@@ -58,34 +58,28 @@ public class ArmorTrenchmaster extends ArmorFSB {
     }
 
     @Override
-    public void handleHurt(LivingHurtEvent event, ArmorFSB chestplate) {
+    public void handleHurt(LivingHurtEvent event) {
         super.handleHurt(event);
-
         if (event.getEntityLiving() instanceof EntityPlayer player) {
-            HbmCapability.IHBMData props = HbmCapability.getData(player);
-
             if (ArmorFSB.hasFSBArmor(player)) {
-
                 if (event.getSource().isExplosion() && event.getSource().getTrueSource() instanceof EntityPlayer) {
                     event.setAmount(0);
-                    return;
                 }
             }
         }
     }
 
     @Override
-    public void handleAttack(LivingAttackEvent event, ArmorFSB chestplate) {
+    public void handleAttack(LivingAttackEvent event) {
         super.handleAttack(event);
         EntityLivingBase e = event.getEntityLiving();
 
-        if (e instanceof EntityPlayer) {
-            EntityPlayer player = (EntityPlayer) e;
+        if (e instanceof EntityPlayer player) {
 
             if (ArmorFSB.hasFSBArmor(player)) {
 
                 if (e.getRNG().nextInt(3) == 0) {
-                    HbmCapability.plink(player, SoundEvents.BLOCK_ANVIL_BREAK, 0.5F, 1.0F + e.getRNG().nextFloat() * 0.5F);
+                    HbmCapability.plink(player, SoundEvents.ENTITY_ITEM_BREAK, 0.5F, 1.0F + e.getRNG().nextFloat() * 0.5F);
                     event.setCanceled(true);
                 }
             }

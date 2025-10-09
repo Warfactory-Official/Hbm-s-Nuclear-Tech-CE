@@ -1,10 +1,11 @@
 package com.hbm.util;
 
-import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilOutput;
 import com.hbm.inventory.RecipesCommon.AStack;
+import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilOutput;
 import com.hbm.main.MainRegistry;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Slot;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraftforge.items.IItemHandler;
@@ -578,4 +579,17 @@ public class InventoryUtil {
 
 		return success;
 	}
+
+    public static boolean hasItem(EntityPlayer player, Item item) {
+        for (ItemStack stack : player.inventory.mainInventory) {
+            if(stack.getItem() == item) return true;
+        }
+        for (ItemStack stack : player.inventory.armorInventory) {
+            if(stack.getItem() == item) return true;
+        }
+        for (ItemStack stack : player.inventory.offHandInventory) {
+            if(stack.getItem() == item) return true;
+        }
+        return false;
+    }
 }

@@ -24,10 +24,10 @@ import com.hbm.entity.projectile.EntityBurningFOEQ;
 import com.hbm.events.CheckLadderEvent;
 import com.hbm.events.InventoryChangedEvent;
 import com.hbm.handler.*;
-import com.hbm.integration.groovy.HbmGroovyPropertyContainer;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.hazard.HazardSystem;
+import com.hbm.integration.groovy.HbmGroovyPropertyContainer;
 import com.hbm.interfaces.IBomb;
 import com.hbm.inventory.recipes.loader.SerializableRecipe;
 import com.hbm.items.IEquipReceiver;
@@ -684,52 +684,70 @@ public class ModEventHandler {
     // Drillgon200: So 1.12.2's going to ignore ISpecialArmor if the damage is
     // unblockable, huh?
     @SubscribeEvent
-    public void onEntityHurt(LivingHurtEvent e) {
-        EntityLivingBase ent = e.getEntityLiving();
-        if (e.getEntityLiving() instanceof EntityPlayer player) {
+    public void onEntityHurt(LivingHurtEvent event) {
+        EntityLivingBase e = event.getEntityLiving();
+        if (event.getEntityLiving() instanceof EntityPlayer player) {
             IHBMData props = HbmCapability.getData(player);
             if(props.getShield() > 0) {
-                float reduce = Math.min(props.getShield(), e.getAmount());
+                float reduce = Math.min(props.getShield(), event.getAmount());
                 props.setShield(props.getShield() - reduce);
-                e.setAmount(e.getAmount() - reduce);
+                event.setAmount(event.getAmount() - reduce);
             }
             props.setLastDamage(player.ticksExisted);
-            if (ArmorUtil.checkArmor(e.getEntityLiving(), ModItems.euphemium_helmet, ModItems.euphemium_plate, ModItems.euphemium_legs, ModItems.euphemium_boots)) {
-                e.setCanceled(true);
+            if (ArmorUtil.checkArmor(event.getEntityLiving(), ModItems.euphemium_helmet, ModItems.euphemium_plate, ModItems.euphemium_legs, ModItems.euphemium_boots)) {
+                event.setCanceled(true);
             }
         }
-        ArmorFSB.handleHurt(e);
 
+        if(HbmLivingProps.getContagion(event.getEntityLiving()) > 0 && event.getAmount() < 100)
+            event.setAmount(event.getAmount() * 2F);
+
+        // mlbv: these below does not exist on 1.7, schedule for removal?
         /// V1 ///
-        if (EntityDamageUtil.wasAttackedByV1(e.getSource())) {
-            EntityPlayer attacker = (EntityPlayer) e.getSource().getImmediateSource();
+        if (EntityDamageUtil.wasAttackedByV1(event.getSource())) {
+            EntityPlayer attacker = (EntityPlayer) event.getSource().getImmediateSource();
 
             NBTTagCompound data = new NBTTagCompound();
             data.setString("type", "vanillaburst");
-            data.setInteger("count", (int) Math.min(ent.getMaxHealth() / 2F, 250));
+            data.setInteger("count", (int) Math.min(e.getMaxHealth() / 2F, 250));
             data.setDouble("motion", 0.1D);
             data.setString("mode", "blockdust");
             data.setInteger("block", Block.getIdFromBlock(Blocks.REDSTONE_BLOCK));
-            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, ent.posX, ent.posY + ent.height * 0.5, ent.posZ), new TargetPoint(ent.dimension, ent.posX, ent.posY, ent.posZ, 50));
+            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, e.posX, e.posY + e.height * 0.5, e.posZ), new TargetPoint(e.dimension, e.posX, e.posY, e.posZ, 50));
 
-            if (attacker.getDistanceSq(ent) < 25) {
-                attacker.heal(e.getAmount() * 0.5F);
+            if (attacker.getDistanceSq(e) < 25) {
+                attacker.heal(event.getAmount() * 0.5F);
             }
         }
 
+        /// ARMOR MODS ///
         for (int i = 2; i < 6; i++) {
 
-            ItemStack armor = ent.getItemStackFromSlot(EntityEquipmentSlot.values()[i]);
+            ItemStack armor = e.getItemStackFromSlot(EntityEquipmentSlot.values()[i]);
 
             if (!armor.isEmpty() && ArmorModHandler.hasMods(armor)) {
 
                 for (ItemStack mod : ArmorModHandler.pryMods(armor)) {
 
                     if (mod != null && mod.getItem() instanceof ItemArmorMod) {
-                        ((ItemArmorMod) mod.getItem()).modDamage(e, armor);
+                        ((ItemArmorMod) mod.getItem()).modDamage(event, armor);
                     }
                 }
             }
+        }
+
+        if(e instanceof EntityPlayer player) {
+
+            /// FSB ARMOR ///
+            if(player.getItemStackFromSlot(EntityEquipmentSlot.CHEST).getItem() instanceof ArmorFSB fsb)
+                fsb.handleHurt(event);
+
+            // TODO: port IDamageHandler
+//            for(ItemStack stack : player.inventory.armorInventory) {
+//                if(stack != null && stack.getItem() instanceof IDamageHandler) {
+//                    ((IDamageHandler)stack.getItem()).handleDamage(event, stack);
+//                }
+//            }
         }
     }
 
@@ -737,14 +755,24 @@ public class ModEventHandler {
     public void onEntityAttacked(LivingAttackEvent event) {
         EntityLivingBase e = event.getEntityLiving();
 
-        if (e instanceof EntityPlayer player && ArmorUtil.checkArmor(e, ModItems.euphemium_helmet, ModItems.euphemium_plate, ModItems.euphemium_legs, ModItems.euphemium_boots)) {
-            if (event.getSource() != ModDamageSource.digamma) {
-                HbmCapability.plink(player, SoundEvents.ENTITY_ITEM_BREAK, 5.0F, 1.0F + e.getRNG().nextFloat() * 0.5F);
-                event.setCanceled(true);
+        if (e instanceof EntityPlayer player) {
+            if (ArmorUtil.checkArmor(e, ModItems.euphemium_helmet, ModItems.euphemium_plate, ModItems.euphemium_legs, ModItems.euphemium_boots)) {
+                if (event.getSource() != ModDamageSource.digamma) {
+                    HbmCapability.plink(player, SoundEvents.ENTITY_ITEM_BREAK, 5.0F, 1.0F + e.getRNG().nextFloat() * 0.5F);
+                    event.setCanceled(true);
+                }
+            } else {
+                if (player.getItemStackFromSlot(EntityEquipmentSlot.CHEST).getItem() instanceof ArmorFSB fsb){
+                    fsb.handleAttack(event);
+                }
+                // TODO: port IAttackHandler
+//                for(ItemStack stack : player.inventory.armorInventory) {
+//                    if(stack != null && stack.getItem() instanceof IAttackHandler) {
+//                        ((IAttackHandler)stack.getItem()).handleAttack(event, stack);
+//                    }
+//                }
             }
         }
-
-        ArmorFSB.handleAttack(event);
     }
 
     @SubscribeEvent
@@ -754,7 +782,8 @@ public class ModEventHandler {
 
     @SubscribeEvent
     public void onEntityFall(LivingFallEvent event) {
-        ArmorFSB.handleFall(event.getEntityLiving());
+        if (event.getEntityLiving() instanceof EntityPlayerMP playerMP)
+            ArmorFSB.handleFall(playerMP);
     }
 
     // only for the ballistic gauntlet! contains dangerous conditional returns!
@@ -808,6 +837,10 @@ public class ModEventHandler {
     @SubscribeEvent
     public void onPlayerTick(TickEvent.PlayerTickEvent event) {
         EntityPlayer player = event.player;
+
+        if (player.getItemStackFromSlot(EntityEquipmentSlot.CHEST).getItem() instanceof ArmorFSB fsb) {
+            fsb.handleTick(event);
+        }
 
         if (player.posY > 300 && player.posY < 1000) {
             Vec3 vec = Vec3.createVectorHelper(3 * rand.nextDouble(), 0, 0);
@@ -1118,7 +1151,6 @@ public class ModEventHandler {
     public void onLivingUpdate(LivingUpdateEvent event) {
         if (event.isCancelable() && event.isCanceled())
             return;
-        ArmorFSB.handleTick(event.getEntityLiving());
         NonNullList<ItemStack> handInventory = event.getEntityLiving().handInventory;
         NonNullList<ItemStack> armorArray =event.getEntityLiving().armorArray;
 
@@ -1180,7 +1212,10 @@ public class ModEventHandler {
     public void onEntityJump(LivingJumpEvent event) {
         if (event.isCancelable() && event.isCanceled())
             return;
-        ArmorFSB.handleJump(event.getEntityLiving());
+        if (event.getEntityLiving() instanceof EntityPlayer player){
+            if (player.getItemStackFromSlot(EntityEquipmentSlot.CHEST).getItem() instanceof ArmorFSB)
+                ArmorFSB.handleJump(player);
+        }
     }
 
     @SubscribeEvent
