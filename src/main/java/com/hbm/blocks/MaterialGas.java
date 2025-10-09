@@ -12,7 +12,7 @@ public class MaterialGas extends Material {
 	}
 	
 	public boolean isSolid() {
-		return true;
+		return false;
 	}
 
 	public boolean getCanBlockGrass() {
