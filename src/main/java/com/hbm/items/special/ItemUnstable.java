@@ -1,12 +1,16 @@
 package com.hbm.items.special;
 
+import com.hbm.Tags;
 import com.hbm.config.BombConfig;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
+import com.hbm.items.IDynamicModels;
 import com.hbm.items.ItemBakedBase;
+import com.hbm.items.ModItems;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.util.I18nUtil;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
@@ -16,6 +20,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.world.World;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -128,5 +133,13 @@ public class ItemUnstable extends ItemBakedBase {
 		tooltip.add("§cDecay Time: " + (timer / 20) + "s - Explosion Radius: " + scaledRadiusForCount(stack.getCount()) + "m§r");
 		tooltip.add("§cDecay: " + (getTimer(stack) * 100 / timer) + "%§r");
 	}
+
+    @Override
+    public void registerModel(){
+            ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(getRegistryName(), "inventory"));
+            ModelLoader.setCustomModelResourceLocation(this, 1, new ModelResourceLocation(Tags.MODID + ":hs-elements", "inventory"));
+            ModelLoader.setCustomModelResourceLocation(this, 2, new ModelResourceLocation(Tags.MODID + ":hs-arsenic", "inventory"));
+            ModelLoader.setCustomModelResourceLocation(this, 3, new ModelResourceLocation(Tags.MODID + ":hs-vault", "inventory"));
+    }
 
 }

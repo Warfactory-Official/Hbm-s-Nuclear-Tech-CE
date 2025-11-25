@@ -44,7 +44,6 @@ import static com.hbm.items.special.ItemBedrockOreNew.ProcessingTrait.*;
 //TODO: fix IDynamicModels
 public class ItemBedrockOreNew extends Item implements IDynamicModels {
 
-    private static final List<ItemBedrockOreNew> INSTANCES = new ArrayList<>();
 
     public ItemBedrockOreNew(String s) {
         this.setTranslationKey(s);
@@ -54,10 +53,8 @@ public class ItemBedrockOreNew extends Item implements IDynamicModels {
         this.setMaxDamage(0);
 
         ModItems.ALL_ITEMS.add(this);
+        IDynamicModels.INSTANCES.add(this);
 
-        if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
-            INSTANCES.add(this);
-        }
     }
 
     @Override
@@ -75,19 +72,19 @@ public class ItemBedrockOreNew extends Item implements IDynamicModels {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void registerModels() {
-        for(int i = 0; i < BedrockOreGrade.VALUES.length; i++) {
-            BedrockOreGrade grade = BedrockOreGrade.VALUES[i];
-            for (int j = 0; j < BedrockOreType.VALUES.length; j++) {
-                BedrockOreType type = BedrockOreType.VALUES[j];
-                String placeholderName = Tags.MODID + ":items/bedrock_ore_" + grade.prefix + "_" + type.suffix + "-" + (i * BedrockOreType.VALUES.length + j);
+    public void registerModel() {
+        for(int i = 0; i < BedrockOreGrade.values().length; i++) {
+            BedrockOreGrade grade = BedrockOreGrade.values()[i];
+            for (int j = 0; j < BedrockOreType.values().length; j++) {
+                BedrockOreType type = BedrockOreType.values()[j];
+                String placeholderName = Tags.MODID + ":items/bedrock_ore_" + grade.prefix + "_" + type.suffix + "-" + (i * BedrockOreType.values().length + j);
                 ModelLoader.setCustomModelResourceLocation(this, grade.ordinal() << 4 | type.ordinal(), new ModelResourceLocation(placeholderName, "inventory"));
             }
         }
     }
 
     @SideOnly(Side.CLIENT)
-    public static void bakeModels(ModelBakeEvent event){
+    public void bakeModel(ModelBakeEvent event){
         try {
             IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft",  "item/generated"));
 
@@ -125,12 +122,12 @@ public class ItemBedrockOreNew extends Item implements IDynamicModels {
     }
 
     @SideOnly(Side.CLIENT)
-    public static void registerSprites(TextureMap map) {
-        for(int i = 0; i < BedrockOreGrade.VALUES.length; i++) {
-            BedrockOreGrade grade = BedrockOreGrade.VALUES[i];
-            for (int j = 0; j < BedrockOreType.VALUES.length; j++) {
-                BedrockOreType type = BedrockOreType.VALUES[j];
-                ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID + ":items/bedrock_ore_" + grade.prefix + "_" + type.suffix + "-" + (i * BedrockOreType.VALUES.length + j));
+    public void registerSprite(TextureMap map) {
+        for(int i = 0; i < BedrockOreGrade.values().length; i++) {
+            BedrockOreGrade grade = BedrockOreGrade.values()[i];
+            for (int j = 0; j < BedrockOreType.values().length; j++) {
+                BedrockOreType type = BedrockOreType.values()[j];
+                ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID + ":items/bedrock_ore_" + grade.prefix + "_" + type.suffix + "-" + (i * BedrockOreType.values().length + j));
                 TextureAtlasSprite sprite = new TextureAtlasSpriteMutatable(spriteLoc.toString(), new RGBMutatorInterpolatedComponentRemap(0xFFFFFF, 0x505050, type.light, type.dark));
                 map.setTextureEntry(sprite);
             }
@@ -143,26 +140,16 @@ public class ItemBedrockOreNew extends Item implements IDynamicModels {
     }
 
     @SideOnly(Side.CLIENT)
-    public static void registerColorHandlers(ColorHandlerEvent.Item evt) {
-        ItemColors itemColors = evt.getItemColors();
-        IItemColor handler = new BedrockOreColorHandler();
-
-        for (ItemBedrockOreNew item : INSTANCES) {
-            itemColors.registerItemColorHandler(handler, item);
-        }
-    }
-
-    @SideOnly(Side.CLIENT)
-    private static class BedrockOreColorHandler implements IItemColor {
-        @Override
-        public int colorMultiplier(ItemStack stack, int tintIndex) {
+    public IItemColor getItemColorHandler() {
+        return (stack, tintIndex) -> {
             if (tintIndex != 0) return 0xFFFFFF;
 
             ItemBedrockOreNew item = (ItemBedrockOreNew) stack.getItem();
             BedrockOreGrade grade = item.getGrade(stack.getItemDamage());
             return grade.tint;
-        }
+        };
     }
+
 
     @Override
     @SideOnly(Side.CLIENT)

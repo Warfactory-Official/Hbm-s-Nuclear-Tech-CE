@@ -7,7 +7,7 @@ import com.hbm.inventory.OreDictManager;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
-import com.hbm.items.IModelRegister;
+import com.hbm.items.IDynamicModels;
 import com.hbm.items.ItemEnums;
 import com.hbm.items.ModItems;
 import com.hbm.main.MainRegistry;
@@ -41,7 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class ItemMold extends Item implements IModelRegister {
+public class ItemMold extends Item implements IDynamicModels {
 
     public static List<Mold> molds = new ArrayList<>(); //molds in "pretty" order, variable between versions
     public static HashMap<Integer, Mold> moldById = new HashMap<>(); //molds by their static ID -> stack item damage
@@ -55,6 +55,7 @@ public class ItemMold extends Item implements IModelRegister {
         this.setHasSubtypes(true);
         this.setMaxDamage(0);
         this.setCreativeTab(MainRegistry.templateTab);
+        IDynamicModels.INSTANCES.add(this);
 
         blockOverrides.put(Mats.MAT_STONE,		new ItemStack(Blocks.STONE));
         blockOverrides.put(Mats.MAT_OBSIDIAN,	new ItemStack(Blocks.OBSIDIAN));
@@ -133,14 +134,14 @@ public class ItemMold extends Item implements IModelRegister {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void registerModels() {
+    public void registerModel() {
         for (Mold mold : molds) {
             ModelLoader.setCustomModelResourceLocation(this, mold.id, new ModelResourceLocation(Tags.MODID + ":items/mold_" + mold.name, "inventory"));
         }
     }
 
     @SideOnly(Side.CLIENT)
-    public static void registerSprites(TextureMap map){
+    public void registerSprite(TextureMap map){
         for (Mold mold : molds) {
             ResourceLocation loc = new ResourceLocation(Tags.MODID + ":items/mold_" + mold.name);
             map.registerSprite(loc);
@@ -148,7 +149,7 @@ public class ItemMold extends Item implements IModelRegister {
     }
 
     @SideOnly(Side.CLIENT)
-    public static void bakeModels(ModelBakeEvent event) {
+    public void bakeModel(ModelBakeEvent event) {
         try {
             IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/generated"));
             for (Mold mold : molds) {

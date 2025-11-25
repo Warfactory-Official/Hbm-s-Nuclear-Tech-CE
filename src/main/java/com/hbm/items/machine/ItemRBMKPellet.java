@@ -1,7 +1,10 @@
 package com.hbm.items.machine;
 
+import com.hbm.items.IDynamicModels;
 import com.hbm.items.ModItems;
 import com.hbm.main.MainRegistry;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
@@ -9,10 +12,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.ModelLoader;
 
 import java.util.List;
 
-public class ItemRBMKPellet extends Item {
+public class ItemRBMKPellet extends Item implements IDynamicModels {
 	
 	public String fullName = "";
 
@@ -25,6 +30,7 @@ public class ItemRBMKPellet extends Item {
 		this.setCreativeTab(MainRegistry.controlTab);
 		
 		ModItems.ALL_ITEMS.add(this);
+        IDynamicModels.INSTANCES.add(this);
 	}
 
 	@Override
@@ -64,4 +70,23 @@ public class ItemRBMKPellet extends Item {
 	static public int rectify(int meta) {
 		return Math.abs(meta) % 10;
 	}
+
+    @Override
+    public void bakeModel(ModelBakeEvent event) {
+
+    }
+
+    @Override
+    public void registerModel() {
+        for (int xe = 0; xe < 2; xe++) {
+            for (int en = 0; en < 5; en++) {
+                ModelLoader.setCustomModelResourceLocation(this, en + xe * 5, new ModelResourceLocation(getRegistryName() + "_e" + en + (xe > 0 ? "_xe" : ""), "inventory"));
+            }
+        }
+    }
+
+    @Override
+    public void registerSprite(TextureMap map) {
+
+    }
 }

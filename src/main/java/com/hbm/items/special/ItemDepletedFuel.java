@@ -3,6 +3,7 @@ package com.hbm.items.special;
 import com.hbm.items.IDynamicModels;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.color.IItemColor;
 import net.minecraft.client.renderer.color.ItemColors;
 import net.minecraft.client.renderer.texture.TextureMap;
@@ -14,6 +15,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -22,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ItemDepletedFuel extends ItemNuclearWaste implements IDynamicModels {
 
@@ -65,7 +68,11 @@ public class ItemDepletedFuel extends ItemNuclearWaste implements IDynamicModels
 
     @Override
     public void registerModel() {
-
+        for (int i = 0; i <= 1; i++) {
+            ModelLoader.setCustomModelResourceLocation(this, i,
+                    new ModelResourceLocation(Objects.requireNonNull(this.getRegistryName()), "inventory"));
+        }
+        return;
     }
 
     @Override

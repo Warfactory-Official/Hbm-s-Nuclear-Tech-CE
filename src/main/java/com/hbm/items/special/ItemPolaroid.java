@@ -1,7 +1,10 @@
 package com.hbm.items.special;
 
+import com.hbm.items.IDynamicModels;
 import com.hbm.items.ModItems;
 import com.hbm.main.MainRegistry;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -10,10 +13,12 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.ModelLoader;
 
 import java.util.List;
 
-public class ItemPolaroid extends Item {
+public class ItemPolaroid extends Item implements IDynamicModels {
 
 	public ItemPolaroid(String s) {
 		this.setTranslationKey(s);
@@ -21,6 +26,7 @@ public class ItemPolaroid extends Item {
 		this.setCreativeTab(MainRegistry.consumableTab);
 		
 		ModItems.ALL_ITEMS.add(this);
+        IDynamicModels.INSTANCES.add(this);
 	}
 	
 	@Override
@@ -95,4 +101,20 @@ public class ItemPolaroid extends Item {
 			break;
 		}
 	}
+
+    @Override
+    public void bakeModel(ModelBakeEvent event) {
+
+    }
+
+    @Override
+    public void registerModel() {
+        ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(this.getRegistryName() + "_" + MainRegistry.polaroidID, "inventory"));
+
+    }
+
+    @Override
+    public void registerSprite(TextureMap map) {
+
+    }
 }

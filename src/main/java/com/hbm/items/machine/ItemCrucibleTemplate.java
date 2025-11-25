@@ -4,10 +4,12 @@ import com.hbm.Tags;
 import com.hbm.interfaces.IHasCustomModel;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.recipes.CrucibleRecipes;
+import com.hbm.items.IDynamicModels;
 import com.hbm.items.ModItems;
 import com.hbm.main.MainRegistry;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
@@ -16,13 +18,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Keyboard;
 
 import java.util.List;
 
-public class ItemCrucibleTemplate extends Item implements IHasCustomModel {
+public class ItemCrucibleTemplate extends Item implements IHasCustomModel, IDynamicModels {
 
     public static final ModelResourceLocation location = new ModelResourceLocation(
             Tags.MODID + ":crucible_template", "inventory");
@@ -35,6 +39,7 @@ public class ItemCrucibleTemplate extends Item implements IHasCustomModel {
         this.setCreativeTab(MainRegistry.templateTab);
 
         ModItems.ALL_ITEMS.add(this);
+        IDynamicModels.INSTANCES.add(this);
     }
 
     @Override
@@ -90,5 +95,22 @@ public class ItemCrucibleTemplate extends Item implements IHasCustomModel {
     @Override
     public ModelResourceLocation getResourceLocation() {
         return location;
+    }
+
+    @Override
+    public void bakeModel(ModelBakeEvent event) {
+
+    }
+
+    @Override
+    public void registerModel() {
+        for (int i = 0; i < 32; i++) {
+            ModelLoader.setCustomModelResourceLocation(this, i, new ModelResourceLocation(this.getRegistryName(), "inventory"));
+        }
+    }
+
+    @Override
+    public void registerSprite(TextureMap map) {
+
     }
 }

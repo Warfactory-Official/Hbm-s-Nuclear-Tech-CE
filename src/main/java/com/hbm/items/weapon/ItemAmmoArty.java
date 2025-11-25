@@ -12,7 +12,7 @@ import com.hbm.explosion.vanillant.standard.*;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.items.IModelRegister;
+import com.hbm.items.IDynamicModels;
 import com.hbm.items.ModItems;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
@@ -21,6 +21,7 @@ import com.hbm.particle.SpentCasing;
 import com.hbm.particle.helper.ExplosionCreator;
 import com.hbm.potion.HbmPotion;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
@@ -37,6 +38,7 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -47,7 +49,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Random;
 
-public class ItemAmmoArty extends Item implements IModelRegister {
+public class ItemAmmoArty extends Item implements IDynamicModels {
 
     public static Random rand = new Random();
     public static ArtilleryShell[] itemTypes =	new ArtilleryShell[ /* >>> */ 12 /* <<< */ ];
@@ -74,6 +76,7 @@ public class ItemAmmoArty extends Item implements IModelRegister {
 
         init();
         ModItems.ALL_ITEMS.add(this);
+        IDynamicModels.INSTANCES.add(this);
     }
 
     @Override
@@ -87,11 +90,20 @@ public class ItemAmmoArty extends Item implements IModelRegister {
     }
 
     @Override
-    public void registerModels() {
+    public void bakeModel(ModelBakeEvent event) {
+
+    }
+
+    public void registerModel() {
         for (int i = 0; i <= 11; i++) {
             ModelLoader.setCustomModelResourceLocation(this, i,
                     new ModelResourceLocation("hbm:ammo_arty_" + getShellName(i), "inventory"));
         }
+    }
+
+    @Override
+    public void registerSprite(TextureMap map) {
+
     }
 
     private String getShellName(int meta) {

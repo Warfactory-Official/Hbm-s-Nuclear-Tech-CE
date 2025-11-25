@@ -3,6 +3,7 @@ package com.hbm.items.machine;
 import com.hbm.items.IDynamicModels;
 import com.hbm.items.ModItems;
 import com.hbm.lib.HBMSoundHandler;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.color.IItemColor;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.util.ITooltipFlag;
@@ -13,10 +14,10 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.ModelLoader;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import java.util.Objects;
 
 public class ItemCassette extends Item implements IDynamicModels {
 
@@ -39,6 +40,9 @@ public class ItemCassette extends Item implements IDynamicModels {
 
     @Override
     public void registerModel() {
+            for (int i = 0; i < ItemCassette.TrackType.values().length; i++) {
+                ModelLoader.setCustomModelResourceLocation(this, i, new ModelResourceLocation(Objects.requireNonNull(this.getRegistryName()), "inventory"));
+            }
 
     }
 

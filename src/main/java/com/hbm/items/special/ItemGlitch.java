@@ -9,10 +9,13 @@ import com.hbm.entity.projectile.EntityMeteor;
 import com.hbm.explosion.ExplosionChaos;
 import com.hbm.explosion.ExplosionLarge;
 import com.hbm.interfaces.Spaghetti;
+import com.hbm.items.IDynamicModels;
 import com.hbm.items.ModItems;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.main.MainRegistry;
 import com.hbm.util.I18nUtil;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
@@ -26,12 +29,14 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.ModelLoader;
 
 import java.util.List;
 
 // mlbv: this annotation was added by bobcat
 @Spaghetti("why do you even exist")
-public class ItemGlitch extends Item implements IBatteryItem {
+public class ItemGlitch extends Item implements IBatteryItem, IDynamicModels {
 
 	public ItemGlitch(String s) {
 		this.setTranslationKey(s);
@@ -40,6 +45,7 @@ public class ItemGlitch extends Item implements IBatteryItem {
         this.setMaxDamage(1);
 		
 		ModItems.ALL_ITEMS.add(this);
+        IDynamicModels.INSTANCES.add(this);
 	}
 	
 	@Override
@@ -213,6 +219,28 @@ public class ItemGlitch extends Item implements IBatteryItem {
 		return 200;
 	}
 
-	@Override public long getChargeRate(ItemStack stack) { return 0; }
-	@Override public long getDischargeRate(ItemStack stack) { return 200; }
+	@Override
+	public long getChargeRate() {
+		return 0;
+	}
+
+	@Override
+	public long getDischargeRate() {
+		return 200;
+	}
+
+    @Override
+    public void bakeModel(ModelBakeEvent event) {
+
+    }
+
+    @Override
+    public void registerModel() {
+        ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(this.getRegistryName() + "_" + MainRegistry.polaroidID, "inventory"));
+    }
+
+    @Override
+    public void registerSprite(TextureMap map) {
+
+    }
 }

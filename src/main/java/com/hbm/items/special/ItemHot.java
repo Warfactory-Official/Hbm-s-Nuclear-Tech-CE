@@ -144,7 +144,9 @@ public class ItemHot extends ItemBakedBase {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerModel() {
-		super.registerModel();
+        for (int i = 0; i < 15; i++)
+            ModelLoader.setCustomModelResourceLocation(this, i, new ModelResourceLocation(getRegistryName(), "inventory"));
+        ModelLoader.setCustomModelResourceLocation(this, 15, new ModelResourceLocation(getRegistryName() + "_hot", "inventory"));
 	}
 
 	@Override
@@ -181,6 +183,7 @@ public class ItemHot extends ItemBakedBase {
 				}
 			};
 		}
+
 
 		@Override
 		public List<BakedQuad> getQuads(@Nullable IBlockState state, @Nullable EnumFacing side, long rand) {
