@@ -127,11 +127,9 @@ public class NTMClientRegistry {
             return 0xFFFFFF;
         }, ModItems.scraps);
         //TODO: Move to IDynamicModels
-        ItemDepletedFuel.registerColorHandlers(evt);
         ItemBedrockOreNew.registerColorHandlers(evt);
         ItemFFFluidDuct.registerColorHandlers(evt);
         ItemGasCanister.registerColorHandler(evt);
-        ItemAutogen.registerColorHandlers(evt);
         IDynamicModels.registerItemColorHandlers(evt);
         ItemChemicalDye.registerColorHandlers(evt);
         ItemKitCustom.registerColorHandlers(evt);
@@ -139,10 +137,7 @@ public class NTMClientRegistry {
 
     @SubscribeEvent
     public void blockColorsEvent(ColorHandlerEvent.Block evt) {
-        FluidDuctBox.registerColorHandler(evt);
-        FluidDuctStandard.registerColorHandler(evt);
         IDynamicModels.registerBlockColorHandlers(evt);
-        Balefire.registerColorHandler(evt);
     }
 
     @SubscribeEvent
@@ -150,9 +145,9 @@ public class NTMClientRegistry {
         TextureMap map = evt.getMap();
         ItemBedrockOreNew.registerSprites(map);
         ItemMold.registerSprites(map);
-        ItemAutogen.registerSprites(map);
 
         IDynamicModels.registerSprites(map);
+        RegistrationUtils.registerInFolder(map,"textures/blocks/forgefluid");
 
         //Debug stuff
         debugPower = map.registerSprite(new ResourceLocation(Tags.MODID, "particle/debug_power"));
@@ -162,7 +157,6 @@ public class NTMClientRegistry {
         particle_base = map.registerSprite(new ResourceLocation(Tags.MODID, "particle/particle_base"));
         fog = map.registerSprite(new ResourceLocation(Tags.MODID, "particle/fog"));
 
-        RegistrationUtils.registerInFolder(map,"textures/blocks/forgefluid");
 
 
         map.registerSprite(new ResourceLocation(Tags.MODID, "items/ore_bedrock_layer"));
@@ -176,8 +170,6 @@ public class NTMClientRegistry {
 
     @SubscribeEvent
     public void textureStitchPost(TextureStitchEvent.Post evt) {
-
-
         RenderStructureMarker.fusion[0][0] = evt.getMap().getAtlasSprite(Tags.MODID + ":blocks/block_steel");
         RenderStructureMarker.fusion[0][1] = evt.getMap().getAtlasSprite(Tags.MODID + ":blocks/fusion_conductor_side_alt3");
         RenderStructureMarker.fusion[1][0] = evt.getMap().getAtlasSprite(Tags.MODID + ":blocks/fusion_heater_top");
@@ -314,15 +306,12 @@ public class NTMClientRegistry {
         IDynamicModels.registerCustomStateMappers();
         IMetaItemTesr.redirectModels();
 
-        ModelLoader.setCustomModelResourceLocation(ModItems.conveyor_wand, 0, new ModelResourceLocation(ModBlocks.conveyor.getRegistryName(),
-                "inventory"));
-        ModelLoader.setCustomModelResourceLocation(ModItems.conveyor_wand, 1, new ModelResourceLocation(ModBlocks.conveyor_express.getRegistryName(),
-                "inventory"));
-        ModelLoader.setCustomModelResourceLocation(ModItems.conveyor_wand, 2, new ModelResourceLocation(ModBlocks.conveyor_double.getRegistryName(),
-                "inventory"));
-        ModelLoader.setCustomModelResourceLocation(ModItems.conveyor_wand, 3, new ModelResourceLocation(ModBlocks.conveyor_triple.getRegistryName(),
-                "inventory"));
         ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(ModBlocks.fence_metal), 1, new ModelResourceLocation("hbm:fence_metal_post", "inventory"));
+
+        //FIXME: this is a dogshit solution
+        // now 2 dogshit solutions!
+
+
     }
 
     private void registerBlockModel(Block block, int meta) {
@@ -409,7 +398,7 @@ public class NTMClientRegistry {
     @SuppressWarnings("unused")
     public void onModelBake(ModelBakeEvent evt) {
         ItemBedrockOreNew.bakeModels(evt);
-        ItemAutogen.bakeModels(evt);
+//        ItemAutogen.bakeModels(evt);
         ItemMold.bakeModels(evt);
         IDynamicModels.bakeModels(evt);
 

@@ -26,7 +26,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.statemap.StateMapperBase;
-import net.minecraft.client.renderer.color.BlockColors;
 import net.minecraft.client.renderer.color.IBlockColor;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
@@ -47,7 +46,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.model.ModelLoader;
@@ -73,7 +71,7 @@ public class FluidDuctBox extends FluidDuctBase implements IDynamicModels, ILook
     public static final IUnlistedProperty<Boolean> CONN_UP = new ConnectionProperty("up");
     public static final IUnlistedProperty<Boolean> CONN_DOWN = new ConnectionProperty("down");
 
-    private static final String[] materials = new String[] {"silver", "copper", "white"};
+    private static final String[] materials = new String[]{"silver", "copper", "white"};
 
     @SideOnly(Side.CLIENT)
     public static TextureAtlasSprite[] iconStraight;
@@ -151,7 +149,7 @@ public class FluidDuctBox extends FluidDuctBase implements IDynamicModels, ILook
 
     @Override
     public void getSubBlocks(CreativeTabs tab, NonNullList<ItemStack> items) {
-        if(tab == CreativeTabs.SEARCH || tab == this.getCreativeTab()) {
+        if (tab == CreativeTabs.SEARCH || tab == this.getCreativeTab()) {
             for (int i = 0; i < 15; ++i) {
                 items.add(new ItemStack(this, 1, i));
             }
@@ -276,12 +274,18 @@ public class FluidDuctBox extends FluidDuctBase implements IDynamicModels, ILook
             } else {
                 bbs.add(new AxisAlignedBB(pos.getX() + lower, pos.getY() + lower, pos.getZ() + lower, pos.getX() + upper, pos.getY() + upper, pos.getZ() + upper));
             }
-            if (pX) bbs.add(new AxisAlignedBB(pos.getX() + upper, pos.getY() + lower, pos.getZ() + lower, pos.getX() + 1.0D, pos.getY() + upper, pos.getZ() + upper));
-            if (nX) bbs.add(new AxisAlignedBB(pos.getX() + 0.0D, pos.getY() + lower, pos.getZ() + lower, pos.getX() + lower, pos.getY() + upper, pos.getZ() + upper));
-            if (pY) bbs.add(new AxisAlignedBB(pos.getX() + lower, pos.getY() + upper, pos.getZ() + lower, pos.getX() + upper, pos.getY() + 1.0D, pos.getZ() + upper));
-            if (nY) bbs.add(new AxisAlignedBB(pos.getX() + lower, pos.getY() + 0.0D, pos.getZ() + lower, pos.getX() + upper, pos.getY() + lower, pos.getZ() + upper));
-            if (pZ) bbs.add(new AxisAlignedBB(pos.getX() + lower, pos.getY() + lower, pos.getZ() + upper, pos.getX() + upper, pos.getY() + upper, pos.getZ() + 1.0D));
-            if (nZ) bbs.add(new AxisAlignedBB(pos.getX() + lower, pos.getY() + lower, pos.getZ() + 0.0D, pos.getX() + upper, pos.getY() + upper, pos.getZ() + lower));
+            if (pX)
+                bbs.add(new AxisAlignedBB(pos.getX() + upper, pos.getY() + lower, pos.getZ() + lower, pos.getX() + 1.0D, pos.getY() + upper, pos.getZ() + upper));
+            if (nX)
+                bbs.add(new AxisAlignedBB(pos.getX() + 0.0D, pos.getY() + lower, pos.getZ() + lower, pos.getX() + lower, pos.getY() + upper, pos.getZ() + upper));
+            if (pY)
+                bbs.add(new AxisAlignedBB(pos.getX() + lower, pos.getY() + upper, pos.getZ() + lower, pos.getX() + upper, pos.getY() + 1.0D, pos.getZ() + upper));
+            if (nY)
+                bbs.add(new AxisAlignedBB(pos.getX() + lower, pos.getY() + 0.0D, pos.getZ() + lower, pos.getX() + upper, pos.getY() + lower, pos.getZ() + upper));
+            if (pZ)
+                bbs.add(new AxisAlignedBB(pos.getX() + lower, pos.getY() + lower, pos.getZ() + upper, pos.getX() + upper, pos.getY() + upper, pos.getZ() + 1.0D));
+            if (nZ)
+                bbs.add(new AxisAlignedBB(pos.getX() + lower, pos.getY() + lower, pos.getZ() + 0.0D, pos.getX() + upper, pos.getY() + upper, pos.getZ() + lower));
         }
 
         for (AxisAlignedBB bb : bbs) {
@@ -470,8 +474,8 @@ public class FluidDuctBox extends FluidDuctBase implements IDynamicModels, ILook
     }
 
     @SideOnly(Side.CLIENT)
-    public static void registerColorHandler(ColorHandlerEvent.Block evt) {
-        IBlockColor ductColorHandler = (state, worldIn, pos, tintIndex) -> {
+    public IBlockColor getBlockColorHandler() {
+        return (state, worldIn, pos, tintIndex) -> {
             if (tintIndex != 0) {
                 return 0xFFFFFF;
             }
@@ -497,7 +501,5 @@ public class FluidDuctBox extends FluidDuctBase implements IDynamicModels, ILook
             return color;
         };
 
-        BlockColors blockColors = evt.getBlockColors();
-        blockColors.registerBlockColorHandler(ductColorHandler, ModBlocks.fluid_duct_box);
     }
 }

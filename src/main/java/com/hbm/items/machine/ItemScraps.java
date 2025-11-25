@@ -5,6 +5,7 @@ import com.hbm.Tags;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
+import com.hbm.items.IDynamicModels;
 import com.hbm.items.ModItems;
 import com.hbm.items.special.ItemAutogen;
 import com.hbm.util.I18nUtil;
@@ -34,7 +35,7 @@ import org.lwjgl.input.Keyboard;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ItemScraps extends ItemAutogen {
+public class ItemScraps extends ItemAutogen implements IDynamicModels {
 
     public ItemScraps(String s) {
         super(null, s);
@@ -89,9 +90,8 @@ public class ItemScraps extends ItemAutogen {
         }
     }
 
-    @Override
     @SideOnly(Side.CLIENT)
-    public void registerModels() {
+    public void registerModel() {
         List<ResourceLocation> variants = new ArrayList<>();
         for (NTMMaterial mat : Mats.orderedList) {
             if (mat.smeltable == NTMMaterial.SmeltingBehavior.SMELTABLE

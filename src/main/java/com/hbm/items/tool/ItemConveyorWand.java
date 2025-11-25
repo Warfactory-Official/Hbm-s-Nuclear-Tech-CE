@@ -6,6 +6,7 @@ import com.hbm.blocks.network.BlockConveyor;
 import com.hbm.blocks.network.BlockConveyorBase;
 import com.hbm.blocks.network.BlockConveyorBendable;
 import com.hbm.blocks.network.BlockCraneBase;
+import com.hbm.items.IDynamicModels;
 import com.hbm.items.ModItems;
 import com.hbm.main.MainRegistry;
 import com.hbm.render.util.RenderOverhead;
@@ -14,6 +15,8 @@ import com.hbm.wiaj.WorldInAJar;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
@@ -33,7 +36,9 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.Pre;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -44,7 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class ItemConveyorWand extends Item implements ILookOverlay {
+public class ItemConveyorWand extends Item implements ILookOverlay, IDynamicModels {
 
     private static RayTraceResult lastMop;
     private static EnumFacing lastSide;
@@ -55,6 +60,7 @@ public class ItemConveyorWand extends Item implements ILookOverlay {
         this.setTranslationKey(name);
         this.setHasSubtypes(true);
         ModItems.ALL_ITEMS.add(this);
+        IDynamicModels.INSTANCES.add(this);
     }
 
     public static ConveyorType getType(ItemStack stack) {
@@ -409,6 +415,28 @@ public class ItemConveyorWand extends Item implements ILookOverlay {
             text.add("Break whole conveyor line");
             ILookOverlay.printGeneric(event, I18nUtil.resolveKey(state.getBlock().getTranslationKey() + ".name"), 0xffff00, 0x404000, text);
         }
+    }
+
+    @Override
+    public void bakeModel(ModelBakeEvent event) {
+
+    }
+
+    @Override
+    public void registerModel() {
+        ModelLoader.setCustomModelResourceLocation(ModItems.conveyor_wand, 0, new ModelResourceLocation(ModBlocks.conveyor.getRegistryName(),
+                "inventory"));
+        ModelLoader.setCustomModelResourceLocation(ModItems.conveyor_wand, 1, new ModelResourceLocation(ModBlocks.conveyor_express.getRegistryName(),
+                "inventory"));
+        ModelLoader.setCustomModelResourceLocation(ModItems.conveyor_wand, 2, new ModelResourceLocation(ModBlocks.conveyor_double.getRegistryName(),
+                "inventory"));
+        ModelLoader.setCustomModelResourceLocation(ModItems.conveyor_wand, 3, new ModelResourceLocation(ModBlocks.conveyor_triple.getRegistryName(),
+                "inventory"));
+    }
+
+    @Override
+    public void registerSprite(TextureMap map) {
+
     }
 
     public enum ConveyorType {

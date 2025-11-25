@@ -5,13 +5,14 @@ import com.hbm.Tags;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
-import com.hbm.items.IModelRegister;
+import com.hbm.items.IDynamicModels;
 import com.hbm.items.ModItems;
 import com.hbm.render.icon.RGBMutatorInterpolatedComponentRemap;
 import com.hbm.render.icon.TextureAtlasSpriteMutatable;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.model.ModelRotation;
+import net.minecraft.client.renderer.color.IBlockColor;
 import net.minecraft.client.renderer.color.IItemColor;
 import net.minecraft.client.renderer.color.ItemColors;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -37,9 +38,8 @@ import java.util.List;
 import java.util.Objects;
 
 //TODO: fix IDynamicModels
-public class ItemAutogen extends Item implements IModelRegister {
+public class ItemAutogen extends Item implements IDynamicModels {
 
-    public static List<ItemAutogen> INSTANCES = new ArrayList<>();
     MaterialShapes shape;
     private HashMap<NTMMaterial, String> textureOverrides = new HashMap<>();
     public static HashMap<NTMMaterial, TextureAtlasSprite> iconMap = new HashMap<>();
@@ -52,7 +52,7 @@ public class ItemAutogen extends Item implements IModelRegister {
         this.shape = shape;
 
         ModItems.ALL_ITEMS.add(this);
-        INSTANCES.add(this);
+        IDynamicModels.INSTANCES.add(this);
 
     }
 
@@ -71,7 +71,7 @@ public class ItemAutogen extends Item implements IModelRegister {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void registerModels() {
+    public void registerModel() {
         for (NTMMaterial mat : Mats.orderedList) {
             if (mat.autogen.contains(this.shape)) {
                 String texturePath = getTexturePath(mat);
@@ -83,7 +83,7 @@ public class ItemAutogen extends Item implements IModelRegister {
         }
     }
 
-    public static void bakeModels(ModelBakeEvent event){for(ItemAutogen item : INSTANCES)item.bakeModel(event);}
+//    public static void bakeModels(ModelBakeEvent event){for(ItemAutogen item : INSTANCES)item.bakeModel(event);}
 
 
     public void bakeModel(ModelBakeEvent event) {
@@ -110,8 +110,8 @@ public class ItemAutogen extends Item implements IModelRegister {
         }
     }
 
-    @SideOnly(Side.CLIENT)
-    public static void registerSprites(TextureMap map){for(ItemAutogen item : INSTANCES) item.registerSprite(map);}
+//    @SideOnly(Side.CLIENT)
+//    public static void registerSprites(TextureMap map){for(ItemAutogen item : INSTANCES) item.registerSprite(map);}
 
     @SideOnly(Side.CLIENT)
     public void registerSprite(TextureMap map) {
@@ -140,13 +140,18 @@ public class ItemAutogen extends Item implements IModelRegister {
         }
     }
 
+//    @SideOnly(Side.CLIENT)
+//    public static void registerColorHandlers(ColorHandlerEvent.Item evt) {
+//        ItemColors itemColors = evt.getItemColors();
+//        IItemColor handler = new ItemAutogen.AutogenColorHandler();
+//        for (ItemAutogen item : INSTANCES) {
+//            if (item != ModItems.scraps) itemColors.registerItemColorHandler(handler, item);
+//        }
+//    }
+
     @SideOnly(Side.CLIENT)
-    public static void registerColorHandlers(ColorHandlerEvent.Item evt) {
-        ItemColors itemColors = evt.getItemColors();
-        IItemColor handler = new ItemAutogen.AutogenColorHandler();
-        for (ItemAutogen item : INSTANCES) {
-            if (item != ModItems.scraps) itemColors.registerItemColorHandler(handler, item);
-        }
+    public IItemColor getItemColorHandler() {
+        return this == ModItems.scraps ? null : new ItemAutogen.AutogenColorHandler();
     }
 
     @SideOnly(Side.CLIENT)
