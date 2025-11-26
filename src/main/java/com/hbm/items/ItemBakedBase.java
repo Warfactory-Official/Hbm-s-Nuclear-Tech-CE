@@ -2,6 +2,7 @@ package com.hbm.items;
 
 import com.google.common.collect.ImmutableMap;
 import com.hbm.Tags;
+import com.hbm.items.tool.ItemCanister;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.model.ModelRotation;
@@ -53,7 +54,10 @@ public class ItemBakedBase extends ItemBase implements IDynamicModels {
 
     @Override
     public void registerModel() {
-        ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath), "inventory"));
+        if (this == ModItems.canister_empty)
+            ModelLoader.setCustomModelResourceLocation(this, 0, ItemCanister.fluidCanisterModel);
+        else
+            ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath), "inventory"));
     }
 
     @Override

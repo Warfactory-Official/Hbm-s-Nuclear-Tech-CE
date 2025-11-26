@@ -4,6 +4,7 @@ import com.hbm.interfaces.IHasCustomModel;
 import com.hbm.items.ModItems;
 import com.hbm.main.MainRegistry;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
@@ -16,6 +17,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -110,5 +112,14 @@ public class RedstoneSword extends ItemSword implements IHasCustomModel {
 	public ModelResourceLocation getResourceLocation() {
 		return rsModel;
 	}
-	
+
+    @Override
+    public void bakeModel(ModelBakeEvent event) {
+
+    }
+
+    @Override
+    public void registerSprite(TextureMap map) {
+
+    }
 }

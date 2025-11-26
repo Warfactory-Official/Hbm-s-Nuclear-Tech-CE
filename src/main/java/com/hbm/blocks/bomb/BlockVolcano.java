@@ -6,28 +6,34 @@ import com.hbm.entity.projectile.EntityShrapnel;
 import com.hbm.explosion.ExplosionNT;
 import com.hbm.explosion.ExplosionNT.ExAttrib;
 import com.hbm.handler.threading.PacketThreading;
+import com.hbm.items.IDynamicModels;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-public class BlockVolcano extends Block {
+public class BlockVolcano extends Block implements IDynamicModels {
 
 	public static final PropertyInteger META = BlockDummyable.META;
 	
@@ -37,6 +43,7 @@ public class BlockVolcano extends Block {
 		this.setRegistryName(s);
 		
 		ModBlocks.ALL_BLOCKS.add(this);
+        INSTANCES.add(this);
 	}
 	
 	@Override
@@ -216,4 +223,23 @@ public class BlockVolcano extends Block {
 	public IBlockState getStateFromMeta(int meta){
 		return this.getDefaultState().withProperty(META, meta);
 	}
+
+    @Override
+    public void bakeModel(ModelBakeEvent event) {
+
+    }
+
+    @Override
+    public void registerModel() {
+        var item = Item.getItemFromBlock(this);
+
+        for (int i = 0; i < 4; i++) {
+            ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(item.getRegistryName(), "inventory"));
+        }
+    }
+
+    @Override
+    public void registerSprite(TextureMap map) {
+
+    }
 }

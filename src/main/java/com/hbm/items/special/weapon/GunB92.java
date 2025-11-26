@@ -9,6 +9,7 @@
     import com.hbm.lib.HBMSoundHandler;
     import com.hbm.main.MainRegistry;
     import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+    import net.minecraft.client.renderer.texture.TextureMap;
     import net.minecraft.client.util.ITooltipFlag;
     import net.minecraft.entity.Entity;
     import net.minecraft.entity.EntityLivingBase;
@@ -26,6 +27,7 @@
     import net.minecraft.util.SoundCategory;
     import net.minecraft.util.text.TextFormatting;
     import net.minecraft.world.World;
+    import net.minecraftforge.client.event.ModelBakeEvent;
     import net.minecraftforge.common.MinecraftForge;
     import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 
@@ -334,4 +336,14 @@ public class GunB92 extends Item implements IHasCustomModel {
 	public ModelResourceLocation getResourceLocation() {
 		return b92Model;
 	}
+
+    @Override
+    public void bakeModel(ModelBakeEvent event) {
+
+    }
+
+    @Override
+    public void registerSprite(TextureMap map) {
+
+    }
 }

@@ -2,11 +2,14 @@ package com.hbm.items.tool;
 
 import com.hbm.Tags;
 import com.hbm.inventory.gui.GUIScreenGuide;
+import com.hbm.items.IDynamicModels;
 import com.hbm.items.ModItems;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
@@ -16,6 +19,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -25,7 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ItemGuideBook extends Item implements IGUIProvider {
+public class ItemGuideBook extends Item implements IGUIProvider, IDynamicModels {
 
 	public ItemGuideBook(String s){
 		this.setTranslationKey(s);
@@ -59,7 +64,23 @@ public class ItemGuideBook extends Item implements IGUIProvider {
 		tooltip.add(String.join(" ", I18nUtil.resolveKeyArray(BookType.getType(stack.getItemDamage()).title)));
 	}
 
-	public enum BookType {
+    @Override
+    public void bakeModel(ModelBakeEvent event) {
+
+    }
+
+    @Override
+    public void registerModel() {
+        for (int i = 0; i < ItemGuideBook.BookType.values().length; i++)
+            ModelLoader.setCustomModelResourceLocation(this, i, new ModelResourceLocation(this.getRegistryName(), "inventory"));
+    }
+
+    @Override
+    public void registerSprite(TextureMap map) {
+
+    }
+
+    public enum BookType {
 
 		TEST("book.test.cover", 2F, statFacTest()),
 		RBMK("book.rbmk.cover", 1.5F, statFacRBMK()),

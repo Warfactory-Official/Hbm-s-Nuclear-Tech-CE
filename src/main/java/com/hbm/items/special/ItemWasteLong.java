@@ -1,25 +1,31 @@
 package com.hbm.items.special;
 
+import com.hbm.items.IDynamicModels;
 import com.hbm.items.ItemBase;
 import com.hbm.main.MainRegistry;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
 
-public class ItemWasteLong extends ItemBase {
+public class ItemWasteLong extends ItemBase implements IDynamicModels {
 
 	public ItemWasteLong(String s) {
 		super(s);
 		this.setHasSubtypes(true);
 		this.setMaxDamage(0);
 		this.setCreativeTab(MainRegistry.controlTab);
+        INSTANCES.add(this);
 	}
 
 	@Override
@@ -39,8 +45,25 @@ public class ItemWasteLong extends ItemBase {
 	public static int rectify(int meta) {
 		return Math.abs(meta) % WasteClass.VALUES.length;
 	}
-	
-	public enum WasteClass {
+
+    @Override
+    public void bakeModel(ModelBakeEvent event) {
+        for (int i = 0; i < ItemWasteLong.WasteClass.values().length; i++) {
+            ModelLoader.setCustomModelResourceLocation(this, i, new ModelResourceLocation(this.getRegistryName(), "inventory"));
+        }
+    }
+
+    @Override
+    public void registerModel() {
+
+    }
+
+    @Override
+    public void registerSprite(TextureMap map) {
+
+    }
+
+    public enum WasteClass {
 
 		//all decayed versions include lead-types and classic nuclear waste
 		THORIUM("Thorium-232", 0, 0),		//uranium 233 and uranium 235 / -

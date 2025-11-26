@@ -17,9 +17,54 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import java.util.Set;
 
 /**
- * Used in items that require model baking;
- * Will automatically bake once correct methods are supplied
- */
+ * <p>
+ * Interface for blocks or items that require dynamic model support.
+ * Implementors register themselves in {@link #INSTANCES} and receive callbacks
+ * during the various client-side model lifecycle events. Allows for model management
+ * without boilerplate json
+ * </p>
+ *
+ * <p>
+ * The interface centralizes model baking, sprite registration, color handlers,
+ * and custom state mappers. Any object implementing this interface should add
+ * itself to {@link #INSTANCES} in its constructor so that the static
+ * registration hooks can discover and process it automatically. I suggest pairing
+ * it with {@link ItemBakedBase} or {@link com.hbm.blocks.generic.BlockBakeBase}
+ * or any child classes.
+ * </p>
+ *
+ * <p>
+ * Typical usage pattern:
+ * <ul>
+ * <li>An implementing class adds itself to {@link #INSTANCES}.</li>
+ * <li>During client initialization, Forge fires model-related events.</li>
+ * <li>The corresponding static methods on this interface forward those events
+ * to all registered implementors.</li>
+ * <li>Implementors override the relevant methods to bake models, register sprites,
+ * or supply color handlers.</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * Model Handling Responsibilities:
+ * <ul>
+ * <li>{@link #bakeModel(ModelBakeEvent)} — Perform model baking and register baked models.</li>
+ * <li>{@link #registerModel()} — Register the unbaked model resource locations.</li>
+ * <li>{@link #registerSprite(TextureMap)} — Register any custom textures required by the model.</li>
+ * <li>{@link #getStateMapper(ResourceLocation)} — Optionally return a custom state mapper.</li>
+ * <li>{@link #getItemColorHandler()} and {@link #getBlockColorHandler()} — Optionally supply color handlers.</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * All model-related methods are client-only and invoked automatically by the
+ * static dispatcher methods. Server-side code will never touch these.
+ * </p>
+ *
+ * <p>
+ * Author: MrNorwood
+ * </p>
+ **/
 public interface IDynamicModels {
 
     /**

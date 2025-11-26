@@ -1,6 +1,7 @@
 package com.hbm.blocks.generic;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.items.IDynamicModels;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.tileentity.deco.TileEntityTrappedBrick;
@@ -10,6 +11,8 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
@@ -17,6 +20,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.MobEffects;
 import net.minecraft.init.SoundEvents;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.tileentity.TileEntity;
@@ -26,12 +30,14 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
 
-public class TrappedBrick extends BlockContainer {
+public class TrappedBrick extends BlockContainer implements IDynamicModels {
 
 	public static final PropertyInteger TYPE = PropertyInteger.create("type", 0, 15);
 
@@ -41,6 +47,7 @@ public class TrappedBrick extends BlockContainer {
 		this.setRegistryName(s);
 
 		ModBlocks.ALL_BLOCKS.add(this);
+        INSTANCES.add(this);
 	}
 
 	@Override
@@ -163,7 +170,24 @@ public class TrappedBrick extends BlockContainer {
 			}
 	}
 
-	public static enum TrapType {
+    @Override
+    public void bakeModel(ModelBakeEvent event) {
+
+    }
+
+    @Override
+    public void registerModel() {
+        var item = Item.getItemFromBlock(this);
+            for (int i = 0; i < TrappedBrick.Trap.values().length; i++)
+                ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(item.getRegistryName(), "inventory"));
+    }
+
+    @Override
+    public void registerSprite(TextureMap map) {
+
+    }
+
+    public static enum TrapType {
 		ON_STEP,
 		DETECTOR
 	}

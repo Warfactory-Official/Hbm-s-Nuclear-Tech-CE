@@ -2,6 +2,7 @@ package com.hbm.blocks.generic;
 
 import com.hbm.blocks.ICustomBlockItem;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.items.IDynamicModels;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockPane;
 import net.minecraft.block.SoundType;
@@ -9,9 +10,12 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockRenderLayer;
@@ -21,9 +25,11 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
-public class BlockMetalFence extends BlockPane implements ICustomBlockItem {
+public class BlockMetalFence extends BlockFence implements ICustomBlockItem, IDynamicModels {
 
     public static final PropertyBool FORCE_POST = PropertyBool.create("force_post");
     public static final PropertyBool PILLAR = PropertyBool.create("pillar");
@@ -187,6 +193,21 @@ public class BlockMetalFence extends BlockPane implements ICustomBlockItem {
     @Override
     public void registerItem() {
         ForgeRegistries.ITEMS.register(new ItemBlockMetalFence(this));
+    }
+
+    @Override
+    public void bakeModel(ModelBakeEvent event) {
+
+    }
+
+    @Override
+    public void registerModel() {
+        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(ModBlocks.fence_metal), 1, new ModelResourceLocation("hbm:fence_metal_post", "inventory"));
+    }
+
+    @Override
+    public void registerSprite(TextureMap map) {
+
     }
 
     public static class ItemBlockMetalFence extends ItemBlock {

@@ -1,12 +1,15 @@
 package com.hbm.blocks.generic;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.items.IDynamicModels;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
@@ -18,10 +21,12 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.ModelLoader;
 
 import java.util.List;
 
-public class BlockGlyph extends Block {
+public class BlockGlyph extends Block implements IDynamicModels {
 
     public static final PropertyInteger TYPE = PropertyInteger.create("type", 0, 15);
 
@@ -31,6 +36,7 @@ public class BlockGlyph extends Block {
         this.setRegistryName(s);
 
         ModBlocks.ALL_BLOCKS.add(this);
+        IDynamicModels.INSTANCES.add(this);
     }
 
     @Override
@@ -124,5 +130,21 @@ public class BlockGlyph extends Block {
     @Override
     public IBlockState getStateFromMeta(int meta) {
         return this.getDefaultState().withProperty(TYPE, meta);
+    }
+
+    @Override
+    public void bakeModel(ModelBakeEvent event) {
+
+    }
+
+    @Override
+    public void registerModel() {
+            for (int i = 0; i < 16; i++)
+                ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), i, new ModelResourceLocation(this.getRegistryName().toString() + i, "inventory"));
+    }
+
+    @Override
+    public void registerSprite(TextureMap map) {
+
     }
 }

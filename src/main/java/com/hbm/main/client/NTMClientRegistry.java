@@ -2,24 +2,19 @@ package com.hbm.main.client;
 
 import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.generic.TrappedBrick;
-import com.hbm.entity.siege.SiegeTier;
 import com.hbm.forgefluid.SpecialContainerFillLists;
 import com.hbm.interfaces.IHasCustomModel;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.inventory.recipes.ChemplantRecipes;
 import com.hbm.items.IDynamicModels;
 import com.hbm.items.IModelRegister;
 import com.hbm.items.ModItems;
 import com.hbm.items.RBMKItemRenderers;
 import com.hbm.items.gear.RedstoneSword;
 import com.hbm.items.machine.*;
-import com.hbm.items.special.*;
 import com.hbm.items.special.weapon.GunB92;
 import com.hbm.items.tool.ItemCanister;
 import com.hbm.items.tool.ItemGasCanister;
-import com.hbm.items.tool.ItemGuideBook;
 import com.hbm.items.weapon.IMetaItemTesr;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.main.MainRegistry;
@@ -50,8 +45,6 @@ import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-import java.util.Objects;
-
 
 /**
  * Handles all loadtime/registry clientside stuff.
@@ -71,6 +64,36 @@ public class NTMClientRegistry {
     // 1 - No CTM, Player didn't acknowledge
     // 2 - No CTM, Player acknowledge
     public static boolean ctmWarning = false;
+
+    public static void swapModels(Item item, IRegistry<ModelResourceLocation, IBakedModel> reg) {
+        ModelResourceLocation loc = new ModelResourceLocation(item.getRegistryName(), "inventory");
+        IBakedModel model = reg.getObject(loc);
+        TileEntityItemStackRenderer render = item.getTileEntityItemStackRenderer();
+        if (render instanceof TEISRBase) {
+            ((TEISRBase) render).itemModel = model;
+            reg.putObject(loc, new BakedModelCustom((TEISRBase) render));
+        }
+    }
+
+    public static void swapModelsNoGui(Item item, IRegistry<ModelResourceLocation, IBakedModel> reg) {
+        ModelResourceLocation loc = new ModelResourceLocation(item.getRegistryName(), "inventory");
+        IBakedModel model = reg.getObject(loc);
+        TileEntityItemStackRenderer render = item.getTileEntityItemStackRenderer();
+        if (render instanceof TEISRBase) {
+            ((TEISRBase) render).itemModel = model;
+            reg.putObject(loc, new BakedModelNoGui((TEISRBase) render));
+        }
+    }
+
+    public static void swapModelsNoFPV(Item item, IRegistry<ModelResourceLocation, IBakedModel> reg) {
+        ModelResourceLocation loc = new ModelResourceLocation(item.getRegistryName(), "inventory");
+        IBakedModel model = reg.getObject(loc);
+        TileEntityItemStackRenderer render = item.getTileEntityItemStackRenderer();
+        if (render instanceof TEISRBase) {
+            ((TEISRBase) render).itemModel = model;
+            reg.putObject(loc, new BakedModelNoFPV((TEISRBase) render, model));
+        }
+    }
 
     @SubscribeEvent
     public void itemColorsEvent(ColorHandlerEvent.Item evt) {
@@ -163,36 +186,6 @@ public class NTMClientRegistry {
         RenderFusionTorusMultiblock.componentSprites[3] = evt.getMap().getAtlasSprite("hbm:blocks/fusion_component.motor");
     }
 
-    public static void swapModels(Item item, IRegistry<ModelResourceLocation, IBakedModel> reg) {
-        ModelResourceLocation loc = new ModelResourceLocation(item.getRegistryName(), "inventory");
-        IBakedModel model = reg.getObject(loc);
-        TileEntityItemStackRenderer render = item.getTileEntityItemStackRenderer();
-        if (render instanceof TEISRBase) {
-            ((TEISRBase) render).itemModel = model;
-            reg.putObject(loc, new BakedModelCustom((TEISRBase) render));
-        }
-    }
-
-    public static void swapModelsNoGui(Item item, IRegistry<ModelResourceLocation, IBakedModel> reg) {
-        ModelResourceLocation loc = new ModelResourceLocation(item.getRegistryName(), "inventory");
-        IBakedModel model = reg.getObject(loc);
-        TileEntityItemStackRenderer render = item.getTileEntityItemStackRenderer();
-        if (render instanceof TEISRBase) {
-            ((TEISRBase) render).itemModel = model;
-            reg.putObject(loc, new BakedModelNoGui((TEISRBase) render));
-        }
-    }
-
-    public static void swapModelsNoFPV(Item item, IRegistry<ModelResourceLocation, IBakedModel> reg) {
-        ModelResourceLocation loc = new ModelResourceLocation(item.getRegistryName(), "inventory");
-        IBakedModel model = reg.getObject(loc);
-        TileEntityItemStackRenderer render = item.getTileEntityItemStackRenderer();
-        if (render instanceof TEISRBase) {
-            ((TEISRBase) render).itemModel = model;
-            reg.putObject(loc, new BakedModelNoFPV((TEISRBase) render, model));
-        }
-    }
-
     @SubscribeEvent
     public void onGuiInit(GuiScreenEvent.InitGuiEvent.Post event) {
         if (!ctmWarning) return;
@@ -204,9 +197,7 @@ public class NTMClientRegistry {
 
     @SubscribeEvent
     public void registerModels(ModelRegistryEvent event) {
-        IDynamicModels.registerModels();
-        IDynamicModels.registerCustomStateMappers();
-        IMetaItemTesr.redirectModels();
+
 
         int i = 0;
         ResourceLocation[] list = new ResourceLocation[SpecialContainerFillLists.EnumCell.VALUES.length];
@@ -225,12 +216,7 @@ public class NTMClientRegistry {
                 }
             }
         }
-        ModelLoader.setCustomModelResourceLocation(ModItems.canister_empty, 0, ItemCanister.fluidCanisterModel);
 
-        ModelResourceLocation clayTabletModel = new ModelResourceLocation(ModItems.clay_tablet.getRegistryName(), "inventory");
-
-        ModelLoader.setCustomModelResourceLocation(ModItems.clay_tablet, 0, clayTabletModel);
-        ModelLoader.setCustomModelResourceLocation(ModItems.clay_tablet, 1, clayTabletModel);
 
         for (Item item : ModItems.ALL_ITEMS) {
             try {
@@ -245,10 +231,9 @@ public class NTMClientRegistry {
             registerBlockModel(block, 0);
         }
 
-
-
-        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(ModBlocks.fence_metal), 1, new ModelResourceLocation("hbm:fence_metal_post", "inventory"));
-
+        IDynamicModels.registerModels();
+        IDynamicModels.registerCustomStateMappers();
+        IMetaItemTesr.redirectModels();
 
 
     }
@@ -259,43 +244,23 @@ public class NTMClientRegistry {
 
     @Deprecated//
     private void registerModel(Item item, int meta) {
-        if (item == Items.AIR)
-            return;
-
         //Drillgon200: I hate myself for making this
         //Th3_Sl1ze: Don't worry, I hate myself too
         //Norwood: I will fix it, after 5 years
+        if (item == Items.AIR)
+            return;
+
 
         if (item instanceof IModelRegister) {
             ((IModelRegister) item).registerModels();
             return;
         }
 
-        if (item == Item.getItemFromBlock(ModBlocks.brick_jungle_glyph)) {
-            for (int i = 0; i < 16; i++)
-                ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(item.getRegistryName().toString() + i, "inventory"));
-        } else if (item == Item.getItemFromBlock(ModBlocks.brick_jungle_trap)) {
-            for (int i = 0; i < TrappedBrick.Trap.VALUES.length; i++)
-                ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(item.getRegistryName(), "inventory"));
-        } else if (item instanceof ItemGuideBook) {
-            for (int i = 0; i < ItemGuideBook.BookType.VALUES.length; i++)
-                ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(item.getRegistryName(), "inventory"));
-        } else if (item instanceof ItemWasteLong) {
-            for (int i = 0; i < ItemWasteLong.WasteClass.VALUES.length; i++) {
-                ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(item.getRegistryName(), "inventory"));
-            }
-        } else if (item instanceof ItemWasteShort) {
-            for (int i = 0; i < ItemWasteShort.WasteClass.VALUES.length; i++) {
-                ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(item.getRegistryName(), "inventory"));
-            }
-        } else if (item == Item.getItemFromBlock(ModBlocks.volcano_core)) {
-            for (int i = 0; i < 4; i++) {
-                ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(item.getRegistryName(), "inventory"));
-            }
-        } else if (item instanceof IHasCustomModel) {
-            ModelLoader.setCustomModelResourceLocation(item, meta, ((IHasCustomModel) item).getResourceLocation());
-        } else if (item instanceof IDynamicModels dyn && dyn.INSTANCES.contains(item)  ){return;}
-        else
+
+        if (item instanceof IHasCustomModel) {
+        } else if (item instanceof IDynamicModels dyn && dyn.INSTANCES.contains(item)) {
+            return;
+        } else
             ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation(item.getRegistryName(), "inventory"));
 
     }

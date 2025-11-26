@@ -1258,7 +1258,7 @@ public class ModEventHandler {
         if (event.player instanceof EntityPlayerMP player) {
 
             if (GeneralConfig.enableMOTD) {
-                player.sendMessage(new TextComponentString("Loaded world with Hbm's Nuclear Tech Mod " + Tags.VERSION + " for Minecraft 1.12.2!"));
+                player.sendMessage(new TextComponentString("Loaded world with Hbm's Nuclear Tech Mod: Community Edition " + Tags.VERSION + " for Minecraft 1.12.2!"));
                 if (HTTPHandler.newVersion && GeneralConfig.changelog) {
                     player.sendMessage(new TextComponentTranslation("chat.newver", HTTPHandler.versionNumber));
                     player.sendMessage(new TextComponentString("Click ")

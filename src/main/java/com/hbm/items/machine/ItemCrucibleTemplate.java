@@ -26,7 +26,7 @@ import org.lwjgl.input.Keyboard;
 
 import java.util.List;
 
-public class ItemCrucibleTemplate extends Item implements IHasCustomModel, IDynamicModels {
+public class ItemCrucibleTemplate extends Item implements IDynamicModels {
 
     public static final ModelResourceLocation location = new ModelResourceLocation(
             Tags.MODID + ":crucible_template", "inventory");
@@ -92,10 +92,7 @@ public class ItemCrucibleTemplate extends Item implements IHasCustomModel, IDyna
         }
     }
 
-    @Override
-    public ModelResourceLocation getResourceLocation() {
-        return location;
-    }
+
 
     @Override
     public void bakeModel(ModelBakeEvent event) {
