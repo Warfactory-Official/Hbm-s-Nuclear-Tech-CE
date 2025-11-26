@@ -294,9 +294,10 @@ public class NTMClientRegistry {
             }
         } else if (item instanceof IHasCustomModel) {
             ModelLoader.setCustomModelResourceLocation(item, meta, ((IHasCustomModel) item).getResourceLocation());
-        } else if (!(item instanceof IDynamicModels) ){
+        } else if (item instanceof IDynamicModels dyn && dyn.INSTANCES.contains(item)  ){return;}
+        else
             ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation(item.getRegistryName(), "inventory"));
-        }
+
     }
 
     @SubscribeEvent
