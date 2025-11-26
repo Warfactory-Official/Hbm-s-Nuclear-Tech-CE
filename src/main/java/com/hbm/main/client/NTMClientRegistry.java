@@ -3,7 +3,6 @@ package com.hbm.main.client;
 import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.forgefluid.SpecialContainerFillLists;
-import com.hbm.interfaces.IHasCustomModel;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.IDynamicModels;
@@ -13,7 +12,6 @@ import com.hbm.items.RBMKItemRenderers;
 import com.hbm.items.gear.RedstoneSword;
 import com.hbm.items.machine.*;
 import com.hbm.items.special.weapon.GunB92;
-import com.hbm.items.tool.ItemCanister;
 import com.hbm.items.tool.ItemGasCanister;
 import com.hbm.items.weapon.IMetaItemTesr;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
@@ -242,27 +240,16 @@ public class NTMClientRegistry {
         registerModel(Item.getItemFromBlock(block), meta);
     }
 
-    @Deprecated//
+    @Deprecated
     private void registerModel(Item item, int meta) {
-        //Drillgon200: I hate myself for making this
-        //Th3_Sl1ze: Don't worry, I hate myself too
-        //Norwood: I will fix it, after 5 years
         if (item == Items.AIR)
             return;
-
-
         if (item instanceof IModelRegister) {
             ((IModelRegister) item).registerModels();
             return;
         }
-
-
-        if (item instanceof IHasCustomModel) {
-        } else if (item instanceof IDynamicModels dyn && dyn.INSTANCES.contains(item)) {
-            return;
-        } else
+        if (!(item instanceof IDynamicModels dyn && dyn.INSTANCES.contains(item)))
             ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation(item.getRegistryName(), "inventory"));
-
     }
 
     @SubscribeEvent

@@ -7,9 +7,12 @@ import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +26,8 @@ public class BlockResourceStone extends BlockEnumMeta<BlockEnums.EnumStoneType> 
         super(Material.ROCK, SoundType.STONE, "stone_resource", BlockEnums.EnumStoneType.VALUES, true, true);
     }
 
+
+
     @Override
     public List<ItemStack> getDrops(IBlockAccess access, BlockPos pos, IBlockState state, int fortune) {
         int meta = state.getValue(META);
@@ -35,6 +40,12 @@ public class BlockResourceStone extends BlockEnumMeta<BlockEnums.EnumStoneType> 
         }
 
         return super.getDrops(access, pos, state, fortune);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public BlockRenderLayer getRenderLayer() {
+        return BlockRenderLayer.SOLID;
     }
 
 }

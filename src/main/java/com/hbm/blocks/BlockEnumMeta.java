@@ -19,6 +19,7 @@ import java.util.Locale;
 // Th3_Sl1ze: name me one, ONE fucking reason it should've been abstract this whole time
 public class BlockEnumMeta<E extends Enum<E>> extends BlockMeta {
 
+
     final public boolean multiName;
     final private boolean multiTexture;
     public E[] blockEnum;

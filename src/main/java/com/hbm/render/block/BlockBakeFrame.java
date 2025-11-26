@@ -23,21 +23,43 @@ public class BlockBakeFrame {
     public static final String ROOT_PATH = "blocks/";
     public final String[] textureArray;
     public final BlockForm blockForm;
+    public final boolean tinted;
 
     //Quick method for making an array of single texture ALL form blocks
+    public BlockBakeFrame(String texture, boolean tinted) {
+        this.textureArray = new String[]{texture};
+        this.blockForm = ALL;
+        this.tinted = tinted;
+    }
+
     public BlockBakeFrame(String texture) {
         this.textureArray = new String[]{texture};
         this.blockForm = ALL;
+        this.tinted = false;
     }
 
     public BlockBakeFrame(String topTexture, String sideTexture) {
         this.textureArray = new String[]{topTexture, sideTexture};
         this.blockForm = PILLAR;
+        tinted = false;
+    }
+
+    public BlockBakeFrame(String topTexture, String sideTexture, boolean tinted) {
+        this.textureArray = new String[]{topTexture, sideTexture};
+        this.blockForm = PILLAR;
+        this.tinted =tinted;
     }
 
     public BlockBakeFrame(String topTexture, String sideTexture, String bottomTexture) {
         this.textureArray = new String[]{topTexture, sideTexture, bottomTexture};
         this.blockForm = PILLAR_BOTTOM;
+        tinted = false;
+    }
+
+    public BlockBakeFrame(String topTexture, String sideTexture, String bottomTexture, boolean tinted) {
+        this.textureArray = new String[]{topTexture, sideTexture, bottomTexture};
+        this.blockForm = PILLAR_BOTTOM;
+        this.tinted = tinted ;
     }
 
     public BlockBakeFrame(BlockForm form, @NotNull String... textures) {
@@ -54,6 +76,26 @@ public class BlockBakeFrame {
                 if (form == PILLAR_BOTTOM || form == PILLAR_BOTTOM_UNTINTED) break;
             case 6:
                 if (form == FULL_CUSTOM || form == FULL_CUSTOM_UNTINTED) break;
+            default:
+                throw new IllegalArgumentException("Amount of textures provided is invalid: " + textures.length
+                        + ". The amount should be 1, 2, 3 or 6");
+        }
+        this.blockForm = form;
+        this.tinted =false;
+    }
+
+    public BlockBakeFrame(BlockForm form, boolean tinted,@NotNull String... textures ) {
+        this.textureArray = textures;
+        this.tinted = tinted ;
+        switch (textures.length) {
+            case 1:
+                if (form == ALL || form == CROSS || form == CROP || form == LAYER) break;
+            case 2:
+                if (form == PILLAR) break;
+            case 3:
+                if (form == PILLAR_BOTTOM) break;
+            case 6:
+                if (form == FULL_CUSTOM) break;
             default:
                 throw new IllegalArgumentException("Amount of textures provided is invalid: " + textures.length
                         + ". The amount should be 1, 2, 3 or 6");
@@ -107,7 +149,7 @@ public class BlockBakeFrame {
     }
 
     public String getBaseModel() {
-        return this.blockForm.baseBakedModel;
+        return tinted ? this.blockForm.baseBakedModelTined : this.blockForm.baseBakedModel;
     }
 
     public void putTextures(ImmutableMap.Builder<String, String> textureMap) {
@@ -120,26 +162,22 @@ public class BlockBakeFrame {
     }
 
     public enum BlockForm {
-        ALL("hbm:block/cube_all_tinted", 1, "all"),
-        CROP("minecraft:block/crop", 1, "crop"),
-        LAYER("hbm:block/block_layering", 1, "texture"),
-        CROSS("hbm:block/cross_tinted", 1, "cross"),
-        PILLAR("hbm:block/cube_column_tinted", 2, "end", "side"),
-        PILLAR_BOTTOM("hbm:block/cube_column_tinted", 3, "end", "side", "bottom"),
-        FULL_CUSTOM("hbm:block/cube_tinted", 6, "up", "down", "north", "south", "west", "east"),
+        ALL("hbm:block/cube_all_tinted", "minecraft:block/cube_all", 1, new String[]{"all"}),
+        CROP( "minecraft:block/crop", "minecraft:block/crop", 1, new String[]{"crop"}),
+        LAYER("hbm:block/block_layering_tinted", "minecraft:block/layer", 1, new String[]{"texture"}),
+        CROSS("hbm:block/cross_tinted", "minecraft:block/cross", 1, new String[]{"cross"}),
+        PILLAR("hbm:block/cube_column_tinted", "minecraft:block/cube_column", 2, new String[]{"end", "side"}),
+        PILLAR_BOTTOM("hbm:block/cube_column_tinted", "minecraft:block/cube_column", 3, new String[]{"end", "side", "bottom"}),
+        FULL_CUSTOM("hbm:block/cube_tinted", "minecraft:block/cube", 6, new String[]{"up","down","north","south","west","east"});
 
-        ALL_UNTINTED("minecraft:block/cube_all", 1, "all"),
-        CROSS_UNTINTED("minecraft:block/cross", 1, "cross"),
-        PILLAR_UNTINTED("minecraft:block/cube_column", 2, "end", "side"),
-        PILLAR_BOTTOM_UNTINTED("minecraft:block/cube_bottom_top", 3, "top", "side", "bottom"),
-        FULL_CUSTOM_UNTINTED("minecraft:block/cube", 6, "up", "down", "north", "south", "west", "east");
-
+        public final String baseBakedModelTined;
         public final String baseBakedModel;
         public final int textureNum;
         public final String[] textureWrap;
 
-        BlockForm(String baseBakedModel, int textureNum, String... textureWrap) {
-            this.baseBakedModel = baseBakedModel;
+        BlockForm(String baseBakedModel, String baseBakedModel1, int textureNum, String[] textureWrap) {
+            this.baseBakedModelTined = baseBakedModel;
+            this.baseBakedModel = baseBakedModel1;
             this.textureNum = textureNum;
             this.textureWrap = textureWrap;
         }
