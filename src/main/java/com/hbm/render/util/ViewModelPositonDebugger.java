@@ -63,7 +63,6 @@ public class ViewModelPositonDebugger {
         Tessellator tess = Tessellator.getInstance();
         BufferBuilder buf = tess.getBuffer();
 
-        // --- Gizmo axes (same as before) ---
         buf.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
 
         // X
@@ -87,14 +86,12 @@ public class ViewModelPositonDebugger {
         tess.draw();
 
 
-
         GlStateManager.enableTexture2D();
         GlStateManager.enableLighting();
         GlStateManager.enableCull();
 
         GlStateManager.popMatrix();
     }
-
 
 
     public offset get(TransformType transform) {
@@ -131,88 +128,171 @@ public class ViewModelPositonDebugger {
             tickDebug();
     }
 
+    private Map<String, Boolean> posInputs() {
+        return Map.of(
+                "up", Keyboard.isKeyDown(Keyboard.KEY_UP),
+                "left", Keyboard.isKeyDown(Keyboard.KEY_LEFT),
+                "down", Keyboard.isKeyDown(Keyboard.KEY_DOWN),
+                "right", Keyboard.isKeyDown(Keyboard.KEY_RIGHT),
+                "+", Keyboard.isKeyDown(Keyboard.KEY_EQUALS),
+                "-", Keyboard.isKeyDown(Keyboard.KEY_MINUS),
+                "comma", Keyboard.isKeyDown(Keyboard.KEY_COMMA),
+                "period", Keyboard.isKeyDown(Keyboard.KEY_PERIOD)
+        );
+    }
+
+    private Map<String, Boolean> rotInputs() {
+        return Map.of(
+                "I", Keyboard.isKeyDown(Keyboard.KEY_I),
+                "J", Keyboard.isKeyDown(Keyboard.KEY_J),
+                "O", Keyboard.isKeyDown(Keyboard.KEY_O),
+                "K", Keyboard.isKeyDown(Keyboard.KEY_K),
+                "P", Keyboard.isKeyDown(Keyboard.KEY_P),
+                "L", Keyboard.isKeyDown(Keyboard.KEY_L)
+        );
+    }
+
+    private Map<String, Boolean> collectInputs() {
+        var inputs = new HashMap<String, Boolean>();
+        inputs.putAll(posInputs());
+        inputs.putAll(rotInputs());
+        inputs.putAll(miscInputs());
+        return inputs;
+    }
+
+
+    private Map<String, Boolean> miscInputs() {
+        return Map.of(
+                "space", Keyboard.isKeyDown(Keyboard.KEY_SPACE),
+                "rshift", Keyboard.isKeyDown(Keyboard.KEY_RSHIFT),
+                "rctrl", Keyboard.isKeyDown(Keyboard.KEY_RCONTROL),
+                "tab", Keyboard.isKeyDown(Keyboard.KEY_TAB),
+                "ctrl", Keyboard.isKeyDown(Keyboard.KEY_LCONTROL),
+                "backspace", Keyboard.isKeyDown(Keyboard.KEY_BACK)
+        );
+    }
+    /**
+     * Handles interactive real-time debugging of item transform offsets for all {@link TransformType}s.
+     * <p>
+     * This method allows the developer to interactively tune position, scale, and rotation
+     * (using quaternions) for any item transform type. It is designed for TEISR debugging.
+     * Provides a full suite of movement, rotation, scaling, and reset functions.
+     *
+     * <h3>Input Mapping</h3>
+     * <ul>
+     *     <li><b>Arrow Keys</b>: Move offset on X/Y axes</li>
+     *     <li><b>Comma / Period</b>: Move offset along Z axis</li>
+     *     <li><b>[ / ]</b>: Increase / decrease scale</li>
+     *
+     *     <li><b>I / J</b>: Rotate around +X / -X</li>
+     *     <li><b>O / K</b>: Rotate around +Y / -Y</li>
+     *     <li><b>P / L</b>: Rotate around +Z / -Z</li>
+     *
+     *     <li><b>BackSpace / RShift</b>: Cycle active TransformType forward / backward</li>
+     *     <li><b>Space</b>: View current rotations</li>
+     *     <li><b>LCtrl</b>: Modifies arrow key behavior (vertical ⇄ depth axis)</li>
+     *     <li><b>Tab</b>: Precision mode (smaller increments)</li>
+     *
+     *     <li><b>Pause / Break</b>: Reset rotation to identity quaternion</li>
+     *     <li><b>Home</b>: Reset position to (0,0,0)</li>
+     *     <li><b>End</b>: Reset scale to 1.0</li>
+     * </ul>
+     *
+     * <h3>Rotation Handling</h3>
+     * Rotation uses quaternion multiplication rather than Euler angle accumulation.
+     * This eliminates gimbal lock and ensures smooth continuous rotation. Each rotation key
+     * applies a small axis-angle quaternion and normalizes the result.
+     * This debug method is meant only for development and should not run in production.
+     *
+     * @author: MrNorwood
+     */
     protected void tickDebug() {
-        boolean[] inputs = new boolean[]{Keyboard.isKeyDown(Keyboard.KEY_UP), Keyboard.isKeyDown(Keyboard.KEY_LEFT), Keyboard.isKeyDown(Keyboard.KEY_DOWN),
-                Keyboard.isKeyDown(Keyboard.KEY_RIGHT), Keyboard.isKeyDown(Keyboard.KEY_I), Keyboard.isKeyDown(Keyboard.KEY_J),
-                Keyboard.isKeyDown(Keyboard.KEY_K), Keyboard.isKeyDown(Keyboard.KEY_L), Keyboard.isKeyDown(Keyboard.KEY_SPACE),
-                Keyboard.isKeyDown(Keyboard.KEY_RSHIFT), Keyboard.isKeyDown(Keyboard.KEY_RCONTROL), Keyboard.isKeyDown(Keyboard.KEY_LBRACKET),
-                Keyboard.isKeyDown(Keyboard.KEY_RBRACKET), Keyboard.isKeyDown(Keyboard.KEY_COMMA), Keyboard.isKeyDown(Keyboard.KEY_PERIOD),
-                Keyboard.isKeyDown(Keyboard.KEY_O), Keyboard.isKeyDown(Keyboard.KEY_P)};
-        boolean doUnblock = true;
-        for (boolean input : inputs) {
-            if (input) {
-                doUnblock = false;
-                break;
-            }
-        }
+        //It's not speed optimal, but who cares its debug
+        Map<String, Boolean> input = collectInputs();
+        boolean doUnblock = input.values().stream().noneMatch(Boolean::booleanValue);
+
         if (doUnblock) blockInput = false;
         if (!blockInput) {
             if (!doUnblock) blockInput = true;
-            if (inputs[9])
-                debugIndex++;
-            if (inputs[10])
-                debugIndex--;
+
+            if (input.get("backspace")) debugIndex++;
+            if (input.get("rshift")) debugIndex--;
+
             debugIndex = Math.floorMod(debugIndex, TransformType.values().length);
+
             TransformType curTransform = TransformType.values()[debugIndex];
             offset offset = this.offsetMap.get(curTransform);
+
             double increment = 0.25;
-            float incrementAngle = 5;
+            float incrementAngle = 5f;
             double incrementScale = 0.05;
-            boolean damn = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL);
-            if (Keyboard.isKeyDown(Keyboard.KEY_TAB)) {
+
+            boolean damn = input.get("rctrl");
+
+            if (input.get("tab")) {
                 increment = 0.05;
                 incrementAngle = 1;
                 incrementScale = 0.01;
             }
-            if (inputs[8] || inputs[9] || inputs[10]) {
+
+            if (input.get("space") || input.get("rshift") || input.get("backspace")) {
                 EntityPlayer player = Minecraft.getMinecraft().player;
                 Minecraft.getMinecraft().ingameGUI.getChatGUI().clearChatMessages(false);
-                player.sendMessage(new TextComponentString("-- Current Grip --").setStyle(new Style().setColor(TextFormatting.LIGHT_PURPLE)));
-                player.sendMessage(new TextComponentString(String.format(" Scale: %01.2f", offset.scale)));
-                player.sendMessage(new TextComponentString(String.format(" Position: %01.2f, %01.2f, %01.2f", offset.position.x, offset.position.y, offset.position.z)));
-                player.sendMessage(new TextComponentString(String.format(" Rotation: %01.0f, %01.0f, %01.0f", offset.rotation.x, offset.rotation.y, offset.rotation.z)));
-                player.sendMessage(new TextComponentString(" Type: " + (curTransform == TransformType.NONE ? "CUSTOM" : curTransform.name())).setStyle(new Style().setColor(TextFormatting.GRAY)));
-            }
-            if (inputs[11])
-                offset.scale += incrementScale;
-            if (inputs[12])
-                offset.scale -= incrementScale;
-            {
-                if (inputs[0])
-                    offset.position = offset.position.add(0, damn ? 0 : increment, damn ? increment : 0);
-                if (inputs[2])
-                    offset.position = offset.position.add(0, damn ? 0 : -increment, damn ? -increment : 0);
-                if (inputs[1])
-                    offset.position = offset.position.add(-increment, 0, 0);
-                if (inputs[3])
-                    offset.position = offset.position.add(increment, 0, 0);
-            }
-            {
-                // I've changed this fucking mess of the debug rotation system
-                // I-O-P changes X-Y-Z rotation positively, and J-K-L - negatively
-                // pretty simple, huh?
-                Quaternionf qxPlus  = new Quaternionf().fromAxisAngleDeg(1, 0, 0,  incrementAngle);
-                Quaternionf qxMinus = new Quaternionf().fromAxisAngleDeg(1, 0, 0, -incrementAngle);
-                Quaternionf qyPlus  = new Quaternionf().fromAxisAngleDeg(0, 1, 0,  incrementAngle);
-                Quaternionf qyMinus = new Quaternionf().fromAxisAngleDeg(0, 1, 0, -incrementAngle);
-                Quaternionf qzPlus  = new Quaternionf().fromAxisAngleDeg(0, 0, 1,  incrementAngle);
-                Quaternionf qzMinus = new Quaternionf().fromAxisAngleDeg(0, 0, 1, -incrementAngle);
 
-                if (inputs[4])  offset.rotation.mul(qxPlus);   // I
-                if (inputs[5])  offset.rotation.mul(qxMinus);  // J
-                if (inputs[15]) offset.rotation.mul(qyPlus);   // O
-                if (inputs[6])  offset.rotation.mul(qyMinus);  // K
-                if (inputs[16]) offset.rotation.mul(qzPlus);   // P
-                if (inputs[7])  offset.rotation.mul(qzMinus);  // L
+                player.sendMessage(new TextComponentString("-- Current Grip --")
+                        .setStyle(new Style().setColor(TextFormatting.LIGHT_PURPLE)));
 
-                offset.rotation.normalize();
+                player.sendMessage(new TextComponentString(
+                        String.format(" Scale: %01.2f", offset.scale)));
+
+                player.sendMessage(new TextComponentString(
+                        String.format(" Position: %01.2f, %01.2f, %01.2f",
+                                offset.position.x, offset.position.y, offset.position.z)));
+
+                player.sendMessage(new TextComponentString(
+                        String.format(" Rotation: %01.0f, %01.0f, %01.0f",
+                                offset.rotation.x, offset.rotation.y, offset.rotation.z)));
+
+                player.sendMessage(new TextComponentString(
+                        " Type: " + (curTransform == TransformType.NONE ? "CUSTOM" : curTransform.name()))
+                        .setStyle(new Style().setColor(TextFormatting.GRAY)));
             }
-            {
-                if (inputs[13])
-                    offset.position = offset.position.add(0, 0, -increment);
-                if (inputs[14])
-                    offset.position = offset.position.add(0, 0, increment);
-            }
+
+            //Scale
+            if (input.get("+")) offset.scale += incrementScale;
+            if (input.get("-")) offset.scale -= incrementScale;
+
+            //Position
+            if (input.get("up"))
+                offset.position = offset.position.add(0, damn ? 0 : increment, damn ? increment : 0);
+            if (input.get("down"))
+                offset.position = offset.position.add(0, damn ? 0 : -increment, damn ? -increment : 0);
+            if (input.get("right"))
+                offset.position = offset.position.add(-increment, 0, 0);
+            if (input.get("left"))
+                offset.position = offset.position.add(increment, 0, 0);
+
+            if (input.get("comma"))
+                offset.position = offset.position.add(0, 0, -increment);
+            if (input.get("period"))
+                offset.position = offset.position.add(0, 0, increment);
+
+            //Rotation
+            Quaternionf qxPlus = new Quaternionf().fromAxisAngleDeg(1, 0, 0, incrementAngle);
+            Quaternionf qxMinus = new Quaternionf().fromAxisAngleDeg(1, 0, 0, -incrementAngle);
+            Quaternionf qyPlus = new Quaternionf().fromAxisAngleDeg(0, 1, 0, incrementAngle);
+            Quaternionf qyMinus = new Quaternionf().fromAxisAngleDeg(0, 1, 0, -incrementAngle);
+            Quaternionf qzPlus = new Quaternionf().fromAxisAngleDeg(0, 0, 1, incrementAngle);
+            Quaternionf qzMinus = new Quaternionf().fromAxisAngleDeg(0, 0, 1, -incrementAngle);
+
+            if (input.get("I")) offset.rotation.mul(qxPlus);
+            if (input.get("J")) offset.rotation.mul(qxMinus);
+            if (input.get("O")) offset.rotation.mul(qyPlus);
+            if (input.get("K")) offset.rotation.mul(qyMinus);
+            if (input.get("P")) offset.rotation.mul(qzPlus);
+            if (input.get("L")) offset.rotation.mul(qzMinus);
+
+            offset.rotation.normalize();
         }
     }
 
