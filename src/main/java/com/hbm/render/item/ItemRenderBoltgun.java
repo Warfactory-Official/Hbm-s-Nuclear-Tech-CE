@@ -10,7 +10,13 @@ import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
+import org.joml.Matrix4f;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GLContext;
+import org.lwjgl.opengl.KHRDebug;
+
+import java.nio.FloatBuffer;
 
 @AutoRegister(item = "boltgun")
 public class ItemRenderBoltgun extends TEISRBase {
@@ -44,6 +50,24 @@ public class ItemRenderBoltgun extends TEISRBase {
     public void renderByItem(ItemStack itemStackIn) {
 
         GlStateManager.pushMatrix();
+        // Begin debug group
+        if (GLContext.getCapabilities().GL_KHR_debug) {
+            KHRDebug.glPushDebugGroup(
+                    KHRDebug.GL_DEBUG_SOURCE_APPLICATION,
+                    1,
+                    "Boltgun render; 1.12.2; type = " + type
+            );
+        }
+
+
+        GL11.glEnable(GL11.GL_CULL_FACE);
+        GL11.glShadeModel(GL11.GL_SMOOTH);
+        Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.boltgun_tex);
+
+        // Track cumulative transforms
+        double cumRotX = 0, cumRotY = 0, cumRotZ = 0;
+        double cumTransX = 0, cumTransY = 0, cumTransZ = 0;
+        double cumScaleX = 1, cumScaleY = 1, cumScaleZ = 1;
 
         EntityPlayer player = Minecraft.getMinecraft().player;
 
@@ -52,20 +76,68 @@ public class ItemRenderBoltgun extends TEISRBase {
         Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.boltgun_tex);
         switch (type) {
             case FIRST_PERSON_RIGHT_HAND, FIRST_PERSON_LEFT_HAND -> {
-                offsets.apply(type);
+//                offsets.apply(type);
 
 
                 double s0 = 0.15D;
-                GlStateManager.translate(0.5F, 0.35F, -0.25F);
-                GlStateManager.rotate(15F, 0F, 0F, 1F);
-                GlStateManager.rotate(80F, 0F, 1F, 0F);
-                GlStateManager.scale((float) s0, (float) s0, (float) s0);
+
+                FloatBuffer buf = BufferUtils.createFloatBuffer(16);
+                Matrix4f FPE17 = new Matrix4f(
+                        -0.048f, -0.253f,  -0.542f,  0.000f,
+                        -0.022f,  0.544f, -0.252f,  0.000f,
+                        0.598f,  0.000f, -0.053f,  0.000f,
+                        0.606f, -0.436f, -0.198f,  1.000f
+                );
+                FPE17.translate(0.5F, 0.35F, -0.25F);
+                FPE17.rotate((float)Math.toRadians(15), 0f, 0f, 1f);
+                FPE17.rotate((float)Math.toRadians(80), 0f, 1f, 0f);
+                FPE17.scale((float) s0);
+                FPE17.get(buf);
+                GlStateManager.loadIdentity();
+                GlStateManager.multMatrix(buf);
+
+
+
+//                GlStateManager.translate(0.5F, 0.35F, -0.25F);
+//                GlStateManager.rotate(15F, 0F, 0F, 1F);
+//                GlStateManager.rotate(80F, 0F, 1F, 0F);
+//                GlStateManager.scale((float) s0, (float) s0, (float) s0);
+                cumScaleX *= s0; cumScaleY *= s0; cumScaleZ *= s0;
+
+                if(GLContext.getCapabilities().GL_KHR_debug) {
+                    KHRDebug.glDebugMessageInsert(
+                            KHRDebug.GL_DEBUG_SOURCE_APPLICATION,
+                            KHRDebug.GL_DEBUG_TYPE_MARKER,
+                            1001,
+                            KHRDebug.GL_DEBUG_SEVERITY_NOTIFICATION,
+                            String.format(
+                                    "FP setup cumulative transforms: Trans=(%.2f,%.2f,%.2f) Rot=(%.2f,%.2f,%.2f) Scale=(%.2f,%.2f,%.2f)",
+                                    cumTransX, cumTransY, cumTransZ,
+                                    cumRotX, cumRotY, cumRotZ,
+                                    cumScaleX, cumScaleY, cumScaleZ
+                            )
+                    );
+                }
 
                 GlStateManager.pushMatrix();
                 double[] anim = HbmAnimations.getRelevantTransformation("RECOIL", type == ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND);
                 GlStateManager.translate(0F, 0F, (float) -anim[0]);
                 if (anim[0] != 0)
                     player.isSwingInProgress = false;
+
+
+                if(GLContext.getCapabilities().GL_KHR_debug) {
+                    KHRDebug.glDebugMessageInsert(
+                            KHRDebug.GL_DEBUG_SOURCE_APPLICATION,
+                            KHRDebug.GL_DEBUG_TYPE_MARKER,
+                            1004,
+                            KHRDebug.GL_DEBUG_SEVERITY_NOTIFICATION,
+                            String.format(
+                                    "FP Barrel translation due to RECOIL: Trans=(%.2f,%.2f,%.2f)",
+                                    cumTransX, cumTransY, cumTransZ
+                            )
+                    );
+                }
 
                 ResourceManager.boltgun.renderPart("Barrel");
 
@@ -74,22 +146,54 @@ public class ItemRenderBoltgun extends TEISRBase {
 
 
             case THIRD_PERSON_RIGHT_HAND, THIRD_PERSON_LEFT_HAND -> {
-                offsets.apply(type);
-                double scale = 0.25D;
+//                offsets.apply(type);
+                double scale = 0.1D;
                 GlStateManager.scale((float) scale, (float) scale, (float) scale);
                 GlStateManager.rotate(10F, 0F, 1F, 0F);
                 GlStateManager.rotate(10F, 0F, 0F, 1F);
                 GlStateManager.rotate(10F, 1F, 0F, 0F);
                 GlStateManager.translate(1.5F, -0.25F, 1F);
+                cumScaleX *= scale; cumScaleY *= scale; cumScaleZ *= scale;
+
+                if(GLContext.getCapabilities().GL_KHR_debug) {
+                    KHRDebug.glDebugMessageInsert(
+                            KHRDebug.GL_DEBUG_SOURCE_APPLICATION,
+                            KHRDebug.GL_DEBUG_TYPE_MARKER,
+                            1005,
+                            KHRDebug.GL_DEBUG_SEVERITY_NOTIFICATION,
+                            String.format(
+                                    "Entity cumulative transforms: Trans=(%.2f,%.2f,%.2f) Rot=(%.2f,%.2f,%.2f) Scale=(%.2f,%.2f,%.2f)",
+                                    cumTransX, cumTransY, cumTransZ,
+                                    cumRotX, cumRotY, cumRotZ,
+                                    cumScaleX, cumScaleY, cumScaleZ
+                            )
+                    );
+                }
 
             }
             case GROUND -> {
-                offsets.apply(type);
+//                offsets.apply(type);
                 double s1 = 0.1D;
                 GlStateManager.scale((float) s1, (float) s1, (float) s1);
+                cumScaleX *= s1; cumScaleY *= s1; cumScaleZ *= s1;
+
+                if(GLContext.getCapabilities().GL_KHR_debug) {
+                    KHRDebug.glDebugMessageInsert(
+                            KHRDebug.GL_DEBUG_SOURCE_APPLICATION,
+                            KHRDebug.GL_DEBUG_TYPE_MARKER,
+                            1005,
+                            KHRDebug.GL_DEBUG_SEVERITY_NOTIFICATION,
+                            String.format(
+                                    "Entity cumulative transforms: Trans=(%.2f,%.2f,%.2f) Rot=(%.2f,%.2f,%.2f) Scale=(%.2f,%.2f,%.2f)",
+                                    cumTransX, cumTransY, cumTransZ,
+                                    cumRotX, cumRotY, cumRotZ,
+                                    cumScaleX, cumScaleY, cumScaleZ
+                            )
+                    );
+                }
             }
             case GUI, FIXED -> {
-                offsets.apply(type);
+//                offsets.apply(type);
                 GlStateManager.enableAlpha();
                 GlStateManager.enableLighting();
 
@@ -98,6 +202,22 @@ public class ItemRenderBoltgun extends TEISRBase {
                 GlStateManager.rotate(-90F, 0F, 1F, 0F);
                 GlStateManager.rotate(-135F, 1F, 0F, 0F);
                 GlStateManager.scale((float) s, (float) s, (float) -s);
+                cumScaleX *= s; cumScaleY *= s; cumScaleZ *= -s;
+
+                if(GLContext.getCapabilities().GL_KHR_debug) {
+                    KHRDebug.glDebugMessageInsert(
+                            KHRDebug.GL_DEBUG_SOURCE_APPLICATION,
+                            KHRDebug.GL_DEBUG_TYPE_MARKER,
+                            1003,
+                            KHRDebug.GL_DEBUG_SEVERITY_NOTIFICATION,
+                            String.format(
+                                    "Inventory cumulative transforms: Trans=(%.2f,%.2f,%.2f) Rot=(%.2f,%.2f,%.2f) Scale=(%.2f,%.2f,%.2f)",
+                                    cumTransX, cumTransY, cumTransZ,
+                                    cumRotX, cumRotY, cumRotZ,
+                                    cumScaleX, cumScaleY, cumScaleZ
+                            )
+                    );
+                }
 
             }
             default -> {
@@ -110,7 +230,10 @@ public class ItemRenderBoltgun extends TEISRBase {
             ResourceManager.boltgun.renderPart("Barrel");
         }
         GlStateManager.shadeModel(GL11.GL_FLAT);
-        ViewModelPositonDebugger.renderGizmo(4f, 3f);
+//        ViewModelPositonDebugger.renderGizmo(4f, 3f);
+        if (GLContext.getCapabilities().GL_KHR_debug) {
+            KHRDebug.glPopDebugGroup();
+        }
 
         GlStateManager.popMatrix();
     }

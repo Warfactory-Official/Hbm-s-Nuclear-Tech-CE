@@ -65,14 +65,14 @@ dependencies {
     runtimeOnlyNonPublishable "com.cleanroommc:configanytime:3.0"
     runtimeOnlyNonPublishable rfg.deobf("curse.maven:flare-692142:6598523")
     runtimeOnlyNonPublishable rfg.deobf("curse.maven:ctm-267602:2915363")
-    runtimeOnlyNonPublishable rfg.deobf("curse.maven:gregtech-ce-unofficial-557242:5519022")
+//    runtimeOnlyNonPublishable rfg.deobf("curse.maven:gregtech-ce-unofficial-557242:5519022")
     runtimeOnlyNonPublishable rfg.deobf("curse.maven:the-one-probe-245211:2667280")
-    runtimeOnlyNonPublishable rfg.deobf("curse.maven:gregic-probe-ceu-1109784:6393352")
-    runtimeOnlyNonPublishable rfg.deobf("curse.maven:codechicken-lib-1-8-242818:2779848")
-    runtimeOnlyNonPublishable rfg.deobf("curse.maven:mekanism-ce-unofficial-840735:6958488")//DO NOT COMMENT! Needed for FE compatibility testing
+//    runtimeOnlyNonPublishable rfg.deobf("curse.maven:gregic-probe-ceu-1109784:6393352")
+//    runtimeOnlyNonPublishable rfg.deobf("curse.maven:codechicken-lib-1-8-242818:2779848")
+//    runtimeOnlyNonPublishable rfg.deobf("curse.maven:mekanism-ce-unofficial-840735:6958488")//DO NOT COMMENT! Needed for FE compatibility testing
   //And I don't want game to take 5 min to start
 //    runtimeOnlyNonPublishable rfg.deobf("curse.maven:universal-tweaks-705000:6675988")
 //    runtimeOnlyNonPublishable rfg.deobf("curse.maven:fluidlogged-api-485654:3845703")
   runtimeOnlyNonPublishable rfg.deobf(files("libs/legacy_completion-0.1.5.jar"))
-    runtimeOnlyNonPublishable    rfg.deobf("curse.maven:vintagefix-871198:6609247")
+//    runtimeOnlyNonPublishable    rfg.deobf("curse.maven:vintagefix-871198:6609247")
 }
