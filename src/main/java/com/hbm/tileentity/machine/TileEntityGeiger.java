@@ -1,17 +1,23 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.handler.CompatHandler;
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.lib.HBMSoundHandler;
+import li.cil.oc.api.machine.Arguments;
+import li.cil.oc.api.machine.Callback;
+import li.cil.oc.api.machine.Context;
+import li.cil.oc.api.network.SimpleComponent;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
-
+import net.minecraftforge.fml.common.Optional;
 import java.util.ArrayList;
 import java.util.List;
 
+@Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 @AutoRegister
-public class TileEntityGeiger extends TileEntity implements ITickable {
+public class TileEntityGeiger extends TileEntity implements ITickable, SimpleComponent, CompatHandler.OCComponent {
 
 	int timer = 0;
     double ticker = 0;
@@ -56,4 +62,32 @@ public class TileEntityGeiger extends TileEntity implements ITickable {
     public double check() {
         return ChunkRadiationManager.proxy.getRadiation(world, pos);
     }
+
+	// OpenComputers Integration
+	@Optional.Method(modid = "opencomputers")
+	public String getComponentName() {
+		return "ntm_geiger";
+	}
+
+	@Callback(direct = true)
+	@Optional.Method(modid = "opencomputers")
+	public Object[] getRads(Context context, Arguments args) {
+		return new Object[] {check()};
+	}
+
+	@Optional.Method(modid = "opencomputers")
+	public String[] methods() {
+		return new String[]{
+				"getRads"
+		};
+	}
+
+	@Optional.Method(modid = "opencomputers")
+	public Object[] invoke(String method, Context context, Arguments args) throws Exception {
+		switch (method) {
+			case ("getRads"):
+				return getRads(context, args);
+		}
+		throw new NoSuchMethodException();
+	}
 }
