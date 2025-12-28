@@ -85,10 +85,8 @@ public class TileEntityFusionCoupler extends TileEntityLoadedBase implements ITi
         super.invalidate();
 
         if(!world.isRemote) {
-            ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10).getOpposite();
-            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-            if(this.klystronNode != null) UniNodespace.destroyNode(world, pos.add(rot.offsetX, 2, rot.offsetZ), KlystronNetwork.THE_PROVIDER);
-            if(this.plasmaNode != null) UniNodespace.destroyNode(world, pos.add(-rot.offsetX, 2, -rot.offsetZ), PlasmaNetwork.THE_PROVIDER);
+            if(this.klystronNode != null) UniNodespace.destroyNode(world, klystronNode);
+            if(this.plasmaNode != null) UniNodespace.destroyNode(world, klystronNode);
         }
     }
 

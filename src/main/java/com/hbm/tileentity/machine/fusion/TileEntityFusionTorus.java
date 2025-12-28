@@ -18,6 +18,7 @@ import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.tileentity.machine.albion.TileEntityCooledBase;
+import com.hbm.uninos.GenNode;
 import com.hbm.uninos.INetworkProvider;
 import com.hbm.uninos.UniNodespace;
 import com.hbm.uninos.networkproviders.KlystronNetwork;
@@ -292,12 +293,12 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements ITick
         }
 
         if(!world.isRemote) {
-            for(int i = 0; i < 4; i++) {
-                ForgeDirection dir = ForgeDirection.getOrientation(i + 2);
-                BlockPos nodePos = pos.add(dir.offsetX * 7, 2, dir.offsetZ * 7);
-                if(klystronNodes[i] != null) UniNodespace.destroyNode(world, nodePos, KlystronNetwork.THE_PROVIDER);
-                if(plasmaNodes[i] != null) UniNodespace.destroyNode(world, nodePos, PlasmaNetwork.THE_PROVIDER);
-            }
+            for(KlystronNetwork.KlystronNode node : klystronNodes)
+                if(node != null)
+                    UniNodespace.destroyNode(world, node);
+            for(PlasmaNetwork.PlasmaNode node : plasmaNodes)
+                if(node != null)
+                    UniNodespace.destroyNode(world, node);
         }
     }
 

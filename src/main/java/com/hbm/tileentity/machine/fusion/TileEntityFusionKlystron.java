@@ -200,8 +200,7 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase implements I
         }
 
         if(!world.isRemote && this.klystronNode != null) {
-            ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10).getOpposite();
-            UniNodespace.destroyNode(world, pos.add(dir.offsetX * 4, 2, dir.offsetZ * 4), KlystronNetwork.THE_PROVIDER);
+            UniNodespace.destroyNode(world, klystronNode);
         }
     }
 

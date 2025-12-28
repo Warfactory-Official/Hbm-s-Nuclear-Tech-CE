@@ -215,7 +215,7 @@ public class TileEntityFusionBreeder extends TileEntityMachineBase implements IT
         super.invalidate();
 
         if(!world.isRemote) {
-            if(this.plasmaNode != null) UniNodespace.destroyNode(world, pos, PlasmaNetwork.THE_PROVIDER);
+            if(this.plasmaNode != null) UniNodespace.destroyNode(world, plasmaNode);
         }
     }
 

@@ -2,6 +2,7 @@ package com.hbm.uninos;
 
 import com.hbm.config.GeneralConfig;
 import com.hbm.lib.DirPos;
+import com.hbm.main.MainRegistry;
 import it.unimi.dsi.fastutil.objects.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -45,6 +46,31 @@ public final class UniNodespace {
         getManagerFor(type).destroyNode(world, pos);
     }
 
+    @SuppressWarnings("unchecked, rawtypes")
+    public static <N extends NodeNet<R, P, L, N>, L extends GenNode<N>, R, P> void destroyNode(World world, L node) {
+        if (world == null || node == null) return;
+        INetworkProvider<N> provider = node.networkProvider;
+        if (provider != null) {
+            PerTypeNodeManager<R, P, L, N> manager = (PerTypeNodeManager<R, P, L, N>) managers.get(provider);
+            if (manager != null) {
+                if (!manager.destroyNode(world, node)) {
+                    MainRegistry.logger.warn("Failed to destroy node {}", node.getClass().getName());
+                    Thread.dumpStack();
+                }
+                return;
+            }
+        }
+        MainRegistry.logger.warn("[UniNodeSpace] Node {} attempts to be destroyed through mismatched type provider {}", node.getClass().getName(), provider);
+        // Fallback: if provider is null/mismatched or manager isn't present yet, locate the node by identity.
+        ObjectIterator<Object2ObjectMap.Entry<INetworkProvider<?>, PerTypeNodeManager<?, ?, ?, ?>>> it = managers.object2ObjectEntrySet().fastIterator();
+        while (it.hasNext()) {
+            PerTypeNodeManager manager = it.next().getValue();
+            if (manager.destroyNode(world, node)) return;
+        }
+        if (node.net != null) node.net.destroy();
+        node.expired = true;
+    }
+
     /**
      * <code>GeneralConfig.enableThreadedNodeSpaceUpdate</code> is safe provided that:
      * <ul>
@@ -79,7 +105,6 @@ public final class UniNodespace {
         return CompletableFuture.allOf(phase1.toArray(new CompletableFuture[0])).thenRunAsync(UniNodespace::resetAllNetTrackers, executor)
                                 .thenCompose(v -> updateAllNetsAsync(executor)).exceptionally(UniNodespace::rethrowAsRuntime);
     }
-
 
     private static void resetAllNetTrackers() {
         for (PerTypeNodeManager<?, ?, ?, ?> manager : managers.values()) {
@@ -178,6 +203,14 @@ public final class UniNodespace {
             if (node != null) {
                 getWorldManager(world).popNode(node);
             }
+        }
+
+        boolean destroyNode(World world, L node) {
+            UniNodeWorld<N, L> nodeWorld = worlds.get(world);
+            if (nodeWorld == null) return false;
+            if (!nodeWorld.containsNode(node)) return false;
+            nodeWorld.popNode(node);
+            return true;
         }
 
         void addActiveNet(N net) {
@@ -281,8 +314,18 @@ public final class UniNodespace {
             node.expired = true;
         }
 
+        boolean containsNode(GenNode<?> node) {
+            if (node == null) return false;
+            BlockPos[] positions = node.positions;
+            if (positions == null) return false;
+            for (BlockPos pos : positions) {
+                if (nodesByPosition.get(pos) == node) return true;
+            }
+            return false;
+        }
+
         /** @return a view of all nodes in this world, do not modify */
-        Collection<L> getAllNodes() {
+        ObjectCollection<L> getAllNodes() {
             return nodesByPosition.values();
         }
     }

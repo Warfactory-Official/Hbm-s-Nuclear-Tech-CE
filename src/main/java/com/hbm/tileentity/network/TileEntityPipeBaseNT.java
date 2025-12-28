@@ -60,9 +60,8 @@ public class TileEntityPipeBaseNT extends TileEntityLoadedBase implements IFluid
             world.markBlockRangeForRenderUpdate(pos, pos);
         }
 
-        UniNodespace.destroyNode(world, pos, prev.getNetworkProvider());
-
         if(this.node != null) {
+            UniNodespace.destroyNode(world, node);
             this.node = null;
         }
     }
@@ -78,7 +77,7 @@ public class TileEntityPipeBaseNT extends TileEntityLoadedBase implements IFluid
 
         if(!world.isRemote) {
             if(this.node != null) {
-                UniNodespace.destroyNode(world, pos, type.getNetworkProvider());
+                UniNodespace.destroyNode(world, node);
             }
         }
     }

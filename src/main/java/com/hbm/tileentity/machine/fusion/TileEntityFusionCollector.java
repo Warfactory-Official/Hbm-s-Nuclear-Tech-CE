@@ -45,7 +45,7 @@ public class TileEntityFusionCollector extends TileEntity implements ITickable {
         super.invalidate();
 
         if(!world.isRemote) {
-            if(this.plasmaNode != null) UniNodespace.destroyNode(world, pos, PlasmaNetwork.THE_PROVIDER);
+            if(this.plasmaNode != null) UniNodespace.destroyNode(world, plasmaNode);
         }
     }
 

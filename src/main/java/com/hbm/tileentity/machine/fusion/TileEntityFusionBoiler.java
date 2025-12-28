@@ -141,7 +141,7 @@ public class TileEntityFusionBoiler extends TileEntityLoadedBase implements ITic
         super.invalidate();
 
         if(!world.isRemote) {
-            if(this.plasmaNode != null) UniNodespace.destroyNode(world, pos, PlasmaNetwork.THE_PROVIDER);
+            if(this.plasmaNode != null) UniNodespace.destroyNode(world, plasmaNode);
         }
     }
 
