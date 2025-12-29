@@ -23,7 +23,7 @@ import java.util.List;
 
 public class ItemGasCanister extends Item {
 
-	public static final ModelResourceLocation gasCansiterFullModel = new ModelResourceLocation(
+	public static final ModelResourceLocation gasCanisterFullModel = new ModelResourceLocation(
 			Tags.MODID + ":gas_full", "inventory");
 	
 
@@ -40,8 +40,8 @@ public class ItemGasCanister extends Item {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public String getItemStackDisplayName(ItemStack stack) {
-		String s = ("" + I18n.format(this.getTranslationKey() + ".name")).trim();
-		String s1 = ("" + I18n.format(Fluids.fromID(stack.getItemDamage()).getConditionalName())).trim();
+		String s = (I18n.format(this.getTranslationKey() + ".name")).trim();
+		String s1 = (I18n.format(Fluids.fromID(stack.getItemDamage()).getConditionalName())).trim();
 
 		if(s1 != null) {
 			s = s + ": " + s1;
