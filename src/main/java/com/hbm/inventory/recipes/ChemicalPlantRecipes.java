@@ -315,6 +315,10 @@ public class ChemicalPlantRecipes extends GenericRecipes<GenericRecipe> {
                 .outputItems(new ItemStack(ModItems.powder_balefire))
                 .outputFluids(new FluidStack(Fluids.BALEFIRE, 8_000)));
 
+        this.register(new GenericRecipe("chem.dhc").setup(400, 500).setIcon(ModItems.fluid_icon, Fluids.DHC.getID())
+                .inputFluids(new FluidStack(Fluids.DEUTERIUM, 500), new FluidStack(Fluids.REFORMGAS, 250), new FluidStack(Fluids.SYNGAS, 250))
+                .outputFluids(new FluidStack(Fluids.DHC, 500)));
+
         /// OSMIRIDIUM ///
         this.register(new GenericRecipe("chem.osmiridiumdeath").setup(240, 1_000)
                 .inputItems(new RecipesCommon.ComparableStack(ModItems.powder_paleogenite), new RecipesCommon.OreDictStack(F.dust(), 8), new RecipesCommon.ComparableStack(ModItems.nugget_bismuth, 4))

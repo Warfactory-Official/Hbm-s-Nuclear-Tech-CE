@@ -287,7 +287,7 @@ public class NTMClientRegistry {
             if (!order[i].hasNoID()) {
                 ModelLoader.setCustomModelResourceLocation(ModItems.fluid_duct, order[i].getID(), ItemFFFluidDuct.ductLoc);
                 if (order[i].getContainer(Fluids.CD_Gastank.class) != null) {
-                    ModelLoader.setCustomModelResourceLocation(ModItems.gas_full, order[i].getID(), ItemGasCanister.gasCansiterFullModel);
+                    ModelLoader.setCustomModelResourceLocation(ModItems.gas_full, order[i].getID(), ItemGasCanister.gasCanisterFullModel);
                 }
             }
         }
