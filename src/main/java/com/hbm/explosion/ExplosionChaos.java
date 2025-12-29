@@ -53,7 +53,7 @@ public class ExplosionChaos {
 	/**
      * Optimized iteration algorithm to reduce CPU load during large scale block operations.
      */
-    private static void forEachBlockInSphere(World world, int x, int y, int z, int radius, Consumer<BlockPos.MutableBlockPos> action) {
+    private static void forEachBlockInSphere(World world, Entity detonator, int x, int y, int z, int radius, Consumer<BlockPos.MutableBlockPos> action) {
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         int radiusSqHalf = (radius * radius) / 2;
 
@@ -82,7 +82,7 @@ public class ExplosionChaos {
 
 	public static void explode(World world, Entity detonator, int x, int y, int z, int bombStartStrength) {
 		if(!CompatibilityConfig.isWarDim(world)) return;
-		forEachBlockInSphere(world, x, y, z, bombStartStrength, pos -> destruction(world, detonator, pos));
+		forEachBlockInSphere(world, detonator, x, y, z, bombStartStrength, pos -> destruction(world, detonator, pos));
 	}
 	
 	private static void destruction(World world, Entity detonator, BlockPos pos) {
@@ -251,7 +251,7 @@ public class ExplosionChaos {
         if(!CompatibilityConfig.isWarDim(world)) return;
         MutableBlockPos mPosUp = new BlockPos.MutableBlockPos();
         
-        forEachBlockInSphere(world, pos.getX(), pos.getY(), pos.getZ(), bound, mPos -> {
+        forEachBlockInSphere(world, detonator, pos.getX(), pos.getY(), pos.getZ(), bound, mPos -> {
             mPosUp.setPos(mPos.getX(), mPos.getY() + 1, mPos.getZ());
             if(world.getBlockState(mPos).getBlock().isFlammable(world, mPos, EnumFacing.UP) && world.getBlockState(mPosUp).getBlock() == Blocks.AIR) {
                 world.setBlockState(mPosUp, Blocks.FIRE.getDefaultState());
@@ -273,7 +273,7 @@ public class ExplosionChaos {
         if(!CompatibilityConfig.isWarDim(world)) return;
         MutableBlockPos mPosUp = new BlockPos.MutableBlockPos();
         
-        forEachBlockInSphere(world, pos.getX(), pos.getY(), pos.getZ(), bound, mPos -> {
+        forEachBlockInSphere(world, detonator, pos.getX(), pos.getY(), pos.getZ(), bound, mPos -> {
             mPosUp.setPos(mPos.getX(), mPos.getY() + 1, mPos.getZ());
             IBlockState upState = world.getBlockState(mPosUp);
             if((upState.getBlock() == Blocks.AIR || upState.getBlock() == Blocks.SNOW_LAYER) && world.getBlockState(mPos).getBlock() != Blocks.AIR) {
@@ -526,7 +526,7 @@ public class ExplosionChaos {
 
 	public static void explodeZOMG(World world, int x, int y, int z, int bombStartStrength) {
 		if(!CompatibilityConfig.isWarDim(world)) return;
-		forEachBlockInSphere(world, x, y, z, bombStartStrength, pos -> {
+		forEachBlockInSphere(world, null, x, y, z, bombStartStrength, pos -> {
 			if(!(world.getBlockState(pos).getBlock().getExplosionResistance(null) > 2_000_000 && pos.getY() <= 0))
 				world.setBlockToAir(pos);
 		});
@@ -599,7 +599,7 @@ public class ExplosionChaos {
 	@SuppressWarnings("deprecation")
 	public static void pulse(World world, int x, int y, int z, int bombStartStrength) {
 		if(!CompatibilityConfig.isWarDim(world)) return;
-		forEachBlockInSphere(world, x, y, z, bombStartStrength, pos -> {
+		forEachBlockInSphere(world, null, x, y, z, bombStartStrength, pos -> {
 			if(world.getBlockState(pos).getBlock().getExplosionResistance(null) <= 70)
 				pDestruction(world, pos.getX(), pos.getY(), pos.getZ());
         });
@@ -616,7 +616,7 @@ public class ExplosionChaos {
         if(!CompatibilityConfig.isWarDim(world)) return;
         int radiusSqHalf = (radius * radius) / 2;
         
-        forEachBlockInSphere(world, x, y, z, radius, pos -> {
+        forEachBlockInSphere(world, null, x, y, z, radius, pos -> {
             if(world.rand.nextInt(radiusSqHalf / 2) > 0) { 
                 IBlockState state = world.getBlockState(pos);
                 Block block = state.getBlock();
@@ -734,7 +734,7 @@ public class ExplosionChaos {
 
 	public static void floater(World world, Entity detonator, int x, int y, int z, int radi, int height) {
         if(!CompatibilityConfig.isWarDim(world)) return;
-        forEachBlockInSphere(world, x, y, z, radi, pos -> {
+        forEachBlockInSphere(world, detonator, x, y, z, radi, pos -> {
             IBlockState save = world.getBlockState(pos);
             world.setBlockToAir(pos);
             if(save.getBlock() != Blocks.AIR) {
@@ -934,7 +934,7 @@ public class ExplosionChaos {
 	
 	public static void hardenVirus(World world, int x, int y, int z, int bombStartStrength) {
         if(!CompatibilityConfig.isWarDim(world)) return;
-        forEachBlockInSphere(world, x, y, z, bombStartStrength, pos -> {
+        forEachBlockInSphere(world, null, x, y, z, bombStartStrength, pos -> {
             if (world.getBlockState(pos).getBlock() == ModBlocks.crystal_virus)
                 world.setBlockState(pos, ModBlocks.crystal_hardened.getDefaultState());
         });
@@ -942,7 +942,7 @@ public class ExplosionChaos {
 
 	public static void spreadVirus(World world, int x, int y, int z, int bombStartStrength) {
         if(!CompatibilityConfig.isWarDim(world)) return;
-        forEachBlockInSphere(world, x, y, z, bombStartStrength, pos -> {
+        forEachBlockInSphere(world, null, x, y, z, bombStartStrength, pos -> {
             if (rand.nextInt(15) == 0 && world.getBlockState(pos).getBlock() != Blocks.AIR)
                 world.setBlockState(pos, ModBlocks.cheater_virus_seed.getDefaultState());
         });
