@@ -43,6 +43,7 @@ import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.monster.EntityBlaze;
 import net.minecraft.entity.monster.EntityCreeper;
+import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.monster.EntityZombieVillager;
 import net.minecraft.entity.passive.*;
 import net.minecraft.entity.player.EntityPlayer;
@@ -241,11 +242,11 @@ public class EntityEffectHandler {
     private static void handleRadiationEffect(EntityLivingBase entity) {
         World world = entity.world;
         if (world.isRemote) return;
-        if (!GeneralConfig.enableRads || entity.isEntityInvulnerable(ModDamageSource.radiation) || entity instanceof EntityPlayerMP player && player.isSpectator())
+        if (!GeneralConfig.enableRads || entity.isEntityInvulnerable(ModDamageSource.radiation) || (entity instanceof EntityPlayerMP player && player.isSpectator()))
             return;
 
         double eRad = HbmLivingProps.getRadiation(entity);
-        if (eRad < 100) return;
+        if (eRad < 50) return;
         int rng = world.rand.nextInt(21000);
 
         if (eRad >= 200 && entity.getHealth() > 0 && entity instanceof EntityCreeper) {
@@ -257,14 +258,13 @@ public class EntityEffectHandler {
                 entity.attackEntityFrom(ModDamageSource.radiation, 100F);
             }
             return;
-        } else if (eRad >= 500 && entity instanceof EntityCow && !(entity instanceof EntityMooshroom)) {
+        } else if (eRad >= 50 && entity instanceof EntityCow && !(entity instanceof EntityMooshroom)) {
             EntityMooshroom creep = new EntityMooshroom(world);
             creep.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
             if (!entity.isDead && world.spawnEntity(creep)) entity.setDead();
             return;
-        } else if (eRad >= 600 && entity instanceof EntityVillager vil) {
+        } else if (eRad >= 500 && entity instanceof EntityVillager vil) {
             EntityZombieVillager creep = new EntityZombieVillager(world);
-            creep.setProfession(vil.getProfession());
             creep.setForgeProfession(vil.getProfessionForge());
             creep.setChild(vil.isChild());
             creep.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
@@ -286,13 +286,14 @@ public class EntityEffectHandler {
             zomhorsie.makeMad();
             if (!entity.isDead && world.spawnEntity(zomhorsie)) entity.setDead();
             return;
-        } else if (eRad >= 900 && entity instanceof EntityDuck) {
+        } else if (eRad >= 200 && entity instanceof EntityDuck) {
             EntityQuackos quacc = new EntityQuackos(world);
             quacc.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
             if (!entity.isDead && world.spawnEntity(quacc)) entity.setDead();
             return;
         }
 
+        if (eRad < 200) return;
         if (eRad > 2500000) HbmLivingProps.setRadiation(entity, 2500000);
 
         if (eRad >= 1000) {
@@ -331,10 +332,9 @@ public class EntityEffectHandler {
             if (rng % 500 == 0) entity.addPotionEffect(new PotionEffect(MobEffects.WEAKNESS, 5 * 20, 0));
             if (rng % 700 == 0) entity.addPotionEffect(new PotionEffect(MobEffects.HUNGER, 3 * 20, 2));
             if (rng % 800 == 0) entity.addPotionEffect(new PotionEffect(MobEffects.MINING_FATIGUE, 4 * 20, 0));
-        } else if (eRad >= 100) {
-            if (rng % 800 == 0) entity.addPotionEffect(new PotionEffect(MobEffects.WEAKNESS, 2 * 20, 0));
-            if (rng % 1000 == 0) entity.addPotionEffect(new PotionEffect(MobEffects.MINING_FATIGUE, 20, 0));
-            if (entity instanceof EntityPlayerMP) AdvancementManager.grantAchievement((EntityPlayerMP) entity, AdvancementManager.achRadPoison);
+            if (entity instanceof EntityPlayerMP) {
+                AdvancementManager.grantAchievement((EntityPlayerMP) entity, AdvancementManager.achRadPoison);
+            }
         }
     }
 

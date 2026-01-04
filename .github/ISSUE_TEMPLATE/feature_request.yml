@@ -30,13 +30,7 @@ body:
       description: If applicable, link to the upstream issue/PR and note the outcome. If this is a compatibility request for another mod, you can skip this.
 
   - type: textarea
-    id: impact-notes
-    attributes:
-      label: Impact details (optional)
-      description: Performance notes, balance considerations, config options, save/world compatibility, or migration notes.
-
-  - type: textarea
     id: additional-context
     attributes:
       label: Additional context
-      description: Any other context, screenshots, mockups, references, or links.
+      description: Anything else you would like to add.

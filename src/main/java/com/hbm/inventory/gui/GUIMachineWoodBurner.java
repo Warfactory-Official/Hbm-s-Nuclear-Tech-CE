@@ -40,7 +40,7 @@ public class GUIMachineWoodBurner extends GuiInfoContainer {
 		super.renderHoveredToolTip(mouseX, mouseY);
 		this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 143, guiTop + 18, 16, 34, burner.power, burner.maxPower);
 
-		if(this.mc.player.inventory.getItemStack() == ItemStack.EMPTY) {
+		if(this.mc.player.inventory.getItemStack().isEmpty()) {
 			
 			Slot slot = (Slot) this.inventorySlots.inventorySlots.get(0);
 			if(this.isMouseOverSlot(slot, mouseX, mouseY) && !slot.getHasStack()) {

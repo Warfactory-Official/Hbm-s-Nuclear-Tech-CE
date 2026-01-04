@@ -2,6 +2,7 @@ package com.hbm.tileentity.machine.oil;
 
 import com.hbm.api.fluid.IFluidStandardTransceiver;
 import com.hbm.api.tile.IHeatSource;
+import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.container.ContainerMachineCoker;
 import com.hbm.inventory.fluid.FluidStack;
@@ -104,6 +105,8 @@ public class TileEntityMachineCoker extends TileEntityMachineBase implements IFl
                         tanks[0].setFill(tanks[0].getFill() - fillReq);
                     }
                 }
+
+                if(wasOn && world.getTotalWorldTime() % 5 == 0) PollutionHandler.incrementPollution(world, pos, PollutionHandler.PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND * 5);
             }
 
             for(DirPos pos : getConPos()) {

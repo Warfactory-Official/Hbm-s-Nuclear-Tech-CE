@@ -65,7 +65,7 @@ public class TileEntityMachineAssemfac extends TileEntityMachineAssemblerBase im
             public void setStackInSlot(int slot, @Nonnull ItemStack stack) {
                 super.setStackInSlot(slot, stack);
 
-                if(stack != ItemStack.EMPTY && slot >= 1 && slot <= 4 && stack.getItem() instanceof ItemMachineUpgrade) {
+                if(!stack.isEmpty() && slot >= 1 && slot <= 4 && stack.getItem() instanceof ItemMachineUpgrade) {
                     world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.upgradePlug, SoundCategory.BLOCKS, 1.0F, 1.0F);
                 }
             }

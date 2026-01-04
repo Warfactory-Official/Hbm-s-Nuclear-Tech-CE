@@ -34,6 +34,6 @@ public class BlockCap extends BlockEnumMeta {
         int meta = state.getValue(META);
         BlockEnums.EnumBlockCapType oreType = (BlockEnums.EnumBlockCapType) this.blockEnum.getEnumConstants()[meta];
 
-        return Collections.singletonList(new ItemStack(oreType.getDrop().getItem(), oreType.getDropCount(), oreType.drop.getMetadata()));
+        return Collections.singletonList(new ItemStack(oreType.getDrop(), oreType.getDropCount()));
     }
 }

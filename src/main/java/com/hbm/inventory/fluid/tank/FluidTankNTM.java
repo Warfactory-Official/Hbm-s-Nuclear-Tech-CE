@@ -138,7 +138,7 @@ public class FluidTankNTM implements IFluidHandler, IFluidTank, Cloneable {
     //Fills tank from canisters
     public boolean loadTank(int in, int out, @NotNull IItemHandler slots) {
 
-        if (slots.getStackInSlot(in) == ItemStack.EMPTY) return false;
+        if (slots.getStackInSlot(in).isEmpty()) return false;
 
         boolean isInfiniteBarrel = slots.getStackInSlot(in).getItem() == ModItems.fluid_barrel_infinite;
 
@@ -158,7 +158,7 @@ public class FluidTankNTM implements IFluidHandler, IFluidTank, Cloneable {
     //Fills canisters from tank
     public boolean unloadTank(int in, int out, @NotNull IItemHandler slots) {
 
-        if (slots.getStackInSlot(in) == ItemStack.EMPTY) return false;
+        if (slots.getStackInSlot(in).isEmpty()) return false;
 
         int prev = this.getFill();
 

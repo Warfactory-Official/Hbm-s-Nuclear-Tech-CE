@@ -62,7 +62,7 @@ public class ContainerMassStorage extends Container {
 		if(storage.getStockpile() > 0)
 			return ret;
 
-		slot.putStack(held != ItemStack.EMPTY ? held.copy() : ItemStack.EMPTY);
+		slot.putStack(!held.isEmpty() ? held.copy() : ItemStack.EMPTY);
 
 		if(slot.getHasStack()) {
 			slot.getStack().setCount(1);

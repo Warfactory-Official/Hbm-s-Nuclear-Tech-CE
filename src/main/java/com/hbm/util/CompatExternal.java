@@ -41,10 +41,10 @@ public class CompatExternal {
 
         //if the block at that pos is a Dummyable, use the mk2's system to find the core
         if(b instanceof BlockDummyable dummy) {
-            int[] pos1 = dummy.findCore(world, pos.getX(), pos.getY(), pos.getZ());
+            BlockPos pos1 = dummy.findCore(world, pos);
 
             if(pos1 != null) {
-                return world.getTileEntity(new BlockPos(pos1[0], pos1[1], pos1[2]));
+                return world.getTileEntity(pos1);
             }
         }//  else MainRegistry.logger.info("{} is not instance of BlockDummyable", b.getClass().getSimpleName());
 

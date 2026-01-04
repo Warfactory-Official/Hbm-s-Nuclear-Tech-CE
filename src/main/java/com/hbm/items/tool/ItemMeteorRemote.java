@@ -1,6 +1,6 @@
 package com.hbm.items.tool;
 
-import com.hbm.entity.projectile.EntityMeteor;
+import com.hbm.handler.BossSpawnHandler;
 import com.hbm.items.ModItems;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.util.I18nUtil;
@@ -60,19 +60,9 @@ public class ItemMeteorRemote extends Item {
 		ItemStack stack = player.getHeldItem(hand);
 		stack.damageItem(1, player);
 
-		if(!world.isRemote)
-		{
-			EntityMeteor meteor = new EntityMeteor(world);
-			meteor.posX = player.posX + world.rand.nextInt(201) - 100;
-			meteor.posY = 384;
-			meteor.posZ = player.posZ + world.rand.nextInt(201) - 100;
-			meteor.motionX = world.rand.nextDouble() - 0.5;
-			meteor.motionY = -2.5;
-			meteor.motionZ = world.rand.nextDouble() - 0.5;
-			world.spawnEntity(meteor);
-		}
-		if(world.isRemote)
-		{
+		if(!world.isRemote) {
+            BossSpawnHandler.spawnMeteorAtPlayer(player, false);
+		} else {
 			player.sendMessage(new TextComponentTranslation("chat.meteorremote.watchhead"));
 		}
 

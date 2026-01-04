@@ -191,7 +191,7 @@ public class BlockMassStorage extends BlockContainer implements ILookOverlay, IT
 
 		List<String> text = new ArrayList();
 		String title = "Empty";
-		boolean full = storage.type != ItemStack.EMPTY && storage.type != null && storage.type.getItem() != Items.AIR;
+		boolean full = !storage.type.isEmpty() && storage.type != null && storage.type.getItem() != Items.AIR;
 
 		if (full) {
 
@@ -215,7 +215,7 @@ public class BlockMassStorage extends BlockContainer implements ILookOverlay, IT
 
 		ItemStack type = new ItemStack(stack.getTagCompound().getCompoundTag("slot1"));
 
-		if (type != ItemStack.EMPTY) {
+		if (!type.isEmpty()) {
 			tooltip.add("§6" + type.getDisplayName());
 			tooltip.add(String.format(Locale.US, "%,d", stack.getTagCompound().getInteger("stack")) + " / " + String.format(Locale.US, "%,d", getCapacity()));
 		}

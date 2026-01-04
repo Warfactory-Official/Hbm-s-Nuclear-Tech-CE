@@ -79,7 +79,7 @@ public class ContainerAutocrafter extends Container {
             autoCrafter.nextMode(index);
 
         } else {
-            slot.putStack(held != ItemStack.EMPTY ? held.copy() : ItemStack.EMPTY);
+            slot.putStack(!held.isEmpty() ? held.copy() : ItemStack.EMPTY);
 
             if(slot.getHasStack()) {
                 slot.getStack().setCount(1);

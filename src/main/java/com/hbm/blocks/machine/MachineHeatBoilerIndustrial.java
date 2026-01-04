@@ -62,7 +62,7 @@ public class MachineHeatBoilerIndustrial extends BlockDummyable
 
       ItemStack heldItem = player.getHeldItem(hand);
 
-      if (heldItem != ItemStack.EMPTY && heldItem.getItem() instanceof IItemFluidIdentifier) {
+      if (!heldItem.isEmpty() && heldItem.getItem() instanceof IItemFluidIdentifier) {
         BlockPos corePos = this.findCore(world, pos);
 
         if (corePos == null) return false;

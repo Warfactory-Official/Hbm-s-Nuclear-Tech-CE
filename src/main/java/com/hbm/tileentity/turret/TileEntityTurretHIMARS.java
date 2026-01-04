@@ -135,7 +135,7 @@ public class TileEntityTurretHIMARS extends TileEntityTurretBaseArtillery implem
   private ItemStack getSpareRocket() {
 
     for (int i = 1; i < 10; i++) {
-      if (inventory.getStackInSlot(i) != ItemStack.EMPTY) {
+      if (!inventory.getStackInSlot(i).isEmpty()) {
         if (inventory.getStackInSlot(i).getItem() == ModItems.ammo_himars) {
           return inventory.getStackInSlot(i);
         }

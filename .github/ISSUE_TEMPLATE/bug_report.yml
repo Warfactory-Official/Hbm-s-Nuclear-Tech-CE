@@ -41,6 +41,17 @@ body:
       required: true
 
   - type: dropdown
+    id: conflict-check
+    attributes:
+      label: Mod conflict check
+      description: Did you try reproducing with only NTM:CE + required dependencies?
+      options:
+        - Yes — reproduces with only NTM:CE
+        - No — only reproduces with other mods (compatibility issue)
+    validations:
+      required: true
+
+  - type: dropdown
     id: platform
     attributes:
       label: Where does it happen?
@@ -52,17 +63,6 @@ body:
         - Singleplayer (Cleanroom / modern Java)
         - Dedicated server (Cleanroom / modern Java)
         - Both singleplayer and dedicated server (Cleanroom / modern Java)
-    validations:
-      required: true
-
-  - type: dropdown
-    id: conflict-check
-    attributes:
-      label: Mod conflict check
-      description: Did you try reproducing with only NTM:CE + required dependencies?
-      options:
-        - Yes — reproduces with only NTM:CE
-        - No — only reproduces with other mods (compatibility issue)
     validations:
       required: true
 

@@ -76,7 +76,7 @@ public class TileEntityNukeMan extends TileEntity implements IGUIProvider {
 	public boolean isReady() {
 		if(this.exp1() && this.exp2() && this.exp3() && this.exp4())
 		{
-            return this.inventory.getStackInSlot(0) != ItemStack.EMPTY && this.inventory.getStackInSlot(5) != ItemStack.EMPTY && this.inventory.getStackInSlot(0).getItem() == ModItems.man_igniter && this.inventory.getStackInSlot(5).getItem() == ModItems.man_core;
+        return this.inventory.getStackInSlot(0) != ItemStack.EMPTY && this.inventory.getStackInSlot(5) != ItemStack.EMPTY && this.inventory.getStackInSlot(0).getItem() == ModItems.man_igniter && this.inventory.getStackInSlot(5).getItem() == ModItems.man_core;
 		}
 		
 		return false;

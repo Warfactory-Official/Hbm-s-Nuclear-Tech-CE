@@ -43,7 +43,7 @@ public class GUIScreenClayTablet extends GuiScreen {
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 
         EntityPlayer player = Minecraft.getMinecraft().player;
-        if(player.getHeldItemMainhand() != ItemStack.EMPTY) tabletMeta = player.getHeldItemMainhand().getItemDamage();
+        if(!player.getHeldItemMainhand().isEmpty()) tabletMeta = player.getHeldItemMainhand().getItemDamage();
         Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
 
         int tabletOffset = tabletMeta == 1 ? 84 : 0;
@@ -53,7 +53,7 @@ public class GUIScreenClayTablet extends GuiScreen {
 
         ArrayList<PedestalRecipes.PedestalRecipe> recipeSet = PedestalRecipes.recipeSets[Math.abs(tabletMeta) % PedestalRecipes.recipeSets.length];
 
-        if(player.getHeldItemMainhand() != ItemStack.EMPTY && player.getHeldItemMainhand().hasTagCompound() && player.getHeldItemMainhand().getTagCompound().hasKey("tabletSeed") && !recipeSet.isEmpty()) {
+        if(!player.getHeldItemMainhand().isEmpty() && player.getHeldItemMainhand().hasTagCompound() && player.getHeldItemMainhand().getTagCompound().hasKey("tabletSeed") && !recipeSet.isEmpty()) {
             Random rand = new Random(player.getHeldItemMainhand().getTagCompound().getLong("tabletSeed"));
             PedestalRecipes.PedestalRecipe recipe = recipeSet.get(rand.nextInt(recipeSet.size()));
 

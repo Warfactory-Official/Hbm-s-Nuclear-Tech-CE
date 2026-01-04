@@ -92,7 +92,8 @@ public class RenderControlPanel extends TileEntitySpecialRenderer<TileEntityCont
     GlStateManager.pushMatrix();
     GlStateManager.rotate(-90, 0, 0, 1);
 
-    switch ((te.getBlockMetadata() & 3) + 2) {
+      int metadata = te.getBlockMetadata();
+      switch ((metadata & 3) + 2) {
       case 4:
         GlStateManager.rotate(-180, 1, 0, 0);
         break;
@@ -106,15 +107,13 @@ public class RenderControlPanel extends TileEntitySpecialRenderer<TileEntityCont
         GlStateManager.rotate(-270, 1, 0, 0);
         break;
     }
-    int meta = te.getBlockMetadata();
-    boolean isUp   = ((meta >> 3) & 1) == 1;
-    boolean isDown = ((meta >> 2) & 1) == 1;
-
-    if (isUp) {
+      boolean isUp = ((metadata >> 3) == 1);
+      boolean isDown = ((metadata >> 2) == 1);
+    if (isDown) {
       GlStateManager.rotate(-180, 1, 0, 0);
       GlStateManager.rotate(-90, 0, 0, 1);
       GlStateManager.translate(0, -1, 0);
-    } else if (isDown) {
+    } else if (isUp) {
       GlStateManager.rotate(90, 0, 0, 1);
     } else {
       GlStateManager.translate(-.5, -.5, 0);

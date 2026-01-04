@@ -3,6 +3,7 @@ package com.hbm.items.machine;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.inventory.FluidContainerRegistry;
 import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FluidTraitSimple;
 import com.hbm.items.ItemBakedBase;
@@ -19,84 +20,88 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class ItemFluidSiphon extends ItemBakedBase {
-    
-    public ItemFluidSiphon(String s) { super(s); } 
+
+    public ItemFluidSiphon(String s) {
+        super(s);
+    }
 
     @Override
     public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+        if (world.isRemote) {
+            TileEntity teClient = CompatExternal.getCoreFromPos(world, pos);
+            return (teClient instanceof IFluidStandardReceiverMK2) ? EnumActionResult.SUCCESS : EnumActionResult.PASS;
+        }
         TileEntity te = CompatExternal.getCoreFromPos(world, pos);
-
-        if(te instanceof IFluidStandardReceiverMK2) {
-            FluidTankNTM[] tanks = ((IFluidStandardReceiverMK2) te).getReceivingTanks();
-
-            boolean hasDrainedTank = false;
-
-            // We need to iterate through the inventory for _each_ siphonable
-            // tank, so we can handle fluids that can only go into certain containers
-            // After we successfully siphon any fluid from a tank, we stop
-            // further processing, multiple fluid types require multiple clicks
-            for(FluidTankNTM tank : tanks) {
-                if(tank.getFill() <= 0)
-                    continue;
-
-                ItemStack availablePipette = null;
-                FluidType tankType = tank.getTankType();
-
-                if(tankType.hasTrait(FluidTraitSimple.FT_Unsiphonable.class))
-                    continue;
-
-                for(int j = 0; j < player.inventory.mainInventory.size(); j++) {
-                    ItemStack inventoryStack = player.inventory.mainInventory.get(j);
-                    if(inventoryStack.isEmpty())
-                        continue;
-
-                    FluidContainerRegistry.FluidContainer container = FluidContainerRegistry.getFluidContainer(inventoryStack);
-
-                    if(availablePipette == null && inventoryStack.getItem() instanceof ItemPipette pipette) {
-                        if(!pipette.willFizzle(tankType) && pipette != ModItems.pipette_laboratory) { // Ignoring laboratory pipettes for now
-                            availablePipette = inventoryStack;
-                        }
-                    }
-
-                    if(container == null)
-                        continue;
-
-                    ItemStack full = FluidContainerRegistry.getFullContainer(inventoryStack, tankType);
-
-                    while(tank.getFill() >= container.content() && inventoryStack.getCount() > 0) {
-                        hasDrainedTank = true;
-
-                        inventoryStack.shrink(1);
-                        if(inventoryStack.getCount() <= 0) {
-                            player.inventory.mainInventory.set(j, ItemStack.EMPTY);
-                        }
-
-                        assert full != null;
-                        ItemStack filledContainer = full.copy();
-                        tank.setFill(tank.getFill() - container.content());
-                        player.inventory.addItemStackToInventory(filledContainer);
+        if (!(te instanceof IFluidStandardReceiverMK2)) return EnumActionResult.PASS;
+        FluidTankNTM[] tanks = ((IFluidStandardReceiverMK2) te).getReceivingTanks();
+        if (tanks == null) return EnumActionResult.PASS;
+        for (FluidTankNTM tank : tanks) {
+            if (tank == null) continue;
+            int fill = tank.getFill();
+            if (fill <= 0) continue;
+            FluidType tankType = tank.getTankType();
+            if (tankType == Fluids.NONE) continue;
+            if (tankType.hasTrait(FluidTraitSimple.FT_Unsiphonable.class)) continue;
+            boolean drainedThisTank = false;
+            ItemStack availablePipette = ItemStack.EMPTY;
+            for (int slot = 0; slot < player.inventory.mainInventory.size(); slot++) {
+                ItemStack inv = player.inventory.mainInventory.get(slot);
+                if (inv.isEmpty()) continue;
+                if (availablePipette.isEmpty() && inv.getItem() instanceof ItemPipette pipette) {
+                    if (pipette != ModItems.pipette_laboratory && !pipette.willFizzle(tankType) && pipette.acceptsFluid(tankType, inv)) {
+                        availablePipette = inv;
                     }
                 }
-
-                // If the remainder of the tank can only fit into a pipette,
-                // fill a pipette with the remainder
-                // Will not auto-fill fizzlable pipettes, there is no feedback
-                // for the fizzle in this case, and that's a touch too unfair
-                if(availablePipette != null && tank.getFill() < 1000) {
-                    ItemPipette pipette = (ItemPipette) availablePipette.getItem();
-
-                    if(pipette.acceptsFluid(tankType, availablePipette)) {
-                        hasDrainedTank = true;
-                        tank.setFill(pipette.tryFill(tankType, tank.getFill(), availablePipette));
-                    }
+                FluidContainerRegistry.FluidContainer recipe = FluidContainerRegistry.getFillRecipe(inv, tankType);
+                if (recipe == null) continue;
+                int perContainer = recipe.content();
+                if (perContainer <= 0) continue;
+                int maxByFluid = fill / perContainer;
+                if (maxByFluid == 0) continue;
+                int toFillTotal = Math.min(inv.getCount(), maxByFluid);
+                if (toFillTotal <= 0) continue;
+                inv.shrink(toFillTotal);
+                if (inv.getCount() <= 0) {
+                    player.inventory.mainInventory.set(slot, ItemStack.EMPTY);
                 }
 
-                if(hasDrainedTank)
-                    return EnumActionResult.SUCCESS;
+                ItemStack outTemplate = recipe.fullContainer().copy();
+                int maxOutStack = Math.max(1, outTemplate.getMaxStackSize());
+
+                int remaining = toFillTotal;
+                while (remaining > 0) {
+                    int batch = Math.min(remaining, maxOutStack);
+                    ItemStack out = outTemplate.copy();
+                    out.setCount(batch);
+                    if (!player.inventory.addItemStackToInventory(out)) {
+                        player.dropItem(out, false);
+                    }
+                    remaining -= batch;
+                }
+
+                fill -= toFillTotal * perContainer;
+                drainedThisTank = true;
+
+                if (fill <= 0) break;
+            }
+
+            if (!availablePipette.isEmpty() && fill > 0 && fill < 1000) {
+                ItemPipette pipette = (ItemPipette) availablePipette.getItem();
+                int newFill = pipette.tryFill(tankType, fill, availablePipette);
+                if (newFill != fill) {
+                    fill = newFill;
+                    drainedThisTank = true;
+                }
+            }
+
+            if (drainedThisTank) {
+                tank.setFill(fill);
+                te.markDirty();
+                player.inventory.markDirty();
+                return EnumActionResult.SUCCESS;
             }
         }
 
         return EnumActionResult.PASS;
     }
-
 }

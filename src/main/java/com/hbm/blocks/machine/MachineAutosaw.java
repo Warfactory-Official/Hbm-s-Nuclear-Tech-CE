@@ -72,7 +72,7 @@ public class MachineAutosaw extends BlockContainer
 
     if (!world.isRemote && !player.isSneaking()) {
 
-      if (player.getHeldItem(hand) != ItemStack.EMPTY
+      if (!player.getHeldItem(hand).isEmpty()
           && player.getHeldItem(hand).getItem() instanceof IItemFluidIdentifier) {
 
         TileEntityMachineAutosaw saw = (TileEntityMachineAutosaw) world.getTileEntity(pos);

@@ -107,7 +107,7 @@ public class TileEntityDroneRequester extends TileEntityRequestNetworkContainer 
         for(int i = 0; i < 9; i++) {
             ItemStack filter = inventory.getStackInSlot(i);
             ItemStack stock = inventory.getStackInSlot(i + 9);
-            if(filter == ItemStack.EMPTY) continue;
+            if(filter.isEmpty()) continue;
             String mode = this.matcher.modes[i];
             RecipesCommon.AStack aStack = null;
 
@@ -121,7 +121,7 @@ public class TileEntityDroneRequester extends TileEntityRequestNetworkContainer 
 
             if(aStack == null) continue;
 
-            if(stock == ItemStack.EMPTY || !this.matcher.isValidForFilter(filter, i, stock)) request.add(aStack);
+            if(stock.isEmpty() || !this.matcher.isValidForFilter(filter, i, stock)) request.add(aStack);
         }
         return new RequestNetwork.RequestNode(pos, this.reachableNodes, request);
     }

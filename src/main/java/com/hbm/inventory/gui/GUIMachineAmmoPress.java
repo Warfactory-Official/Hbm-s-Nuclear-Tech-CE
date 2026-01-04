@@ -117,7 +117,7 @@ public class GUIMachineAmmoPress extends GuiInfoContainer {
         && guiLeft + xSize > mouseX
         && guiTop < mouseY
         && guiTop + ySize >= mouseY
-        && getMouseOverStack() == ItemStack.EMPTY) {
+        && getMouseOverStack().isEmpty()) {
       if (!Mouse.isButtonDown(0) && !Mouse.isButtonDown(1) && Mouse.next()) {
         int scroll = Mouse.getEventDWheel();
 

@@ -88,7 +88,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
           public void setStackInSlot(int slot, @NotNull ItemStack stack) {
             super.setStackInSlot(slot, stack);
 
-            if (stack != ItemStack.EMPTY
+            if (!stack.isEmpty()
                 && slot >= 9
                 && slot <= 10
                 && stack.getItem() instanceof ItemMachineUpgrade) {

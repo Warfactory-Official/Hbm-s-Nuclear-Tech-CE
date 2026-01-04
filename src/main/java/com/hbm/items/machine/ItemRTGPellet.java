@@ -82,7 +82,7 @@ public class ItemRTGPellet extends ItemBase {
 
 	@CheckForNull
 	public ItemStack getDecayItem() {
-		return decayItem == ItemStack.EMPTY ? ItemStack.EMPTY : decayItem;
+		return decayItem.isEmpty() ? ItemStack.EMPTY : decayItem;
 	}
 
 	public boolean getDoesDecay() {

@@ -143,8 +143,8 @@ public class PneumoTubeBakedModel extends AbstractBakedModel {
             if (pZ) boundsList.add(new float[]{lower, lower, upper, upper, upper, 1, 0});
         }
 
-        if (outDir != ForgeDirection.UNKNOWN) addConnectorBounds(boundsList, outDir, 1);
-        if (inDir != ForgeDirection.UNKNOWN) addConnectorBounds(boundsList, inDir, 2);
+        if (outDir != ForgeDirection.UNKNOWN) addConnectorBounds(boundsList, outDir, 2);
+        if (inDir != ForgeDirection.UNKNOWN) addConnectorBounds(boundsList, inDir, 1);
         if (connectorDir != ForgeDirection.UNKNOWN) addConnectorBounds(boundsList, connectorDir, 3);
 
         FaceBakery faceBakery = new FaceBakery();

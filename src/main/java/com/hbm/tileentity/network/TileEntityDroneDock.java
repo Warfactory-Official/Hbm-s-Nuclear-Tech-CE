@@ -117,7 +117,7 @@ public class TileEntityDroneDock extends TileEntityRequestNetworkContainer imple
 
         for(int i = 0; i < this.inventory.getSlots(); i++) {
             ItemStack stack = inventory.getStackInSlot(i);
-            if(stack != ItemStack.EMPTY && stack.getItem() == ModItems.drone && stack.getItemDamage() == ItemDrone.EnumDroneType.REQUEST.ordinal()) {
+            if(!stack.isEmpty() && stack.getItem() == ModItems.drone && stack.getItemDamage() == ItemDrone.EnumDroneType.REQUEST.ordinal()) {
                 this.decrStackSize(i, 1);
                 break;
             }
@@ -184,7 +184,7 @@ public class TileEntityDroneDock extends TileEntityRequestNetworkContainer imple
 
         for(int i = 0; i < this.inventory.getSlots(); i++) {
             ItemStack stack = inventory.getStackInSlot(i);
-            if(stack != ItemStack.EMPTY && stack.getItem() == ModItems.drone && stack.getItemDamage() == ItemDrone.EnumDroneType.REQUEST.ordinal()) return true;
+            if(!stack.isEmpty() && stack.getItem() == ModItems.drone && stack.getItemDamage() == ItemDrone.EnumDroneType.REQUEST.ordinal()) return true;
         }
 
         return false;

@@ -85,21 +85,21 @@ public class BlockPedestal extends BlockContainer implements IGunClickable {
 
         TileEntityPedestal pedestal = (TileEntityPedestal) world.getTileEntity(pos);
 
-        if(pedestal.item == ItemStack.EMPTY && player.getHeldItem(hand) != ItemStack.EMPTY) {
+        if(pedestal.item.isEmpty() && !player.getHeldItem(hand).isEmpty()) {
             if(world.isRemote) return true;
             pedestal.item = player.getHeldItem(hand).copy();
             player.setHeldItem(hand, ItemStack.EMPTY);
             pedestal.markDirty();
             world.notifyBlockUpdate(pos, state, state, 3);
             return true;
-        } else if(pedestal.item != ItemStack.EMPTY && player.getHeldItem(hand) == ItemStack.EMPTY) {
+        } else if(!pedestal.item.isEmpty() && player.getHeldItem(hand).isEmpty()) {
             if(world.isRemote) return true;
             player.setHeldItem(hand, pedestal.item.copy());
             pedestal.item = ItemStack.EMPTY;
             pedestal.markDirty();
             world.notifyBlockUpdate(pos, state, state, 3);
             return true;
-        } else if (pedestal.item != ItemStack.EMPTY && player.getHeldItem(hand) != ItemStack.EMPTY) {
+        } else if (!pedestal.item.isEmpty() && !player.getHeldItem(hand).isEmpty()) {
             if(world.isRemote) return true;
             ItemStack temp = player.getHeldItem(hand).copy();
             player.setHeldItem(hand, pedestal.item.copy());

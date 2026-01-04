@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.container.ContainerFurnaceIron;
 import com.hbm.inventory.gui.GUIFurnaceIron;
@@ -69,7 +70,7 @@ public class TileEntityFurnaceIron extends TileEntityMachineBase implements IGUI
 				
 				for(int i = 1; i < 3; i++) {
 					ItemStack input = inventory.getStackInSlot(i);
-					if(input != null && !input.isEmpty()) {
+					if(!input.isEmpty()) {
 						
 						int fuel = burnModule.getBurnTime(input);
 						
@@ -100,7 +101,7 @@ public class TileEntityFurnaceIron extends TileEntityMachineBase implements IGUI
 					ItemStack result = FurnaceRecipes.instance().getSmeltingResult(inventory.getStackInSlot(0));
 					ItemStack copy = outputs;
 		
-					if(outputs == ItemStack.EMPTY) {
+					if(outputs.isEmpty()) {
 						 copy  = result.copy();
 						 inventory.setStackInSlot(3, copy);
 					} else {
@@ -112,7 +113,8 @@ public class TileEntityFurnaceIron extends TileEntityMachineBase implements IGUI
 					this.progress = 0;
 					this.markDirty();
 				}
-			} else {
+                if(world.getTotalWorldTime() % 20 == 0) PollutionHandler.incrementPollution(world, pos, PollutionHandler.PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND);
+            } else {
 				this.progress = 0;
 			}
 
@@ -158,7 +160,7 @@ public class TileEntityFurnaceIron extends TileEntityMachineBase implements IGUI
 		
 		ItemStack result = FurnaceRecipes.instance().getSmeltingResult(inventory.getStackInSlot(0));
 		
-		if(result == ItemStack.EMPTY || result.isEmpty()) return false;
+		if(result.isEmpty()) return false;
 		if(inventory.getStackInSlot(3).isEmpty()) return true;
 		
 		if(!result.isItemEqual(inventory.getStackInSlot(3))) return false;

@@ -231,7 +231,7 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
 
 		ItemStack result = ShredderRecipes.getShredderResult(stack);
 
-		if (result == ItemStack.EMPTY) {
+		if (result.isEmpty()) {
 			return false;
 		}
 

@@ -144,7 +144,7 @@ public class ItemBlueprints extends ItemBakedBase {
         player.swingArm(hand);
 
         ItemStack copy = stack.copy();
-        copy.grow(1);
+        copy.setCount(1);
 
         if(!player.capabilities.isCreativeMode) {
             if(stack.getCount() < stack.getMaxStackSize()) {
@@ -154,7 +154,7 @@ public class ItemBlueprints extends ItemBakedBase {
 
             if(!player.inventory.addItemStackToInventory(copy)) {
                 copy = stack.copy();
-                copy.grow(1);
+                copy.setCount(1);
                 player.dropItem(copy, false);
             }
 

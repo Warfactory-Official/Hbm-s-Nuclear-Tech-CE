@@ -1,7 +1,7 @@
 package com.hbm.blocks;
 
 import com.hbm.items.ModItems;
-import net.minecraft.item.ItemStack;
+import net.minecraft.item.Item;
 
 import javax.annotation.Nullable;
 
@@ -93,48 +93,52 @@ public class BlockEnums {
 
 
 	public enum EnumBasaltOreType {
-		SULFUR (new ItemStack(ModItems.sulfur)),
-		FLUORITE(new ItemStack(ModItems.fluorite)),
-		ASBESTOS(new ItemStack(ModItems.ingot_asbestos)),
-		GEM(new ItemStack(ModItems.gem_volcanic)),
-		MOLYSITE(new ItemStack(ModItems.powder_molysite));
+		SULFUR,
+		FLUORITE,
+		ASBESTOS,
+		GEM,
+		MOLYSITE;
 
-		public final ItemStack drop;
-
-		public ItemStack getDrop(){
-			return drop;
+		public Item getDrop() {
+			return switch (this) {
+                 case SULFUR -> ModItems.sulfur;
+                 case FLUORITE -> ModItems.fluorite;
+                 case ASBESTOS -> ModItems.ingot_asbestos;
+                 case GEM -> ModItems.gem_volcanic;
+                 case MOLYSITE -> ModItems.powder_molysite;
+			};
 		}
+
 		public int getDropCount(int rand){
 			return rand + 1;
 		}
-
-        EnumBasaltOreType(ItemStack drop) {
-            this.drop = drop;
-        }
     }
 
 	public enum EnumBlockCapType {
-		NUKA (new ItemStack(ModItems.cap_nuka)),
-		QUANTUM (new ItemStack(ModItems.cap_quantum)),
-		RAD (new ItemStack(ModItems.cap_rad)),
-		SPARKLE (new ItemStack(ModItems.cap_sparkle)),
-		KORL (new ItemStack(ModItems.cap_korl)),
-		FRITZ (new ItemStack(ModItems.cap_fritz)),
-		SUNSET (new ItemStack(ModItems.cap_sunset)),
-		STAR (new ItemStack(ModItems.cap_star));
+		NUKA,
+		QUANTUM,
+		RAD,
+		SPARKLE,
+		KORL,
+		FRITZ,
+		SUNSET,
+		STAR;
 
-		public final ItemStack drop;
-
-		public ItemStack getDrop() {
-			return drop;
+		public Item getDrop() {
+			return switch (this) {
+                 case NUKA -> ModItems.cap_nuka;
+                 case QUANTUM -> ModItems.cap_quantum;
+                 case RAD -> ModItems.cap_rad;
+                 case SPARKLE -> ModItems.cap_sparkle;
+                 case KORL -> ModItems.cap_korl;
+                 case FRITZ -> ModItems.cap_fritz;
+                 case SUNSET -> ModItems.cap_sunset;
+                 case STAR -> ModItems.cap_star;
+			};
 		}
 
 		public int getDropCount(){
 			return 128;
-		}
-
-		EnumBlockCapType(ItemStack drop) {
-			this.drop = drop;
 		}
 	}
 }

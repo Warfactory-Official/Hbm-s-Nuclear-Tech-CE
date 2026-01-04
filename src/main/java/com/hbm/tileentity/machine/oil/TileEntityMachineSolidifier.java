@@ -96,6 +96,11 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase implement
     }
 
     @Override
+    public boolean canInsertItem(int slot, ItemStack itemStack) {
+        return false;
+    }
+
+    @Override
     public boolean canExtractItem(int slot, ItemStack stack, int side) {
         return slot == 0;
     }

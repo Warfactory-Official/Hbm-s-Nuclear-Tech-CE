@@ -1,7 +1,7 @@
 {
 	"name": "Blast Furnace",
 	"icon": ["hbm:machine_difurnace_off", 1, 0],
-	"trigger": [["hbm:machine_difurnace_off"], ["hbm:machine_difurnace_extension"]],
+	"trigger": [["hbm:machine_difurnace_off"], ["hbm:machine_difurnace_ext"]],
 	"title": {
 		"en_us": "Blast Furnace"
 	},

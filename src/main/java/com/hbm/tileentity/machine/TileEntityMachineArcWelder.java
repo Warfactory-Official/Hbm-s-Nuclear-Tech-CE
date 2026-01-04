@@ -89,7 +89,7 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase
           public void setStackInSlot(int slot, @Nonnull ItemStack stack) {
             super.setStackInSlot(slot, stack);
 
-            if (stack != ItemStack.EMPTY
+            if (!stack.isEmpty()
                 && slot >= 6
                 && slot <= 7
                 && stack.getItem() instanceof ItemMachineUpgrade) {

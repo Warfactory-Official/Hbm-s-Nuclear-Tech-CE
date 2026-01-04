@@ -37,7 +37,7 @@ public class ItemKitNBT extends Item {
         if(stacks != null) {
 
             for(ItemStack item : stacks) {
-                if(item != ItemStack.EMPTY && item != null) {
+                if(item != null && !item.isEmpty()) {
                     playerIn.inventory.addItemStackToInventory(item.copy());
                 }
             }
@@ -47,7 +47,7 @@ public class ItemKitNBT extends Item {
 
         stack.shrink(1);
 
-        if(container != ItemStack.EMPTY) {
+        if(!container.isEmpty()) {
 
             if(stack.getCount() > 0) {
                 playerIn.inventory.addItemStackToInventory(container.copy());

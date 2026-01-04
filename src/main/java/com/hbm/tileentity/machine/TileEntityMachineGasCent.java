@@ -321,7 +321,7 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
 
 	public void setTankType(int in) {
 
-		if(inventory.getStackInSlot(in) != ItemStack.EMPTY && inventory.getStackInSlot(in).getItem() instanceof IItemFluidIdentifier id) {
+		if(!inventory.getStackInSlot(in).isEmpty() && inventory.getStackInSlot(in).getItem() instanceof IItemFluidIdentifier id) {
             FluidType newType = id.getType(world, pos.getX(), pos.getY(), pos.getZ(), inventory.getStackInSlot(in));
 
 			if(tank.getTankType() != newType) {

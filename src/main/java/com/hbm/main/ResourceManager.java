@@ -854,7 +854,6 @@ public class ResourceManager {
     public static final ResourceLocation heater_oven_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/heating_oven.png");
     public static final ResourceLocation ashpit_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/ashpit.png");
     public static final ResourceLocation heater_oilburner_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/oilburner.png");
-    public static final ResourceLocation heater_radiothermal_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/radiothermal.png");
     public static final ResourceLocation boiler_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/boiler.png");
     public static final ResourceLocation heater_electric_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/electric_heater.png");
     public static final ResourceLocation heater_heatex_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/heater_heatex.png");

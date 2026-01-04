@@ -19,6 +19,7 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -30,6 +31,7 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
 import java.util.List;
+import java.util.Random;
 
 public class BlockKeyhole extends Block {
     public BlockKeyhole(String s) {
@@ -46,8 +48,13 @@ public class BlockKeyhole extends Block {
     }
 
     @Override
+    public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+        return Item.getItemFromBlock(Blocks.COBBLESTONE);
+    }
+
+    @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        if(player.getHeldItem(hand) != ItemStack.EMPTY) {
+        if(!player.getHeldItem(hand).isEmpty()) {
             boolean cracked = player.getHeldItem(hand).getItem() == ModItems.key_red_cracked;
             if((player.getHeldItem(hand).getItem() == ModItems.key_red || cracked) && facing != EnumFacing.UP && facing != EnumFacing.DOWN) {
                 if(cracked) player.getHeldItem(hand).shrink(1);

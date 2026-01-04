@@ -313,6 +313,8 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 
             this.markDirty();
         }
+
+        if(world.getTotalWorldTime() % 20 == 0) PollutionHandler.incrementPollution(world, pos, PollutionHandler.PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND * 5);
         this.power -= 5;
     }
 

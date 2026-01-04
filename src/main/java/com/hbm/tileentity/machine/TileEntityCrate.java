@@ -10,6 +10,7 @@ import com.hbm.lib.InventoryHelper;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.IGUIProvider;
+import com.hbm.tileentity.IPersistentNBT;
 import com.hbm.tileentity.machine.storage.TileEntityCrateBase;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
@@ -27,8 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 // mlbv: I tried overriding markDirty to calculate the changes but somehow it always delays by one operation.
 // also, implementing ITickable is a bad idea, remove it if you can find a better way.
-// TODO: hook onto IPersistentNBT
-public abstract class TileEntityCrate extends TileEntityCrateBase implements IGUIProvider, ITickable {
+public abstract class TileEntityCrate extends TileEntityCrateBase implements IGUIProvider, ITickable, IPersistentNBT {
 
 
     private final AtomicBoolean isCheckScheduled = new AtomicBoolean(false);
@@ -36,6 +36,10 @@ public abstract class TileEntityCrate extends TileEntityCrateBase implements IGU
     protected String name;
     boolean needsUpdate = false;
     private boolean needsSync = false;
+    private boolean destroyedByCreativePlayer = false;
+
+    private record CrateDropData(NBTTagCompound persistentData, double radiation) {
+    }
 
     public TileEntityCrate(int scount, String name) {
         super(scount);
@@ -116,26 +120,37 @@ public abstract class TileEntityCrate extends TileEntityCrateBase implements IGU
     }
 
     public long getSize() {
-        NBTTagCompound nbt = new NBTTagCompound();
-        double rads = 0D;
-        for (int i = 0; i < inventory.getSlots(); i++) {
+        return Library.getCompressedNbtSize(assembleDropTag(buildDropData()));
+    }
 
+    private CrateDropData buildDropData() {
+        NBTTagCompound persistentData = new NBTTagCompound();
+        double radiation = 0D;
+        for (int i = 0; i < inventory.getSlots(); i++) {
             ItemStack stack = inventory.getStackInSlot(i);
             if (stack.isEmpty()) continue;
 
-            rads += HazardSystem.getTotalRadsFromStack(stack) * stack.getCount();
+            radiation += HazardSystem.getTotalRadsFromStack(stack) * stack.getCount();
             NBTTagCompound slot = new NBTTagCompound();
             stack.writeToNBT(slot);
-            nbt.setTag("slot" + i, slot);
-        }
-        if (rads > 0) {
-            nbt.setDouble(BlockStorageCrate.CRATE_RAD_KEY, rads);
+            persistentData.setTag("slot" + i, slot);
         }
         if (this.isLocked()) {
-            nbt.setInteger("lock", this.getPins());
-            nbt.setDouble("lockMod", this.getMod());
+            persistentData.setInteger("lock", this.getPins());
+            persistentData.setDouble("lockMod", this.getMod());
         }
-        return Library.getCompressedNbtSize(nbt);
+        return new CrateDropData(persistentData, radiation);
+    }
+
+    private static NBTTagCompound assembleDropTag(CrateDropData data) {
+        NBTTagCompound root = new NBTTagCompound();
+        if (!data.persistentData.isEmpty()) {
+            root.setTag(NBT_PERSISTENT_KEY, data.persistentData.copy());
+        }
+        if (data.radiation > 0D) {
+            root.setDouble(BlockStorageCrate.CRATE_RAD_KEY, data.radiation);
+        }
+        return root;
     }
 
     @Override
@@ -176,6 +191,50 @@ public abstract class TileEntityCrate extends TileEntityCrateBase implements IGU
         super.writeToNBT(compound);
         compound.setFloat("fill", fillPercentage);
         return compound;
+    }
+
+    @Override
+    public void writeNBT(NBTTagCompound nbt) {
+        CrateDropData data = buildDropData();
+        NBTTagCompound dropTag = assembleDropTag(data);
+        if (world != null && !world.isRemote && Library.getCompressedNbtSize(dropTag) > MachineConfig.crateByteSize) {
+            InventoryHelper.dropInventoryItems(world, pos, this);
+            return;
+        }
+        if (!data.persistentData.isEmpty()) {
+            nbt.setTag(NBT_PERSISTENT_KEY, data.persistentData);
+        }
+        if (data.radiation > 0D) {
+            nbt.setDouble(BlockStorageCrate.CRATE_RAD_KEY, data.radiation);
+        }
+    }
+
+    @Override
+    public void readNBT(NBTTagCompound nbt) {
+        NBTTagCompound data = nbt.hasKey(NBT_PERSISTENT_KEY) ? nbt.getCompoundTag(NBT_PERSISTENT_KEY) : nbt;
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            String key = "slot" + i;
+            if (data.hasKey(key)) {
+                inventory.setStackInSlot(i, new ItemStack(data.getCompoundTag(key)));
+            } else {
+                inventory.setStackInSlot(i, ItemStack.EMPTY);
+            }
+        }
+        if (data.hasKey("lock")) {
+            this.setPins(data.getInteger("lock"));
+            this.setMod(data.getDouble("lockMod"));
+            this.lock();
+        }
+    }
+
+    @Override
+    public void setDestroyedByCreativePlayer() {
+        destroyedByCreativePlayer = true;
+    }
+
+    @Override
+    public boolean isDestroyedByCreativePlayer() {
+        return destroyedByCreativePlayer;
     }
 
     @Override

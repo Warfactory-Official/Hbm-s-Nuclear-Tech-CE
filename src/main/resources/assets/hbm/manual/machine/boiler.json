@@ -1,7 +1,7 @@
 {
 	"name": "Boiler",
-	"icon": ["hbm:machine_boiler", 1, 0],
-	"trigger": [["hbm:machine_boiler"], ["hbm:machine_industrial_boiler"]],
+	"icon": ["hbm:heat_boiler", 1, 0],
+	"trigger": [["hbm:heat_boiler"], ["hbm:machine_industrial_boiler"]],
 	"title": {
 		"en_us": "Boiler",
 		"zh_cn": "锅炉"

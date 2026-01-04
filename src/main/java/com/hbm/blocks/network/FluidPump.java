@@ -29,6 +29,7 @@ import li.cil.oc.api.machine.Context;
 import li.cil.oc.api.network.SimpleComponent;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyDirection;
+import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiButton;
@@ -92,6 +93,11 @@ public class FluidPump extends BlockContainerBakeable implements INBTBlockTransf
     }
 
     @Override
+    public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
+        return BlockFaceShape.UNDEFINED;
+    }
+
+    @Override
     public EnumBlockRenderType getRenderType(IBlockState state) {
         return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
     }
@@ -120,10 +126,9 @@ public class FluidPump extends BlockContainerBakeable implements INBTBlockTransf
         }
 
         ItemStack heldStack = player.getHeldItem(hand);
-        if (!heldStack.isEmpty() && heldStack.getItem() instanceof IItemFluidIdentifier) {
+        if (!heldStack.isEmpty() && heldStack.getItem() instanceof IItemFluidIdentifier identifier) {
             TileEntity tile = world.getTileEntity(pos);
             if (tile instanceof TileEntityFluidPump pump && !world.isRemote) {
-                IItemFluidIdentifier identifier = (IItemFluidIdentifier) heldStack.getItem();
                 FluidType type = identifier.getType(world, pos.getX(), pos.getY(), pos.getZ(), heldStack);
                 pump.tank[0].setTankType(type);
                 pump.markDirty();
@@ -418,6 +423,7 @@ public class FluidPump extends BlockContainerBakeable implements INBTBlockTransf
         private GuiTextField textPlacementPriority;
         private GuiButton buttonPressure;
         private GuiButton buttonPriority;
+
         private int pressure;
         private int priority;
 
@@ -431,8 +437,7 @@ public class FluidPump extends BlockContainerBakeable implements INBTBlockTransf
         public void initGui() {
             Keyboard.enableRepeatEvents(true);
             this.buttonList.clear();
-
-            this.textPlacementPriority = new GuiTextField(0, this.fontRenderer, this.width / 2 - 150, 100, 90, 20);
+            this.textPlacementPriority = new GuiTextField(2, this.fontRenderer, this.width / 2 - 150, 100, 90, 20);
             this.textPlacementPriority.setText(String.valueOf(this.pump.bufferSize));
             this.textPlacementPriority.setMaxStringLength(5);
 
@@ -466,6 +471,22 @@ public class FluidPump extends BlockContainerBakeable implements INBTBlockTransf
         }
 
         @Override
+        protected void actionPerformed(GuiButton button) {
+            if (button.id == 0) {
+                this.pressure = (this.pressure + 1) % 6;
+                button.displayString = this.pressure + " PU";
+                return;
+            }
+            if (button.id == 1) {
+                this.priority++;
+                if (this.priority >= IEnergyReceiverMK2.ConnectionPriority.VALUES.length) {
+                    this.priority = 0;
+                }
+                button.displayString = EnumUtil.grabEnumSafely(IEnergyReceiverMK2.ConnectionPriority.class, this.priority).name();
+            }
+        }
+
+        @Override
         protected void keyTyped(char typedChar, int keyCode) throws IOException {
             if (this.textPlacementPriority.textboxKeyTyped(typedChar, keyCode)) {
                 return;
@@ -473,6 +494,7 @@ public class FluidPump extends BlockContainerBakeable implements INBTBlockTransf
 
             if (keyCode == 1 || keyCode == this.mc.gameSettings.keyBindInventory.getKeyCode()) {
                 this.mc.player.closeScreen();
+                return;
             }
 
             super.keyTyped(typedChar, keyCode);
@@ -482,24 +504,6 @@ public class FluidPump extends BlockContainerBakeable implements INBTBlockTransf
         protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
             super.mouseClicked(mouseX, mouseY, mouseButton);
             this.textPlacementPriority.mouseClicked(mouseX, mouseY, mouseButton);
-
-            if (this.buttonPressure.mousePressed(this.mc, mouseX, mouseY)) {
-                this.pressure++;
-                if (this.pressure > 5) {
-                    this.pressure = 0;
-                }
-                this.buttonPressure.displayString = this.pressure + " PU";
-                this.buttonPressure.playPressSound(this.mc.getSoundHandler());
-            }
-
-            if (this.buttonPriority.mousePressed(this.mc, mouseX, mouseY)) {
-                this.priority++;
-                if (this.priority >= IEnergyReceiverMK2.ConnectionPriority.VALUES.length) {
-                    this.priority = 0;
-                }
-                this.buttonPriority.displayString = EnumUtil.grabEnumSafely(IEnergyReceiverMK2.ConnectionPriority.class, this.priority).name();
-                this.buttonPriority.playPressSound(this.mc.getSoundHandler());
-            }
         }
 
         @Override
@@ -511,10 +515,7 @@ public class FluidPump extends BlockContainerBakeable implements INBTBlockTransf
             this.textPlacementPriority.drawTextBox();
 
             this.fontRenderer.drawString("Pressure:", this.width / 2 - 50, 80, 0xA0A0A0);
-            this.buttonPressure.drawButton(this.mc, mouseX, mouseY, partialTicks);
-
             this.fontRenderer.drawString("Priority:", this.width / 2 + 50, 80, 0xA0A0A0);
-            this.buttonPriority.drawButton(this.mc, mouseX, mouseY, partialTicks);
 
             super.drawScreen(mouseX, mouseY, partialTicks);
         }

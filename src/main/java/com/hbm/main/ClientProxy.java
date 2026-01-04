@@ -773,7 +773,7 @@ public class ClientProxy extends ServerProxy {
                 }
             }
             case "debugdrone" -> {
-                Item held = player.getHeldItem(EnumHand.MAIN_HAND) == ItemStack.EMPTY ? null : player.getHeldItem(EnumHand.MAIN_HAND).getItem();
+                Item held = player.getHeldItem(EnumHand.MAIN_HAND).isEmpty() ? null : player.getHeldItem(EnumHand.MAIN_HAND).getItem();
 
                 if (held == ModItems.drone ||
                         held == Item.getItemFromBlock(ModBlocks.drone_crate_provider) ||

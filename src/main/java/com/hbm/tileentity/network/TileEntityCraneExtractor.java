@@ -110,7 +110,7 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGU
                 tickCounter = 0;
                 int amount = 1;
 
-                if(inventory.getStackInSlot(18) != ItemStack.EMPTY){
+                if(!inventory.getStackInSlot(18).isEmpty()){
                     if(inventory.getStackInSlot(18).getItem() == ModItems.upgrade_stack_1) {
                         amount = 4;
                     } else if(inventory.getStackInSlot(18).getItem() == ModItems.upgrade_stack_2){
@@ -146,7 +146,7 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGU
                             int index = access == null ? i : access[i];
                             ItemStack stack = inv.getStackInSlot(index);
 
-                            if(stack != ItemStack.EMPTY && (sided == null || canExtractItemCE(index, stack, EnumFacing.byIndex(inputSide.getOpposite().ordinal()), sided))){
+                            if(!stack.isEmpty() && (sided == null || canExtractItemCE(index, stack, EnumFacing.byIndex(inputSide.getOpposite().ordinal()), sided))){
 
                                 boolean match = this.matchesFilter(stack);
 
@@ -170,7 +170,7 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGU
                     for(int index : allowed_slots) {
                         ItemStack stack = inventory.getStackInSlot(index);
                     try {
-                        if (stack != ItemStack.EMPTY && (sided == null || canExtractItemCE(index, stack, EnumFacing.byIndex(inputSide.getOpposite().ordinal()), sided))) {
+                        if (!stack.isEmpty() && (sided == null || canExtractItemCE(index, stack, EnumFacing.byIndex(inputSide.getOpposite().ordinal()), sided))) {
 
                             boolean match = this.matchesFilter(stack);
 
@@ -257,7 +257,7 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGU
         for(int i = 0; i < 9; i++) {
             ItemStack filter = inventory.getStackInSlot(i);
 
-            if(filter != ItemStack.EMPTY && this.matcher.isValidForFilter(filter, i, stack)) {
+            if(!filter.isEmpty() && this.matcher.isValidForFilter(filter, i, stack)) {
                 return true;
             }
         }

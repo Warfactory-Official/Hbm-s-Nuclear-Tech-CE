@@ -53,7 +53,6 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 
 	public long power;
 	public static final long maxPower = 1_000_000;
-	public FluidTank tankOld;
 	public FluidTankNTM tank;
 	public FluidTankNTM blood;
 
@@ -75,15 +74,13 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 
 	public AudioWrapper audio;
 
-	private Fluid oldFluid =Fluids.NONE.getFF();
-
 	public TileEntityMachineTurbofan() {
 		super(5, 150, true, true);
-		tankOld = new FluidTank(64000);
 		tank = new FluidTankNTM(Fluids.KEROSENE, 24000);
 		blood = new FluidTankNTM(Fluids.BLOOD, 24000);
 		upgradeManager = new UpgradeManagerNT(this);
 	}
+
 	@Override
 	public String getDefaultName() {
 		return "container.machineTurbofan";

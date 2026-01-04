@@ -41,6 +41,7 @@ import net.minecraftforge.common.property.ExtendedBlockState;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -136,47 +137,46 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
     }
 
     @Override
-    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand,
+                                    EnumFacing facing, float hitX, float hitY, float hitZ) {
+
         ItemStack stack = player.getHeldItem(hand);
-
-        if (!stack.isEmpty() && stack.getItem() instanceof ItemBlock ib) {
+        if(!stack.isEmpty() && stack.getItem() instanceof ItemBlock ib) {
             Block disguise = ib.getBlock();
-
-            if (disguise == this) {
-                return false;
-            }
-
-            IBlockState disguiseState = disguise.getStateFromMeta(stack.getMetadata());
-            if (!disguiseState.isFullCube() || !disguiseState.isOpaqueCube()) {
-                return false;
-            }
-
-            TileEntity tile = world.getTileEntity(pos);
-            if (tile instanceof TileEntityPneumoTubePaintable tube && tube.block == null) {
-                if (!world.isRemote) {
-                    tube.block = disguise;
-                    tube.meta = stack.getMetadata() & 15;
-                    tube.markDirty();
-                    world.markChunkDirty(pos, tube);
-                    world.notifyBlockUpdate(pos, state, state, 3);
+            if(disguise != this) {
+                IBlockState disguiseState = disguise.getStateFromMeta(stack.getMetadata());
+                if(disguiseState.isFullCube() && disguiseState.isOpaqueCube()) {
+                    TileEntity tile = world.getTileEntity(pos);
+                    if(tile instanceof TileEntityPneumoTubePaintable tube && tube.block == null) {
+                        if(!world.isRemote) {
+                            tube.block = disguise;
+                            tube.meta = stack.getMetadata() & 15;
+                            tube.markDirty();
+                            world.markChunkDirty(pos, tube);
+                            world.notifyBlockUpdate(pos, state, state, 3);
+                        }
+                        return true;
+                    }
                 }
-                return true;
             }
-            return false;
-        } else if (!stack.isEmpty()) {
+        } else if(!stack.isEmpty()) {
             ToolType type = ToolType.getType(stack);
-            if (type == ToolType.SCREWDRIVER || type == ToolType.HAND_DRILL) {
-                return false;
+            if(type == ToolType.SCREWDRIVER || type == ToolType.HAND_DRILL) return false;
+        }
+
+        if(!player.isSneaking()) {
+            TileEntity tile = world.getTileEntity(pos);
+            if(tile instanceof TileEntityPneumoTube tube) {
+                if(tube.isCompressor()) {
+                    if (!world.isRemote) FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
+                    return true;
+                } else if(tube.isEndpoint()) {
+                    if (!world.isRemote) FMLNetworkHandler.openGui(player, MainRegistry.instance, 1, world, pos.getX(), pos.getY(), pos.getZ());
+                    return true;
+                }
             }
         }
 
-        if (!player.isSneaking()) {
-            TileEntity tile = world.getTileEntity(pos);
-            if (tile instanceof TileEntityPneumoTube tube && tube.isCompressor()) {
-                player.openGui(MainRegistry.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
-                return true;
-            }
-        }
         return false;
     }
 
@@ -231,18 +231,15 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
 
     @Override
     public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos) {
-        if (state instanceof IExtendedBlockState ext) {
-            TileEntity tile = world.getTileEntity(pos);
-            if (tile instanceof TileEntityPneumoTubePaintable tube) {
-                IBlockState disguiseState = tube.block != null ? tube.block.getStateFromMeta(tube.meta) : null;
-                ext = ext.withProperty(DISGUISED_STATE, disguiseState);
-                ext = ext.withProperty(INSERTION_DIR, tube.insertionDir.toEnumFacing());
-                ext = ext.withProperty(EJECTION_DIR, tube.ejectionDir.toEnumFacing());
-                return ext;
-            }
-            return ext.withProperty(DISGUISED_STATE, null).withProperty(INSERTION_DIR, null).withProperty(EJECTION_DIR, null);
+        if(!(state instanceof IExtendedBlockState ext)) return state;
+        TileEntity tile = world.getTileEntity(pos);
+        if(tile instanceof TileEntityPneumoTubePaintable tube) {
+            IBlockState disguiseState = tube.block != null ? tube.block.getStateFromMeta(tube.meta) : null;
+            EnumFacing insertion = tube.insertionDir != null ? tube.insertionDir.toEnumFacing() : null;
+            EnumFacing ejection = tube.ejectionDir != null ? tube.ejectionDir.toEnumFacing() : null;
+            return ext.withProperty(DISGUISED_STATE, disguiseState).withProperty(INSERTION_DIR, insertion).withProperty(EJECTION_DIR, ejection);
         }
-        return state;
+        return ext.withProperty(DISGUISED_STATE, null).withProperty(INSERTION_DIR, null).withProperty(EJECTION_DIR, null);
     }
 
     @Override
@@ -258,10 +255,11 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
     @Override
     @SideOnly(Side.CLIENT)
     public void bakeModel(ModelBakeEvent event) {
-        TextureAtlasSprite base = baseSprite != null ? baseSprite : Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(new ResourceLocation(Tags.MODID, "blocks/pneumatic_tube_paintable").toString());
-        TextureAtlasSprite overlay = overlaySprite != null ? overlaySprite : Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(new ResourceLocation(Tags.MODID, "blocks/pneumatic_tube_paintable_overlay").toString());
-        TextureAtlasSprite overlayIn = overlayInSprite != null ? overlayInSprite : Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(new ResourceLocation(Tags.MODID, "blocks/pneumatic_tube_paintable_overlay_in").toString());
-        TextureAtlasSprite overlayOut = overlayOutSprite != null ? overlayOutSprite : Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(new ResourceLocation(Tags.MODID, "blocks/pneumatic_tube_paintable_overlay_out").toString());
+        TextureMap textureMapBlocks = Minecraft.getMinecraft().getTextureMapBlocks();
+        TextureAtlasSprite base = baseSprite != null ? baseSprite : textureMapBlocks.getAtlasSprite(new ResourceLocation(Tags.MODID, "blocks/pneumatic_tube_paintable").toString());
+        TextureAtlasSprite overlay = overlaySprite != null ? overlaySprite : textureMapBlocks.getAtlasSprite(new ResourceLocation(Tags.MODID, "blocks/pneumatic_tube_paintable_overlay").toString());
+        TextureAtlasSprite overlayIn = overlayInSprite != null ? overlayInSprite : textureMapBlocks.getAtlasSprite(new ResourceLocation(Tags.MODID, "blocks/pneumatic_tube_paintable_overlay_in").toString());
+        TextureAtlasSprite overlayOut = overlayOutSprite != null ? overlayOutSprite : textureMapBlocks.getAtlasSprite(new ResourceLocation(Tags.MODID, "blocks/pneumatic_tube_paintable_overlay_out").toString());
 
         PneumoTubePaintableModel model = new PneumoTubePaintableModel(base, overlay, overlayIn, overlayOut);
         ModelResourceLocation inventory = new ModelResourceLocation(Objects.requireNonNull(getRegistryName()), "inventory");
@@ -319,8 +317,8 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
         public SPacketUpdateTileEntity getUpdatePacket() {
             NBTTagCompound nbt = new NBTTagCompound();
             this.writeToNBT(nbt);
-            nbt.setInteger("insertionDir", insertionDir != null ? insertionDir.ordinal() : -1);
-            nbt.setInteger("ejectionDir", ejectionDir != null ? ejectionDir.ordinal() : -1);
+            nbt.setInteger("insertionDir", this.insertionDir != ForgeDirection.UNKNOWN ? this.insertionDir.ordinal() : -1);
+            nbt.setInteger("ejectionDir", this.ejectionDir != ForgeDirection.UNKNOWN ? this.ejectionDir.ordinal() : -1);
             return new SPacketUpdateTileEntity(this.pos, 0, nbt);
         }
 
@@ -330,8 +328,8 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
             this.readFromNBT(nbt);
             int insertion = nbt.getInteger("insertionDir");
             int ejection = nbt.getInteger("ejectionDir");
-            this.insertionDir = insertion >= 0 ? ForgeDirection.getOrientation(insertion) : null;
-            this.ejectionDir = ejection >= 0 ? ForgeDirection.getOrientation(ejection) : null;
+            this.insertionDir = insertion >= 0 ? ForgeDirection.getOrientation(insertion) : ForgeDirection.UNKNOWN;
+            this.ejectionDir = ejection >= 0 ? ForgeDirection.getOrientation(ejection) : ForgeDirection.UNKNOWN;
         }
 
         @Override
@@ -389,49 +387,47 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
             this.baseFaces = buildFaceMap(base, -1, false);
             this.baseGeneral = flatten(this.baseFaces);
             this.overlayGeneral = buildOverlayMap(overlay, -1);
-            this.overlayInsertion = buildOverlayMap(overlayOut, -1);
-            this.overlayEjection = buildOverlayMap(overlayIn, -1);
+            this.overlayInsertion = buildOverlayMap(overlayIn, -1);
+            this.overlayEjection = buildOverlayMap(overlayOut, -1);
         }
 
         @Override
         public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
-            List<BakedQuad> quads = new ArrayList<>();
+            if (state == null) {
+                if (side != null) return ImmutableList.of();
+                ImmutableList.Builder<BakedQuad> b = ImmutableList.builder();
+                for (EnumFacing f : EnumFacing.VALUES) b.addAll(baseFaces.get(f));
+                for (EnumFacing f : EnumFacing.VALUES) b.add(overlayGeneral.get(f));
+                return b.build();
+            }
+            if (side == null) return ImmutableList.of();
             BlockRenderLayer layer = MinecraftForgeClient.getRenderLayer();
-            boolean renderTube = layer == null || layer == BlockRenderLayer.CUTOUT_MIPPED;
-
+            boolean tubeLayer = (layer == null || layer == BlockRenderLayer.CUTOUT_MIPPED);
             IBlockState disguiseState = null;
             EnumFacing insertion = null;
             EnumFacing ejection = null;
 
-            if (state instanceof IExtendedBlockState) {
-                IExtendedBlockState ext = (IExtendedBlockState) state;
+            if (state instanceof IExtendedBlockState ext) {
                 disguiseState = ext.getValue(DISGUISED_STATE);
                 insertion = ext.getValue(INSERTION_DIR);
                 ejection = ext.getValue(EJECTION_DIR);
             }
-
+            List<BakedQuad> base = ImmutableList.of();
             if (disguiseState != null) {
-                IBakedModel disguiseModel = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(disguiseState);
-                quads.addAll(disguiseModel.getQuads(disguiseState, side, rand));
-            } else if (renderTube) {
-                if (side == null) {
-                    quads.addAll(baseGeneral);
-                } else {
-                    quads.addAll(baseFaces.get(side));
+                if (layer == null || disguiseState.getBlock().canRenderInLayer(disguiseState, layer)) {
+                    IBakedModel disguiseModel = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(disguiseState);
+                    base = disguiseModel.getQuads(disguiseState, side, rand);
                 }
+            } else if (tubeLayer) {
+                base = baseFaces.get(side);
             }
-
-            if (renderTube) {
-                if (side == null) {
-                    for (EnumFacing face : EnumFacing.VALUES) {
-                        quads.add(selectOverlay(face, insertion, ejection));
-                    }
-                } else {
-                    quads.add(selectOverlay(side, insertion, ejection));
-                }
-            }
-
-            return quads;
+            if (!tubeLayer) return base;
+            BakedQuad overlayQuad = selectOverlay(side, insertion, ejection);
+            if (base.isEmpty()) return ImmutableList.of(overlayQuad);
+            ArrayList<BakedQuad> out = new ArrayList<>(base.size() + 1);
+            out.addAll(base);
+            out.add(overlayQuad);
+            return out;
         }
 
         private BakedQuad selectOverlay(EnumFacing face, EnumFacing insertion, EnumFacing ejection) {

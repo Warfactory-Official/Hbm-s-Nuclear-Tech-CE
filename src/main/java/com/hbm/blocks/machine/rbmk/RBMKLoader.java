@@ -22,9 +22,9 @@ public class RBMKLoader extends BlockBase implements IFluidConnectorBlock, ITool
         super(material, s);
     }
 
-    @Override
+    @Override // this method is purely visual, actual logic at TileEntityRBMKBoiler
     public boolean canConnect(FluidType type, IBlockAccess world, int x, int y, int z, ForgeDirection dir) {
-        if (dir == ForgeDirection.DOWN) return type.hasTrait(FT_Heatable.class); //Norwood: For some odd fucking reason the rotations are flipped on this version...? I don'
+        if (dir == ForgeDirection.UP) return type.hasTrait(FT_Heatable.class);
         return type.hasTrait(FT_Coolable.class);
     }
 

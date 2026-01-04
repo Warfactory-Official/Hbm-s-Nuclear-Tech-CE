@@ -38,6 +38,8 @@ public class BlockGenericSlab extends BlockSlab implements ICustomBlockItem {
         this.setRegistryName(s);
         this.isDouble = true;
         this.singleBlock = (BlockSlab) singleBlock;
+        this.fullBlock = true;
+        this.useNeighborBrightness = false;
         this.setDefaultState(this.blockState.getBaseState().withProperty(VARIANT, Variant.DEFAULT));
         ModBlocks.ALL_BLOCKS.add(this);
     }
@@ -47,7 +49,9 @@ public class BlockGenericSlab extends BlockSlab implements ICustomBlockItem {
         this.setTranslationKey(s);
         this.setRegistryName(s);
         this.isDouble = false;
-        singleBlock = null;
+        this.singleBlock = null;
+        this.fullBlock = false;
+        this.useNeighborBrightness = true;
         this.setDefaultState(this.blockState.getBaseState().withProperty(VARIANT, Variant.DEFAULT).withProperty(HALF, EnumBlockHalf.BOTTOM));
         ModBlocks.ALL_BLOCKS.add(this);
     }

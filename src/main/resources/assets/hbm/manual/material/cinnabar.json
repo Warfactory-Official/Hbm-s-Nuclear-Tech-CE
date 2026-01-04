@@ -1,7 +1,7 @@
 {
 	"name": "Cinnabar",
-	"icon": ["hbm:cinnebar", 1, 0],
-	"trigger": [["hbm:cinnebar"]],
+	"icon": ["hbm:cinnabar", 1, 0],
+	"trigger": [["hbm:cinnabar"]],
 	"title": {
 		"en_us": "Cinnabar",
 		"uk_UA": "Кіновар",

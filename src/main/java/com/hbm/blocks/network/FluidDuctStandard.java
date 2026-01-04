@@ -127,33 +127,7 @@ public class FluidDuctStandard extends FluidDuctBase implements IDynamicModels, 
 	 * Checks if it can connect to a fluid-capable neighbor.
 	 */
 	private boolean canConnectTo(IBlockAccess world, int x, int y, int z, ForgeDirection dir, FluidType type) {
-		BlockPos pos = new BlockPos(x, y, z);
-		BlockPos neighborPos = pos.offset(Objects.requireNonNull(dir.toEnumFacing()));
-		if (Library.canConnectFluid(world, x + dir.offsetX, y + dir.offsetY, z + dir.offsetZ, dir, type)) {
-			return true;
-		}
-
-		TileEntity neighbor = world.getTileEntity(neighborPos);
-		if (neighbor != null && !neighbor.isInvalid()) {
-			EnumFacing facing = dir.getOpposite().toEnumFacing();
-			if (neighbor.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, facing)) {
-				IFluidHandler handler = neighbor.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, facing);
-				if (handler != null) {
-					IFluidTankProperties[] props = handler.getTankProperties();
-					if (props != null && props.length > 0) {
-						for (IFluidTankProperties p : props) {
-							if (p != null && (p.canFill() || p.canDrain())) {
-								return true;
-							}
-						}
-						return false;
-					}
-					return true;
-				}
-			}
-		}
-
-		return false;
+		return Library.canConnectFluid(world, x + dir.offsetX, y + dir.offsetY, z + dir.offsetZ, dir, type);
 	}
 
 	private boolean canConnectAt(IBlockAccess world, BlockPos pos, EnumFacing dir, FluidType type) {

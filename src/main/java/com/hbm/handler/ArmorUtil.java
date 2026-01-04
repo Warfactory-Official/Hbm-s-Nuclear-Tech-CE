@@ -140,7 +140,7 @@ public class ArmorUtil {
 
 	public static void damageSuit(EntityPlayer player, int slot, int amount) {
 	
-		if(player.inventory.armorInventory.get(slot) == ItemStack.EMPTY)
+		if(player.inventory.armorInventory.get(slot).isEmpty())
 			return;
 	
 		int j = player.inventory.armorInventory.get(slot).getItemDamage();

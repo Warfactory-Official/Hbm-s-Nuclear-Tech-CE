@@ -83,7 +83,7 @@ public class ArmorEnvsuit extends ArmorFSBPowered {
 				boolean canRemoveNightVision = true;
 				ItemStack helmet = player.getItemStackFromSlot(EntityEquipmentSlot.HEAD);
 				ItemStack helmetMod = ArmorModHandler.pryMod(helmet, ArmorModHandler.helmet_only); // Get the modification!
-				if (helmetMod != ItemStack.EMPTY && helmetMod.getItem() instanceof ItemModNightVision) {
+				if (!helmetMod.isEmpty() && helmetMod.getItem() instanceof ItemModNightVision) {
 					canRemoveNightVision = false;
 				}
 

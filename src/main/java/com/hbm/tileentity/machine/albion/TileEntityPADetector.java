@@ -18,6 +18,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -77,6 +78,11 @@ public class TileEntityPADetector extends TileEntityCooledBase implements IGUIPr
     @Override
     public boolean canExtractItem(int slot, ItemStack stack, int amount) {
         return slot == 3 || slot == 4;
+    }
+
+    @Override
+    public int[] getAccessibleSlotsFromSide(EnumFacing side) {
+        return new int[] { 1, 2, 3, 4 };
     }
 
     @Override

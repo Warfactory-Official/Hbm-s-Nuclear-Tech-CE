@@ -143,9 +143,6 @@ public class ItemMachineUpgrade extends ItemBakedBase {
 			list.add(" "+I18nUtil.resolveKey("desc.upgrade15"));
 			list.add(" "+I18nUtil.resolveKey("desc.upgrade16"));
 			list.add(" "+I18nUtil.resolveKey("desc.upgrade17"));
-			list.add("");
-			list.add(TextFormatting.GOLD+I18nUtil.resolveKey("desc.upgrade11"));
-			list.add(" "+I18nUtil.resolveKey("desc.upgrade18"));
 		}
 		
 		if(this == ModItems.upgrade_nullifier)

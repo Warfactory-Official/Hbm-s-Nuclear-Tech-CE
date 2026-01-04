@@ -92,7 +92,7 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
 			@Override
 			public void setStackInSlot(int slot, @NotNull ItemStack stack) {
 				super.setStackInSlot(slot, stack);
-				if(stack != ItemStack.EMPTY && slot >= 1 && slot <= 8 && stack.getItem() instanceof ItemMachineUpgrade)
+				if(!stack.isEmpty() && slot >= 1 && slot <= 8 && stack.getItem() instanceof ItemMachineUpgrade)
 					world.playSound(null, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5, HBMSoundHandler.upgradePlug, SoundCategory.BLOCKS, 1.0F, 1.0F);
 			}
 		};
@@ -541,12 +541,14 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
 		tankNew.readFromNBT(compound, "oil");
 		if(compound.hasKey("tank")) compound.removeTag("tank");
 		isOn = compound.getBoolean("isOn");
+        power = compound.getLong("power");
 	}
 
 	@Override
 	public @NotNull NBTTagCompound writeToNBT(NBTTagCompound compound) {
 		tankNew.writeToNBT(compound, "oil");
 		compound.setBoolean("isOn", isOn);
+		compound.setLong("power", power);
 		return super.writeToNBT(compound);
 	}
 

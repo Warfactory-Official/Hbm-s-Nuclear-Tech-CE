@@ -16,6 +16,7 @@ import java.io.IOException;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -143,6 +144,11 @@ public class TileEntityAshpit extends TileEntityMachineBase implements ITickable
         super.deserialize(buf);
         this.playersUsing = buf.readInt();
         this.isFull = buf.readBoolean();
+    }
+
+    @Override
+    public boolean canInsertItem(int slot, ItemStack itemStack) {
+        return false;
     }
 
     @Override

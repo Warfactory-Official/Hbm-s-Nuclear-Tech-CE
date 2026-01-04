@@ -171,7 +171,7 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
     public ItemStack getShellLoaded() {
 
         for(int i = 1; i < 10; i++) {
-            if(inventory.getStackInSlot(i) != ItemStack.EMPTY) {
+            if(!inventory.getStackInSlot(i).isEmpty()) {
                 if(inventory.getStackInSlot(i).getItem() == ModItems.ammo_arty) {
                     return inventory.getStackInSlot(i);
                 }

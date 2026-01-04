@@ -55,7 +55,7 @@ public class GUIAutocrafter extends GuiInfoContainer {
 
             Slot slot = (Slot) this.inventorySlots.inventorySlots.get(9);
 
-            if(this.isMouseOverSlot(slot, x, y) && diFurnace.inventory.getStackInSlot(9) != ItemStack.EMPTY) {
+            if(this.isMouseOverSlot(slot, x, y) && !diFurnace.inventory.getStackInSlot(9).isEmpty()) {
                 this.drawHoveringText(Arrays.asList(new String[] { ChatFormatting.RED + I18nUtil.resolveKey("desc.rcchange"), ChatFormatting.YELLOW + "" + (diFurnace.recipeIndex + 1) + " / " + diFurnace.recipeCount }), x, y - 30);
             }
         }

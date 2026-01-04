@@ -191,6 +191,9 @@ public class TileEntityPASource extends TileEntityCooledBase implements IGUIProv
         return slot == 3 || slot == 4;
     }
 
+    @Override
+    public int[] getAccessibleSlotsFromSide(EnumFacing side) { return new int[] { 3, 4 }; }
+
     //reusing the same fucking instance because doing anything else would be retarded
     public static final BlockPos.MutableBlockPos cheapAss = new BlockPos.MutableBlockPos();
     public static final int[] slotsRed = new int[]{1, 3, 4};

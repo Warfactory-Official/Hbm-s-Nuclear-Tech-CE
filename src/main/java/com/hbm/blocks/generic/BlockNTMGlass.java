@@ -8,10 +8,14 @@ import net.minecraft.block.BlockBreakable;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
 import java.util.Random;
@@ -19,8 +23,8 @@ import java.util.Random;
 public class BlockNTMGlass extends BlockBreakable implements IRadResistantBlock {
 
 	BlockRenderLayer layer;
-	boolean doesDrop = false;
-	boolean isRadResistant = false;
+	private final boolean doesDrop;
+	private final boolean isRadResistant;
 
 	public BlockNTMGlass(Material materialIn, BlockRenderLayer layer, String s) {
 		this(materialIn, layer, false, s);
@@ -37,7 +41,8 @@ public class BlockNTMGlass extends BlockBreakable implements IRadResistantBlock 
 		this.layer = layer;
 		this.doesDrop = doesDrop;
 		this.isRadResistant = isRadResistant;
-
+        lightOpacity = 0;
+        translucent = true;
 		ModBlocks.ALL_BLOCKS.add(this);
 	}
 
@@ -53,6 +58,16 @@ public class BlockNTMGlass extends BlockBreakable implements IRadResistantBlock 
 		}
 		super.onBlockAdded(worldIn, pos, state);
 	}
+
+    @Override
+    public boolean isBlockNormalCube(IBlockState state) {
+        return false;
+    }
+
+    @Override
+    public boolean causesSuffocation(IBlockState state) {
+        return false;
+    }
 
 	@Override
 	public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
@@ -73,9 +88,9 @@ public class BlockNTMGlass extends BlockBreakable implements IRadResistantBlock 
 	}
 
 	@Override
-	protected boolean canSilkHarvest() {
-		return false;
-	}
+    public boolean canSilkHarvest(World world, BlockPos pos, IBlockState state, EntityPlayer player) {
+        return true;
+    }
 
 	@Override
 	public boolean isRadResistant(World worldIn, BlockPos blockPos){

@@ -69,7 +69,7 @@ public class LiquefactionRecipes extends SerializableRecipe {
 
     public static FluidStack getOutput(ItemStack stack) {
 
-        if(stack == ItemStack.EMPTY || stack.getItem() == null)
+        if(stack.isEmpty() || stack.getItem() == null)
             return null;
 
         RecipesCommon.ComparableStack comp = new RecipesCommon.ComparableStack(stack.getItem(), 1, stack.getItemDamage());

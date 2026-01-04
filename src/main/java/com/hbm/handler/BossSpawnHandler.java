@@ -12,6 +12,7 @@ import com.hbm.items.ModItems;
 import com.hbm.main.MainRegistry;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.util.ContaminationUtil;
+import com.hbm.util.MutableVec3d;
 import com.hbm.util.Vec3NT;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
@@ -218,16 +219,16 @@ public class BossSpawnHandler {
 		EntityMeteor meteor = new EntityMeteor(player.world);
 		meteor.setPositionAndRotation(player.posX + meteorRand.nextInt(201) - 100, 384, player.posZ + meteorRand.nextInt(201) - 100, 0, 0);
 
-		Vec3NT vec;
+        MutableVec3d vec;
 		if(repell) {
-			vec = new Vec3NT(meteor.posX - player.posX, 0, meteor.posZ - player.posZ).normalizeSelf();
+			vec = new MutableVec3d(meteor.posX - player.posX, 0, meteor.posZ - player.posZ).normalizeSelf();
 			double vel = meteorRand.nextDouble();
 			vec.setX(vec.x * vel);
 			vec.setZ(vec.z * vel);
 			meteor.safe = true;
 		} else {
-			vec = new Vec3NT(meteorRand.nextDouble() - 0.5D, 0, 0);
-			vec.rotateAroundYRad((float) (Math.PI * meteorRand.nextDouble()));
+			vec = new MutableVec3d(meteorRand.nextDouble() - 0.5D, 0, 0);
+			vec.rotateYawSelf((float) (Math.PI * meteorRand.nextDouble()));
 		}
 
 		meteor.motionX = vec.x;

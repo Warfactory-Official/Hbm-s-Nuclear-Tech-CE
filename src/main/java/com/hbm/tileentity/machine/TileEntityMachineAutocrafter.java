@@ -92,7 +92,7 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase implemen
 
         ItemStack stack = inventory.getStackInSlot(i);
 
-        if(stack == ItemStack.EMPTY) {
+        if(stack.isEmpty()) {
             modes[i] = null;
             return;
         }
@@ -167,11 +167,11 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase implemen
                 if(recipe.matches(this.getRecipeGrid(), this.world)) {
                     ItemStack stack = recipe.getCraftingResult(this.getRecipeGrid());
 
-                    if(stack != ItemStack.EMPTY) {
+                    if(!stack.isEmpty()) {
 
                         boolean didCraft = false;
 
-                        if(this.inventory.getStackInSlot(19) == ItemStack.EMPTY) {
+                        if(this.inventory.getStackInSlot(19).isEmpty()) {
                             inventory.setStackInSlot(19, stack.copy());
                             didCraft = true;
                         } else if(this.inventory.getStackInSlot(19).isItemEqual(stack) && ItemStack.areItemStackTagsEqual(stack, this.inventory.getStackInSlot(19)) && this.inventory.getStackInSlot(19).getCount() + stack.getCount() <= this.inventory.getStackInSlot(19).getMaxStackSize()) {
@@ -184,10 +184,10 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase implemen
 
                                 ItemStack ingredient = this.inventory.getStackInSlot(i);
 
-                                if(ingredient != ItemStack.EMPTY) {
+                                if(!ingredient.isEmpty()) {
                                     this.inventory.getStackInSlot(i).shrink(1);
 
-                                    if(this.inventory.getStackInSlot(i) == ItemStack.EMPTY && ingredient.getItem().hasContainerItem(ingredient)) {
+                                    if(this.inventory.getStackInSlot(i).isEmpty() && ingredient.getItem().hasContainerItem(ingredient)) {
                                         ItemStack container = ingredient.getItem().getContainerItem(ingredient);
 
                                         if(container != null && container.isItemStackDamageable() && container.getItemDamage() > container.getMaxDamage()) {
@@ -305,7 +305,7 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase implemen
             return false;
 
         //is the filter at this space null? no input.
-        if(this.inventory.getStackInSlot(slot - 10) == ItemStack.EMPTY)
+        if(this.inventory.getStackInSlot(slot - 10).isEmpty())
             return false;
 
         //let's find all slots that this item could potentially go in
@@ -314,13 +314,13 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase implemen
             ItemStack filter = this.inventory.getStackInSlot(i);
             String mode = modes[i];
 
-            if(filter == ItemStack.EMPTY || mode == null || mode.isEmpty()) continue;
+            if(filter.isEmpty() || mode == null || mode.isEmpty()) continue;
 
             if(isValidForFilter(filter, mode, stack)) {
                 validSlots.add(i + 10);
 
                 //if the current slot is valid and has no item in it, shortcut to true [*]
-                if(i + 10 == slot && this.inventory.getStackInSlot(slot) == ItemStack.EMPTY) {
+                if(i + 10 == slot && this.inventory.getStackInSlot(slot).isEmpty()) {
                     return true;
                 }
             }
@@ -338,7 +338,7 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase implemen
         for(Integer i : validSlots) {
             ItemStack valid = this.inventory.getStackInSlot(i);
 
-            if(valid == ItemStack.EMPTY) return false; //null? since slots[slot] is not null by now, this other slot needs the item more
+            if(valid.isEmpty()) return false; //null? since slots[slot] is not null by now, this other slot needs the item more
             if(!(valid.isItemEqual(stack) && ItemStack.areItemStackTagsEqual(valid, stack))) continue; //different item anyway? out with it
 
             //if there is another slot that actually does need the same item more, cancel
