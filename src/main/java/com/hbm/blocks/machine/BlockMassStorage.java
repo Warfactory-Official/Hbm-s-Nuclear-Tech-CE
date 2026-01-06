@@ -191,7 +191,7 @@ public class BlockMassStorage extends BlockContainer implements ILookOverlay, IT
 
 		List<String> text = new ArrayList();
 		String title = "Empty";
-		boolean full = !storage.type.isEmpty() && storage.type != null && storage.type.getItem() != Items.AIR;
+		boolean full =  storage.type != null && !storage.type.isEmpty() && storage.type.getItem() != Items.AIR;
 
 		if (full) {
 
