@@ -185,7 +185,7 @@ public class ConsumableRecipes {
 
         //Special Mods
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.horseshoe_magnet, 1),"L L", "I I", "ILI", 'L', ModItems.lodestone, 'I', IRON.ingot() );
-        CraftingManager.addRecipeAuto(new ItemStack(ModItems.industrial_magnet, 1),"SMS", " B ", "SMS", 'S', STEEL.ingot(), 'M', ModItems.horseshoe_magnet, 'B', new ItemStack(ModBlocks.fusion_conductor, 1, 0) );
+        CraftingManager.addRecipeAuto(new ItemStack(ModItems.industrial_magnet, 1),"SMS", " B ", "SMS", 'S', STEEL.ingot(), 'M', ModItems.horseshoe_magnet, 'B', new ItemStack(ModBlocks.hadron_coil_alloy, 1, 0) );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.heart_container, 1),"HAH", "ACA", "HAH", 'H', ModItems.heart_piece, 'A', AL.ingot(), 'C', ModItems.coin_creeper );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.heart_booster, 1),"GHG", "MCM", "GHG", 'G', GOLD.ingot(), 'H', ModItems.heart_container, 'M', ModItems.morning_glory, 'C', ModItems.coin_maskman );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.heart_fab, 1),"GHG", "MCM", "GHG", 'G', PO210.billet(), 'H', ModItems.heart_booster, 'M', ANY_COKE.gem(), 'C', ModItems.coin_worm );

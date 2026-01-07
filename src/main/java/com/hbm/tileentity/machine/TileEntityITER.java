@@ -54,8 +54,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-@Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
-@AutoRegister
+@Deprecated
 public class TileEntityITER extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiver, IGUIProvider, IFluidCopiable, CompatHandler.OCComponent {
 
 	public long power;
@@ -426,17 +425,18 @@ public class TileEntityITER extends TileEntityMachineBase implements ITickable, 
 					int b = layout[ly][x][z];
 
 					switch(b) {
+                        /*
 					case 1: world.setBlockState(new BlockPos(pos.getX() - width + x, pos.getY() + y - 2, pos.getZ() - width + z), ModBlocks.fusion_conductor.getDefaultState());break;
 					case 2: world.setBlockState(new BlockPos(pos.getX() - width + x, pos.getY() + y - 2, pos.getZ() - width + z), ModBlocks.fusion_center.getDefaultState());break;
 					case 3: world.setBlockState(new BlockPos(pos.getX() - width + x, pos.getY() + y - 2, pos.getZ() - width + z), ModBlocks.fusion_motor.getDefaultState());break;
 					case 4: world.setBlockState(new BlockPos(pos.getX() - width + x, pos.getY() + y - 2, pos.getZ() - width + z), ModBlocks.reinforced_glass.getDefaultState());break;
+
+                         */
 					}
 				}
 			}
 		}
 
-		world.setBlockState(new BlockPos(pos.getX(), pos.getY() - 2, pos.getZ()), ModBlocks.struct_iter_core.getDefaultState());
-		
 		MachineITER.drop = true;
 		
 		List<EntityPlayerMP> players = world.getEntitiesWithinAABB(EntityPlayerMP.class,
@@ -523,99 +523,6 @@ public class TileEntityITER extends TileEntityMachineBase implements ITickable, 
 	@SideOnly(Side.CLIENT)
 	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		return new GUIITER(player.inventory, this);
-	}
-
-	@Override
-	@Optional.Method(modid = "opencomputers")
-	public String getComponentName() {
-		return "ntm_fusion";
-	}
-
-	@Callback(direct = true)
-	@Optional.Method(modid = "opencomputers")
-	public Object[] getEnergyInfo(Context context, Arguments args) {
-		return new Object[] {getPower(), getMaxPower()};
-	}
-
-	@Callback(direct = true)
-	@Optional.Method(modid = "opencomputers")
-	public Object[] isActive(Context context, Arguments args) {
-		return new Object[] {isOn};
-	}
-
-	@Callback(direct = true, limit = 4)
-	@Optional.Method(modid = "opencomputers")
-	public Object[] setActive(Context context, Arguments args) {
-		isOn = args.checkBoolean(0);
-		return new Object[] {};
-	}
-
-	@Callback(direct = true)
-	@Optional.Method(modid = "opencomputers")
-	public Object[] getFluid(Context context, Arguments args) {
-		return new Object[] {
-				tanks[0].getFill(), tanks[0].getMaxFill(),
-				tanks[1].getFill(), tanks[1].getMaxFill(),
-				plasma.getFill(), plasma.getMaxFill(), plasma.getTankType().getTranslationKey()
-		};
-	}
-
-	@Callback(direct = true)
-	@Optional.Method(modid = "opencomputers")
-	public Object[] getPlasmaTemp(Context context, Arguments args) {
-		return new Object[] {plasma.getTankType().temperature};
-	}
-
-	@Callback(direct = true)
-	@Optional.Method(modid = "opencomputers")
-	public Object[] getMaxTemp(Context context, Arguments args) {
-		if (!inventory.getStackInSlot(3).isEmpty() && (inventory.getStackInSlot(3).getItem() instanceof ItemFusionShield))
-			return new Object[] {((ItemFusionShield) inventory.getStackInSlot(3).getItem()).maxTemp};
-		return new Object[] {"N/A"};
-	}
-
-	@Callback(direct = true)
-	@Optional.Method(modid = "opencomputers")
-	public Object[] getBlanketDamage(Context context, Arguments args) {
-		if (!inventory.getStackInSlot(3).isEmpty() && (inventory.getStackInSlot(3).getItem() instanceof ItemFusionShield))
-			return new Object[]{ItemFusionShield.getShieldDamage(inventory.getStackInSlot(3)), ((ItemFusionShield)inventory.getStackInSlot(3).getItem()).maxDamage};
-		return new Object[] {"N/A", "N/A"};
-	}
-
-	@Override
-	@Optional.Method(modid = "opencomputers")
-	public String[] methods() {
-		return new String[] {
-				"getEnergyInfo",
-				"isActive",
-				"setActive",
-				"getFluid",
-				"getPlasmaTemp",
-				"getMaxTemp",
-				"getBlanketDamage"
-		};
-	}
-
-	@Override
-	@Optional.Method(modid = "opencomputers")
-	public Object[] invoke(String method, Context context, Arguments args) throws Exception {
-		switch (method) {
-			case ("getEnergyInfo"):
-				return getEnergyInfo(context, args);
-			case ("isActive"):
-				return isActive(context, args);
-			case ("setActive"):
-				return setActive(context, args);
-			case ("getFluid"):
-				return getFluid(context, args);
-			case ("getPlasmaTemp"):
-				return getPlasmaTemp(context, args);
-			case ("getMaxTemp"):
-				return getMaxTemp(context, args);
-			case ("getBlanketDamage"):
-				return getBlanketDamage(context, args);
-		}
-		throw new NoSuchMethodException();
 	}
 
 	@Override

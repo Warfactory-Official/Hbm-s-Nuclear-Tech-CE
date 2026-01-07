@@ -240,9 +240,6 @@ public class ExplosionChaos {
 	/**
 	 * Sets all flammable blocks on fire
 	 *
-	 * @param x
-	 * @param y
-	 * @param z
 	 * @param world
 	 * @param detonator
 	 * @param bound
@@ -262,9 +259,6 @@ public class ExplosionChaos {
 	/**
 	 * Sets all blocks on fire
 	 *
-	 * @param x
-	 * @param y
-	 * @param z
 	 * @param world
 	 * @param detonator
 	 * @param bound
@@ -837,37 +831,9 @@ public class ExplosionChaos {
 		if(bblock == ModBlocks.waste_earth && random.nextInt(3) != 0) {
 			world.setBlockState(pos, Blocks.GRASS.getDefaultState());
 		}
-
-		else if(bblock == ModBlocks.waste_dirt && random.nextInt(3) != 0) {
-			world.setBlockState(pos, Blocks.DIRT.getDefaultState());
-		}
-
-		else if(bblock == ModBlocks.waste_sand && random.nextInt(3) != 0) {
-			world.setBlockState(pos, Blocks.SAND.getDefaultState());
-		}
-
-		else if(bblock == ModBlocks.waste_sand_red && random.nextInt(3) != 0) {
-			world.setBlockState(pos, Blocks.SAND.getStateFromMeta(1));
-		}
-		
-		else if(bblock == Blocks.SANDSTONE && random.nextInt(3) != 0) {
-				world.setBlockState(pos, ModBlocks.waste_sandstone.getDefaultState());
-		} 
-		
-		else if((bblock == Blocks.HARDENED_CLAY || bblock == Blocks.STAINED_HARDENED_CLAY) && random.nextInt(3) != 0) {
-			world.setBlockState(pos, ModBlocks.waste_red_sandstone.getDefaultState());
-		}
-
-		else if(bblock == Blocks.RED_SANDSTONE && random.nextInt(3) != 0) {
-			world.setBlockState(pos, ModBlocks.waste_red_sandstone.getDefaultState());
-		}
 		
 		else if(bblock == ModBlocks.waste_grass_tall && random.nextInt(3) != 0) {
 			world.setBlockState(pos, Blocks.TALLGRASS.getDefaultState());
-		}
-
-		else if(bblock == ModBlocks.waste_gravel && random.nextInt(3) != 0) {
-			world.setBlockState(pos, Blocks.GRAVEL.getDefaultState());
 		}
 
 		else if(bblock == ModBlocks.waste_mycelium && random.nextInt(5) == 0) {

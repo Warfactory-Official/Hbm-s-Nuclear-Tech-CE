@@ -53,7 +53,6 @@ public class NTMToolHandler {
 
     public static void register() {
         conversions.put(new Pair<>(ToolType.BOLT, new MetaBlock(ModBlocks.watz_casing, 0)), new Pair<>(new AStack[]{new OreDictStack(OreDictManager.DURA.bolt(), 4)}, new MetaBlock(ModBlocks.watz_casing, 1)));
-        conversions.put(new Pair(ToolType.TORCH, new MetaBlock(ModBlocks.fusion_conductor, 0)), new Pair(new AStack[] {new OreDictStack(OreDictManager.STEEL.plateCast())}, new MetaBlock(ModBlocks.fusion_conductor, 1)));
         conversions.put(new Pair(ToolType.TORCH, new MetaBlock(ModBlocks.fusion_component, 0)), new Pair(new AStack[] {new OreDictStack(OreDictManager.STEEL.plateCast())}, new MetaBlock(ModBlocks.fusion_component, 1)));
         conversions.put(new Pair<>(ToolType.BOLT, new MetaBlock(Blocks.STONE)), new Pair<>(new AStack[]{new OreDictStack(OreDictManager.DURA.bolt(), 1)}, new MetaBlock(Blocks.COBBLESTONE)));
         conversions.put(new Pair<>(ToolType.TORCH, new MetaBlock(ModBlocks.icf_component, 1)),

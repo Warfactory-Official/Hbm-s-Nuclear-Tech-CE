@@ -427,7 +427,7 @@ public class SiloComponent extends Component {
         setBlockState(world, Blocks.HEAVY_WEIGHTED_PRESSURE_PLATE.getStateFromMeta(0), 34, 22, 18, box);
         setBlockState(world, ModBlocks.capacitor_copper.getStateFromMeta(decoE), 36, 21, 16, box);
         setBlockState(world, ModBlocks.deco_steel.getStateFromMeta(0), 36, 21, 17, box);
-        setBlockState(world, ModBlocks.fusion_conductor.getStateFromMeta(0), 36, 21, 19, box);
+        setBlockState(world, ModBlocks.hadron_coil_alloy.getStateFromMeta(0), 36, 21, 19, box);
         fillWithMetadataBlocks(world, box, 36, 22, 16, 36, 23, 16, ModBlocks.tape_recorder, decoE);
         setBlockState(world, ModBlocks.deco_computer.getStateFromMeta(decoModelW), 36, 22, 17, box);
         fillWithMetadataBlocks(world, box, 36, 21, 18, 36, 23, 18, ModBlocks.tape_recorder, decoE);

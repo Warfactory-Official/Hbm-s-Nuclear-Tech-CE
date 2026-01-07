@@ -27,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
 
+@Deprecated
 public class MachineITER extends BlockDummyable {
 
 	public static boolean drop = true;
@@ -143,7 +144,8 @@ public class MachineITER extends BlockDummyable {
 		
 		super.onBlockPlacedBy(world, pos, state, player, itemStack);
 	}
-	
+    //had to comment this out due to half of these blocks being non-existent now - SilentYeti
+    /*
 	@Override
 	public void breakBlock(@NotNull World world, @NotNull BlockPos pos, IBlockState state) {
 		int i = state.getValue(META);
@@ -161,7 +163,8 @@ public class MachineITER extends BlockDummyable {
 
 		super.breakBlock(world, pos, state);
 	}
-	
+	*/
+
 	@Override
 	public boolean checkRequirement(World world, int x, int y, int z, ForgeDirection dir, int o) {
 		x = x + dir.offsetX * o;

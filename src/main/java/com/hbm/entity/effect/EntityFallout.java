@@ -166,7 +166,6 @@ public abstract class EntityFallout extends Entity implements IChunkLoader {
             }
             Block blockBelow = world.getBlockState(lowerPos.down()).getBlock();
             if (blockBelow == Blocks.FARMLAND) {
-                placeBlockFromDist(dist, ModBlocks.waste_dirt, lowerPos.down());
                 placeBlockFromDist(dist, ModBlocks.waste_grass_tall, lowerPos);
             } else if (blockBelow instanceof BlockGrass) {
                 placeBlockFromDist(dist, ModBlocks.waste_earth, lowerPos.down());
@@ -214,49 +213,18 @@ public abstract class EntityFallout extends Entity implements IChunkLoader {
             case "minecraft:dirt":
                 BlockDirt.DirtType dirtVariant = blockState.getValue(BlockDirt.VARIANT);
                 switch (dirtVariant) {
-                    case DIRT -> placeBlockFromDist(dist, ModBlocks.waste_dirt, pos);
-                    case COARSE_DIRT -> placeBlockFromDist(dist, ModBlocks.waste_gravel, pos);
                     case PODZOL -> placeBlockFromDist(dist, ModBlocks.waste_mycelium, pos);
                 }
                 return false;
-            case "minecraft:farmland":
-                placeBlockFromDist(dist, ModBlocks.waste_dirt, pos);
-                return true;
-            case "minecraft:snow_layer":
-                placeBlockFromDist(dist, ModBlocks.waste_snow, pos);
-                return true;
-            case "minecraft:snow":
-                placeBlockFromDist(dist, ModBlocks.waste_snow_block, pos);
-                return true;
-            case "minecraft:ice":
-            case "minecraft:packed_ice":
-            case "minecraft:frosted_ice":
-                world.setBlockState(pos, ModBlocks.waste_ice.getDefaultState());
-                return true;
+
             case "minecraft:mycelium":
                 placeBlockFromDist(dist, ModBlocks.waste_mycelium, pos);
-                return false;
-            case "minecraft:gravel":
-                placeBlockFromDist(dist, ModBlocks.waste_gravel, pos);
-                return false;
-            case "minecraft:sandstone":
-                placeBlockFromDist(dist, ModBlocks.waste_sandstone, pos);
-                return false;
-            case "minecraft:red_sandstone":
-                placeBlockFromDist(dist, ModBlocks.waste_red_sandstone, pos);
-                return false;
-            case "minecraft:hardened_clay":
-            case "minecraft:stained_hardened_clay":
-                placeBlockFromDist(dist, ModBlocks.waste_terracotta, pos);
                 return false;
             case "minecraft:sand":
                 BlockSand.EnumType sandVariant = blockState.getValue(BlockSand.VARIANT);
                 Block trinitite = sandVariant == BlockSand.EnumType.SAND ? ModBlocks.waste_trinitite : ModBlocks.waste_trinitite_red;
-                Block sandWaste = sandVariant == BlockSand.EnumType.SAND ? ModBlocks.waste_sand : ModBlocks.waste_sand_red;
                 if (rand.nextInt(60) == 0) {
                     placeBlockFromDist(dist, trinitite, pos);
-                } else {
-                    placeBlockFromDist(dist, sandWaste, pos);
                 }
                 return false;
             case "minecraft:clay":

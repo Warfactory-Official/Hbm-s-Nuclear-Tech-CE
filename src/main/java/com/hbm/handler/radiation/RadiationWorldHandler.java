@@ -84,22 +84,15 @@ class RadiationWorldHandler {
         if (!"minecraft".equals(namespace)) return;
         IBlockState newState = switch (path) {
             case "grass" -> ModBlocks.waste_earth.getDefaultState();
-            case "dirt", "farmland" -> ModBlocks.waste_dirt.getDefaultState();
-            case "sandstone" -> ModBlocks.waste_sandstone.getDefaultState();
-            case "red_sandstone" -> ModBlocks.waste_red_sandstone.getDefaultState();
-            case "hardened_clay", "stained_hardened_clay" -> ModBlocks.waste_terracotta.getDefaultState();
-            case "gravel" -> ModBlocks.waste_gravel.getDefaultState();
+
             case "mycelium" -> ModBlocks.waste_mycelium.getDefaultState();
-            case "snow_layer" -> ModBlocks.waste_snow.getDefaultState();
-            case "snow" -> ModBlocks.waste_snow_block.getDefaultState();
-            case "ice" -> ModBlocks.waste_ice.getDefaultState();
             case "sand" -> {
                 BlockSand.EnumType meta = state.getValue(BlockSand.VARIANT);
                 if (isLegacy && world.rand.nextInt(60) == 0) {
                     yield meta == BlockSand.EnumType.SAND ? ModBlocks.waste_trinitite.getDefaultState() :
                             ModBlocks.waste_trinitite_red.getDefaultState();
                 } else {
-                    yield meta == BlockSand.EnumType.SAND ? ModBlocks.waste_sand.getDefaultState() : ModBlocks.waste_sand_red.getDefaultState();
+                    yield meta == BlockSand.EnumType.SAND ? ModBlocks.waste_trinitite.getDefaultState() : ModBlocks.waste_trinitite_red.getDefaultState();
                 }
             }
             default -> {

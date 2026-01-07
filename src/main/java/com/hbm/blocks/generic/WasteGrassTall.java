@@ -37,7 +37,7 @@ public class WasteGrassTall extends BlockBush {
 	public boolean canBlockStay(World world, BlockPos pos, IBlockState state){
 		if (pos.getY() >= 0 && pos.getY() < 256){
             Block block = world.getBlockState(pos.down()).getBlock();
-            return block == ModBlocks.waste_earth || block == ModBlocks.waste_mycelium || block == ModBlocks.waste_dirt;
+            return block == ModBlocks.waste_earth || block == ModBlocks.waste_mycelium;
         }
         return false;
 	}

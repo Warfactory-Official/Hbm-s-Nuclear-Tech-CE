@@ -170,10 +170,6 @@ public class TileEntityNukeCustom extends TileEntity implements ITickable, IGUIP
 		entries.put(new ComparableStack(ModItems.billet_solinium), new CustomNukeEntry(EnumBombType.SOL, 3F));
 		entries.put(new ComparableStack(ModBlocks.block_solinium), new CustomNukeEntry(EnumBombType.SOL, 50F));
 
-		entries.put(new ComparableStack(ModItems.nugget_unobtainium), new CustomNukeEntry(EnumBombType.SOL, 1.01F, EnumEntryType.MULT));
-		entries.put(new ComparableStack(ModItems.ingot_unobtainium), new CustomNukeEntry(EnumBombType.SOL, 1.1F, EnumEntryType.MULT));
-		entries.put(new ComparableStack(ModItems.powder_unobtainium), new CustomNukeEntry(EnumBombType.SOL, 1.1F, EnumEntryType.MULT));
-		entries.put(new ComparableStack(ModBlocks.block_unobtainium), new CustomNukeEntry(EnumBombType.SOL, 1.5F, EnumEntryType.MULT));
 		entries.put(new ComparableStack(ModItems.custom_sol), new CustomNukeEntry(EnumBombType.SOL, 15F));
 
 		//ANTI-MASS

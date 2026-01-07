@@ -4315,7 +4315,6 @@ item.ingot_saturnite.name=Saturnite Ingot
 item.ingot_schrabidate.name=Ferric Schrabidate Ingot
 item.ingot_schrabidium.name=Schrabidium Ingot
 item.ingot_schrabidium_fuel.name=Ingot of Schrabidium Fuel
-item.ingot_schraranium.desc=Made from uranium in a schrabidium transmutator
 item.ingot_schraranium.name=Schraranium Ingot
 item.ingot_semtex.name=Bar of Semtex
 item.ingot_silicon.name=Silicon Boule

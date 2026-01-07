@@ -455,7 +455,7 @@ public class AdvGen {
                         .toast(true)
                         .announce(true)
                         .frame(FrameType.CHALLENGE),
-                "crafting", new ItemStack(ModBlocks.struct_iter_core))
+                "crafting", new ItemStack(ModBlocks.struct_torus_core))
         );
         batch.add(Templates.impossible("achmeltdown",
                 "hbm:achfusion",

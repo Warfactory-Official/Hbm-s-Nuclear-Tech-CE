@@ -12,15 +12,14 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 
 import static com.hbm.render.util.SmallBlockPronter.renderSimpleBlockAt;
-@AutoRegister
-public class RenderITERMultiblock extends TileEntitySpecialRenderer<TileEntityITERStruct> {
+@Deprecated
+public class RenderITERMultiblock {
 
-	@Override
+
 	public boolean isGlobalRenderer(TileEntityITERStruct te) {
 		return true;
 	}
 
-	@Override
 	public void render(TileEntityITERStruct te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
 		GlStateManager.pushMatrix();
 

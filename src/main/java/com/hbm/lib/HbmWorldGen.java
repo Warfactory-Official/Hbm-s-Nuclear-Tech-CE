@@ -215,12 +215,8 @@ public class HbmWorldGen implements IWorldGenerator {
         }
 
         //Special ores
-        DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.reiiumSpawn.get(dimID)), 3, 14, 18, ModBlocks.ore_reiium);
-        DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.weidaniumSpawn.get(dimID)), 3, 14, 18, ModBlocks.ore_weidanium);
+
         DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.australiumSpawn.get(dimID)), 3, 14, 18, ModBlocks.ore_australium);
-        DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.verticiumSpawn.get(dimID)), 3, 14, 18, ModBlocks.ore_verticium);
-        DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.unobtainiumSpawn.get(dimID)), 3, 14, 18, ModBlocks.ore_unobtainium);
-        DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.daffergonSpawn.get(dimID)), 3, 14, 18, ModBlocks.ore_daffergon);
 
         //Nether ores
         DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.netherUraniumSpawn.get(dimID)), 6, 0, 127, ModBlocks.ore_nether_uranium, Blocks.NETHERRACK);

@@ -109,7 +109,7 @@ public class WasteEarth extends Block {
 
     @Override
     public void updateTick(@NotNull World world, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull Random rand) {
-        if (this == ModBlocks.waste_earth || this == ModBlocks.waste_dirt || this == ModBlocks.waste_mycelium) {
+        if (this == ModBlocks.waste_earth || this == ModBlocks.waste_mycelium) {
             if (GeneralConfig.enableAutoCleanup) {
                 world.setBlockState(pos, Blocks.DIRT.getDefaultState());
             }

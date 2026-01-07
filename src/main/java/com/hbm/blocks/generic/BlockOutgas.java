@@ -61,7 +61,7 @@ public class BlockOutgas extends BlockNTMOre {
         }
 
         if (GeneralConfig.enableCarbonMonoxide) {
-            if (this == ModBlocks.ore_coal_oil_burning || this == ModBlocks.ore_nether_coal) {
+            if (this == ModBlocks.ore_nether_coal) {
                 return ModBlocks.gas_monoxide;
             }
         }

@@ -14,7 +14,6 @@ public class BlockDeadPlant extends BlockPlantEnumMeta {
     }
 
     public static void initPlacables() {
-        PLANTABLE_BLOCKS.add(ModBlocks.waste_dirt);
         PLANTABLE_BLOCKS.add(ModBlocks.waste_earth);
         PLANTABLE_BLOCKS.add(ModBlocks.dirt_oily);
         PLANTABLE_BLOCKS.add(ModBlocks.dirt_dead);

@@ -43,19 +43,8 @@ public class ConstructionHandler extends JEIUniversalHandler {
 
         bufferedRecipes.put(watz, new ItemStack(ModBlocks.watz));
 
-        /* ITER */
-        ItemStack[] iter = new ItemStack[]{
-                new ItemStack(ModBlocks.fusion_conductor, 36),
-                ItemStackUtil.addStackSizeLabel(new ItemStack(ModBlocks.fusion_conductor, 256)),
-                new ItemStack(ModItems.plate_cast, 36, Mats.MAT_STEEL.id),
-                ItemStackUtil.addStackSizeLabel(new ItemStack(ModItems.plate_cast, 256, Mats.MAT_STEEL.id)),
-                new ItemStack(ModBlocks.fusion_center, 64),
-                new ItemStack(ModBlocks.fusion_motor, 4),
-                new ItemStack(ModBlocks.reinforced_glass, 8),
-                new ItemStack(ModItems.blowtorch)
-        };
+        /* ITER ACKED*/
 
-        bufferedRecipes.put(iter, new ItemStack(ModBlocks.iter));
 
         /* PLASMA HEATER */
         ItemStack[] heater = new ItemStack[]{

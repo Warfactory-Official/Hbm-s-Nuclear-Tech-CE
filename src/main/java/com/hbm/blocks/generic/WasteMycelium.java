@@ -39,7 +39,7 @@ public class WasteMycelium extends WasteEarth {
                     Block adjB = world.getBlockState(adjacentBlockPos).getBlock();
                     IBlockState aboveAdjacentBlockState = world.getBlockState(adjacentBlockPos.up());
                     if (!aboveAdjacentBlockState.isOpaqueCube() &&
-                            (adjB == Blocks.DIRT || adjB == Blocks.GRASS || adjB == Blocks.MYCELIUM || adjB == ModBlocks.waste_earth || adjB == ModBlocks.waste_dirt)) {
+                            (adjB == Blocks.DIRT || adjB == Blocks.GRASS || adjB == Blocks.MYCELIUM || adjB == ModBlocks.waste_earth)) {
                         validPositions.add(adjacentBlockPos);
                     }
                 }

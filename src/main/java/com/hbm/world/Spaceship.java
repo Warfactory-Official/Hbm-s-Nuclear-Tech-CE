@@ -37,7 +37,7 @@ public class Spaceship extends AbstractPhasedStructure {
 	Block Block8 = ModBlocks.fusion_hatch;
 	Block Block9 = ModBlocks.reinforced_light;
 	Block Block10 = ModBlocks.reinforced_glass;
-	Block Block11 = ModBlocks.fusion_conductor;
+	Block Block11 = ModBlocks.hadron_coil_alloy;
 	Block Block12 = ModBlocks.pwr_fuelrod;
 
 	@Override
