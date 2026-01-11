@@ -22,10 +22,9 @@ and all related recipes (PR #1247 by SilentYeti)
 - Fixed Meteorite Dungeon Generation Config not working (PR #1197 by Vidarin)
 - Fixed a crash when opening the GUI of Ammo Press
 - Fixed alexandrite and iron cluster spawn rate can't be controlled by config
-- Fixed a crashed when looking at mass storage
+- Fixed a crash when looking at mass storage
 - Fixed hydroactive items exploding in dry biomes
-- Fixed a severe offset calculation issue in radiation simulation system that may cause segmentation faults 
-with compressedOops enabled
+- Fixed a severe offset calculation error in radiation simulation system that may cause segmentation faults
 - Fixed MKU crafting recipe
 ### Changes
 - Most old batteries were hidden in creative tabs
