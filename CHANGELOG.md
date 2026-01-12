@@ -26,10 +26,13 @@ and all related recipes (PR #1247 by SilentYeti)
 - Fixed hydroactive items exploding in dry biomes
 - Fixed a severe offset calculation error in radiation simulation system that may cause segmentation faults
 - Fixed MKU crafting recipe
+- Fixed gas blocks being mineable when mined with silk touch
+- Fixed fluid availability accounting across receiver priority tiers in fluid net, causing lost fluid volume
 ### Changes
 - Most old batteries were hidden in creative tabs
 ### New Features
 - Ported new FEnSU and other changes to energy storage blocks from 1.7
+- Ported fluid valves and fluid switch from 1.7
 ### Performance
 
 ### Misc
