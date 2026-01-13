@@ -27,22 +27,30 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
+
 @AutoRegister(name = "entity_black_hole", trackingRange = 1000)
 public class EntityBlackHole extends Entity implements IConstantRenderer {
+	protected static final DataParameter<Float> SIZE = EntityDataManager.createKey(EntityBlackHole.class, DataSerializers.FLOAT);
+	protected boolean breaksBlocks = true;
 
-	public static final DataParameter<Float> SIZE = EntityDataManager.createKey(EntityBlackHole.class, DataSerializers.FLOAT);
-	
 	public EntityBlackHole(World worldIn) {
 		super(worldIn);
 		this.ignoreFrustumCheck = true;
 		this.isImmuneToFire = true;
-	}
-	
-	public EntityBlackHole(World w, float size){
-		this(w);
-		this.getDataManager().set(SIZE, size);
+		this.noClip = true;
 	}
 
+	public EntityBlackHole(World worldIn, float size) {
+		this(worldIn);
+		this.dataManager.set(SIZE, size);
+	}
+
+	public EntityBlackHole noBreak() {
+		this.breaksBlocks = false;
+		return this;
+	}
+
+	@Override
 	public boolean isImmuneToExplosions() {
 		return true;
 	}
@@ -50,72 +58,77 @@ public class EntityBlackHole extends Entity implements IConstantRenderer {
 	@Override
 	public void onUpdate() {
 		super.onUpdate();
-		if(!CompatibilityConfig.isWarDim(world)){
+		if (!CompatibilityConfig.isWarDim(world)) {
 			this.setDead();
 			return;
 		}
-		float size = this.dataManager.get(SIZE);
-		
-		if(!world.isRemote) {
-			for(int k = 0; k < size * 2; k++) {
+
+		final float size = this.dataManager.get(SIZE);
+
+		if (!world.isRemote && breaksBlocks) {
+			BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+			for (int k = 0; k < size * 2; k++) {
 				double phi = rand.nextDouble() * (Math.PI * 2);
 				double costheta = rand.nextDouble() * 2 - 1;
 				double theta = Math.acos(costheta);
-				double x = Math.sin( theta) * Math.cos( phi );
-				double y = Math.sin( theta) * Math.sin( phi );
-				double z = Math.cos( theta );
-				
-				Vec3 vec = Vec3.createVectorHelper(x, y, z);
-				int length = (int)Math.ceil(size * 15);
-				
-				for(int i = 0; i < length; i ++) {
-					int x0 = (int)(this.posX + (vec.xCoord * i));
-					int y0 = (int)(this.posY + (vec.yCoord * i));
-					int z0 = (int)(this.posZ + (vec.zCoord * i));
-					
-					BlockPos des = new BlockPos(x0, y0, z0);
-					
-					if(world.getBlockState(des).getMaterial().isLiquid()) {
-						world.setBlockState(des, Blocks.AIR.getDefaultState());
+				double x = Math.sin(theta) * Math.cos(phi);
+				double y = Math.sin(theta) * Math.sin(phi);
+				double z = Math.cos(theta);
+
+				int length = (int) Math.ceil(size * 15);
+
+				for (int i = 0; i < length; i++) {
+					int x0 = (int) (this.posX + (x * i));
+					int y0 = (int) (this.posY + (y * i));
+					int z0 = (int) (this.posZ + (z * i));
+
+					pos.setPos(x0, y0, z0);
+					IBlockState state = world.getBlockState(pos);
+
+					if (state.getMaterial().isLiquid()) {
+						world.setBlockState(pos, Blocks.AIR.getDefaultState());
+						state = world.getBlockState(pos);
 					}
-					
-					if(world.getBlockState(des).getBlock() != Blocks.AIR) {
+
+					if (state.getBlock() != Blocks.AIR) {
 						EntityRubble rubble = new EntityRubble(world);
 						rubble.posX = x0 + 0.5F;
 						rubble.posY = y0;
 						rubble.posZ = z0 + 0.5F;
-						IBlockState st = world.getBlockState(new BlockPos(x0, y0, z0));
-						rubble.setMetaBasedOnBlock(st.getBlock(), st.getBlock().getMetaFromState(st));
-						
+						Block b = state.getBlock();
+						rubble.setMetaBasedOnBlock(b, b.getMetaFromState(state));
 						world.spawnEntity(rubble);
-					
-						world.setBlockState(des, Blocks.AIR.getDefaultState());
+						world.setBlockState(pos, Blocks.AIR.getDefaultState());
 						break;
 					}
 				}
 			}
 		}
-		
-		double range = size * 15;
-		
+
+		final double range = size * 15;
+
 		List<Entity> entities = world.getEntitiesWithinAABBExcludingEntity(this, new AxisAlignedBB(
-				posX - range, posY - range, posZ - range, posX + range, posY + range, posZ + range));
-		
-		for(Entity e : entities) {
-			
-			if(e instanceof EntityPlayer && ((EntityPlayer)e).capabilities.isCreativeMode)
+						posX - range, posY - range, posZ - range,
+						posX + range, posY + range, posZ + range
+				)
+		);
+
+		for (Entity e : entities) {
+
+			if (e instanceof EntityPlayer && ((EntityPlayer) e).capabilities.isCreativeMode)
 				continue;
-			
-			if(e instanceof EntityFallingBlock && !world.isRemote && e.ticksExisted > 1) {
-				
+
+			if (e instanceof EntityFallingBlock && !world.isRemote && e.ticksExisted > 1) {
 				double x = e.posX;
 				double y = e.posY;
 				double z = e.posZ;
-				Block b = ((EntityFallingBlock)e).getBlock().getBlock();
-				int meta = b.getMetaFromState(((EntityFallingBlock)e).getBlock());
-				
+
+				IBlockState st = ((EntityFallingBlock) e).getBlock();
+				Block b = st.getBlock();
+				int meta = b.getMetaFromState(st);
+
 				e.setDead();
-				
+
 				EntityRubble rubble = new EntityRubble(world);
 				rubble.setMetaBasedOnBlock(b, meta);
 				rubble.setPositionAndRotation(x, y, z, 0, 0);
@@ -124,38 +137,35 @@ public class EntityBlackHole extends Entity implements IConstantRenderer {
 				rubble.motionZ = e.motionZ;
 				world.spawnEntity(rubble);
 			}
-			
+
 			Vec3 vec = Vec3.createVectorHelper(posX - e.posX, posY - e.posY, posZ - e.posZ);
-			
+
 			double dist = vec.length();
-			
-			if(dist > range)
+			if (dist > range)
 				continue;
-			
+
 			vec = vec.normalize();
-			
-			if(!(e instanceof EntityItem))
-				vec.rotateAroundY((float)Math.toRadians(15));
-			
+
+			if (!(e instanceof EntityItem))
+				vec.rotateAroundY((float) Math.toRadians(15));
+
 			double speed = 0.1D;
 			e.motionX += vec.xCoord * speed;
 			e.motionY += vec.yCoord * speed * 2;
 			e.motionZ += vec.zCoord * speed;
-			
-			if(e instanceof EntityBlackHole)
+
+			if (e instanceof EntityBlackHole)
 				continue;
-			
-			if(dist < size * 1.5) {
-				e.attackEntityFrom(ModDamageSource.blackhole, 1000);
-				
-				if(!(e instanceof EntityLivingBase))
+
+			if (dist < size * 1.5F) {
+				e.attackEntityFrom(ModDamageSource.blackhole, 1000.0F);
+
+				if (!(e instanceof EntityLivingBase))
 					e.setDead();
-				
-				if(!world.isRemote && e instanceof EntityItem) {
-					EntityItem item = (EntityItem) e;
-					ItemStack stack = item.getItem();
-					
-					if(stack.getItem() == ModItems.pellet_antimatter || stack.getItem() == ModItems.flame_pony) {
+
+				if (!world.isRemote && e instanceof EntityItem) {
+					ItemStack stack = ((EntityItem) e).getItem();
+					if (stack.getItem() == ModItems.pellet_antimatter || stack.getItem() == ModItems.flame_pony) {
 						this.setDead();
 						world.createExplosion(null, this.posX, this.posY, this.posZ, 5.0F, true);
 						return;
@@ -163,47 +173,48 @@ public class EntityBlackHole extends Entity implements IConstantRenderer {
 				}
 			}
 		}
-		
+
 		this.setPosition(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
-		
 		this.motionX *= 0.99D;
 		this.motionY *= 0.99D;
 		this.motionZ *= 0.99D;
 	}
-	
+
 	@Override
 	protected void entityInit() {
-		this.getDataManager().register(SIZE, 0.5F);
+		this.dataManager.register(SIZE, 0.5F);
 	}
 
 	@Override
 	protected void readEntityFromNBT(NBTTagCompound compound) {
-		this.getDataManager().set(SIZE, compound.getFloat("size"));
+		this.dataManager.set(SIZE, compound.getFloat("size"));
+		if (compound.hasKey("breaksBlocks")) {
+			this.breaksBlocks = compound.getBoolean("breaksBlocks");
+		} else {
+			this.breaksBlocks = true;
+		}
 	}
 
 	@Override
 	protected void writeEntityToNBT(NBTTagCompound compound) {
-		compound.setFloat("size", this.getDataManager().get(SIZE));
+		compound.setFloat("size", this.dataManager.get(SIZE));
+		compound.setBoolean("breaksBlocks", this.breaksBlocks);
 	}
-	
+
 	@Override
 	@SideOnly(Side.CLIENT)
-    public boolean isInRangeToRenderDist(double distance)
-    {
-        return distance < 25000;
-    }
+	public boolean isInRangeToRenderDist(double distance) {
+		return distance < 25000;
+	}
 
-    @Override
+	@Override
 	@SideOnly(Side.CLIENT)
-    public int getBrightnessForRender()
-    {
-        return 15728880;
-    }
+	public int getBrightnessForRender() {
+		return 15728880;
+	}
 
-    @Override
-	public float getBrightness()
-    {
-        return 1.0F;
-    }
-
+	@Override
+	public float getBrightness() {
+		return 1.0F;
+	}
 }
