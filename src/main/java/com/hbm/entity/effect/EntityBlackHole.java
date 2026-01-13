@@ -30,7 +30,7 @@ import java.util.List;
 
 @AutoRegister(name = "entity_black_hole", trackingRange = 1000)
 public class EntityBlackHole extends Entity implements IConstantRenderer {
-	protected static final DataParameter<Float> SIZE = EntityDataManager.createKey(EntityBlackHole.class, DataSerializers.FLOAT);
+	public static final DataParameter<Float> SIZE = EntityDataManager.createKey(EntityBlackHole.class, DataSerializers.FLOAT);
 	protected boolean breaksBlocks = true;
 
 	public EntityBlackHole(World worldIn) {
