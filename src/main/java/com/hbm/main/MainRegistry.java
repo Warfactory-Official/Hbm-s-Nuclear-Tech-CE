@@ -1,6 +1,5 @@
 package com.hbm.main;
 
-//FIXME This may have gotten mangled in a merge
 
 import com.google.common.collect.ImmutableList;
 import com.hbm.Tags;
@@ -67,11 +66,6 @@ import com.hbm.world.generator.CellularDungeonFactory;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.RangedAttribute;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.item.Item;
-import net.minecraft.item.Item.ToolMaterial;
-import net.minecraft.item.ItemArmor.ArmorMaterial;
-import net.minecraft.item.ItemStack;
 import net.minecraft.stats.StatBase;
 import net.minecraft.stats.StatBasic;
 import net.minecraft.util.ResourceLocation;
@@ -84,7 +78,6 @@ import net.minecraftforge.common.ForgeChunkManager.Ticket;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.common.util.EnumHelper;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -98,9 +91,9 @@ import java.io.File;
 import java.util.List;
 import java.util.Random;
 
-@Mod(modid = Tags.MODID, version = Tags.VERSION, name = Tags.MODNAME
+@Mod(modid = Tags.MODID, version = Tags.VERSION, name = Tags.MODNAME,
+        dependencies = "required-client:ctm"
 )
-@Spaghetti("Total cluserfuck")
 public class MainRegistry {
 
     @SidedProxy(clientSide = "com.hbm.main.ClientProxy", serverSide = "com.hbm.main.ServerProxy")
@@ -142,68 +135,11 @@ public class MainRegistry {
     public static long startupTime = 0;
     public static File configDir;
     public static File configHbmDir;
-    // Armor Materials
-    // Drillgon200: I have no idea what the two strings and the number at the
-    // end are.
-    public static ArmorMaterial enumArmorMaterialT51 = EnumHelper.addArmorMaterial(Tags.MODID + ":T51", Tags.MODID + ":T51", 150, new int[] {3, 8, 6, 3 }, 0, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    public static ArmorMaterial aMatBJ = EnumHelper.addArmorMaterial(Tags.MODID + ":BLACKJACK", Tags.MODID + ":HBM_BLACKJACK", 150, new int[]{3, 6, 8, 3}, 100, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    public static ArmorMaterial aMatAJR = EnumHelper.addArmorMaterial(Tags.MODID + ":T45AJR", Tags.MODID + ":T45AJR", 150, new int[]{3, 6, 8, 3}, 100, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    public static ArmorMaterial aMatSteamsuit = EnumHelper.addArmorMaterial(Tags.MODID + ":Steamsuit", Tags.MODID + ":Steamsuit", 150, new int[]{3, 6, 8, 3}, 100, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    public static ArmorMaterial aMatDieselsuit = EnumHelper.addArmorMaterial(Tags.MODID + ":Dieselsuit", Tags.MODID + ":Dieselsuit", 150, new int[]{3, 6, 8, 3}, 100, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    public static ArmorMaterial aMatTrench = EnumHelper.addArmorMaterial(Tags.MODID + ":Trenchmaster", Tags.MODID + ":Trenchmaster", 150, new int[]{3, 6, 8, 3}, 100, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    public static ArmorMaterial aMatTaurun = EnumHelper.addArmorMaterial(Tags.MODID + ":Taurun", Tags.MODID + ":Taurun", 150, new int[]{3, 6, 8, 3}, 100, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    public static ArmorMaterial aMatBismuth = EnumHelper.addArmorMaterial(Tags.MODID + ":Bismuth", Tags.MODID + ":Bismuth", 150, new int[]{3, 6, 8, 3}, 100, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    public static ArmorMaterial aMatZirconium = EnumHelper.addArmorMaterial(Tags.MODID + ":Zirconium", Tags.MODID + ":Zirconium", 150, new int[]{3, 6, 8, 3}, 100, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    public static ArmorMaterial aMatDNT = EnumHelper.addArmorMaterial(Tags.MODID + ":DNT", Tags.MODID + ":DNT", 3, new int[]{1, 1, 1, 1}, 0, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0.0F);
-    public static ArmorMaterial aMatEnvsuit = EnumHelper.addArmorMaterial(Tags.MODID + ":Envsuit", Tags.MODID + ":Envsuit", 150, new int[]{3, 6, 8, 3}, 100, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    public static ArmorMaterial aMatRPA = EnumHelper.addArmorMaterial(Tags.MODID + ":RPA", Tags.MODID + ":RPA", 150, new int[]{3, 6, 8, 3}, 100, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    public static ArmorMaterial aMatHEV = EnumHelper.addArmorMaterial(Tags.MODID + ":HEV", Tags.MODID + ":HEV", 150, new int[]{3, 6, 8, 3}, 100, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    public static ArmorMaterial aMatHaz = EnumHelper.addArmorMaterial(Tags.MODID + ":HAZMAT", Tags.MODID + ":HAZMAT", 60, new int[]{1, 4, 5, 2}, 5, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0.0F);
-    public static ArmorMaterial aMatHaz2 = EnumHelper.addArmorMaterial(Tags.MODID + ":HAZMAT2", Tags.MODID + ":HAZMAT2", 60, new int[]{1, 4, 5, 2}, 5, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0.0F);
-    public static ArmorMaterial aMatHaz3 = EnumHelper.addArmorMaterial(Tags.MODID + ":HAZMAT3", Tags.MODID + ":HAZMAT3", 60, new int[]{1, 4, 5, 2}, 5, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0.0F);
-    public static ArmorMaterial aMatPaa = EnumHelper.addArmorMaterial(Tags.MODID + ":PAA", Tags.MODID + ":PAA", 75, new int[]{3, 6, 8, 3}, 25, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    public static ArmorMaterial aMatSchrab = EnumHelper.addArmorMaterial(Tags.MODID + ":SCHRABIDIUM", Tags.MODID + ":SCHRABIDIUM", 100, new int[]{3, 6, 8, 3}, 50, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    public static ArmorMaterial aMatEuph = EnumHelper.addArmorMaterial(Tags.MODID + ":EUPHEMIUM", Tags.MODID + ":EUPHEMIUM", 15000000, new int[]{3, 6, 8, 3}, 100, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    public static ArmorMaterial aMatSteel = EnumHelper.addArmorMaterial(Tags.MODID + ":STEEL", Tags.MODID + ":STEEL", 20, new int[]{2, 5, 6, 2}, 5, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0.0F);
-    public static ArmorMaterial aMatAlloy = EnumHelper.addArmorMaterial(Tags.MODID + ":ALLOY", Tags.MODID + ":ALLOY", 40, new int[]{3, 6, 8, 3}, 12, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0.0F);
-    public static ArmorMaterial aMatAus3 = EnumHelper.addArmorMaterial(Tags.MODID + ":AUSIII", Tags.MODID + ":AUSIII", 375, new int[]{2, 5, 6, 2}, 0, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0.0F);
-    public static ArmorMaterial aMatTitan = EnumHelper.addArmorMaterial(Tags.MODID + ":TITANIUM", Tags.MODID + ":TITANIUM", 25, new int[]{3, 6, 8, 3}, 9, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    public static ArmorMaterial aMatCMB = EnumHelper.addArmorMaterial(Tags.MODID + ":CMB", Tags.MODID + ":CMB", 60, new int[]{3, 6, 8, 3}, 50, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    public static ArmorMaterial aMatSecurity = EnumHelper.addArmorMaterial(Tags.MODID + ":SECURITY", Tags.MODID + ":SECURITY", 100, new int[]{3, 6, 8, 3}, 15, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    public static ArmorMaterial aMatAsbestos = EnumHelper.addArmorMaterial(Tags.MODID + ":ASBESTOS", Tags.MODID + ":ASBESTOS", 20, new int[]{1, 3, 4, 1}, 5, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0.0F);
-    public static ArmorMaterial aMatCobalt = EnumHelper.addArmorMaterial(Tags.MODID + ":COBALT", Tags.MODID + ":COBALT", 70, new int[]{3, 6, 8, 3}, 25, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    public static ArmorMaterial aMatStarmetal = EnumHelper.addArmorMaterial(Tags.MODID + ":STARMETAL", Tags.MODID + ":STARMETAL", 150, new int[]{3, 6, 8, 3}, 100, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    public static ArmorMaterial aMatLiquidator = EnumHelper.addArmorMaterial(Tags.MODID + ":LIQUIDATOR", Tags.MODID + ":LIQUIDATOR", 750, new int[]{3, 6, 8, 3}, 10, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    public static ArmorMaterial aMatFau = EnumHelper.addArmorMaterial(Tags.MODID + ":DIGAMMA", Tags.MODID + ":DIGAMMA", 150, new int[]{3, 8, 6, 3}, 100, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    public static ArmorMaterial aMatDNS = EnumHelper.addArmorMaterial(Tags.MODID + ":DNT_NANO", Tags.MODID + ":DNT_NANO", 150, new int[]{3, 8, 6, 3}, 100, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 2.0F);
-    // Tool Materials
-    public static ToolMaterial enumToolMaterialSchrabidium = EnumHelper.addToolMaterial(Tags.MODID + ":SCHRABIDIUM", 4, 10000, 50.0F, 100.0F, 200);
-    public static ToolMaterial enumToolMaterialHammer = EnumHelper.addToolMaterial(Tags.MODID + ":SCHRABIDIUMHAMMER", 3, 0, 50.0F, 999999996F, 200);
-    public static ToolMaterial enumToolMaterialChainsaw = EnumHelper.addToolMaterial(Tags.MODID + ":CHAINSAW", 3, 1500, 50.0F, 22.0F, 0);
-    public static ToolMaterial enumToolMaterialSteel = EnumHelper.addToolMaterial(Tags.MODID + ":STEEL", 2, 500, 7.5F, 2.0F, 10);
-    public static ToolMaterial enumToolMaterialTitanium = EnumHelper.addToolMaterial(Tags.MODID + ":TITANIUM", 2, 750, 9.0F, 2.5F, 15);
-    public static ToolMaterial enumToolMaterialAlloy = EnumHelper.addToolMaterial(Tags.MODID + ":ALLOY", 3, 2000, 15.0F, 5.0F, 5);
-    public static ToolMaterial enumToolMaterialCmb = EnumHelper.addToolMaterial(Tags.MODID + ":CMB", 4, 8500, 40.0F, 55F, 100);
-    public static ToolMaterial enumToolMaterialElec = EnumHelper.addToolMaterial(Tags.MODID + ":ELEC", 2, 0, 30.0F, 12.0F, 2);
-    public static ToolMaterial enumToolMaterialDesh = EnumHelper.addToolMaterial(Tags.MODID + ":DESH", 2, 0, 7.5F, 2.0F, 10);
-    public static ToolMaterial enumToolMaterialCobalt = EnumHelper.addToolMaterial(Tags.MODID + ":COBALT", 4, 750, 9.0F, 2.5F, 15);
-    public static ToolMaterial enumToolMaterialSaw = EnumHelper.addToolMaterial(Tags.MODID + ":SAW", 2, 750, 2.0F, 3.5F, 25);
-    public static ToolMaterial enumToolMaterialBat = EnumHelper.addToolMaterial(Tags.MODID + ":BAT", 0, 500, 1.5F, 3F, 25);
-    public static ToolMaterial enumToolMaterialBatNail = EnumHelper.addToolMaterial(Tags.MODID + ":BATNAIL", 0, 450, 1.0F, 4F, 25);
-    public static ToolMaterial enumToolMaterialGolfClub = EnumHelper.addToolMaterial(Tags.MODID + ":GOLFCLUB", 1, 1000, 2.0F, 5F, 25);
-    public static ToolMaterial enumToolMaterialPipeRusty = EnumHelper.addToolMaterial(Tags.MODID + ":PIPERUSTY", 1, 350, 1.5F, 4.5F, 25);
-    public static ToolMaterial enumToolMaterialPipeLead = EnumHelper.addToolMaterial(Tags.MODID + ":PIPELEAD", 1, 250, 1.5F, 5.5F, 25);
-    public static ToolMaterial enumToolMaterialBottleOpener = EnumHelper.addToolMaterial(Tags.MODID + ":OPENER", 1, 250, 1.5F, 0.5F, 200);
-    public static ToolMaterial enumToolMaterialSledge = EnumHelper.addToolMaterial(Tags.MODID + ":SHIMMERSLEDGE", 1, 0, 25.0F, 26F, 200);
-    public static ToolMaterial enumToolMaterialMultitool = EnumHelper.addToolMaterial(Tags.MODID + ":MULTITOOL", 3, 5000, 25F, 5.5F, 25);
-    public static ToolMaterial matMeteorite = EnumHelper.addToolMaterial("HBM_METEORITE", 4, 0, 50F, 0.0F, 200);
-    public static ToolMaterial matCrucible = EnumHelper.addToolMaterial("CRUCIBLE", 3, 10000, 50.0F, 100.0F, 200);
-    public static ToolMaterial matHS = EnumHelper.addToolMaterial("CRUCIBLE", 3, 10000, 50.0F, 100.0F, 200);
-    public static ToolMaterial matHF = EnumHelper.addToolMaterial("CRUCIBLE", 3, 10000, 50.0F, 100.0F, 200);
 
     static {
         HBMSoundHandler.init();
         FluidRegistry.enableUniversalBucket();
+        MaterialRegistry.init();
     }
 
     Random rand = new Random();
@@ -322,35 +258,8 @@ public class MainRegistry {
 
         StockNodesRegister.register();
 
-        aMatSchrab.setRepairItem(new ItemStack(ModItems.ingot_schrabidium));
-        aMatHaz.setRepairItem(new ItemStack(ModItems.hazmat_cloth));
-        aMatHaz2.setRepairItem(new ItemStack(ModItems.hazmat_cloth_red));
-        aMatHaz3.setRepairItem(new ItemStack(ModItems.hazmat_cloth_grey));
-        aMatBJ.setRepairItem(new ItemStack(ModItems.plate_armor_lunar));
-        aMatAJR.setRepairItem(new ItemStack(ModItems.plate_armor_ajr));
-        aMatHEV.setRepairItem(new ItemStack(ModItems.plate_armor_hev));
-        aMatTitan.setRepairItem(new ItemStack(ModItems.ingot_titanium));
-        aMatSteel.setRepairItem(new ItemStack(ModItems.ingot_steel));
-        aMatAlloy.setRepairItem(new ItemStack(ModItems.ingot_advanced_alloy));
-        aMatPaa.setRepairItem(new ItemStack(ModItems.plate_paa));
-        aMatCMB.setRepairItem(new ItemStack(ModItems.ingot_combine_steel));
-        aMatAus3.setRepairItem(new ItemStack(ModItems.ingot_australium));
-        aMatSecurity.setRepairItem(new ItemStack(ModItems.plate_kevlar));
-        enumToolMaterialSchrabidium.setRepairItem(new ItemStack(ModItems.ingot_schrabidium));
-        enumToolMaterialHammer.setRepairItem(new ItemStack(Item.getItemFromBlock(ModBlocks.block_schrabidium)));
-        enumToolMaterialChainsaw.setRepairItem(new ItemStack(ModItems.ingot_steel));
-        enumToolMaterialTitanium.setRepairItem(new ItemStack(ModItems.ingot_titanium));
-        enumToolMaterialSteel.setRepairItem(new ItemStack(ModItems.ingot_steel));
-        enumToolMaterialAlloy.setRepairItem(new ItemStack(ModItems.ingot_advanced_alloy));
-        enumToolMaterialCmb.setRepairItem(new ItemStack(ModItems.ingot_combine_steel));
-        enumToolMaterialBottleOpener.setRepairItem(new ItemStack(ModItems.plate_steel));
-        enumToolMaterialDesh.setRepairItem(new ItemStack(ModItems.ingot_desh));
-        aMatAsbestos.setRepairItem(new ItemStack(ModItems.asbestos_cloth));
-        matMeteorite.setRepairItem(new ItemStack(ModItems.plate_paa));
-        aMatLiquidator.setRepairItem(new ItemStack(ModItems.plate_lead));
-        aMatFau.setRepairItem(new ItemStack(ModItems.plate_armor_fau));
-        aMatDNS.setRepairItem(new ItemStack(ModItems.plate_armor_dnt));
 
+        MaterialRegistry.initFixMaterials();
         AutoRegistry.registerTileEntities();
         AutoRegistry.loadAuxiliaryData();
         NetworkRegistry.INSTANCE.registerGuiHandler(instance, new GuiHandler());
@@ -359,15 +268,11 @@ public class MainRegistry {
 
 
         AutoRegistry.registerEntities(i);
-        ForgeChunkManager.setForcedChunkLoadingCallback(this, new LoadingCallback() {
+        ForgeChunkManager.setForcedChunkLoadingCallback(this, (tickets, world) -> {
+            for (Ticket ticket : tickets) {
 
-            @Override
-            public void ticketsLoaded(List<Ticket> tickets, World world) {
-                for (Ticket ticket : tickets) {
-
-                    if (ticket.getEntity() instanceof IChunkLoader) {
-                        ((IChunkLoader) ticket.getEntity()).init(ticket);
-                    }
+                if (ticket.getEntity() instanceof IChunkLoader) {
+                    ((IChunkLoader) ticket.getEntity()).init(ticket);
                 }
             }
         });
@@ -383,7 +288,6 @@ public class MainRegistry {
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
-        //RodRecipes.registerInit();
         statLegendary = new StatBasic("stat.ntmLegendary", new TextComponentTranslation("stat.ntmLegendary")).registerStat();
         statMines = new StatBasic("stat.ntmMines", new TextComponentTranslation("stat.ntmMines")).registerStat();
         statBullets = new StatBasic("stat.ntmBullets", new TextComponentTranslation("stat.ntmBullets")).registerStat();
@@ -393,7 +297,7 @@ public class MainRegistry {
         HazmatRegistry.registerHazmats();
         ControlRegistry.init();
         OreDictManager.registerOres();
-        if(RadiationConfig.enableContaminationOnGround)
+        if (RadiationConfig.enableContaminationOnGround)
             HazardRegistry.registerContaminatingDrops();
         Fluids.initForgeFluidCompat();
         PacketDispatcher.registerPackets();
@@ -443,11 +347,16 @@ public class MainRegistry {
         if (World.MAX_ENTITY_RADIUS < 5)
             World.MAX_ENTITY_RADIUS = 5;
         MinecraftForge.EVENT_BUS.register(new SchistStratum(ModBlocks.stone_gneiss.getDefaultState(), 0.01D, 5, 8, 30)); //DecorateBiomeEvent.Pre
-        if(WorldConfig.enableSulfurCave) new OreCave(ModBlocks.stone_resource, 0).setThreshold(1.5D).setRangeMult(20).setYLevel(30).setMaxRange(20).withFluid(ModBlocks.sulfuric_acid_block);	//sulfur
-        if(WorldConfig.enableAsbestosCave) new OreCave(ModBlocks.stone_resource, 1).setThreshold(1.75D).setRangeMult(20).setYLevel(25).setMaxRange(20);											//asbestos
-        if(WorldConfig.enableHematite) new OreLayer3D(ModBlocks.stone_resource, BlockEnums.EnumStoneType.HEMATITE.ordinal()).setScaleH(0.04D).setScaleV(0.25D).setThreshold(230);
-        if(WorldConfig.enableBauxite) new OreLayer3D(ModBlocks.stone_resource, BlockEnums.EnumStoneType.BAUXITE.ordinal()).setScaleH(0.03D).setScaleV(0.15D).setThreshold(300);
-        if(WorldConfig.enableMalachite) new OreLayer3D(ModBlocks.stone_resource, BlockEnums.EnumStoneType.MALACHITE.ordinal()).setScaleH(0.1D).setScaleV(0.15D).setThreshold(275);
+        if (WorldConfig.enableSulfurCave)
+            new OreCave(ModBlocks.stone_resource, 0).setThreshold(1.5D).setRangeMult(20).setYLevel(30).setMaxRange(20).withFluid(ModBlocks.sulfuric_acid_block);    //sulfur
+        if (WorldConfig.enableAsbestosCave)
+            new OreCave(ModBlocks.stone_resource, 1).setThreshold(1.75D).setRangeMult(20).setYLevel(25).setMaxRange(20);                                            //asbestos
+        if (WorldConfig.enableHematite)
+            new OreLayer3D(ModBlocks.stone_resource, BlockEnums.EnumStoneType.HEMATITE.ordinal()).setScaleH(0.04D).setScaleV(0.25D).setThreshold(230);
+        if (WorldConfig.enableBauxite)
+            new OreLayer3D(ModBlocks.stone_resource, BlockEnums.EnumStoneType.BAUXITE.ordinal()).setScaleH(0.03D).setScaleV(0.15D).setThreshold(300);
+        if (WorldConfig.enableMalachite)
+            new OreLayer3D(ModBlocks.stone_resource, BlockEnums.EnumStoneType.MALACHITE.ordinal()).setScaleH(0.1D).setScaleV(0.15D).setThreshold(275);
 
         if (event.getSide() == Side.CLIENT) {
             BedrockOreRegistry.registerOreColors();
@@ -482,15 +391,15 @@ public class MainRegistry {
     }
 
     @EventHandler
-    public void fMLLoadCompleteEvent(FMLLoadCompleteEvent evt){
+    public void fMLLoadCompleteEvent(FMLLoadCompleteEvent evt) {
         proxy.onLoadComplete(evt);
         RadiationSystemNT.onLoadComplete();
         FalloutConfigJSON.initialize();
-        for(Tuple<ResourceLocation, HazardData> tuple : HazardSystem.locationRateRegisterList)
+        for (Tuple<ResourceLocation, HazardData> tuple : HazardSystem.locationRateRegisterList)
             HazardSystem.register(tuple.getFirst(), tuple.getSecond());
 
         HazardSystem.clearCaches();
-        if(!HazardSystem.locationRateRegisterList.isEmpty()){
+        if (!HazardSystem.locationRateRegisterList.isEmpty()) {
             HazardSystem.locationRateRegisterList.clear();
         }
     }

@@ -10,8 +10,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 
-@Deprecated //Oh no...
-@Spaghetti("ew")
 public class GuiHandler implements IGuiHandler {
 
 	@Override
