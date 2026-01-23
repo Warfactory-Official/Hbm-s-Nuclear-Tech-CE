@@ -1633,20 +1633,6 @@ public class ResourceManager {
     public static final ResourceLocation ff_schrabidium = new ResourceLocation(Tags.MODID, "textures/models/weapons/ff/schrabidium.png");
     public static final ResourceLocation ff_wood = new ResourceLocation(Tags.MODID, "textures/models/weapons/ff/wood.png");
     public static final ResourceLocation ff_wood_red = new ResourceLocation(Tags.MODID, "textures/models/weapons/ff/wood_red.png");
-    public static IModelCustom soyuz = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/soyuz.obj")).asVBO();
-    public static IModelCustom soyuz_launcher_legs = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/launch_table/soyuz_launcher_legs.obj")).asVBO();
-    public static IModelCustom soyuz_launcher_table = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/launch_table/soyuz_launcher_table.obj")).asVBO();
-    public static IModelCustom soyuz_launcher_tower_base = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/launch_table/soyuz_launcher_tower_base.obj")).asVBO();
-    public static IModelCustom soyuz_launcher_tower = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/launch_table/soyuz_launcher_tower.obj")).asVBO();
-    public static IModelCustom soyuz_launcher_support_base = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/launch_table/soyuz_launcher_support_base.obj")).asVBO();
-    public static IModelCustom soyuz_launcher_support = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/launch_table/soyuz_launcher_support.obj")).asVBO();
-    public static IModelCustom sphere_uv = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/sphere_uv.obj")).asVBO();
-    public static IModelCustom sphere_hq = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/sphere_hq.obj")).asVBO();
-    public static IModelCustom egon_hose = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/weapons/egon_hose.obj")).asVBO();
-    public static IModelCustom egon_backpack = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/weapons/egon.obj")).asVBO();
-    //Doors
-    public static AnimatedModel transition_seal;
-    public static Animation transition_seal_anim;
     public static final IModelCustomNamed water_door = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/doors/water_door.obj")).asVBO();
     public static final IModelCustomNamed large_vehicle_door = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/doors/large_vehicle_door.obj")).asVBO();
     public static final IModelCustomNamed qe_containment_door = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/doors/qe_containment.obj")).asVBO();
@@ -1661,6 +1647,24 @@ public class ResourceManager {
     public static final IModelCustomNamed silo_hatch = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/doors/silo_hatch.obj")).asVBO();
     public static final ResourceLocation silo_hatch_large_tex = new ResourceLocation(Tags.MODID, "textures/models/doors/silo_hatch_large.png");
     public static final IModelCustomNamed silo_hatch_large = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/doors/silo_hatch_large.obj")).asVBO();
+    private static final MethodHandle splashThreadGetter;
+    private static final MethodHandle splashEnabledGetter;
+    private static final MethodHandle splashPauseHandle;
+    private static final MethodHandle splashResumeHandle;
+    public static IModelCustom soyuz = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/soyuz.obj")).asVBO();
+    public static IModelCustom soyuz_launcher_legs = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/launch_table/soyuz_launcher_legs.obj")).asVBO();
+    public static IModelCustom soyuz_launcher_table = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/launch_table/soyuz_launcher_table.obj")).asVBO();
+    public static IModelCustom soyuz_launcher_tower_base = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/launch_table/soyuz_launcher_tower_base.obj")).asVBO();
+    public static IModelCustom soyuz_launcher_tower = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/launch_table/soyuz_launcher_tower.obj")).asVBO();
+    public static IModelCustom soyuz_launcher_support_base = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/launch_table/soyuz_launcher_support_base.obj")).asVBO();
+    public static IModelCustom soyuz_launcher_support = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/launch_table/soyuz_launcher_support.obj")).asVBO();
+    public static IModelCustom sphere_uv = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/sphere_uv.obj")).asVBO();
+    public static IModelCustom sphere_hq = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/sphere_hq.obj")).asVBO();
+    public static IModelCustom egon_hose = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/weapons/egon_hose.obj")).asVBO();
+    public static IModelCustom egon_backpack = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/weapons/egon.obj")).asVBO();
+    //Doors
+    public static AnimatedModel transition_seal;
+    public static Animation transition_seal_anim;
     //Gluon gun and tau cannon
     public static ResourceLocation flare = new ResourceLocation(Tags.MODID, "textures/misc/flare.png");
     public static ResourceLocation flare2 = new ResourceLocation(Tags.MODID, "textures/misc/flare2.png");
@@ -1675,45 +1679,34 @@ public class ResourceManager {
     public static ResourceLocation gluontau_hud = new ResourceLocation(Tags.MODID, "textures/misc/gluontau_hud.png");
     public static ResourceLocation mflash = new ResourceLocation(Tags.MODID, "textures/misc/mflash_4.png");
     public static ResourceLocation beam_generic = new ResourceLocation(Tags.MODID, "textures/misc/beam_generic.png");
-
     //Book
     public static ResourceLocation circle_big = new ResourceLocation(Tags.MODID, "textures/misc/circle_big.png");
-
     public static ResourceLocation jetpack_tex = new ResourceLocation(Tags.MODID, "textures/armor/jetpack_anim.png");
     public static ResourceLocation jetpack_hud_large = new ResourceLocation(Tags.MODID, "textures/gui/hud/jetpack_hud_large.png");
     public static ResourceLocation jetpack_hud_small = new ResourceLocation(Tags.MODID, "textures/gui/hud/jetpack_hud_small.png");
     public static ResourceLocation jetpack_hud_small_text = new ResourceLocation(Tags.MODID, "textures/gui/hud/jetpack_hud_small_text.png");
-
     //ANIMATIONS
     public static AnimatedModel supershotgun;
     public static Animation ssg_reload;
-
     public static AnimatedModel door0;
     public static AnimatedModel door0_1;
     public static Animation door0_open;
-
     public static AnimatedModel silo_hatch_drillgon;
     public static Animation silo_hatch_open;
-
     public static AnimatedModel jetpack;
     public static Animation jetpack_activate;
-
     public static AnimatedModel lightning_fp;
     public static Animation lightning_fp_anim;
-
     public static AnimatedModel arm_rig;
-
     public static AnimatedModel jshotgun;
     public static Animation jshotgun_anim0;
     public static Animation jshotgun_anim1;
-
     public static AnimatedModel crucible_anim;
     public static Animation crucible_equip;
     public static AnimatedModel hs_sword;
     public static Animation hs_sword_equip;
     public static AnimatedModel hf_sword;
     public static Animation hf_sword_equip;
-
     //SHADERS
     public static Shader lit_particles = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/lit_particles"), shader -> {
         GLCompat.bindAttribLocation(shader, 0, "pos");
@@ -1723,7 +1716,6 @@ public class ResourceManager {
         GLCompat.bindAttribLocation(shader, 4, "color");
         GLCompat.bindAttribLocation(shader, 5, "lightmap");
     }).withUniforms(HbmShaderManager2.MODELVIEW_MATRIX, HbmShaderManager2.PROJECTION_MATRIX, HbmShaderManager2.INV_PLAYER_ROT_MATRIX, HbmShaderManager2.LIGHTMAP);
-
     public static Shader gluon_beam = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/gluon_beam"))
             .withUniforms(shader -> {
                 GLCompat.activeTexture(GLCompat.GL_TEXTURE0 + 3);
@@ -1737,7 +1729,6 @@ public class ResourceManager {
                 float time = (System.currentTimeMillis() % 10000000) / 1000F;
                 shader.uniform1f("time", time);
             });
-
     public static Shader gluon_spiral = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/gluon_spiral"))
             .withUniforms(shader -> {
                 //Well, I accidentally uniformed the same noise sampler twice. That explains why the second noise didn't work.
@@ -1752,14 +1743,10 @@ public class ResourceManager {
                 float time = (System.currentTimeMillis() % 10000000) / 1000F;
                 shader.uniform1f("time", time);
             });
-
     //Drillgon200: Did I need a shader for this? No, not really, but it's somewhat easier to create a sin wave pattern programmatically than to do it in paint.net.
     public static Shader tau_ray = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/tau_ray"));
-
     public static Shader book_circle = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/book/circle"));
-
     public static Shader normal_fadeout = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/normal_fadeout"));
-
     public static Shader heat_distortion = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/heat_distortion"))
             .withUniforms(shader -> {
                 Framebuffer buffer = Minecraft.getMinecraft().getFramebuffer();
@@ -1775,7 +1762,6 @@ public class ResourceManager {
                 shader.uniform1f("time", time);
                 shader.uniform2f("windowSize", Minecraft.getMinecraft().displayWidth, Minecraft.getMinecraft().displayHeight);
             });
-
     public static Shader desaturate = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/desaturate"));
     public static Shader test_trail = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/trail"), shader -> {
         GLCompat.bindAttribLocation(shader, 0, "pos");
@@ -1809,8 +1795,6 @@ public class ResourceManager {
     public static Shader flashlight_deferred = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/flashlight_deferred")).withUniforms(shader -> {
         shader.uniform2f("windowSize", Minecraft.getMinecraft().displayWidth, Minecraft.getMinecraft().displayHeight);
     });
-
-
     //The actual shaders used in flashlight rendering, not experimental
     public static Shader albedo = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/lighting/albedo"));
     public static Shader flashlight_depth = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/lighting/flashlight_depth"));
@@ -1827,7 +1811,6 @@ public class ResourceManager {
     public static Shader volume_upscale = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/lighting/volume_upscale")).withUniforms(shader -> {
         shader.uniform2f("windowSize", Minecraft.getMinecraft().displayWidth, Minecraft.getMinecraft().displayHeight);
     });
-
     public static Shader heat_distortion_post = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/heat_distortion_post")).withUniforms(shader -> {
         shader.uniform2f("windowSize", Minecraft.getMinecraft().displayWidth, Minecraft.getMinecraft().displayHeight);
         GlStateManager.setActiveTexture(GLCompat.GL_TEXTURE0 + 4);
@@ -1837,7 +1820,6 @@ public class ResourceManager {
         float time = (System.currentTimeMillis() % 10000000) / 1000F;
         shader.uniform1f("time", time);
     });
-
     public static Shader heat_distortion_new = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/heat_distortion_new"));
     public static Shader crucible_lightning = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/crucible_lightning"), shader -> {
         GLCompat.bindAttribLocation(shader, 0, "pos");
@@ -1860,7 +1842,6 @@ public class ResourceManager {
     public static Shader blood_dissolve = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/blood/blood")).withUniforms(HbmShaderManager2.LIGHTMAP);
     public static Shader gravitymap_render = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/blood/gravitymap"));
     public static Shader blood_flow_update = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/blood/blood_flow_update"));
-
     public static Shader gpu_particle_render = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/gpu_particle_render")).withUniforms(HbmShaderManager2.MODELVIEW_MATRIX, HbmShaderManager2.PROJECTION_MATRIX, HbmShaderManager2.INV_PLAYER_ROT_MATRIX, shader -> {
         shader.uniform1i("lightmap", 1);
         shader.uniform1i("particleData0", 2);
@@ -1868,13 +1849,28 @@ public class ResourceManager {
         shader.uniform1i("particleData2", 4);
         shader.uniform4f("particleTypeTexCoords[0]", NTMClientRegistry.contrail.getMinU(), NTMClientRegistry.contrail.getMinV(), NTMClientRegistry.contrail.getMaxU() - NTMClientRegistry.contrail.getMinU(), NTMClientRegistry.contrail.getMaxV() - NTMClientRegistry.contrail.getMinV());
     });
-
     public static Shader gpu_particle_udpate = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/gpu_particle_update")).withUniforms(shader -> {
         shader.uniform1i("particleData0", 2);
         shader.uniform1i("particleData1", 3);
         shader.uniform1i("particleData2", 4);
     });
 
+    static {
+        Class<?> splash;
+        if (Loader.isModLoaded(Compat.ModIds.MODERN_SPLASH)) {
+            try {
+                splash = Class.forName("gkappa.modernsplash.CustomSplash");
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException("ModernSplash loaded but failed to find gkappa.modernsplash.CustomSplash", e);
+            }
+        } else {
+            splash = SplashProgress.class;
+        }
+        splashThreadGetter = MethodHandleHelper.findStaticGetter(splash, "thread", Thread.class);
+        splashEnabledGetter = MethodHandleHelper.findStaticGetter(splash, "enabled", boolean.class);
+        splashPauseHandle = MethodHandleHelper.findStatic(splash, "pause", MethodType.methodType(void.class));
+        splashResumeHandle = MethodHandleHelper.findStatic(splash, "resume", MethodType.methodType(void.class));
+    }
 
     public static void loadAnimatedModels() {
         supershotgun = ColladaLoader.load(new ResourceLocation(Tags.MODID, "models/anim/ssg_reload_mk2_2_newmodel.dae"));
@@ -1913,7 +1909,6 @@ public class ResourceManager {
     public static void init() {
 
 
-
         LensVisibilityHandler.checkSphere = new WavefrontObjDisplayList(new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/diffractionspikechecker.obj"))).getListForName("sphere");
         Minecraft.getMinecraft().getTextureManager().bindTexture(fresnel_ms);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
@@ -1924,35 +1919,13 @@ public class ResourceManager {
 
         //Drillgon discovered that it messes with GL context
         pauseSplash();
-        if(!WaveFrontObjectVAO.uploaded) {
-            WaveFrontObjectVAO.allVBOs.forEach(WaveFrontObjectVAO::generate_vaos);
+        if (!WaveFrontObjectVAO.uploaded) {
+            Minecraft.getMinecraft().addScheduledTask(() -> WaveFrontObjectVAO.allVBOs.forEach(WaveFrontObjectVAO::generate_vaos));
             WaveFrontObjectVAO.uploaded = true;
         }
         resumeSplash();
         KeypadClient.load();
 
-    }
-
-    private static final MethodHandle splashThreadGetter;
-    private static final MethodHandle splashEnabledGetter;
-    private static final MethodHandle splashPauseHandle;
-    private static final MethodHandle splashResumeHandle;
-
-    static {
-        Class<?> splash;
-        if (Loader.isModLoaded(Compat.ModIds.MODERN_SPLASH)) {
-            try {
-                splash = Class.forName("gkappa.modernsplash.CustomSplash");
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException("ModernSplash loaded but failed to find gkappa.modernsplash.CustomSplash", e);
-            }
-        } else {
-            splash = SplashProgress.class;
-        }
-        splashThreadGetter = MethodHandleHelper.findStaticGetter(splash, "thread", Thread.class);
-        splashEnabledGetter = MethodHandleHelper.findStaticGetter(splash, "enabled", boolean.class);
-        splashPauseHandle = MethodHandleHelper.findStatic(splash, "pause", MethodType.methodType(void.class));
-        splashResumeHandle = MethodHandleHelper.findStatic(splash, "resume", MethodType.methodType(void.class));
     }
 
     private static void pauseSplash() {
