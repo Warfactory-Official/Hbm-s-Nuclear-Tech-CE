@@ -64,7 +64,7 @@ public class Compat {
         final Map<String,String> humanReadable = Map.of(
                 HBM_NTM_LUCKY_BLOCKS, "\"HBM NTM Lucky blocks\" by Eag0la",
                 POTATOO_STRUCTURE, "\"Potatoo's Custom Structure For HBM's Nuclear Tech Mod\" by Potatoo_Cake",
-                HBM_NTM_STRUCTURE, "\"HBM/NTM structure\" by AliyKorol"
+                HBM_NTM_STRUCTURE, "\"HBM/NTM structure\" by AlimodyKorol"
         );
         for (String mod : ModIds.INCOMPATIBLE_MODS) {
             if (Loader.isModLoaded(mod)) {
