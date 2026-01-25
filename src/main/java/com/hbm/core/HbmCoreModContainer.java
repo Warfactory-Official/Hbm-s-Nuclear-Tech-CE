@@ -17,7 +17,7 @@ public class HbmCoreModContainer extends DummyModContainer {
         meta.name = "NTMCore";
         meta.description = "Hbm core mod";
         //versioning scheme = MAJOR.MINOR.PATCH
-        meta.version = "1.12.2-3.0.0";
+        meta.version = "1.12.2-3.1.0";
         meta.authorList = Arrays.asList("Movblock","Leafia (CBR system)");
 	}
 
