@@ -9,6 +9,7 @@ import com.hbm.capability.HbmCapability.IHBMData;
 import com.hbm.capability.HbmLivingCapability;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.config.*;
+import com.hbm.core.BlockMetaAir;
 import com.hbm.util.CompatBlockReplacer;
 import com.hbm.entity.logic.IChunkLoader;
 import com.hbm.entity.mob.EntityCreeperTainted;
@@ -96,8 +97,10 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.BlockStatePaletteHashMap;
 import net.minecraft.world.chunk.BlockStatePaletteLinear;
+
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IBlockStatePalette;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
@@ -166,41 +169,53 @@ public class ModEventHandler {
         return false;
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void replaceBlocks(ChunkEvent.Load evt) {
+        // TODO: add config option
         Chunk chunk = evt.getChunk();
         for (ExtendedBlockStorage storage : chunk.getBlockStorageArray())
             replacePalette(storage);
     }
-    public static void replacePalette(ExtendedBlockStorage storage) {
+
+    private static void replacePalette(ExtendedBlockStorage storage) {
         if (storage == null || storage.data == null || storage.data.palette == null) return;
         IBlockStatePalette palette = storage.data.palette;
         if (palette instanceof BlockStatePaletteHashMap map) {
-            for (IBlockState state : map.statePaletteMap) {
-                try {
-                    //System.out.println("STATE/HASH: "+state);
-                    if (state.getBlock().getClass().getSimpleName().equals("BlockDummyAir")) {
-                        int id = map.statePaletteMap.getId(state);
-                        map.statePaletteMap.put(CompatBlockReplacer.replaceBlock(state),id);
-                    }
-                } catch (NullPointerException ignored) {}
+            IntIdentityHashBiMap<IBlockState> statePaletteMap = map.statePaletteMap;
+            if (statePaletteMap == null) return;
+            for (IBlockState state : statePaletteMap) {
+                // inheritance: BlockDummyAir extends BlockMetaAir extends BlockAir
+                if (state.getBlock() instanceof BlockMetaAir) {
+                    int id = statePaletteMap.getId(state);
+                    statePaletteMap.put(CompatBlockReplacer.replaceBlock(state), id);
+                }
             }
         } else if (palette instanceof BlockStatePaletteLinear linear) {
-            for (int i = 0; i < linear.states.length; i++) {
-                try {
-                    //System.out.println("STATE/LINEAR: "+linear.states[i]);
-                    if (linear.states[i].getBlock().getClass().getSimpleName().equals("BlockDummyAir"))
-                        linear.states[i] = CompatBlockReplacer.replaceBlock(linear.states[i]);
-                } catch (NullPointerException ignored) {}
+            IBlockState[] states = linear.states;
+            if (states == null) return;
+            for (int i = 0; i < states.length; i++) {
+                if (states[i].getBlock() instanceof BlockMetaAir) {
+                    states[i] = CompatBlockReplacer.replaceBlock(states[i]);
+                }
+            }
+        } else if (palette == BlockStateContainer.REGISTRY_BASED_PALETTE) {
+            BitArray bits = storage.data.storage;
+            if (bits == null) return;
+            for (int i = 0; i < 4096; i++) {
+                int rawId = bits.getAt(i);
+                IBlockState state = Block.BLOCK_STATE_IDS.getByValue(rawId);
+                if (state != null && state.getBlock() instanceof BlockMetaAir) {
+                    int newId = Block.BLOCK_STATE_IDS.get(CompatBlockReplacer.replaceBlock(state));
+                    bits.setAt(i, Math.max(newId, 0));
+                }
             }
         } else {
-            throw new RuntimeException("Impossible case ("+palette.getClass().getName()+")");
+            throw new IllegalStateException("Unknown palette format: " + palette.getClass().getName());
         }
     }
 
     @SubscribeEvent
     public void soundRegistering(RegistryEvent.Register<SoundEvent> evt) {
-
         for (SoundEvent e : HBMSoundHandler.ALL_SOUNDS) {
             evt.getRegistry().register(e);
         }
