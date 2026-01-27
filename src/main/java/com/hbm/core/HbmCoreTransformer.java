@@ -27,6 +27,8 @@ public final class HbmCoreTransformer implements IClassTransformer {
                     EntityItemHazardTransformer.transform(name, transformedName, basicClass);
 //            case ResourceAccessTransformer.TARGET ->
 //                    ResourceAccessTransformer.transform(name, transformedName, basicClass);
+            case BlockDummyAirTransformer.TARGET ->
+                    BlockDummyAirTransformer.transform(name,transformedName,basicClass);
             default -> basicClass;
         };
     }
