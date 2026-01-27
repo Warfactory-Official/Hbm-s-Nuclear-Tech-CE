@@ -3,99 +3,110 @@ package com.hbm.tileentity;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.interfaces.ICopiable;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.IItemHandlerModifiable;
 
 public interface IControlReceiverFilter extends IControlReceiver, ICopiable {
 
-	void nextMode(int i);
+    void nextMode(int i);
 
-	/*
-	default ModulePatternMatcher getMatcher(){
+    @Override
+    default void receiveControl(NBTTagCompound data) {
+        if (data.hasKey("slot")) {
+            setFilterContents(data);
+        }
+    }
 
-	}*/
+    /**
+     * Uses Capabilities to update filter contents.
+     * Expects the implementor to be a TileEntity.
+     */
+    default void setFilterContents(NBTTagCompound nbt) {
+        if (!(this instanceof TileEntity tile)) return;
 
-	@Override
-	default void receiveControl(NBTTagCompound data) {
-		if(data.hasKey("slot")) {
-			setFilterContents(data);
-		}
-	}
+        IItemHandler handler = tile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        if (handler instanceof IItemHandlerModifiable modifiableHandler) {
+            int slot = nbt.getInteger("slot");
+            ItemStack stack = new ItemStack(nbt.getCompoundTag("stack"));
 
-	/**
-	 * Expects the implementor to be a tile entity and an IInventory
-	 * @param nbt
-	 */
-	default void setFilterContents(NBTTagCompound nbt) {
-		TileEntity tile = (TileEntity) this;
-		IInventory inv = (IInventory) this;
-		int slot = nbt.getInteger("slot");
-		NBTTagCompound stack = nbt.getCompoundTag("stack");
-		ItemStack item = new ItemStack(stack);
-		inv.setInventorySlotContents(slot, item);
-		nextMode(slot);
-		tile.getWorld().markChunkDirty(tile.getPos(), tile);
-	}
-	/**
-	 * Used for the copy tool
-	 * @return The start and end (start inclusive, end exclusive) of the filter slots of the TE
-	 */
-	int[] getFilterSlots();
+            modifiableHandler.setStackInSlot(slot, stack);
+            nextMode(slot);
 
-	@Override
-	default NBTTagCompound getSettings(World world, int x, int y, int z) {
-		IInventory inv = (IInventory) this;
-		NBTTagCompound nbt = new NBTTagCompound();
-		NBTTagList tags = new NBTTagList();
-		int count = 0;
-		for (int i = getFilterSlots()[0]; i < getFilterSlots()[1]; i++) {
-			NBTTagCompound slotNBT = new NBTTagCompound();
-			if(inv.getStackInSlot(i) != null) {
-				slotNBT.setByte("slot", (byte) count);
-				inv.getStackInSlot(i).writeToNBT(slotNBT);
-				tags.appendTag(slotNBT);
-			}
-			count++;
-		}
-		nbt.setTag("items", tags);
+            tile.getWorld().markChunkDirty(tile.getPos(), tile);
+        }
+    }
 
-		return nbt;
-	}
-	// TODO: stop using IInventory, use ItemHandler instead
-	@Override
-	default void pasteSettings(NBTTagCompound nbt, int index, World world, EntityPlayer player, int x, int y, int z) {
-		TileEntity tile = (TileEntity) this;
-		IInventory inv = (IInventory) this;
-		NBTTagList items = nbt.getTagList("items", 10);
-		int listSize = items.tagCount();
-		if(listSize > 0) {
-			int count = 0;
+    int[] getFilterSlots();
 
-			for (int i = getFilterSlots()[0]; i < getFilterSlots()[1]; i++) {
-				if (i < listSize) {
-					NBTTagCompound slotNBT = items.getCompoundTagAt(count);
-					byte slot = slotNBT.getByte("slot");
-					ItemStack loadedStack = new ItemStack(slotNBT);
-					//whether the filter info came from a router
-					boolean router = nbt.hasKey("modes") && slot > index * 5 && slot < index * + 5;
+    @Override
+    default NBTTagCompound getSettings(World world, int x, int y, int z) {
+        NBTTagCompound nbt = new NBTTagCompound();
+        if (!(this instanceof TileEntity tile)) return nbt;
 
-					if (!loadedStack.isEmpty() && index < listSize && (slot < getFilterSlots()[1] || router)) {
-						inv.setInventorySlotContents(slot + getFilterSlots()[0], new ItemStack(slotNBT));
-						nextMode(slot);
-						tile.getWorld().markChunkDirty(tile.getPos(), tile);
-					}
-				}
-				count++;
-			}
-		}
-	}
+        IItemHandler handler = tile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        if (handler == null) return nbt;
 
-	@Override
-	default String[] infoForDisplay(World world, int x, int y, int z) {
-		return new String[] { "copytool.filter" };
-	}
+        NBTTagList tags = new NBTTagList();
+        int[] range = getFilterSlots();
+
+        int count = 0;
+        for (int i = range[0]; i < range[1]; i++) {
+            ItemStack stack = handler.getStackInSlot(i);
+            if (!stack.isEmpty()) {
+                NBTTagCompound slotNBT = new NBTTagCompound();
+                slotNBT.setByte("slot", (byte) count);
+                stack.writeToNBT(slotNBT);
+                tags.appendTag(slotNBT);
+            }
+            count++;
+        }
+        nbt.setTag("items", tags);
+        return nbt;
+    }
+
+    @Override
+    default void pasteSettings(NBTTagCompound nbt, int index, World world, EntityPlayer player, int x, int y, int z) {
+        if (!(this instanceof TileEntity tile)) return;
+
+        IItemHandler handler = tile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        if (!(handler instanceof IItemHandlerModifiable modifiableHandler)) return;
+
+        NBTTagList items = nbt.getTagList("items", 10);
+        int listSize = items.tagCount();
+        if (listSize <= 0) return;
+
+        int[] range = getFilterSlots();
+        int count = 0;
+
+        for (int i = range[0]; i < range[1]; i++) {
+            if (count < listSize) {
+                NBTTagCompound slotNBT = items.getCompoundTagAt(count);
+                byte slotIdx = slotNBT.getByte("slot");
+                ItemStack loadedStack = new ItemStack(slotNBT);
+
+                boolean isRouter = nbt.hasKey("modes") && slotIdx > index * 5 && slotIdx < (index + 1) * 5;
+
+                if (!loadedStack.isEmpty() && (slotIdx < range[1] || isRouter)) {
+                    int targetSlot = slotIdx + range[0];
+                    if (targetSlot < modifiableHandler.getSlots()) {
+                        modifiableHandler.setStackInSlot(targetSlot, loadedStack);
+                        nextMode(slotIdx);
+                    }
+                }
+            }
+            count++;
+        }
+        tile.getWorld().markChunkDirty(tile.getPos(), tile);
+    }
+
+    @Override
+    default String[] infoForDisplay(World world, int x, int y, int z) {
+        return new String[]{"copytool.filter"};
+    }
 }
