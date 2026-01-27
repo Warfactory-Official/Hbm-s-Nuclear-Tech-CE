@@ -4,11 +4,14 @@ import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.container.ContainerBatterySocket;
 import com.hbm.inventory.gui.GUIBatterySocket;
-import com.hbm.items.ModItems;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 
+import com.hbm.util.BufferUtil;
 import io.netty.buffer.ByteBuf;
+import li.cil.oc.api.machine.Arguments;
+import li.cil.oc.api.machine.Callback;
+import li.cil.oc.api.machine.Context;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -17,6 +20,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -26,7 +30,7 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase {
     public long[] log = new long[20];
     public long delta = 0;
 
-    public int renderPack = -1;
+    public ItemStack syncStack;
 
     public TileEntityBatterySocket() {
         super(1);
@@ -42,7 +46,6 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase {
         long prevPower = this.getPower();
 
         super.update();
-
         if (!world.isRemote) {
 
             long avg = (this.getPower() + prevPower) / 2;
@@ -59,20 +62,15 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase {
     @Override
     public void serialize(ByteBuf buf) {
         super.serialize(buf);
-
-        int renderPack = -1;
-        if (!inventory.getStackInSlot(0).isEmpty() && inventory.getStackInSlot(0).getItem() == ModItems.battery_pack) {
-            renderPack = inventory.getStackInSlot(0).getItemDamage();
-        }
-        buf.writeInt(renderPack);
         buf.writeLong(delta);
+        BufferUtil.writeItemStack(buf, this.inventory.getStackInSlot(0));
     }
 
     @Override
     public void deserialize(ByteBuf buf) {
         super.deserialize(buf);
-        renderPack = buf.readInt();
         delta = buf.readLong();
+        this.syncStack = BufferUtil.readItemStack(buf);
     }
 
     @Override
@@ -89,12 +87,8 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase {
         return new int[]{0};
     }
 
-    @Override
-    public long getPower() {
-        if (inventory.getStackInSlot(0).isEmpty() || !(inventory.getStackInSlot(0).getItem() instanceof IBatteryItem))
-            return 0;
-        return ((IBatteryItem) inventory.getStackInSlot(0).getItem()).getCharge(inventory.getStackInSlot(0));
-    }
+    @Override public long getPower() { return powerFromStack(this.inventory.getStackInSlot(0)); }
+    @Override public long getMaxPower() { return maxPowerFromStack(this.inventory.getStackInSlot(0)); }
 
     @Override
     public void setPower(long power) {
@@ -103,11 +97,14 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase {
         ((IBatteryItem) inventory.getStackInSlot(0).getItem()).setCharge(inventory.getStackInSlot(0), power);
     }
 
-    @Override
-    public long getMaxPower() {
-        if (inventory.getStackInSlot(0).isEmpty() || !(inventory.getStackInSlot(0).getItem() instanceof IBatteryItem))
-            return 0;
-        return ((IBatteryItem) inventory.getStackInSlot(0).getItem()).getMaxCharge(inventory.getStackInSlot(0));
+    public static long powerFromStack(ItemStack stack) {
+        if(stack == null || !(stack.getItem() instanceof IBatteryItem)) return 0;
+        return ((IBatteryItem) stack.getItem()).getCharge(stack);
+    }
+
+    public static long maxPowerFromStack(ItemStack stack) {
+        if(stack == null || !(stack.getItem() instanceof IBatteryItem)) return 0;
+        return ((IBatteryItem) stack.getItem()).getMaxCharge(stack);
     }
 
     @Override
@@ -185,5 +182,57 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase {
         }
 
         return bb;
+    }
+
+    // do some opencomputer stuff
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getEnergyInfo(Context context, Arguments args) {
+        return new Object[] {getPower(), getMaxPower(), this.delta};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getPackInfo(Context context, Arguments args) {
+        if(inventory.getStackInSlot(0).isEmpty() || !(inventory.getStackInSlot(0).getItem() instanceof IBatteryItem bat)) return new Object[] {"", 0, 0};
+        return new Object[] {inventory.getStackInSlot(0).getTranslationKey(), bat.getChargeRate(inventory.getStackInSlot(0)), bat.getDischargeRate(inventory.getStackInSlot(0))};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getInfo(Context context, Arguments args) {
+        Object[] energyInfo = getEnergyInfo(context, args);
+        Object[] packInfo = getPackInfo(context, args);
+        Object[] modeInfo = getModeInfo(context, args);
+        return new Object[] {energyInfo[0], energyInfo[1], energyInfo[2], modeInfo[0], modeInfo[1], modeInfo[2], packInfo[0], packInfo[1], packInfo[2]};
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public String[] methods() {
+        return new String[] {
+                "getEnergyInfo",
+                "getPackInfo",
+                "getModeInfo",
+                "setModeLow",
+                "setModeHigh",
+                "setPriority",
+                "getInfo"
+        };
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public Object[] invoke(String method, Context context, Arguments args) throws Exception {
+        return switch (method) {
+            case "getEnergyInfo" -> getEnergyInfo(context, args);
+            case "getPackInfo" -> getPackInfo(context, args);
+            case "getModeInfo" -> getModeInfo(context, args);
+            case "setModeLow" -> setModeLow(context, args);
+            case "setModeHigh" -> setModeHigh(context, args);
+            case "setPriority" -> setPriority(context, args);
+            case "getInfo" -> getInfo(context, args);
+            default -> throw new NoSuchMethodException();
+        };
     }
 }

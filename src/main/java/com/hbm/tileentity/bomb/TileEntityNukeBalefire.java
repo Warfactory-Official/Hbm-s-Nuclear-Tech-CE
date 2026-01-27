@@ -94,10 +94,10 @@ public class TileEntityNukeBalefire extends TileEntityMachineBase implements ITi
 		loaded = buf.readBoolean();
 		started = buf.readBoolean();
 	}
-	
-	public boolean isLoaded() {
 
-		return hasEgg() && hasBattery();
+	@Override
+	public boolean isLoaded() {
+		return super.isLoaded() && hasEgg() && hasBattery();
 	}
 
 	public boolean hasEgg() {

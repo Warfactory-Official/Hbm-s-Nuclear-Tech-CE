@@ -11,7 +11,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 
 import java.util.List;
-
+@Deprecated
 public class ItemSelfcharger extends Item implements IBatteryItem {
 	
 	long charge;

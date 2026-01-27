@@ -53,6 +53,7 @@ public abstract class EntityThrowableInterp extends EntityThrowableNT {
         }
     }
 
+    @Override
     @SideOnly(Side.CLIENT)
     public void setVelocity(double velX, double velY, double velZ) {
         this.velocityX = this.motionX = velX;
@@ -60,6 +61,7 @@ public abstract class EntityThrowableInterp extends EntityThrowableNT {
         this.velocityZ = this.motionZ = velZ;
     }
 
+    @Override
     @SideOnly(Side.CLIENT)
     public void setPositionAndRotationDirect(double x, double y, double z, float yaw, float pitch, int theNumberThree, boolean teleport) {
         this.syncPosX = x;

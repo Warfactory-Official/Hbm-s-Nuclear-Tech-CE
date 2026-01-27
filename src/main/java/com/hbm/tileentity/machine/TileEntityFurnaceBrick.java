@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.MachineBrickFurnace;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.OreDictManager;
@@ -7,9 +8,11 @@ import com.hbm.inventory.container.ContainerFurnaceBrick;
 import com.hbm.inventory.gui.GUIFurnaceBrick;
 import com.hbm.items.ItemEnums;
 import com.hbm.items.ModItems;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
@@ -22,6 +25,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntityFurnace;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -231,5 +235,11 @@ public class TileEntityFurnaceBrick extends TileEntityMachineBase implements IGU
     @SideOnly(Side.CLIENT)
     public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
         return new GUIFurnaceBrick(player.inventory, this);
+    }
+
+    @Override
+    public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
+        if (Library.isSwappingBetweenVariants(oldState, newState, ModBlocks.machine_furnace_brick_on, ModBlocks.machine_furnace_brick_off)) return false;
+        return super.shouldRefresh(world, pos, oldState, newState);
     }
 }

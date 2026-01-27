@@ -271,7 +271,7 @@ public class ModEventHandler {
     @SubscribeEvent
     public void onItemPickup(PlayerEvent.ItemPickupEvent event) {
         if(event.getStack().getItem() == ModItems.canned_conserve && EnumUtil.grabEnumSafely(
-                ItemConserve.EnumFoodType.class, event.getStack().getItemDamage()) == ItemConserve.EnumFoodType.JIZZ)
+                ItemConserve.EnumFoodType.VALUES, event.getStack().getItemDamage()) == ItemConserve.EnumFoodType.JIZZ)
             AdvancementManager.grantAchievement(event.player, AdvancementManager.achC20_5);
         if(event.getStack().getItem() == Items.SLIME_BALL)
             AdvancementManager.grantAchievement(event.player, AdvancementManager.achSlimeball);
@@ -565,31 +565,31 @@ public class ModEventHandler {
 
         //let's start from the back:
 
-        //this part means that the message's first character has to equal a '!': -------------------------+
-        //                                                                                                |
-        //this is a logical AND operator: -------------------------------------------------------------+  |
-        //                                                                                             |  |
-        //this is a reference to a field in                                                            |  |
-        //Library.java containing a reference UUID: --------------------------------------+            |  |
-        //                                                                                |            |  |
-        //this will compare said UUID with                                                |            |  |
-        //the string representation of the                                                |            |  |
-        //current player's UUID: ----------+                                              |            |  |
-        //                                 |                                              |            |  |
-        //another AND operator: --------+  |                                              |            |  |
-        //                              |  |                                              |            |  |
-        //this is a reference to a      |  |                                              |            |  |
-        //boolean called                |  |                                              |            |  |
-        //'enableDebugMode' which is    |  |                                              |            |  |
-        //only set once by the mod's    |  |                                              |            |  |
-        //config and is disabled by     |  |                                              |            |  |
-        //default. "debug" is not a     |  |                                              |            |  |:
-        //substring of the message, nor |  |                                              |            |  |
-        //something that can be toggled |  |                                              |            |  |
-        //in any other way except for   |  |                                              |            |  |
-        //the config file: |            |  |                                              |            |  |
-        //                 V            V  V                                              V            V  V
-        if (GeneralConfig.enableDebugMode && player.getUniqueID().toString().equals(Library.HbMinecraft) && message.startsWith("!")) {
+        //this part means that the message's first character has to equal a '!': ------------------+
+        //                                                                                         |
+        //this is a logical AND operator: ------------------------------------------------------+  |
+        //                                                                                      |  |
+        //this is a reference to a field in                                                     |  |
+        //ShadyUtil containing a reference UUID: -----------------------------------------+     |  |
+        //                                                                                |     |  |
+        //this will compare said UUID with                                                |     |  |
+        //the string representation of the                                                |     |  |
+        //current player's UUID: ----------+                                              |     |  |
+        //                                 |                                              |     |  |
+        //another AND operator: --------+  |                                              |     |  |
+        //                              |  |                                              |     |  |
+        //this is a reference to a      |  |                                              |     |  |
+        //boolean called                |  |                                              |     |  |
+        //'enableDebugMode' which is    |  |                                              |     |  |
+        //only set once by the mod's    |  |                                              |     |  |
+        //config and is disabled by     |  |                                              |     |  |
+        //default. "debug" is not a     |  |                                              |     |  |:
+        //substring of the message, nor |  |                                              |     |  |
+        //something that can be toggled |  |                                              |     |  |
+        //in any other way except for   |  |                                              |     |  |
+        //the config file: |            |  |                                              |     |  |
+        //                 V            V  V                                              V     V  V
+        if (GeneralConfig.enableDebugMode && player.getUniqueID().equals(ShadyUtil.HbMinecraft) && message.startsWith("!")) {
 
             String[] msg = message.split(" ");
 
@@ -980,11 +980,11 @@ public class ModEventHandler {
             foeq.setPositionAndRotation(event.getEntity().posX, 500, event.getEntity().posZ, 0.0F, 0.0F);
             event.getEntity().world.spawnEntity(foeq);
         }
-        if (event.getEntity().getUniqueID().toString().equals(Library.HbMinecraft)) {
+        if (event.getEntity().getUniqueID().equals(ShadyUtil.HbMinecraft)) {
             event.getEntity().dropItem(ModItems.book_of_, 1);
         }
 
-        if (event.getEntity().getUniqueID().toString().equals(Library.Alcater)) {
+        if (event.getEntity().getUniqueID().equals(ShadyUtil.Alcater)) {
             event.getEntity().entityDropItem(new ItemStack(ModItems.bottle_rad).setStackDisplayName("§aAlcater's §2Neo §aNuka§r"), 0.5F);
         }
 
@@ -1259,7 +1259,7 @@ public class ModEventHandler {
                     player.sendMessage(new TextComponentString("Click ")
                             .setStyle(new Style().setColor(TextFormatting.YELLOW))
                             .appendSibling(new TextComponentString("[here]")
-                                    .setStyle(new Style().setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://github.com/Warfactory-Offical/Hbm-s-Nuclear-Tech-CE/releases")).setUnderlined(Boolean.TRUE).setColor(TextFormatting.RED))
+                                    .setStyle(new Style().setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://modrinth.com/mod/ntm-ce/versions")).setUnderlined(Boolean.TRUE).setColor(TextFormatting.RED))
                             ).appendSibling(new TextComponentString(" to download!").setStyle(new Style().setColor(TextFormatting.YELLOW)))
                     );
                 }

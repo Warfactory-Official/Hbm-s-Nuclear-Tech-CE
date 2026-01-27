@@ -98,7 +98,7 @@ public class ItemICFPellet extends Item {
     @Contract(pure = true)
     public static EnumICFFuel getType(ItemStack stack, boolean first) {
         if (!stack.hasTagCompound()) return first ? EnumICFFuel.DEUTERIUM : EnumICFFuel.TRITIUM;
-        return EnumUtil.grabEnumSafely(EnumICFFuel.class, stack.getTagCompound().getByte("type" + (first ? 1 : 2)));
+        return EnumUtil.grabEnumSafely(EnumICFFuel.VALUES, stack.getTagCompound().getByte("type" + (first ? 1 : 2)));
     }
 
     @Override
@@ -153,6 +153,8 @@ public class ItemICFPellet extends Item {
         CALCIUM(0xD2C7A9, 3.00D, 1.00D, 12.5D),
         //titanium
         ;
+
+        public static final EnumICFFuel[] VALUES = values();
 
         public final int color;
         public final double reactionMult;

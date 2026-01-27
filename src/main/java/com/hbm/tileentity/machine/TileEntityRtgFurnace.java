@@ -54,8 +54,9 @@ public class TileEntityRtgFurnace extends TileEntityMachineBase implements ITick
 		}
 	}
 
+	@Override
 	public boolean isLoaded() {
-		return RTGUtil.hasHeat(this.inventory);
+		return super.isLoaded() && RTGUtil.hasHeat(this.inventory);
 	}
 	
 	@Override

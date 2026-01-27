@@ -40,6 +40,8 @@
 dependencies {
     annotationProcessor project(':processor')
     compileOnly project(':processor')
+    testImplementation project(':processor')
+    testAnnotationProcessor project(':processor')
     //compileOnly rfg.deobf("dev.galacticraft:galacticraft-legacy:${version_gc}")
     compileOnly rfg.deobf("curse.maven:galacticraft-legacy-564236:6364107")
     compileOnly rfg.deobf("com.azanor.baubles:Baubles:${version_baubles}")
@@ -61,6 +63,8 @@ dependencies {
     runtimeOnlyNonPublishable "com.cleanroommc:configanytime:3.0"
     runtimeOnlyNonPublishable rfg.deobf("curse.maven:flare-692142:6598523")
     runtimeOnlyNonPublishable rfg.deobf("curse.maven:ctm-267602:2915363")
+//    devOnlyNonPublishable rfg.deobf("curse.maven:quark-243121:2924091")
+//    devOnlyNonPublishable rfg.deobf("curse.maven:autoreglib-250363:2746011")
 //    runtimeOnlyNonPublishable rfg.deobf("curse.maven:gregtech-ce-unofficial-557242:5519022")
 //    runtimeOnlyNonPublishable rfg.deobf("curse.maven:the-one-probe-245211:2667280")
 //    runtimeOnlyNonPublishable rfg.deobf("curse.maven:gregic-probe-ceu-1109784:6393352")

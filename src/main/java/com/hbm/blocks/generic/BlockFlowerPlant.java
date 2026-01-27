@@ -20,10 +20,10 @@ import static com.hbm.blocks.PlantEnums.EnumFlowerPlantType;
 import static com.hbm.blocks.PlantEnums.EnumFlowerPlantType.*;
 import static com.hbm.blocks.PlantEnums.EnumTallPlantType.*;
 
-public class BlockFlowerPlant extends BlockPlantEnumMeta implements IGrowable, IPlantable {
+public class BlockFlowerPlant extends BlockPlantEnumMeta<EnumFlowerPlantType> implements IGrowable, IPlantable {
 
     public BlockFlowerPlant(String registryName) {
-        super(registryName, EnumFlowerPlantType.class);
+        super(registryName, EnumFlowerPlantType.VALUES);
         this.setTickRandomly(true);
     }
 

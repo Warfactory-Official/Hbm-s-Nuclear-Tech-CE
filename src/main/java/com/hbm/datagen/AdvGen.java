@@ -17,6 +17,8 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
 
 public class AdvGen {
+    // After modifying any content here, set doGen to true and runClient once,
+    // the jsons will be generated automatically
     private static final boolean doGen = false;
     public static void generate() {
         if (!doGen) return;
@@ -84,6 +86,16 @@ public class AdvGen {
                         .descKey("achievement.stratum.desc")
                         .icon(new ItemStack(ModBlocks.stone_gneiss))
                         .frame(FrameType.CHALLENGE)
+                        .toast(true)
+                        .announce(true),
+                "impossible")
+        );
+        batch.add(Templates.impossible("achno9",
+                "hbm:root",
+                new Display()
+                        .titleKey("achievement.no9")
+                        .descKey("achievement.no9.desc")
+                        .icon(ModItems.no9)
                         .toast(true)
                         .announce(true),
                 "impossible")

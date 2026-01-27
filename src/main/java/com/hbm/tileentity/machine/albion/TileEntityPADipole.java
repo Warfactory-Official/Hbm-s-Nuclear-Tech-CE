@@ -79,7 +79,7 @@ public class TileEntityPADipole extends TileEntityCooledBase implements IGUIProv
 
         int mult = 1;
         if (inventory.getStackInSlot(1).getItem() == ModItems.pa_coil) {
-            type = EnumUtil.grabEnumSafely(ItemPACoil.EnumCoilType.class, inventory.getStackInSlot(1).getItemDamage());
+            type = EnumUtil.grabEnumSafely(ItemPACoil.EnumCoilType.VALUES, inventory.getStackInSlot(1).getItemDamage());
 
             if (type.diMin > particle.momentum) mult *= 10;
             if (type.diDistMin > particle.distanceTraveled) mult *= 10;

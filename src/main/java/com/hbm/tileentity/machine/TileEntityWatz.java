@@ -235,7 +235,7 @@ public class TileEntityWatz extends TileEntityMachineBase implements ITickable, 
 
 			/* init base flux */
 			for(ItemStack stack : pellets) {
-				EnumWatzType type = EnumUtil.grabEnumSafely(EnumWatzType.class, stack.getItemDamage());
+				EnumWatzType type = EnumUtil.grabEnumSafely(EnumWatzType.VALUES, stack.getItemDamage());
 				baseFlux += type.passive;
 			}
 
@@ -244,7 +244,7 @@ public class TileEntityWatz extends TileEntityMachineBase implements ITickable, 
 			double addedHeat = 0D;
 
 			for(ItemStack stack : pellets) {
-				EnumWatzType type = EnumUtil.grabEnumSafely(EnumWatzType.class, stack.getItemDamage());
+				EnumWatzType type = EnumUtil.grabEnumSafely(EnumWatzType.VALUES, stack.getItemDamage());
 				Function burnFunc = type.burnFunc;
 				Function heatDiv = type.heatDiv;
 
@@ -259,7 +259,7 @@ public class TileEntityWatz extends TileEntityMachineBase implements ITickable, 
 			}
 
 			for(ItemStack stack : pellets) {
-				EnumWatzType type = EnumUtil.grabEnumSafely(EnumWatzType.class, stack.getItemDamage());
+				EnumWatzType type = EnumUtil.grabEnumSafely(EnumWatzType.VALUES, stack.getItemDamage());
 				Function absorbFunc = type.absorbFunc;
 
 				if(absorbFunc != null) {

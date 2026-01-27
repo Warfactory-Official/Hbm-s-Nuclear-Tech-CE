@@ -197,11 +197,14 @@ public class ExplosionLarge {
     public static void spawnMissileDebris(World world, double x, double y, double z, double motionX, double motionY, double motionZ, double deviation, List<ItemStack> debris, ItemStack rareDrop) {
 
         if (debris != null) {
-            for (int i = 0; i < debris.size(); i++) {
-                if (debris.get(i) != null) {
-                    int k = rand.nextInt(debris.get(i).getCount() + 1);
+            for (ItemStack itemStack : debris) {
+                if (itemStack != null && !itemStack.isEmpty()) {
+                    int k = rand.nextInt(itemStack.getCount() + 1);
                     for (int j = 0; j < k; j++) {
-                        EntityItem item = new EntityItem(world, x, y, z, new ItemStack(debris.get(i).getItem()));
+                        ItemStack copy = itemStack.copy();
+                        copy.setCount(1);
+                        //mlbv: 1.7 uses debris.get(i).copy() directly here, I think it's a bug
+                        EntityItem item = new EntityItem(world, x, y, z, copy);
                         item.motionX = (motionX + rand.nextGaussian() * deviation) * 0.85;
                         item.motionY = (motionY + rand.nextGaussian() * deviation) * 0.85;
                         item.motionZ = (motionZ + rand.nextGaussian() * deviation) * 0.85;
@@ -213,6 +216,14 @@ public class ExplosionLarge {
                     }
                 }
             }
+        }
+
+        if(rareDrop != null && rand.nextInt(10) == 0) {
+            EntityItem item = new EntityItem(world, x, y, z, rareDrop.copy());
+            item.motionX = motionX + rand.nextGaussian() * deviation * 0.1;
+            item.motionY = motionY + rand.nextGaussian() * deviation * 0.1;
+            item.motionZ = motionZ + rand.nextGaussian() * deviation * 0.1;
+            world.spawnEntity(item);
         }
     }
 

@@ -513,16 +513,16 @@ public class EntityChemical extends EntityThrowableNT{
     }
 
     @Override
-    public double getGravityVelocity() {
+    public float getGravityVelocity() {
 
         ChemicalStyle type = getStyle();
 
-        if(type == ChemicalStyle.AMAT) return 0D;
-        if(type == ChemicalStyle.LIGHTNING) return 0D;
-        if(type == ChemicalStyle.GAS) return 0D;
-        if(type == ChemicalStyle.GASFLAME) return -0.01D;
+        if(type == ChemicalStyle.AMAT) return 0F;
+        if(type == ChemicalStyle.LIGHTNING) return 0F;
+        if(type == ChemicalStyle.GAS) return 0f;
+        if(type == ChemicalStyle.GASFLAME) return -0.01F;
 
-        return 0.03D;
+        return 0.03F;
     }
 
     public ChemicalStyle getStyle() {

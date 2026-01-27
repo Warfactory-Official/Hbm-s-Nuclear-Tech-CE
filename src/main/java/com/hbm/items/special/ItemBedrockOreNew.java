@@ -305,10 +305,10 @@ public class ItemBedrockOreNew extends Item implements IModelRegister {
     }
 
     public BedrockOreGrade getGrade(int meta) {
-        return EnumUtil.grabEnumSafely(BedrockOreGrade.class, meta >> 4);
+        return EnumUtil.grabEnumSafely(BedrockOreGrade.VALUES, meta >> 4);
     }
 
     public BedrockOreType getType(int meta) {
-        return EnumUtil.grabEnumSafely(BedrockOreType.class, meta & 15);
+        return EnumUtil.grabEnumSafely(BedrockOreType.VALUES, meta & 15);
     }
 }

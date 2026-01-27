@@ -297,8 +297,8 @@ public abstract class EntityMissileBaseNT extends EntityThrowableInterp implemen
     }
 
     @Override
-    public double getGravityVelocity() {
-        return 0.0D;
+    public float getGravityVelocity() {
+        return 0.0F;
     }
 
     @Override

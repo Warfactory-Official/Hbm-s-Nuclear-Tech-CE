@@ -42,7 +42,7 @@ public class GunNPCFactory {
 		bullet.bulletsMax = 1;
 		bullet.dmgMin = 100;
 		bullet.dmgMax = 100;
-		bullet.gravity = 0.0D;
+		bullet.gravity = 0.0F;
 		bullet.maxAge = 60;
 		bullet.doesRicochet = false;
 		bullet.ricochetAngle = 0;
@@ -155,7 +155,7 @@ public class GunNPCFactory {
 		BulletConfiguration bullet = BulletConfigFactory.standardGrenadeConfig();
 
 		bullet.ammo = new RecipesCommon.ComparableStack(ModItems.coin_maskman);
-		bullet.gravity = 0.1D;
+		bullet.gravity = 0.1F;
 		bullet.velocity = 1.0F;
 		bullet.dmgMin = 15;
 		bullet.dmgMax = 20;
@@ -171,7 +171,7 @@ public class GunNPCFactory {
 		BulletConfiguration bullet = BulletConfigFactory.standardGrenadeConfig();
 
 		bullet.ammo = new RecipesCommon.ComparableStack(ModItems.coin_maskman);
-		bullet.gravity = 0.1D;
+		bullet.gravity = 0.1F;
 		bullet.velocity = 1.0F;
 		bullet.dmgMin = 20;
 		bullet.dmgMax = 30;

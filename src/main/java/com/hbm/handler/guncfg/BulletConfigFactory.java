@@ -51,7 +51,7 @@ public class BulletConfigFactory {
 		bullet.dmgMax = 17;
 		bullet.bulletsMin = 1;
 		bullet.bulletsMax = 1;
-		bullet.gravity = 0D;
+		bullet.gravity = 0F;
 		bullet.maxAge = 100;
 		bullet.doesRicochet = true;
 		bullet.ricochetAngle = 10;
@@ -78,7 +78,7 @@ public class BulletConfigFactory {
 		bullet.wear = 10;
 		bullet.bulletsMin = 1;
 		bullet.bulletsMax = 1;
-		bullet.gravity = 0D;
+		bullet.gravity = 0F;
 		bullet.maxAge = 100;
 		bullet.doesRicochet = true;
 		bullet.ricochetAngle = 5;
@@ -104,7 +104,7 @@ public class BulletConfigFactory {
 		bullet.wear = 10;
 		bullet.bulletsMin = 1;
 		bullet.bulletsMax = 1;
-		bullet.gravity = 0.005D;
+		bullet.gravity = 0.005F;
 		bullet.maxAge = 300;
 		bullet.doesRicochet = true;
 		bullet.ricochetAngle = 10;
@@ -131,7 +131,7 @@ public class BulletConfigFactory {
 		bullet.bulletsMax = 1;
 		bullet.dmgMin = 1000;
 		bullet.dmgMax = 1000;
-		bullet.gravity = 0.025D;
+		bullet.gravity = 0.025F;
 		bullet.maxAge = 300;
 		bullet.doesRicochet = false;
 		bullet.ricochetAngle = 0;
@@ -155,7 +155,7 @@ public class BulletConfigFactory {
 		bullet.wear = 10;
 		bullet.bulletsMin = 5;
 		bullet.bulletsMax = 8;
-		bullet.gravity = 0D;
+		bullet.gravity = 0F;
 		bullet.maxAge = 100;
 		bullet.doesRicochet = true;
 		bullet.ricochetAngle = 15;
@@ -180,7 +180,7 @@ public class BulletConfigFactory {
 		bullet.wear = 10;
 		bullet.bulletsMin = 1;
 		bullet.bulletsMax = 1;
-		bullet.gravity = 0.005D;
+		bullet.gravity = 0.005F;
 		bullet.maxAge = 300;
 		bullet.doesRicochet = true;
 		bullet.ricochetAngle = 10;
@@ -205,7 +205,7 @@ public class BulletConfigFactory {
 		bullet.wear = 10;
 		bullet.bulletsMin = 1;
 		bullet.bulletsMax = 1;
-		bullet.gravity = 0.035D;
+		bullet.gravity = 0.035F;
 		bullet.maxAge = 300;
 		bullet.doesRicochet = false;
 		bullet.ricochetAngle = 0;

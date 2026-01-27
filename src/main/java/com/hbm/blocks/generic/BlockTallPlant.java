@@ -30,11 +30,11 @@ import static com.hbm.blocks.PlantEnums.EnumFlowerPlantType.MUSTARD_WILLOW_0;
 import static com.hbm.blocks.PlantEnums.EnumTallPlantType;
 import static com.hbm.blocks.PlantEnums.EnumTallPlantType.*;
 
-public class BlockTallPlant extends BlockPlantEnumMeta implements IGrowable, IPlantable {
+public class BlockTallPlant extends BlockPlantEnumMeta<EnumTallPlantType> implements IGrowable, IPlantable {
 
 
     public BlockTallPlant(String registryName) {
-        super(registryName, EnumTallPlantType.class);
+        super(registryName, EnumTallPlantType.VALUES);
         this.setTickRandomly(true);
 
     }
@@ -88,7 +88,8 @@ public class BlockTallPlant extends BlockPlantEnumMeta implements IGrowable, IPl
 //        return 1;
 //    }
 
-    public String enumToTranslationKey(Enum value) {
+    @Override
+    public String enumToTranslationKey(EnumTallPlantType value) {
         return this.getTranslationKey() + "." + value.name().toLowerCase(Locale.US).substring(0, value.name().length() - 6);
     }
 

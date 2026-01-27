@@ -1,6 +1,5 @@
 package com.hbm.core;
 
-import net.minecraft.launchwrapper.IClassTransformer;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.*;
@@ -9,18 +8,11 @@ import static com.hbm.core.HbmCorePlugin.coreLogger;
 import static com.hbm.core.HbmCorePlugin.fail;
 import static org.objectweb.asm.Opcodes.*;
 
-public class PlayerInteractionManagerTransformer implements IClassTransformer {
+final class PlayerInteractionManagerTransformer {
+    static final String TARGET = "net.minecraft.server.management.PlayerInteractionManager";
 
     private static final ObfSafeName processRightClickBlock = new ObfSafeName("processRightClickBlock", "func_187251_a");
     private static final ObfSafeName getTileEntity = new ObfSafeName("getTileEntity", "func_175625_s");
-
-    private static AbstractInsnNode nextRealInsn(AbstractInsnNode insn) {
-        AbstractInsnNode n = insn;
-        do {
-            n = n.getNext();
-        } while (n instanceof LabelNode || n instanceof LineNumberNode || n instanceof FrameNode);
-        return n;
-    }
 
     private static boolean patchSpectatorRightClickBlock(MethodNode method) {
         Integer tileEntityVar = null;
@@ -32,7 +24,7 @@ public class PlayerInteractionManagerTransformer implements IClassTransformer {
             if (n.getOpcode() == INVOKEVIRTUAL && n instanceof MethodInsnNode mi) {
                 if ("net/minecraft/world/World".equals(mi.owner) && getTileEntity.matches(mi.name) && "(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/tileentity/TileEntity;".equals(mi.desc)) {
 
-                    AbstractInsnNode next = nextRealInsn(mi);
+                    AbstractInsnNode next = AsmHelper.nextRealInsn(mi);
 
                     if (next instanceof VarInsnNode varInsnNode && next.getOpcode() == ASTORE) {
                         tileEntityVar = varInsnNode.var;
@@ -42,7 +34,7 @@ public class PlayerInteractionManagerTransformer implements IClassTransformer {
             if (tileEntityVar != null && n.getOpcode() == GETSTATIC && n instanceof FieldInsnNode f) {
                 if ("net/minecraft/util/EnumActionResult".equals(f.owner) && "PASS".equals(f.name) && "Lnet/minecraft/util/EnumActionResult;".equals(f.desc)) {
 
-                    AbstractInsnNode next = nextRealInsn(f);
+                    AbstractInsnNode next = AsmHelper.nextRealInsn(f);
 
                     if (next != null && next.getOpcode() == ARETURN) {
                         spectatorReturnGetStatic = f;
@@ -122,12 +114,7 @@ public class PlayerInteractionManagerTransformer implements IClassTransformer {
         return foundAnyReturn;
     }
 
-    @Override
-    public byte[] transform(String name, String transformedName, byte[] basicClass) {
-        if (basicClass == null || !"net.minecraft.server.management.PlayerInteractionManager".equals(transformedName)) {
-            return basicClass;
-        }
-
+    static byte[] transform(String name, String transformedName, byte[] basicClass) {
         coreLogger.info("Patching class {} / {}", transformedName, name);
 
         try {
@@ -157,7 +144,7 @@ public class PlayerInteractionManagerTransformer implements IClassTransformer {
             cn.accept(cw);
             return cw.toByteArray();
         } catch (Throwable t) {
-            fail("net.minecraft.server.management.PlayerInteractionManager", t);
+            fail(TARGET, t);
             return basicClass;
         }
     }

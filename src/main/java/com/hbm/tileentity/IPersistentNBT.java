@@ -16,7 +16,7 @@ import net.minecraft.world.World;
 /**
  * Persistent block data helper
  *
- * <p>Lifecycle expectations:
+ * <p>Lifecycle expectations: </p>
  * <ul>
  *   <li>Blocks must override {@link Block#breakBlock}, {@link Block#dropBlockAsItemWithChance} (empty), {@link Block#onBlockHarvested}, and {@link Block#onBlockPlacedBy}. Call the matching static helper here before invoking super where noted.</li>
  *   <li>Subclasses of {@link com.hbm.blocks.BlockDummyable BlockDummyable} already handle placement; you can skip overriding {@code onBlockPlacedBy} there.</li>
@@ -24,7 +24,6 @@ import net.minecraft.world.World;
  *   <li>{@link #readNBT(NBTTagCompound)} gets the full item tag; check both the root and {@link #NBT_PERSISTENT_KEY} so old items still load.</li>
  *   <li>Call {@link #setDestroyedByCreativePlayer()} in {@link #onBlockHarvested(World, BlockPos, EntityPlayer)} to skip drops for creative breaks.</li>
  * </ul>
- * </p>
  *
  * <p><strong>Warning:</strong> This differs from upstream because vanilla destroys blocks before tile removal.</p>
  *
@@ -37,10 +36,13 @@ public interface IPersistentNBT {
 
     /**
      * Call from {@link Block#breakBlock} before super. Server side only.
+     *
+     * @return true if item is dropped
      */
-    static void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+    static boolean breakBlock(World worldIn, BlockPos pos, IBlockState state) {
         // intentionally avoided CompatExternal.getCoreFromPos to prevent duplicates, so that only the block that has the core TE would drop items
         TileEntity tile = worldIn.getTileEntity(pos);
+        final boolean flag;
         if (tile instanceof IPersistentNBT persistentTE && persistentTE.shouldDrop()) {
             ItemStack itemstack = new ItemStack(Item.getItemFromBlock(state.getBlock()), 1, state.getBlock().damageDropped(state));
             NBTTagCompound data = new NBTTagCompound();
@@ -51,10 +53,12 @@ public interface IPersistentNBT {
                 if (tile instanceof IWorldRenameable rn) rn.setCustomName("");
             }
             Block.spawnAsEntity(worldIn, pos, itemstack);
-        }
+            flag = true;
+        } else flag = false;
         if (state.hasComparatorInputOverride()) {
             worldIn.updateComparatorOutputLevel(pos, state.getBlock());
         }
+        return flag;
     }
 
     /**

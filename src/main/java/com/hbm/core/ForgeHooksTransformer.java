@@ -1,8 +1,5 @@
 package com.hbm.core;
 
-import net.minecraft.launchwrapper.IClassTransformer;
-import net.minecraft.launchwrapper.Launch;
-import net.minecraftforge.fml.common.asm.transformers.deobf.FMLDeobfuscatingRemapper;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.*;
@@ -11,7 +8,8 @@ import static com.hbm.core.HbmCorePlugin.coreLogger;
 import static com.hbm.core.HbmCorePlugin.fail;
 import static org.objectweb.asm.Opcodes.*;
 
-public class ForgeHooksTransformer implements IClassTransformer {
+final class ForgeHooksTransformer {
+    static final String TARGET = "net.minecraftforge.common.ForgeHooks";
     private static final ObfSafeName isSpectator = new ObfSafeName("isSpectator", "func_175149_v");
     private static final ObfSafeName getTileEntity = new ObfSafeName("getTileEntity", "func_175625_s");
     private static final ObfSafeName storeTEInStack = new ObfSafeName("storeTEInStack", "func_184119_a");
@@ -27,14 +25,6 @@ public class ForgeHooksTransformer implements IClassTransformer {
             }
         }
         return null;
-    }
-
-    private static AbstractInsnNode firstRealInsn(InsnList list) {
-        AbstractInsnNode cur = list.getFirst();
-        while (cur instanceof LabelNode || cur instanceof LineNumberNode || cur instanceof FrameNode) {
-            cur = cur.getNext();
-        }
-        return cur == null ? list.getFirst() : cur;
     }
 
     private static void injectHook(MethodNode method, AbstractInsnNode anchor, boolean headFallback) {
@@ -170,11 +160,7 @@ public class ForgeHooksTransformer implements IClassTransformer {
         return replacedGetTileEntity && injectedHook;
     }
 
-    @Override
-    public byte[] transform(String name, String transformedName, byte[] basicClass) {
-        if (basicClass == null || !"net.minecraftforge.common.ForgeHooks".equals(transformedName)) {
-            return basicClass;
-        }
+    static byte[] transform(String name, String transformedName, byte[] basicClass) {
         coreLogger.info("Patching class {} / {}", transformedName, name);
 
         try {
@@ -191,7 +177,7 @@ public class ForgeHooksTransformer implements IClassTransformer {
                     AbstractInsnNode anchor = findAnchor(mn);
                     boolean headFallback = false;
                     if (anchor == null) {
-                        anchor = firstRealInsn(mn.instructions);
+                        anchor = AsmHelper.firstRealInsnOrHead(mn.instructions);
                         headFallback = true;
                     }
                     injectHook(mn, anchor, headFallback);
@@ -216,7 +202,7 @@ public class ForgeHooksTransformer implements IClassTransformer {
             cn.accept(cw);
             return cw.toByteArray();
         } catch (Throwable t) {
-            fail("net.minecraftforge.common.ForgeHooks", t);
+            fail(TARGET, t);
             return basicClass;
         }
     }

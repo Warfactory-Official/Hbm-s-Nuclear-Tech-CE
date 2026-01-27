@@ -429,6 +429,7 @@ public class NTMClientRegistry {
         ItemMold.bakeModels(evt);
         IDynamicModels.bakeModels(evt);
 
+
         for (SpecialContainerFillLists.EnumCanister e : SpecialContainerFillLists.EnumCanister.VALUES) {
             Object o = evt.getModelRegistry().getObject(e.getResourceLocation());
             if (o instanceof IBakedModel)

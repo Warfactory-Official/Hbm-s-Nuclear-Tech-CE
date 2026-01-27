@@ -5,7 +5,7 @@ import com.hbm.api.fluid.IFluidStandardTransceiver;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.RecipesCommon.AStack;
-import com.hbm.inventory.UpgradeManager;
+import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerMachineChemplant;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -55,7 +55,7 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
     public int maxProgress = 100;
     public boolean isProgressing;
     public FluidTankNTM[] tanksNew;
-    public UpgradeManager manager = new UpgradeManager();
+    public UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
     //upgraded stats
     int consumption = 100;
     int speed = 100;
@@ -65,6 +65,7 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
     int lsu0 = 0;
     int lsu1 = 0;
     private AudioWrapper audio;
+
     public TileEntityMachineChemplant() {
         super(21, true, true);
         /*
@@ -164,7 +165,7 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
 
     @Override
     public void onChunkUnload() {
-
+        super.onChunkUnload();
         if (audio != null) {
             audio.stopSound();
             audio = null;
@@ -260,11 +261,11 @@ public class TileEntityMachineChemplant extends TileEntityMachineBase implements
                     this.sendFluid(tanksNew[3], world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
             }
 
-            manager.eval(inventory, 1, 3);
+            upgradeManager.checkSlots(inventory, 1, 3);
 
-            int speedLevel = Math.min(manager.getLevel(ItemMachineUpgrade.UpgradeType.SPEED), 3);
-            int powerLevel = Math.min(manager.getLevel(ItemMachineUpgrade.UpgradeType.POWER), 3);
-            int overLevel = manager.getLevel(ItemMachineUpgrade.UpgradeType.OVERDRIVE);
+            int speedLevel = Math.min(upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.SPEED), 3);
+            int powerLevel = Math.min(upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.POWER), 3);
+            int overLevel = upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.OVERDRIVE);
 
             this.speed -= speedLevel * 25;
             this.consumption += speedLevel * 300;

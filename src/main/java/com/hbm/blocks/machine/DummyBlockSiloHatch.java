@@ -161,7 +161,7 @@ public class DummyBlockSiloHatch extends BlockContainer implements IDummy, IBomb
 	
 	@Override
 	public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
-		return new ItemStack(ModBlocks.silo_hatch);
+		return new ItemStack(ModBlocks.silo_hatch_drillgon);
 	}
 
 	@Override

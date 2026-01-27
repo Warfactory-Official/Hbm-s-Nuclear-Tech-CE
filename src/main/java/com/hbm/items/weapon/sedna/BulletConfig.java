@@ -201,7 +201,7 @@ public class BulletConfig implements Cloneable {
     public BiConsumer<EntityBulletBeamBase, RayTraceResult> onImpactBeam; //fuck fuck fuck fuck i should have used a better base class here god dammit
     public BiConsumer<EntityBulletBaseMK4, RayTraceResult> onRicochet = LAMBDA_STANDARD_RICOCHET;
     public BiConsumer<EntityBulletBaseMK4, RayTraceResult> onEntityHit = LAMBDA_STANDARD_ENTITY_HIT;
-    public double gravity = 0;
+    public float gravity = 0;
     public int expires = 30;
     public boolean impactsEntities = true;
     public boolean doesPenetrate = false;
@@ -371,7 +371,7 @@ public class BulletConfig implements Cloneable {
         return this;
     }
 
-    public BulletConfig setGrav(double gravity) {
+    public BulletConfig setGrav(float gravity) {
         this.gravity = gravity;
         return this;
     }

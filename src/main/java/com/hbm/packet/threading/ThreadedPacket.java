@@ -12,7 +12,7 @@ public abstract class ThreadedPacket implements IMessage {
 
     private void compile0() {
         if (compiledBuffer != null) {
-            if (compiledBuffer.refCnt() > 0) compiledBuffer.release();
+            compiledBuffer.release();
             compiledBuffer = null;
         }
         ByteBuf newBuf = PooledByteBufAllocator.DEFAULT.directBuffer();
@@ -20,7 +20,7 @@ public abstract class ThreadedPacket implements IMessage {
             this.toBytes(newBuf);
             this.compiledBuffer = newBuf;
         } catch (Throwable t) {
-            if (newBuf.refCnt() > 0) newBuf.release();
+            newBuf.release();
             this.compiledBuffer = null;
             throw t;
         }
@@ -35,9 +35,7 @@ public abstract class ThreadedPacket implements IMessage {
 
     public synchronized final void releaseBuffer() {
         if (compiledBuffer != null) {
-            if (compiledBuffer.refCnt() > 0) {
-                compiledBuffer.release();
-            }
+            compiledBuffer.release();
             compiledBuffer = null;
         }
     }

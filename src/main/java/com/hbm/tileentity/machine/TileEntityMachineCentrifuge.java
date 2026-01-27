@@ -266,7 +266,7 @@ public class TileEntityMachineCentrifuge extends TileEntityMachineBase implement
 
     @Override
     public void onChunkUnload() {
-
+        super.onChunkUnload();
         if (audio != null) {
             audio.stopSound();
             audio = null;

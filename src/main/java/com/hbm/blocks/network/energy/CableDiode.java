@@ -43,250 +43,262 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CableDiode extends BlockContainer implements IEnergyConnectorBlock, ILookOverlay, IToolable, ITooltipProvider {
-	public static final PropertyDirection FACING = BlockDirectional.FACING;
+    public static final PropertyDirection FACING = BlockDirectional.FACING;
 
-	public CableDiode(Material materialIn, String s) {
-		super(materialIn);
-		this.setTranslationKey(s);
-		this.setRegistryName(s);
+    public CableDiode(Material materialIn, String s) {
+        super(materialIn);
+        this.setTranslationKey(s);
+        this.setRegistryName(s);
 
-		ModBlocks.ALL_BLOCKS.add(this);
-	}
+        ModBlocks.ALL_BLOCKS.add(this);
+    }
 
-	@Override
-	protected @NotNull BlockStateContainer createBlockState(){
-		return new BlockStateContainer(this, FACING);
-	}
+    @Override
+    protected @NotNull BlockStateContainer createBlockState() {
+        return new BlockStateContainer(this, FACING);
+    }
 
-	@Override
-	public int getMetaFromState(IBlockState state){
-		return state.getValue(FACING).getIndex();
-	}
+    @Override
+    public int getMetaFromState(IBlockState state) {
+        return state.getValue(FACING).getIndex();
+    }
 
-	@Override
-	public @NotNull IBlockState getStateFromMeta(int meta) {
-		EnumFacing enumfacing = EnumFacing.byIndex(meta);
-		return this.getDefaultState().withProperty(FACING, enumfacing);
-	}
+    @Override
+    public @NotNull IBlockState getStateFromMeta(int meta) {
+        EnumFacing enumfacing = EnumFacing.byIndex(meta);
+        return this.getDefaultState().withProperty(FACING, enumfacing);
+    }
 
-	@Override
-	public @NotNull IBlockState withRotation(IBlockState state, Rotation rot){
-		return state.withProperty(FACING, rot.rotate(state.getValue(FACING)));
-	}
+    @Override
+    public @NotNull IBlockState withRotation(IBlockState state, Rotation rot) {
+        return state.withProperty(FACING, rot.rotate(state.getValue(FACING)));
+    }
 
-	@NotNull
-	@Override
-	public IBlockState withMirror(IBlockState state, Mirror mirrorIn){
-		return state.withRotation(mirrorIn.toRotation(state.getValue(FACING)));
-	}
+    @NotNull
+    @Override
+    public IBlockState withMirror(IBlockState state, Mirror mirrorIn) {
+        return state.withRotation(mirrorIn.toRotation(state.getValue(FACING)));
+    }
 
-	@Override
-	public void onBlockPlacedBy(World worldIn, @NotNull BlockPos pos, IBlockState state, @NotNull EntityLivingBase placer, @NotNull ItemStack stack) {
-		worldIn.setBlockState(pos, state.withProperty(FACING, EnumFacing.getDirectionFromEntityLiving(pos, placer)));
-	}
+    @Override
+    public void onBlockPlacedBy(World worldIn, @NotNull BlockPos pos, IBlockState state, @NotNull EntityLivingBase placer, @NotNull ItemStack stack) {
+        worldIn.setBlockState(pos, state.withProperty(FACING, EnumFacing.getDirectionFromEntityLiving(pos, placer)));
+    }
 
-	@Override
-	public boolean canConnect(IBlockAccess world, BlockPos pos, ForgeDirection dir) {
-		return true;
-	}
+    @Override
+    public boolean canConnect(IBlockAccess world, BlockPos pos, ForgeDirection dir) {
+        return true;
+    }
 
-	@Override
-	public boolean onScrew(World world, EntityPlayer player, int x, int y, int z, EnumFacing side, float fX, float fY, float fZ, EnumHand hand, ToolType tool) {
-		BlockPos pos = new BlockPos(x, y, z);
-		IBlockState state = world.getBlockState(pos);
-		TileEntityDiode te = (TileEntityDiode) world.getTileEntity(pos);
-		assert te != null;
+    @Override
+    public boolean onScrew(World world, EntityPlayer player, int x, int y, int z, EnumFacing side, float fX, float fY, float fZ, EnumHand hand, ToolType tool) {
+        BlockPos pos = new BlockPos(x, y, z);
+        IBlockState state = world.getBlockState(pos);
+        TileEntityDiode te = (TileEntityDiode) world.getTileEntity(pos);
+        assert te != null;
 
-		if(world.isRemote)
-			return true;
+        if (world.isRemote)
+            return true;
 
-		if(tool == ToolType.SCREWDRIVER) {
-			if(te.level < 11)
-				te.level++;
-			te.markDirty();
-			world.notifyBlockUpdate(pos, state, state, 3);
-			return true;
-		}
+        if (tool == ToolType.SCREWDRIVER) {
+            if (te.level < 11)
+                te.level++;
+            world.notifyBlockUpdate(pos, state, state, 3);
+            te.markDirty();
+            return true;
+        }
 
-		if(tool == ToolType.HAND_DRILL) {
-			if(te.level > 1)
-				te.level--;
-			te.markDirty();
-			world.notifyBlockUpdate(pos, state, state, 3);
-			return true;
-		}
+        if (tool == ToolType.HAND_DRILL) {
+            if (te.level > 1)
+                te.level--;
+            world.notifyBlockUpdate(pos, state, state, 3);
+            te.markDirty();
+            return true;
+        }
 
-		if(tool == ToolType.DEFUSER) {
-			int p = te.priority.ordinal() + 1;
-			if(p > 4) p = 0;
-			te.priority = ConnectionPriority.values()[p];
-			te.markDirty();
-			world.notifyBlockUpdate(pos, state, state, 3);
-			return true;
-		}
+        if (tool == ToolType.DEFUSER) {
+            int p = te.priority.ordinal() + 1;
+            if (p > 4) p = 0;
+            te.priority = ConnectionPriority.values()[p];
+            world.notifyBlockUpdate(pos, state, state, 3);
+            te.markDirty();
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	@Override
-	public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> list, ITooltipFlag flagIn) {
-		list.add(TextFormatting.GOLD + "Limits throughput and restricts flow direction");
-		list.add(TextFormatting.YELLOW + "Use screwdriver to increase throughput");
-		list.add(TextFormatting.YELLOW + "Use hand drill to decrease throughput");
-		list.add(TextFormatting.YELLOW + "Use defuser to change network priority");
-	}
+    @Override
+    public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> list, ITooltipFlag flagIn) {
+        list.add(TextFormatting.GOLD + "Limits throughput and restricts flow direction");
+        list.add(TextFormatting.YELLOW + "Use screwdriver to increase throughput");
+        list.add(TextFormatting.YELLOW + "Use hand drill to decrease throughput");
+        list.add(TextFormatting.YELLOW + "Use defuser to change network priority");
+    }
 
-	@Override
-	public EnumBlockRenderType getRenderType(IBlockState state) {
-		return EnumBlockRenderType.MODEL;
-	}
+    @Override
+    public EnumBlockRenderType getRenderType(IBlockState state) {
+        return EnumBlockRenderType.MODEL;
+    }
 
-	@Override
-	public void printHook(Pre event, World world, int x, int y, int z) {
+    @Override
+    public void printHook(Pre event, World world, int x, int y, int z) {
 
-		TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
+        TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
 
-		if(!(te instanceof TileEntityDiode))
-			return;
+        if (!(te instanceof TileEntityDiode))
+            return;
 
-		TileEntityDiode diode = (TileEntityDiode) te;
+        TileEntityDiode diode = (TileEntityDiode) te;
 
-		List<String> text = new ArrayList<>();
-		text.add("Max.: " + BobMathUtil.getShortNumber(diode.getMaxPower()) + "HE/t");
-		text.add("Priority: " + diode.priority.name());
+        List<String> text = new ArrayList<>();
+        text.add("Max.: " + BobMathUtil.getShortNumber(diode.getMaxPower()) + "HE/t");
+        text.add("Priority: " + diode.priority.name());
 
-		ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getTranslationKey() + ".name"), 0xffff00, 0x404000, text);
-	}
+        ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getTranslationKey() + ".name"), 0xffff00, 0x404000, text);
+    }
 
-	@Override
-	public TileEntity createNewTileEntity(World world, int meta) {
-		return new TileEntityDiode();
-	}
+    @Override
+    public TileEntity createNewTileEntity(World world, int meta) {
+        return new TileEntityDiode();
+    }
 
-	@AutoRegister
-	public static class TileEntityDiode extends TileEntityLoadedBase implements IEnergyReceiverMK2, ITickable {
+    @AutoRegister
+    public static class TileEntityDiode extends TileEntityLoadedBase implements IEnergyReceiverMK2, ITickable {
 
-		@Override
-		public void readFromNBT(NBTTagCompound nbt) {
-			super.readFromNBT(nbt);
-			level = nbt.getInteger("level");
-			priority = ConnectionPriority.values()[nbt.getByte("p")];
-		}
+        public ConnectionPriority priority = ConnectionPriority.NORMAL;
+        int level = 1;
+        /**
+         * Used as an intra-tick tracker for how much energy has been transmitted, resets to 0 each tick and maxes out based on transfer
+         */
+        private long power;
+        private boolean recursionBrake = false;
+        private int pulses = 0;
 
-		@Override
-		public @NotNull NBTTagCompound writeToNBT(NBTTagCompound nbt) {
-			super.writeToNBT(nbt);
-			nbt.setInteger("level", level);
-			nbt.setByte("p", (byte) this.priority.ordinal());
-			return nbt;
-		}
+        @Override
+        public void readFromNBT(NBTTagCompound nbt) {
+            super.readFromNBT(nbt);
+            level = nbt.getInteger("level");
+            priority = ConnectionPriority.values()[nbt.getByte("p")];
+        }
 
-		@Override
-		public @Nullable SPacketUpdateTileEntity getUpdatePacket() {
-			NBTTagCompound nbt = new NBTTagCompound();
-			this.writeToNBT(nbt);
-			return new SPacketUpdateTileEntity(this.pos, 0, nbt);
-		}
+        @Override
+        public @NotNull NBTTagCompound writeToNBT(NBTTagCompound nbt) {
 
-		@Override
-		public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-			this.readFromNBT(pkt.getNbtCompound());
-		}
+            nbt.setInteger("level", level);
+            nbt.setByte("p", (byte) this.priority.ordinal());
+            return super.writeToNBT(nbt);
+        }
 
-		int level = 1;
+        @Override
+        public @Nullable SPacketUpdateTileEntity getUpdatePacket() {
+            NBTTagCompound nbt = new NBTTagCompound();
+            this.writeToNBT(nbt);
+            return new SPacketUpdateTileEntity(this.pos, 0, nbt);
+        }
 
-		private ForgeDirection getDir() {
-			return ForgeDirection.getOrientation(this.getBlockMetadata()).getOpposite();
-		}
+        @Override
+        public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+            this.readFromNBT(pkt.getNbtCompound());
+        }
 
-		@Override
-		public void update() {
+        @Override
+        public NBTTagCompound getUpdateTag() {
+            return this.writeToNBT(new NBTTagCompound());
+        }
 
-			if(!world.isRemote) {
-				for(ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
+        @Override
+        public void handleUpdateTag(NBTTagCompound tag) {
+            this.readFromNBT(tag);
+        }
 
-					if(dir == getDir())
-						continue;
+        private ForgeDirection getDir() {
+            return ForgeDirection.getOrientation(this.getBlockMetadata()).getOpposite();
+        }
 
-					this.trySubscribe(world, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
-				}
+        @Override
+        public void update() {
 
-				pulses = 0;
-				this.setPower(0); //tick is over, reset our allowed transfer
-			}
-		}
+            if (!world.isRemote) {
+                for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
 
-		@Override
-		public boolean canConnect(ForgeDirection dir) {
-			return dir != getDir();
-		}
+                    if (dir == getDir())
+                        continue;
 
-		/** Used as an intra-tick tracker for how much energy has been transmitted, resets to 0 each tick and maxes out based on transfer */
-		private long power;
-		private boolean recursionBrake = false;
-		private int pulses = 0;
-		public ConnectionPriority priority = ConnectionPriority.NORMAL;
+                    this.trySubscribe(world, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
+                }
 
-		@Override
-		public long transferPower(long power, boolean simulate) {
+                pulses = 0;
+                this.setPower(0); //tick is over, reset our allowed transfer
+            }
+        }
 
-			if(recursionBrake)
-				return power;
+        @Override
+        public boolean canConnect(ForgeDirection dir) {
+            return dir != getDir();
+        }
 
-			pulses++;
-			if(this.getPower() >= this.getMaxPower() || pulses > 10) return power; //if we have already maxed out transfer or max pulses, abort
+        @Override
+        public long transferPower(long power, boolean simulate) {
 
-			recursionBrake = true;
+            if (recursionBrake)
+                return power;
 
-			ForgeDirection dir = getDir();
-			PowerNode node = Nodespace.getNode(world, new BlockPos(pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ));
-			TileEntity te = Compat.getTileStandard(world, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ);
+            pulses++;
+            if (this.getPower() >= this.getMaxPower() || pulses > 10)
+                return power; //if we have already maxed out transfer or max pulses, abort
 
-			if(node != null && !node.expired && node.hasValidNet() && te instanceof IEnergyConnectorMK2 && ((IEnergyConnectorMK2) te).canConnect(dir.getOpposite())) {
-				long toTransfer = Math.min(power, this.getReceiverSpeed());
-				long remainder = node.net.sendPowerDiode(toTransfer, simulate);
-				long transferred = (toTransfer - remainder);
-				if (!simulate) this.power += transferred;
-				power -= transferred;
+            recursionBrake = true;
 
-			} else if(te instanceof IEnergyReceiverMK2 && te != this) {
-				IEnergyReceiverMK2 rec = (IEnergyReceiverMK2) te;
-				if(rec.canConnect(dir.getOpposite())) {
-					long toTransfer = Math.min(power, rec.getReceiverSpeed());
-					long remainder = rec.transferPower(toTransfer, simulate);
-					power -= (toTransfer - remainder);
-					recursionBrake = false;
-					return power;
-				}
-			}
+            ForgeDirection dir = getDir();
+            PowerNode node = Nodespace.getNode(world, new BlockPos(pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ));
+            TileEntity te = Compat.getTileStandard(world, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ);
 
-			recursionBrake = false;
-			return power;
-		}
+            if (node != null && !node.expired && node.hasValidNet() && te instanceof IEnergyConnectorMK2 && ((IEnergyConnectorMK2) te).canConnect(dir.getOpposite())) {
+                long toTransfer = Math.min(power, this.getReceiverSpeed());
+                long remainder = node.net.sendPowerDiode(toTransfer, simulate);
+                long transferred = (toTransfer - remainder);
+                if (!simulate) this.power += transferred;
+                power -= transferred;
 
-		@Override
-		public long getReceiverSpeed() {
-			return this.getMaxPower() - this.getPower();
-		}
+            } else if (te instanceof IEnergyReceiverMK2 && te != this) {
+                IEnergyReceiverMK2 rec = (IEnergyReceiverMK2) te;
+                if (rec.canConnect(dir.getOpposite())) {
+                    long toTransfer = Math.min(power, rec.getReceiverSpeed());
+                    long remainder = rec.transferPower(toTransfer, simulate);
+                    power -= (toTransfer - remainder);
+                    recursionBrake = false;
+                    return power;
+                }
+            }
 
-		@Override
-		public long getMaxPower() {
-			return (long) Math.pow(10, level);
-		}
+            recursionBrake = false;
+            return power;
+        }
 
-		@Override
-		public long getPower() {
-			return Math.min(power, this.getMaxPower());
-		}
+        @Override
+        public long getReceiverSpeed() {
+            return this.getMaxPower() - this.getPower();
+        }
 
-		@Override
-		public void setPower(long power) {
-			this.power = power;
-		}
+        @Override
+        public long getMaxPower() {
+            return (long) Math.pow(10, level);
+        }
 
-		@Override
-		public ConnectionPriority getPriority() {
-			return this.priority;
-		}
-	}
+        @Override
+        public long getPower() {
+            return Math.min(power, this.getMaxPower());
+        }
+
+        @Override
+        public void setPower(long power) {
+            this.power = power;
+        }
+
+        @Override
+        public ConnectionPriority getPriority() {
+            return this.priority;
+        }
+    }
 }

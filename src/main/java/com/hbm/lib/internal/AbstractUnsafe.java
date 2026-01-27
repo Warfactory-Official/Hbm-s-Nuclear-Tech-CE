@@ -50,451 +50,451 @@ public abstract sealed class AbstractUnsafe permits InternalUnsafeWrapper, SunUn
     // 1. Offsets, Info & Instantiation
     // ================================================================================================================
 
-    public abstract <T extends Throwable> long objectFieldOffset(Field f) throws T;
+    public abstract long objectFieldOffset(Field f);
 
-    public abstract <T extends Throwable> Object staticFieldBase(Field f) throws T;
+    public abstract Object staticFieldBase(Field f);
 
-    public abstract <T extends Throwable> long staticFieldOffset(Field f) throws T;
+    public abstract long staticFieldOffset(Field f);
 
-    public abstract <T extends Throwable> Object allocateInstance(Class<?> cls) throws InstantiationException, T;
+    public abstract Object allocateInstance(Class<?> cls) throws InstantiationException;
 
-    public abstract <T extends Throwable> Object allocateUninitializedArray(Class<?> componentType, int length) throws T;
+    public abstract Object allocateUninitializedArray(Class<?> componentType, int length);
 
-    public abstract <T extends Throwable> long arrayBaseOffset(Class<?> cls) throws T;
+    public abstract long arrayBaseOffset(Class<?> cls);
 
-    public abstract <T extends Throwable> int arrayIndexScale(Class<?> cls) throws T;
+    public abstract int arrayIndexScale(Class<?> cls);
 
-    public abstract <T extends Throwable> int addressSize() throws T;
+    public abstract int addressSize();
 
-    public abstract <T extends Throwable> int pageSize() throws T;
+    public abstract int pageSize();
 
 
     // ================================================================================================================
     // 2. References (Object)
     // ================================================================================================================
 
-    public abstract <T extends Throwable> Object getReference(Object o, long offset) throws T;
+    public abstract Object getReference(Object o, long offset);
 
-    public abstract <T extends Throwable> void putReference(Object o, long offset, Object x) throws T;
+    public abstract void putReference(Object o, long offset, Object x);
 
-    public abstract <T extends Throwable> Object getReferenceVolatile(Object o, long offset) throws T;
+    public abstract Object getReferenceVolatile(Object o, long offset);
 
-    public abstract <T extends Throwable> void putReferenceVolatile(Object o, long offset, Object x) throws T;
+    public abstract void putReferenceVolatile(Object o, long offset, Object x);
 
-    public abstract <T extends Throwable> Object getReferenceAcquire(Object o, long offset) throws T;
+    public abstract Object getReferenceAcquire(Object o, long offset);
 
-    public abstract <T extends Throwable> void putReferenceRelease(Object o, long offset, Object x) throws T;
+    public abstract void putReferenceRelease(Object o, long offset, Object x);
 
-    public abstract <T extends Throwable> Object getReferenceOpaque(Object o, long offset) throws T;
+    public abstract Object getReferenceOpaque(Object o, long offset);
 
-    public abstract <T extends Throwable> void putReferenceOpaque(Object o, long offset, Object x) throws T;
+    public abstract void putReferenceOpaque(Object o, long offset, Object x);
 
     // CAS & Atomic - Reference
-    public abstract <T extends Throwable> boolean compareAndSetReference(Object o, long offset, Object expected, Object x) throws T;
+    public abstract boolean compareAndSetReference(Object o, long offset, Object expected, Object x);
 
-    public abstract <T extends Throwable> Object getAndSetReference(Object o, long offset, Object x) throws T;
+    public abstract Object getAndSetReference(Object o, long offset, Object x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetReference(Object o, long offset, Object expected, Object x) throws T;
+    public abstract boolean weakCompareAndSetReference(Object o, long offset, Object expected, Object x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetReferenceAcquire(Object o, long offset, Object expected, Object x) throws T;
+    public abstract boolean weakCompareAndSetReferenceAcquire(Object o, long offset, Object expected, Object x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetReferenceRelease(Object o, long offset, Object expected, Object x) throws T;
+    public abstract boolean weakCompareAndSetReferenceRelease(Object o, long offset, Object expected, Object x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetReferencePlain(Object o, long offset, Object expected, Object x) throws T;
+    public abstract boolean weakCompareAndSetReferencePlain(Object o, long offset, Object expected, Object x);
 
-    public abstract <T extends Throwable> Object compareAndExchangeReference(Object o, long offset, Object expected, Object x) throws T;
+    public abstract Object compareAndExchangeReference(Object o, long offset, Object expected, Object x);
 
-    public abstract <T extends Throwable> Object compareAndExchangeReferenceAcquire(Object o, long offset, Object expected, Object x) throws T;
+    public abstract Object compareAndExchangeReferenceAcquire(Object o, long offset, Object expected, Object x);
 
-    public abstract <T extends Throwable> Object compareAndExchangeReferenceRelease(Object o, long offset, Object expected, Object x) throws T;
+    public abstract Object compareAndExchangeReferenceRelease(Object o, long offset, Object expected, Object x);
 
-    public abstract <T extends Throwable> Object getAndSetReferenceAcquire(Object o, long offset, Object x) throws T;
+    public abstract Object getAndSetReferenceAcquire(Object o, long offset, Object x);
 
-    public abstract <T extends Throwable> Object getAndSetReferenceRelease(Object o, long offset, Object x) throws T;
+    public abstract Object getAndSetReferenceRelease(Object o, long offset, Object x);
 
 
     // ================================================================================================================
     // 3. Primitives: Int
     // ================================================================================================================
 
-    public abstract <T extends Throwable> int getInt(Object o, long offset) throws T;
+    public abstract int getInt(Object o, long offset);
 
-    public abstract <T extends Throwable> void putInt(Object o, long offset, int x) throws T;
+    public abstract void putInt(Object o, long offset, int x);
 
-    public abstract <T extends Throwable> int getIntVolatile(Object o, long offset) throws T;
+    public abstract int getIntVolatile(Object o, long offset);
 
-    public abstract <T extends Throwable> void putIntVolatile(Object o, long offset, int x) throws T;
+    public abstract void putIntVolatile(Object o, long offset, int x);
 
-    public abstract <T extends Throwable> int getIntAcquire(Object o, long offset) throws T;
+    public abstract int getIntAcquire(Object o, long offset);
 
-    public abstract <T extends Throwable> void putIntRelease(Object o, long offset, int x) throws T;
+    public abstract void putIntRelease(Object o, long offset, int x);
 
-    public abstract <T extends Throwable> int getIntOpaque(Object o, long offset) throws T;
+    public abstract int getIntOpaque(Object o, long offset);
 
-    public abstract <T extends Throwable> void putIntOpaque(Object o, long offset, int x) throws T;
+    public abstract void putIntOpaque(Object o, long offset, int x);
 
-    public abstract <T extends Throwable> boolean compareAndSetInt(Object o, long offset, int expected, int x) throws T;
+    public abstract boolean compareAndSetInt(Object o, long offset, int expected, int x);
 
-    public abstract <T extends Throwable> int getAndAddInt(Object o, long offset, int delta) throws T;
+    public abstract int getAndAddInt(Object o, long offset, int delta);
 
-    public abstract <T extends Throwable> int getAndSetInt(Object o, long offset, int x) throws T;
+    public abstract int getAndSetInt(Object o, long offset, int x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetInt(Object o, long offset, int expected, int x) throws T;
+    public abstract boolean weakCompareAndSetInt(Object o, long offset, int expected, int x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetIntAcquire(Object o, long offset, int expected, int x) throws T;
+    public abstract boolean weakCompareAndSetIntAcquire(Object o, long offset, int expected, int x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetIntRelease(Object o, long offset, int expected, int x) throws T;
+    public abstract boolean weakCompareAndSetIntRelease(Object o, long offset, int expected, int x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetIntPlain(Object o, long offset, int expected, int x) throws T;
+    public abstract boolean weakCompareAndSetIntPlain(Object o, long offset, int expected, int x);
 
-    public abstract <T extends Throwable> int compareAndExchangeInt(Object o, long offset, int expected, int x) throws T;
+    public abstract int compareAndExchangeInt(Object o, long offset, int expected, int x);
 
-    public abstract <T extends Throwable> int compareAndExchangeIntAcquire(Object o, long offset, int expected, int x) throws T;
+    public abstract int compareAndExchangeIntAcquire(Object o, long offset, int expected, int x);
 
-    public abstract <T extends Throwable> int compareAndExchangeIntRelease(Object o, long offset, int expected, int x) throws T;
+    public abstract int compareAndExchangeIntRelease(Object o, long offset, int expected, int x);
 
-    public abstract <T extends Throwable> int getAndSetIntAcquire(Object o, long offset, int x) throws T;
+    public abstract int getAndSetIntAcquire(Object o, long offset, int x);
 
-    public abstract <T extends Throwable> int getAndSetIntRelease(Object o, long offset, int x) throws T;
+    public abstract int getAndSetIntRelease(Object o, long offset, int x);
 
 
     // ================================================================================================================
     // 4. Primitives: Long
     // ================================================================================================================
 
-    public abstract <T extends Throwable> long getLong(Object o, long offset) throws T;
+    public abstract long getLong(Object o, long offset);
 
-    public abstract <T extends Throwable> void putLong(Object o, long offset, long x) throws T;
+    public abstract void putLong(Object o, long offset, long x);
 
-    public abstract <T extends Throwable> long getLongVolatile(Object o, long offset) throws T;
+    public abstract long getLongVolatile(Object o, long offset);
 
-    public abstract <T extends Throwable> void putLongVolatile(Object o, long offset, long x) throws T;
+    public abstract void putLongVolatile(Object o, long offset, long x);
 
-    public abstract <T extends Throwable> long getLongAcquire(Object o, long offset) throws T;
+    public abstract long getLongAcquire(Object o, long offset);
 
-    public abstract <T extends Throwable> void putLongRelease(Object o, long offset, long x) throws T;
+    public abstract void putLongRelease(Object o, long offset, long x);
 
-    public abstract <T extends Throwable> long getLongOpaque(Object o, long offset) throws T;
+    public abstract long getLongOpaque(Object o, long offset);
 
-    public abstract <T extends Throwable> void putLongOpaque(Object o, long offset, long x) throws T;
+    public abstract void putLongOpaque(Object o, long offset, long x);
 
-    public abstract <T extends Throwable> boolean compareAndSetLong(Object o, long offset, long expected, long x) throws T;
+    public abstract boolean compareAndSetLong(Object o, long offset, long expected, long x);
 
-    public abstract <T extends Throwable> long getAndAddLong(Object o, long offset, long delta) throws T;
+    public abstract long getAndAddLong(Object o, long offset, long delta);
 
-    public abstract <T extends Throwable> long getAndSetLong(Object o, long offset, long x) throws T;
+    public abstract long getAndSetLong(Object o, long offset, long x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetLong(Object o, long offset, long expected, long x) throws T;
+    public abstract boolean weakCompareAndSetLong(Object o, long offset, long expected, long x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetLongAcquire(Object o, long offset, long expected, long x) throws T;
+    public abstract boolean weakCompareAndSetLongAcquire(Object o, long offset, long expected, long x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetLongRelease(Object o, long offset, long expected, long x) throws T;
+    public abstract boolean weakCompareAndSetLongRelease(Object o, long offset, long expected, long x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetLongPlain(Object o, long offset, long expected, long x) throws T;
+    public abstract boolean weakCompareAndSetLongPlain(Object o, long offset, long expected, long x);
 
-    public abstract <T extends Throwable> long compareAndExchangeLong(Object o, long offset, long expected, long x) throws T;
+    public abstract long compareAndExchangeLong(Object o, long offset, long expected, long x);
 
-    public abstract <T extends Throwable> long compareAndExchangeLongAcquire(Object o, long offset, long expected, long x) throws T;
+    public abstract long compareAndExchangeLongAcquire(Object o, long offset, long expected, long x);
 
-    public abstract <T extends Throwable> long compareAndExchangeLongRelease(Object o, long offset, long expected, long x) throws T;
+    public abstract long compareAndExchangeLongRelease(Object o, long offset, long expected, long x);
 
-    public abstract <T extends Throwable> long getAndSetLongAcquire(Object o, long offset, long x) throws T;
+    public abstract long getAndSetLongAcquire(Object o, long offset, long x);
 
-    public abstract <T extends Throwable> long getAndSetLongRelease(Object o, long offset, long x) throws T;
+    public abstract long getAndSetLongRelease(Object o, long offset, long x);
 
 
     // ================================================================================================================
     // 5. Primitives: Boolean
     // ================================================================================================================
 
-    public abstract <T extends Throwable> boolean getBoolean(Object o, long offset) throws T;
+    public abstract boolean getBoolean(Object o, long offset);
 
-    public abstract <T extends Throwable> void putBoolean(Object o, long offset, boolean x) throws T;
+    public abstract void putBoolean(Object o, long offset, boolean x);
 
-    public abstract <T extends Throwable> boolean getBooleanVolatile(Object o, long offset) throws T;
+    public abstract boolean getBooleanVolatile(Object o, long offset);
 
-    public abstract <T extends Throwable> void putBooleanVolatile(Object o, long offset, boolean x) throws T;
+    public abstract void putBooleanVolatile(Object o, long offset, boolean x);
 
-    public abstract <T extends Throwable> boolean getBooleanAcquire(Object o, long offset) throws T;
+    public abstract boolean getBooleanAcquire(Object o, long offset);
 
-    public abstract <T extends Throwable> void putBooleanRelease(Object o, long offset, boolean x) throws T;
+    public abstract void putBooleanRelease(Object o, long offset, boolean x);
 
-    public abstract <T extends Throwable> boolean getBooleanOpaque(Object o, long offset) throws T;
+    public abstract boolean getBooleanOpaque(Object o, long offset);
 
-    public abstract <T extends Throwable> void putBooleanOpaque(Object o, long offset, boolean x) throws T;
+    public abstract void putBooleanOpaque(Object o, long offset, boolean x);
 
-    public abstract <T extends Throwable> boolean compareAndSetBoolean(Object o, long offset, boolean expected, boolean x) throws T;
+    public abstract boolean compareAndSetBoolean(Object o, long offset, boolean expected, boolean x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetBoolean(Object o, long offset, boolean expected, boolean x) throws T;
+    public abstract boolean weakCompareAndSetBoolean(Object o, long offset, boolean expected, boolean x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetBooleanAcquire(Object o, long offset, boolean expected, boolean x) throws T;
+    public abstract boolean weakCompareAndSetBooleanAcquire(Object o, long offset, boolean expected, boolean x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetBooleanRelease(Object o, long offset, boolean expected, boolean x) throws T;
+    public abstract boolean weakCompareAndSetBooleanRelease(Object o, long offset, boolean expected, boolean x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetBooleanPlain(Object o, long offset, boolean expected, boolean x) throws T;
+    public abstract boolean weakCompareAndSetBooleanPlain(Object o, long offset, boolean expected, boolean x);
 
-    public abstract <T extends Throwable> boolean compareAndExchangeBoolean(Object o, long offset, boolean expected, boolean x) throws T;
+    public abstract boolean compareAndExchangeBoolean(Object o, long offset, boolean expected, boolean x);
 
-    public abstract <T extends Throwable> boolean compareAndExchangeBooleanAcquire(Object o, long offset, boolean expected, boolean x) throws T;
+    public abstract boolean compareAndExchangeBooleanAcquire(Object o, long offset, boolean expected, boolean x);
 
-    public abstract <T extends Throwable> boolean compareAndExchangeBooleanRelease(Object o, long offset, boolean expected, boolean x) throws T;
+    public abstract boolean compareAndExchangeBooleanRelease(Object o, long offset, boolean expected, boolean x);
 
 
     // ================================================================================================================
     // 6. Primitives: Byte
     // ================================================================================================================
 
-    public abstract <T extends Throwable> byte getByte(Object o, long offset) throws T;
+    public abstract byte getByte(Object o, long offset);
 
-    public abstract <T extends Throwable> void putByte(Object o, long offset, byte x) throws T;
+    public abstract void putByte(Object o, long offset, byte x);
 
-    public abstract <T extends Throwable> byte getByteVolatile(Object o, long offset) throws T;
+    public abstract byte getByteVolatile(Object o, long offset);
 
-    public abstract <T extends Throwable> void putByteVolatile(Object o, long offset, byte x) throws T;
+    public abstract void putByteVolatile(Object o, long offset, byte x);
 
-    public abstract <T extends Throwable> byte getByteAcquire(Object o, long offset) throws T;
+    public abstract byte getByteAcquire(Object o, long offset);
 
-    public abstract <T extends Throwable> void putByteRelease(Object o, long offset, byte x) throws T;
+    public abstract void putByteRelease(Object o, long offset, byte x);
 
-    public abstract <T extends Throwable> byte getByteOpaque(Object o, long offset) throws T;
+    public abstract byte getByteOpaque(Object o, long offset);
 
-    public abstract <T extends Throwable> void putByteOpaque(Object o, long offset, byte x) throws T;
+    public abstract void putByteOpaque(Object o, long offset, byte x);
 
-    public abstract <T extends Throwable> boolean compareAndSetByte(Object o, long offset, byte expected, byte x) throws T;
+    public abstract boolean compareAndSetByte(Object o, long offset, byte expected, byte x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetByte(Object o, long offset, byte expected, byte x) throws T;
+    public abstract boolean weakCompareAndSetByte(Object o, long offset, byte expected, byte x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetByteAcquire(Object o, long offset, byte expected, byte x) throws T;
+    public abstract boolean weakCompareAndSetByteAcquire(Object o, long offset, byte expected, byte x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetByteRelease(Object o, long offset, byte expected, byte x) throws T;
+    public abstract boolean weakCompareAndSetByteRelease(Object o, long offset, byte expected, byte x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetBytePlain(Object o, long offset, byte expected, byte x) throws T;
+    public abstract boolean weakCompareAndSetBytePlain(Object o, long offset, byte expected, byte x);
 
-    public abstract <T extends Throwable> byte compareAndExchangeByte(Object o, long offset, byte expected, byte x) throws T;
+    public abstract byte compareAndExchangeByte(Object o, long offset, byte expected, byte x);
 
-    public abstract <T extends Throwable> byte compareAndExchangeByteAcquire(Object o, long offset, byte expected, byte x) throws T;
+    public abstract byte compareAndExchangeByteAcquire(Object o, long offset, byte expected, byte x);
 
-    public abstract <T extends Throwable> byte compareAndExchangeByteRelease(Object o, long offset, byte expected, byte x) throws T;
+    public abstract byte compareAndExchangeByteRelease(Object o, long offset, byte expected, byte x);
 
 
     // ================================================================================================================
     // 7. Primitives: Short
     // ================================================================================================================
 
-    public abstract <T extends Throwable> short getShort(Object o, long offset) throws T;
+    public abstract short getShort(Object o, long offset);
 
-    public abstract <T extends Throwable> void putShort(Object o, long offset, short x) throws T;
+    public abstract void putShort(Object o, long offset, short x);
 
-    public abstract <T extends Throwable> short getShortVolatile(Object o, long offset) throws T;
+    public abstract short getShortVolatile(Object o, long offset);
 
-    public abstract <T extends Throwable> void putShortVolatile(Object o, long offset, short x) throws T;
+    public abstract void putShortVolatile(Object o, long offset, short x);
 
-    public abstract <T extends Throwable> short getShortAcquire(Object o, long offset) throws T;
+    public abstract short getShortAcquire(Object o, long offset);
 
-    public abstract <T extends Throwable> void putShortRelease(Object o, long offset, short x) throws T;
+    public abstract void putShortRelease(Object o, long offset, short x);
 
-    public abstract <T extends Throwable> short getShortOpaque(Object o, long offset) throws T;
+    public abstract short getShortOpaque(Object o, long offset);
 
-    public abstract <T extends Throwable> void putShortOpaque(Object o, long offset, short x) throws T;
+    public abstract void putShortOpaque(Object o, long offset, short x);
 
-    public abstract <T extends Throwable> boolean compareAndSetShort(Object o, long offset, short expected, short x) throws T;
+    public abstract boolean compareAndSetShort(Object o, long offset, short expected, short x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetShort(Object o, long offset, short expected, short x) throws T;
+    public abstract boolean weakCompareAndSetShort(Object o, long offset, short expected, short x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetShortAcquire(Object o, long offset, short expected, short x) throws T;
+    public abstract boolean weakCompareAndSetShortAcquire(Object o, long offset, short expected, short x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetShortRelease(Object o, long offset, short expected, short x) throws T;
+    public abstract boolean weakCompareAndSetShortRelease(Object o, long offset, short expected, short x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetShortPlain(Object o, long offset, short expected, short x) throws T;
+    public abstract boolean weakCompareAndSetShortPlain(Object o, long offset, short expected, short x);
 
-    public abstract <T extends Throwable> short compareAndExchangeShort(Object o, long offset, short expected, short x) throws T;
+    public abstract short compareAndExchangeShort(Object o, long offset, short expected, short x);
 
-    public abstract <T extends Throwable> short compareAndExchangeShortAcquire(Object o, long offset, short expected, short x) throws T;
+    public abstract short compareAndExchangeShortAcquire(Object o, long offset, short expected, short x);
 
-    public abstract <T extends Throwable> short compareAndExchangeShortRelease(Object o, long offset, short expected, short x) throws T;
+    public abstract short compareAndExchangeShortRelease(Object o, long offset, short expected, short x);
 
 
     // ================================================================================================================
     // 8. Primitives: Char
     // ================================================================================================================
 
-    public abstract <T extends Throwable> char getChar(Object o, long offset) throws T;
+    public abstract char getChar(Object o, long offset);
 
-    public abstract <T extends Throwable> void putChar(Object o, long offset, char x) throws T;
+    public abstract void putChar(Object o, long offset, char x);
 
-    public abstract <T extends Throwable> char getCharVolatile(Object o, long offset) throws T;
+    public abstract char getCharVolatile(Object o, long offset);
 
-    public abstract <T extends Throwable> void putCharVolatile(Object o, long offset, char x) throws T;
+    public abstract void putCharVolatile(Object o, long offset, char x);
 
-    public abstract <T extends Throwable> char getCharAcquire(Object o, long offset) throws T;
+    public abstract char getCharAcquire(Object o, long offset);
 
-    public abstract <T extends Throwable> void putCharRelease(Object o, long offset, char x) throws T;
+    public abstract void putCharRelease(Object o, long offset, char x);
 
-    public abstract <T extends Throwable> char getCharOpaque(Object o, long offset) throws T;
+    public abstract char getCharOpaque(Object o, long offset);
 
-    public abstract <T extends Throwable> void putCharOpaque(Object o, long offset, char x) throws T;
+    public abstract void putCharOpaque(Object o, long offset, char x);
 
-    public abstract <T extends Throwable> boolean compareAndSetChar(Object o, long offset, char expected, char x) throws T;
+    public abstract boolean compareAndSetChar(Object o, long offset, char expected, char x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetChar(Object o, long offset, char expected, char x) throws T;
+    public abstract boolean weakCompareAndSetChar(Object o, long offset, char expected, char x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetCharAcquire(Object o, long offset, char expected, char x) throws T;
+    public abstract boolean weakCompareAndSetCharAcquire(Object o, long offset, char expected, char x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetCharRelease(Object o, long offset, char expected, char x) throws T;
+    public abstract boolean weakCompareAndSetCharRelease(Object o, long offset, char expected, char x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetCharPlain(Object o, long offset, char expected, char x) throws T;
+    public abstract boolean weakCompareAndSetCharPlain(Object o, long offset, char expected, char x);
 
-    public abstract <T extends Throwable> char compareAndExchangeChar(Object o, long offset, char expected, char x) throws T;
+    public abstract char compareAndExchangeChar(Object o, long offset, char expected, char x);
 
-    public abstract <T extends Throwable> char compareAndExchangeCharAcquire(Object o, long offset, char expected, char x) throws T;
+    public abstract char compareAndExchangeCharAcquire(Object o, long offset, char expected, char x);
 
-    public abstract <T extends Throwable> char compareAndExchangeCharRelease(Object o, long offset, char expected, char x) throws T;
+    public abstract char compareAndExchangeCharRelease(Object o, long offset, char expected, char x);
 
 
     // ================================================================================================================
     // 9. Primitives: Float
     // ================================================================================================================
 
-    public abstract <T extends Throwable> float getFloat(Object o, long offset) throws T;
+    public abstract float getFloat(Object o, long offset);
 
-    public abstract <T extends Throwable> void putFloat(Object o, long offset, float x) throws T;
+    public abstract void putFloat(Object o, long offset, float x);
 
-    public abstract <T extends Throwable> float getFloatVolatile(Object o, long offset) throws T;
+    public abstract float getFloatVolatile(Object o, long offset);
 
-    public abstract <T extends Throwable> void putFloatVolatile(Object o, long offset, float x) throws T;
+    public abstract void putFloatVolatile(Object o, long offset, float x);
 
-    public abstract <T extends Throwable> float getFloatAcquire(Object o, long offset) throws T;
+    public abstract float getFloatAcquire(Object o, long offset);
 
-    public abstract <T extends Throwable> void putFloatRelease(Object o, long offset, float x) throws T;
+    public abstract void putFloatRelease(Object o, long offset, float x);
 
-    public abstract <T extends Throwable> float getFloatOpaque(Object o, long offset) throws T;
+    public abstract float getFloatOpaque(Object o, long offset);
 
-    public abstract <T extends Throwable> void putFloatOpaque(Object o, long offset, float x) throws T;
+    public abstract void putFloatOpaque(Object o, long offset, float x);
 
-    public abstract <T extends Throwable> boolean compareAndSetFloat(Object o, long offset, float expected, float x) throws T;
+    public abstract boolean compareAndSetFloat(Object o, long offset, float expected, float x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetFloat(Object o, long offset, float expected, float x) throws T;
+    public abstract boolean weakCompareAndSetFloat(Object o, long offset, float expected, float x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetFloatAcquire(Object o, long offset, float expected, float x) throws T;
+    public abstract boolean weakCompareAndSetFloatAcquire(Object o, long offset, float expected, float x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetFloatRelease(Object o, long offset, float expected, float x) throws T;
+    public abstract boolean weakCompareAndSetFloatRelease(Object o, long offset, float expected, float x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetFloatPlain(Object o, long offset, float expected, float x) throws T;
+    public abstract boolean weakCompareAndSetFloatPlain(Object o, long offset, float expected, float x);
 
-    public abstract <T extends Throwable> float compareAndExchangeFloat(Object o, long offset, float expected, float x) throws T;
+    public abstract float compareAndExchangeFloat(Object o, long offset, float expected, float x);
 
-    public abstract <T extends Throwable> float compareAndExchangeFloatAcquire(Object o, long offset, float expected, float x) throws T;
+    public abstract float compareAndExchangeFloatAcquire(Object o, long offset, float expected, float x);
 
-    public abstract <T extends Throwable> float compareAndExchangeFloatRelease(Object o, long offset, float expected, float x) throws T;
+    public abstract float compareAndExchangeFloatRelease(Object o, long offset, float expected, float x);
 
 
     // ================================================================================================================
     // 10. Primitives: Double
     // ================================================================================================================
 
-    public abstract <T extends Throwable> double getDouble(Object o, long offset) throws T;
+    public abstract double getDouble(Object o, long offset);
 
-    public abstract <T extends Throwable> void putDouble(Object o, long offset, double x) throws T;
+    public abstract void putDouble(Object o, long offset, double x);
 
-    public abstract <T extends Throwable> double getDoubleVolatile(Object o, long offset) throws T;
+    public abstract double getDoubleVolatile(Object o, long offset);
 
-    public abstract <T extends Throwable> void putDoubleVolatile(Object o, long offset, double x) throws T;
+    public abstract void putDoubleVolatile(Object o, long offset, double x);
 
-    public abstract <T extends Throwable> double getDoubleAcquire(Object o, long offset) throws T;
+    public abstract double getDoubleAcquire(Object o, long offset);
 
-    public abstract <T extends Throwable> void putDoubleRelease(Object o, long offset, double x) throws T;
+    public abstract void putDoubleRelease(Object o, long offset, double x);
 
-    public abstract <T extends Throwable> double getDoubleOpaque(Object o, long offset) throws T;
+    public abstract double getDoubleOpaque(Object o, long offset);
 
-    public abstract <T extends Throwable> void putDoubleOpaque(Object o, long offset, double x) throws T;
+    public abstract void putDoubleOpaque(Object o, long offset, double x);
 
-    public abstract <T extends Throwable> boolean compareAndSetDouble(Object o, long offset, double expected, double x) throws T;
+    public abstract boolean compareAndSetDouble(Object o, long offset, double expected, double x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetDouble(Object o, long offset, double expected, double x) throws T;
+    public abstract boolean weakCompareAndSetDouble(Object o, long offset, double expected, double x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetDoubleAcquire(Object o, long offset, double expected, double x) throws T;
+    public abstract boolean weakCompareAndSetDoubleAcquire(Object o, long offset, double expected, double x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetDoubleRelease(Object o, long offset, double expected, double x) throws T;
+    public abstract boolean weakCompareAndSetDoubleRelease(Object o, long offset, double expected, double x);
 
-    public abstract <T extends Throwable> boolean weakCompareAndSetDoublePlain(Object o, long offset, double expected, double x) throws T;
+    public abstract boolean weakCompareAndSetDoublePlain(Object o, long offset, double expected, double x);
 
-    public abstract <T extends Throwable> double compareAndExchangeDouble(Object o, long offset, double expected, double x) throws T;
+    public abstract double compareAndExchangeDouble(Object o, long offset, double expected, double x);
 
-    public abstract <T extends Throwable> double compareAndExchangeDoubleAcquire(Object o, long offset, double expected, double x) throws T;
+    public abstract double compareAndExchangeDoubleAcquire(Object o, long offset, double expected, double x);
 
-    public abstract <T extends Throwable> double compareAndExchangeDoubleRelease(Object o, long offset, double expected, double x) throws T;
+    public abstract double compareAndExchangeDoubleRelease(Object o, long offset, double expected, double x);
 
 
     // ================================================================================================================
     // 11. Raw Memory Access
     // ================================================================================================================
 
-    public abstract <T extends Throwable> long allocateMemory(long bytes) throws T;
+    public abstract long allocateMemory(long bytes);
 
-    public abstract <T extends Throwable> void freeMemory(long address) throws T;
+    public abstract void freeMemory(long address);
 
-    public abstract <T extends Throwable> long reallocateMemory(long address, long bytes) throws T;
+    public abstract long reallocateMemory(long address, long bytes);
 
-    public abstract <T extends Throwable> void setMemory(long address, long bytes, byte value) throws T;
+    public abstract void setMemory(long address, long bytes, byte value);
 
-    public abstract <T extends Throwable> void copyMemory(Object srcBase, long srcOffset, Object destBase, long destOffset, long bytes) throws T;
+    public abstract void copyMemory(Object srcBase, long srcOffset, Object destBase, long destOffset, long bytes);
 
     // Byte
-    public abstract <T extends Throwable> byte getByte(long address) throws T;
+    public abstract byte getByte(long address);
 
-    public abstract <T extends Throwable> void putByte(long address, byte x) throws T;
+    public abstract void putByte(long address, byte x);
 
     // Short
-    public abstract <T extends Throwable> short getShort(long address) throws T;
+    public abstract short getShort(long address);
 
-    public abstract <T extends Throwable> void putShort(long address, short x) throws T;
+    public abstract void putShort(long address, short x);
 
     // Char
-    public abstract <T extends Throwable> char getChar(long address) throws T;
+    public abstract char getChar(long address);
 
-    public abstract <T extends Throwable> void putChar(long address, char x) throws T;
+    public abstract void putChar(long address, char x);
 
     // Int
-    public abstract <T extends Throwable> int getInt(long address) throws T;
+    public abstract int getInt(long address);
 
-    public abstract <T extends Throwable> void putInt(long address, int x) throws T;
+    public abstract void putInt(long address, int x);
 
     // Long
-    public abstract <T extends Throwable> long getLong(long address) throws T;
+    public abstract long getLong(long address);
 
-    public abstract <T extends Throwable> void putLong(long address, long x) throws T;
+    public abstract void putLong(long address, long x);
 
     // Float
-    public abstract <T extends Throwable> float getFloat(long address) throws T;
+    public abstract float getFloat(long address);
 
-    public abstract <T extends Throwable> void putFloat(long address, float x) throws T;
+    public abstract void putFloat(long address, float x);
 
     // Double
-    public abstract <T extends Throwable> double getDouble(long address) throws T;
+    public abstract double getDouble(long address);
 
-    public abstract <T extends Throwable> void putDouble(long address, double x) throws T;
+    public abstract void putDouble(long address, double x);
 
     // Address
-    public abstract <T extends Throwable> long getAddress(long address) throws T;
+    public abstract long getAddress(long address);
 
-    public abstract <T extends Throwable> void putAddress(long address, long x) throws T;
+    public abstract void putAddress(long address, long x);
 
 
     // ================================================================================================================
     // 12. Fences & Miscellaneous
     // ================================================================================================================
 
-    public abstract <T extends Throwable> void loadFence() throws T;
+    public abstract void loadFence();
 
-    public abstract <T extends Throwable> void storeFence() throws T;
+    public abstract void storeFence();
 
-    public abstract <T extends Throwable> void fullFence() throws T;
+    public abstract void fullFence();
 
-    public abstract <T extends Throwable> void park(boolean isAbsolute, long time) throws T;
+    public abstract void park(boolean isAbsolute, long time);
 
-    public abstract <T extends Throwable> void unpark(Object thread) throws T;
+    public abstract void unpark(Object thread);
 
-    public abstract <T extends Throwable> void throwException(Throwable ee) throws T;
+    public abstract void throwException(Throwable ee);
 
     /**
      * @deprecated use {@link #getReference(Object, long)} whenever possible

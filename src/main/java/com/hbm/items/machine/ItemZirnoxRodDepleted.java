@@ -2,10 +2,10 @@ package com.hbm.items.machine;
 
 import com.hbm.items.ItemEnumMulti;
 
-public class ItemZirnoxRodDepleted extends ItemEnumMulti {
+public class ItemZirnoxRodDepleted extends ItemEnumMulti<ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted> {
 
     public ItemZirnoxRodDepleted(String registryName) {
-        super(registryName, EnumZirnoxTypeDepleted.class, true, true);
+        super(registryName, EnumZirnoxTypeDepleted.VALUES, true, true);
         this.canRepair = false;
     }
 
@@ -18,6 +18,8 @@ public class ItemZirnoxRodDepleted extends ItemEnumMulti {
         U233_FUEL,
         U235_FUEL,
         LES_FUEL,
-        ZFB_MOX_FUEL,
+        ZFB_MOX_FUEL;
+
+        public static final EnumZirnoxTypeDepleted[] VALUES = values();
     }
 }

@@ -1,6 +1,7 @@
 package com.hbm.tileentity.bomb;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.api.entity.IThrowable;
 import com.hbm.api.fluid.IFluidStandardReceiver;
 import com.hbm.api.item.IDesignatorItem;
 import com.hbm.config.GeneralConfig;
@@ -10,7 +11,6 @@ import com.hbm.entity.missile.EntityMissileTier1.*;
 import com.hbm.entity.missile.EntityMissileTier2.*;
 import com.hbm.entity.missile.EntityMissileTier3.*;
 import com.hbm.entity.missile.EntityMissileTier4.*;
-import com.hbm.entity.projectile.EntityThrowableInterp;
 import com.hbm.handler.CompatHandler;
 import com.hbm.interfaces.IBomb.BombReturnCode;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
@@ -370,10 +370,8 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase impl
 	public void finalizeLaunch(Entity missile) {
 		Entity detonatorEntity = ModContext.DETONATOR_CONTEXT.get();
 		if (detonatorEntity instanceof EntityLivingBase entityLivingBase){
-			if (missile instanceof EntityThrowableInterp throwableInterp)
-				throwableInterp.setThrower(entityLivingBase);
-			else if (missile instanceof EntityMissileBaseAdvanced missileBaseAdvanced)
-				missileBaseAdvanced.setThrower(entityLivingBase);
+			if (missile instanceof IThrowable throwable)
+				throwable.setThrower(entityLivingBase);
 		}
 		world.spawnEntity(missile);
 		TrackerUtil.setTrackingRange(world, missile, 500);

@@ -35,6 +35,13 @@ public class ItemSettingsTool extends ItemBakedBase {
         super(s);
     }
 
+
+    //Causes small visual bug when switching to form one settings tool to another, but thats so minor that I don't see this as worth fixing
+    @Override
+    public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
+        if (slotChanged) return true;
+        return oldStack.getItem() != newStack.getItem();
+    }
     @Override
     public void onUpdate(ItemStack stack, World world, Entity entity, int itemSlot, boolean isSelected) {
         if (!(entity instanceof EntityPlayerMP playerMP)) {

@@ -5,10 +5,10 @@ import com.hbm.render.block.BlockBakeFrame;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 
-public class BlockICFLaserComponent extends BlockEnumMeta {
+public class BlockICFLaserComponent extends BlockEnumMeta<BlockICFLaserComponent.EnumICFPart> {
 
     public BlockICFLaserComponent() {
-        super(Material.IRON, SoundType.METAL, "icf_laser_component", EnumICFPart.class, true, true);
+        super(Material.IRON, SoundType.METAL, "icf_laser_component", EnumICFPart.VALUES, true, true);
     }
 
     @Override

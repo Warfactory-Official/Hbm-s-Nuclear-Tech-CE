@@ -1,7 +1,6 @@
 package com.hbm.entity.logic;
 
 import com.google.common.collect.ImmutableSet;
-import com.hbm.entity.effect.EntityCloudFleijaRainbow;
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;
@@ -149,12 +148,14 @@ public abstract class EntityPlaneBase extends Entity implements IChunkLoader {
     protected void rotation() {
         float motionHorizontal = MathHelper.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
         this.rotationYaw = (float) (Math.atan2(this.motionX, this.motionZ) * 180.0D / Math.PI);
-        for(this.rotationPitch = (float) (Math.atan2(this.motionY, motionHorizontal) * 180.0D / Math.PI) - 90; this.rotationPitch - this.prevRotationPitch < -180.0F; this.prevRotationPitch -= 360.0F);
+        this.rotationPitch = (float) (Math.atan2(this.motionY, motionHorizontal) * 180.0D / Math.PI) - 90;
+        while(this.rotationPitch - this.prevRotationPitch < -180.0F) this.prevRotationPitch -= 360.0F;
         while(this.rotationPitch - this.prevRotationPitch >= 180.0F) this.prevRotationPitch += 360.0F;
         while(this.rotationYaw - this.prevRotationYaw < -180.0F) this.prevRotationYaw -= 360.0F;
         while(this.rotationYaw - this.prevRotationYaw >= 180.0F) this.prevRotationYaw += 360.0F;
     }
 
+    @Override
     @SideOnly(Side.CLIENT)
     public void setVelocity(double velX, double velY, double velZ) {
         this.velocityX = this.motionX = velX;
@@ -162,14 +163,23 @@ public abstract class EntityPlaneBase extends Entity implements IChunkLoader {
         this.velocityZ = this.motionZ = velZ;
     }
 
+    @Override // setPositionAndRotation2 on 1.7
     @SideOnly(Side.CLIENT)
-    public void setPositionAndRotation2(double x, double y, double z, float yaw, float pitch, int theNumberThree) {
+    public void setPositionAndRotationDirect(double x, double y, double z, float yaw, float pitch,
+                                             int increments, boolean teleport) {
         this.syncPosX = x;
         this.syncPosY = y;
         this.syncPosZ = z;
-        this.syncYaw = yaw;
+        this.syncYaw  = yaw;
         this.syncPitch = pitch;
-        this.turnProgress = theNumberThree;
+        if (teleport || increments <= 0) {
+            this.turnProgress = 0;
+            this.setPosition(x, y, z);
+            this.rotationYaw = yaw;
+            this.rotationPitch = pitch;
+            return;
+        }
+        this.turnProgress = increments;
         this.motionX = this.velocityX;
         this.motionY = this.velocityY;
         this.motionZ = this.velocityZ;
@@ -200,6 +210,7 @@ public abstract class EntityPlaneBase extends Entity implements IChunkLoader {
         }
     }
 
+    @Override
     public void loadNeighboringChunks(int newChunkX, int newChunkZ) {
         if(!world.isRemote && loaderTicket != null) {
             for(ChunkPos chunk : ImmutableSet.copyOf(loaderTicket.getChunkList())) {

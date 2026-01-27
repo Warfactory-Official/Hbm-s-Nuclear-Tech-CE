@@ -2,8 +2,8 @@ package com.hbm.handler;
 
 import com.hbm.items.ModItems;
 import com.hbm.items.armor.ItemModCladding;
-import com.hbm.lib.Library;
 import com.hbm.potion.HbmPotion;
+import com.hbm.util.ShadyUtil;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -58,9 +58,9 @@ public class HazmatRegistry {
 	public static float getResistance(EntityLivingBase player) {
 		float res = 0.0F;
 
-		if (player.getUniqueID().toString().equals(Library.HbMinecraft) || player.getUniqueID().toString().equals(Library.Drillgon) || player.getUniqueID().toString().equals(Library.Alcater)) {
-			res += 1.0F;
-		}
+        if (player.getUniqueID().equals(ShadyUtil.HbMinecraft) || player.getUniqueID().equals(ShadyUtil.Drillgon) || player.getUniqueID().equals(ShadyUtil.Alcater)) {
+            res += 1.0F;
+        }
 
 		for(ItemStack stack : player.getArmorInventoryList()) {
 			if(!stack.isEmpty()) {

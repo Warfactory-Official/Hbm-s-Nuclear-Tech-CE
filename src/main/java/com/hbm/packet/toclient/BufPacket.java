@@ -68,9 +68,7 @@ public class BufPacket extends PrecompiledPacket {
                     }
                 }
             } finally {
-                if (m.buf.refCnt() > 0) {
-                    m.buf.release();
-                }
+                m.buf.release();
             }
 
             return null;

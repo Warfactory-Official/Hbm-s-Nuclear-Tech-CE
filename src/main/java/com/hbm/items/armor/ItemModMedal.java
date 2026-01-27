@@ -13,11 +13,11 @@ import net.minecraft.world.World;
 import java.util.List;
 
 public class ItemModMedal extends ItemArmorMod {
-	private float minusRads;
-	private float decayRate;
+	private final float minusRads;
+	private final float decayRate;
 
 	public ItemModMedal(String s, float minusRads) {
-		super(ArmorModHandler.extra, false, true, false, false, s);
+		super(ArmorModHandler.plate_only, true, true, false, false, s);
 		this.minusRads = minusRads;
 		this.decayRate = (float)Math.pow(0.5, minusRads/6000);
 

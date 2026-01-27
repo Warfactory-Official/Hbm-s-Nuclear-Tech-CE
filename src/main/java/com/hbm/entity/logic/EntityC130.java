@@ -64,7 +64,7 @@ public class EntityC130 extends EntityPlaneBase {
     @Override
     protected void readEntityFromNBT(NBTTagCompound nbt) {
         super.readEntityFromNBT(nbt);
-        this.payload = EnumUtil.grabEnumSafely(C130PayloadType.class, nbt.getInteger("payload"));
+        this.payload = EnumUtil.grabEnumSafely(C130PayloadType.VALUES, nbt.getInteger("payload"));
     }
 
     @Override
@@ -94,6 +94,8 @@ public class EntityC130 extends EntityPlaneBase {
     public enum C130PayloadType {
         SUPPLIES,
         WEAPONS,
-        A_FUCKING_FUEL_TRUCK
+        A_FUCKING_FUEL_TRUCK;
+
+        public static final C130PayloadType[] VALUES = values();
     }
 }

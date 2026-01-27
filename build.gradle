@@ -298,6 +298,19 @@ java {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+    def suppressCheckedExceptionsPluginArg = '-Xplugin:suppress-checked-exceptions'
+    def javacExports = [
+            '--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
+            '--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED'
+    ]
+    if (name in ['compileJava', 'compileTestJava'] && !options.compilerArgs.contains(suppressCheckedExceptionsPluginArg)) {
+        options.compilerArgs.add(suppressCheckedExceptionsPluginArg)
+        javacExports.each { arg ->
+            if (!options.compilerArgs.contains(arg)) {
+                options.compilerArgs.add(arg)
+            }
+        }
+    }
 
     if (enableModernJavaSyntax.toBoolean()) {
         if (it.name in ['compileMcLauncherJava', 'compilePatchedMcJava']) {

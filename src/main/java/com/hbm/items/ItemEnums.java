@@ -5,7 +5,9 @@ public class ItemEnums {
   public enum EnumCokeType {
     COAL,
     LIGNITE,
-    PETROLEUM
+    PETROLEUM;
+
+    public static final EnumCokeType[] VALUES = values();
   }
 
   public enum EnumTarType {
@@ -14,25 +16,33 @@ public class ItemEnums {
     COAL,
     WOOD,
     WAX,
-    PARAFFIN
+    PARAFFIN;
+
+    public static final EnumTarType[] VALUES = values();
   }
 
   public enum EnumBriquetteType {
     COAL,
     LIGNITE,
-    WOOD
+    WOOD;
+
+    public static final EnumBriquetteType[] VALUES = values();
   }
 
   public enum SoyuzSkinType {
     NORMAL,
     LUNAR,
-    POST_WAR
+    POST_WAR;
+
+    public static final SoyuzSkinType[] VALUES = values();
   }
 
   public enum EnumLegendaryType {
     TIER1,
     TIER2,
-    TIER3
+    TIER3;
+
+    public static final EnumLegendaryType[] VALUES = values();
   }
 
   public enum EnumAshType {
@@ -41,19 +51,25 @@ public class ItemEnums {
     MISC,
     FLY,
     SOOT,
-    FULLERENE
+    FULLERENE;
+
+    public static final EnumAshType[] VALUES = values();
   }
 
   public enum EnumPlantType {
     TOBACCO,
     ROPE,
-    MUSTARDWILLOW
+    MUSTARDWILLOW;
+
+    public static final EnumPlantType[] VALUES = values();
   }
 
   public enum EnumChunkType {
     RARE,
     MALACHITE,
-    CRYOLITE
+    CRYOLITE;
+
+    public static final EnumChunkType[] VALUES = values();
   }
 
   public enum EnumAchievementType {
@@ -66,12 +82,16 @@ public class ItemEnums {
     DIGAMMAKAUAIMOHO,
     DIGAMMAUPONTOP,
     DIGAMMAFOROURRIGHT,
-    QUESTIONMARK
+    QUESTIONMARK;
+
+    public static final EnumAchievementType[] VALUES = values();
   }
 
   public enum EnumFuelAdditive {
     ANTIKNOCK,
-    DEICER
+    DEICER;
+
+    public static final EnumFuelAdditive[] VALUES = values();
   }
 
   public enum EnumPages {
@@ -82,15 +102,21 @@ public class ItemEnums {
     PAGE5,
     PAGE6,
     PAGE7,
-    PAGE8
+    PAGE8;
+
+    public static final EnumPages[] VALUES = values();
   }
 
   public static enum EnumSecretType {
-    CANISTER, CONTROLLER, SELENIUM_STEEL, ABERRATOR, FOLLY
+    CANISTER, CONTROLLER, SELENIUM_STEEL, ABERRATOR, FOLLY;
+
+    public static final EnumSecretType[] VALUES = values();
   }
 
   public enum EnumCasingType {
-    SMALL, LARGE, SMALL_STEEL, LARGE_STEEL, SHOTSHELL, BUCKSHOT, BUCKSHOT_ADVANCED
+    SMALL, LARGE, SMALL_STEEL, LARGE_STEEL, SHOTSHELL, BUCKSHOT, BUCKSHOT_ADVANCED;
+
+    public static final EnumCasingType[] VALUES = values();
   }
 
   public enum EnumCircuitType {
@@ -113,7 +139,9 @@ public class ItemEnums {
     CHIP_QUANTUM,
     CONTROLLER_QUANTUM,
     ATOMIC_CLOCK,
-    NUMITRON,
+    NUMITRON;
+
+    public static final EnumCircuitType[] VALUES = values();
   }
 
   public enum EnumDepletedRTGMaterial {
@@ -122,7 +150,9 @@ public class ItemEnums {
     NEPTUNIUM,
     LEAD,
     ZIRCONIUM,
-    NICKEL
+    NICKEL;
+
+    public static final EnumDepletedRTGMaterial[] VALUES = values();
   }
 
   public enum EnumPartType {
@@ -132,6 +162,8 @@ public class ItemEnums {
     LDE("low_density_element"),
     HDE("heavy_duty_element"),
     GLASS_POLARIZED("glass_polarized");
+
+    public static final EnumPartType[] VALUES = values();
 
     final String texName;
 
@@ -172,17 +204,23 @@ public class ItemEnums {
 
     //EXTENSION CARD
     CARD_BOARD,
-    CARD_PROCESSOR
+    CARD_PROCESSOR;
+
+    public static final ScrapType[] VALUES = values();
   }
 
   public enum CircuitComponentType {
     CHIPSET,
     CPU,
     RAM,
-    CARD
+    CARD;
+
+    public static final CircuitComponentType[] VALUES = values();
   }
   public enum EnumExpensiveType {
-    STEEL_PLATING, HEAVY_FRAME, CIRCUIT, LEAD_PLATING, FERRO_PLATING, COMPUTER, BRONZE_TUBES, PLASTIC
+    STEEL_PLATING, HEAVY_FRAME, CIRCUIT, LEAD_PLATING, FERRO_PLATING, COMPUTER, BRONZE_TUBES, PLASTIC;
+
+    public static final EnumExpensiveType[] VALUES = values();
   }
 
   public enum EnumDrillType {
@@ -196,6 +234,8 @@ public class ItemEnums {
     TCALLOY_DIAMOND	(2.0D, 4, 4, true, true),
     FERRO			(2.5D, 5, 1, true, true),
     FERRO_DIAMOND	(2.5D, 5, 4, true, true);
+
+    public static final EnumDrillType[] VALUES = values();
 
     public double speed;
     public int tier;
@@ -212,3 +252,4 @@ public class ItemEnums {
     }
   }
 }
+

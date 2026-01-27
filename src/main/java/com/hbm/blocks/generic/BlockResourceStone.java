@@ -18,9 +18,9 @@ import java.util.Random;
 import static com.hbm.inventory.OreDictManager.DictFrame;
 import static com.hbm.items.ItemEnums.EnumChunkType;
 
-public class BlockResourceStone extends BlockEnumMeta {
+public class BlockResourceStone extends BlockEnumMeta<BlockEnums.EnumStoneType> {
     public BlockResourceStone() {
-        super(Material.ROCK, SoundType.STONE, "stone_resource", BlockEnums.EnumStoneType.class, true, true);
+        super(Material.ROCK, SoundType.STONE, "stone_resource", BlockEnums.EnumStoneType.VALUES, true, true);
     }
 
     @Override

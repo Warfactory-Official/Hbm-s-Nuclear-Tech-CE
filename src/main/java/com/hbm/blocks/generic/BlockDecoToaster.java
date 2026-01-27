@@ -20,10 +20,10 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class BlockDecoToaster extends BlockDecoModel {
+public class BlockDecoToaster extends BlockDecoModel<BlockEnums.DecoToasterEnum> {
 
     public BlockDecoToaster(Material mat, SoundType type, String registryName) {
-        super(mat, type, registryName, BlockEnums.DecoToasterEnum.class, false, true,
+        super(mat, type, registryName, BlockEnums.DecoToasterEnum.VALUES, false, true,
                 new ResourceLocation(Tags.MODID, "models/blocks/toaster.obj"));
         this.setBlockBoundsTo(0.25F, 0.0F, 0.375F, 0.75F, 0.325F, 0.625F);
     }

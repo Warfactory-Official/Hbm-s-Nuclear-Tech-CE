@@ -47,7 +47,7 @@ public class RenderTurbineGas extends TileEntitySpecialRenderer<TileEntityMachin
 
     @Override
     public Item getItemForRenderer() {
-        return Item.getItemFromBlock(ModBlocks.machine_turbine_gas);
+        return Item.getItemFromBlock(ModBlocks.machine_turbinegas);
     }
 
     @Override

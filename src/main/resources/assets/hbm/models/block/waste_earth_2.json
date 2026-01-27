@@ -2,7 +2,7 @@
     "parent": "block/cube_bottom_top",
     "textures": {
         "top": "hbm:blocks/contamination/grass/waste_grass_top_2",
-        "bottom": "hbm:blocks/contamination/dirt/waste_dirt_2",
+        "bottom": "minecraft:blocks/dirt",
         "side": "hbm:blocks/contamination/grass/waste_grass_side_2"
     }
 }

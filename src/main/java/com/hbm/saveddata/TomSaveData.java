@@ -10,13 +10,13 @@ public class TomSaveData extends WorldSavedData {
 	public float dust;
 	public float fire;
 	public boolean impact;
-    // mlbv: fields below this line (except lastCachedUnsafe) does not exist in upstream.. Silze added them in a commit
-    // called "SPACE" so I assume they are present in the space fork? I'll keep them for now.
+	// fields below are reserved for space addon usage
+    // SPACE FIELD START
 	public long time;
 	public long dtime;
 	public int x;
 	public int z;
-	
+	// SPACE FIELD END
 	private static TomSaveData lastCachedUnsafe = null;
 
 	/* no caching for data per world needed, minecraft's save structure already does that! call forWorld as much as you want. */

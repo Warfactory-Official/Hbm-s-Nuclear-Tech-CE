@@ -55,7 +55,7 @@ public class TileEntityPAQuadrupole extends TileEntityCooledBase implements IGUI
 
         int mult = 1;
         if (inventory.getStackInSlot(1).getItem() == ModItems.pa_coil) {
-            type = EnumUtil.grabEnumSafely(EnumCoilType.class, inventory.getStackInSlot(1).getItemDamage());
+            type = EnumUtil.grabEnumSafely(EnumCoilType.VALUES, inventory.getStackInSlot(1).getItemDamage());
             mult = type.quadMin > particle.momentum ? 10 : 1;
         }
 

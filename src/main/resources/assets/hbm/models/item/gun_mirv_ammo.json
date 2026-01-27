@@ -1,6 +1,0 @@
-{
-	"parent": "item/generated",
-	"textures": {
-		"layer0": "hbm:items/gun_mirv_ammo"
-	}
-}

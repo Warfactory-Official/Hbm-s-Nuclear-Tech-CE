@@ -53,9 +53,7 @@ public class HbmCapabilityPacket extends PrecompiledPacket {
             } catch (Exception e) {
                 MainRegistry.logger.error("Failed to sync HBM Capability", e);
             } finally {
-                if (m.buf.refCnt() > 0) {
-                    m.buf.release();
-                }
+                m.buf.release();
             }
             return null;
         }

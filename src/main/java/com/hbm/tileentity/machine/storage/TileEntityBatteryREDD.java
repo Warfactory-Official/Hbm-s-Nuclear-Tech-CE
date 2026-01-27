@@ -12,7 +12,11 @@ import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.sound.AudioWrapper;
 
+import com.hbm.tileentity.IPersistentNBT;
 import io.netty.buffer.ByteBuf;
+import li.cil.oc.api.machine.Arguments;
+import li.cil.oc.api.machine.Callback;
+import li.cil.oc.api.machine.Context;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -21,11 +25,12 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @AutoRegister
-public class TileEntityBatteryREDD extends TileEntityBatteryBase {
+public class TileEntityBatteryREDD extends TileEntityBatteryBase implements IPersistentNBT {
 
     public float prevRotation = 0F;
     public float rotation = 0F;
@@ -250,5 +255,60 @@ public class TileEntityBatteryREDD extends TileEntityBatteryBase {
         }
 
         return bb;
+    }
+
+    // do some opencomputer stuff
+    @Callback(direct = true)
+    @Optional.Method(modid = "OpenComputers")
+    public Object[] getEnergyInfo(Context context, Arguments args) {
+        return new Object[] {this.power.doubleValue(), this.delta.longValue()};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "OpenComputers")
+    public Object[] getInfo(Context context, Arguments args) {
+        return new Object[] {this.power.doubleValue(), this.delta.longValue(), redLow, redHigh, getPriority().ordinal()-1};
+    }
+
+    @Override
+    @Optional.Method(modid = "OpenComputers")
+    public String[] methods() {
+        return new String[] {
+                "getEnergyInfo",
+                "getModeInfo",
+                "setModeLow",
+                "setModeHigh",
+                "setPriority",
+                "getInfo"
+        };
+    }
+
+    @Override
+    @Optional.Method(modid = "OpenComputers")
+    public Object[] invoke(String method, Context context, Arguments args) throws Exception {
+        return switch (method) {
+            case "getEnergyInfo" -> getEnergyInfo(context, args);
+            case "getModeInfo" -> getModeInfo(context, args);
+            case "setModeLow" -> setModeLow(context, args);
+            case "setModeHigh" -> setModeHigh(context, args);
+            case "setPriority" -> setPriority(context, args);
+            case "getInfo" -> getInfo(context, args);
+            default -> throw new NoSuchMethodException();
+        };
+    }
+
+    @Override
+    public void writeNBT(NBTTagCompound nbt) {
+        NBTTagCompound data = new NBTTagCompound();
+        data.setByteArray("power", this.power.toByteArray());
+        data.setBoolean("muffled", muffled);
+        nbt.setTag(NBT_PERSISTENT_KEY, data);
+    }
+
+    @Override
+    public void readNBT(NBTTagCompound nbt) {
+        NBTTagCompound data = nbt.getCompoundTag(NBT_PERSISTENT_KEY);
+        this.power = new BigInteger(data.getByteArray("power"));
+        this.muffled = data.getBoolean("muffled");
     }
 }

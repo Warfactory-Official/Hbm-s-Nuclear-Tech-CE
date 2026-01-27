@@ -3,6 +3,7 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.capability.NTMEnergyCapabilityWrapper;
 import com.hbm.interfaces.AutoRegister;
+import com.hbm.interfaces.ICopiable;
 import com.hbm.inventory.container.ContainerMicrowave;
 import com.hbm.inventory.gui.GUIMicrowave;
 import com.hbm.lib.ForgeDirection;
@@ -28,7 +29,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
-public class TileEntityMicrowave extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IGUIProvider {
+public class TileEntityMicrowave extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IGUIProvider, ICopiable {
 
 	public long power;
 	public static final long maxPower = 50000;
@@ -242,5 +243,22 @@ public class TileEntityMicrowave extends TileEntityMachineBase implements ITicka
 	@SideOnly(Side.CLIENT)
 	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		return new GUIMicrowave(player.inventory, this);
+	}
+
+	@Override
+	public NBTTagCompound getSettings(World world, int x, int y, int z) {
+		NBTTagCompound nbt = new NBTTagCompound();
+		nbt.setInteger("microSpeed", speed);
+		return null;
+	}
+
+	@Override
+	public void pasteSettings(NBTTagCompound nbt, int index, World world, EntityPlayer player, int x, int y, int z) {
+		if(nbt.hasKey("microSpeed")) speed = nbt.getInteger("microSpeed");
+	}
+
+	@Override
+	public String[] infoForDisplay(World world, int x, int y, int z) {
+		return new String[]{ "copyTool.speed"};
 	}
 }

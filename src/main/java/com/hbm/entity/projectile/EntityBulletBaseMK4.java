@@ -228,7 +228,7 @@ public class EntityBulletBaseMK4 extends EntityThrowableInterp {
     }
 
     @Override
-    public double getGravityVelocity() {
+    public float getGravityVelocity() {
         return this.config.gravity;
     }
 

@@ -8,19 +8,19 @@ import net.minecraft.creativetab.CreativeTabs;
 
 import java.util.Locale;
 // TODO: lightstone slabs/stairs
-public class BlockLightstone extends BlockEnumMeta {
+public class BlockLightstone<E extends Enum<E>> extends BlockEnumMeta<E> {
 
-    public BlockLightstone(Material mat, SoundType type, String registryName, Class<? extends Enum> theEnum, boolean multiName, boolean multiTexture) {
-        super(mat, type, registryName, theEnum, multiName, multiTexture);
+    public BlockLightstone(Material mat, SoundType type, String registryName, E[] blockEnum, boolean multiName, boolean multiTexture) {
+        super(mat, type, registryName, blockEnum, multiName, multiTexture);
         this.setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
     }
 
     @Override
     protected BlockBakeFrame[] generateBlockFrames(String registryName) {
-        Enum[] values = this.blockEnum.getEnumConstants();
+        E[] values = this.blockEnum;
         BlockBakeFrame[] frames = new BlockBakeFrame[values.length];
 
-        for (Enum e : values) {
+        for (E e : values) {
             int i = e.ordinal();
             String base = registryName + "." + e.name().toLowerCase(Locale.US);
 

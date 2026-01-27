@@ -223,6 +223,10 @@ public class ModEventHandlerImpact {
 		}
 	}
 
+	@SubscribeEvent
+	public void populateChunkPre(PopulateChunkEvent.Pre event) {
+		TomSaveData.forWorld(event.getWorld()); /* forces the data to be cached so it is accurate by the time ModEventHandlerImpact#modifyVillageGen is called. */
+	}
 
 	@SubscribeEvent
 	public void populateChunkPost(PopulateChunkEvent.Post event) {

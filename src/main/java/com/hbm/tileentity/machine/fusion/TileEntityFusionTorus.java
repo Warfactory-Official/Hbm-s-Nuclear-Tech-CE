@@ -150,6 +150,7 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements ITick
 
                     for(Map.Entry<TileEntity, Long> o : plasmaNodes[i].net.receiverEntries.entrySet()) {
                         TileEntity thing = o.getKey();
+                        if(thing.isInvalid()) continue;
                         if(thing instanceof TileEntityLoadedBase && !((TileEntityLoadedBase) thing).isLoaded()) continue;
                         if(thing instanceof IFusionPowerReceiver && ((IFusionPowerReceiver) thing).receivesFusionPower()) receiverCount++;
                         if(thing instanceof TileEntityFusionCollector) collectors++;

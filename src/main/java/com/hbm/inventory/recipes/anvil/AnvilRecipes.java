@@ -19,6 +19,7 @@ import com.hbm.items.ItemEnums;
 import com.hbm.items.ItemEnums.EnumCircuitType;
 import com.hbm.items.ModItems;
 import com.hbm.items.food.ItemFlask;
+import com.hbm.items.machine.ItemBatterySC;
 import com.hbm.util.Tuple;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
@@ -753,7 +754,7 @@ public class AnvilRecipes extends SerializableRecipe {
 						new AnvilOutput(new ItemStack(ModItems.scrap, 1)),
 						new AnvilOutput(new ItemStack(ModItems.coil_tungsten, 2)),
 						new AnvilOutput(new ItemStack(Items.BREAD, 1), 0.5F),
-						new AnvilOutput(new ItemStack(ModItems.battery_sc_uranium, 1), 0.1F),
+						new AnvilOutput(new ItemStack(ModItems.battery_sc, 1, ItemBatterySC.EnumBatterySC.RA226.ordinal()), 0.1F),
 						new AnvilOutput(new ItemStack(ModItems.fusion_core, 1), 0.05F)
 
 				}

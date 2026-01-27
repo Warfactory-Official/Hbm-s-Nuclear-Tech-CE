@@ -1,6 +1,5 @@
 package com.hbm.core;
 
-import net.minecraft.launchwrapper.IClassTransformer;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.*;
@@ -9,7 +8,8 @@ import static com.hbm.core.HbmCorePlugin.coreLogger;
 import static com.hbm.core.HbmCorePlugin.fail;
 import static org.objectweb.asm.Opcodes.*;
 
-public class EntityItemHazardTransformer implements IClassTransformer {
+final class EntityItemHazardTransformer {
+    static final String TARGET = "net.minecraft.entity.item.EntityItem";
     private static final ObfSafeName ON_UPDATE = new ObfSafeName("onUpdate", "func_70071_h_");
     private static final String HAZARD_OWNER = "com/hbm/hazard/HazardSystem";
     private static final String HAZARD_NAME  = "updateDroppedItem";
@@ -29,11 +29,8 @@ public class EntityItemHazardTransformer implements IClassTransformer {
         }
         coreLogger.info("Injected HazardSystem hook into EntityItem#onUpdate ({} return site(s))", "all");
     }
-    @Override
-    public byte[] transform(String name, String transformedName, byte[] basicClass) {
-        if (!"net.minecraft.entity.item.EntityItem".equals(transformedName)) {
-            return basicClass;
-        }
+
+    static byte[] transform(String name, String transformedName, byte[] basicClass) {
         coreLogger.info("Patching class {} / {}", transformedName, name);
         try {
             ClassNode classNode = new ClassNode();
@@ -55,7 +52,7 @@ public class EntityItemHazardTransformer implements IClassTransformer {
             classNode.accept(writer);
             return writer.toByteArray();
         } catch (Throwable t) {
-            fail("net.minecraft.entity.item.EntityItem", t);
+            fail(TARGET, t);
             return basicClass;
         }
     }

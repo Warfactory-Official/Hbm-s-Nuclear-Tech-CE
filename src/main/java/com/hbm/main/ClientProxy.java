@@ -26,6 +26,7 @@ import com.hbm.items.weapon.sedna.factory.GunFactoryClient;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.RecoilHandler;
 import com.hbm.main.client.NTMClientRegistry;
+import com.hbm.command.CommandRadVisClient;
 import com.hbm.particle.*;
 import com.hbm.particle.bfg.*;
 import com.hbm.particle.bullet_hit.ParticleBloodParticle;
@@ -110,12 +111,12 @@ import net.minecraft.util.registry.IRegistry;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.obj.OBJLoader;
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fluids.BlockFluidClassic;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLLoadCompleteEvent;
@@ -184,7 +185,7 @@ public class ClientProxy extends ServerProxy {
         MinecraftForge.EVENT_BUS.register(new ModEventHandlerRenderer());
         MinecraftForge.EVENT_BUS.register(new PlacementPreviewHandler());
         MinecraftForge.EVENT_BUS.register(theInfoSystem);
-        FMLCommonHandler.instance().bus().register(theInfoSystem);
+        ClientCommandHandler.instance.registerCommand(new CommandRadVisClient());
 
         HbmShaderManager.loadShaders();
 

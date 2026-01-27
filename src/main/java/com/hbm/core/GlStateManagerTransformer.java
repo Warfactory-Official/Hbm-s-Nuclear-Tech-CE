@@ -1,6 +1,5 @@
 package com.hbm.core;
 
-import net.minecraft.launchwrapper.IClassTransformer;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.*;
@@ -9,8 +8,8 @@ import static com.hbm.core.HbmCorePlugin.coreLogger;
 import static com.hbm.core.HbmCorePlugin.fail;
 import static org.objectweb.asm.Opcodes.*;
 
-public class GlStateManagerTransformer implements IClassTransformer {
-
+final class GlStateManagerTransformer {
+    static final String TARGET = "net.minecraft.client.renderer.GlStateManager";
     private static final String OWNER = "net/minecraft/client/renderer/GlStateManager";
 
     private static final String ROTATE = "rotate";
@@ -28,11 +27,7 @@ public class GlStateManagerTransformer implements IClassTransformer {
     private static final ObfSafeName SRC_FACTOR_ALPHA = new ObfSafeName("srcFactorAlpha", "field_179209_d");
     private static final ObfSafeName DST_FACTOR_ALPHA = new ObfSafeName("dstFactorAlpha", "field_179210_e");
 
-    @Override
-    public byte[] transform(String name, String transformedName, byte[] basicClass) {
-        if (!"net.minecraft.client.renderer.GlStateManager".equals(transformedName)) {
-            return basicClass;
-        }
+    static byte[] transform(String name, String transformedName, byte[] basicClass) {
         coreLogger.info("Patching class {} / {}", transformedName, name);
 
         try {

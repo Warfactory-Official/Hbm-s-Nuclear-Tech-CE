@@ -1,6 +1,5 @@
 package com.hbm.core;
 
-import net.minecraft.launchwrapper.IClassTransformer;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.*;
@@ -9,7 +8,9 @@ import static com.hbm.core.HbmCorePlugin.coreLogger;
 import static com.hbm.core.HbmCorePlugin.fail;
 import static org.objectweb.asm.Opcodes.*;
 
-public class FMLNetworkTransformer implements IClassTransformer {
+final class FMLNetworkTransformer {
+    static final String TARGET_DISPATCHER = "net.minecraftforge.fml.common.network.handshake.NetworkDispatcher";
+    static final String TARGET_PACKET = "net.minecraftforge.fml.common.network.internal.FMLProxyPacket";
     private static final ObfSafeName write = new ObfSafeName("write", "write");
     private static final ObfSafeName toS3FPackets = new ObfSafeName("toS3FPackets", "toS3FPackets");
 
@@ -64,25 +65,31 @@ public class FMLNetworkTransformer implements IClassTransformer {
         return patched;
     }
 
-    @Override
-    public byte[] transform(String name, String transformedName, byte[] basicClass) {
-        if (basicClass == null || transformedName == null) return basicClass;
-        final boolean isDispatcher = "net.minecraftforge.fml.common.network.handshake.NetworkDispatcher".equals(transformedName);
-        final boolean isProxy = "net.minecraftforge.fml.common.network.internal.FMLProxyPacket".equals(transformedName);
-        if (!isDispatcher && !isProxy) return basicClass;
+    static byte[] transformNetworkDispatcher(String name, String transformedName, byte[] basicClass) {
         coreLogger.info("Patching class {} / {}", transformedName, name);
         try {
             ClassReader cr = new ClassReader(basicClass);
             ClassNode cn = new ClassNode();
             cr.accept(cn, 0);
-            boolean ok;
-            if (isDispatcher) {
-                ok = patchNetworkDispatcher(cn);
-                if (!ok) throw new IllegalStateException("Failed to patch NetworkDispatcher.write");
-            } else {
-                ok = patchFMLProxyPacket(cn);
-                if (!ok) throw new IllegalStateException("Failed to patch FMLProxyPacket.toS3FPackets");
-            }
+            boolean ok = patchNetworkDispatcher(cn);
+            if (!ok) throw new IllegalStateException("Failed to patch NetworkDispatcher.write");
+            ClassWriter cw = new MinecraftClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
+            cn.accept(cw);
+            return cw.toByteArray();
+        } catch (Throwable t) {
+            fail(transformedName, t);
+            return basicClass;
+        }
+    }
+
+    static byte[] transformFMLProxyPacket(String name, String transformedName, byte[] basicClass) {
+        coreLogger.info("Patching class {} / {}", transformedName, name);
+        try {
+            ClassReader cr = new ClassReader(basicClass);
+            ClassNode cn = new ClassNode();
+            cr.accept(cn, 0);
+            boolean ok = patchFMLProxyPacket(cn);
+            if (!ok) throw new IllegalStateException("Failed to patch FMLProxyPacket.toS3FPackets");
             ClassWriter cw = new MinecraftClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
             cn.accept(cw);
             return cw.toByteArray();

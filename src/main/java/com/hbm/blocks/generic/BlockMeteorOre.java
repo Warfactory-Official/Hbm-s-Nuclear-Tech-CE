@@ -5,9 +5,9 @@ import com.hbm.blocks.BlockEnums;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 
-public class BlockMeteorOre extends BlockEnumMeta {
+public class BlockMeteorOre extends BlockEnumMeta<BlockEnums.EnumMeteorType> {
 
     public BlockMeteorOre() {
-        super(Material.ROCK, SoundType.STONE, "ore_meteor", BlockEnums.EnumMeteorType.class, true, true);
+        super(Material.ROCK, SoundType.STONE, "ore_meteor", BlockEnums.EnumMeteorType.VALUES, true, true);
     }
 }

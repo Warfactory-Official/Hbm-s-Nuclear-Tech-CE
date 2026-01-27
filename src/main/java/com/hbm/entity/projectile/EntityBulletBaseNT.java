@@ -572,7 +572,7 @@ public class EntityBulletBaseNT extends EntityThrowableInterp implements IBullet
     }
 
     @Override
-    public double getGravityVelocity() {
+    public float getGravityVelocity() {
         return this.config.gravity;
     }
 

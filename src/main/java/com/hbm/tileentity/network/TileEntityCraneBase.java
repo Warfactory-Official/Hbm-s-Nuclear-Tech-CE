@@ -1,17 +1,27 @@
 package com.hbm.tileentity.network;
 
+import com.hbm.interfaces.ICopiable;
+import com.hbm.tileentity.IControlReceiverFilter;
 import com.hbm.tileentity.TileEntityMachineBase;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.IItemHandlerModifiable;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class TileEntityCraneBase extends TileEntityMachineBase implements ITickable {
+public abstract class TileEntityCraneBase extends TileEntityMachineBase implements ITickable, ICopiable {
 
     public TileEntityCraneBase(int scount) {
         super(scount, false, false);
@@ -131,5 +141,85 @@ public abstract class TileEntityCraneBase extends TileEntityMachineBase implemen
             nbt.setByte("CraneOutputOverride", (byte) outputOverride.ordinal());
         }
         return nbt;
+    }
+
+
+    @Override
+    public NBTTagCompound getSettings(World world, int x, int y, int z) {
+        NBTTagCompound nbt = new NBTTagCompound();
+        nbt.setInteger("inputSide", getInputSide().ordinal());
+        nbt.setInteger("outputSide", getOutputSide().ordinal());
+
+        if (this instanceof IControlReceiverFilter filter) {
+            IItemHandler handler = this.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+
+            if (handler != null) {
+                NBTTagList tags = new NBTTagList();
+                int[] slots = filter.getFilterSlots();
+                int count = 0;
+
+                for (int i = slots[0]; i < slots[1]; i++) {
+                    if (i >= handler.getSlots()) break;
+
+                    ItemStack stack = handler.getStackInSlot(i);
+                    if (!stack.isEmpty()) {
+                        NBTTagCompound slotNBT = new NBTTagCompound();
+                        slotNBT.setByte("slot", (byte) count);
+                        stack.writeToNBT(slotNBT);
+                        tags.appendTag(slotNBT);
+                    }
+                    count++;
+                }
+                nbt.setTag("items", tags);
+            }
+        }
+
+        return nbt;
+    }
+    @Override
+    public void pasteSettings(NBTTagCompound nbt, int index, World world, EntityPlayer player, int x, int y, int z) {
+        if (index == 1) {
+            if (nbt.hasKey("outputSide")) {
+                this.outputOverride = EnumFacing.values()[nbt.getInteger("outputSide") % 6];
+                this.onBlockChanged();
+            }
+            if (nbt.hasKey("inputSide")) {
+                world.setBlockState(pos, getBlockType().getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.values()[nbt.getInteger("inputSide")%6]),  3);
+            }
+        }
+        else if (this instanceof IControlReceiverFilter filter) {
+            IItemHandler handler = this.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+
+            if (handler instanceof IItemHandlerModifiable modifiable) {
+                NBTTagList items = nbt.getTagList("items", 10);
+                int listSize = items.tagCount();
+
+                if (listSize > 0) {
+                    int[] slots = filter.getFilterSlots();
+                    int count = 0;
+
+                    for (int i = slots[0]; i < slots[1]; i++) {
+                        if (count < listSize) {
+                            NBTTagCompound slotNBT = items.getCompoundTagAt(count);
+                            byte slotIdx = slotNBT.getByte("slot");
+                            ItemStack loadedStack = new ItemStack(slotNBT);
+
+                            boolean isRouter = nbt.hasKey("modes") && slotIdx > index * 5 && slotIdx < (index + 1) * 5;
+
+                            if (!loadedStack.isEmpty() && (slotIdx < slots[1] || isRouter)) {
+                                int targetSlot = slotIdx + slots[0];
+
+                                if (targetSlot < modifiable.getSlots()) {
+                                    modifiable.setStackInSlot(targetSlot, loadedStack);
+                                    filter.nextMode(slotIdx);
+                                }
+                            }
+                        }
+                        count++;
+                    }
+                    world.markChunkDirty(new BlockPos(x, y, z), this);
+                }
+            }
+        }
     }
 }

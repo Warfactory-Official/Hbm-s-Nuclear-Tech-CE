@@ -2,7 +2,6 @@ package com.hbm.items.machine;
 
 import com.hbm.Tags;
 import com.hbm.api.energymk2.IBatteryItem;
-import com.hbm.interfaces.IOrderedEnum;
 import com.hbm.items.ItemEnumMulti;
 import com.hbm.items.ModItems;
 import com.hbm.items.weapon.IMetaItemTesr;
@@ -24,10 +23,10 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
 
-public class ItemBatteryPack extends ItemEnumMulti implements IBatteryItem, IMetaItemTesr {
+public class ItemBatteryPack extends ItemEnumMulti<ItemBatteryPack.EnumBatteryPack> implements IBatteryItem, IMetaItemTesr {
 
     public ItemBatteryPack(String s) {
-        super(s, EnumBatteryPack.class, true, false);
+        super(s, EnumBatteryPack.VALUES, true, false);
         this.setMaxStackSize(1);
         this.setCreativeTab(MainRegistry.controlTab);
         this.setHasSubtypes(true);
@@ -87,19 +86,19 @@ public class ItemBatteryPack extends ItemEnumMulti implements IBatteryItem, IMet
 
     @Override
     public long getMaxCharge(ItemStack stack) {
-        EnumBatteryPack pack = EnumUtil.grabEnumSafely(EnumBatteryPack.class, stack.getItemDamage());
+        EnumBatteryPack pack = EnumUtil.grabEnumSafely(EnumBatteryPack.VALUES, stack.getItemDamage());
         return pack.capacity;
     }
 
     @Override
     public long getChargeRate(ItemStack stack) {
-        EnumBatteryPack pack = EnumUtil.grabEnumSafely(EnumBatteryPack.class, stack.getItemDamage());
+        EnumBatteryPack pack = EnumUtil.grabEnumSafely(EnumBatteryPack.VALUES, stack.getItemDamage());
         return pack.chargeRate;
     }
 
     @Override
     public long getDischargeRate(ItemStack stack) {
-        EnumBatteryPack pack = EnumUtil.grabEnumSafely(EnumBatteryPack.class, stack.getItemDamage());
+        EnumBatteryPack pack = EnumUtil.grabEnumSafely(EnumBatteryPack.VALUES, stack.getItemDamage());
         return pack.dischargeRate;
     }
 
@@ -133,11 +132,11 @@ public class ItemBatteryPack extends ItemEnumMulti implements IBatteryItem, IMet
     @SideOnly(Side.CLIENT)
     public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
         if (this.isInCreativeTab(tab)) {
-
+            /* mlbv: code below is useless since EnumBatteryPack doesn't implement IOrderedEnum
             Enum[] order = theEnum.getEnumConstants();
             if (order[0] instanceof IOrderedEnum) order = ((IOrderedEnum) order[0]).getOrder();
-
-            for (Enum anEnum : order) {
+            */
+            for (EnumBatteryPack anEnum : theEnum) {
                 items.add(makeEmptyBattery(new ItemStack(this, 1, anEnum.ordinal())));
                 items.add(makeFullBattery(new ItemStack(this, 1, anEnum.ordinal())));
             }

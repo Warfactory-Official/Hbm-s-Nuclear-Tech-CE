@@ -40,7 +40,7 @@ public class BulletConfiguration {
 	public float headshotMult = 1.0F;
 
 	//acceleration torwards neg Y
-	public double gravity;
+	public float gravity;
 	//max age in ticks before despawning
 	public int maxAge;
 

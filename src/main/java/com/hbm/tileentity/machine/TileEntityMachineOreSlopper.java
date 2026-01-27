@@ -4,7 +4,7 @@ import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluid.IFluidStandardTransceiver;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.inventory.UpgradeManager;
+import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerOreSlopper;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -51,17 +51,16 @@ import java.util.List;
 @AutoRegister
 public class TileEntityMachineOreSlopper extends TileEntityMachineBase implements IEnergyReceiverMK2, IFluidStandardTransceiver, IGUIProvider, IFluidCopiable, ITickable {
 
-    public long power;
     public static final long maxPower = 100_000;
-
     public static final int waterUsedBase = 1_000;
-    public int waterUsed = waterUsedBase;
     public static final long consumptionBase = 200;
+    private static final int[] slot_access = new int[]{2, 3, 4, 5, 6, 7, 8};
+    private final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
+    public long power;
+    public int waterUsed = waterUsedBase;
     public long consumption = consumptionBase;
-
     public float progress;
     public boolean processing;
-
     public SlopperAnimation animation = SlopperAnimation.LOWERING;
     public float slider;
     public float prevSlider;
@@ -72,11 +71,9 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase implement
     public float fan;
     public float prevFan;
     public int delay;
-
     public FluidTankNTM[] tanks;
     public double[] ores = new double[BedrockOreType.VALUES.length];
-
-    private final UpgradeManager manager = new UpgradeManager();
+    AxisAlignedBB bb = null;
 
     public TileEntityMachineOreSlopper() {
         super(11, true, true);
@@ -90,47 +87,44 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase implement
         return "container.machineOreSlopper";
     }
 
-    public static enum SlopperAnimation {
-        LOWERING, LIFTING, MOVE_SHREDDER, DUMPING, MOVE_BUCKET
-    }
-
     @Override
     public void update() {
 
         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
 
-        if(!world.isRemote) {
+        if (!world.isRemote) {
 
             this.power = Library.chargeTEFromItems(inventory, 0, power, maxPower);
 
             tanks[0].setType(1, inventory);
             FluidType conversion = this.getFluidOutput(tanks[0].getTankType());
-            if(conversion != null) tanks[1].setTankType(conversion);
+            if (conversion != null) tanks[1].setTankType(conversion);
 
-            for(DirPos pos : getConPos()) {
+            for (DirPos pos : getConPos()) {
                 this.trySubscribe(world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
                 this.trySubscribe(tanks[0].getTankType(), world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
-                if(tanks[1].getFill() > 0) this.sendFluid(tanks[1], world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
+                if (tanks[1].getFill() > 0)
+                    this.sendFluid(tanks[1], world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
             }
 
             this.processing = false;
 
-            manager.eval(inventory, 9, 10);
-            int speed = Math.min(manager.getLevel(ItemMachineUpgrade.UpgradeType.SPEED), 3);
-            int efficiency = Math.min(manager.getLevel(ItemMachineUpgrade.UpgradeType.EFFECT), 3);
+            upgradeManager.checkSlots(inventory, 9, 10);
+            int speed = Math.min(upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.SPEED), 3);
+            int efficiency = Math.min(upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.EFFECT), 3);
 
             this.consumption = this.consumptionBase + (this.consumptionBase * speed) / 2 + (this.consumptionBase * efficiency);
 
-            if(canSlop()) {
+            if (canSlop()) {
                 this.power -= this.consumption;
                 this.progress += 1F / (600 - speed * 150);
                 this.processing = true;
                 boolean markDirty = false;
 
-                while(progress >= 1F && canSlop()) {
+                while (progress >= 1F && canSlop()) {
                     progress -= 1F;
 
-                    for(BedrockOreType type : BedrockOreType.VALUES) {
+                    for (BedrockOreType type : BedrockOreType.VALUES) {
                         ores[type.ordinal()] += (ItemBedrockOreBase.getOreAmount(inventory.getStackInSlot(2), type) * (1D + efficiency * 0.1));
                     }
 
@@ -140,14 +134,14 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase implement
                     markDirty = true;
                 }
 
-                if(markDirty) this.markDirty();
+                if (markDirty) this.markDirty();
 
                 List<Entity> entities = world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(pos.getX() - 0.5, pos.getY() + 1, pos.getZ() - 0.5, pos.getX() + 1.5, pos.getY() + 3, pos.getZ() + 1.5).offset(dir.offsetX, 0, dir.offsetZ));
 
-                for(Entity e : entities) {
+                for (Entity e : entities) {
                     e.attackEntityFrom(ModDamageSource.turbofan, 1000F);
 
-                    if(!e.isEntityAlive() && e instanceof EntityLivingBase) {
+                    if (!e.isEntityAlive() && e instanceof EntityLivingBase) {
                         NBTTagCompound vdat = new NBTTagCompound();
                         vdat.setString("type", "giblets");
                         vdat.setInteger("ent", e.getEntityId());
@@ -162,15 +156,22 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase implement
                 this.progress = 0;
             }
 
-            for(BedrockOreType type : BedrockOreType.VALUES) {
+            for (BedrockOreType type : BedrockOreType.VALUES) {
                 ItemStack output = ItemBedrockOreNew.make(BedrockOreGrade.BASE, type);
-                outer: while(ores[type.ordinal()] >= 1) {
-                    for(int i = 3; i <= 8; i++) if(!inventory.getStackInSlot(i).isEmpty() && inventory.getStackInSlot(i).getItem() == output.getItem() && inventory.getStackInSlot(i).getItemDamage() == output.getItemDamage() && inventory.getStackInSlot(i).getCount() < output.getMaxStackSize()) {
-                        inventory.getStackInSlot(i).grow(1); ores[type.ordinal()] -= 1F; continue outer;
-                    }
-                    for(int i = 3; i <= 8; i++) if(inventory.getStackInSlot(i).isEmpty()) {
-                        inventory.setStackInSlot(i, output); ores[type.ordinal()] -= 1F; continue outer;
-                    }
+                outer:
+                while (ores[type.ordinal()] >= 1) {
+                    for (int i = 3; i <= 8; i++)
+                        if (!inventory.getStackInSlot(i).isEmpty() && inventory.getStackInSlot(i).getItem() == output.getItem() && inventory.getStackInSlot(i).getItemDamage() == output.getItemDamage() && inventory.getStackInSlot(i).getCount() < output.getMaxStackSize()) {
+                            inventory.getStackInSlot(i).grow(1);
+                            ores[type.ordinal()] -= 1F;
+                            continue outer;
+                        }
+                    for (int i = 3; i <= 8; i++)
+                        if (inventory.getStackInSlot(i).isEmpty()) {
+                            inventory.setStackInSlot(i, output);
+                            ores[type.ordinal()] -= 1F;
+                            continue outer;
+                        }
                     break outer;
                 }
             }
@@ -184,22 +185,22 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase implement
             this.prevBlades = this.blades;
             this.prevFan = this.fan;
 
-            if(this.processing) {
+            if (this.processing) {
 
                 this.blades += 15F;
                 this.fan += 35F;
 
-                if(blades >= 360) {
+                if (blades >= 360) {
                     blades -= 360;
                     prevBlades -= 360;
                 }
 
-                if(fan >= 360) {
+                if (fan >= 360) {
                     fan -= 360;
                     prevFan -= 360;
                 }
 
-                if(animation == animation.DUMPING && MainRegistry.proxy.me().getDistance(pos.getX() + 0.5, pos.getY() + 4, pos.getZ() + 0.5) <= 50) {
+                if (animation == animation.DUMPING && MainRegistry.proxy.me().getDistance(pos.getX() + 0.5, pos.getY() + 4, pos.getZ() + 0.5) <= 50) {
                     NBTTagCompound data = new NBTTagCompound();
                     data.setString("type", "vanillaExt");
                     data.setString("mode", "blockdust");
@@ -211,31 +212,31 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase implement
                     MainRegistry.proxy.effectNT(data);
                 }
 
-                if(delay > 0) {
+                if (delay > 0) {
                     delay--;
                     return;
                 }
 
-                switch(animation) {
+                switch (animation) {
                     case LOWERING:
-                        this.bucket += 1F/40F;
-                        if(bucket >= 1F) {
+                        this.bucket += 1F / 40F;
+                        if (bucket >= 1F) {
                             bucket = 1F;
                             animation = SlopperAnimation.LIFTING;
                             delay = 20;
                         }
                         break;
                     case LIFTING:
-                        this.bucket -= 1F/40F;
-                        if(bucket <= 0) {
+                        this.bucket -= 1F / 40F;
+                        if (bucket <= 0) {
                             bucket = 0F;
                             animation = SlopperAnimation.MOVE_SHREDDER;
                             delay = 10;
                         }
                         break;
                     case MOVE_SHREDDER:
-                        this.slider += 1/50F;
-                        if(slider >= 1F) {
+                        this.slider += 1 / 50F;
+                        if (slider >= 1F) {
                             slider = 1F;
                             animation = SlopperAnimation.DUMPING;
                             delay = 60;
@@ -245,8 +246,8 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase implement
                         animation = SlopperAnimation.MOVE_BUCKET;
                         break;
                     case MOVE_BUCKET:
-                        this.slider -= 1/50F;
-                        if(slider <= 0F) {
+                        this.slider -= 1 / 50F;
+                        if (slider <= 0F) {
                             animation = SlopperAnimation.LOWERING;
                             delay = 10;
                         }
@@ -260,7 +261,7 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase implement
         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
 
-        return new DirPos[] {
+        return new DirPos[]{
                 new DirPos(pos.getX() + dir.offsetX * 4, pos.getY(), pos.getZ() + dir.offsetZ * 4, dir),
                 new DirPos(pos.getX() - dir.offsetX * 4, pos.getY(), pos.getZ() - dir.offsetZ * 4, dir.getOpposite()),
                 new DirPos(pos.getX() + rot.offsetX * 2, pos.getY(), pos.getZ() + rot.offsetZ * 2, rot),
@@ -282,14 +283,13 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase implement
         return i >= 3 && i <= 8;
     }
 
-    private static final int[] slot_access = new int[] {2, 3, 4, 5, 6, 7, 8};
-
     @Override
     public int[] getAccessibleSlotsFromSide(EnumFacing side) {
         return slot_access;
     }
 
-    @Override public void serialize(ByteBuf buf) {
+    @Override
+    public void serialize(ByteBuf buf) {
         super.serialize(buf);
         buf.writeLong(power);
         buf.writeLong(consumption);
@@ -299,7 +299,8 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase implement
         tanks[1].serialize(buf);
     }
 
-    @Override public void deserialize(ByteBuf buf) {
+    @Override
+    public void deserialize(ByteBuf buf) {
         super.deserialize(buf);
         this.power = buf.readLong();
         this.consumption = buf.readLong();
@@ -328,33 +329,53 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase implement
     }
 
     public boolean canSlop() {
-        if(this.getFluidOutput(tanks[0].getTankType()) == null) return false;
-        if(tanks[0].getFill() < waterUsed) return false;
-        if(tanks[1].getFill() + waterUsed > tanks[1].getMaxFill()) return false;
-        if(power < consumption) return false;
+        if (this.getFluidOutput(tanks[0].getTankType()) == null) return false;
+        if (tanks[0].getFill() < waterUsed) return false;
+        if (tanks[1].getFill() + waterUsed > tanks[1].getMaxFill()) return false;
+        if (power < consumption) return false;
 
         return !inventory.getStackInSlot(2).isEmpty() && inventory.getStackInSlot(2).getItem() == ModItems.bedrock_ore_base;
     }
 
     public FluidType getFluidOutput(FluidType input) {
-        if(input == Fluids.WATER) return Fluids.SLOP;
+        if (input == Fluids.WATER) return Fluids.SLOP;
         return null;
     }
 
-    @Override public long getPower() { return power; }
-    @Override public void setPower(long power) { this.power = power; }
-    @Override public long getMaxPower() { return maxPower; }
+    @Override
+    public long getPower() {
+        return power;
+    }
 
-    @Override public FluidTankNTM[] getAllTanks() { return tanks; }
-    @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[] {tanks[1]}; }
-    @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[] {tanks[0]}; }
+    @Override
+    public void setPower(long power) {
+        this.power = power;
+    }
 
-    AxisAlignedBB bb = null;
+    @Override
+    public long getMaxPower() {
+        return maxPower;
+    }
+
+    @Override
+    public FluidTankNTM[] getAllTanks() {
+        return tanks;
+    }
+
+    @Override
+    public FluidTankNTM[] getSendingTanks() {
+        return new FluidTankNTM[]{tanks[1]};
+    }
+
+    @Override
+    public FluidTankNTM[] getReceivingTanks() {
+        return new FluidTankNTM[]{tanks[0]};
+    }
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
 
-        if(bb == null) {
+        if (bb == null) {
             bb = new AxisAlignedBB(
                     pos.getX() - 3,
                     pos.getY(),
@@ -383,5 +404,9 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase implement
     @SideOnly(Side.CLIENT)
     public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
         return new GUIOreSlopper(player.inventory, this);
+    }
+
+    public static enum SlopperAnimation {
+        LOWERING, LIFTING, MOVE_SHREDDER, DUMPING, MOVE_BUCKET
     }
 }

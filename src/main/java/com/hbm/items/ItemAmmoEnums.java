@@ -12,6 +12,8 @@ public class ItemAmmoEnums {
         FOAM("ammo_fireext_foam"),
         SAND("ammo_fireext_sand");
 
+        public static final AmmoFireExt[] VALUES = values();
+
         private final Set<ItemAmmo.AmmoItemTrait> traits;
         private final String unloc;
 
@@ -34,6 +36,8 @@ public class ItemAmmoEnums {
     public enum AmmoMisc implements IAmmoItemEnum {
         //LUNA_SNIPER("ammo_lunar", Gun50BMGFactory.getLunaticSabotRound(), AmmoItemTrait.PRO_HEAVY_DAMAGE, AmmoItemTrait.PRO_ACCURATE2, AmmoItemTrait.NEU_HEAVY_METAL),
         DGK("ammo_dkg");
+
+        public static final AmmoMisc[] VALUES = values();
 
         private final Set<ItemAmmo.AmmoItemTrait> traits;
         private final String unloc;
@@ -60,6 +64,8 @@ public class ItemAmmoEnums {
         APFSDS_T("ammo_shell_apfsds_t"),
         APFSDS_DU("ammo_shell_apfsds_du"),
         W9("ammo_shell_w9");
+
+        public static final Ammo240Shell[] VALUES = values();
 
         private final Set<ItemAmmo.AmmoItemTrait> traits;
         private final String unloc;

@@ -256,7 +256,7 @@ public class FluidPump extends BlockContainerBakeable implements INBTBlockTransf
         public void readFromNBT(NBTTagCompound compound) {
             super.readFromNBT(compound);
             this.tank[0].readFromNBT(compound, "t");
-            this.priority = EnumUtil.grabEnumSafely(IEnergyReceiverMK2.ConnectionPriority.class, compound.getByte("p"));
+            this.priority = EnumUtil.grabEnumSafely(IEnergyReceiverMK2.ConnectionPriority.VALUES, compound.getByte("p"));
             this.bufferSize = compound.getInteger("buffer");
         }
 
@@ -272,7 +272,7 @@ public class FluidPump extends BlockContainerBakeable implements INBTBlockTransf
         public void deserialize(ByteBuf buf) {
             super.deserialize(buf);
             this.tank[0].deserialize(buf);
-            this.priority = EnumUtil.grabEnumSafely(IEnergyReceiverMK2.ConnectionPriority.class, buf.readByte());
+            this.priority = EnumUtil.grabEnumSafely(IEnergyReceiverMK2.ConnectionPriority.VALUES, buf.readByte());
             this.bufferSize = buf.readInt();
         }
 
@@ -310,7 +310,7 @@ public class FluidPump extends BlockContainerBakeable implements INBTBlockTransf
                 this.tank[0].withPressure(MathHelper.clamp(data.getByte("pressure"), 0, 5));
             }
             if (data.hasKey("priority")) {
-                this.priority = EnumUtil.grabEnumSafely(IEnergyReceiverMK2.ConnectionPriority.class, data.getByte("priority"));
+                this.priority = EnumUtil.grabEnumSafely(IEnergyReceiverMK2.ConnectionPriority.VALUES, data.getByte("priority"));
             }
 
             this.markDirty();
@@ -482,7 +482,7 @@ public class FluidPump extends BlockContainerBakeable implements INBTBlockTransf
                 if (this.priority >= IEnergyReceiverMK2.ConnectionPriority.VALUES.length) {
                     this.priority = 0;
                 }
-                button.displayString = EnumUtil.grabEnumSafely(IEnergyReceiverMK2.ConnectionPriority.class, this.priority).name();
+                button.displayString = EnumUtil.grabEnumSafely(IEnergyReceiverMK2.ConnectionPriority.VALUES, this.priority).name();
             }
         }
 

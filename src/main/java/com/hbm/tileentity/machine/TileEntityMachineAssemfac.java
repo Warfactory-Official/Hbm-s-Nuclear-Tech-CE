@@ -3,7 +3,7 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.fluid.IFluidStandardTransceiver;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.inventory.UpgradeManager;
+import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerAssemfac;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -34,20 +34,20 @@ import java.util.Random;
 @AutoRegister
 public class TileEntityMachineAssemfac extends TileEntityMachineAssemblerBase implements IFluidStandardTransceiver, IGUIProvider, IFluidCopiable {
 
+    private static final int invSize = 117;
+    private final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
     public AssemblerArm[] arms;
-
     public FluidTankNTM water;
     public FluidTankNTM steam;
-
-    private final UpgradeManager upgradeManager;
-
-    private static final int invSize = 117;
+    AxisAlignedBB bb = null;
+    ImmutablePair<BlockPos, ForgeDirection>[] inpos;
+    ImmutablePair<BlockPos, ForgeDirection>[] outpos;
 
     public TileEntityMachineAssemfac() {
         super(invSize, true, true); //8 assembler groups with 14 slots, 4 upgrade slots, 1 battery slot
 
         arms = new AssemblerArm[6];
-        for(int i = 0; i < arms.length; i++) {
+        for (int i = 0; i < arms.length; i++) {
             arms[i] = new AssemblerArm(i % 3 == 1 ? 1 : 0); //the second of every group of three becomes a welder
         }
 
@@ -65,12 +65,11 @@ public class TileEntityMachineAssemfac extends TileEntityMachineAssemblerBase im
             public void setStackInSlot(int slot, @Nonnull ItemStack stack) {
                 super.setStackInSlot(slot, stack);
 
-                if(!stack.isEmpty() && slot >= 1 && slot <= 4 && stack.getItem() instanceof ItemMachineUpgrade) {
+                if (!stack.isEmpty() && slot >= 1 && slot <= 4 && stack.getItem() instanceof ItemMachineUpgrade) {
                     world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.upgradePlug, SoundCategory.BLOCKS, 1.0F, 1.0F);
                 }
             }
         };
-        upgradeManager = new UpgradeManager();
     }
 
     @Override
@@ -82,16 +81,16 @@ public class TileEntityMachineAssemfac extends TileEntityMachineAssemblerBase im
     public void update() {
         super.update();
 
-        if(!world.isRemote) {
+        if (!world.isRemote) {
 
-            if(world.getTotalWorldTime() % 20 == 0) {
+            if (world.getTotalWorldTime() % 20 == 0) {
                 this.updateConnections();
             }
 
             this.speed = 100;
             this.consumption = 100;
 
-            upgradeManager.eval(inventory, 1, 4);
+            upgradeManager.checkSlots(inventory, 1, 4);
 
             int speedLevel = Math.min(upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.SPEED), 6);
             int powerLevel = Math.min(upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.POWER), 3);
@@ -104,7 +103,7 @@ public class TileEntityMachineAssemfac extends TileEntityMachineAssemblerBase im
             this.speed /= (overLevel + 1);
             this.consumption *= (overLevel + 1);
 
-            for(DirPos pos : getConPos()) {
+            for (DirPos pos : getConPos()) {
                 this.sendFluid(steam, world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
             }
 
@@ -112,9 +111,9 @@ public class TileEntityMachineAssemfac extends TileEntityMachineAssemblerBase im
 
         } else {
 
-            for(AssemblerArm arm : arms) {
+            for (AssemblerArm arm : arms) {
                 arm.updateInterp();
-                if(isProgressing) {
+                if (isProgressing) {
                     arm.updateArm();
                 }
             }
@@ -125,7 +124,7 @@ public class TileEntityMachineAssemfac extends TileEntityMachineAssemblerBase im
     public void serialize(ByteBuf buf) {
         super.serialize(buf);
         buf.writeLong(power);
-        for(int i = 0; i < getRecipeCount(); i++) {
+        for (int i = 0; i < getRecipeCount(); i++) {
             buf.writeInt(progress[i]);
             buf.writeInt(maxProgress[i]);
         }
@@ -138,7 +137,7 @@ public class TileEntityMachineAssemfac extends TileEntityMachineAssemblerBase im
     public void deserialize(ByteBuf buf) {
         super.deserialize(buf);
         power = buf.readLong();
-        for(int i = 0; i < getRecipeCount(); i++) {
+        for (int i = 0; i < getRecipeCount(); i++) {
             progress[i] = buf.readInt();
             maxProgress[i] = buf.readInt();
         }
@@ -164,7 +163,7 @@ public class TileEntityMachineAssemfac extends TileEntityMachineAssemblerBase im
     }
 
     private void updateConnections() {
-        for(DirPos pos : getConPos()) {
+        for (DirPos pos : getConPos()) {
             this.trySubscribe(world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
             this.trySubscribe(water.getTankType(), world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
         }
@@ -175,7 +174,7 @@ public class TileEntityMachineAssemfac extends TileEntityMachineAssemblerBase im
         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
 
-        return new DirPos[] {
+        return new DirPos[]{
                 new DirPos(pos.getX() - dir.offsetX * 3 + rot.offsetX * 5, pos.getY(), pos.getZ() - dir.offsetZ * 3 + rot.offsetZ * 5, rot),
                 new DirPos(pos.getX() + dir.offsetX * 2 + rot.offsetX * 5, pos.getY(), pos.getZ() + dir.offsetZ * 2 + rot.offsetZ * 5, rot),
                 new DirPos(pos.getX() - dir.offsetX * 3 - rot.offsetX * 4, pos.getY(), pos.getZ() - dir.offsetZ * 3 - rot.offsetZ * 4, rot.getOpposite()),
@@ -187,157 +186,10 @@ public class TileEntityMachineAssemfac extends TileEntityMachineAssemblerBase im
         };
     }
 
-    public static class AssemblerArm {
-        public double[] angles = new double[4];
-        public double[] prevAngles = new double[4];
-        public double[] targetAngles = new double[4];
-        public double[] speed = new double[4];
-
-        Random rand = new Random();
-
-        int actionMode;
-        ArmActionState state;
-        int actionDelay = 0;
-
-        public AssemblerArm(int actionMode) {
-            this.actionMode = actionMode;
-
-            if(this.actionMode == 0) {
-                speed[0] = 15;	//Pivot
-                speed[1] = 15;	//Arm
-                speed[2] = 15;	//Piston
-                speed[3] = 0.5;	//Striker
-            } else if(this.actionMode == 1) {
-                speed[0] = 3;		//Pivot
-                speed[1] = 3;		//Arm
-                speed[2] = 1;		//Piston
-                speed[3] = 0.125;	//Striker
-            }
-
-            state = ArmActionState.ASSUME_POSITION;
-            chooseNewArmPoistion();
-            actionDelay = rand.nextInt(20);
-        }
-
-        public void updateArm() {
-
-            if(actionDelay > 0) {
-                actionDelay--;
-                return;
-            }
-
-            switch(state) {
-                //Move. If done moving, set a delay and progress to EXTEND
-                case ASSUME_POSITION:
-                    if(move()) {
-                        if(this.actionMode == 0) {
-                            actionDelay = 2;
-                        } else if(this.actionMode == 1) {
-                            actionDelay = 10;
-                        }
-                        state = ArmActionState.EXTEND_STRIKER;
-                        targetAngles[3] = 1D;
-                    }
-                    break;
-                case EXTEND_STRIKER:
-                    if(move()) {
-                        if(this.actionMode == 0) {
-                            state = ArmActionState.RETRACT_STRIKER;
-                            targetAngles[3] = 0D;
-                        } else if(this.actionMode == 1) {
-                            state = ArmActionState.WELD;
-                            targetAngles[2] -= 20;
-                            actionDelay = 5 + rand.nextInt(5);
-                        }
-                    }
-                    break;
-                case WELD:
-                    if(move()) {
-                        state = ArmActionState.RETRACT_STRIKER;
-                        targetAngles[3] = 0D;
-                        actionDelay = 10 + rand.nextInt(5);
-                    }
-                    break;
-                case RETRACT_STRIKER:
-                    if(move()) {
-                        if(this.actionMode == 0) {
-                            actionDelay = 2 + rand.nextInt(5);
-                        } else if(this.actionMode == 1) {
-                            actionDelay = 5 + rand.nextInt(3);
-                        }
-                        chooseNewArmPoistion();
-                        state = ArmActionState.ASSUME_POSITION;
-                    }
-                    break;
-
-            }
-        }
-
-        public void chooseNewArmPoistion() {
-
-            if(this.actionMode == 0) {
-                targetAngles[0] = -rand.nextInt(50);		//Pivot
-                targetAngles[1] = -targetAngles[0];			//Arm
-                targetAngles[2] = rand.nextInt(30) - 15;	//Piston
-            } else if(this.actionMode == 1) {
-                targetAngles[0] = -rand.nextInt(30) + 10;	//Pivot
-                targetAngles[1] = -targetAngles[0];			//Arm
-                targetAngles[2] = rand.nextInt(10) + 10;	//Piston
-            }
-        }
-
-        private void updateInterp() {
-            for(int i = 0; i < angles.length; i++) {
-                prevAngles[i] = angles[i];
-            }
-        }
-
-        /**
-         * @return True when it has finished moving
-         */
-        private boolean move() {
-            boolean didMove = false;
-
-            for(int i = 0; i < angles.length; i++) {
-                if(angles[i] == targetAngles[i])
-                    continue;
-
-                didMove = true;
-
-                double angle = angles[i];
-                double target = targetAngles[i];
-                double turn = speed[i];
-                double delta = Math.abs(angle - target);
-
-                if(delta <= turn) {
-                    angles[i] = targetAngles[i];
-                    continue;
-                }
-
-                if(angle < target) {
-                    angles[i] += turn;
-                } else {
-                    angles[i] -= turn;
-                }
-            }
-
-            return !didMove;
-        }
-
-        public static enum ArmActionState {
-            ASSUME_POSITION,
-            EXTEND_STRIKER,
-            WELD,
-            RETRACT_STRIKER
-        }
-    }
-
-    AxisAlignedBB bb = null;
-
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
 
-        if(bb == null) {
+        if (bb == null) {
             bb = new AxisAlignedBB(
                     pos.getX() - 5,
                     pos.getY(),
@@ -374,22 +226,19 @@ public class TileEntityMachineAssemfac extends TileEntityMachineAssemblerBase im
 
     @Override
     public int[] getSlotIndicesFromIndex(int index) {
-        return new int[] { 5 + index * 14, 16 + index * 14, 18 + index * 14};
+        return new int[]{5 + index * 14, 16 + index * 14, 18 + index * 14};
     }
-
-    ImmutablePair<BlockPos, ForgeDirection>[] inpos;
-    ImmutablePair<BlockPos, ForgeDirection>[] outpos;
 
     @Override
     public ImmutablePair<BlockPos, ForgeDirection>[] getInputPositions() {
 
-        if(inpos != null)
+        if (inpos != null)
             return inpos;
 
         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
 
-        inpos = new ImmutablePair[] {
+        inpos = new ImmutablePair[]{
                 ImmutablePair.of(new BlockPos(getPos().getX() + dir.offsetX * 4 - rot.offsetX, getPos().getY(), getPos().getZ() + dir.offsetZ * 4 - rot.offsetZ), dir),
                 ImmutablePair.of(new BlockPos(getPos().getX() - dir.offsetX * 5 + rot.offsetX * 2, getPos().getY(), getPos().getZ() - dir.offsetZ * 5 + rot.offsetZ * 2), dir.getOpposite()),
                 ImmutablePair.of(new BlockPos(getPos().getX() - dir.offsetX * 2 - rot.offsetX * 4, getPos().getY(), getPos().getZ() - dir.offsetZ * 2 - rot.offsetZ * 4), rot.getOpposite()),
@@ -402,13 +251,13 @@ public class TileEntityMachineAssemfac extends TileEntityMachineAssemblerBase im
     @Override
     public ImmutablePair<BlockPos, ForgeDirection>[] getOutputPositions() {
 
-        if(outpos != null)
+        if (outpos != null)
             return outpos;
 
         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
 
-        outpos = new ImmutablePair[] {
+        outpos = new ImmutablePair[]{
                 ImmutablePair.of(new BlockPos(getPos().getX() + dir.offsetX * 4 + rot.offsetX * 2, getPos().getY(), getPos().getZ() + dir.offsetZ * 4 + rot.offsetZ * 2), dir),
                 ImmutablePair.of(new BlockPos(getPos().getX() - dir.offsetX * 5 - rot.offsetX * 1, getPos().getY(), getPos().getZ() - dir.offsetZ * 5 - rot.offsetZ * 1), dir.getOpposite()),
                 ImmutablePair.of(new BlockPos(getPos().getX() + dir.offsetX * 1 - rot.offsetX * 4, getPos().getY(), getPos().getZ() + dir.offsetZ * 1 - rot.offsetZ * 4), rot.getOpposite()),
@@ -425,17 +274,17 @@ public class TileEntityMachineAssemfac extends TileEntityMachineAssemblerBase im
 
     @Override
     public FluidTankNTM[] getSendingTanks() {
-        return new FluidTankNTM[] { steam };
+        return new FluidTankNTM[]{steam};
     }
 
     @Override
     public FluidTankNTM[] getReceivingTanks() {
-        return new FluidTankNTM[] { water };
+        return new FluidTankNTM[]{water};
     }
 
     @Override
     public FluidTankNTM[] getAllTanks() {
-        return new FluidTankNTM[] { water, steam };
+        return new FluidTankNTM[]{water, steam};
     }
 
     @Override
@@ -452,5 +301,150 @@ public class TileEntityMachineAssemfac extends TileEntityMachineAssemblerBase im
     @Override
     public FluidTankNTM getTankToPaste() {
         return null;
+    }
+
+    public static class AssemblerArm {
+        public double[] angles = new double[4];
+        public double[] prevAngles = new double[4];
+        public double[] targetAngles = new double[4];
+        public double[] speed = new double[4];
+
+        Random rand = new Random();
+
+        int actionMode;
+        ArmActionState state;
+        int actionDelay = 0;
+
+        public AssemblerArm(int actionMode) {
+            this.actionMode = actionMode;
+
+            if (this.actionMode == 0) {
+                speed[0] = 15;    //Pivot
+                speed[1] = 15;    //Arm
+                speed[2] = 15;    //Piston
+                speed[3] = 0.5;    //Striker
+            } else if (this.actionMode == 1) {
+                speed[0] = 3;        //Pivot
+                speed[1] = 3;        //Arm
+                speed[2] = 1;        //Piston
+                speed[3] = 0.125;    //Striker
+            }
+
+            state = ArmActionState.ASSUME_POSITION;
+            chooseNewArmPoistion();
+            actionDelay = rand.nextInt(20);
+        }
+
+        public void updateArm() {
+
+            if (actionDelay > 0) {
+                actionDelay--;
+                return;
+            }
+
+            switch (state) {
+                //Move. If done moving, set a delay and progress to EXTEND
+                case ASSUME_POSITION:
+                    if (move()) {
+                        if (this.actionMode == 0) {
+                            actionDelay = 2;
+                        } else if (this.actionMode == 1) {
+                            actionDelay = 10;
+                        }
+                        state = ArmActionState.EXTEND_STRIKER;
+                        targetAngles[3] = 1D;
+                    }
+                    break;
+                case EXTEND_STRIKER:
+                    if (move()) {
+                        if (this.actionMode == 0) {
+                            state = ArmActionState.RETRACT_STRIKER;
+                            targetAngles[3] = 0D;
+                        } else if (this.actionMode == 1) {
+                            state = ArmActionState.WELD;
+                            targetAngles[2] -= 20;
+                            actionDelay = 5 + rand.nextInt(5);
+                        }
+                    }
+                    break;
+                case WELD:
+                    if (move()) {
+                        state = ArmActionState.RETRACT_STRIKER;
+                        targetAngles[3] = 0D;
+                        actionDelay = 10 + rand.nextInt(5);
+                    }
+                    break;
+                case RETRACT_STRIKER:
+                    if (move()) {
+                        if (this.actionMode == 0) {
+                            actionDelay = 2 + rand.nextInt(5);
+                        } else if (this.actionMode == 1) {
+                            actionDelay = 5 + rand.nextInt(3);
+                        }
+                        chooseNewArmPoistion();
+                        state = ArmActionState.ASSUME_POSITION;
+                    }
+                    break;
+
+            }
+        }
+
+        public void chooseNewArmPoistion() {
+
+            if (this.actionMode == 0) {
+                targetAngles[0] = -rand.nextInt(50);        //Pivot
+                targetAngles[1] = -targetAngles[0];            //Arm
+                targetAngles[2] = rand.nextInt(30) - 15;    //Piston
+            } else if (this.actionMode == 1) {
+                targetAngles[0] = -rand.nextInt(30) + 10;    //Pivot
+                targetAngles[1] = -targetAngles[0];            //Arm
+                targetAngles[2] = rand.nextInt(10) + 10;    //Piston
+            }
+        }
+
+        private void updateInterp() {
+            for (int i = 0; i < angles.length; i++) {
+                prevAngles[i] = angles[i];
+            }
+        }
+
+        /**
+         * @return True when it has finished moving
+         */
+        private boolean move() {
+            boolean didMove = false;
+
+            for (int i = 0; i < angles.length; i++) {
+                if (angles[i] == targetAngles[i])
+                    continue;
+
+                didMove = true;
+
+                double angle = angles[i];
+                double target = targetAngles[i];
+                double turn = speed[i];
+                double delta = Math.abs(angle - target);
+
+                if (delta <= turn) {
+                    angles[i] = targetAngles[i];
+                    continue;
+                }
+
+                if (angle < target) {
+                    angles[i] += turn;
+                } else {
+                    angles[i] -= turn;
+                }
+            }
+
+            return !didMove;
+        }
+
+        public static enum ArmActionState {
+            ASSUME_POSITION,
+            EXTEND_STRIKER,
+            WELD,
+            RETRACT_STRIKER
+        }
     }
 }

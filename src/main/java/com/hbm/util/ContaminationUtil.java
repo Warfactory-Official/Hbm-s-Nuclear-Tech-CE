@@ -565,7 +565,7 @@ public class ContaminationUtil {
 
 	public static void radiate(World world, double x, double y, double z, double range, float rad3d, float dig3d, float fire3d, float blast3d, double blastRange) {
 		List<Entity> entities = world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(x-range, y-range, z-range, x+range, y+range, z+range));
-		
+		BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 		for(Entity e : entities) {
 			if(isExplosionExempt(e)) continue;
 
@@ -583,7 +583,7 @@ public class ContaminationUtil {
 				int ix = (int)Math.floor(x + vec.xCoord * i);
 				int iy = (int)Math.floor(y + vec.yCoord * i);
 				int iz = (int)Math.floor(z + vec.zCoord * i);
-				res += world.getBlockState(new BlockPos(ix, iy, iz)).getBlock().getExplosionResistance(null);
+				res += world.getBlockState(pos.setPos(ix, iy, iz)).getBlock().getExplosionResistance(null);
 			}
 			boolean isLiving = e instanceof EntityLivingBase;
 			

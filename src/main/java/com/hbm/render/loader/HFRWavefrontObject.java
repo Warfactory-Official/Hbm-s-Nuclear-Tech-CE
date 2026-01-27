@@ -15,10 +15,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class HFRWavefrontObject implements IModelCustom
+public class HFRWavefrontObject implements IModelCustomNamed
 {
     private static Pattern vertexPattern = Pattern.compile("(v( (\\-){0,1}\\d+(\\.\\d+)?){3,4} *\\n)|(v( (\\-){0,1}\\d+(\\.\\d+)?){3,4} *$)");
     private static Pattern vertexNormalPattern = Pattern.compile("(vn( (\\-){0,1}\\d+(\\.\\d+)?){3,4} *\\n)|(vn( (\\-){0,1}\\d+(\\.\\d+)?){3,4} *$)");
@@ -611,6 +612,15 @@ public class HFRWavefrontObject implements IModelCustom
     public String getType()
     {
         return "obj";
+    }
+
+    @Override
+    public List<String> getPartNames() {
+        List<String> names = new ArrayList<String>();
+        for(GroupObject data : groupObjects) {
+            names.add(data.name);
+        }
+        return names;
     }
 
     //TODO implement

@@ -42,9 +42,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.repository.name }}
-          path: build/libs/
+          path: |
+            build/libs/**
+            !build/libs/**/*-downgraded.jar
+          if-no-files-found: error
 
-      - name: Run server for up to 90 seconds
+      - name: Run server
         run: |
           set -euo pipefail
 
@@ -56,7 +59,7 @@ jobs:
 
           echo "stop" > run/server/stop.txt
           set +e
-          timeout 90s ./gradlew runServer --no-daemon --stacktrace < run/server/stop.txt 2>&1 | tee server.log
+          timeout 120s ./gradlew runServer --no-daemon --stacktrace < run/server/stop.txt 2>&1 | tee server.log
           code=${PIPESTATUS[0]}
           set -e
 

@@ -410,7 +410,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 
 	@Override
 	public void onChunkUnload() {
-
+        super.onChunkUnload();
 		if(audio != null) {
 			audio.stopSound();
 			audio = null;

@@ -7,8 +7,8 @@ import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBattery;
 import com.hbm.items.machine.ItemBreedingRod;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.lib.Library;
 import com.hbm.util.I18nUtil;
+import com.hbm.util.ShadyUtil;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
@@ -478,7 +478,7 @@ public class ItemStarterKit extends Item {
 
         if(this == ModItems.letter && world.isRemote)
         {
-            if(player.getUniqueID().toString().equals(Library.a20)) {
+            if(player.getUniqueID().equals(ShadyUtil.a20)) {
                 player.sendMessage(new TextComponentTranslation("chat.letter.a20"));
             } else {
                 player.sendMessage(new TextComponentTranslation("chat.letter.open"));

@@ -13,6 +13,7 @@ import com.hbm.inventory.fluid.trait.FluidTrait;
 import com.hbm.inventory.gui.GUIOilburner;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
@@ -27,7 +28,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
-public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implements ITickable, IGUIProvider, IHeatSource, IControlReceiver, IFluidStandardTransceiver, IFFtoNTMF {
+public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implements ITickable, IGUIProvider, IHeatSource, IControlReceiver, IFluidStandardTransceiver, IFFtoNTMF, IFluidCopiable {
 
     public static final int maxHeatEnergy = 100_000;
     public boolean isOn = false;
@@ -221,5 +222,21 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
     @Override
     public FluidTankNTM[] getSendingTanks() {
         return new FluidTankNTM[]{smoke, smoke_leaded, smoke_poison};
+    }
+    @Override
+    public NBTTagCompound getSettings(World world, int x, int y, int z) {
+        NBTTagCompound tag = new NBTTagCompound();
+        tag.setIntArray("fluidID", new int[]{tank.getTankType().getID()});
+        tag.setInteger("burnRate", setting);
+        tag.setBoolean("isOn", isOn);
+        return tag;
+    }
+
+    @Override
+    public void pasteSettings(NBTTagCompound nbt, int index, World world, EntityPlayer player, int x, int y, int z) {
+        int id = nbt.getIntArray("fluidID")[index];
+        tank.setTankType(Fluids.fromID(id));
+        if(nbt.hasKey("isOn")) isOn = nbt.getBoolean("isOn");
+        if(nbt.hasKey("burnRate")) setting = nbt.getInteger("burnRate");
     }
 }

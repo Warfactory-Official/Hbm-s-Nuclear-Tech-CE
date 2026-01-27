@@ -11,23 +11,23 @@ public final class SunUnsafeWrapper extends AbstractUnsafe {
     SunUnsafeWrapper() {
     }
 
-    public <T extends Throwable> long objectFieldOffset(Field f) throws T {
+    public long objectFieldOffset(Field f) {
         return sunUnsafe.objectFieldOffset(f);
     }
 
-    public <T extends Throwable> Object staticFieldBase(Field f) throws T {
+    public Object staticFieldBase(Field f) {
         return sunUnsafe.staticFieldBase(f);
     }
 
-    public <T extends Throwable> long staticFieldOffset(Field f) throws T {
+    public long staticFieldOffset(Field f) {
         return sunUnsafe.staticFieldOffset(f);
     }
 
-    public <T extends Throwable> Object allocateInstance(Class<?> cls) throws InstantiationException {
+    public Object allocateInstance(Class<?> cls) throws InstantiationException {
         return sunUnsafe.allocateInstance(cls);
     }
 
-    public <T extends Throwable> Object allocateUninitializedArray(Class<?> componentType, int length) throws T {
+    public Object allocateUninitializedArray(Class<?> componentType, int length) {
         if (componentType == null) throw new IllegalArgumentException("Component type is null");
         if (!componentType.isPrimitive()) throw new IllegalArgumentException("Component type is not primitive");
         if (length < 0) throw new IllegalArgumentException("Negative length");
@@ -42,83 +42,83 @@ public final class SunUnsafeWrapper extends AbstractUnsafe {
         return null;
     }
 
-    public <T extends Throwable> long arrayBaseOffset(Class<?> cls) throws T {
+    public long arrayBaseOffset(Class<?> cls) {
         return sunUnsafe.arrayBaseOffset(cls);
     }
 
-    public <T extends Throwable> int arrayIndexScale(Class<?> cls) throws T {
+    public int arrayIndexScale(Class<?> cls) {
         return sunUnsafe.arrayIndexScale(cls);
     }
 
-    public <T extends Throwable> int addressSize() throws T {
+    public int addressSize() {
         return sunUnsafe.addressSize();
     }
 
-    public <T extends Throwable> int pageSize() throws T {
+    public int pageSize() {
         return sunUnsafe.pageSize();
     }
 
     // --- 2. References ---
 
-    public <T extends Throwable> Object getReference(Object o, long offset) throws T {
+    public Object getReference(Object o, long offset) {
         return sunUnsafe.getObject(o, offset);
     }
 
-    public <T extends Throwable> void putReference(Object o, long offset, Object x) throws T {
+    public void putReference(Object o, long offset, Object x) {
         sunUnsafe.putObject(o, offset, x);
     }
 
-    public <T extends Throwable> Object getReferenceVolatile(Object o, long offset) throws T {
+    public Object getReferenceVolatile(Object o, long offset) {
         return sunUnsafe.getObjectVolatile(o, offset);
     }
 
-    public <T extends Throwable> void putReferenceVolatile(Object o, long offset, Object x) throws T {
+    public void putReferenceVolatile(Object o, long offset, Object x) {
         sunUnsafe.putObjectVolatile(o, offset, x);
     }
 
-    public <T extends Throwable> Object getReferenceAcquire(Object o, long offset) throws T {
+    public Object getReferenceAcquire(Object o, long offset) {
         Object v = sunUnsafe.getObject(o, offset);
         sunUnsafe.loadFence();
         return v;
     }
 
-    public <T extends Throwable> void putReferenceRelease(Object o, long offset, Object x) throws T {
+    public void putReferenceRelease(Object o, long offset, Object x) {
         sunUnsafe.putOrderedObject(o, offset, x);
     }
 
-    public <T extends Throwable> Object getReferenceOpaque(Object o, long offset) throws T {
+    public Object getReferenceOpaque(Object o, long offset) {
         return getReferenceAcquire(o, offset);
     }
 
-    public <T extends Throwable> void putReferenceOpaque(Object o, long offset, Object x) throws T {
+    public void putReferenceOpaque(Object o, long offset, Object x) {
         putReferenceRelease(o, offset, x);
     }
 
-    public <T extends Throwable> boolean compareAndSetReference(Object o, long offset, Object expected, Object x) throws T {
+    public boolean compareAndSetReference(Object o, long offset, Object expected, Object x) {
         return sunUnsafe.compareAndSwapObject(o, offset, expected, x);
     }
 
-    public <T extends Throwable> Object getAndSetReference(Object o, long offset, Object x) throws T {
+    public Object getAndSetReference(Object o, long offset, Object x) {
         return sunUnsafe.getAndSetObject(o, offset, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetReference(Object o, long offset, Object expected, Object x) throws T {
+    public boolean weakCompareAndSetReference(Object o, long offset, Object expected, Object x) {
         return sunUnsafe.compareAndSwapObject(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetReferenceAcquire(Object o, long offset, Object expected, Object x) throws T {
+    public boolean weakCompareAndSetReferenceAcquire(Object o, long offset, Object expected, Object x) {
         return sunUnsafe.compareAndSwapObject(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetReferenceRelease(Object o, long offset, Object expected, Object x) throws T {
+    public boolean weakCompareAndSetReferenceRelease(Object o, long offset, Object expected, Object x) {
         return sunUnsafe.compareAndSwapObject(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetReferencePlain(Object o, long offset, Object expected, Object x) throws T {
+    public boolean weakCompareAndSetReferencePlain(Object o, long offset, Object expected, Object x) {
         return sunUnsafe.compareAndSwapObject(o, offset, expected, x);
     }
 
-    public <T extends Throwable> Object compareAndExchangeReference(Object o, long offset, Object expected, Object x) throws T {
+    public Object compareAndExchangeReference(Object o, long offset, Object expected, Object x) {
         while (true) {
             Object witness = sunUnsafe.getObjectVolatile(o, offset);
             if (witness != expected) {
@@ -130,87 +130,87 @@ public final class SunUnsafeWrapper extends AbstractUnsafe {
         }
     }
 
-    public <T extends Throwable> Object compareAndExchangeReferenceAcquire(Object o, long offset, Object expected, Object x) throws T {
+    public Object compareAndExchangeReferenceAcquire(Object o, long offset, Object expected, Object x) {
         return compareAndExchangeReference(o, offset, expected, x);
     }
 
-    public <T extends Throwable> Object compareAndExchangeReferenceRelease(Object o, long offset, Object expected, Object x) throws T {
+    public Object compareAndExchangeReferenceRelease(Object o, long offset, Object expected, Object x) {
         return compareAndExchangeReference(o, offset, expected, x);
     }
 
-    public <T extends Throwable> Object getAndSetReferenceAcquire(Object o, long offset, Object x) throws T {
+    public Object getAndSetReferenceAcquire(Object o, long offset, Object x) {
         return sunUnsafe.getAndSetObject(o, offset, x);
     }
 
-    public <T extends Throwable> Object getAndSetReferenceRelease(Object o, long offset, Object x) throws T {
+    public Object getAndSetReferenceRelease(Object o, long offset, Object x) {
         return sunUnsafe.getAndSetObject(o, offset, x);
     }
 
     // --- 3. Int ---
 
-    public <T extends Throwable> int getInt(Object o, long offset) throws T {
+    public int getInt(Object o, long offset) {
         return sunUnsafe.getInt(o, offset);
     }
 
-    public <T extends Throwable> void putInt(Object o, long offset, int x) throws T {
+    public void putInt(Object o, long offset, int x) {
         sunUnsafe.putInt(o, offset, x);
     }
 
-    public <T extends Throwable> int getIntVolatile(Object o, long offset) throws T {
+    public int getIntVolatile(Object o, long offset) {
         return sunUnsafe.getIntVolatile(o, offset);
     }
 
-    public <T extends Throwable> void putIntVolatile(Object o, long offset, int x) throws T {
+    public void putIntVolatile(Object o, long offset, int x) {
         sunUnsafe.putIntVolatile(o, offset, x);
     }
 
-    public <T extends Throwable> int getIntAcquire(Object o, long offset) throws T {
+    public int getIntAcquire(Object o, long offset) {
         int v = sunUnsafe.getInt(o, offset);
         sunUnsafe.loadFence();
         return v;
     }
 
-    public <T extends Throwable> void putIntRelease(Object o, long offset, int x) throws T {
+    public void putIntRelease(Object o, long offset, int x) {
         sunUnsafe.putOrderedInt(o, offset, x);
     }
 
-    public <T extends Throwable> int getIntOpaque(Object o, long offset) throws T {
+    public int getIntOpaque(Object o, long offset) {
         return getIntAcquire(o, offset);
     }
 
-    public <T extends Throwable> void putIntOpaque(Object o, long offset, int x) throws T {
+    public void putIntOpaque(Object o, long offset, int x) {
         putIntRelease(o, offset, x);
     }
 
-    public <T extends Throwable> boolean compareAndSetInt(Object o, long offset, int expected, int x) throws T {
+    public boolean compareAndSetInt(Object o, long offset, int expected, int x) {
         return sunUnsafe.compareAndSwapInt(o, offset, expected, x);
     }
 
-    public <T extends Throwable> int getAndAddInt(Object o, long offset, int delta) throws T {
+    public int getAndAddInt(Object o, long offset, int delta) {
         return sunUnsafe.getAndAddInt(o, offset, delta);
     }
 
-    public <T extends Throwable> int getAndSetInt(Object o, long offset, int x) throws T {
+    public int getAndSetInt(Object o, long offset, int x) {
         return sunUnsafe.getAndSetInt(o, offset, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetInt(Object o, long offset, int expected, int x) throws T {
+    public boolean weakCompareAndSetInt(Object o, long offset, int expected, int x) {
         return sunUnsafe.compareAndSwapInt(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetIntAcquire(Object o, long offset, int expected, int x) throws T {
+    public boolean weakCompareAndSetIntAcquire(Object o, long offset, int expected, int x) {
         return sunUnsafe.compareAndSwapInt(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetIntRelease(Object o, long offset, int expected, int x) throws T {
+    public boolean weakCompareAndSetIntRelease(Object o, long offset, int expected, int x) {
         return sunUnsafe.compareAndSwapInt(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetIntPlain(Object o, long offset, int expected, int x) throws T {
+    public boolean weakCompareAndSetIntPlain(Object o, long offset, int expected, int x) {
         return sunUnsafe.compareAndSwapInt(o, offset, expected, x);
     }
 
-    public <T extends Throwable> int compareAndExchangeInt(Object o, long offset, int expected, int x) throws T {
+    public int compareAndExchangeInt(Object o, long offset, int expected, int x) {
         while (true) {
             int witness = sunUnsafe.getIntVolatile(o, offset);
             if (witness != expected) {
@@ -222,87 +222,87 @@ public final class SunUnsafeWrapper extends AbstractUnsafe {
         }
     }
 
-    public <T extends Throwable> int compareAndExchangeIntAcquire(Object o, long offset, int expected, int x) throws T {
+    public int compareAndExchangeIntAcquire(Object o, long offset, int expected, int x) {
         return compareAndExchangeInt(o, offset, expected, x);
     }
 
-    public <T extends Throwable> int compareAndExchangeIntRelease(Object o, long offset, int expected, int x) throws T {
+    public int compareAndExchangeIntRelease(Object o, long offset, int expected, int x) {
         return compareAndExchangeInt(o, offset, expected, x);
     }
 
-    public <T extends Throwable> int getAndSetIntAcquire(Object o, long offset, int x) throws T {
+    public int getAndSetIntAcquire(Object o, long offset, int x) {
         return sunUnsafe.getAndSetInt(o, offset, x);
     }
 
-    public <T extends Throwable> int getAndSetIntRelease(Object o, long offset, int x) throws T {
+    public int getAndSetIntRelease(Object o, long offset, int x) {
         return sunUnsafe.getAndSetInt(o, offset, x);
     }
 
     // --- 4. Long ---
 
-    public <T extends Throwable> long getLong(Object o, long offset) throws T {
+    public long getLong(Object o, long offset) {
         return sunUnsafe.getLong(o, offset);
     }
 
-    public <T extends Throwable> void putLong(Object o, long offset, long x) throws T {
+    public void putLong(Object o, long offset, long x) {
         sunUnsafe.putLong(o, offset, x);
     }
 
-    public <T extends Throwable> long getLongVolatile(Object o, long offset) throws T {
+    public long getLongVolatile(Object o, long offset) {
         return sunUnsafe.getLongVolatile(o, offset);
     }
 
-    public <T extends Throwable> void putLongVolatile(Object o, long offset, long x) throws T {
+    public void putLongVolatile(Object o, long offset, long x) {
         sunUnsafe.putLongVolatile(o, offset, x);
     }
 
-    public <T extends Throwable> long getLongAcquire(Object o, long offset) throws T {
+    public long getLongAcquire(Object o, long offset) {
         long v = sunUnsafe.getLong(o, offset);
         sunUnsafe.loadFence();
         return v;
     }
 
-    public <T extends Throwable> void putLongRelease(Object o, long offset, long x) throws T {
+    public void putLongRelease(Object o, long offset, long x) {
         sunUnsafe.putOrderedLong(o, offset, x);
     }
 
-    public <T extends Throwable> long getLongOpaque(Object o, long offset) throws T {
+    public long getLongOpaque(Object o, long offset) {
         return getLongAcquire(o, offset);
     }
 
-    public <T extends Throwable> void putLongOpaque(Object o, long offset, long x) throws T {
+    public void putLongOpaque(Object o, long offset, long x) {
         putLongRelease(o, offset, x);
     }
 
-    public <T extends Throwable> boolean compareAndSetLong(Object o, long offset, long expected, long x) throws T {
+    public boolean compareAndSetLong(Object o, long offset, long expected, long x) {
         return sunUnsafe.compareAndSwapLong(o, offset, expected, x);
     }
 
-    public <T extends Throwable> long getAndAddLong(Object o, long offset, long delta) throws T {
+    public long getAndAddLong(Object o, long offset, long delta) {
         return sunUnsafe.getAndAddLong(o, offset, delta);
     }
 
-    public <T extends Throwable> long getAndSetLong(Object o, long offset, long x) throws T {
+    public long getAndSetLong(Object o, long offset, long x) {
         return sunUnsafe.getAndSetLong(o, offset, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetLong(Object o, long offset, long expected, long x) throws T {
+    public boolean weakCompareAndSetLong(Object o, long offset, long expected, long x) {
         return sunUnsafe.compareAndSwapLong(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetLongAcquire(Object o, long offset, long expected, long x) throws T {
+    public boolean weakCompareAndSetLongAcquire(Object o, long offset, long expected, long x) {
         return sunUnsafe.compareAndSwapLong(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetLongRelease(Object o, long offset, long expected, long x) throws T {
+    public boolean weakCompareAndSetLongRelease(Object o, long offset, long expected, long x) {
         return sunUnsafe.compareAndSwapLong(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetLongPlain(Object o, long offset, long expected, long x) throws T {
+    public boolean weakCompareAndSetLongPlain(Object o, long offset, long expected, long x) {
         return sunUnsafe.compareAndSwapLong(o, offset, expected, x);
     }
 
-    public <T extends Throwable> long compareAndExchangeLong(Object o, long offset, long expected, long x) throws T {
+    public long compareAndExchangeLong(Object o, long offset, long expected, long x) {
         while (true) {
             long witness = sunUnsafe.getLongVolatile(o, offset);
             if (witness != expected) {
@@ -314,129 +314,129 @@ public final class SunUnsafeWrapper extends AbstractUnsafe {
         }
     }
 
-    public <T extends Throwable> long compareAndExchangeLongAcquire(Object o, long offset, long expected, long x) throws T {
+    public long compareAndExchangeLongAcquire(Object o, long offset, long expected, long x) {
         return compareAndExchangeLong(o, offset, expected, x);
     }
 
-    public <T extends Throwable> long compareAndExchangeLongRelease(Object o, long offset, long expected, long x) throws T {
+    public long compareAndExchangeLongRelease(Object o, long offset, long expected, long x) {
         return compareAndExchangeLong(o, offset, expected, x);
     }
 
-    public <T extends Throwable> long getAndSetLongAcquire(Object o, long offset, long x) throws T {
+    public long getAndSetLongAcquire(Object o, long offset, long x) {
         return sunUnsafe.getAndSetLong(o, offset, x);
     }
 
-    public <T extends Throwable> long getAndSetLongRelease(Object o, long offset, long x) throws T {
+    public long getAndSetLongRelease(Object o, long offset, long x) {
         return sunUnsafe.getAndSetLong(o, offset, x);
     }
 
     // --- 5. Boolean ---
 
-    public <T extends Throwable> boolean getBoolean(Object o, long offset) throws T {
+    public boolean getBoolean(Object o, long offset) {
         return sunUnsafe.getBoolean(o, offset);
     }
 
-    public <T extends Throwable> void putBoolean(Object o, long offset, boolean x) throws T {
+    public void putBoolean(Object o, long offset, boolean x) {
         sunUnsafe.putBoolean(o, offset, x);
     }
 
-    public <T extends Throwable> boolean getBooleanVolatile(Object o, long offset) throws T {
+    public boolean getBooleanVolatile(Object o, long offset) {
         return sunUnsafe.getBooleanVolatile(o, offset);
     }
 
-    public <T extends Throwable> void putBooleanVolatile(Object o, long offset, boolean x) throws T {
+    public void putBooleanVolatile(Object o, long offset, boolean x) {
         sunUnsafe.putBooleanVolatile(o, offset, x);
     }
 
-    public <T extends Throwable> boolean getBooleanAcquire(Object o, long offset) throws T {
+    public boolean getBooleanAcquire(Object o, long offset) {
         boolean v = sunUnsafe.getBoolean(o, offset);
         sunUnsafe.loadFence();
         return v;
     }
 
-    public <T extends Throwable> void putBooleanRelease(Object o, long offset, boolean x) throws T {
+    public void putBooleanRelease(Object o, long offset, boolean x) {
         sunUnsafe.storeFence();
         sunUnsafe.putBoolean(o, offset, x);
     }
 
-    public <T extends Throwable> boolean getBooleanOpaque(Object o, long offset) throws T {
+    public boolean getBooleanOpaque(Object o, long offset) {
         return getBooleanAcquire(o, offset);
     }
 
-    public <T extends Throwable> void putBooleanOpaque(Object o, long offset, boolean x) throws T {
+    public void putBooleanOpaque(Object o, long offset, boolean x) {
         putBooleanRelease(o, offset, x);
     }
 
-    public <T extends Throwable> boolean compareAndSetBoolean(Object o, long offset, boolean expected, boolean x) throws T {
+    public boolean compareAndSetBoolean(Object o, long offset, boolean expected, boolean x) {
         return compareAndSetByte(o, offset, (byte) (expected ? 1 : 0), (byte) (x ? 1 : 0));
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetBoolean(Object o, long offset, boolean expected, boolean x) throws T {
+    public boolean weakCompareAndSetBoolean(Object o, long offset, boolean expected, boolean x) {
         return compareAndSetBoolean(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetBooleanAcquire(Object o, long offset, boolean expected, boolean x) throws T {
+    public boolean weakCompareAndSetBooleanAcquire(Object o, long offset, boolean expected, boolean x) {
         return compareAndSetBoolean(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetBooleanRelease(Object o, long offset, boolean expected, boolean x) throws T {
+    public boolean weakCompareAndSetBooleanRelease(Object o, long offset, boolean expected, boolean x) {
         return compareAndSetBoolean(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetBooleanPlain(Object o, long offset, boolean expected, boolean x) throws T {
+    public boolean weakCompareAndSetBooleanPlain(Object o, long offset, boolean expected, boolean x) {
         return compareAndSetBoolean(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean compareAndExchangeBoolean(Object o, long offset, boolean expected, boolean x) throws T {
+    public boolean compareAndExchangeBoolean(Object o, long offset, boolean expected, boolean x) {
         return compareAndExchangeByte(o, offset, (byte) (expected ? 1 : 0), (byte) (x ? 1 : 0)) != 0;
     }
 
-    public <T extends Throwable> boolean compareAndExchangeBooleanAcquire(Object o, long offset, boolean expected, boolean x) throws T {
+    public boolean compareAndExchangeBooleanAcquire(Object o, long offset, boolean expected, boolean x) {
         return compareAndExchangeBoolean(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean compareAndExchangeBooleanRelease(Object o, long offset, boolean expected, boolean x) throws T {
+    public boolean compareAndExchangeBooleanRelease(Object o, long offset, boolean expected, boolean x) {
         return compareAndExchangeBoolean(o, offset, expected, x);
     }
 
     // --- 6. Byte ---
 
-    public <T extends Throwable> byte getByte(Object o, long offset) throws T {
+    public byte getByte(Object o, long offset) {
         return sunUnsafe.getByte(o, offset);
     }
 
-    public <T extends Throwable> void putByte(Object o, long offset, byte x) throws T {
+    public void putByte(Object o, long offset, byte x) {
         sunUnsafe.putByte(o, offset, x);
     }
 
-    public <T extends Throwable> byte getByteVolatile(Object o, long offset) throws T {
+    public byte getByteVolatile(Object o, long offset) {
         return sunUnsafe.getByteVolatile(o, offset);
     }
 
-    public <T extends Throwable> void putByteVolatile(Object o, long offset, byte x) throws T {
+    public void putByteVolatile(Object o, long offset, byte x) {
         sunUnsafe.putByteVolatile(o, offset, x);
     }
 
-    public <T extends Throwable> byte getByteAcquire(Object o, long offset) throws T {
+    public byte getByteAcquire(Object o, long offset) {
         byte v = sunUnsafe.getByte(o, offset);
         sunUnsafe.loadFence();
         return v;
     }
 
-    public <T extends Throwable> void putByteRelease(Object o, long offset, byte x) throws T {
+    public void putByteRelease(Object o, long offset, byte x) {
         sunUnsafe.storeFence();
         sunUnsafe.putByte(o, offset, x);
     }
 
-    public <T extends Throwable> byte getByteOpaque(Object o, long offset) throws T {
+    public byte getByteOpaque(Object o, long offset) {
         return getByteAcquire(o, offset);
     }
 
-    public <T extends Throwable> void putByteOpaque(Object o, long offset, byte x) throws T {
+    public void putByteOpaque(Object o, long offset, byte x) {
         putByteRelease(o, offset, x);
     }
 
-    public <T extends Throwable> boolean compareAndSetByte(Object o, long offset, byte expected, byte x) throws T {
+    public boolean compareAndSetByte(Object o, long offset, byte expected, byte x) {
         final long wordOffset = offset & ~3L;
         int byteIndex = (int) offset & 3;
         if (BIG_ENDIAN) {
@@ -459,23 +459,23 @@ public final class SunUnsafeWrapper extends AbstractUnsafe {
         }
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetByte(Object o, long offset, byte expected, byte x) throws T {
+    public boolean weakCompareAndSetByte(Object o, long offset, byte expected, byte x) {
         return compareAndSetByte(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetByteAcquire(Object o, long offset, byte expected, byte x) throws T {
+    public boolean weakCompareAndSetByteAcquire(Object o, long offset, byte expected, byte x) {
         return compareAndSetByte(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetByteRelease(Object o, long offset, byte expected, byte x) throws T {
+    public boolean weakCompareAndSetByteRelease(Object o, long offset, byte expected, byte x) {
         return compareAndSetByte(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetBytePlain(Object o, long offset, byte expected, byte x) throws T {
+    public boolean weakCompareAndSetBytePlain(Object o, long offset, byte expected, byte x) {
         return compareAndSetByte(o, offset, expected, x);
     }
 
-    public <T extends Throwable> byte compareAndExchangeByte(Object o, long offset, byte expected, byte x) throws T {
+    public byte compareAndExchangeByte(Object o, long offset, byte expected, byte x) {
         final long wordOffset = offset & ~3L;
         int byteIndex = (int) offset & 3;
         if (BIG_ENDIAN) {
@@ -500,52 +500,52 @@ public final class SunUnsafeWrapper extends AbstractUnsafe {
         }
     }
 
-    public <T extends Throwable> byte compareAndExchangeByteAcquire(Object o, long offset, byte expected, byte x) throws T {
+    public byte compareAndExchangeByteAcquire(Object o, long offset, byte expected, byte x) {
         return compareAndExchangeByte(o, offset, expected, x);
     }
 
-    public <T extends Throwable> byte compareAndExchangeByteRelease(Object o, long offset, byte expected, byte x) throws T {
+    public byte compareAndExchangeByteRelease(Object o, long offset, byte expected, byte x) {
         return compareAndExchangeByte(o, offset, expected, x);
     }
 
     // --- 7. Short ---
 
-    public <T extends Throwable> short getShort(Object o, long offset) throws T {
+    public short getShort(Object o, long offset) {
         return sunUnsafe.getShort(o, offset);
     }
 
-    public <T extends Throwable> void putShort(Object o, long offset, short x) throws T {
+    public void putShort(Object o, long offset, short x) {
         sunUnsafe.putShort(o, offset, x);
     }
 
-    public <T extends Throwable> short getShortVolatile(Object o, long offset) throws T {
+    public short getShortVolatile(Object o, long offset) {
         return sunUnsafe.getShortVolatile(o, offset);
     }
 
-    public <T extends Throwable> void putShortVolatile(Object o, long offset, short x) throws T {
+    public void putShortVolatile(Object o, long offset, short x) {
         sunUnsafe.putShortVolatile(o, offset, x);
     }
 
-    public <T extends Throwable> short getShortAcquire(Object o, long offset) throws T {
+    public short getShortAcquire(Object o, long offset) {
         short v = sunUnsafe.getShort(o, offset);
         sunUnsafe.loadFence();
         return v;
     }
 
-    public <T extends Throwable> void putShortRelease(Object o, long offset, short x) throws T {
+    public void putShortRelease(Object o, long offset, short x) {
         sunUnsafe.storeFence();
         sunUnsafe.putShort(o, offset, x);
     }
 
-    public <T extends Throwable> short getShortOpaque(Object o, long offset) throws T {
+    public short getShortOpaque(Object o, long offset) {
         return getShortAcquire(o, offset);
     }
 
-    public <T extends Throwable> void putShortOpaque(Object o, long offset, short x) throws T {
+    public void putShortOpaque(Object o, long offset, short x) {
         putShortRelease(o, offset, x);
     }
 
-    public <T extends Throwable> boolean compareAndSetShort(Object o, long offset, short expected, short x) throws T {
+    public boolean compareAndSetShort(Object o, long offset, short expected, short x) {
         int byteIndex = (int) offset & 3;
         if (byteIndex == 3) {
             throw new IllegalArgumentException("short CAS crosses word boundary");
@@ -573,23 +573,23 @@ public final class SunUnsafeWrapper extends AbstractUnsafe {
         }
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetShort(Object o, long offset, short expected, short x) throws T {
+    public boolean weakCompareAndSetShort(Object o, long offset, short expected, short x) {
         return compareAndSetShort(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetShortAcquire(Object o, long offset, short expected, short x) throws T {
+    public boolean weakCompareAndSetShortAcquire(Object o, long offset, short expected, short x) {
         return compareAndSetShort(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetShortRelease(Object o, long offset, short expected, short x) throws T {
+    public boolean weakCompareAndSetShortRelease(Object o, long offset, short expected, short x) {
         return compareAndSetShort(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetShortPlain(Object o, long offset, short expected, short x) throws T {
+    public boolean weakCompareAndSetShortPlain(Object o, long offset, short expected, short x) {
         return compareAndSetShort(o, offset, expected, x);
     }
 
-    public <T extends Throwable> short compareAndExchangeShort(Object o, long offset, short expected, short x) throws T {
+    public short compareAndExchangeShort(Object o, long offset, short expected, short x) {
         int byteIndex = (int) offset & 3;
         if (byteIndex == 3) {
             throw new IllegalArgumentException("short CAS crosses word boundary");
@@ -621,326 +621,326 @@ public final class SunUnsafeWrapper extends AbstractUnsafe {
         }
     }
 
-    public <T extends Throwable> short compareAndExchangeShortAcquire(Object o, long offset, short expected, short x) throws T {
+    public short compareAndExchangeShortAcquire(Object o, long offset, short expected, short x) {
         return compareAndExchangeShort(o, offset, expected, x);
     }
 
-    public <T extends Throwable> short compareAndExchangeShortRelease(Object o, long offset, short expected, short x) throws T {
+    public short compareAndExchangeShortRelease(Object o, long offset, short expected, short x) {
         return compareAndExchangeShort(o, offset, expected, x);
     }
 
     // --- 8. Char ---
 
-    public <T extends Throwable> char getChar(Object o, long offset) throws T {
+    public char getChar(Object o, long offset) {
         return sunUnsafe.getChar(o, offset);
     }
 
-    public <T extends Throwable> void putChar(Object o, long offset, char x) throws T {
+    public void putChar(Object o, long offset, char x) {
         sunUnsafe.putChar(o, offset, x);
     }
 
-    public <T extends Throwable> char getCharVolatile(Object o, long offset) throws T {
+    public char getCharVolatile(Object o, long offset) {
         return sunUnsafe.getCharVolatile(o, offset);
     }
 
-    public <T extends Throwable> void putCharVolatile(Object o, long offset, char x) throws T {
+    public void putCharVolatile(Object o, long offset, char x) {
         sunUnsafe.putCharVolatile(o, offset, x);
     }
 
-    public <T extends Throwable> char getCharAcquire(Object o, long offset) throws T {
+    public char getCharAcquire(Object o, long offset) {
         char v = sunUnsafe.getChar(o, offset);
         sunUnsafe.loadFence();
         return v;
     }
 
-    public <T extends Throwable> void putCharRelease(Object o, long offset, char x) throws T {
+    public void putCharRelease(Object o, long offset, char x) {
         sunUnsafe.storeFence();
         sunUnsafe.putChar(o, offset, x);
     }
 
-    public <T extends Throwable> char getCharOpaque(Object o, long offset) throws T {
+    public char getCharOpaque(Object o, long offset) {
         return getCharAcquire(o, offset);
     }
 
-    public <T extends Throwable> void putCharOpaque(Object o, long offset, char x) throws T {
+    public void putCharOpaque(Object o, long offset, char x) {
         putCharRelease(o, offset, x);
     }
 
-    public <T extends Throwable> boolean compareAndSetChar(Object o, long offset, char expected, char x) throws T {
+    public boolean compareAndSetChar(Object o, long offset, char expected, char x) {
         return compareAndSetShort(o, offset, (short) expected, (short) x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetChar(Object o, long offset, char expected, char x) throws T {
+    public boolean weakCompareAndSetChar(Object o, long offset, char expected, char x) {
         return compareAndSetChar(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetCharAcquire(Object o, long offset, char expected, char x) throws T {
+    public boolean weakCompareAndSetCharAcquire(Object o, long offset, char expected, char x) {
         return compareAndSetChar(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetCharRelease(Object o, long offset, char expected, char x) throws T {
+    public boolean weakCompareAndSetCharRelease(Object o, long offset, char expected, char x) {
         return compareAndSetChar(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetCharPlain(Object o, long offset, char expected, char x) throws T {
+    public boolean weakCompareAndSetCharPlain(Object o, long offset, char expected, char x) {
         return compareAndSetChar(o, offset, expected, x);
     }
 
-    public <T extends Throwable> char compareAndExchangeChar(Object o, long offset, char expected, char x) throws T {
+    public char compareAndExchangeChar(Object o, long offset, char expected, char x) {
         return (char) compareAndExchangeShort(o, offset, (short) expected, (short) x);
     }
 
-    public <T extends Throwable> char compareAndExchangeCharAcquire(Object o, long offset, char expected, char x) throws T {
+    public char compareAndExchangeCharAcquire(Object o, long offset, char expected, char x) {
         return compareAndExchangeChar(o, offset, expected, x);
     }
 
-    public <T extends Throwable> char compareAndExchangeCharRelease(Object o, long offset, char expected, char x) throws T {
+    public char compareAndExchangeCharRelease(Object o, long offset, char expected, char x) {
         return compareAndExchangeChar(o, offset, expected, x);
     }
 
     // --- 9. Float ---
 
-    public <T extends Throwable> float getFloat(Object o, long offset) throws T {
+    public float getFloat(Object o, long offset) {
         return sunUnsafe.getFloat(o, offset);
     }
 
-    public <T extends Throwable> void putFloat(Object o, long offset, float x) throws T {
+    public void putFloat(Object o, long offset, float x) {
         sunUnsafe.putFloat(o, offset, x);
     }
 
-    public <T extends Throwable> float getFloatVolatile(Object o, long offset) throws T {
+    public float getFloatVolatile(Object o, long offset) {
         return sunUnsafe.getFloatVolatile(o, offset);
     }
 
-    public <T extends Throwable> void putFloatVolatile(Object o, long offset, float x) throws T {
+    public void putFloatVolatile(Object o, long offset, float x) {
         sunUnsafe.putFloatVolatile(o, offset, x);
     }
 
-    public <T extends Throwable> float getFloatAcquire(Object o, long offset) throws T {
+    public float getFloatAcquire(Object o, long offset) {
         float v = sunUnsafe.getFloat(o, offset);
         sunUnsafe.loadFence();
         return v;
     }
 
-    public <T extends Throwable> void putFloatRelease(Object o, long offset, float x) throws T {
+    public void putFloatRelease(Object o, long offset, float x) {
         sunUnsafe.putOrderedInt(o, offset, Float.floatToRawIntBits(x));
     }
 
-    public <T extends Throwable> float getFloatOpaque(Object o, long offset) throws T {
+    public float getFloatOpaque(Object o, long offset) {
         return getFloatAcquire(o, offset);
     }
 
-    public <T extends Throwable> void putFloatOpaque(Object o, long offset, float x) throws T {
+    public void putFloatOpaque(Object o, long offset, float x) {
         putFloatRelease(o, offset, x);
     }
 
-    public <T extends Throwable> boolean compareAndSetFloat(Object o, long offset, float expected, float x) throws T {
+    public boolean compareAndSetFloat(Object o, long offset, float expected, float x) {
         return sunUnsafe.compareAndSwapInt(o, offset, Float.floatToRawIntBits(expected), Float.floatToRawIntBits(x));
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetFloat(Object o, long offset, float expected, float x) throws T {
+    public boolean weakCompareAndSetFloat(Object o, long offset, float expected, float x) {
         return compareAndSetFloat(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetFloatAcquire(Object o, long offset, float expected, float x) throws T {
+    public boolean weakCompareAndSetFloatAcquire(Object o, long offset, float expected, float x) {
         return compareAndSetFloat(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetFloatRelease(Object o, long offset, float expected, float x) throws T {
+    public boolean weakCompareAndSetFloatRelease(Object o, long offset, float expected, float x) {
         return compareAndSetFloat(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetFloatPlain(Object o, long offset, float expected, float x) throws T {
+    public boolean weakCompareAndSetFloatPlain(Object o, long offset, float expected, float x) {
         return compareAndSetFloat(o, offset, expected, x);
     }
 
-    public <T extends Throwable> float compareAndExchangeFloat(Object o, long offset, float expected, float x) throws T {
+    public float compareAndExchangeFloat(Object o, long offset, float expected, float x) {
         return Float.intBitsToFloat(compareAndExchangeInt(o, offset, Float.floatToRawIntBits(expected), Float.floatToRawIntBits(x)));
     }
 
-    public <T extends Throwable> float compareAndExchangeFloatAcquire(Object o, long offset, float expected, float x) throws T {
+    public float compareAndExchangeFloatAcquire(Object o, long offset, float expected, float x) {
         return compareAndExchangeFloat(o, offset, expected, x);
     }
 
-    public <T extends Throwable> float compareAndExchangeFloatRelease(Object o, long offset, float expected, float x) throws T {
+    public float compareAndExchangeFloatRelease(Object o, long offset, float expected, float x) {
         return compareAndExchangeFloat(o, offset, expected, x);
     }
 
     // --- 10. Double ---
 
-    public <T extends Throwable> double getDouble(Object o, long offset) throws T {
+    public double getDouble(Object o, long offset) {
         return sunUnsafe.getDouble(o, offset);
     }
 
-    public <T extends Throwable> void putDouble(Object o, long offset, double x) throws T {
+    public void putDouble(Object o, long offset, double x) {
         sunUnsafe.putDouble(o, offset, x);
     }
 
-    public <T extends Throwable> double getDoubleVolatile(Object o, long offset) throws T {
+    public double getDoubleVolatile(Object o, long offset) {
         return sunUnsafe.getDoubleVolatile(o, offset);
     }
 
-    public <T extends Throwable> void putDoubleVolatile(Object o, long offset, double x) throws T {
+    public void putDoubleVolatile(Object o, long offset, double x) {
         sunUnsafe.putDoubleVolatile(o, offset, x);
     }
 
-    public <T extends Throwable> double getDoubleAcquire(Object o, long offset) throws T {
+    public double getDoubleAcquire(Object o, long offset) {
         double v = sunUnsafe.getDouble(o, offset);
         sunUnsafe.loadFence();
         return v;
     }
 
-    public <T extends Throwable> void putDoubleRelease(Object o, long offset, double x) throws T {
+    public void putDoubleRelease(Object o, long offset, double x) {
         sunUnsafe.putOrderedLong(o, offset, Double.doubleToRawLongBits(x));
     }
 
-    public <T extends Throwable> double getDoubleOpaque(Object o, long offset) throws T {
+    public double getDoubleOpaque(Object o, long offset) {
         return getDoubleAcquire(o, offset);
     }
 
-    public <T extends Throwable> void putDoubleOpaque(Object o, long offset, double x) throws T {
+    public void putDoubleOpaque(Object o, long offset, double x) {
         putDoubleRelease(o, offset, x);
     }
 
-    public <T extends Throwable> boolean compareAndSetDouble(Object o, long offset, double expected, double x) throws T {
+    public boolean compareAndSetDouble(Object o, long offset, double expected, double x) {
         return sunUnsafe.compareAndSwapLong(o, offset, Double.doubleToRawLongBits(expected), Double.doubleToRawLongBits(x));
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetDouble(Object o, long offset, double expected, double x) throws T {
+    public boolean weakCompareAndSetDouble(Object o, long offset, double expected, double x) {
         return compareAndSetDouble(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetDoubleAcquire(Object o, long offset, double expected, double x) throws T {
+    public boolean weakCompareAndSetDoubleAcquire(Object o, long offset, double expected, double x) {
         return compareAndSetDouble(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetDoubleRelease(Object o, long offset, double expected, double x) throws T {
+    public boolean weakCompareAndSetDoubleRelease(Object o, long offset, double expected, double x) {
         return compareAndSetDouble(o, offset, expected, x);
     }
 
-    public <T extends Throwable> boolean weakCompareAndSetDoublePlain(Object o, long offset, double expected, double x) throws T {
+    public boolean weakCompareAndSetDoublePlain(Object o, long offset, double expected, double x) {
         return compareAndSetDouble(o, offset, expected, x);
     }
 
-    public <T extends Throwable> double compareAndExchangeDouble(Object o, long offset, double expected, double x) throws T {
+    public double compareAndExchangeDouble(Object o, long offset, double expected, double x) {
         return Double.longBitsToDouble(compareAndExchangeLong(o, offset, Double.doubleToRawLongBits(expected), Double.doubleToRawLongBits(x)));
     }
 
-    public <T extends Throwable> double compareAndExchangeDoubleAcquire(Object o, long offset, double expected, double x) throws T {
+    public double compareAndExchangeDoubleAcquire(Object o, long offset, double expected, double x) {
         return compareAndExchangeDouble(o, offset, expected, x);
     }
 
-    public <T extends Throwable> double compareAndExchangeDoubleRelease(Object o, long offset, double expected, double x) throws T {
+    public double compareAndExchangeDoubleRelease(Object o, long offset, double expected, double x) {
         return compareAndExchangeDouble(o, offset, expected, x);
     }
 
     // --- 11. Memory ---
 
-    public <T extends Throwable> long allocateMemory(long bytes) throws T {
+    public long allocateMemory(long bytes) {
         return sunUnsafe.allocateMemory(bytes);
     }
 
-    public <T extends Throwable> void freeMemory(long address) throws T {
+    public void freeMemory(long address) {
         sunUnsafe.freeMemory(address);
     }
 
-    public <T extends Throwable> long reallocateMemory(long address, long bytes) throws T {
+    public long reallocateMemory(long address, long bytes) {
         return sunUnsafe.reallocateMemory(address, bytes);
     }
 
-    public <T extends Throwable> void setMemory(long address, long bytes, byte value) throws T {
+    public void setMemory(long address, long bytes, byte value) {
         sunUnsafe.setMemory(address, bytes, value);
     }
 
-    public <T extends Throwable> void copyMemory(Object srcBase, long srcOffset, Object destBase, long destOffset, long bytes) throws T {
+    public void copyMemory(Object srcBase, long srcOffset, Object destBase, long destOffset, long bytes) {
         sunUnsafe.copyMemory(srcBase, srcOffset, destBase, destOffset, bytes);
     }
 
-    public <T extends Throwable> byte getByte(long address) throws T {
+    public byte getByte(long address) {
         return sunUnsafe.getByte(address);
     }
 
-    public <T extends Throwable> void putByte(long address, byte x) throws T {
+    public void putByte(long address, byte x) {
         sunUnsafe.putByte(address, x);
     }
 
-    public <T extends Throwable> short getShort(long address) throws T {
+    public short getShort(long address) {
         return sunUnsafe.getShort(address);
     }
 
-    public <T extends Throwable> void putShort(long address, short x) throws T {
+    public void putShort(long address, short x) {
         sunUnsafe.putShort(address, x);
     }
 
-    public <T extends Throwable> char getChar(long address) throws T {
+    public char getChar(long address) {
         return sunUnsafe.getChar(address);
     }
 
-    public <T extends Throwable> void putChar(long address, char x) throws T {
+    public void putChar(long address, char x) {
         sunUnsafe.putChar(address, x);
     }
 
-    public <T extends Throwable> int getInt(long address) throws T {
+    public int getInt(long address) {
        return sunUnsafe.getInt(address);
     }
 
-    public <T extends Throwable> void putInt(long address, int x) throws T {
+    public void putInt(long address, int x) {
         sunUnsafe.putInt(address, x);
     }
 
-    public <T extends Throwable> long getLong(long address) throws T {
+    public long getLong(long address) {
         return sunUnsafe.getLong(address);
     }
 
-    public <T extends Throwable> void putLong(long address, long value) throws T {
+    public void putLong(long address, long value) {
         sunUnsafe.putLong(address, value);
     }
 
-    public <T extends Throwable> float getFloat(long address) throws T {
+    public float getFloat(long address) {
         return sunUnsafe.getFloat(address);
     }
 
-    public <T extends Throwable> void putFloat(long address, float x) throws T {
+    public void putFloat(long address, float x) {
         sunUnsafe.putFloat(address, x);
     }
 
-    public <T extends Throwable> double getDouble(long address) throws T {
+    public double getDouble(long address) {
         return sunUnsafe.getDouble(address);
     }
 
-    public <T extends Throwable> void putDouble(long address, double x) throws T {
+    public void putDouble(long address, double x) {
         sunUnsafe.putDouble(address, x);
     }
 
-    public <T extends Throwable> long getAddress(long address) throws T {
+    public long getAddress(long address) {
         return sunUnsafe.getAddress(address);
     }
 
-    public <T extends Throwable> void putAddress(long address, long x) throws T {
+    public void putAddress(long address, long x) {
         sunUnsafe.putAddress(address, x);
     }
 
-    public <T extends Throwable> void loadFence() throws T {
+    public void loadFence() {
         sunUnsafe.loadFence();
     }
 
-    public <T extends Throwable> void storeFence() throws T {
+    public void storeFence() {
         sunUnsafe.storeFence();
     }
 
-    public <T extends Throwable> void fullFence() throws T {
+    public void fullFence() {
         sunUnsafe.fullFence();
     }
 
-    public <T extends Throwable> void park(boolean isAbsolute, long time) throws T {
+    public void park(boolean isAbsolute, long time) {
         sunUnsafe.park(isAbsolute, time);
     }
 
-    public <T extends Throwable> void unpark(Object thread) throws T {
+    public void unpark(Object thread) {
         sunUnsafe.unpark(thread);
     }
 
-    public <T extends Throwable> void throwException(Throwable ee) throws T {
+    public void throwException(Throwable ee) {
         sunUnsafe.throwException(ee);
     }
 }

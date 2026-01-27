@@ -100,12 +100,7 @@ public class MachineFENSU extends BlockDummyableMBB implements ILookOverlay {
 
     @Override
     public void breakBlock(@NotNull World worldIn, @NotNull BlockPos pos, IBlockState state) {
-        TileEntity tileentity = worldIn.getTileEntity(pos);
-        if (tileentity instanceof TileEntityMachineFENSU) {
-            IPersistentNBT.breakBlock(worldIn, pos, state);
-            InventoryHelper.dropInventoryItems(worldIn, pos, tileentity);
-            worldIn.updateComparatorOutputLevel(pos, this);
-        }
+		IPersistentNBT.breakBlock(worldIn, pos, state);
         super.breakBlock(worldIn, pos, state);
     }
 

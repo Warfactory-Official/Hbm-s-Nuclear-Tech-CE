@@ -239,6 +239,7 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase impl
     }
 
     @Override public void onChunkUnload() {
+        super.onChunkUnload();
         if(audio != null) { audio.stopSound(); audio = null; }
     }
 

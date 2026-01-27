@@ -30,7 +30,9 @@ public class HbmAnimationsSedna {
         SPINDOWN,		//animation for actionend
         EQUIP,			//animation for drawing the weapon
         INSPECT,		//animation for inspecting the weapon
-        JAMMED			//animation for jammed weapons
+        JAMMED;			//animation for jammed weapons
+
+        public static final AnimType[] VALUES = values();
     }
 
     public static enum ToolAnimation {

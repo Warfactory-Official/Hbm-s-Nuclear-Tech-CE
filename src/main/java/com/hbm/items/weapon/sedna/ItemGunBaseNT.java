@@ -152,7 +152,9 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
         IDLE,		//the gun is ready to fire or reload
         COOLDOWN,	//forced delay, but with option for refire
         RELOADING,	//forced delay after which a reload action happens, may be canceled (TBI)
-        JAMMED,		//forced delay due to jamming
+        JAMMED;		//forced delay due to jamming
+
+        public static final GunState[] VALUES = values();
     }
 
     public ItemGunBaseNT setNameMutator(Function<ItemStack, String> lambda) {
@@ -364,7 +366,7 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
     public static int getTimer(ItemStack stack, int index) { return getValueInt(stack, KEY_TIMER + index); }
     public static void setTimer(ItemStack stack, int index, int value) { setValueInt(stack, KEY_TIMER + index, value); }
     // GUN STATE //
-    public static GunState getState(ItemStack stack, int index) { return EnumUtil.grabEnumSafely(GunState.class, getValueByte(stack, KEY_STATE + index)); }
+    public static GunState getState(ItemStack stack, int index) { return EnumUtil.grabEnumSafely(GunState.VALUES, getValueByte(stack, KEY_STATE + index)); }
     public static void setState(ItemStack stack, int index, GunState value) { setValueByte(stack, KEY_STATE + index, (byte) value.ordinal()); }
     // GUN MODE //
     public static int getMode(ItemStack stack, int index) { return getValueInt(stack, KEY_MODE + index); }
@@ -381,7 +383,7 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
     public static boolean getIsLockedOn(ItemStack stack) { return getValueBool(stack, KEY_LOCKEDON); }
     public static void setIsLockedOn(ItemStack stack, boolean value) { setValueBool(stack, KEY_LOCKEDON, value); }
     // ANIM TRACKING //
-    public static HbmAnimationsSedna.AnimType getLastAnim(ItemStack stack, int index) { return EnumUtil.grabEnumSafely(HbmAnimationsSedna.AnimType.class, getValueInt(stack, KEY_LASTANIM + index)); }
+    public static HbmAnimationsSedna.AnimType getLastAnim(ItemStack stack, int index) { return EnumUtil.grabEnumSafely(HbmAnimationsSedna.AnimType.VALUES, getValueInt(stack, KEY_LASTANIM + index)); }
     public static void setLastAnim(ItemStack stack, int index, HbmAnimationsSedna.AnimType value) { setValueInt(stack, KEY_LASTANIM + index, value.ordinal()); }
     public static int getAnimTimer(ItemStack stack, int index) { return getValueInt(stack, KEY_ANIMTIMER + index); }
     public static void setAnimTimer(ItemStack stack, int index, int value) { setValueInt(stack, KEY_ANIMTIMER + index, value); }

@@ -16,6 +16,11 @@ out
 build
 .gradle
 
+# vscode
+/bin/
+/processor/bin/
+.vscode
+
 # other
 eclipse
 run

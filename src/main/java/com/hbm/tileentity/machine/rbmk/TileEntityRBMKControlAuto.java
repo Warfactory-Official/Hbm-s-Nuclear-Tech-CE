@@ -2,12 +2,14 @@ package com.hbm.tileentity.machine.rbmk;
 
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IControlReceiver;
+import com.hbm.interfaces.ICopiable;
 import com.hbm.inventory.container.ContainerRBMKControlAuto;
 import com.hbm.inventory.gui.GUIRBMKControlAuto;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole.ColumnType;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKControlManual.RBMKColor;
+import com.hbm.util.EnumUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
@@ -20,7 +22,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
-public class TileEntityRBMKControlAuto extends TileEntityRBMKControl implements IControlReceiver, IGUIProvider {
+public class TileEntityRBMKControlAuto extends TileEntityRBMKControl implements IControlReceiver, IGUIProvider, ICopiable {
 	
 	public RBMKFunction function = RBMKFunction.LINEAR;
 	public double levelLower;
@@ -171,5 +173,24 @@ public class TileEntityRBMKControlAuto extends TileEntityRBMKControl implements 
 	@SideOnly(Side.CLIENT)
 	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		return new GUIRBMKControlAuto(player.inventory, this);
+	}
+	@Override
+	public NBTTagCompound getSettings(World world, int x, int y, int z) {
+		NBTTagCompound data = new NBTTagCompound();
+		data.setDouble("levelLower", levelLower);
+		data.setDouble("levelUpper", levelUpper);
+		data.setDouble("heatLower", heatLower);
+		data.setDouble("heatUpper", heatUpper);
+		data.setInteger("function", function.ordinal());
+		return data;
+	}
+
+	@Override
+	public void pasteSettings(NBTTagCompound nbt, int index, World world, EntityPlayer player, int x, int y, int z) {
+		if(nbt.hasKey("levelLower")) levelLower = nbt.getDouble("levelLower");
+		if(nbt.hasKey("levelUpper")) levelLower = nbt.getDouble("levelUpper");
+		if(nbt.hasKey("heatLower")) heatLower = nbt.getDouble("heatLower");
+		if(nbt.hasKey("heatUpper")) heatUpper = nbt.getDouble("heatUpper");
+		if(nbt.hasKey("function")) function = EnumUtil.grabEnumSafely(RBMKFunction.values(), nbt.getInteger("function"));
 	}
 }

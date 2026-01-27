@@ -15,16 +15,25 @@ public class TileEntityLoadedBase extends TileEntity implements ILoadedTile, IBu
 	
 	public boolean isLoaded = true;
 	public boolean muffled = false;
-	
+
+	/**
+	 * @return if the tileEntity is loaded. Note that even if it's loaded, it may be invalid!
+	 */
 	@Override
 	public boolean isLoaded() {
 		return isLoaded;
 	}
 
 	@Override
+	public void onLoad() {
+		super.onLoad();
+		isLoaded = true;
+	}
+
+	@Override
 	public void onChunkUnload() {
 		super.onChunkUnload();
-		this.isLoaded = false;
+		isLoaded = false;
 	}
 
     /** The "chunks is modified, pls don't forget to save me" effect of markDirty, minus the block updates */

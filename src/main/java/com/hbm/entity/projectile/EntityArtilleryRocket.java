@@ -230,8 +230,8 @@ public class EntityArtilleryRocket extends EntityThrowableNT
   }
 
   @Override
-  public double getGravityVelocity() {
-    return this.steering != null ? 0D : 0.01D;
+  public float getGravityVelocity() {
+    return this.steering != null ? 0F : 0.01F;
   }
 
   @Override

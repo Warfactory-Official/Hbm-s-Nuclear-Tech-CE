@@ -94,9 +94,9 @@ public class ItemMissile extends Item {
 
 		public double radius;
 	}
-	
+
 	public enum WarheadType {
-		
+
 		HE,
 		INC,
 		BUSTER,
@@ -110,11 +110,10 @@ public class ItemMissile extends Item {
 		CLOUD,
 		VOLCANO,
 		TURBINE,
-		MIRV,
+		MIRV(null, EntityMissileCustom::mirvSplit),
 		APOLLO,
 		SATELLITE,
 
-		//shit solution but it works. this allows traits to be attached to these empty dummy types, allowing for custom warheads
 		CUSTOM0, CUSTOM1, CUSTOM2, CUSTOM3, CUSTOM4, CUSTOM5, CUSTOM6, CUSTOM7, CUSTOM8, CUSTOM9;
 
 		/** Overrides that type's impact effect. Only runs serverside */
@@ -123,6 +122,14 @@ public class ItemMissile extends Item {
 		public Consumer<EntityMissileCustom> updateCustom = null;
 		/** Override for the warhead's name in the missile description */
 		public String labelCustom = null;
+
+		WarheadType() {
+		}
+
+		WarheadType(Consumer<EntityMissileCustom> onImpact, Consumer<EntityMissileCustom> onUpdate) {
+			impactCustom = onImpact;
+			updateCustom = onUpdate;
+		}
 	}
 	
 	public enum FuelType {

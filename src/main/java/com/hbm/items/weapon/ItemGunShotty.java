@@ -4,6 +4,7 @@ import com.hbm.handler.GunConfiguration;
 import com.hbm.interfaces.Spaghetti;
 import com.hbm.items.ModItems;
 import com.hbm.lib.Library;
+import com.hbm.util.ShadyUtil;
 import com.hbm.packet.toclient.GunAnimationPacket;
 import com.hbm.packet.toclient.MeathookResetStrafePacket;
 import com.hbm.packet.PacketDispatcher;
@@ -47,7 +48,7 @@ public class ItemGunShotty extends ItemGunBase {
 	public void startActionClient(ItemStack stack, World world, EntityPlayer player, boolean main, EnumHand hand) {
 		if(mainConfig.firingMode == GunConfiguration.FIRE_MANUAL && m1 && tryShoot(stack, world, player, main)){
 			long time = System.currentTimeMillis();
-			float mult = player.getUniqueID().toString().equals(Library.Dr_Nostalgia) ? 10 : 1;
+			float mult = player.getUniqueID().equals(ShadyUtil.Dr_Nostalgia) ? 10 : 1;
 			NBTTagCompound anim = new NBTTagCompound();
 			anim.setLong("time", time);
 			anim.setInteger("id", 0);
@@ -109,7 +110,7 @@ public class ItemGunShotty extends ItemGunBase {
 				setHookedEntity(player, stack, null);
 		}
 		
-		if(player.getUniqueID().toString().equals(Library.Dr_Nostalgia) && getDelay(stack) < this.mainConfig.rateOfFire * 0.9){
+		if(player.getUniqueID().equals(ShadyUtil.Dr_Nostalgia) && getDelay(stack) < this.mainConfig.rateOfFire * 0.9){
 			setDelay(stack, 0);
 		}
 		

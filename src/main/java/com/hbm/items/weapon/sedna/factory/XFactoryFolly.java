@@ -94,9 +94,9 @@ public class XFactoryFolly {
 
     public static void init() {
 
-        folly_sm = new BulletConfig().setItem(GunFactory.EnumAmmoSecret.FOLLY_SM).setupDamageClass(DamageResistanceHandler.DamageClass.SUBATOMIC).setBeam().setLife(100).setVel(2F).setGrav(0.015D).setRenderRotations(false).setSpectral(true).setDoesPenetrate(true)
+        folly_sm = new BulletConfig().setItem(GunFactory.EnumAmmoSecret.FOLLY_SM).setupDamageClass(DamageResistanceHandler.DamageClass.SUBATOMIC).setBeam().setLife(100).setVel(2F).setGrav(0.015F).setRenderRotations(false).setSpectral(true).setDoesPenetrate(true)
                 .setOnUpdate(LAMBDA_SM_UPDATE);
-        folly_nuke = new BulletConfig().setItem(GunFactory.EnumAmmoSecret.FOLLY_NUKE).setChunkloading().setLife(600).setVel(4F).setGrav(0.015D)
+        folly_nuke = new BulletConfig().setItem(GunFactory.EnumAmmoSecret.FOLLY_NUKE).setChunkloading().setLife(600).setVel(4F).setGrav(0.015F)
                 .setOnImpact(LAMBDA_NUKE_IMPACT);
 
         ModItems.gun_folly = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.SECRET, "gun_folly", new GunConfig()

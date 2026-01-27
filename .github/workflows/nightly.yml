@@ -51,17 +51,15 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build --no-daemon
 
-      - name: Find mod jar
-        run: |
-          FILE=$(ls build/libs | grep -E '^NTM-CE.*\.jar$' | grep -vE '(-dev|-sources|-api)' | head -n1)
-          echo "FILE=$FILE" >> $GITHUB_ENV
-
-
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: nightly-build
-          path: build/libs/
+          name: nightly-artifacts
+          path: |
+            build/libs/*-sources.jar
+            build/libs/*-dev.jar
+            build/libs/*-dev-java25.jar
+          if-no-files-found: error
 
       - name: Create nightly tag
         id: tag
@@ -81,19 +79,14 @@ jobs:
           name: "Nightly Build v${{ env.MOD_VERSION }}"
           prerelease: true
           body: |
-            ⚠️ **Nightly build** — may be unstable. Use at your own risk.
-            
-            ## Which JAR should I download?
-            
-            - **NTM-CE-1.12.2-${{ env.MOD_VERSION }}.jar** — **Java 8+** (recommended for most Forge users)
-            - **NTM-CE-1.12.2-${{ env.MOD_VERSION }}-java25.jar** — **Java 25+** (Cleanroom; may be more efficient)
-            - **NTM-CE-1.12.2-${{ env.MOD_VERSION }}-downgraded.jar** — **Java 8+**, but **does not** shade the JVMDG `java-api` (useful if you provide a custom one)
-            - **NTM-CE-1.12.2-${{ env.MOD_VERSION }}-dev.jar** — **Java 8+**, unobfuscated (for developers)
-            - **NTM-CE-1.12.2-${{ env.MOD_VERSION }}-dev-java25.jar** — **Java 25+**, unobfuscated (for developers on the JVMDG/Cleanroom toolchain)
-            
-            **Commit:** `${{ github.sha }}`
-            **Workflow run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          files: build/libs/*.jar
+            ## This release is for **development purposes only**
+            - For normal end-user downloads, use CurseForge or Modrinth (see project README).
+            - For bleeding-edge builds, use GitHub Actions artifacts. They could be unstable, use at your own risk.
+            Commit: `${{ github.sha }}`
+          files: |
+            build/libs/*-sources.jar
+            build/libs/*-dev.jar
+            build/libs/*-dev-java25.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

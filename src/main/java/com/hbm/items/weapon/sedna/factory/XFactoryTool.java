@@ -275,24 +275,24 @@ public class XFactoryTool {
 
     public static void init() {
 
-        fext_water = new BulletConfig().setItem(new ItemStack(ModItems.ammo_fireext, 1, 0)).setReloadCount(300).setLife(100).setVel(0.75F).setGrav(0.04D).setSpread(0.025F)
+        fext_water = new BulletConfig().setItem(new ItemStack(ModItems.ammo_fireext, 1, 0)).setReloadCount(300).setLife(100).setVel(0.75F).setGrav(0.04F).setSpread(0.025F)
                 .setOnUpdate(LAMBDA_WATER_UPDATE)
                 .setOnEntityHit((bulletEntity, target) -> { if(target.entityHit != null) target.entityHit.extinguish(); })
                 .setOnRicochet(LAMBDA_WATER_HIT);
-        fext_foam = new BulletConfig().setItem(new ItemStack(ModItems.ammo_fireext, 1, 1)).setReloadCount(300).setLife(100).setVel(0.75F).setGrav(0.04D).setSpread(0.05F)
+        fext_foam = new BulletConfig().setItem(new ItemStack(ModItems.ammo_fireext, 1, 1)).setReloadCount(300).setLife(100).setVel(0.75F).setGrav(0.04F).setSpread(0.05F)
                 .setOnUpdate(LAMBDA_FOAM_UPDATE)
                 .setOnEntityHit((bulletEntity, target) -> { if(target.entityHit != null) target.entityHit.extinguish(); })
                 .setOnRicochet(LAMBDA_FOAM_HIT);
-        fext_sand = new BulletConfig().setItem(new ItemStack(ModItems.ammo_fireext, 1, 2)).setReloadCount(300).setLife(100).setVel(0.75F).setGrav(0.04D).setSpread(0.05F)
+        fext_sand = new BulletConfig().setItem(new ItemStack(ModItems.ammo_fireext, 1, 2)).setReloadCount(300).setLife(100).setVel(0.75F).setGrav(0.04F).setSpread(0.05F)
                 .setOnUpdate(LAMBDA_SAND_UPDATE)
                 .setOnEntityHit((bulletEntity, target) -> { if(target.entityHit != null) target.entityHit.extinguish(); })
                 .setOnRicochet(LAMBDA_SAND_HIT);
 
-        ct_hook = new BulletConfig().setItem(GunFactory.EnumAmmo.CT_HOOK).setRenderRotations(false).setLife(6_000).setVel(3F).setGrav(0.035D).setDoesPenetrate(true).setDamageFalloffByPen(false)
+        ct_hook = new BulletConfig().setItem(GunFactory.EnumAmmo.CT_HOOK).setRenderRotations(false).setLife(6_000).setVel(3F).setGrav(0.035F).setDoesPenetrate(true).setDamageFalloffByPen(false)
                 .setOnUpdate(LAMBDA_SET_HOOK).setOnImpact(LAMBDA_HOOK);
-        ct_mortar = new BulletConfig().setItem(GunFactory.EnumAmmo.CT_MORTAR).setDamage(2.5F).setLife(200).setVel(3F).setGrav(0.035D)
+        ct_mortar = new BulletConfig().setItem(GunFactory.EnumAmmo.CT_MORTAR).setDamage(2.5F).setLife(200).setVel(3F).setGrav(0.035F)
                 .setOnImpact(LAMBDA_MORTAR);
-        ct_mortar_charge = new BulletConfig().setItem(GunFactory.EnumAmmo.CT_MORTAR_CHARGE).setDamage(5F).setLife(200).setVel(3F).setGrav(0.035D)
+        ct_mortar_charge = new BulletConfig().setItem(GunFactory.EnumAmmo.CT_MORTAR_CHARGE).setDamage(5F).setLife(200).setVel(3F).setGrav(0.035F)
                 .setOnImpact(LAMBDA_MORTAR_CHARGE);
 
         ModItems.gun_fireext = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.UTILITY, "gun_fireext", new GunConfig()

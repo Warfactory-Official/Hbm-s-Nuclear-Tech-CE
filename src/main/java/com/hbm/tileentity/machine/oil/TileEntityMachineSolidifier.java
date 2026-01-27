@@ -3,7 +3,7 @@ package com.hbm.tileentity.machine.oil;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluid.IFluidStandardReceiver;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.inventory.UpgradeManager;
+import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerSolidifier;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -33,16 +33,17 @@ import org.jetbrains.annotations.NotNull;
 @AutoRegister
 public class TileEntityMachineSolidifier extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardReceiver, IGUIProvider, IFluidCopiable {
 
-    public long power;
     public static final long maxPower = 100000;
     public static final int usageBase = 500;
+    public static final int processTimeBase = 100;
+    public long power;
     public int usage;
     public int progress;
-    public static final int processTimeBase = 100;
     public int processTime;
 
     public FluidTankNTM tank;
-    public UpgradeManager manager = new UpgradeManager();
+    public UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
+    AxisAlignedBB bb = null;
 
     public TileEntityMachineSolidifier() {
         super(5, true, true);
@@ -56,19 +57,19 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase implement
 
     @Override
     public void update() {
-        manager.eval(inventory, 2, 3);
-        if(!world.isRemote) {
+        upgradeManager.checkSlots(inventory, 2, 3);
+        if (!world.isRemote) {
             this.power = Library.chargeTEFromItems(inventory, 1, power, maxPower);
             tank.setType(4, inventory);
 
             this.updateConnections();
-            int speed = Math.min(manager.getLevel(ItemMachineUpgrade.UpgradeType.SPEED), 3);
-            int power = Math.min(manager.getLevel(ItemMachineUpgrade.UpgradeType.POWER), 3);
+            int speed = Math.min(upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.SPEED), 3);
+            int power = Math.min(upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.POWER), 3);
 
             this.processTime = processTimeBase - (processTimeBase / 4) * speed;
-            this.usage = (usageBase + (usageBase * speed))  / (power + 1);
+            this.usage = (usageBase + (usageBase * speed)) / (power + 1);
 
-            if(this.canProcess())
+            if (this.canProcess())
                 this.process();
             else
                 this.progress = 0;
@@ -78,14 +79,14 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase implement
     }
 
     private void updateConnections() {
-        for(DirPos pos : getConPos()) {
+        for (DirPos pos : getConPos()) {
             this.trySubscribe(world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
             this.trySubscribe(tank.getTankType(), world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
         }
     }
 
     private DirPos[] getConPos() {
-        return new DirPos[] {
+        return new DirPos[]{
                 new DirPos(pos.getX(), pos.getY() + 4, pos.getZ(), Library.POS_Y),
                 new DirPos(pos.getX(), pos.getY() - 1, pos.getZ(), Library.NEG_Y),
                 new DirPos(pos.getX() + 2, pos.getY() + 1, pos.getZ(), Library.POS_X),
@@ -107,34 +108,34 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase implement
 
     @Override
     public int[] getAccessibleSlotsFromSide(EnumFacing e) {
-        return new int[] { 0 };
+        return new int[]{0};
     }
 
     public boolean canProcess() {
 
-        if(this.power < usage)
+        if (this.power < usage)
             return false;
 
         Tuple.Pair<Integer, ItemStack> out = SolidificationRecipes.getOutput(tank.getTankType());
 
-        if(out == null)
+        if (out == null)
             return false;
 
         int req = out.getKey();
         ItemStack stack = out.getValue();
 
-        if(req > tank.getFill())
+        if (req > tank.getFill())
             return false;
 
-        if(!inventory.getStackInSlot(0).isEmpty()) {
+        if (!inventory.getStackInSlot(0).isEmpty()) {
 
-            if(inventory.getStackInSlot(0).getItem() != stack.getItem())
+            if (inventory.getStackInSlot(0).getItem() != stack.getItem())
                 return false;
 
-            if(inventory.getStackInSlot(0).getItemDamage() != stack.getItemDamage())
+            if (inventory.getStackInSlot(0).getItemDamage() != stack.getItemDamage())
                 return false;
 
-            if(inventory.getStackInSlot(0).getCount() + stack.getCount() > inventory.getStackInSlot(0).getMaxStackSize())
+            if (inventory.getStackInSlot(0).getCount() + stack.getCount() > inventory.getStackInSlot(0).getMaxStackSize())
                 return false;
         }
 
@@ -147,14 +148,14 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase implement
 
         progress++;
 
-        if(progress >= processTime) {
+        if (progress >= processTime) {
 
             Tuple.Pair<Integer, ItemStack> out = SolidificationRecipes.getOutput(tank.getTankType());
             int req = out.getKey();
             ItemStack stack = out.getValue();
             tank.setFill(tank.getFill() - req);
 
-            if(inventory.getStackInSlot(0).isEmpty()) {
+            if (inventory.getStackInSlot(0).isEmpty()) {
                 inventory.setStackInSlot(0, stack.copy());
             } else {
                 inventory.getStackInSlot(0).grow(stack.getCount());
@@ -199,13 +200,13 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase implement
     }
 
     @Override
-    public void setPower(long power) {
-        this.power = power;
+    public long getPower() {
+        return power;
     }
 
     @Override
-    public long getPower() {
-        return power;
+    public void setPower(long power) {
+        this.power = power;
     }
 
     @Override
@@ -213,12 +214,10 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase implement
         return maxPower;
     }
 
-    AxisAlignedBB bb = null;
-
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
 
-        if(bb == null) {
+        if (bb == null) {
             bb = new AxisAlignedBB(
                     pos.getX() - 1,
                     pos.getY(),
@@ -240,12 +239,12 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase implement
 
     @Override
     public FluidTankNTM[] getReceivingTanks() {
-        return new FluidTankNTM[] { tank };
+        return new FluidTankNTM[]{tank};
     }
 
     @Override
     public FluidTankNTM[] getAllTanks() {
-        return new FluidTankNTM[] { tank };
+        return new FluidTankNTM[]{tank};
     }
 
     @Override

@@ -16,7 +16,8 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
 import java.util.List;
-@AutoRegister(name = "entity_grenade_if_mystery")
+
+@AutoRegister(name = "entity_grenade_if_null")
 public class EntityGrenadeIFNull extends EntityGrenadeBouncyBase {
 
     public EntityGrenadeIFNull(World p_i1773_1_)

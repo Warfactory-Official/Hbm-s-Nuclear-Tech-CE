@@ -102,7 +102,7 @@ public class ItemCrayon extends ItemFood implements IDynamicModels {
 
     @Override
     public String getTranslationKey(ItemStack stack) {
-        Enum num = EnumUtil.grabEnumSafely(ItemChemicalDye.EnumChemDye.class, stack.getItemDamage());
+        Enum num = EnumUtil.grabEnumSafely(ItemChemicalDye.EnumChemDye.VALUES, stack.getItemDamage());
         return super.getTranslationKey() + "." + num.name().toLowerCase(Locale.US);
     }
 }

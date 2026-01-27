@@ -53,6 +53,8 @@ public class TileEntityPASource extends TileEntityCooledBase implements IGUIProv
         CRASH_UNDERSPEED(0xff0000),    //crash due to recipe momentum requirements not being met
         CRASH_NORECIPE(0xff0000);        //crash due to failing to match recipe
 
+        public static final PAState[] VALUES = values();
+
         public final int color;
 
         PAState(int color) {
@@ -161,7 +163,7 @@ public class TileEntityPASource extends TileEntityCooledBase implements IGUIProv
     public void deserialize(ByteBuf buf) {
         super.deserialize(buf);
         debugSpeed = buf.readInt();
-        state = EnumUtil.grabEnumSafely(PAState.class, buf.readByte());
+        state = EnumUtil.grabEnumSafely(PAState.VALUES, buf.readByte());
         this.lastSpeed = buf.readInt();
     }
 
@@ -301,7 +303,7 @@ public class TileEntityPASource extends TileEntityCooledBase implements IGUIProv
         int x = particleTag.getInteger("x");
         int y = particleTag.getInteger("y");
         int z = particleTag.getInteger("z");
-        ForgeDirection dir = EnumUtil.grabEnumSafely(ForgeDirection.class, particleTag.getInteger("dir"));
+        ForgeDirection dir = EnumUtil.grabEnumSafely(ForgeDirection.VALUES, particleTag.getInteger("dir"));
         ItemStack input1 = new ItemStack(particleTag.getCompoundTag("input1"));
         ItemStack input2 = new ItemStack(particleTag.getCompoundTag("input2"));
 

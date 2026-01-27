@@ -22,10 +22,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class BlockStalagmite extends BlockEnumMeta {
+public class BlockStalagmite extends BlockEnumMeta<BlockEnums.EnumStalagmiteType> {
 
     public BlockStalagmite(String registryName) {
-        super(Material.ROCK, SoundType.STONE, registryName, BlockEnums.EnumStalagmiteType.class, true, true);
+        super(Material.ROCK, SoundType.STONE, registryName, BlockEnums.EnumStalagmiteType.VALUES, true, true);
     }
 
     public static int getMetaFromResource(int meta) {
@@ -89,8 +89,7 @@ public class BlockStalagmite extends BlockEnumMeta {
 
     @Override
     protected BlockBakeFrame[] generateBlockFrames(String registryName) {
-        return Arrays.stream(blockEnum.getEnumConstants())
-                     .sorted(Comparator.comparingInt(Enum::ordinal))
+        return Arrays.stream(blockEnum)
                      .map(Enum::name)
                      .map(n -> registryName + "." + n.toLowerCase(Locale.US))
                      .map(tex -> new BlockBakeFrame(BlockBakeFrame.BlockForm.CROSS_UNTINTED, tex))

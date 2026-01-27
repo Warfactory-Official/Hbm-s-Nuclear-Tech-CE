@@ -15,7 +15,9 @@ public class BlockEnums {
 		HEMATITE,
 		MALACHITE,
 		LIMESTONE,
-		BAUXITE
+		BAUXITE;
+
+		public static final EnumStoneType[] VALUES = values();
 	}
 
 	public enum EnumMeteorType {
@@ -23,20 +25,26 @@ public class BlockEnums {
 		COPPER,
 		ALUMINIUM,
 		RAREEARTH,
-		COBALT
+		COBALT;
+
+		public static final EnumMeteorType[] VALUES = values();
 	}
 
 	public enum EnumStalagmiteType {
 		SULFUR,
-		ASBESTOS
+		ASBESTOS;
+
+		public static final EnumStalagmiteType[] VALUES = values();
 	}
-	
+
 	/** DECO / STRUCTURE ENUMS */
 	//i apologize in advance
-	
+
 	public enum TileType {
 		LARGE,
-		SMALL
+		SMALL;
+
+		public static final TileType[] VALUES = values();
 	}
 
 	public enum LightstoneType {
@@ -44,29 +52,39 @@ public class BlockEnums {
 		TILE,
 		BRICKS,
 		BRICKS_CHISELED,
-		CHISELED
+		CHISELED;
+
+		public static final LightstoneType[] VALUES = values();
 	}
-	
+
 	public enum DecoComputerEnum {
-		IBM_300PL
+		IBM_300PL;
+
+		public static final DecoComputerEnum[] VALUES = values();
 	}
-	
+
 	public enum DecoCabinetEnum {
 		GREEN,
-		STEEL
+		STEEL;
+
+		public static final DecoCabinetEnum[] VALUES = values();
 	}
 
     public enum DecoCRTEnum {
         CLEAN,
         BROKEN,
         BLINKING,
-        BSOD
+        BSOD;
+
+		public static final DecoCRTEnum[] VALUES = values();
     }
 
     public enum DecoToasterEnum {
         IRON,
         STEEL,
-        WOOD
+        WOOD;
+
+		public static final DecoToasterEnum[] VALUES = values();
     }
 
 	public enum OreType {
@@ -76,6 +94,8 @@ public class BlockEnums {
 		//URANIUM_SCORCEHD ("uranium_scorched", null),
 		URANIUM ("uranium", null),
 		SCHRABIDIUM ("schrabidium", null);
+
+		public static final OreType[] VALUES = values();
 
 		public final String overlayTexture;
 		public final OreEnum oreEnum;
@@ -98,6 +118,8 @@ public class BlockEnums {
 		ASBESTOS,
 		GEM,
 		MOLYSITE;
+
+		public static final EnumBasaltOreType[] VALUES = values();
 
 		public Item getDrop() {
 			return switch (this) {
@@ -124,6 +146,8 @@ public class BlockEnums {
 		SUNSET,
 		STAR;
 
+		public static final EnumBlockCapType[] VALUES = values();
+
 		public Item getDrop() {
 			return switch (this) {
                  case NUKA -> ModItems.cap_nuka;
@@ -142,5 +166,3 @@ public class BlockEnums {
 		}
 	}
 }
-
-

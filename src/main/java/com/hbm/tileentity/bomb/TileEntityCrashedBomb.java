@@ -25,7 +25,7 @@ public class TileEntityCrashedBomb extends TileEntity implements ITickable {
         if (!world.isRemote) {
 
             if (world.getTotalWorldTime() % 2 == 0) {
-                EnumDudType type = EnumUtil.grabEnumSafely(EnumDudType.class, this.getBlockMetadata());
+                EnumDudType type = EnumUtil.grabEnumSafely(EnumDudType.VALUES, this.getBlockMetadata());
 
                 switch (type) {
                     case BALEFIRE -> affectEntities(

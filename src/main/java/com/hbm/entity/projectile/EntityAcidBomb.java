@@ -37,8 +37,8 @@ public class EntityAcidBomb extends EntityThrowableInterp {
     }
 
     @Override
-    public double getGravityVelocity() {
-        return 0.04D;
+    public float getGravityVelocity() {
+        return 0.04F;
     }
 
     @Override

@@ -12,7 +12,7 @@ import com.hbm.util.ContaminationUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.monster.EntityMob;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
@@ -29,6 +29,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
+
 @AutoRegister(name = "entity_ntm_radiation_blaze", trackingRange = 1000, eggColors = {0x303030, 0x008000})
 public class EntityRADBeast extends EntityMob implements IRadiationImmune {
 
@@ -62,10 +63,9 @@ public class EntityRADBeast extends EntityMob implements IRadiationImmune {
     @Override
     public void onDeath(DamageSource cause) {
     	if(this.getMaxHealth() > 150) {
-	        List<EntityPlayer> players = world.getEntitiesWithinAABB(EntityPlayer.class, this.getEntityBoundingBox().grow(50, 50, 50));
-
-	        for(EntityPlayer player : players) {
-	        	AdvancementManager.grantAchievement(player, AdvancementManager.achMeltdown);
+	        List<EntityPlayerMP> players = world.getEntitiesWithinAABB(EntityPlayerMP.class, this.getEntityBoundingBox().grow(50));
+	        for(EntityPlayerMP player : players) {
+	        	AdvancementManager.grantAchievement(player, AdvancementManager.bossMeltdown);
 	        }
         }
         super.onDeath(cause);

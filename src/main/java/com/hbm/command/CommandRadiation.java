@@ -11,6 +11,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -31,8 +32,7 @@ public class CommandRadiation extends CommandBase {
     }
 
     private static void handleResetPlayers(MinecraftServer server, ICommandSender sender) {
-        server.getPlayerList().getPlayers().stream().map(CommandRadiation::getRadiationCap).filter(Objects::nonNull)
-              .forEach(cap -> cap.setRads(0.0D));
+        server.getPlayerList().getPlayers().stream().map(CommandRadiation::getRadiationCap).filter(Objects::nonNull).forEach(cap -> cap.setRads(0.0D));
         sender.sendMessage(new TextComponentTranslation("commands.hbmrad.player_success"));
     }
 
@@ -67,20 +67,41 @@ public class CommandRadiation extends CommandBase {
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos targetPos) {
         if (args.length == 0) return Collections.emptyList();
-        return switch (args.length) {
-            case 1 -> getListOfStringsMatchingLastWord(args, "set", "clearall", "reset", "player", "resetplayers");
-            case 2 -> switch (args[0]) {
-                case "player" -> getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
-                case "set" -> getTabCompletionCoordinate(args, 1, targetPos);
-                default -> Collections.emptyList();
-            };
-            default -> {
-                if ("set".equals(args[0]) && args.length <= 4) {
+
+        String sub = args[0].toLowerCase();
+        if (args.length == 1) return getListOfStringsMatchingLastWord(args, "set", "clearall", "reset", "player", "resetplayers", "dumpgeometry");
+        else return switch (sub) {
+            case "set" -> {
+                // /hbmrad set <x> <y> <z> <value>
+                if (args.length <= 4) {
                     yield getTabCompletionCoordinate(args, 1, targetPos);
+                }
+                if (args.length == 5) {
+                    yield getListOfStringsMatchingLastWord(args, "0", "1", "5", "10", "min", "max");
                 }
                 yield Collections.emptyList();
             }
+            case "player" -> {
+                // /hbmrad player <player> [value]
+                if (args.length == 2) {
+                    var opts = new ArrayList<String>();
+                    Collections.addAll(opts, server.getOnlinePlayerNames());
+                    Collections.addAll(opts, "@p", "@r", "@s");
+                    yield getListOfStringsMatchingLastWord(args, opts);
+                }
+                if (args.length == 3) {
+                    yield getListOfStringsMatchingLastWord(args, "0", "1", "5", "10", "min", "max");
+                }
+                yield Collections.emptyList();
+            }
+            default -> Collections.emptyList();
         };
+    }
+
+    @Override
+    public boolean isUsernameIndex(String[] args, int index) {
+        // /hbmrad player <player>
+        return args.length > 0 && "player".equalsIgnoreCase(args[0]) && index == 1;
     }
 
     @Override
@@ -112,8 +133,7 @@ public class CommandRadiation extends CommandBase {
         } else {
             var newRads = Math.max(0.0D, parseDoubleMinMax(args[2]));
             cap.setRads(newRads);
-            sender.sendMessage(new TextComponentTranslation(
-                    "Set radiation for player " + getPlayer(server, sender, args[1]).getName() + " to " + newRads + "."));
+            sender.sendMessage(new TextComponentTranslation("Set radiation for player " + getPlayer(server, sender, args[1]).getName() + " to " + newRads + "."));
         }
     }
 }

@@ -78,6 +78,11 @@ public class GenericRecipe {
     public GenericRecipe outputItems(IOutput... output) { this.outputItem = output; return this; }
     public GenericRecipe outputFluids(FluidStack... output) { this.outputFluid = output; return this; }
 
+    private boolean exceedsStackLimit(RecipesCommon.AStack stack) {
+        if(stack instanceof RecipesCommon.ComparableStack && stack.stacksize > ((RecipesCommon.ComparableStack) stack).item.getItemStackLimit(((RecipesCommon.ComparableStack) stack).toStack())) return true;
+        return stack.stacksize > 64;
+    }
+
     public GenericRecipe outputItems(ItemStack... output) {
         this.outputItem = new IOutput[output.length];
         for(int i = 0; i < outputItem.length; i++) this.outputItem[i] = new ChanceOutput(output[i]);

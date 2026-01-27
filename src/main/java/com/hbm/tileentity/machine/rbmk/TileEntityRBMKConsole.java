@@ -276,7 +276,7 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
                 TileEntity te = world.getTileEntity(new BlockPos(targetX + x, targetY, targetZ + z));
 
                 if (te instanceof TileEntityRBMKControlManual rod) {
-                    rod.color = EnumUtil.grabEnumSafely(RBMKColor.class, color);
+                    rod.color = EnumUtil.grabEnumSafely(RBMKColor.VALUES, color);
                     te.markDirty();
                 }
             }

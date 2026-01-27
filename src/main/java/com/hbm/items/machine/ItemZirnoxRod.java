@@ -13,10 +13,10 @@ import net.minecraft.world.World;
 import java.util.Collections;
 import java.util.List;
 
-public class ItemZirnoxRod extends ItemEnumMulti {
+public class ItemZirnoxRod extends ItemEnumMulti<ItemZirnoxRod.EnumZirnoxType> {
 
     public ItemZirnoxRod(String registryName) {
-        super(registryName, EnumZirnoxType.class, true, true);
+        super(registryName, EnumZirnoxType.VALUES, true, true);
         this.setMaxStackSize(1);
         this.canRepair = false;
     }
@@ -108,6 +108,8 @@ public class ItemZirnoxRod extends ItemEnumMulti {
         LES_FUEL(150_000, 150),
         LITHIUM_FUEL(20_000, 0, true),
         ZFB_MOX_FUEL(50_000, 35);
+
+        public static final EnumZirnoxType[] VALUES = values();
 
         public final int maxLife;
         public final int heat;

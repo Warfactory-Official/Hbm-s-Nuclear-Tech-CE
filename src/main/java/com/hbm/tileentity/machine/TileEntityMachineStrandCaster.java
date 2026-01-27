@@ -409,19 +409,6 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase 
     return bb;
   }
 
-  public boolean isLoaded = true;
-
-  @Override
-  public boolean isLoaded() {
-    return isLoaded;
-  }
-
-  @Override
-  public void onChunkUnload() {
-    super.onChunkUnload();
-    this.isLoaded = false;
-  }
-
   @Override
   public boolean hasCapability(@NotNull Capability<?> capability, @Nullable EnumFacing facing) {
     if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY) {

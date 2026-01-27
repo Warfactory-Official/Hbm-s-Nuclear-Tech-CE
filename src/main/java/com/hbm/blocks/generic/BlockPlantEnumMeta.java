@@ -34,11 +34,11 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public abstract class BlockPlantEnumMeta extends BlockEnumMeta {
+public abstract class BlockPlantEnumMeta<E extends Enum<E>> extends BlockEnumMeta<E> {
 
     public static Set<Block> PLANTABLE_BLOCKS = new HashSet<>();
 
-    public BlockPlantEnumMeta(String registryName, Class<? extends Enum> blockEnum) {
+    public BlockPlantEnumMeta(String registryName, E[] blockEnum) {
         super(Material.PLANTS, SoundType.PLANT, registryName, blockEnum, true, true);
         this.setTickRandomly(true);
     }
@@ -48,7 +48,7 @@ public abstract class BlockPlantEnumMeta extends BlockEnumMeta {
 
     @Override
     protected BlockBakeFrame[] generateBlockFrames(String registryName) {
-        return Arrays.stream(blockEnum.getEnumConstants())
+        return Arrays.stream(blockEnum)
                 .sorted(Comparator.comparing(Enum::ordinal))
                 .map(Enum::name)
                 .map(name -> registryName + "_" + name.toLowerCase(Locale.US))

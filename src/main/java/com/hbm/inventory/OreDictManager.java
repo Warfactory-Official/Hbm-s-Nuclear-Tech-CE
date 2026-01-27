@@ -22,10 +22,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.OreDictionary.OreRegisterEvent;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 import static com.hbm.blocks.BlockEnums.EnumBasaltOreType;
 import static com.hbm.blocks.BlockEnums.EnumStoneType;
@@ -406,7 +403,7 @@ public class OreDictManager {
     /**
      * Alternate, additional names for ore dict registration. Used mostly for DictGroups
      */
-    private static final HashMap<String, HashSet<String>> reRegistration = new HashMap();
+    private static final HashMap<String, HashSet<String>> reRegistration = new HashMap<>();
     private static boolean recursionBrake = false;
 
     // order: nugget billet ingot dust dustTiny block crystal plate gem ore oreNether
@@ -590,7 +587,7 @@ public class OreDictManager {
         ANY_CONCRETE.any(concrete, concrete_smooth, concrete_asbestos, ducrete, ducrete_smooth);
         for(int i = 0; i < 16; i++) { ANY_CONCRETE.any(new ItemStack(ModBlocks.concrete_colored, 1, i)); }
         for(int i = 0; i < 8; i++) { ANY_CONCRETE.any(new ItemStack(ModBlocks.concrete_colored_ext, 1, i)); }
-        ANY_COKE.gem(fromAll(coke, EnumCokeType.class)).block(fromAll(block_coke, EnumCokeType.class));
+        ANY_COKE.gem(fromAll(coke, EnumCokeType.VALUES)).block(fromAll(block_coke, EnumCokeType.VALUES));
         ANY_BISMOID.ingot(ingot_bismuth, ingot_arsenic).nugget(nugget_bismuth, nugget_arsenic).block(block_bismuth);
         ANY_ASH.any(fromOne(ModItems.powder_ash, EnumAshType.WOOD), fromOne(ModItems.powder_ash, EnumAshType.COAL), fromOne(ModItems.powder_ash, EnumAshType.MISC), fromOne(ModItems.powder_ash, EnumAshType.FLY), fromOne(ModItems.powder_ash, EnumAshType.SOOT));
 
@@ -786,7 +783,7 @@ public class OreDictManager {
         HashSet<String> strings = reRegistration.get(original);
 
         if (strings == null)
-            strings = new HashSet();
+            strings = new HashSet<>();
 
         strings.add(additional);
 
@@ -816,7 +813,7 @@ public class OreDictManager {
         }
     }
 
-    public static final HashSet<RecipesCommon.ComparableStack> arcSmeltable = new HashSet();
+    public static final HashSet<RecipesCommon.ComparableStack> arcSmeltable = new HashSet<>();
 
     /** Vanilla item ore dict registration events never actually register in the ODM because vanilla items are registered so early that the ODM event handler doesn't exist yet. */
     public static void compensateMojangSpaghettiBullshit() {
@@ -844,7 +841,7 @@ public class OreDictManager {
     public static class DictFrame {
         public String[] mats;
         float hazMult = 1.0F;
-        List<HazardEntry> hazards = new ArrayList();
+        List<HazardEntry> hazards = new ArrayList<>();
 
         public DictFrame(String... mats) {
             this.mats = mats;
@@ -853,27 +850,34 @@ public class OreDictManager {
         /**
          * Returns an ItemStack composed of the supplied item with the meta being the enum's ordinal. Purely syntactic candy
          */
-        public static ItemStack fromOne(Item item, Enum en) {
+        public static ItemStack fromOne(Item item, Enum<?> en) {
             return new ItemStack(item, 1, en.ordinal());
         }
 
-        public static ItemStack fromOne(Block block, Enum en) {
+        public static ItemStack fromOne(Block block, Enum<?> en) {
             return new ItemStack(block, 1, en.ordinal());
         }
 
-        public static ItemStack fromOne(Item item, Enum en, int stacksize) {
+        public static ItemStack fromOne(Item item, Enum<?> en, int stacksize) {
             return new ItemStack(item, stacksize, en.ordinal());
         }
 
-        public static ItemStack fromOne(Block block, Enum en, int stacksize) {
+        public static ItemStack fromOne(Block block, Enum<?> en, int stacksize) {
             return new ItemStack(block, stacksize, en.ordinal());
+        }
+
+        /**
+         * @deprecated Use {@link #fromAll(Item, Enum[])} instead.
+         */
+        @Deprecated(forRemoval = true, since = "1.5.1.1")
+        public static Object[] fromAll(Item item, Class<? extends Enum<?>> en) {
+            return fromAll(item, en.getEnumConstants());
         }
 
         /**
          * Same as fromOne but with an array of ItemStacks. The array type is Object[] so that the ODM methods work with it. Generates ItemStacks for the entire enum class.
          */
-        public static Object[] fromAll(Item item, Class<? extends Enum> en) {
-            Enum[] vals = en.getEnumConstants();
+        public static Object[] fromAll(Item item, Enum<?>[] vals) {
             Object[] stacks = new Object[vals.length];
 
             for (int i = 0; i < vals.length; i++) {
@@ -882,8 +886,15 @@ public class OreDictManager {
             return stacks;
         }
 
-        public static Object[] fromAll(Block block, Class<? extends Enum> en) {
-            Enum[] vals = en.getEnumConstants();
+        /**
+         * @deprecated Use {@link #fromAll(Block, Enum[])} instead.
+         */
+        @Deprecated(forRemoval = true, since = "1.5.1.1")
+        public static Object[] fromAll(Block block, Class<? extends Enum<?>> en) {
+            return fromAll(block, en.getEnumConstants());
+        }
+
+        public static Object[] fromAll(Block block, Enum<?>[] vals) {
             Object[] stacks = new Object[vals.length];
 
             for (int i = 0; i < vals.length; i++) {
@@ -1206,7 +1217,7 @@ public class OreDictManager {
 
     public static class DictGroup {
         private String groupName;
-        private HashSet<String> names = new HashSet();
+        private HashSet<String> names = new HashSet<>();
 
         public DictGroup(String groupName) {
             this.groupName = groupName;
@@ -1223,7 +1234,7 @@ public class OreDictManager {
         }
 
         public DictGroup addNames(String... names) {
-            for (String mat : names) this.names.add(mat);
+            Collections.addAll(this.names, names);
             return this;
         }
 

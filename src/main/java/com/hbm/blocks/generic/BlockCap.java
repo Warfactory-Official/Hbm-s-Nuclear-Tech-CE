@@ -11,18 +11,20 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
 
-public class BlockCap extends BlockEnumMeta {
+public class BlockCap extends BlockEnumMeta<BlockEnums.EnumBlockCapType> {
 
     public BlockCap(String registryName) {
-        super(Material.IRON, SoundType.METAL, registryName, BlockEnums.EnumBlockCapType.class, true, true);
+        super(Material.IRON, SoundType.METAL, registryName, BlockEnums.EnumBlockCapType.VALUES, true, true);
     }
 
     @Override
     protected BlockBakeFrame[] generateBlockFrames(String registryName) {
-        return Arrays.stream(blockEnum.getEnumConstants())
-                .sorted(Comparator.comparing(Enum::ordinal))
+        return Arrays.stream(blockEnum)
                 .map(Enum::name)
                 .map(name -> registryName + "_" + name.toLowerCase(Locale.US))
                 .map(texture -> new BlockBakeFrame(texture + "_top", texture))
@@ -32,7 +34,7 @@ public class BlockCap extends BlockEnumMeta {
     @Override
     public @NotNull List<ItemStack> getDrops(IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
         int meta = state.getValue(META);
-        BlockEnums.EnumBlockCapType oreType = (BlockEnums.EnumBlockCapType) this.blockEnum.getEnumConstants()[meta];
+        BlockEnums.EnumBlockCapType oreType = this.blockEnum[meta];
 
         return Collections.singletonList(new ItemStack(oreType.getDrop(), oreType.getDropCount()));
     }

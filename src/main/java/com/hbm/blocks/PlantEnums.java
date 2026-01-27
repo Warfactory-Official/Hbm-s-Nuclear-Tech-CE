@@ -7,7 +7,9 @@ public class PlantEnums {
         GRASS,
         FLOWER,
         BIG_FLOWER,
-        FERN,
+        FERN;
+
+        public static final EnumDeadPlantType[] VALUES = values();
     }
 
     public static enum EnumFlowerPlantType {
@@ -18,6 +20,8 @@ public class PlantEnums {
         NIGHTSHADE,
         TOBACCO,
         ;
+
+        public static final EnumFlowerPlantType[] VALUES = values();
 
         public final boolean needsOil;
         EnumFlowerPlantType(boolean needsOil){ this.needsOil = needsOil;}

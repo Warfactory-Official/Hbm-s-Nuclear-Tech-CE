@@ -2,6 +2,7 @@ package com.hbm.blocks.generic;
 
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.handler.radiation.RadiationSystemNT;
+import com.hbm.interfaces.IBomb;
 import com.hbm.interfaces.IDoor;
 import com.hbm.interfaces.IRadResistantBlock;
 import com.hbm.items.ModItems;
@@ -34,7 +35,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 @Optional.InterfaceList({@Optional.Interface(iface = "micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock", modid = "galacticraftcore")})
-public class BlockDoorGeneric extends BlockDummyable implements IRadResistantBlock, IPartialSealableBlock {
+public class BlockDoorGeneric extends BlockDummyable implements IRadResistantBlock, IPartialSealableBlock, IBomb {
 
 	public DoorDecl type;
 	public final boolean isRadResistant;
@@ -75,7 +76,7 @@ public class BlockDoorGeneric extends BlockDummyable implements IRadResistantBlo
 
 	@Override
 	public int getOffset(){
-		return 0;
+		return type.getBlockOffset();
 	}
 
 	@Override
@@ -125,9 +126,8 @@ public class BlockDoorGeneric extends BlockDummyable implements IRadResistantBlo
 			int[] corePos = findCore(world, pos.getX(), pos.getY(), pos.getZ());
 			if(corePos != null){
 				TileEntity core = world.getTileEntity(new BlockPos(corePos[0], corePos[1], corePos[2]));
-				if(core instanceof TileEntityDoorGeneric){
-					TileEntityDoorGeneric door = (TileEntityDoorGeneric)core;
-					door.updateRedstonePower(pos);
+				if(core instanceof TileEntityDoorGeneric door){
+                    door.updateRedstonePower(pos);
 				}
 			}
 		}
@@ -213,4 +213,21 @@ public class BlockDoorGeneric extends BlockDummyable implements IRadResistantBlo
 			tooltip.add("§6" + I18nUtil.resolveKey("trait.blastres", hardness));
 		}
 	}
+
+    //Months later I found this joke again
+    //I'm not even sorry
+
+    //Drillgon200: Months later (probably) I found this joke and don't understand it. Probably another reference...
+    @Override
+    public BombReturnCode explode(World world, BlockPos pos, Entity detonator) {
+        TileEntity te = findCoreTE(world,pos);
+        if(!(te instanceof TileEntityDoorGeneric door)) return BombReturnCode.ERROR_INCOMPATIBLE;
+        DoorDecl decl = door.getDoorType();
+        if(!decl.remoteControllable()) return BombReturnCode.ERROR_INCOMPATIBLE;
+        if(door.tryToggle(null)) {
+            return BombReturnCode.TRIGGERED;
+        }
+
+        return BombReturnCode.ERROR_INCOMPATIBLE;
+    }
 }

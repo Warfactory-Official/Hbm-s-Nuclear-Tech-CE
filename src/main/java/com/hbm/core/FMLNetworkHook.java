@@ -162,7 +162,7 @@ public final class FMLNetworkHook {
                 try {
                     ret.add(new SPacketCustomPayload("FML|MP", pb));
                 } catch (Throwable t) {
-                    if (combined.refCnt() > 0) combined.release();
+                    combined.release();
                     throw t;
                 }
                 offset += dataLen;

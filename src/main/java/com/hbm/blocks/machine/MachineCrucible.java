@@ -3,6 +3,7 @@ package com.hbm.blocks.machine;
 import com.hbm.api.block.ICrucibleAcceptor;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ICustomBlockHighlight;
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.inventory.material.Mats;
 import com.hbm.items.machine.ItemScraps;
 import com.hbm.lib.ForgeDirection;
@@ -13,6 +14,7 @@ import java.util.List;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.RenderGlobal;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -28,7 +30,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
-public class MachineCrucible extends BlockDummyable implements ICrucibleAcceptor {
+public class MachineCrucible extends BlockDummyable implements ICrucibleAcceptor, ITooltipProvider {
 
     public MachineCrucible(String s) {
         super(Material.ROCK, s);
@@ -187,4 +189,9 @@ public class MachineCrucible extends BlockDummyable implements ICrucibleAcceptor
 
     @Override public boolean canAcceptPartialFlow(World world, BlockPos pos, ForgeDirection side, Mats.MaterialStack stack) { return false; }
     @Override public Mats.MaterialStack flow(World world, BlockPos pos, ForgeDirection side, Mats.MaterialStack stack) { return null; }
+
+    @Override
+    public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
+        this.addStandardInfo(tooltip);
+    }
 }

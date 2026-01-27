@@ -4,13 +4,14 @@ import com.hbm.items.ItemAmmoEnums;
 import com.hbm.items.ItemAmmoEnums.IAmmoItemEnum;
 import com.hbm.items.ItemEnumMulti;
 import com.hbm.util.EnumUtil;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.ItemStack;
 
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Locale;
 
-public class ItemAmmo extends ItemEnumMulti {
+public class ItemAmmo<E extends Enum<E> & IAmmoItemEnum> extends ItemEnumMulti<E> {
 
 	public enum AmmoItemTrait {
 		CON_ACCURACY2,
@@ -103,18 +104,18 @@ public class ItemAmmo extends ItemEnumMulti {
 
 	private final String altName;
 
-	public ItemAmmo(String s, Class<? extends Enum<?>> clazz) {
+	public ItemAmmo(String s, E[] clazz) {
 		this(s, clazz, "");
 	}
 
-	public ItemAmmo(String s, Class<? extends Enum<?>> clazz, String altName) {
+	public ItemAmmo(String s, E[] clazz, String altName) {
 		super(s, clazz, true, true);
 		this.setCreativeTab(null);
 		this.altName = altName;
 
-		this.textures = Arrays.stream(theEnum.getEnumConstants())
+		this.textures = Arrays.stream(theEnum)
 				.sorted(Comparator.comparing(Enum::ordinal))
-				.map(e -> ((IAmmoItemEnum) e).getInternalName())
+				.map(IAmmoItemEnum::getInternalName)
 				.toArray(String[]::new);
 	}
 
@@ -122,5 +123,10 @@ public class ItemAmmo extends ItemEnumMulti {
 	public String getTranslationKey(ItemStack stack) {
 		ItemAmmoEnums.IAmmoItemEnum num = EnumUtil.grabEnumSafely(theEnum, stack.getItemDamage());
 		return "item." + num.getInternalName();
+	}
+
+	@Override
+	public ItemAmmo<E> setCreativeTab(CreativeTabs tab) {
+        return (ItemAmmo<E>) super.setCreativeTab(tab);
 	}
 }

@@ -145,8 +145,7 @@ public class ToolRecipes {
         CraftingManager.addRecipeAuto(ItemBlowtorch.getEmptyTool(ModItems.blowtorch), "CC ", " I ", "CCC", 'C', CU.plate528(), 'I', IRON.ingot() );
         CraftingManager.addRecipeAuto(ItemBlowtorch.getEmptyTool(ModItems.acetylene_torch), "SS ", " PS", " T ", 'S', STEEL.plate528(), 'P', ANY_PLASTIC.ingot(), 'T', ModItems.tank_steel );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.boltgun), "DPS", " RD", " D ", 'D', DURA.ingot(), 'P', DictFrame.fromOne(ModItems.part_generic, ItemEnums.EnumPartType.PISTON_PNEUMATIC), 'R', RUBBER.ingot(), 'S', STEEL.shell() );
-        // TODO
-        //CraftingManager.addRecipeAuto(new ItemStack(ModItems.rebar_placer), "RDR", "DWD", "RDR", 'R', ModBlocks.rebar, 'D', ModItems.ducttape, 'W', ModItems.wrench );
+        CraftingManager.addRecipeAuto(new ItemStack(ModItems.rebar_placer), "RDR", "DWD", "RDR", 'R', ModBlocks.rebar, 'D', ModItems.ducttape, 'W', ModItems.wrench );
 
         //Bobmazon
         CraftingManager.addShapelessAuto(new ItemStack(ModItems.bobmazon), Items.BOOK, Items.GOLD_NUGGET, Items.STRING, KEY_BLUE);

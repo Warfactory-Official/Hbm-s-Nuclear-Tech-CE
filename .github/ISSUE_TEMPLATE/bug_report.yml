@@ -19,7 +19,7 @@ body:
         Please confirm that the problem can be reproduced on the **latest successful GitHub Actions build** (not Releases/Tags).
 
         **Quick how-to:**
-        1) Open the repo's **Actions** tab and pick the most recent green run labeled **CI Build** or **Nightly Gradle Build**.  
+        1) Open the repo's **Actions** tab and pick the most recent green run labeled **CI Build**.  
         2) On the run page, download the artifact (Summary → Artifacts), extract it, and put the `.jar` (no `-dev` / `-sources`) in your mods folder.  
         3) Reproduce the issue and paste the run URL below. If updating fixes it, please close the report.
 

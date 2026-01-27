@@ -163,7 +163,12 @@ public class MachineCapacitor extends BlockContainer implements ILookOverlay, IP
     @Override
     public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
         IPersistentNBT.onBlockPlacedBy(world, pos, stack);
-        world.setBlockState(pos, state.withProperty(FACING, EnumFacing.getDirectionFromEntityLiving(pos, placer)));
+    }
+    @Override
+    public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing,
+                                            float hitX, float hitY, float hitZ,
+                                            int meta, EntityLivingBase placer) {
+        return this.getDefaultState().withProperty(FACING, facing);
     }
 
     @Override

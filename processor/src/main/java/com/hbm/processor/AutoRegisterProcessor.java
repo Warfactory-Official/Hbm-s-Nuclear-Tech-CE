@@ -19,14 +19,12 @@ import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 @AutoService(Processor.class)
-@SupportedAnnotationTypes({
-        "com.hbm.interfaces.AutoRegister",
-        "com.hbm.interfaces.AutoRegisterContainer"
-})
-@SupportedSourceVersion(SourceVersion.RELEASE_8)
-public class AutoRegisterProcessor extends AbstractProcessor {
+@SupportedAnnotationTypes({"com.hbm.interfaces.AutoRegister", "com.hbm.interfaces.AutoRegisterContainer"})
+@SupportedSourceVersion(SourceVersion.RELEASE_25)
+public final class AutoRegisterProcessor extends AbstractProcessor {
 
     private static final String TESR_FQN = "net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer";
     private static final String TE_FQN = "net.minecraft.tileentity.TileEntity";
@@ -34,40 +32,71 @@ public class AutoRegisterProcessor extends AbstractProcessor {
     private static final String ICONFIGURABLE_FQN = "com.hbm.tileentity.IConfigurableMachine";
     private static final String RENDER_FQN = "net.minecraft.client.renderer.entity.Render";
     private static final String TEISR_FQN = "net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer";
-    private static final String DEFAULT_CLASS_FQN = "java.lang.Object";
+    private static final String OBJECT_FQN = "java.lang.Object";
 
-    private final List<EntityInfo> entities = new ArrayList<>();
-    private final Map<String, String> tileEntities = new LinkedHashMap<>();
-    private final List<EntityRendererInfo> entityRenderers = new ArrayList<>();
-    private final Map<String, String> tileEntityRenderers = new LinkedHashMap<>();
-    private final List<TeisrInfo> itemRenderers = new ArrayList<>();
-    private final List<String> configurableMachines = new ArrayList<>();
+    private static final Pattern TE_PATTERN = Pattern.compile("^TileEntity");
+    private static final Pattern TE_NAME_PATTERN = Pattern.compile("([a-z])([A-Z])");
+
+    private final Map<String, EntityInfo> entitiesByName = new HashMap<>(256);
+    private final Map<String, ClassName> entityNameOwners = new HashMap<>(256);
+
+    private final Map<ClassName, String> tileEntities = new HashMap<>(512);
+    private final Map<String, ClassName> tileEntityIdOwners = new HashMap<>(512);
+
+    private final Map<ClassName, EntityRendererInfo> entityRenderersByEntity = new HashMap<>(256);
+    private final Map<ClassName, ClassName> tileEntityRenderers = new HashMap<>(512);
+    private final Map<String, TeisrInfo> itemRenderersByItemField = new HashMap<>(128);
+
+    private final Set<ClassName> configurableMachines = new HashSet<>(64);
 
     private Filer filer;
     private Messager messager;
     private Types typeUtils;
     private Elements elementUtils;
 
+    private TypeElement tesrElement;
+    private TypeElement renderElement;
+
+    private TypeMirror teisrType;
+    private TypeMirror teType;
+    private TypeMirror entityType;
+    private TypeMirror configurableType;
+    private TypeMirror objectType;
+
+    private static String generateRegistrationId(String name) {
+        name = TE_PATTERN.matcher(name).replaceFirst("");
+        return "tileentity_" + TE_NAME_PATTERN.matcher(name).replaceAll("$1_$2").toLowerCase(Locale.ROOT);
+    }
+
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
-        this.filer = processingEnv.getFiler();
-        this.messager = processingEnv.getMessager();
-        this.typeUtils = processingEnv.getTypeUtils();
-        this.elementUtils = processingEnv.getElementUtils();
+        filer = processingEnv.getFiler();
+        messager = processingEnv.getMessager();
+        typeUtils = processingEnv.getTypeUtils();
+        elementUtils = processingEnv.getElementUtils();
+
+        tesrElement = elementUtils.getTypeElement(TESR_FQN);
+        renderElement = elementUtils.getTypeElement(RENDER_FQN);
+
+        teisrType = typeMirrorOrNull(TEISR_FQN);
+        teType = typeMirrorOrNull(TE_FQN);
+        entityType = typeMirrorOrNull(ENTITY_FQN);
+        configurableType = typeMirrorOrNull(ICONFIGURABLE_FQN);
+        objectType = typeMirrorOrNull(OBJECT_FQN);
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        Set<Element> annotatedElements = new HashSet<>();
+        var annotatedElements = new LinkedHashSet<Element>(64);
         annotatedElements.addAll(roundEnv.getElementsAnnotatedWith(AutoRegister.class));
         annotatedElements.addAll(roundEnv.getElementsAnnotatedWith(AutoRegisterContainer.class));
-        for (Element element : annotatedElements) {
-            if (!(element instanceof TypeElement)) continue;
-            TypeElement typeElement = (TypeElement) element;
+
+        for (var element : annotatedElements) {
+            if (!(element instanceof TypeElement typeElement)) continue;
             if (typeElement.getModifiers().contains(Modifier.ABSTRACT)) continue;
 
-            for (AutoRegister annotation : typeElement.getAnnotationsByType(AutoRegister.class)) {
+            for (var annotation : typeElement.getAnnotationsByType(AutoRegister.class)) {
                 try {
                     processAnnotation(typeElement, annotation);
                 } catch (Exception e) {
@@ -75,54 +104,77 @@ public class AutoRegisterProcessor extends AbstractProcessor {
                 }
             }
         }
-        if (roundEnv.processingOver() && (!entities.isEmpty() || !tileEntities.isEmpty() || !entityRenderers.isEmpty() || !tileEntityRenderers.isEmpty() || !itemRenderers.isEmpty())) {
+
+        if (roundEnv.processingOver() && hasAnyOutput()) {
             try {
                 generateRegistrarFile();
             } catch (IOException e) {
                 messager.printMessage(Diagnostic.Kind.ERROR, "Failed to generate registrar file: " + e.getMessage());
             }
         }
+
         return true;
     }
 
+    private boolean hasAnyOutput() {
+        return !entitiesByName.isEmpty() || !tileEntities.isEmpty() || !entityRenderersByEntity.isEmpty() || !tileEntityRenderers.isEmpty() || !itemRenderersByItemField.isEmpty() || !configurableMachines.isEmpty();
+    }
+
     private void processAnnotation(TypeElement annotatedElement, AutoRegister annotation) {
-        String annotatedFqn = annotatedElement.getQualifiedName().toString();
+        var annotatedClass = ClassName.get(annotatedElement);
 
-        if (isSubtypeByString(annotatedElement, TESR_FQN)) {
-            String tileEntityClassName = getClassNameFromAnnotation(annotation, "tileentity");
-            if (tileEntityClassName.equals(DEFAULT_CLASS_FQN)) {
-                tileEntityClassName = getGenericSupertypeFqn(annotatedElement, TESR_FQN);
+        // TESR<TileEntity>
+        if (isSubtypeErased(annotatedElement, tesrElement)) {
+            var teMirror = typeMirrorFromAnnotation(annotation, MirrorKind.TILEENTITY);
+            var teArg = selectOrInferTypeArg(annotatedElement, tesrElement, teMirror, teType, "TileEntity", "tileentity");
+            if (teArg == null) return;
 
-                if (tileEntityClassName == null) {
-                    messager.printMessage(Diagnostic.Kind.ERROR, "Could not infer TileEntity type for renderer. Please specify it manually using " +
-                            "'tileentity = ...'.", annotatedElement);
-                    return;
-                }
-            }
-            tileEntityRenderers.put(tileEntityClassName, annotatedFqn);
-
-        } else if (isSubtypeByString(annotatedElement, RENDER_FQN)) {
-            String entityClassName = getClassNameFromAnnotation(annotation, "entity");
-            if (entityClassName.equals(DEFAULT_CLASS_FQN)) {
-                entityClassName = getGenericSupertypeFqn(annotatedElement, RENDER_FQN);
-
-                if (entityClassName == null) {
-                    messager.printMessage(Diagnostic.Kind.ERROR, "Could not infer Entity type for renderer. Please specify it manually using " +
-                            "'entity = ...'.", annotatedElement);
-                    return;
-                }
-            }
-            String factoryFieldName = annotation.factory();
-            entityRenderers.add(new EntityRendererInfo(entityClassName, annotatedFqn, factoryFieldName));
-        } else if (isSubtypeOf(annotatedElement, TEISR_FQN)) {
-            if (annotation.item().isEmpty()) {
-                messager.printMessage(Diagnostic.Kind.ERROR, "A TEISR class must specify the 'item' parameter in its @AutoRegister annotation.",
-                        annotatedElement);
+            var teClass = classNameFromTypeMirror(teArg);
+            if (teClass == null) {
+                messager.printMessage(Diagnostic.Kind.ERROR, "Invalid 'tileentity' type in @AutoRegister.", annotatedElement);
                 return;
             }
+
+            var prev = tileEntityRenderers.putIfAbsent(teClass, annotatedClass);
+            if (prev != null && !prev.equals(annotatedClass)) {
+                messager.printMessage(Diagnostic.Kind.ERROR, "Duplicate TESR registration: " + teClass.canonicalName() + " already has renderer " + prev.canonicalName() + ", cannot also register " + annotatedClass.canonicalName() + ".", annotatedElement);
+            }
+            return;
+        }
+
+        // Render<Entity>
+        if (isSubtypeErased(annotatedElement, renderElement)) {
+            var entMirror = typeMirrorFromAnnotation(annotation, MirrorKind.ENTITY);
+            var entArg = selectOrInferTypeArg(annotatedElement, renderElement, entMirror, entityType, "Entity", "entity");
+            if (entArg == null) return;
+
+            var entityClass = classNameFromTypeMirror(entArg);
+            if (entityClass == null) {
+                messager.printMessage(Diagnostic.Kind.ERROR, "Invalid 'entity' type in @AutoRegister.", annotatedElement);
+                return;
+            }
+
+            var factory = annotation.factory().trim();
+            var info = new EntityRendererInfo(entityClass, annotatedClass, factory);
+
+            var prev = entityRenderersByEntity.putIfAbsent(entityClass, info);
+            if (prev != null && !prev.rendererType().equals(annotatedClass)) {
+                messager.printMessage(Diagnostic.Kind.ERROR, "Duplicate entity renderer registration: " + entityClass.canonicalName() + " already has renderer " + prev.rendererType().canonicalName() + ", cannot also register " + annotatedClass.canonicalName() + ".", annotatedElement);
+            }
+            return;
+        }
+
+        // TEISR
+        if (isSubtypeErased(annotatedElement, teisrType)) {
+            var itemField = annotation.item().trim();
+            if (itemField.isEmpty()) {
+                messager.printMessage(Diagnostic.Kind.ERROR, "A TEISR class must specify the 'item' parameter in its @AutoRegister annotation.", annotatedElement);
+                return;
+            }
+
             boolean hasArrayArgs = annotation.constructorArgs().length > 0;
-            boolean hasStringArgs = !annotation.constructorArgsString().isEmpty();
-            boolean hasInstanceField = !annotation.instanceField().isEmpty();
+            boolean hasStringArgs = !annotation.constructorArgsString().isBlank();
+            boolean hasInstanceField = !annotation.instanceField().isBlank();
 
             if (hasArrayArgs && hasStringArgs) {
                 messager.printMessage(Diagnostic.Kind.ERROR, "Cannot use both 'constructorArgs' and 'constructorArgsString'. Please use only one.", annotatedElement);
@@ -133,42 +185,105 @@ public class AutoRegisterProcessor extends AbstractProcessor {
                 return;
             }
 
-            String finalArgs;
-            if (hasStringArgs) {
-                finalArgs = annotation.constructorArgsString();
-            } else {
-                finalArgs = String.join(", ", annotation.constructorArgs());
-            }
-            itemRenderers.add(new TeisrInfo(annotatedFqn, annotation.item(), finalArgs, annotation.instanceField()));
+            var ctorArgs = hasStringArgs ? annotation.constructorArgsString().trim() : String.join(", ", annotation.constructorArgs()).trim();
+            var instanceField = annotation.instanceField().trim();
 
-        } else if (isSubtypeOf(annotatedElement, TE_FQN)) {
-            String regId = annotation.name().trim().isEmpty() ? generateRegistrationId(annotatedElement.getSimpleName().toString()) :
-                    annotation.name();
-            tileEntities.put(annotatedFqn, regId);
-            if (isSubtypeOf(annotatedElement, ICONFIGURABLE_FQN)) {
-                configurableMachines.add(annotatedFqn);
+            var info = new TeisrInfo(annotatedClass, itemField, ctorArgs, instanceField);
+
+            var prev = itemRenderersByItemField.putIfAbsent(itemField, info);
+            if (prev != null && !prev.rendererType().equals(annotatedClass)) {
+                messager.printMessage(Diagnostic.Kind.ERROR, "Duplicate TEISR registration: item field '" + itemField + "' already uses renderer " + prev.rendererType().canonicalName() + ", cannot also register " + annotatedClass.canonicalName() + ".", annotatedElement);
+            }
+            return;
+        }
+
+        // TileEntity
+        if (isSubtypeErased(annotatedElement, teType)) {
+            var annoName = annotation.name().trim();
+            var regId = annoName.isEmpty() ? generateRegistrationId(annotatedElement.getSimpleName().toString()) : annoName;
+
+            var regOwner = tileEntityIdOwners.putIfAbsent(regId, annotatedClass);
+            if (regOwner != null && !regOwner.equals(annotatedClass)) {
+                messager.printMessage(Diagnostic.Kind.ERROR, "Duplicate TileEntity registration id '" + regId + "' used by " + regOwner.canonicalName() + " and " + annotatedClass.canonicalName() + ".", annotatedElement);
+                return;
             }
 
-        } else if (isSubtypeOf(annotatedElement, ENTITY_FQN)) {
-            if (annotation.name().trim().isEmpty()) {
+            var prevId = tileEntities.putIfAbsent(annotatedClass, regId);
+            if (prevId != null && !prevId.equals(regId)) {
+                messager.printMessage(Diagnostic.Kind.ERROR, "Conflicting TileEntity registration id for " + annotatedClass.canonicalName() + ": '" + prevId + "' vs '" + regId + "'.", annotatedElement);
+                return;
+            }
+
+            if (isSubtypeErased(annotatedElement, configurableType)) {
+                configurableMachines.add(annotatedClass);
+            }
+            return;
+        }
+
+        // Entity
+        if (isSubtypeErased(annotatedElement, entityType)) {
+            var name = annotation.name().trim();
+            if (name.isEmpty()) {
                 messager.printMessage(Diagnostic.Kind.ERROR, "Entity registration requires a non-empty 'name' parameter.", annotatedElement);
                 return;
             }
-            entities.add(new EntityInfo(annotatedFqn, annotation.name(), annotation.trackingRange(), annotation.updateFrequency(),
-                    annotation.sendVelocityUpdates(), annotation.eggColors()));
 
-        } else {
-            messager.printMessage(Diagnostic.Kind.ERROR, "Class is not a valid type for @AutoRegister. Must extend Entity, TileEntity, or a valid " +
-                    "Renderer class.", annotatedElement);
+            var owner = entityNameOwners.putIfAbsent(name, annotatedClass);
+            if (owner != null && !owner.equals(annotatedClass)) {
+                messager.printMessage(Diagnostic.Kind.ERROR, "Duplicate entity registration name '" + name + "' used by " + owner.canonicalName() + " and " + annotatedClass.canonicalName() + ".", annotatedElement);
+                return;
+            }
+
+            int egg0 = 0;
+            int egg1 = 0;
+            int[] eggs = annotation.eggColors();
+            if (eggs != null && eggs.length >= 2) {
+                egg0 = eggs[0];
+                egg1 = eggs[1];
+            } else if (eggs != null && eggs.length != 0) {
+                messager.printMessage(Diagnostic.Kind.ERROR, "eggColors must have length 0 or 2 (primary, secondary).", annotatedElement);
+                return;
+            }
+
+            var info = new EntityInfo(annotatedClass, name, annotation.trackingRange(), annotation.updateFrequency(), annotation.sendVelocityUpdates(), egg0, egg1);
+            var prev = entitiesByName.putIfAbsent(name, info);
+            if (prev != null && !prev.type().equals(annotatedClass)) {
+                messager.printMessage(Diagnostic.Kind.ERROR, "Duplicate entity registration name '" + name + "' already mapped to " + prev.type().canonicalName() + ", cannot also map to " + annotatedClass.canonicalName() + ".", annotatedElement);
+            }
+            return;
         }
+
+        messager.printMessage(Diagnostic.Kind.ERROR, "Class is not a valid type for @AutoRegister. Must extend Entity, TileEntity, or a valid Renderer class.", annotatedElement);
     }
 
-    private boolean isSubtypeOf(TypeElement element, String targetSuperclassFqn) {
-        TypeElement superclassElement = elementUtils.getTypeElement(targetSuperclassFqn);
-        if (superclassElement == null) {
-            return false;
+    private TypeMirror selectOrInferTypeArg(TypeElement annotatedElement, TypeElement targetRaw, TypeMirror fromAnnotation, TypeMirror bound, String boundDisplay, String annoFieldName) {
+        TypeMirror chosen;
+
+        if (isObjectType(fromAnnotation)) {
+            chosen = inferFirstTypeArg(annotatedElement.asType(), targetRaw);
+            if (chosen == null) {
+                messager.printMessage(Diagnostic.Kind.ERROR, "Could not infer " + boundDisplay + " type for renderer. Please specify it manually using '" + annoFieldName + " = ...'.", annotatedElement);
+                return null;
+            }
+        } else {
+            chosen = fromAnnotation;
+            if (chosen == null) {
+                messager.printMessage(Diagnostic.Kind.ERROR, "Invalid '" + annoFieldName + "' type in @AutoRegister.", annotatedElement);
+                return null;
+            }
         }
-        return typeUtils.isSubtype(element.asType(), superclassElement.asType());
+
+        if (isTypeVarOrWildcard(chosen)) {
+            messager.printMessage(Diagnostic.Kind.ERROR, "Could not resolve a concrete " + boundDisplay + " type for renderer (generic type variable/wildcard). Please specify '" + annoFieldName + " = ...' explicitly.", annotatedElement);
+            return null;
+        }
+
+        if (bound != null && !isSubtypeErased(chosen, bound)) {
+            messager.printMessage(Diagnostic.Kind.ERROR, "Invalid '" + annoFieldName + "' type in @AutoRegister: must be a subtype of " + boundDisplay + ".", annotatedElement);
+            return null;
+        }
+
+        return chosen;
     }
 
     private void generateRegistrarFile() throws IOException {
@@ -183,213 +298,178 @@ public class AutoRegisterProcessor extends AbstractProcessor {
         ClassName MAIN_REGISTRY = ClassName.get("com.hbm.main", "MainRegistry");
         ClassName MOD_ITEMS = ClassName.get("com.hbm.items", "ModItems");
         ClassName ICONFIGURABLE_MACHINE = ClassName.get("com.hbm.tileentity", "IConfigurableMachine");
-        TypeSpec.Builder registrarBuilder =
-                TypeSpec.classBuilder("GeneratedHBMRegistrar").addModifiers(Modifier.PUBLIC, Modifier.FINAL).addJavadoc("AUTO-GENERATED FILE. DO NOT MODIFY.");
+
+        var registrarBuilder = TypeSpec.classBuilder("GeneratedHBMRegistrar").addModifiers(Modifier.PUBLIC, Modifier.FINAL).addJavadoc("AUTO-GENERATED FILE. DO NOT MODIFY.");
+
         if (!configurableMachines.isEmpty()) {
             TypeName classOfConfigurable = ParameterizedTypeName.get(ClassName.get(Class.class), WildcardTypeName.subtypeOf(ICONFIGURABLE_MACHINE));
-            TypeName listOfConfigurables = ParameterizedTypeName.get(ClassName.get(java.util.List.class), classOfConfigurable);
-            registrarBuilder.addField(FieldSpec.builder(listOfConfigurables, "CONFIGURABLE_MACHINES").addModifiers(Modifier.PUBLIC, Modifier.STATIC
-                    , Modifier.FINAL).initializer("new $T<>()", java.util.ArrayList.class).build());
-            CodeBlock.Builder staticBlock = CodeBlock.builder();
-            for (String fqn : configurableMachines) {
-                staticBlock.addStatement("$N.add($T.class)", "CONFIGURABLE_MACHINES", ClassName.bestGuess(fqn));
-            }
-            registrarBuilder.addStaticBlock(staticBlock.build());
+            TypeName listOfConfigurables = ParameterizedTypeName.get(ClassName.get(List.class), classOfConfigurable);
+            registrarBuilder.addField(FieldSpec.builder(listOfConfigurables, "CONFIGURABLE_MACHINES").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer("new $T<>($L)", ArrayList.class, configurableMachines.size()).build());
+
+            var block = CodeBlock.builder();
+            configurableMachines.stream().sorted(Comparator.comparing(ClassName::canonicalName)).forEach(cn -> block.addStatement("$N.add($T.class)", "CONFIGURABLE_MACHINES", cn));
+            registrarBuilder.addStaticBlock(block.build());
         }
-        if (!entities.isEmpty()) {
-            MethodSpec.Builder method =
-                    MethodSpec.methodBuilder("registerEntities").addModifiers(Modifier.PUBLIC, Modifier.STATIC).returns(int.class).addParameter(int.class, "startId").addJavadoc("@param startId The starting ID for entity registration.\n@return The next available entity ID.");
+
+        if (!entitiesByName.isEmpty()) {
+            var method = MethodSpec.methodBuilder("registerEntities").addModifiers(Modifier.PUBLIC, Modifier.STATIC).returns(int.class).addParameter(int.class, "startId").addJavadoc("@param startId The starting ID for entity registration.\n@return The next available entity ID.");
+
             method.addStatement("int currentId = startId");
-            for (EntityInfo info : entities) {
-                method.addStatement("$T.registerModEntity(new $T($T.MODID, $S), $T.class, $S, currentId++, $T.instance, $L, $L, $L)",
-                        ENTITY_REGISTRY, RESOURCE_LOCATION, REF_STRINGS, info.name, ClassName.bestGuess(info.fqn), info.name, MAIN_REGISTRY,
-                        info.trackingRange, info.updateFrequency, info.sendVelocityUpdates);
-            }
-            for(EntityInfo info : entities) {
-                if(info.eggColors[0] + info.eggColors[1] != 0x0) {
-                    method.addStatement("$T.registerEgg(new $T($T.MODID, $S), $L, $L)", ENTITY_REGISTRY, RESOURCE_LOCATION, REF_STRINGS, info.name, info.eggColors[0], info.eggColors[1]);
+
+            entitiesByName.values().stream().sorted(Comparator.comparing(EntityInfo::name)).forEach(info -> {
+                method.addStatement("$T.registerModEntity(new $T($T.MODID, $S), $T.class, $S, currentId++, $T.instance, $L, $L, $L)", ENTITY_REGISTRY, RESOURCE_LOCATION, REF_STRINGS, info.name(), info.type(), info.name(), MAIN_REGISTRY, info.trackingRange(), info.updateFrequency(), info.sendVelocityUpdates());
+
+                if ((info.eggPrimary() | info.eggSecondary()) != 0) {
+                    method.addStatement("$T.registerEgg(new $T($T.MODID, $S), $L, $L)", ENTITY_REGISTRY, RESOURCE_LOCATION, REF_STRINGS, info.name(), info.eggPrimary(), info.eggSecondary());
                 }
-            }
+            });
+
             method.addStatement("return currentId");
             registrarBuilder.addMethod(method.build());
         }
+
         if (!tileEntities.isEmpty()) {
-            MethodSpec.Builder method = MethodSpec.methodBuilder("registerTileEntities").addModifiers(Modifier.PUBLIC, Modifier.STATIC);
-            for (Map.Entry<String, String> entry : tileEntities.entrySet()) {
-                method.addStatement("$T.registerTileEntity($T.class, new $T($T.MODID, $S))", GAME_REGISTRY, ClassName.bestGuess(entry.getKey()),
-                        RESOURCE_LOCATION, REF_STRINGS, entry.getValue());
-            }
+            var method = MethodSpec.methodBuilder("registerTileEntities").addModifiers(Modifier.PUBLIC, Modifier.STATIC);
+
+            tileEntities.entrySet().stream().sorted(Comparator.comparing(e -> e.getKey().canonicalName())).forEach(entry -> method.addStatement("$T.registerTileEntity($T.class, new $T($T.MODID, $S))", GAME_REGISTRY, entry.getKey(), RESOURCE_LOCATION, REF_STRINGS, entry.getValue()));
+
             registrarBuilder.addMethod(method.build());
         }
-        if (!entityRenderers.isEmpty()) {
-            MethodSpec.Builder method =
-                    MethodSpec.methodBuilder("registerEntityRenderers").addModifiers(Modifier.PUBLIC, Modifier.STATIC).addAnnotation(AnnotationSpec.builder(SIDE_ONLY).addMember("value", "$T.CLIENT", SIDE).build());
-            for (EntityRendererInfo info : entityRenderers) {
-                if (info.factoryFieldName.isEmpty()) {
-                    method.addStatement("$T.registerEntityRenderingHandler($T.class, $T::new)", RENDERING_REGISTRY,
-                            ClassName.bestGuess(info.entityFqn), ClassName.bestGuess(info.rendererFqn));
+
+        if (!entityRenderersByEntity.isEmpty()) {
+            var method = MethodSpec.methodBuilder("registerEntityRenderers").addModifiers(Modifier.PUBLIC, Modifier.STATIC).addAnnotation(AnnotationSpec.builder(SIDE_ONLY).addMember("value", "$T.CLIENT", SIDE).build());
+
+            entityRenderersByEntity.values().stream().sorted(Comparator.comparing(e -> e.entityType().canonicalName())).forEach(info -> {
+                if (info.factoryFieldName().isBlank()) {
+                    method.addStatement("$T.registerEntityRenderingHandler($T.class, $T::new)", RENDERING_REGISTRY, info.entityType(), info.rendererType());
                 } else {
-                    method.addStatement("$T.registerEntityRenderingHandler($T.class, $T.$L)", RENDERING_REGISTRY,
-                            ClassName.bestGuess(info.entityFqn), ClassName.bestGuess(info.rendererFqn), info.factoryFieldName);
+                    method.addStatement("$T.registerEntityRenderingHandler($T.class, $T.$L)", RENDERING_REGISTRY, info.entityType(), info.rendererType(), info.factoryFieldName());
                 }
-            }
+            });
+
             registrarBuilder.addMethod(method.build());
         }
+
         if (!tileEntityRenderers.isEmpty()) {
-            MethodSpec.Builder method =
-                    MethodSpec.methodBuilder("registerTileEntityRenderers").addModifiers(Modifier.PUBLIC, Modifier.STATIC).addAnnotation(AnnotationSpec.builder(SIDE_ONLY).addMember("value", "$T.CLIENT", SIDE).build());
-            for (Map.Entry<String, String> entry : tileEntityRenderers.entrySet()) {
-                method.addStatement("$T.bindTileEntitySpecialRenderer($T.class, new $T())",
-                        CLIENT_REGISTRY, ClassName.bestGuess(entry.getKey()), ClassName.bestGuess(entry.getValue()));
-            }
+            var method = MethodSpec.methodBuilder("registerTileEntityRenderers").addModifiers(Modifier.PUBLIC, Modifier.STATIC).addAnnotation(AnnotationSpec.builder(SIDE_ONLY).addMember("value", "$T.CLIENT", SIDE).build());
+
+            tileEntityRenderers.entrySet().stream().sorted(Comparator.comparing(e -> e.getKey().canonicalName())).forEach(entry -> method.addStatement("$T.bindTileEntitySpecialRenderer($T.class, new $T())", CLIENT_REGISTRY, entry.getKey(), entry.getValue()));
+
             registrarBuilder.addMethod(method.build());
         }
-        if (!itemRenderers.isEmpty()) {
-            MethodSpec.Builder method = MethodSpec.methodBuilder("registerItemRenderers")
-                    .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                    .addAnnotation(AnnotationSpec.builder(SIDE_ONLY).addMember("value", "$T.CLIENT", SIDE).build());
-            for (TeisrInfo info : itemRenderers) {
-                if (info.instanceFieldName.isEmpty()) {
-                    method.addStatement("$T.$L.setTileEntityItemStackRenderer(new $T(" + info.constructorArgs + "))",
-                            MOD_ITEMS, info.itemFieldName, ClassName.bestGuess(info.rendererFqn));
+
+        if (!itemRenderersByItemField.isEmpty()) {
+            var method = MethodSpec.methodBuilder("registerItemRenderers").addModifiers(Modifier.PUBLIC, Modifier.STATIC).addAnnotation(AnnotationSpec.builder(SIDE_ONLY).addMember("value", "$T.CLIENT", SIDE).build());
+
+            itemRenderersByItemField.values().stream().sorted(Comparator.comparing(TeisrInfo::itemFieldName)).forEach(info -> {
+                if (info.instanceFieldName().isBlank()) {
+                    method.addStatement("$T.$L.setTileEntityItemStackRenderer(new $T($L))", MOD_ITEMS, info.itemFieldName(), info.rendererType(), info.constructorArgs());
                 } else {
-                    method.addStatement("$T.$L.setTileEntityItemStackRenderer($T.$L)",
-                            MOD_ITEMS, info.itemFieldName, ClassName.bestGuess(info.rendererFqn), info.instanceFieldName);
+                    method.addStatement("$T.$L.setTileEntityItemStackRenderer($T.$L)", MOD_ITEMS, info.itemFieldName(), info.rendererType(), info.instanceFieldName());
                 }
-            }
+            });
+
             registrarBuilder.addMethod(method.build());
         }
+
         JavaFile.builder("com.hbm.generated", registrarBuilder.build()).addFileComment("AUTO-GENERATED FILE. DO NOT MODIFY.").indent("    ").build().writeTo(filer);
     }
 
-    private String generateRegistrationId(String name) {
-        name = name.replaceFirst("^TileEntity", "");
-        return "tileentity_" + name.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
+    private TypeMirror typeMirrorOrNull(String fqn) {
+        var el = elementUtils.getTypeElement(fqn);
+        return el == null ? null : el.asType();
     }
 
-    private String getClassNameFromAnnotation(AutoRegister annotation, String methodName) {
+    private boolean isSubtypeErased(TypeElement element, TypeMirror targetType) {
+        if (element == null || targetType == null) return false;
+        return typeUtils.isSubtype(typeUtils.erasure(element.asType()), typeUtils.erasure(targetType));
+    }
+
+    private boolean isSubtypeErased(TypeElement element, TypeElement targetElement) {
+        if (element == null || targetElement == null) return false;
+        return isSubtypeErased(element, targetElement.asType());
+    }
+
+    private boolean isSubtypeErased(TypeMirror source, TypeMirror target) {
+        if (source == null || target == null) return false;
+        return typeUtils.isSubtype(typeUtils.erasure(source), typeUtils.erasure(target));
+    }
+
+    private boolean isObjectType(TypeMirror tm) {
+        if (tm == null || objectType == null) return false;
+        return typeUtils.isSameType(typeUtils.erasure(tm), typeUtils.erasure(objectType));
+    }
+
+    private static boolean isTypeVarOrWildcard(TypeMirror tm) {
+        if (tm == null) return false;
+        var k = tm.getKind();
+        return k == TypeKind.TYPEVAR || k == TypeKind.WILDCARD;
+    }
+
+    private TypeMirror typeMirrorFromAnnotation(AutoRegister annotation, MirrorKind kind) {
         try {
-            switch (methodName) {
-                case "entity":
-                    annotation.entity();
-                    break;
-                case "tileentity":
-                    annotation.tileentity();
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid method: " + methodName);
-            }
+            Class<?> c = switch (kind) {
+                case ENTITY -> annotation.entity();
+                case TILEENTITY -> annotation.tileentity();
+            };
+            // should be unreachable
+            if (c == null) return null;
+            var el = elementUtils.getTypeElement(c.getCanonicalName());
+            return el == null ? null : el.asType();
         } catch (MirroredTypeException mte) {
-            return ((TypeElement) typeUtils.asElement(mte.getTypeMirror())).getQualifiedName().toString();
+            return mte.getTypeMirror();
         }
-        throw new IllegalStateException("Failed to get class name for " + methodName + ". This is an annotation processor bug.");
     }
 
-    /**
-     * Retarded hack to deal with parameterized classes because apparently isSubtypeOf don't like them
-     */
-    private static boolean isSubtypeByString(TypeElement element, String targetFqn) {
-        if (element == null) {
-            return false;
-        }
+    private TypeMirror inferFirstTypeArg(TypeMirror startingType, TypeElement targetRaw) {
+        if (startingType == null || targetRaw == null) return null;
 
-        Queue<TypeMirror> queue = new LinkedList<>();
-        Set<String> visited = new HashSet<>();
+        var queue = new ArrayDeque<TypeMirror>(8);
+        var visited = new HashSet<String>(32);
 
-        queue.add(element.asType());
+        queue.add(startingType);
 
         while (!queue.isEmpty()) {
-            TypeMirror currentType = queue.poll();
-            if (!(currentType instanceof DeclaredType)) {
-                continue;
-            }
-            TypeElement currentElement = (TypeElement) ((DeclaredType) currentType).asElement();
-            String currentFqn = currentElement.getQualifiedName().toString();
-            if (!visited.add(currentFqn)) {
-                continue;
-            }
-            if (currentFqn.equals(targetFqn)) {
-                return true;
-            }
-            TypeMirror superclass = currentElement.getSuperclass();
-            if (superclass != null && superclass.getKind() != TypeKind.NONE) {
-                queue.add(superclass);
-            }
-            queue.addAll(currentElement.getInterfaces());
-        }
+            var current = queue.removeFirst();
 
-        return false;
-    }
+            var visitKey = typeUtils.erasure(current).toString() + "|" + current;
+            if (!visited.add(visitKey)) continue;
 
-    private String getGenericSupertypeFqn(TypeElement element, String targetSuperclassFqn) {
-        Queue<TypeMirror> queue = new LinkedList<>();
-        queue.add(element.asType());
-
-        while (!queue.isEmpty()) {
-            TypeMirror currentType = queue.poll();
-            if (!(currentType instanceof DeclaredType)) {
-                continue;
-            }
-
-            DeclaredType declaredType = (DeclaredType) currentType;
-            TypeElement currentElement = (TypeElement) declaredType.asElement();
-            if (currentElement.getQualifiedName().toString().equals(targetSuperclassFqn)) {
-                List<? extends TypeMirror> typeArguments = declaredType.getTypeArguments();
-                if (!typeArguments.isEmpty()) {
-                    TypeMirror genericArg = typeArguments.get(0);
-                    if (genericArg.getKind() == TypeKind.DECLARED) {
-                        return ((TypeElement) typeUtils.asElement(genericArg)).getQualifiedName().toString();
-                    }
+            if (current instanceof DeclaredType declared) {
+                var raw = (TypeElement) declared.asElement();
+                if (raw.equals(targetRaw)) {
+                    var args = declared.getTypeArguments();
+                    if (args.isEmpty()) return null;
+                    return args.getFirst();
                 }
-                return null;
             }
-            TypeMirror superclass = currentElement.getSuperclass();
-            if (superclass.getKind() != TypeKind.NONE) {
-                queue.add(superclass);
+
+            for (var st : typeUtils.directSupertypes(current)) {
+                queue.addLast(st);
             }
-            queue.addAll(currentElement.getInterfaces());
         }
 
         return null;
     }
 
-    private static class EntityInfo {
-        final String fqn, name;
-        final int trackingRange, updateFrequency;
-        final boolean sendVelocityUpdates;
-        final int[] eggColors;
-
-        EntityInfo(String fqn, String name, int r, int u, boolean v, int[] eggColors) {
-            this.fqn = fqn;
-            this.name = name;
-            this.trackingRange = r;
-            this.updateFrequency = u;
-            this.sendVelocityUpdates = v;
-            this.eggColors = eggColors;
-        }
+    private ClassName classNameFromTypeMirror(TypeMirror tm) {
+        if (tm == null) return null;
+        var erased = typeUtils.erasure(tm);
+        if (!(erased instanceof DeclaredType)) return null;
+        var el = (TypeElement) typeUtils.asElement(erased);
+        return el == null ? null : ClassName.get(el);
     }
 
-    private static class EntityRendererInfo {
-        final String entityFqn, rendererFqn, factoryFieldName;
+    private enum MirrorKind {ENTITY, TILEENTITY}
 
-        EntityRendererInfo(String entityFqn, String rendererFqn, String factoryFieldName) {
-            this.entityFqn = entityFqn;
-            this.rendererFqn = rendererFqn;
-            this.factoryFieldName = factoryFieldName;
-        }
+    private record EntityInfo(ClassName type, String name, int trackingRange, int updateFrequency,
+                              boolean sendVelocityUpdates, int eggPrimary, int eggSecondary) {
     }
 
-    private static class TeisrInfo {
-        final String rendererFqn;
-        final String itemFieldName;
-        final String constructorArgs;
-        final String instanceFieldName;
+    private record EntityRendererInfo(ClassName entityType, ClassName rendererType, String factoryFieldName) {
+    }
 
-        TeisrInfo(String rendererFqn, String itemFieldName, String constructorArgs, String instanceFieldName) {
-            this.rendererFqn = rendererFqn;
-            this.itemFieldName = itemFieldName;
-            this.constructorArgs = constructorArgs;
-            this.instanceFieldName = instanceFieldName;
-        }
+    private record TeisrInfo(ClassName rendererType, String itemFieldName, String constructorArgs,
+                             String instanceFieldName) {
     }
 }

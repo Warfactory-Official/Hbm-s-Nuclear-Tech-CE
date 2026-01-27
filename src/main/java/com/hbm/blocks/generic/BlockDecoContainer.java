@@ -40,15 +40,14 @@ import java.util.Random;
 import java.util.function.Supplier;
 
 // mlbv: I can't believe it actually (originally) used tile.newInstance(). Jesus Christ.
-public class BlockDecoContainer<T extends TileEntity> extends BlockDecoModel implements ITileEntityProvider {
+public class BlockDecoContainer<E extends Enum<E>, T extends TileEntity> extends BlockDecoModel<E> implements ITileEntityProvider {
 
     private final Supplier<T> tile;
 
-    public BlockDecoContainer(Material mat, SoundType type, String registryName, Class<? extends Enum<?>> theEnum, boolean multiName, boolean multiTexture, Supplier<T> tile) {
-        super(mat, type, registryName, theEnum, multiName, multiTexture);
+    public BlockDecoContainer(Material mat, SoundType type, String registryName, E[] blockEnum, boolean multiName, boolean multiTexture, Supplier<T> tile) {
+        super(mat, type, registryName, blockEnum, multiName, multiTexture);
         this.tile = tile;
     }
-
 
     @Override
     public boolean hasTileEntity(IBlockState state) {

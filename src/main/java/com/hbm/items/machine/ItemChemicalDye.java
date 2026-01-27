@@ -22,10 +22,10 @@ import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class ItemChemicalDye extends ItemEnumMulti {
+public class ItemChemicalDye extends ItemEnumMulti<ItemChemicalDye.EnumChemDye> {
     protected String baseName;
     public ItemChemicalDye(String s) {
-        super(s, EnumChemDye.class, true, false);
+        super(s, EnumChemDye.VALUES, true, false);
         baseName = s;
     }
 
@@ -52,7 +52,7 @@ public class ItemChemicalDye extends ItemEnumMulti {
                 "inventory"
         );
 
-        for (int i = 0; i < theEnum.getEnumConstants().length; i++) {
+        for (int i = 0; i < theEnum.length; i++) {
             ModelLoader.setCustomModelResourceLocation(this, i, mrl);
         }
     }
@@ -87,7 +87,7 @@ public class ItemChemicalDye extends ItemEnumMulti {
         @Override
         public int colorMultiplier(ItemStack stack, int tintIndex) {
             if(tintIndex == 1) {
-                EnumChemDye dye = EnumUtil.grabEnumSafely(EnumChemDye.class, stack.getItemDamage());
+                EnumChemDye dye = EnumUtil.grabEnumSafely(EnumChemDye.VALUES, stack.getItemDamage());
                 return dye.color;
             }
 

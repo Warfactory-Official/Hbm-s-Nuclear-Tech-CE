@@ -23,8 +23,8 @@ public class GunFactory {
 
         /// AMMO ITEMS ///
         ModItems.ammo_debug = new ItemBakedBase("ammo_debug", "ammo_45");
-        ModItems.ammo_standard = new ItemEnumMulti("ammo_standard", EnumAmmo.class, true, true).setCreativeTab(MainRegistry.weaponTab);
-        ModItems.ammo_secret = new ItemEnumMulti("ammo_secret", EnumAmmoSecret.class, true, true).setCreativeTab(null);
+        ModItems.ammo_standard = new ItemEnumMulti<>("ammo_standard", EnumAmmo.VALUES, true, true).setCreativeTab(MainRegistry.weaponTab);
+        ModItems.ammo_secret = new ItemEnumMulti<>("ammo_secret", EnumAmmoSecret.VALUES, true, true).setCreativeTab(null);
 
         //// BULLLET CFGS ///
         ammo_debug = new BulletConfig().setItem(ModItems.ammo_debug).setSpread(0.01F).setRicochetAngle(45).setCasing(CASING44.clone().register("DEBUG0"));
@@ -66,10 +66,10 @@ public class GunFactory {
         XFactoryDrill.init();
         XFactory35800.init();
 
-        ModItems.weapon_mod_test = new ItemEnumMulti("weapon_mod_test", EnumModTest.class, true, true).setMaxStackSize(1);
-        ModItems.weapon_mod_generic = new ItemEnumMulti("weapon_mod_generic", EnumModGeneric.class, true, true).setMaxStackSize(1).setCreativeTab(MainRegistry.weaponTab);
-        ModItems.weapon_mod_special = new ItemEnumMulti("weapon_mod_special", EnumModSpecial.class, true, true).setMaxStackSize(1).setCreativeTab(MainRegistry.weaponTab);
-        ModItems.weapon_mod_caliber = new ItemEnumMulti("weapon_mod_caliber", EnumModCaliber.class, true, true).setMaxStackSize(1).setCreativeTab(MainRegistry.weaponTab);
+        ModItems.weapon_mod_test = new ItemEnumMulti<>("weapon_mod_test", EnumModTest.VALUES, true, true).setMaxStackSize(1);
+        ModItems.weapon_mod_generic = new ItemEnumMulti<>("weapon_mod_generic", EnumModGeneric.VALUES, true, true).setMaxStackSize(1).setCreativeTab(MainRegistry.weaponTab);
+        ModItems.weapon_mod_special = new ItemEnumMulti<>("weapon_mod_special", EnumModSpecial.VALUES, true, true).setMaxStackSize(1).setCreativeTab(MainRegistry.weaponTab);
+        ModItems.weapon_mod_caliber = new ItemEnumMulti<>("weapon_mod_caliber", EnumModCaliber.VALUES, true, true).setMaxStackSize(1).setCreativeTab(MainRegistry.weaponTab);
 
         /// PROXY BULLSHIT ///
         MainRegistry.proxy.registerGunCfg();
@@ -102,6 +102,8 @@ public class GunFactory {
 
         // ONLY ADD NEW ENTRIES AT THE BOTTOM TO AVOID SHIFTING!
         ;
+
+        public static final EnumAmmo[] VALUES = values();
 
         /** used for creative tab order */
         public static EnumAmmo[] order = new EnumAmmo[] {
@@ -136,12 +138,16 @@ public class GunFactory {
     public enum EnumAmmoSecret {
         FOLLY_SM, FOLLY_NUKE,
         M44_EQUESTRIAN, G12_EQUESTRIAN, BMG50_EQUESTRIAN,
-        P35_800, BMG50_BLACK, P35_800_BL
+        P35_800, BMG50_BLACK, P35_800_BL;
+
+        public static final EnumAmmoSecret[] VALUES = values();
     }
 
     public enum EnumModTest {
         FIRERATE, DAMAGE, MULTI,
-        OVERRIDE_2_5, OVERRIDE_5, OVERRIDE_7_5, OVERRIDE_10, OVERRIDE_12_5, OVERRIDE_15, OVERRIDE_20
+        OVERRIDE_2_5, OVERRIDE_5, OVERRIDE_7_5, OVERRIDE_10, OVERRIDE_12_5, OVERRIDE_15, OVERRIDE_20;
+
+        public static final EnumModTest[] VALUES = values();
     }
 
     public enum EnumModGeneric {
@@ -153,7 +159,9 @@ public class GunFactory {
         FERRO_DAMAGE, FERRO_DURA,
         TCALLOY_DAMAGE, TCALLOY_DURA,
         BIGMT_DAMAGE, BIGMT_DURA,
-        BRONZE_DAMAGE, BRONZE_DURA,
+        BRONZE_DAMAGE, BRONZE_DURA;
+
+        public static final EnumModGeneric[] VALUES = values();
     }
 
     public enum EnumModSpecial {
@@ -164,10 +172,14 @@ public class GunFactory {
         LAS_CAPACITOR, LAS_AUTO,
         DRILL_HSS, DRILL_WEAPONSTEEL, DRILL_TCALLOY, DRILL_SATURNITE,
         ENGINE_DIESEL, ENGINE_AVIATION, ENGINE_ELECTRIC, ENGINE_TURBO,
-        MAGNET, SIFTER, CANISTERS
+        MAGNET, SIFTER, CANISTERS;
+
+        public static final EnumModSpecial[] VALUES = values();
     }
 
     public enum EnumModCaliber {
-        P9, P45, P22, M357, M44, R556, R762, BMG50,
+        P9, P45, P22, M357, M44, R556, R762, BMG50;
+
+        public static final EnumModCaliber[] VALUES = values();
     }
 }

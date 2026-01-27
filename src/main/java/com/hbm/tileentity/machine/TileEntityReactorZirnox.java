@@ -304,7 +304,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
     private boolean hasFuelRod(int id) {
         if (!inventory.getStackInSlot(id).isEmpty()) {
             if (inventory.getStackInSlot(id).getItem() instanceof ItemZirnoxRod) {
-                final EnumZirnoxType num = EnumUtil.grabEnumSafely(EnumZirnoxType.class, inventory.getStackInSlot(id).getItemDamage());
+                final EnumZirnoxType num = EnumUtil.grabEnumSafely(EnumZirnoxType.VALUES, inventory.getStackInSlot(id).getItemDamage());
                 return !num.breeding;
             }
         }
@@ -333,7 +333,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
     private void decay(int id) {
         int decay = getNeighbourCount(id);
         ItemStack zirnoxRodItemStack = inventory.getStackInSlot(id);
-        final EnumZirnoxType num = EnumUtil.grabEnumSafely(EnumZirnoxType.class, zirnoxRodItemStack.getItemDamage());
+        final EnumZirnoxType num = EnumUtil.grabEnumSafely(EnumZirnoxType.VALUES, zirnoxRodItemStack.getItemDamage());
 
         if (!num.breeding)
             decay++;

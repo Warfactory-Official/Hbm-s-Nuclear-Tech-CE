@@ -39,7 +39,7 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 
-public class BlockDecoModel extends BlockEnumMeta implements INBTBlockTransformable {
+public class BlockDecoModel<E extends Enum<E>> extends BlockEnumMeta<E> implements INBTBlockTransformable {
 
     private float mnX = 0.0F;
     private float mnY = 0.0F;
@@ -50,15 +50,15 @@ public class BlockDecoModel extends BlockEnumMeta implements INBTBlockTransforma
 
     private ResourceLocation objModelLocation;
     public BlockDecoModel(Material mat, SoundType type, String registryName,
-                          Class<? extends Enum<?>> theEnum, boolean multiName, boolean multiTexture,
+                          E[] blockEnum, boolean multiName, boolean multiTexture,
                           ResourceLocation objModelLocation) {
-        super(mat, type, registryName, theEnum, multiName, multiTexture);
+        super(mat, type, registryName, blockEnum, multiName, multiTexture);
         this.objModelLocation = objModelLocation;
     }
 
     public BlockDecoModel(Material mat, SoundType type, String registryName,
-                          Class<? extends Enum<?>> theEnum, boolean multiName, boolean multiTexture) {
-        super(mat, type, registryName, theEnum, multiName, multiTexture);
+                          E[] blockEnum, boolean multiName, boolean multiTexture) {
+        super(mat, type, registryName, blockEnum, multiName, multiTexture);
     }
 
 

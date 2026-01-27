@@ -251,7 +251,7 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
 
 	@Override
 	public void onChunkUnload() {
-
+        super.onChunkUnload();
 		if(audio != null) {
 			audio.stopSound();
 			audio = null;

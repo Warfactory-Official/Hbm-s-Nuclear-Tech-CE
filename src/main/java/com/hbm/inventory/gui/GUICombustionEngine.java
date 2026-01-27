@@ -77,7 +77,7 @@ public class GUICombustionEngine extends GuiInfoContainer {
         FT_Combustible trait = engine.tank.getTankType().getTrait(FT_Combustible.class);
         int i = engine.inventory.getStackInSlot(2).getItemDamage();
         ItemPistons.EnumPistonType piston =
-            EnumUtil.grabEnumSafely(ItemPistons.EnumPistonType.class, i);
+            EnumUtil.grabEnumSafely(ItemPistons.EnumPistonType.VALUES, i);
         power =
             setting
                 * 0.2

@@ -25,10 +25,10 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class BlockDecoCRT extends BlockDecoModel {
+public class BlockDecoCRT extends BlockDecoModel<BlockEnums.DecoCRTEnum> {
 
     public BlockDecoCRT(Material mat, SoundType type, String registryName) {
-        super(mat, type, registryName, BlockEnums.DecoCRTEnum.class, false, true,
+        super(mat, type, registryName, BlockEnums.DecoCRTEnum.VALUES, false, true,
                 new ResourceLocation(Tags.MODID, "models/blocks/crt.obj"));
     }
 
