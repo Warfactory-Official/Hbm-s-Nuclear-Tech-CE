@@ -444,8 +444,7 @@ public class Spaceship2 {
 		world.setBlockState(pos.setPos(x + 7, y + 4, z + 6), Blocks.AIR.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + 4, z + 6), Blocks.AIR.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 4, z + 7), Blocks.AIR.getDefaultState(), 3);
-		if(GeneralConfig.enableDebugMode)
-			System.out.print("[Debug] Successfully spawned spaceship at " + x + " " + y +" " + z + "\n");
+
 		return true;
 
 	}

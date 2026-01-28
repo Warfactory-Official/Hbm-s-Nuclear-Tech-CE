@@ -82,6 +82,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.invoke.*;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.function.Predicate;
@@ -1065,6 +1066,7 @@ public class Library {
 
     }
 
+    @Deprecated(forRemoval = true, since = "1.5.2.1")
     public static Block getRandomConcrete() {
         int i = rand.nextInt(100);
 
@@ -1074,6 +1076,20 @@ public class Library {
 
         return ModBlocks.brick_concrete;
     }
+
+    /**
+     * Deterministic variant for worldgen: callers must pass their seeded RNG.
+     */
+    public static Block getRandomConcrete(Random random) {
+        int i = random.nextInt(100);
+
+        if (i < 5) return ModBlocks.brick_concrete_broken;
+        if (i < 20) return ModBlocks.brick_concrete_cracked;
+        if (i < 50) return ModBlocks.brick_concrete_mossy;
+
+        return ModBlocks.brick_concrete;
+    }
+
 
     public static void placeDoorWithoutCheck(World worldIn, BlockPos pos, EnumFacing facing, Block door, boolean isRightHinge) {
         BlockPos blockpos2 = pos.up();
@@ -2376,7 +2392,7 @@ public class Library {
         }
     }
 
-    public static long fnv1A(ByteBuf buf) {
+    public static long fnv1a64(ByteBuf buf) {
         long hash = 0xcbf29ce484222325L;
         int len = buf.readableBytes();
         if (buf.hasMemoryAddress()) {
@@ -2400,6 +2416,16 @@ public class Library {
                 hash ^= (buf.getByte(start + i) & 0xffL);
                 hash *= 0x100000001b3L;
             }
+        }
+        return hash;
+    }
+
+    public static long fnv1a64(String s) {
+        byte[] data = s.getBytes(StandardCharsets.UTF_8);
+        long hash = 0xcbf29ce484222325L;
+        for (byte b : data) {
+            hash ^= (b & 0xFFL);
+            hash *= 0x100000001b3L;
         }
         return hash;
     }

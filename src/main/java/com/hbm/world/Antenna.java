@@ -231,8 +231,6 @@ public class Antenna extends AbstractPhasedStructure {
 		world.setBlockState(pos.setPos(x + 0, y + 20, z + 2), Blocks.AIR.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 1, y + 20, z + 2), Blocks.AIR.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 2, y + 20, z + 2), Blocks.AIR.getDefaultState(), 3);
-		if(GeneralConfig.enableDebugMode)
-			System.out.print("[Debug] Successfully spawned antenna at " + x + " " + y +" " + z + "\n");
 		return true;
 
 	}

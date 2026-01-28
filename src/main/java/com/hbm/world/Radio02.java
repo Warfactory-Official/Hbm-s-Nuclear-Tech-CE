@@ -2175,8 +2175,7 @@ public class Radio02
 		world.setBlockState(pos.setPos(x + 8, y + 23, z + 25), Blocks.AIR.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 9, y + 23, z + 25), Blocks.AIR.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 10, y + 23, z + 25), Blocks.AIR.getDefaultState(), 3);
-		if(GeneralConfig.enableDebugMode)
-			System.out.print("[Debug] Successfully spawned abandoned Radio station at " + x + " " + y +" " + z + "\n");
+
 	}
 
 }

@@ -2,8 +2,11 @@ package com.hbm.world.feature;
 
 import com.google.common.base.Predicate;
 import com.hbm.lib.Library;
+import com.hbm.main.MainRegistry;
+import com.hbm.util.BufferUtil;
 import com.hbm.world.WorldUtil;
 import com.hbm.world.phased.AbstractPhasedStructure;
+import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -11,7 +14,6 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.block.state.pattern.BlockMatcher;
 import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -136,19 +138,36 @@ public class WorldGenMinableNonCascade extends AbstractPhasedStructure {
         }
     }
 
-    @Override
-    public void writeToNBT(NBTTagCompound nbt) {
-        nbt.setString("oreBlock", oreBlock.getBlock().getRegistryName().toString());
-        nbt.setInteger("numberOfBlocks", numberOfBlocks);
-        nbt.setString("target", target.getRegistryName().toString());
+    
+    public void writeToBuf(@NotNull ByteBuf out) {
+        BufferUtil.writeStringStable(out, oreBlock.getBlock().getRegistryName().toString());
+        int meta = oreBlock.getBlock().getMetaFromState(oreBlock);
+        BufferUtil.writeVarInt(out, meta);
+        BufferUtil.writeVarInt(out, numberOfBlocks);
+        BufferUtil.writeStringStable(out, target.getRegistryName().toString());
     }
 
-    public static WorldGenMinableNonCascade readFromNBT(NBTTagCompound nbt) {
-        Block oreBlock = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(nbt.getString("oreBlock")));
-        int numberOfBlocks = nbt.getInteger("numberOfBlocks");
-        Block target = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(nbt.getString("target")));
-        if (oreBlock == null || target == null || numberOfBlocks == 0) return null;
-        if (oreBlock == Blocks.STONE) return new WorldGenMinableNonCascade(oreBlock.getDefaultState(), numberOfBlocks);
-        return new WorldGenMinableNonCascade(oreBlock.getDefaultState(), numberOfBlocks, target);
+    public static WorldGenMinableNonCascade readFromBuf(@NotNull ByteBuf in) {
+        try {
+            String oreS = BufferUtil.readStringStable(in);
+            int meta = BufferUtil.readVarInt(in);
+            int numberOfBlocks = BufferUtil.readVarInt(in);
+            String targetS = BufferUtil.readStringStable(in);
+
+            if (oreS == null || targetS == null) return null;
+
+            Block oreBlock = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(oreS));
+            Block target = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(targetS));
+            if (oreBlock == null || target == null || numberOfBlocks <= 0) return null;
+
+            IBlockState state = oreBlock.getStateFromMeta(meta & 15);
+            if (oreBlock == Blocks.STONE && target == Blocks.STONE) {
+                return new WorldGenMinableNonCascade(state, numberOfBlocks);
+            }
+            return new WorldGenMinableNonCascade(state, numberOfBlocks, target);
+        } catch (Exception ex) {
+            MainRegistry.logger.warn("[WorldGenMinableNonCascade] Failed to read from buffer", ex);
+            return null;
+        }
     }
 }

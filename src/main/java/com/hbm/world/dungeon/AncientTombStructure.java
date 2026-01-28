@@ -6,6 +6,7 @@ import com.hbm.world.phased.PhasedStructureGenerator;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
@@ -38,7 +39,7 @@ public class AncientTombStructure extends AbstractPhasedStructure {
     }
 
     @Override
-    public PhasedStructureGenerator.ReadyToGenerateStructure validate(@NotNull World world, @NotNull PhasedStructureGenerator.PendingValidationStructure pending) {
+    public PhasedStructureGenerator.ReadyToGenerateStructure validate(@NotNull WorldServer world, @NotNull PhasedStructureGenerator.PendingValidationStructure pending) {
         long origin = pending.origin;
         int originX = Library.getBlockPosX(origin);
         int originZ = Library.getBlockPosZ(origin);

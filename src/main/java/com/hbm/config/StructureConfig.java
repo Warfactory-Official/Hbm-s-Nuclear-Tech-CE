@@ -63,6 +63,8 @@ public class StructureConfig {
     public static int plainsNullWeight = 4;
     public static int oceanNullWeight = 15;
 
+    public static boolean enableDynamicStructureSaving = false;
+
     public static void loadFromConfig(Configuration config) {
 
         String unparsedStructureFlag = CommonConfig.createConfigString(config, CommonConfig.CATEGORY_STRUCTURES, "15.00_enableStructures", "Flag for whether modern NTM structures will spawn. Valid values are true|false|flag - flag will respect the \"Generate Structures\" world flag.", "flag");
@@ -117,6 +119,10 @@ public class StructureConfig {
         
         structureMinChunks = CommonConfig.setDef(structureMinChunks, 4);
         structureMaxChunks = CommonConfig.setDef(structureMaxChunks, 12);
+
+        enableDynamicStructureSaving = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_STRUCTURES, "15.99_CE_01_enableDynamicStructureSaving",
+                "Whether dynamic structure scheduled for generation but didn't meet generation requirements should be persisted to resume generation.\n" +
+                "Affects small structures like ores, glyphid hives, flowers, etc. Will slightly increase world save size. Default: false", false);
 
         if(structureMinChunks > structureMaxChunks) {
             MainRegistry.logger.error("Fatal error config: Minimum value has been set higher than the maximum value!");

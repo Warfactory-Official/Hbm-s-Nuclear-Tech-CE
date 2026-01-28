@@ -162,7 +162,7 @@ public class TileEntityLockableBase extends TileEntity implements IBufPacketRece
         if (world.isRemote) return;
         BufPacket packet = new BufPacket(pos.getX(), pos.getY(), pos.getZ(), this);
         ByteBuf currentBuf = packet.getCompiledBuffer();
-        long currentHash = Library.fnv1A(currentBuf);
+        long currentHash = Library.fnv1a64(currentBuf);
         if (currentHash == lastPackedBufHash) {
             if (this.world.getTotalWorldTime() % 20 != 0) {
                 packet.releaseBuffer();

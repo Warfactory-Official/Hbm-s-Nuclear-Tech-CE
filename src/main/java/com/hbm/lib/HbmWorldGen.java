@@ -73,9 +73,8 @@ public class HbmWorldGen implements IWorldGenerator {
                 generateBlueprintChest(world, rand, chunkMinX, chunkMinZ, 5000, 5000);
             }
 
-        } catch (final Throwable t) {
-            System.out.println("NTM Worldgen Error " + t);
-            t.printStackTrace();
+        } catch (Throwable t) {
+            MainRegistry.logger.error("NTM Worldgen Error", t);
         }
     }
 

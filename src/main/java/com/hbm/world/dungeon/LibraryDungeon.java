@@ -1001,8 +1001,6 @@ public class LibraryDungeon extends AbstractPhasedStructure {
 		world.setBlockState(pos.setPos(x + 3, y + 5, z + 3), Blocks.AIR.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 3, y + 5, z + 6), Blocks.AIR.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 4, y + 5, z + 7), Blocks.AIR.getDefaultState(), 3);
-		if(GeneralConfig.enableDebugMode)
-			System.out.print("[Debug] Successfully spawned library at " + x + " " + y +" " + z + "\n");
 		return true;
 
 	}

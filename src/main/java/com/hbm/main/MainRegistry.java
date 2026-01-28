@@ -58,6 +58,8 @@ import com.hbm.world.feature.OreCave;
 import com.hbm.world.feature.OreLayer3D;
 import com.hbm.world.feature.SchistStratum;
 import com.hbm.world.generator.CellularDungeonFactory;
+import com.hbm.world.phased.PhasedEventHandler;
+import com.hbm.world.phased.PhasedStructureRegistry;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.RangedAttribute;
@@ -368,6 +370,8 @@ public class MainRegistry {
         AdvancementManager.init(evt.getServer());
         //MUST be initialized AFTER achievements!!
         BobmazonOfferFactory.init();
+
+        PhasedStructureRegistry.onServerStarting(evt.getServer());
     }
 
     @EventHandler
@@ -381,6 +385,8 @@ public class MainRegistry {
     @EventHandler
     public void serverStopped(FMLServerStoppedEvent evt) {
         RadiationSystemNT.onServerStopped();
+        PhasedEventHandler.onServerStopped();
+        PhasedStructureRegistry.onServerStopped();
     }
 
     @EventHandler

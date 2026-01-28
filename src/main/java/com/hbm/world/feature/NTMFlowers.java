@@ -59,10 +59,14 @@ public class NTMFlowers extends AbstractPhasedStructure {
     @Override
     public void postGenerate(@NotNull World world, @NotNull Random rand, long finalOrigin) {
         int x = Library.getBlockPosX(finalOrigin);
-        int y = Library.getBlockPosY(finalOrigin);
         int z = Library.getBlockPosZ(finalOrigin);
+        int y = world.getHeight(mutablePos.setPos(x, 0, z)).getY();
+
         for (int i = 0; i < 64; ++i) {
-            BlockPos blockpos = mutablePos.setPos(x + rand.nextInt(8) - rand.nextInt(8), y + rand.nextInt(4) - rand.nextInt(4), z + rand.nextInt(8) - rand.nextInt(8));
+            int px = x + rand.nextInt(8) - rand.nextInt(8);
+            int py = y + rand.nextInt(4) - rand.nextInt(4);
+            int pz = z + rand.nextInt(8) - rand.nextInt(8);
+            BlockPos blockpos = mutablePos.setPos(px, py, pz);
 
             if (world.isAirBlock(blockpos) && blockpos.getY() < 255 && ((BlockFlowerPlant) plantType.getBlock()).canBlockStay(world, blockpos, plantType)) {
                 world.setBlockState(blockpos, plantType, 18);

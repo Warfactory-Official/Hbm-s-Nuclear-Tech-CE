@@ -3,13 +3,15 @@ package com.hbm.world.feature;
 import com.google.common.base.Predicate;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.lib.Library;
+import com.hbm.main.MainRegistry;
+import com.hbm.util.BufferUtil;
 import com.hbm.world.phased.AbstractPhasedStructure;
+import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.block.state.pattern.BlockMatcher;
 import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.World;
@@ -130,22 +132,36 @@ public class DepthDeposit extends AbstractPhasedStructure {
         return chunkOffsets;
     }
 
-    @Override
-    public void writeToNBT(NBTTagCompound nbt) {
-        nbt.setInteger("size", size);
-        nbt.setDouble("fill", fill);
-        nbt.setString("oreBlock", oreBlock.getRegistryName().toString());
-        nbt.setString("genTarget", genTarget.getRegistryName().toString());
-        nbt.setString("filler", filler.getRegistryName().toString());
+    
+    public void writeToBuf(@NotNull ByteBuf out) {
+        BufferUtil.writeVarInt(out, size);
+        out.writeDouble(fill);
+        BufferUtil.writeString(out, oreBlock.getRegistryName().toString());
+        BufferUtil.writeString(out, genTarget.getRegistryName().toString());
+        BufferUtil.writeString(out, filler.getRegistryName().toString());
     }
 
     @Nullable
-    public static DepthDeposit readFromNBT(NBTTagCompound nbt) {
-        int size = nbt.getInteger("size");
-        double fill = nbt.getDouble("fill");
-        Block oreBlock = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(nbt.getString("oreBlock")));
-        Block genTarget = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(nbt.getString("genTarget")));
-        Block filler = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(nbt.getString("filler")));
+    public static DepthDeposit readFromBuf(@NotNull ByteBuf in) {
+        int size;
+        double fill;
+        String oreS;
+        String targetS;
+        String fillerS;
+        try {
+            size = BufferUtil.readVarInt(in);
+            fill = in.readDouble();
+            oreS = BufferUtil.readString(in, 256);
+            targetS = BufferUtil.readString(in, 256);
+            fillerS = BufferUtil.readString(in, 256);
+        } catch (Exception ex) {
+            MainRegistry.logger.warn("[DepthDeposit] Failed to read from buffer", ex);
+            return null;
+        }
+
+        Block oreBlock = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(oreS));
+        Block genTarget = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(targetS));
+        Block filler = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(fillerS));
         if (oreBlock == null || genTarget == null || filler == null) return null;
         return new DepthDeposit(size, fill, oreBlock, genTarget, filler);
     }

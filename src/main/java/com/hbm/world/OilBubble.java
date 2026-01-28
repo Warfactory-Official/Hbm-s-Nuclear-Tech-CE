@@ -2,11 +2,13 @@ package com.hbm.world;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.lib.Library;
+import com.hbm.main.MainRegistry;
+import com.hbm.util.BufferUtil;
 import com.hbm.world.phased.AbstractPhasedStructure;
+import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
@@ -96,13 +98,19 @@ public class OilBubble extends AbstractPhasedStructure {
 		}
 	}
 
-    @Override
-    public void writeToNBT(NBTTagCompound nbt) {
-        nbt.setInteger("radius", radius);
-    }
 
-    public static OilBubble readFromNBT(NBTTagCompound nbt) {
-        int radius = nbt.getInteger("radius");
+    public void writeToBuf(@NotNull ByteBuf out) {
+		BufferUtil.writeVarInt(out, radius);
+	}
+
+    public static OilBubble readFromBuf(@NotNull ByteBuf in) {
+        int radius;
+        try {
+			radius = BufferUtil.readVarInt(in);
+        } catch (Exception ex) {
+            MainRegistry.logger.warn("[OilBubble] Failed to read from buffer", ex);
+            return null;
+        }
         return new OilBubble(radius);
     }
 }

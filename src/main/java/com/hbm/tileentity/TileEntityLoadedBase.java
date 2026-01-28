@@ -104,7 +104,7 @@ public class TileEntityLoadedBase extends TileEntity implements ILoadedTile, IBu
         // In my testing, this can be reliably reproduced with a full fluid barrel, for instance.
         // I think it might be fixable by doing something with getDescriptionPacket() and onDataPacket(),
         // but this sidesteps the problem for the mean time.
-        long preHash = Library.fnv1A(preBuf);
+        long preHash = Library.fnv1a64(preBuf);
         if (preHash == lastPackedBufHash) {
             if (this.world.getTotalWorldTime() % 20 != 0) {
                 packet.releaseBuffer();
