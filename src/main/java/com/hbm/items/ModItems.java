@@ -35,7 +35,6 @@ import com.hbm.items.weapon.*;
 import com.hbm.items.weapon.ItemMissile.FuelType;
 import com.hbm.items.weapon.ItemMissile.PartSize;
 import com.hbm.items.weapon.ItemMissile.Rarity;
-import com.hbm.items.weapon.ItemMissile.WarheadType;
 import com.hbm.items.weapon.sedna.factory.GunFactory;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
@@ -65,6 +64,8 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import java.util.*;
 
 import static com.hbm.items.ItemEnums.*;
+import static com.hbm.items.weapon.ItemMissile.*;
+import static com.hbm.items.weapon.ItemMissile.FuelType.KEROSENE;
 
 public class ModItems {
 

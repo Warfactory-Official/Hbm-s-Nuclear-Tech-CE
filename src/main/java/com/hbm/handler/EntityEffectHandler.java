@@ -586,7 +586,7 @@ public class EntityEffectHandler {
 
 		if(!RadiationConfig.enablePollution) return;
 
-		if(RadiationConfig.enablePoison && !ArmorRegistry.hasProtection(entity, EntityEquipmentSlot.HEAD, ArmorRegistry.HazardClass.GAS_CORROSIVE) && entity.ticksExisted % 60 == 0) {
+		if(RadiationConfig.enablePoison && !ArmorRegistry.hasProtection(entity, EntityEquipmentSlot.HEAD, ArmorRegistry.HazardClass.GAS_BLISTERING) && entity.ticksExisted % 60 == 0) {
 
 			float poison = PollutionHandler.getPollution(entity.world, new BlockPos((int) Math.floor(entity.posX), (int) Math.floor(entity.posY + entity.getEyeHeight()), (int) Math.floor(entity.posZ)), PollutionHandler.PollutionType.POISON);
 

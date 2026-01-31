@@ -33,7 +33,7 @@ public class BlockGasRadonDense extends BlockGasBase {
         if (!(entity instanceof EntityLivingBase entityLiving) || !GeneralConfig.enableRadon)
             return;
 
-        if (ArmorRegistry.hasProtection(entityLiving, EntityEquipmentSlot.HEAD, HazardClass.RAD_GAS)) {
+        if (ArmorRegistry.hasProtection(entityLiving, EntityEquipmentSlot.HEAD, HazardClass.PARTICLE_FINE)) {
             ArmorUtil.damageGasMaskFilter(entityLiving, 2);
             ContaminationUtil.contaminate(entityLiving, HazardType.RADIATION, ContaminationType.CREATIVE, 0.5F);
         } else {

@@ -107,10 +107,10 @@ public class ItemModGasmask extends ItemArmorMod implements IGasMask {
 	public List<HazardClass> getBlacklist(ItemStack stack) {
 		
 		if(this == ModItems.attachment_mask_mono) {
-			return Arrays.asList(HazardClass.GAS_CHLORINE, HazardClass.GAS_CORROSIVE, HazardClass.NERVE_AGENT,
+			return Arrays.asList(HazardClass.GAS_LUNG, HazardClass.GAS_BLISTERING, HazardClass.BACTERIA,
                     HazardClass.BACTERIA);
 		} else {
-			return Arrays.asList(HazardClass.GAS_CORROSIVE, HazardClass.NERVE_AGENT);
+			return Arrays.asList(HazardClass.GAS_BLISTERING);
 		}
 	}
 

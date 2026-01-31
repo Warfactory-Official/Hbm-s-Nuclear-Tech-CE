@@ -58,7 +58,7 @@ public class BlockClorine extends Block {
 
 		EntityLivingBase entityLiving = (EntityLivingBase) entity;
 
-		if(ArmorRegistry.hasAllProtection(entityLiving, EntityEquipmentSlot.HEAD, HazardClass.GAS_CHLORINE)) {
+		if(ArmorRegistry.hasAllProtection(entityLiving, EntityEquipmentSlot.HEAD, HazardClass.GAS_LUNG)) {
 			ArmorUtil.damageGasMaskFilter(entityLiving, 1);
 		} else {
 			entityLiving.addPotionEffect(new PotionEffect(MobEffects.BLINDNESS, 5 * 20, 0));

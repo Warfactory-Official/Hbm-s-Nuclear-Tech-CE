@@ -206,7 +206,7 @@ public class ExplosionChaos {
 				if(d9 < wat) {
 
 					if(entity instanceof EntityPlayer) {
-						if(!ArmorRegistry.hasProtection((EntityPlayer) entity, EntityEquipmentSlot.HEAD, HazardClass.GAS_CORROSIVE)){
+						if(!ArmorRegistry.hasProtection((EntityPlayer) entity, EntityEquipmentSlot.HEAD, HazardClass.GAS_BLISTERING)){
 							ArmorUtil.damageSuit((EntityPlayer) entity, 0, 5);
 							ArmorUtil.damageSuit((EntityPlayer) entity, 1, 5);
 							ArmorUtil.damageSuit((EntityPlayer) entity, 2, 5);
@@ -331,7 +331,7 @@ public class ExplosionChaos {
 				if(d9 < wat) {
 
 					if(entity instanceof EntityPlayer) {
-						if(!ArmorRegistry.hasProtection((EntityPlayer) entity, EntityEquipmentSlot.HEAD, HazardClass.GAS_CORROSIVE)){
+						if(!ArmorRegistry.hasProtection((EntityPlayer) entity, EntityEquipmentSlot.HEAD, HazardClass.GAS_BLISTERING)){
 							ArmorUtil.damageSuit((EntityPlayer) entity, 0, 25);
 							ArmorUtil.damageSuit((EntityPlayer) entity, 1, 25);
 							ArmorUtil.damageSuit((EntityPlayer) entity, 2, 25);

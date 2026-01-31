@@ -1,35 +1,21 @@
 package com.hbm.handler.guncfg;
 
-import com.hbm.config.CompatibilityConfig;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.entity.projectile.EntityBulletBase;
-import com.hbm.handler.ArmorUtil;
 import com.hbm.handler.BulletConfiguration;
-import com.hbm.handler.threading.PacketThreading;
-import com.hbm.interfaces.IBulletImpactBehavior;
 import com.hbm.interfaces.IBulletUpdateBehavior;
 import com.hbm.inventory.RecipesCommon;
 import com.hbm.items.ModItems;
 import com.hbm.lib.Library;
-import com.hbm.packet.toclient.AuxParticlePacketNT;
-import com.hbm.potion.HbmPotion;
 import com.hbm.render.amlfrom1710.Vec3;
-import com.hbm.util.ArmorRegistry;
-import com.hbm.util.ArmorRegistry.HazardClass;
 import com.hbm.util.BobMathUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.MobEffects;
-import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
 import java.util.List;
 
@@ -119,57 +105,6 @@ public class BulletConfigFactory {
 		
 		return bullet;
 	}
-	
-	public static BulletConfiguration standardNukeConfig() {
-
-		BulletConfiguration bullet = new BulletConfiguration();
-		
-		bullet.velocity = 3.0F;
-		bullet.spread = 0.005F;
-		bullet.wear = 10;
-		bullet.bulletsMin = 1;
-		bullet.bulletsMax = 1;
-		bullet.dmgMin = 1000;
-		bullet.dmgMax = 1000;
-		bullet.gravity = 0.025F;
-		bullet.maxAge = 300;
-		bullet.doesRicochet = false;
-		bullet.ricochetAngle = 0;
-		bullet.HBRC = 0;
-		bullet.LBRC = 0;
-		bullet.bounceMod = 1.0;
-		bullet.doesPenetrate = true;
-		bullet.doesBreakGlass = false;
-		bullet.style = BulletConfiguration.STYLE_NUKE;
-		bullet.plink = BulletConfiguration.PLINK_GRENADE;
-		
-		return bullet;
-	}
-
-	public static BulletConfiguration standardBuckshotConfig() {
-
-		BulletConfiguration bullet = new BulletConfiguration();
-
-		bullet.velocity = 5.0F;
-		bullet.spread = 0.05F;
-		bullet.wear = 10;
-		bullet.bulletsMin = 5;
-		bullet.bulletsMax = 8;
-		bullet.gravity = 0F;
-		bullet.maxAge = 100;
-		bullet.doesRicochet = true;
-		bullet.ricochetAngle = 15;
-		bullet.HBRC = 5;
-		bullet.LBRC = 65;
-		bullet.bounceMod = 0.8;
-		bullet.doesPenetrate = false;
-		bullet.doesBreakGlass = true;
-		bullet.style = BulletConfiguration.STYLE_PELLET;
-		bullet.plink = BulletConfiguration.PLINK_BULLET;
-		bullet.leadChance = 10;
-
-		return bullet;
-	}
 
 	public static BulletConfiguration standardRocketConfig() {
 
@@ -221,98 +156,7 @@ public class BulletConfigFactory {
 
 		return bullet;
 	}
-	
-	public static IBulletImpactBehavior getPhosphorousEffect(final int radius, final int duration, final int count, final double motion, float hazeChance) {
-		
-		IBulletImpactBehavior impact = new IBulletImpactBehavior() {
 
-			@Override
-			public void behaveBlockHit(EntityBulletBase bullet, int x, int y, int z) {
-				if(CompatibilityConfig.isWarDim(bullet.world)){
-					List<Entity> hit = bullet.world.getEntitiesWithinAABBExcludingEntity(bullet, new AxisAlignedBB(bullet.posX - radius, bullet.posY - radius, bullet.posZ - radius, bullet.posX + radius, bullet.posY + radius, bullet.posZ + radius));
-					
-					for(Entity e : hit) {
-						
-						if(!Library.isObstructed(bullet.world, bullet.posX, bullet.posY, bullet.posZ, e.posX, e.posY + e.getEyeHeight(), e.posZ)) {
-							e.setFire(5);
-							
-							if(e instanceof EntityLivingBase) {
-								
-								PotionEffect eff = new PotionEffect(HbmPotion.phosphorus, duration, 0, true, false);
-								eff.getCurativeItems().clear();
-								((EntityLivingBase)e).addPotionEffect(eff);
-							}
-						}
-					}
-				}
-				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "vanillaburst");
-				data.setString("mode", "flame");
-				data.setInteger("count", count);
-				data.setDouble("motion", motion);
-
-				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, bullet.posX, bullet.posY, bullet.posZ), new TargetPoint(bullet.dimension, bullet.posX, bullet.posY, bullet.posZ, 50));
-				if(bullet.world.rand.nextFloat() < hazeChance) {
-					NBTTagCompound haze = new NBTTagCompound();
-					haze.setString("type", "haze");
-					PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(haze, bullet.posX, bullet.posY, bullet.posZ), new TargetPoint(bullet.dimension, bullet.posX, bullet.posY, bullet.posZ, 150));
-				}
-			}
-		};
-		
-		return impact;
-	}
-	
-	public static IBulletImpactBehavior getGasEffect(final int radius, final int duration) {
-		
-		IBulletImpactBehavior impact = new IBulletImpactBehavior() {
-
-			@Override
-			public void behaveBlockHit(EntityBulletBase bullet, int x, int y, int z) {
-				
-				List<Entity> hit = bullet.world.getEntitiesWithinAABBExcludingEntity(bullet, new AxisAlignedBB(bullet.posX - radius, bullet.posY - radius, bullet.posZ - radius, bullet.posX + radius, bullet.posY + radius, bullet.posZ + radius));
-				
-				for(Entity e : hit) {
-					
-					if(!Library.isObstructed(bullet.world, bullet.posX, bullet.posY, bullet.posZ, e.posX, e.posY + e.getEyeHeight(), e.posZ)) {
-						
-						if(e instanceof EntityLivingBase) {
-		
-							EntityLivingBase entityLiving = (EntityLivingBase) e;
-							
-							if(ArmorRegistry.hasAllProtection(entityLiving, EntityEquipmentSlot.HEAD, HazardClass.GAS_CHLORINE)) {
-								ArmorUtil.damageGasMaskFilter(entityLiving, 1);
-							} else {
-								PotionEffect eff0 = new PotionEffect(MobEffects.POISON, duration, 2, true, false);
-								PotionEffect eff1 = new PotionEffect(MobEffects.MINING_FATIGUE, duration, 2, true, false);
-								PotionEffect eff2 = new PotionEffect(MobEffects.WEAKNESS, duration, 4, true, false);
-								PotionEffect eff3 = new PotionEffect(MobEffects.WITHER, (int)Math.ceil(duration * 0.1), 0, true, false);
-								eff0.getCurativeItems().clear();
-								eff1.getCurativeItems().clear();
-								eff2.getCurativeItems().clear();
-								eff3.getCurativeItems().clear();
-								entityLiving.addPotionEffect(eff0);
-								entityLiving.addPotionEffect(eff1);
-								entityLiving.addPotionEffect(eff2);
-								entityLiving.addPotionEffect(eff3);
-							}
-						}
-					}
-				}
-				
-				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "vanillaburst");
-				data.setString("mode", "cloud");
-				data.setInteger("count", 15);
-				data.setDouble("motion", 0.1D);
-
-				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, bullet.posX, bullet.posY, bullet.posZ), new TargetPoint(bullet.dimension, bullet.posX, bullet.posY, bullet.posZ, 50));
-			}
-		};
-		
-		return impact;
-	}
-	
 	public static IBulletUpdateBehavior getLaserSteering() {
 
 		IBulletUpdateBehavior onUpdate = new IBulletUpdateBehavior() {
