@@ -60,6 +60,8 @@ public class CasingCreator implements IParticleCreator {
         data.setDouble("mZ", mZ);
         data.setFloat("yaw", player.rotationYaw);
         data.setFloat("pitch", player.rotationPitch);
+        data.setFloat("mPitch", mPitch);
+        data.setFloat("mYaw", mYaw);
         data.setString("name", casing);
         data.setBoolean("smoking", smoking);
         data.setInteger("smokeLife", smokeLife);
@@ -106,11 +108,13 @@ public class CasingCreator implements IParticleCreator {
         double mZ = data.getDouble("mZ");
         float yaw = data.getFloat("yaw");
         float pitch = data.getFloat("pitch");
+        float mPitch = data.getFloat("mPitch");
+        float mYaw = data.getFloat("mYaw");
         boolean smoking = data.getBoolean("smoking");
         int smokeLife = data.getInteger("smokeLife");
         double smokeLift = data.getDouble("smokeLift");
         int nodeLife = data.getInteger("nodeLife");
-        ParticleSpentCasing casing = new ParticleSpentCasing(world, x, y, z, mX, mY, mZ, 0, 0, casingConfig, smoking, smokeLife, smokeLift, nodeLife);
+        ParticleSpentCasing casing = new ParticleSpentCasing(world, x, y, z, mX, mY, mZ, mPitch, mYaw, casingConfig, smoking, smokeLife, smokeLift, nodeLife);
         casing.prevRotationYaw = casing.rotationYaw = yaw;
         casing.prevRotationPitch = casing.rotationPitch = pitch;
         Minecraft.getMinecraft().effectRenderer.addEffect(casing);

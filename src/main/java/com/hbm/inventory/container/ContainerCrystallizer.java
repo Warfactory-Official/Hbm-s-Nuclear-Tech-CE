@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.slot.SlotBattery;
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.lib.Library;
@@ -23,9 +23,9 @@ public class ContainerCrystallizer extends Container {
 
 		this.addSlotToContainer(new SlotItemHandler(te.inventory, 0, 62, 45));
 		this.addSlotToContainer(new SlotBattery(te.inventory, 1, 152, 72));
-		this.addSlotToContainer(new SlotTakeOnly(te.inventory, 2, 113, 45));
+		this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 2, 113, 45));
 		this.addSlotToContainer(new SlotItemHandler(te.inventory, 3, 17, 18));
-		this.addSlotToContainer(new SlotTakeOnly(te.inventory, 4, 17, 54));
+		this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 4, 17, 54));
 		this.addSlotToContainer(new SlotUpgrade(te.inventory, 5, 80, 18));
 		this.addSlotToContainer(new SlotUpgrade(te.inventory, 6, 98, 18));
 		this.addSlotToContainer(new SlotItemHandler(te.inventory, 7, 35, 72));

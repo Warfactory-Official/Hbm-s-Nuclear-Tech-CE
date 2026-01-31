@@ -1,6 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.tileentity.machine.TileEntityMachineRadGen;
 import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
@@ -25,7 +25,7 @@ public class ContainerMachineRadGen extends Container {
 		}
 		for(int i = 0; i < 4; i++) {
 			for(int j = 0; j < 3; j++) {
-				this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, j + i * 3 + 12, 116 + j * 18, 17 + i * 18));
+				this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, j + i * 3 + 12, 116 + j * 18, 17 + i * 18));
 			}
 		}
 

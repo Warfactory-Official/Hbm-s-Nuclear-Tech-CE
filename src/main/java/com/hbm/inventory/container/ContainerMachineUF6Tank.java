@@ -1,6 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineUF6Tank;
 import com.hbm.util.InventoryUtil;
@@ -19,9 +19,9 @@ public class ContainerMachineUF6Tank extends Container {
 		tank = tedf;
 		
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 44, 17));
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 1, 44, 53));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 1, 44, 53));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 2, 116, 17));
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 3, 116, 53));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 3, 116, 53));
 		
 		for(int i = 0; i < 3; i++)
 		{

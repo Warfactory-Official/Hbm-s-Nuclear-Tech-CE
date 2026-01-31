@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.slot.SlotBattery;
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineCentrifuge;
@@ -23,10 +23,10 @@ public class ContainerCentrifuge extends Container {
 		
 		this.addSlotToContainer(new SlotItemHandler(te.inventory, 0, 36, 50));
 		this.addSlotToContainer(new SlotBattery(te.inventory, 1, 9, 50));
-		this.addSlotToContainer(new SlotTakeOnly(te.inventory, 2, 63, 50));
-		this.addSlotToContainer(new SlotTakeOnly(te.inventory, 3, 83, 50));
-		this.addSlotToContainer(new SlotTakeOnly(te.inventory, 4, 103, 50));
-		this.addSlotToContainer(new SlotTakeOnly(te.inventory, 5, 123, 50));
+		this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 2, 63, 50));
+		this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 3, 83, 50));
+		this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 4, 103, 50));
+		this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 5, 123, 50));
 		this.addSlotToContainer(new SlotUpgrade(te.inventory, 6, 149, 22));
 		this.addSlotToContainer(new SlotUpgrade(te.inventory, 7, 149, 40));
 		

@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.slot.SlotBattery;
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityHadron;
 import com.hbm.util.InventoryUtil;
@@ -26,8 +26,8 @@ public class ContainerHadron extends Container {
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 17, 36));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 1, 35, 36));
 		//Outputs
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 2, 125, 36));
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 3, 143, 36));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 2, 125, 36));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 3, 143, 36));
 		//Battery
 		this.addSlotToContainer(new SlotBattery(tedf.inventory, 4, 44, 108));
 

@@ -1,7 +1,8 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.slot.SlotBattery;
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.lib.Library;
@@ -27,20 +28,20 @@ public class ContainerElectrolyserFluid extends Container {
         this.addSlotToContainer(new SlotUpgrade(tedf.inventory, 1, 186, 140));
         this.addSlotToContainer(new SlotUpgrade(tedf.inventory, 2, 186, 158));
         //Fluid ID
-        this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 6, 18));
-        this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 4, 6, 54));
+        this.addSlotToContainer(SlotFiltered.fluidTypeSlot(tedf.inventory, 3, 6, 18));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 4, 6, 54));
         //Input
-        this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 5, 24, 18));
-        this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 6, 24, 54));
+        this.addSlotToContainer(SlotFiltered.fluidHandlerSlot(tedf.inventory, 5, 24, 18));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 6, 24, 54));
         //Output
-        this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 7, 78, 18));
-        this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 8, 78, 54));
-        this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 9, 134, 18));
-        this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 10, 134, 54));
+        this.addSlotToContainer(SlotFiltered.fluidHandlerSlot(tedf.inventory, 7, 78, 18));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 8, 78, 54));
+        this.addSlotToContainer(SlotFiltered.fluidHandlerSlot(tedf.inventory, 9, 134, 18));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 10, 134, 54));
         //Byproducts
-        this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 11, 154, 18));
-        this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 12, 154, 36));
-        this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 13, 154, 54));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 11, 154, 18));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 12, 154, 36));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 13, 154, 54));
 
         for(int i = 0; i < 3; i++) {
             for(int j = 0; j < 9; j++) {

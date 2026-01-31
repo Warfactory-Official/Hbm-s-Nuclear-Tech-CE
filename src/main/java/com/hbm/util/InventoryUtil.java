@@ -671,28 +671,55 @@ public class InventoryUtil {
      * @param s3 The index of the last slot of the third special slots. All slots from s2 - s3 will count as special.
      */
     public static ItemStack transferStack(List<Slot> slots, int index, int maxSlots, Predicate<ItemStack> p1, int s1, Predicate<ItemStack> p2, int s2, Predicate<ItemStack> p3, int s3) {
-        ItemStack result = ItemStack.EMPTY;
-        Slot slot = slots.get(index);
+		ItemStack result = ItemStack.EMPTY;
+		Slot slot = slots.get(index);
 
-        if (slot != null && slot.getHasStack())
-        {
-            ItemStack stack = slot.getStack();
-            result = stack.copy();
+		if (slot != null && slot.getHasStack()) {
+			ItemStack stack = slot.getStack();
+			result = stack.copy();
+			int originalCount = stack.getCount();
 
-            if (index < maxSlots) {
-                if (!mergeItemStack(slots, stack, maxSlots + 1, slots.size(), true)) return ItemStack.EMPTY;
-            } else {
-                if (p1.test(stack) && !mergeItemStack(slots, stack, 0, s1, false)) return ItemStack.EMPTY;
-                else if (p2.test(stack) && !mergeItemStack(slots, stack, s1, s2, false)) return ItemStack.EMPTY;
-                else if (p3.test(stack) && !mergeItemStack(slots, stack, s2, s3, false)) return ItemStack.EMPTY;
-                else if (!mergeItemStack(slots, stack, s3, maxSlots, false)) return ItemStack.EMPTY;
-            }
+			if (index < maxSlots) {
+				if (!mergeItemStack(slots, stack, maxSlots, slots.size(), true)) {
+					return ItemStack.EMPTY;
+				}
+			}
+			else {
+				boolean moved = false;
 
-            if (stack.getCount() == 0) slot.putStack(ItemStack.EMPTY);
-            else slot.onSlotChanged();
-        }
+				if (p1.test(stack)) {
+					moved = mergeItemStack(slots, stack, 0, s1, false);
+				}
 
-        return result;
+				if (!moved && p2.test(stack)) {
+					moved = mergeItemStack(slots, stack, s1, s2, false);
+				}
+
+				if (!moved && p3.test(stack)) {
+					moved = mergeItemStack(slots, stack, s2, s3, false);
+				}
+
+				if (!moved && !mergeItemStack(slots, stack, s3, maxSlots, false)) {
+					if (index < maxSlots + 27) {
+						if (!mergeItemStack(slots, stack, maxSlots + 27, slots.size(), false)) return ItemStack.EMPTY;
+					} else {
+						if (!mergeItemStack(slots, stack, maxSlots, maxSlots + 27, false)) return ItemStack.EMPTY;
+					}
+				}
+			}
+
+			if (stack.getCount() == originalCount) {
+				return ItemStack.EMPTY;
+			}
+
+			if (stack.isEmpty()) {
+				slot.putStack(ItemStack.EMPTY);
+			} else {
+				slot.onSlotChanged();
+			}
+		}
+
+		return result;
     }
 
     /**

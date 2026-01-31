@@ -1,6 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.tileentity.machine.storage.TileEntityMassStorage;
 import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
@@ -20,7 +20,7 @@ public class ContainerMassStorage extends Container {
 
 		this.addSlotToContainer(new SlotItemHandler(tile.inventory, 0, 61, 17));
 		this.addSlotToContainer(new SlotItemHandler(tile.inventory, 1, 61, 53));
-		this.addSlotToContainer(new SlotTakeOnly(tile.inventory, 2, 61, 89));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tile.inventory, 2, 61, 89));
 
 		for(int i = 0; i < 3; i++) {
 			for(int j = 0; j < 9; j++) {

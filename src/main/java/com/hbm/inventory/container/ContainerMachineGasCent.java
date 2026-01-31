@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.slot.SlotBattery;
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.lib.Library;
@@ -27,7 +27,7 @@ public class ContainerMachineGasCent extends Container {
     for (int i = 0; i < 2; i++) {
       for (int j = 0; j < 2; j++) {
         this.addSlotToContainer(
-            new SlotTakeOnly(gasCent.inventory, j + i * 2, 71 + j * 18, 53 + i * 18));
+            SlotFiltered.takeOnly(gasCent.inventory, j + i * 2, 71 + j * 18, 53 + i * 18));
       }
     }
 

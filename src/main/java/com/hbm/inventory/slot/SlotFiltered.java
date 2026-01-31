@@ -1,6 +1,9 @@
 package com.hbm.inventory.slot;
 
+import com.hbm.items.machine.IItemFluidIdentifier;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
@@ -35,7 +38,22 @@ public class SlotFiltered extends SlotItemHandler {
                                              Predicate<ItemStack> blacklist) {
         return new SlotFiltered(itemHandler, index, x, y, blacklist.negate());
     }
+    public static SlotFiltered fluidTypeSlot(IItemHandler itemHandler, int index, int x, int y
+                                             ) {
+        return new SlotFiltered(itemHandler, index, x, y, itemStack -> itemStack.getItem() instanceof IItemFluidIdentifier);
+    }
+    public static SlotFiltered takeOnly(IItemHandler itemHandler, int index, int x, int y
+                                             ) {
+        return new SlotFiltered(itemHandler, index, x, y, _ -> false);
+    }
+    public static SlotFiltered withCapability(IItemHandler itemHandler, int index, int x, int y,
+                                             Capability<?>capability) {
+        return new SlotFiltered(itemHandler, index, x, y, itemStack -> itemStack.getCapability(capability,null) != null);
+    }
 
+    public static SlotFiltered fluidHandlerSlot(IItemHandler itemHandler, int index, int x, int y) {
+      return  withCapability(itemHandler, index, x, y, CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY);
+    }
 
     @Override
     public boolean isItemValid(@Nonnull ItemStack stack) {

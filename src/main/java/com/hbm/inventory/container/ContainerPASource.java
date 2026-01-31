@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.slot.SlotBattery;
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.albion.TileEntityPASource;
 import com.hbm.util.InventoryUtil;
@@ -23,8 +23,8 @@ public class ContainerPASource extends Container {
         this.addSlotToContainer(new SlotItemHandler(tile.inventory, 1, 62, 18));
         this.addSlotToContainer(new SlotItemHandler(tile.inventory, 2, 80, 18));
         //Containers
-        this.addSlotToContainer(new SlotTakeOnly(tile.inventory, 3, 62, 45));
-        this.addSlotToContainer(new SlotTakeOnly(tile.inventory, 4, 80, 45));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tile.inventory, 3, 62, 45));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tile.inventory, 4, 80, 45));
 
         for(int i = 0; i < 3; i++) {
             for(int j = 0; j < 9; j++) {

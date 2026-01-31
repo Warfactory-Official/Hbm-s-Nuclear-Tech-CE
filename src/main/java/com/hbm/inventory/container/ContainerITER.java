@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.slot.SlotBattery;
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityITER;
 import com.hbm.util.InventoryUtil;
@@ -25,11 +25,11 @@ private TileEntityITER iter;
 		//Breeder In
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 1, 26, 18));
 		//Breeder Out
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 2, 62, 18));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 2, 62, 18));
 		//Plasma Shield
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 98, 18));
 		//Byproduct
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 4, 134, 18));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 4, 134, 18));
 
 		for(int i = 0; i < 3; i++)
 		{

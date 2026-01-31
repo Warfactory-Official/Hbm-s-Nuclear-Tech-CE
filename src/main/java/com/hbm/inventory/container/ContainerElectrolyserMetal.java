@@ -3,7 +3,7 @@ package com.hbm.inventory.container;
 import com.hbm.inventory.recipes.ElectrolyserMetalRecipes;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityElectrolyser;
@@ -33,12 +33,12 @@ public class ContainerElectrolyserMetal extends Container {
         this.addSlotToContainer(SlotFiltered.withWhitelist(tedf.inventory, 14, 10, 22, INPUT_FILTER)
         );
         //Outputs
-        this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 15, 136, 18));
-        this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 16, 154, 18));
-        this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 17, 136, 36));
-        this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 18, 154, 36));
-        this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 19, 136, 54));
-        this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 20, 154, 54));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 15, 136, 18));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 16, 154, 18));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 17, 136, 36));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 18, 154, 36));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 19, 136, 54));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 20, 154, 54));
 
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; j++) {

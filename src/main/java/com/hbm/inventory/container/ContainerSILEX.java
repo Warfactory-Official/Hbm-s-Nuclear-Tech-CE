@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.FluidContainerRegistry;
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.tileentity.machine.TileEntitySILEX;
 import com.hbm.util.InventoryUtil;
@@ -25,7 +25,7 @@ public class ContainerSILEX extends Container {
 		this.addSlotToContainer(new SlotItemHandler(te.inventory, 1, 8, 24));
 		//Fluid Container
 		this.addSlotToContainer(new SlotItemHandler(te.inventory, 2, 8 + 18, 24));
-		this.addSlotToContainer(new SlotTakeOnly(te.inventory, 3, 8 + 18*2, 24));
+		this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 3, 8 + 18*2, 24));
 		//Output
 		this.addSlotToContainer(new SlotItemHandler(te.inventory, 4, 116, 90));
 		//Output Queue

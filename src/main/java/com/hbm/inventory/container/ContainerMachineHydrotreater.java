@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.slot.SlotBattery;
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.lib.Library;
@@ -27,7 +27,7 @@ public class ContainerMachineHydrotreater extends Container {
         //Canister Input
         this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 1, 35, 90));
         //Canister Output
-        this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 2, 35, 108));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 2, 35, 108));
         //Hydrogen Input (removed, requires pressurization)
         //so why the fuck did you not remove them Bob, gottverdammt
         // this.addSlotToContainer(new SlotDeprecated(tedf, 3, 53, 90));
@@ -36,11 +36,11 @@ public class ContainerMachineHydrotreater extends Container {
         //Desulfated Oil Input
         this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 125, 90));
         //Desulfated Oil Output
-        this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 4, 125, 108));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 4, 125, 108));
         //Sour Gas Input
         this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 5, 143, 90));
         //Sour Gas Oil Output
-        this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 6, 143, 108));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 6, 143, 108));
         //Fluid ID
         this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 7, 17, 108));
         //Catalyst

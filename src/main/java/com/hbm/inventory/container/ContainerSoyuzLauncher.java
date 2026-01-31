@@ -2,7 +2,7 @@ package com.hbm.inventory.container;
 
 import com.hbm.api.item.IDesignatorItem;
 import com.hbm.inventory.slot.SlotBattery;
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemSatellite;
 import com.hbm.items.special.ItemSoyuz;
@@ -35,11 +35,11 @@ public class ContainerSoyuzLauncher extends Container {
 		//Kerosene IN
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 4, 8, 90));
 		//Kerosene OUT
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 5, 8, 108));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 5, 8, 108));
 		//Peroxide IN
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 6, 26, 90));
 		//Peroxide OUT
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 7, 26, 108));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 7, 26, 108));
 		//Battery
 		this.addSlotToContainer(new SlotBattery(tedf.inventory, 8, 44, 108));
 		

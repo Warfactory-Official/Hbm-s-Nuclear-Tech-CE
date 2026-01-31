@@ -1,6 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.items.machine.ItemStamp;
@@ -32,7 +32,7 @@ public class ContainerMachineEPress extends Container {
         //Input
         this.addSlotToContainer(new SlotItemHandler(ePress.inventory, 2, 80, 53));
         //Output
-        this.addSlotToContainer(new SlotTakeOnly(ePress.inventory, 3, 140, 35));
+        this.addSlotToContainer(SlotFiltered.takeOnly(ePress.inventory, 3, 140, 35));
         //Upgrade
         this.addSlotToContainer(new SlotUpgrade(ePress.inventory, 4, 44, 21));
 

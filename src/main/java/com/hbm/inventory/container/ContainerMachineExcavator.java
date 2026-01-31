@@ -1,6 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.items.machine.ItemDrillbit;
 import com.hbm.lib.Library;
@@ -31,7 +31,7 @@ public class ContainerMachineExcavator extends Container {
 		//Buffer: 5-13
 		for(int i = 0; i < 3; i++) {
 			for(int j = 0; j < 3; j++) {
-				this.addSlotToContainer(new SlotTakeOnly(tile.inventory, 5 + j + i * 3, 136 + j * 18, 5 + i * 18));
+				this.addSlotToContainer(SlotFiltered.takeOnly(tile.inventory, 5 + j + i * 3, 136 + j * 18, 5 + i * 18));
 			}
 		}
 		

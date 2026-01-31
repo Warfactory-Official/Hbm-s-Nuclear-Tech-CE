@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.slot.SlotBattery;
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.items.machine.ItemRTGPellet;
 import com.hbm.lib.Library;
@@ -33,11 +33,11 @@ public class ContainerRadiolysis extends Container {
 
         //Fluid IO
         this.addSlotToContainer(new SlotItemHandler(tile.inventory, 10, 34, 17));
-        this.addSlotToContainer(new SlotTakeOnly(tile.inventory, 11, 34, 53));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tile.inventory, 11, 34, 53));
 
         //Sterilization
         this.addSlotToContainer(new SlotItemHandler(tile.inventory, 12, 148, 17));
-        this.addSlotToContainer(new SlotTakeOnly(tile.inventory, 13, 148, 53));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tile.inventory, 13, 148, 53));
 
         //Battery
         this.addSlotToContainer(new SlotBattery(tile.inventory, 14, 8, 53));

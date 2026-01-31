@@ -1,6 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.machine.ItemBreedingRod;
 import com.hbm.tileentity.machine.TileEntityMachineReactorBreeding;
 import com.hbm.util.InventoryUtil;
@@ -20,7 +20,7 @@ public class ContainerMachineReactorBreeding extends Container {
 		reactor = tedf;
 
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 35, 35));
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 1, 125, 35));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 1, 125, 35));
 
 		for(int i = 0; i < 3; i++) {
 			for(int j = 0; j < 9; j++) {

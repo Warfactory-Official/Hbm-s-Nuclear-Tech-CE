@@ -1,6 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.tileentity.machine.TileEntityICFPress;
@@ -23,11 +23,11 @@ public class ContainerICFPress extends Container {
         //Empty Capsule
         this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 98, 18));
         //Filled Capsule
-        this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 1, 98, 54));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 1, 98, 54));
         //Filled Muon
         this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 2, 8, 18));
         //Empty Muon
-        this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 3, 8, 54));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 3, 8, 54));
         //Solid Fuels
         this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 4, 62, 54));
         this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 5, 134, 54));

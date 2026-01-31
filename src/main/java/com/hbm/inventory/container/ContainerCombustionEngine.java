@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.slot.SlotBattery;
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.lib.Library;
@@ -24,7 +24,7 @@ public class ContainerCombustionEngine extends Container {
     this.engine = tile;
 
     this.addSlotToContainer(new SlotItemHandler(tile.inventory, 0, 17, 17));
-    this.addSlotToContainer(new SlotTakeOnly(tile.inventory, 1, 17, 53));
+    this.addSlotToContainer(SlotFiltered.takeOnly(tile.inventory, 1, 17, 53));
     this.addSlotToContainer(new SlotItemHandler(tile.inventory, 2, 88, 71));
     this.addSlotToContainer(new SlotBattery(tile.inventory, 3, 143, 71));
     this.addSlotToContainer(new SlotItemHandler(tile.inventory, 4, 35, 71));

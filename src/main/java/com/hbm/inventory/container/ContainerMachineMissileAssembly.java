@@ -1,6 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.tileentity.machine.TileEntityMachineMissileAssembly;
 import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
@@ -23,7 +23,7 @@ public class ContainerMachineMissileAssembly extends Container {
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 2, 44, 36));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 62, 36));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 4, 80, 36));
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 5, 152, 36));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 5, 152, 36));
 		
 		for(int i = 0; i < 3; i++)
 		{

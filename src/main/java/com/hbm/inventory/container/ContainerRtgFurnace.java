@@ -1,6 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.machine.ItemRTGPellet;
 import com.hbm.tileentity.machine.TileEntityRtgFurnace;
 import com.hbm.util.InventoryUtil;
@@ -28,7 +28,7 @@ public class ContainerRtgFurnace extends Container {
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 2, 56, 53));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 74, 53));
 		//Output
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 4, 116, 35));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 4, 116, 35));
 		
 		for(int i = 0; i < 3; i++)
 		{

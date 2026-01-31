@@ -3,7 +3,7 @@ package com.hbm.inventory.container;
 import com.hbm.api.item.IDesignatorItem;
 import com.hbm.inventory.FluidContainerRegistry;
 import com.hbm.inventory.slot.SlotBattery;
-import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.ModItems;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.bomb.TileEntityLaunchPadBase;
@@ -31,11 +31,11 @@ public class ContainerLaunchPadLarge extends Container {
 		//Fuel in
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 125, 90));
 		//Fuel out
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 4, 125, 108));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 4, 125, 108));
 		//Oxidizer in
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 5, 143, 90));
 		//Oxidizer out
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 6, 143, 108));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 6, 143, 108));
 		
 		for(int i = 0; i < 3; i++) {
 			for(int j = 0; j < 9; j++) {
