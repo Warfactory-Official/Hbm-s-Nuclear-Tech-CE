@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotTakeOnly;
-import com.hbm.inventory.SlotNonRetarded;
+import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotNonRetarded;
 import com.hbm.items.machine.ItemMold;
 import com.hbm.tileentity.machine.TileEntityMachineStrandCaster;
 import com.hbm.util.InventoryUtil;

@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotBattery;
-import com.hbm.inventory.SlotPattern;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotPattern;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineAutocrafter;
 import net.minecraft.entity.player.EntityPlayer;

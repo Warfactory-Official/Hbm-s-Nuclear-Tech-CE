@@ -1,8 +1,8 @@
 package com.hbm.inventory.container;
 
 import com.hbm.api.item.IDesignatorItem;
-import com.hbm.inventory.SlotBattery;
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotTakeOnly;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemSatellite;
 import com.hbm.items.special.ItemSoyuz;

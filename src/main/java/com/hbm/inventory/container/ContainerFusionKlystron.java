@@ -1,8 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.api.energymk2.IBatteryItem;
-import com.hbm.inventory.SlotBattery;
-import com.hbm.items.ModItems;
+import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionKlystron;
 import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;

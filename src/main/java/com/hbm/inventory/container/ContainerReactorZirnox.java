@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.FluidContainerRegistry;
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotTakeOnly;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.machine.ItemZirnoxRod;
 import com.hbm.tileentity.machine.TileEntityReactorZirnox;

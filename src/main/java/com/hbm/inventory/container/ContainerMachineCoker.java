@@ -1,6 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotCraftingOutput;
+import com.hbm.inventory.slot.SlotCraftingOutput;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.tileentity.machine.oil.TileEntityMachineCoker;
 import com.hbm.util.InventoryUtil;

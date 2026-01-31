@@ -1,15 +1,13 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotPattern;
-import com.hbm.inventory.SlotUpgrade;
+import com.hbm.inventory.slot.SlotPattern;
+import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.items.ModItems;
 import com.hbm.tileentity.network.TileEntityCraneGrabber;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ClickType;
-import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 public class ContainerCraneGrabber extends ContainerBase {

@@ -1,4 +1,4 @@
-package com.hbm.inventory;
+package com.hbm.inventory.slot;
 
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;

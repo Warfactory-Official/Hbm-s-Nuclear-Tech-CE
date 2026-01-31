@@ -2,9 +2,9 @@ package com.hbm.inventory.container;
 
 import com.hbm.capability.NTMFluidCapabilityHandler;
 import com.hbm.inventory.FluidContainerRegistry;
-import com.hbm.inventory.SlotCraftingOutput;
-import com.hbm.inventory.SlotNonRetarded;
-import com.hbm.inventory.SlotUpgrade;
+import com.hbm.inventory.slot.SlotCraftingOutput;
+import com.hbm.inventory.slot.SlotNonRetarded;
+import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.machine.ItemBlueprints;

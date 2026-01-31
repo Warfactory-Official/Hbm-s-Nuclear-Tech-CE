@@ -2,8 +2,8 @@ package com.hbm.inventory.container;
 
 import com.hbm.api.item.IDesignatorItem;
 import com.hbm.inventory.FluidContainerRegistry;
-import com.hbm.inventory.SlotBattery;
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotTakeOnly;
 import com.hbm.items.ModItems;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.bomb.TileEntityLaunchPadBase;

@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotSmelting;
-import com.hbm.inventory.SlotUpgrade;
+import com.hbm.inventory.slot.SlotSmelting;
+import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineElectricFurnace;

@@ -1,7 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotPattern;
-import com.hbm.tileentity.network.TileEntityDroneDock;
+import com.hbm.inventory.slot.SlotPattern;
 import com.hbm.tileentity.network.TileEntityDroneRequester;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;

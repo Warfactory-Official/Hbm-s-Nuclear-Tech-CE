@@ -2,6 +2,10 @@ package com.hbm.inventory.container;
 
 import com.hbm.inventory.*;
 import com.hbm.inventory.recipes.SolderingRecipes;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotNonRetarded;
+import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.Library;

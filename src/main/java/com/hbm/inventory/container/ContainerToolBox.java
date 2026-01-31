@@ -1,6 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotNonRetarded;
+import com.hbm.inventory.slot.SlotNonRetarded;
 import com.hbm.items.tool.ItemToolBox;
 import com.hbm.items.tool.ItemToolBox.InventoryToolBox;
 import com.hbm.util.InventoryUtil;

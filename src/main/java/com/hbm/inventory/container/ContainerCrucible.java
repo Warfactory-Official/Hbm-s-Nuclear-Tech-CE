@@ -1,6 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotNonRetarded;
+import com.hbm.inventory.slot.SlotNonRetarded;
 import com.hbm.items.machine.ItemCrucibleTemplate;
 import com.hbm.tileentity.machine.TileEntityCrucible;
 import net.minecraft.entity.player.EntityPlayer;

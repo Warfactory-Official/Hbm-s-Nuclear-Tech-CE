@@ -1,6 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotTakeOnly;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineUF6Tank;
 import com.hbm.util.InventoryUtil;

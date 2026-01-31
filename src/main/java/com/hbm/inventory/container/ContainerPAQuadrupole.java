@@ -1,6 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotBattery;
+import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.albion.TileEntityPAQuadrupole;
 import com.hbm.util.InventoryUtil;

@@ -1,6 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotPattern;
+import com.hbm.inventory.slot.SlotPattern;
 import com.hbm.items.tool.ItemRebarPlacer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;

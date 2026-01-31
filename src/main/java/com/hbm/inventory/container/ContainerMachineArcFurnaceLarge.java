@@ -1,12 +1,10 @@
 package com.hbm.inventory.container;
 
-import com.hbm.api.energymk2.IBatteryItem;
-import com.hbm.inventory.SlotBattery;
-import com.hbm.inventory.SlotNonRetarded;
-import com.hbm.inventory.SlotUpgrade;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotNonRetarded;
+import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.inventory.recipes.ArcFurnaceRecipes;
 import com.hbm.items.ModItems;
-import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineArcFurnaceLarge;
 import com.hbm.util.InventoryUtil;

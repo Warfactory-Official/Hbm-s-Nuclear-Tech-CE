@@ -1,4 +1,4 @@
-package com.hbm.inventory;
+package com.hbm.inventory.slot;
 
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;

@@ -1,8 +1,10 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotBattery;
-import com.hbm.inventory.SlotTakeOnly;
-import com.hbm.inventory.SlotUpgrade;
+import com.hbm.inventory.recipes.ElectrolyserMetalRecipes;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotFiltered;
+import com.hbm.inventory.slot.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityElectrolyser;
 import com.hbm.util.InventoryUtil;
@@ -11,11 +13,13 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.items.SlotItemHandler;
+
+import java.util.function.Predicate;
 
 public class ContainerElectrolyserMetal extends Container {
 
     private TileEntityElectrolyser electrolyser;
+    Predicate<ItemStack> INPUT_FILTER = itemStack -> ElectrolyserMetalRecipes.recipes.keySet().stream().anyMatch(aStack -> aStack.getStack().getItem().equals(itemStack.getItem()));
 
     public ContainerElectrolyserMetal(InventoryPlayer invPlayer, TileEntityElectrolyser tedf) {
         electrolyser = tedf;
@@ -26,7 +30,8 @@ public class ContainerElectrolyserMetal extends Container {
         this.addSlotToContainer(new SlotUpgrade(tedf.inventory, 1, 186, 140));
         this.addSlotToContainer(new SlotUpgrade(tedf.inventory, 2, 186, 158));
         //Input
-        this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 14, 10, 22));
+        this.addSlotToContainer(SlotFiltered.withWhitelist(tedf.inventory, 14, 10, 22, INPUT_FILTER)
+        );
         //Outputs
         this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 15, 136, 18));
         this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 16, 154, 18));
@@ -35,13 +40,13 @@ public class ContainerElectrolyserMetal extends Container {
         this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 19, 136, 54));
         this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 20, 154, 54));
 
-        for(int i = 0; i < 3; i++) {
-            for(int j = 0; j < 9; j++) {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 9; j++) {
                 this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 122 + i * 18));
             }
         }
 
-        for(int i = 0; i < 9; i++) {
+        for (int i = 0; i < 9; i++) {
             this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 180));
         }
     }
@@ -51,7 +56,9 @@ public class ContainerElectrolyserMetal extends Container {
         return InventoryUtil.transferStack(this.inventorySlots, index, 21,
                 Library::isBattery, 1,
                 Library::isMachineUpgrade, 3,
-                _ -> false, 14);
+                INPUT_FILTER, 14
+
+               );
     }
 
     @Override

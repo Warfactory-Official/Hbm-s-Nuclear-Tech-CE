@@ -1,6 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotTakeOnly;
 import com.hbm.inventory.recipes.AmmoPressRecipes;
 import com.hbm.tileentity.machine.TileEntityMachineAmmoPress;
 import net.minecraft.entity.player.EntityPlayer;
