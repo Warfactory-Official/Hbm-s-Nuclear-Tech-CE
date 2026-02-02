@@ -20,7 +20,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.tileentity.IGUIProvider;
-import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole.ColumnType;
+import com.hbm.tileentity.machine.rbmk.RBMKColumn.ColumnType;
 import com.hbm.uninos.UniNodespace;
 import io.netty.buffer.ByteBuf;
 import li.cil.oc.api.machine.Arguments;
@@ -246,13 +246,13 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
     }
 
     @Override
-    public NBTTagCompound getNBTForConsole() {
-        NBTTagCompound data = new NBTTagCompound();
-        data.setInteger("water", this.feed.getFill());
-        data.setInteger("maxWater", this.feed.getMaxFill());
-        data.setInteger("steam", this.steam.getFill());
-        data.setInteger("maxSteam", this.steam.getMaxFill());
-        data.setShort("type", (short) this.steam.getTankType().getID());
+    public RBMKColumn getConsoleData() {
+        RBMKColumn.BoilerColumn data = (RBMKColumn.BoilerColumn) super.getConsoleData();
+        data.water = this.feed.getFill();
+        data.maxWater = this.feed.getMaxFill();
+        data.steam = this.steam.getFill();
+        data.maxSteam = this.steam.getMaxFill();
+        data.steamType = (short) this.steam.getTankType().getID();
         return data;
     }
 

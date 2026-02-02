@@ -22,7 +22,7 @@ import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.saveddata.TomSaveData;
 import com.hbm.tileentity.IOverpressurable;
 import com.hbm.tileentity.TileEntityLoadedBase;
-import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole.ColumnType;
+import com.hbm.tileentity.machine.rbmk.RBMKColumn.ColumnType;
 import com.hbm.util.I18nUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
@@ -668,8 +668,14 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 
 	public abstract ColumnType getConsoleType();
 
-	public NBTTagCompound getNBTForConsole() {
-		return null;
+	public RBMKColumn getConsoleData() {
+		RBMKColumn col = RBMKColumn.createForType(getConsoleType());
+		col.heat = this.heat;
+		col.maxHeat = this.maxHeat();
+		col.moderated = this.isModerated();
+		col.reasimWater = this.reasimWater;
+		col.reasimSteam = this.reasimSteam;
+		return col;
 	}
 
 	public static List<String> getFancyStats(NBTTagCompound nbt) {

@@ -143,9 +143,9 @@ public abstract class TileEntityRBMKControl extends TileEntityRBMKSlottedBase im
 	}
 
 	@Override
-	public NBTTagCompound getNBTForConsole() {
-		NBTTagCompound data = new NBTTagCompound();
-		data.setDouble("level", this.level);
+	public RBMKColumn getConsoleData() {
+		RBMKColumn.ControlColumn data = (RBMKColumn.ControlColumn) super.getConsoleData();
+		data.level = this.level;
 		return data;
 	}
 

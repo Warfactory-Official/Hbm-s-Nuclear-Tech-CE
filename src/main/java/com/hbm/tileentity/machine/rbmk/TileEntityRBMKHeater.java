@@ -17,7 +17,7 @@ import com.hbm.inventory.gui.GUIRBMKHeater;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IGUIProvider;
-import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole.ColumnType;
+import com.hbm.tileentity.machine.rbmk.RBMKColumn.ColumnType;
 import io.netty.buffer.ByteBuf;
 import li.cil.oc.api.machine.Arguments;
 import li.cil.oc.api.machine.Callback;
@@ -176,14 +176,14 @@ public class TileEntityRBMKHeater extends TileEntityRBMKSlottedBase implements I
 	}
 
 	@Override
-	public NBTTagCompound getNBTForConsole() {
-		NBTTagCompound data = new NBTTagCompound();
-		data.setInteger("water", this.feed.getFill());
-		data.setInteger("maxWater", this.feed.getMaxFill());
-		data.setInteger("steam", this.steam.getFill());
-		data.setInteger("maxSteam", this.steam.getMaxFill());
-		data.setShort("type", (short)this.feed.getTankType().getID());
-		data.setShort("hottype", (short)this.steam.getTankType().getID());
+	public RBMKColumn getConsoleData() {
+		RBMKColumn.HeaterColumn data = (RBMKColumn.HeaterColumn) super.getConsoleData();
+		data.water = this.feed.getFill();
+		data.maxWater = this.feed.getMaxFill();
+		data.steam = this.steam.getFill();
+		data.maxSteam = this.steam.getMaxFill();
+		data.coldType = (short)this.feed.getTankType().getID();
+		data.hotType = (short)this.steam.getTankType().getID();
 		return data;
 	}
 

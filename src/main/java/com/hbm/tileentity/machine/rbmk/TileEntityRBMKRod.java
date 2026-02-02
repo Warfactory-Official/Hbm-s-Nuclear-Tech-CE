@@ -19,7 +19,7 @@ import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemRBMKRod;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.IGUIProvider;
-import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole.ColumnType;
+import com.hbm.tileentity.machine.rbmk.RBMKColumn.ColumnType;
 import com.hbm.util.BufferUtil;
 import com.hbm.util.ParticleUtil;
 import io.netty.buffer.ByteBuf;
@@ -384,17 +384,14 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 	}
 
 	@Override
-	public NBTTagCompound getNBTForConsole() {
-		NBTTagCompound data = new NBTTagCompound();
-		
-		if(inventory.getStackInSlot(0).getItem() instanceof ItemRBMKRod) {
-			
-			ItemRBMKRod rod = ((ItemRBMKRod)inventory.getStackInSlot(0).getItem());
-			data.setDouble("enrichment", ItemRBMKRod.getEnrichment(inventory.getStackInSlot(0)));
-			data.setDouble("xenon", ItemRBMKRod.getPoison(inventory.getStackInSlot(0)));
-			data.setDouble("c_heat", ItemRBMKRod.getHullHeat(inventory.getStackInSlot(0)));
-			data.setDouble("c_coreHeat", ItemRBMKRod.getCoreHeat(inventory.getStackInSlot(0)));
-			data.setDouble("c_maxHeat", rod.meltingPoint);
+	public RBMKColumn getConsoleData() {
+		RBMKColumn.FuelColumn data = (RBMKColumn.FuelColumn) super.getConsoleData();
+		if(inventory.getStackInSlot(0).getItem() instanceof ItemRBMKRod rod) {
+            data.enrichment = ItemRBMKRod.getEnrichment(inventory.getStackInSlot(0));
+			data.xenon = ItemRBMKRod.getPoison(inventory.getStackInSlot(0));
+			data.c_heat = ItemRBMKRod.getHullHeat(inventory.getStackInSlot(0));
+			data.c_coreHeat = ItemRBMKRod.getCoreHeat(inventory.getStackInSlot(0));
+			data.c_maxHeat = rod.meltingPoint;
 		}
 		return data;
 	}

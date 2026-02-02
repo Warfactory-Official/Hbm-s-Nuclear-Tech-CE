@@ -6,8 +6,8 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole;
-import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole.RBMKColumn;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole.RBMKScreen;
+import com.hbm.tileentity.machine.rbmk.RBMKColumn;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -92,18 +92,18 @@ public class RenderRBMKConsole extends TileEntitySpecialRenderer<TileEntityRBMKC
           ky,
           kz,
           (float) (0.75D + (i % 2) * 0.05D),
-          col.data.getDouble("heat") / col.data.getDouble("maxHeat"));
+          col.heat / col.maxHeat);
 
       switch (col.type) {
         case FUEL:
         case FUEL_SIM:
-          drawFuel(buf, kx + 0.01, ky, kz, col.data.getDouble("enrichment"));
+          drawFuel(buf, kx + 0.01, ky, kz, ((RBMKColumn.FuelColumn) col).enrichment);
           break;
         case CONTROL:
-          drawControl(buf, kx + 0.01, ky, kz, col.data.getDouble("level"));
+          drawControl(buf, kx + 0.01, ky, kz, ((RBMKColumn.ControlColumn) col).level);
           break;
         case CONTROL_AUTO:
-          drawControlAuto(buf, kx + 0.01, ky, kz, col.data.getDouble("level"));
+          drawControlAuto(buf, kx + 0.01, ky, kz, ((RBMKColumn.ControlColumn) col).level);
           break;
         default:
       }

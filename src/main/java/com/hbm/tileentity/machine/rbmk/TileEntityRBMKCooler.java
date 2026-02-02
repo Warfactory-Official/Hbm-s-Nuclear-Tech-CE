@@ -9,7 +9,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
-import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole.ColumnType;
+import com.hbm.tileentity.machine.rbmk.RBMKColumn.ColumnType;
 import io.netty.buffer.ByteBuf;
 import li.cil.oc.api.machine.Arguments;
 import li.cil.oc.api.machine.Callback;
@@ -162,10 +162,10 @@ public class TileEntityRBMKCooler extends TileEntityRBMKBase implements IFluidSt
 	}
 
 	@Override
-	public NBTTagCompound getNBTForConsole() {
-		NBTTagCompound data = new NBTTagCompound();
-		data.setInteger("cryo", this.tank.getFill());
-		data.setInteger("cooled", this.lastCooled);
+	public RBMKColumn getConsoleData() {
+		RBMKColumn.CoolerColumn data = (RBMKColumn.CoolerColumn) super.getConsoleData();
+		data.cryo = this.tank.getFill();
+		data.cooled = this.lastCooled;
 		return data;
 	}
 

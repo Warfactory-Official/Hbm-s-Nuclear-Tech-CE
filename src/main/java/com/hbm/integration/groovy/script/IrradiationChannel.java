@@ -5,6 +5,7 @@ import com.cleanroommc.groovyscript.api.documentation.annotations.RegistryDescri
 import com.cleanroommc.groovyscript.registry.VirtualizedRegistry;
 import com.hbm.inventory.RecipesCommon;
 import com.hbm.inventory.fluid.FluidStack;
+import com.hbm.inventory.recipes.OutgasserRecipes;
 import com.hbm.util.Tuple;
 import net.minecraft.item.ItemStack;
 
@@ -13,22 +14,22 @@ import java.util.Iterator;
 import static com.hbm.inventory.recipes.OutgasserRecipes.recipes;
 
 @RegistryDescription(linkGenerator = "hbm", isFullyDocumented = false)
-public class IrradiationChannel extends VirtualizedRegistry<Tuple.Pair<RecipesCommon.AStack, Tuple.Pair<ItemStack, FluidStack>>> {
+public class IrradiationChannel extends VirtualizedRegistry<Tuple.Pair<RecipesCommon.AStack, OutgasserRecipes.OutgasserRecipe>> {
     @Override
     public void onReload() {
         this.removeScripted().forEach(this::removeRecipe);
         this.restoreFromBackup().forEach(this::addRecipe);
     }
 
-    public void removeRecipe(Tuple.Pair<RecipesCommon.AStack, Tuple.Pair<ItemStack, FluidStack>> pair){
-        recipes.remove(pair.getKey(), pair.getValue());
+    public void removeRecipe(Tuple.Pair<RecipesCommon.AStack, OutgasserRecipes.OutgasserRecipe> pair){
+        recipes.remove(pair.getKey());
         this.addBackup(pair);
     }
 
     public void removeAll(){
         for (Iterator<RecipesCommon.AStack> it = recipes.keySet().iterator(); it.hasNext(); ) {
             RecipesCommon.AStack stack = it.next();
-            Tuple.Pair<ItemStack, FluidStack> param = recipes.get(stack);
+            OutgasserRecipes.OutgasserRecipe param = recipes.get(stack);
             this.addBackup(new Tuple.Pair<>(stack, param));
             it.remove();
         }
@@ -42,15 +43,23 @@ public class IrradiationChannel extends VirtualizedRegistry<Tuple.Pair<RecipesCo
 
     public void removeRecipe(ItemStack stack){
         RecipesCommon.AStack comparableStack = new RecipesCommon.ComparableStack(stack);
-        Tuple.Pair<ItemStack, FluidStack> param = recipes.get(comparableStack);
-        recipes.remove(comparableStack, param);
+        OutgasserRecipes.OutgasserRecipe param = recipes.get(comparableStack);
+        recipes.remove(comparableStack);
         this.addBackup(new Tuple.Pair<>(comparableStack, param));
     }
 
     public void addRecipe(ItemStack input, ItemStack outItem, FluidStack outFluid){
+        addRecipe(input, outItem, outFluid, false);
+    }
+
+    public void addRecipe(ItemStack input, ItemStack outItem, FluidStack outFluid, boolean fusionOnly){
         RecipesCommon.ComparableStack stack = new RecipesCommon.ComparableStack(input);
-        Tuple.Pair<ItemStack, FluidStack> objects = new Tuple.Pair<>(outItem, new FluidStack(outFluid.type, outFluid.fill));
-        addRecipe(new Tuple.Pair<>(stack, objects));
+        FluidStack output = outFluid == null ? null : new FluidStack(outFluid.type, outFluid.fill);
+        OutgasserRecipes.OutgasserRecipe recipe = new OutgasserRecipes.OutgasserRecipe(outItem, output);
+        if (fusionOnly) {
+            recipe.fusionOnly();
+        }
+        addRecipe(new Tuple.Pair<>(stack, recipe));
     }
 
     public void addRecipe(ItemStack input, FluidStack out){
@@ -61,7 +70,7 @@ public class IrradiationChannel extends VirtualizedRegistry<Tuple.Pair<RecipesCo
         addRecipe(input, out, null);
     }
 
-    public void addRecipe(Tuple.Pair<RecipesCommon.AStack, Tuple.Pair<ItemStack, FluidStack>> pair){
+    public void addRecipe(Tuple.Pair<RecipesCommon.AStack, OutgasserRecipes.OutgasserRecipe> pair){
         recipes.put(pair.getKey(), pair.getValue());
         this.addScripted(pair);
     }

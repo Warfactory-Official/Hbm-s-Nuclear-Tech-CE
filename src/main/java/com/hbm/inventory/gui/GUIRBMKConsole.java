@@ -5,9 +5,9 @@ import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.toserver.NBTControlPacket;
+import com.hbm.tileentity.machine.rbmk.RBMKColumn;
+import com.hbm.tileentity.machine.rbmk.RBMKColumn.ColumnType;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole;
-import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole.ColumnType;
-import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole.RBMKColumn;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
@@ -192,7 +192,7 @@ public class GUIRBMKConsole extends GuiScreen {
 					this.selection = new boolean[15 * 15];
 
 					for (int j = 0; j < console.columns.length; j++) {
-						if (console.columns[j] != null && console.columns[j].type == ColumnType.CONTROL && console.columns[j].data.getShort("color") == k) {
+						if (console.columns[j] != null && console.columns[j].type == ColumnType.CONTROL && ((RBMKColumn.ControlColumn) console.columns[j]).color == k) {
 							this.selection[j] = true;
 						}
 					}
@@ -338,7 +338,7 @@ public class GUIRBMKConsole extends GuiScreen {
 			drawTexturedModalRect(guiLeft + x, guiTop + y, tX, tY, size, size);
 
 
-			int h = (int) Math.ceil((col.data.getDouble("heat") - 20) * 10 / Math.max(col.data.getDouble("maxHeat"), 1.0D));
+			int h = (int) Math.ceil((col.heat - 20) * 10 / Math.max(col.maxHeat, 1.0D));
 			if (h < 0) h = 0;
 			if (h > 10) h = 10;
 			drawTexturedModalRect(guiLeft + x, guiTop + y + size - h, 0, 192 - h, 10, h);
@@ -352,16 +352,19 @@ public class GUIRBMKConsole extends GuiScreen {
 				case BREEDER:
 					break;
 				case COOLER:
-					int cryo = (int)Math.ceil(col.data.getShort("cryo") * 8 / 16000);
-					if(cryo > 0)
+					RBMKColumn.CoolerColumn cooler = (RBMKColumn.CoolerColumn) col;
+					int cryo = (int) Math.ceil(cooler.cryo * 8 / 16000);
+					if (cryo > 0)
 						drawTexturedModalRect(guiLeft + x + 3, guiTop + y + size - cryo - 1, 123, 191 - cryo, 4, cryo);
 					break;
 				case CONTROL:
-					int color = col.data.getShort("color");
+					RBMKColumn.ControlColumn control = (RBMKColumn.ControlColumn) col;
+					int color = control.color;
 					if (color > -1)
 						drawTexturedModalRect(guiLeft + x, guiTop + y, color * size, 202, 10, 10);
 				case CONTROL_AUTO:
-					int fr = 8 - (int) Math.ceil((col.data.getDouble("level") * 8));
+					RBMKColumn.ControlColumn controlAuto = (RBMKColumn.ControlColumn) col;
+					int fr = 8 - (int) Math.ceil((controlAuto.level * 8));
 					if (fr < 0) fr = 0;
 					if (fr > 8) fr = 8;
 					drawTexturedModalRect(guiLeft + x + 4, guiTop + y + 1, 24, 183, 2, fr);
@@ -369,36 +372,36 @@ public class GUIRBMKConsole extends GuiScreen {
 
 				case FUEL:
 				case FUEL_SIM:
-					if (col.data.hasKey("c_heat")) {
-						int fh = (int) Math.ceil((col.data.getDouble("c_heat") - 20) * 8 / Math.max(col.data.getDouble("c_maxHeat"), 1.0D));
-						if (fh < 0) fh = 0;
-						if (fh > 8) fh = 8;
-						drawTexturedModalRect(guiLeft + x + 1, guiTop + y + size - fh - 1, 11, 191 - fh, 2, fh);
+					RBMKColumn.FuelColumn fuel = (RBMKColumn.FuelColumn) col;
+					int fh = (int) Math.ceil((fuel.c_heat - 20) * 8 / Math.max(fuel.c_maxHeat, 1.0D));
+					if (fh < 0) fh = 0;
+					if (fh > 8) fh = 8;
+					drawTexturedModalRect(guiLeft + x + 1, guiTop + y + size - fh - 1, 11, 191 - fh, 2, fh);
 
-						int fe = (int) Math.ceil((col.data.getDouble("enrichment")) * 8);
-						if (fe < 0) fe = 0;
-						if (fe > 8) fe = 8;
-						drawTexturedModalRect(guiLeft + x + 4, guiTop + y + size - fe - 1, 14, 191 - fe, 2, fe);
+					int fe = (int) Math.ceil((fuel.enrichment) * 8);
+					if (fe < 0) fe = 0;
+					if (fe > 8) fe = 8;
+					drawTexturedModalRect(guiLeft + x + 4, guiTop + y + size - fe - 1, 14, 191 - fe, 2, fe);
 
-						int fx = (int) Math.ceil((col.data.getDouble("xenon")) * 8 / 100.0D);
-						if (fx < 0) fx = 0;
-						if (fx > 8) fx = 8;
-						drawTexturedModalRect(guiLeft + x + 7, guiTop + y + size - fx - 1, 17, 191 - fx, 2, fx);
-					}
+					int fx = (int) Math.ceil((fuel.xenon) * 8 / 100.0D);
+					if (fx < 0) fx = 0;
+					if (fx > 8) fx = 8;
+					drawTexturedModalRect(guiLeft + x + 7, guiTop + y + size - fx - 1, 17, 191 - fx, 2, fx);
 					break;
 
 				case BOILER:
-					int fw = (int) Math.ceil((col.data.getInteger("water")) * 8 / Math.max(col.data.getDouble("maxWater"), 1.0D));
+					RBMKColumn.BoilerColumn boiler = (RBMKColumn.BoilerColumn) col;
+					int fw = (int) Math.ceil((boiler.water) * 8 / Math.max(boiler.maxWater, 1.0D));
 					if (fw < 0) fw = 0;
 					if (fw > 8) fw = 8;
 					drawTexturedModalRect(guiLeft + x + 1, guiTop + y + size - fw - 1, 41, 191 - fw, 3, fw);
 
-					int fs = (int) Math.ceil((col.data.getInteger("steam")) * 8 / Math.max(col.data.getDouble("maxSteam"), 1.0D));
+					int fs = (int) Math.ceil((boiler.steam) * 8 / Math.max(boiler.maxSteam, 1.0D));
 					if (fs < 0) fs = 0;
 					if (fs > 8) fs = 8;
 					drawTexturedModalRect(guiLeft + x + 6, guiTop + y + size - fs - 1, 46, 191 - fs, 3, fs);
 
-					short type = col.data.getShort("type");
+					short type = boiler.steamType;
 					if (Fluids.fromID(type) == Fluids.STEAM)
 						drawTexturedModalRect(guiLeft + x + 4, guiTop + y + 1, 44, 183, 2, 2);
 					if (Fluids.fromID(type) == Fluids.HOTSTEAM)
@@ -410,12 +413,13 @@ public class GUIRBMKConsole extends GuiScreen {
 					break;
 
 				case HEATEX:
-					int cc = (int) Math.ceil((col.data.getInteger("water")) * 8 / Math.max(col.data.getDouble("maxWater"), 1.0D));
+					RBMKColumn.HeaterColumn heater = (RBMKColumn.HeaterColumn) col;
+					int cc = (int) Math.ceil((heater.water) * 8 / Math.max(heater.maxWater, 1.0D));
 					if (cc < 0) cc = 0;
 					if (cc > 8) cc = 8;
 					drawTexturedModalRect(guiLeft + x + 1, guiTop + y + size - cc - 1, 131, 191 - cc, 3, cc);
 
-					int hc = (int) Math.ceil((col.data.getInteger("steam")) * 8 / Math.max(col.data.getDouble("maxSteam"), 1.0D));
+					int hc = (int) Math.ceil((heater.steam) * 8 / Math.max(heater.maxSteam, 1.0D));
 					if (hc < 0) hc = 0;
 					if (hc > 8) hc = 8;
 					drawTexturedModalRect(guiLeft + x + 6, guiTop + y + size - hc - 1, 136, 191 - hc, 3, hc);

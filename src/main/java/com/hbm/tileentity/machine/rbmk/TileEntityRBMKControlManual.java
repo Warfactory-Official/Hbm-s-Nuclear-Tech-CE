@@ -11,7 +11,7 @@ import com.hbm.inventory.control_panel.DataValueFloat;
 import com.hbm.inventory.gui.GUIRBMKControl;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.tileentity.IGUIProvider;
-import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole.ColumnType;
+import com.hbm.tileentity.machine.rbmk.RBMKColumn.ColumnType;
 import com.hbm.util.EnumUtil;
 import io.netty.buffer.ByteBuf;
 import li.cil.oc.api.machine.Arguments;
@@ -157,13 +157,13 @@ public class TileEntityRBMKControlManual extends TileEntityRBMKControl implement
     }
 
     @Override
-    public NBTTagCompound getNBTForConsole() {
-        NBTTagCompound data = super.getNBTForConsole();
+    public RBMKColumn getConsoleData() {
+        RBMKColumn.ControlColumn data = (RBMKColumn.ControlColumn) super.getConsoleData();
 
         if (this.color != null)
-            data.setShort("color", (short) this.color.ordinal());
+            data.color = (short) this.color.ordinal();
         else
-            data.setShort("color", (short) -1);
+            data.color = (short) -1;
 
         return data;
     }
