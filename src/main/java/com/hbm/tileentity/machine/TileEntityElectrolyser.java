@@ -31,6 +31,7 @@ import com.hbm.tileentity.*;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.CrucibleUtil;
 import com.hbm.util.I18nUtil;
+import com.hbm.util.MutableVec3d;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
@@ -181,7 +182,7 @@ public class TileEntityElectrolyser extends TileEntityMachineBase implements IEn
                 List<Mats.MaterialStack> toCast = new ArrayList<>();
                 toCast.add(this.leftStack);
 
-                Vec3d impact = new Vec3d(0, 0, 0);
+                MutableVec3d impact = new MutableVec3d();
                 Mats.MaterialStack didPour = CrucibleUtil.pourFullStack(world, pos.getX() + 0.5D + dir.offsetX * 5.875D, pos.getY() + 2D, pos.getZ() + 0.5D + dir.offsetZ * 5.875D, 6, true, toCast, MaterialShapes.NUGGET.q(3) * Math.max (getCycleCount() * speedLevel, 1), impact);
 
                 if(didPour != null) {
@@ -206,7 +207,7 @@ public class TileEntityElectrolyser extends TileEntityMachineBase implements IEn
                 List<Mats.MaterialStack> toCast = new ArrayList<>();
                 toCast.add(this.rightStack);
 
-                Vec3d impact = new Vec3d(0, 0, 0);
+                MutableVec3d impact = new MutableVec3d();
                 Mats.MaterialStack didPour = CrucibleUtil.pourFullStack(world, pos.getX() + 0.5D + dir.offsetX * 5.875D, pos.getY() + 2D, pos.getZ() + 0.5D + dir.offsetZ * 5.875D, 6, true, toCast, MaterialShapes.NUGGET.q(3) * Math.max (getCycleCount() * speedLevel, 1), impact);
 
                 if(didPour != null) {

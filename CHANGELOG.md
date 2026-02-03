@@ -15,6 +15,8 @@
 - Fixed various machine inventory shift-click issues
 - Fixed gun rendering artifacts with active shaders
 - Fixed RBMK console NPE
+- Fixed Crayon item texture z-fighting
+- Fixed some crucible bugs
 ### Changes
 - Reworked phased worldgen system(`package com.hbm.world.phased`) to be vastly more extensible and robust
 ### New Features

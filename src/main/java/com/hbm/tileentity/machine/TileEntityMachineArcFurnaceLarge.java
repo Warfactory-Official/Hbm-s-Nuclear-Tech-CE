@@ -30,6 +30,7 @@ import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.CrucibleUtil;
 import com.hbm.util.I18nUtil;
+import com.hbm.util.MutableVec3d;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
@@ -190,7 +191,7 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase impl
 
                 ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
 
-                Vec3d impact = new Vec3d(0, 0, 0);
+                MutableVec3d impact = new MutableVec3d();
                 Mats.MaterialStack didPour = CrucibleUtil.pourFullStack(world, pos.getX() + 0.5D + dir.offsetX * 2.875D, pos.getY() + 1.25D, pos.getZ() + 0.5D + dir.offsetZ * 2.875D, 6, true, this.liquids, MaterialShapes.INGOT.q(1), impact);
 
                 if(didPour != null) {

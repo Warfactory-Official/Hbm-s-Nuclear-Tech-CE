@@ -27,6 +27,8 @@ import java.util.Locale;
 
 import static com.hbm.items.ItemEnumMulti.ROOT_PATH;
 
+//mlbv: the original base texture from 1.7 has overlapping parts with overlay, causing z-fighting as noted in #1325;
+//I made the base's overlapping parts transparent to fix it. There should be no behavioral changes except the flickering.
 public class ItemCrayon extends ItemFood implements IDynamicModels {
     protected String baseName;
 
