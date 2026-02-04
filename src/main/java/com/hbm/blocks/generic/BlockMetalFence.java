@@ -3,8 +3,8 @@ package com.hbm.blocks.generic;
 import com.hbm.blocks.ICustomBlockItem;
 import com.hbm.blocks.ModBlocks;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockFence;
-import net.minecraft.block.material.MapColor;
+import net.minecraft.block.BlockPane;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.BlockStateContainer;
@@ -23,7 +23,7 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
-public class BlockMetalFence extends BlockFence implements ICustomBlockItem {
+public class BlockMetalFence extends BlockPane implements ICustomBlockItem {
 
     public static final PropertyBool FORCE_POST = PropertyBool.create("force_post");
     public static final PropertyBool PILLAR = PropertyBool.create("pillar");
@@ -34,8 +34,9 @@ public class BlockMetalFence extends BlockFence implements ICustomBlockItem {
     public static final AxisAlignedBB NORTH_SHORT_AABB = new AxisAlignedBB(0.375D, 0.0D, 0.0D,   0.625D, 1.0D, 0.375D);
     public static final AxisAlignedBB EAST_SHORT_AABB  = new AxisAlignedBB(0.625D, 0.0D, 0.375D, 1.0D,   1.0D, 0.625D);
 
-    public BlockMetalFence(Material materialIn, MapColor mapColorIn, String id) {
-        super(materialIn, mapColorIn);
+    public BlockMetalFence(Material materialIn, String id) {
+        super(materialIn, true);
+        this.setSoundType(SoundType.METAL);
         this.setTranslationKey(id);
         this.setRegistryName(id);
         this.setDefaultState(this.blockState.getBaseState()

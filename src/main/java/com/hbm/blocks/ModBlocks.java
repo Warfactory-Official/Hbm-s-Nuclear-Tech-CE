@@ -768,7 +768,7 @@ public class ModBlocks {
     public static final Block geiger = new GeigerCounter(Material.ROCK, "geiger").setCreativeTab(MainRegistry.machineTab).setHardness(15.0F).setResistance(0.25F);
     public static final Block hev_battery = new HEVBattery(Material.IRON, "hev_battery_block").setCreativeTab(MainRegistry.machineTab).setHardness(15.0F).setResistance(0.25F);
 
-    public static final Block fence_metal = new BlockMetalFence(Material.ROCK, MapColor.GRAY, "fence_metal").setCreativeTab(MainRegistry.machineTab).setHardness(15.0F).setResistance(0.25F);
+    public static final Block fence_metal = new BlockMetalFence(Material.IRON, "fence_metal").setCreativeTab(MainRegistry.machineTab).setHardness(15.0F).setResistance(0.25F);
 
 
     // A lot of stuff with uses no one knows
