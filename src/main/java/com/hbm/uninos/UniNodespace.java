@@ -29,6 +29,7 @@ import java.util.concurrent.Executor;
 public final class UniNodespace {
 
     private static final Object2ObjectOpenHashMap<INetworkProvider<?>, PerTypeNodeManager<?, ?, ?, ?>> managers = new Object2ObjectOpenHashMap<>();
+    private static int reapTimer = 0;
 
     private UniNodespace() {
     }
@@ -105,7 +106,7 @@ public final class UniNodespace {
         return CompletableFuture.allOf(phase1.toArray(new CompletableFuture[0]))
                                 .thenRunAsync(UniNodespace::resetAllNetTrackers, executor)
                                 .thenCompose(_ -> updateAllNetsAsync(executor))
-                                .thenRunAsync(UniNodespace::clearAllEmpty, executor)
+                                .thenRunAsync(UniNodespace::reapNetworks, executor)
                                 .exceptionally(UniNodespace::rethrowAsRuntime);
     }
 
@@ -151,11 +152,18 @@ public final class UniNodespace {
     private static void updateNetworks() {
         for (PerTypeNodeManager<?, ?, ?, ?> manager : managers.values()) manager.resetTrackers();
         for (PerTypeNodeManager<?, ?, ?, ?> manager : managers.values()) manager.updateNetworks();
-        clearAllEmpty();
+        reapNetworks();
     }
 
-    private static void clearAllEmpty() {
-        for (PerTypeNodeManager<?, ?, ?, ?> manager : managers.values()) manager.removeEmptyNets();
+    private static void updateReapTimer() {
+        if (reapTimer <= 0) reapTimer = 5 * 60 * 20;
+        else reapTimer--;
+    }
+
+    private static void reapNetworks() {
+        updateReapTimer();
+        if (reapTimer > 0) return;
+        for (PerTypeNodeManager<?, ?, ?, ?> manager : managers.values()) manager.reapLinksAndNets();
     }
 
     @SuppressWarnings("unchecked")
@@ -169,6 +177,7 @@ public final class UniNodespace {
         return (PerTypeNodeManager<R, P, L, N>) manager;
     }
 
+    @SuppressWarnings("Java8CollectionRemoveIf")
     private static class PerTypeNodeManager<R, P, L extends GenNode<N>, N extends NodeNet<R, P, L, N>> {
 
         private final Object2ObjectOpenHashMap<World, UniNodeWorld<N, L>> worlds = new Object2ObjectOpenHashMap<>();
@@ -247,7 +256,20 @@ public final class UniNodespace {
         }
 
         void removeEmptyNets() {
-            activeNodeNets.removeIf(net -> net.links.isEmpty());
+            var it = activeNodeNets.iterator();
+            while (it.hasNext()) {
+                if (it.next().links.isEmpty()) it.remove();
+            }
+        }
+
+        void reapLinksAndNets() {
+            for (N net : activeNodeNets) {
+                var it = net.links.iterator();
+                while (it.hasNext()) {
+                    if (it.next().expired) it.remove();
+                }
+            }
+            removeEmptyNets();
         }
 
         void updateNetworks() {
