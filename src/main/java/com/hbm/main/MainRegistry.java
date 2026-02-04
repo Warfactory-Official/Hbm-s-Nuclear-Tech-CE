@@ -49,6 +49,7 @@ import com.hbm.lib.HbmWorld;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.potion.HbmDetox;
 import com.hbm.potion.HbmPotion;
+import com.hbm.saveddata.FluidIdRemapper;
 import com.hbm.saveddata.satellites.Satellite;
 import com.hbm.tileentity.bomb.TileEntityLaunchPadBase;
 import com.hbm.tileentity.bomb.TileEntityNukeCustom;
@@ -373,6 +374,7 @@ public class MainRegistry {
         BobmazonOfferFactory.init();
 
         PhasedStructureRegistry.onServerStarting(evt.getServer());
+        FluidIdRemapper.onServerStarting();
     }
 
     @EventHandler
@@ -388,11 +390,12 @@ public class MainRegistry {
         RadiationSystemNT.onServerStopped();
         PhasedEventHandler.onServerStopped();
         PhasedStructureRegistry.onServerStopped();
+        FluidIdRemapper.onServerStopped();
         BombForkJoinPool.onServerStopped();
     }
 
     @EventHandler
-    public void fMLLoadCompleteEvent(FMLLoadCompleteEvent evt) {
+    public void loadComplete(FMLLoadCompleteEvent evt) {
         proxy.onLoadComplete(evt);
         RadiationSystemNT.onLoadComplete();
         FalloutConfigJSON.initialize();

@@ -6,6 +6,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.gui.GuiInfoContainer;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.saveddata.FluidIdRemapper;
 import com.hbm.util.RenderUtil;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import io.netty.buffer.ByteBuf;
@@ -18,6 +19,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.MathHelper;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
@@ -300,7 +302,7 @@ public class FluidTankNTM implements IFluidHandler, IFluidTank, Cloneable {
     public void writeToNBT(NBTTagCompound nbt, String s) {
         nbt.setInteger(s, fluid);
         nbt.setInteger(s + "_max", maxFluid);
-        nbt.setInteger(s + "_type", type.getID());
+        nbt.setInteger(s + "_type_v1", FluidIdRemapper.getStringId(type));
         nbt.setShort(s + "_p", (short) pressure);
     }
 
@@ -312,8 +314,21 @@ public class FluidTankNTM implements IFluidHandler, IFluidTank, Cloneable {
 
         fluid = MathHelper.clamp(fluid, 0, max);
 
-        type = Fluids.fromNameCompat(nbt.getString(s + "_type")); //compat
-        if (type == Fluids.NONE) type = Fluids.fromID(nbt.getInteger(s + "_type"));
+        String v1k = s + "_type_v1";
+        type = Fluids.NONE;
+        if (nbt.hasKey(v1k, Constants.NBT.TAG_INT)) {
+            int stringId = nbt.getInteger(v1k);
+            type = FluidIdRemapper.getFluid(stringId);
+        } else {
+            String v0k = s + "_type";
+            int tagType = nbt.getTagId(v0k);
+            if (tagType == Constants.NBT.TAG_STRING) {
+                type = Fluids.fromNameCompat(nbt.getString(v0k));
+            } else if (tagType == Constants.NBT.TAG_INT) {
+                int oldId = nbt.getInteger(v0k);
+                type = FluidIdRemapper.remapLegacyId(oldId);
+            }
+        }
 
         this.pressure = nbt.getShort(s + "_p");
     }
