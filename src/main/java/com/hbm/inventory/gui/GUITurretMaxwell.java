@@ -7,7 +7,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GUITurretMaxwell extends GUITurretBase {
 	
-	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/weapon/gui_turret_maxwell.png");
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/weapon/gui_turret_maxwell.png");
 
 	public GUITurretMaxwell(InventoryPlayer invPlayer, TileEntityTurretBaseNT tedf) {
 		super(invPlayer, tedf);
@@ -16,8 +16,6 @@ public class GUITurretMaxwell extends GUITurretBase {
 	protected ResourceLocation getTexture() {
 		return texture;
 	}
-
-
 
 	@Override
 	public int getTurretFontColor(){
