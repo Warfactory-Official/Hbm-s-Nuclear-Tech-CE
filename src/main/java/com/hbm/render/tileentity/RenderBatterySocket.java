@@ -58,24 +58,24 @@ public class RenderBatterySocket extends TileEntitySpecialRenderer<TileEntityBat
                 bindTexture(ResourceManager.battery_sc_tex);
                 ResourceManager.battery_socket.renderPart("Battery");
             } else if(render.getItem() == ModItems.battery_creative) {
-                GL11.glPushMatrix();
-                GL11.glScaled(0.75, 0.75, 0.75);
-                GL11.glRotated((tile.getWorld().getTotalWorldTime() % 360 + partialTicks) * 25D, 0, -1, 0);
+                GlStateManager.pushMatrix();
+                GlStateManager.scale(0.75, 0.75, 0.75);
+                GlStateManager.rotate((tile.getWorld().getTotalWorldTime() % 360 + partialTicks) * 25D, 0, -1, 0);
                 this.bindTexture(blorbo);
                 HorsePronter.reset();
                 HorsePronter.enableHorn();
                 HorsePronter.pront();
-                GL11.glPopMatrix();
+                GlStateManager.popMatrix();
 
                 Random rand = new Random(tile.getWorld().getTotalWorldTime() / 5);
                 rand.nextBoolean();
 
                 for(int i = -1; i <= 1; i += 2) for(int j = -1; j <= 1; j += 2) if(rand.nextInt(4) == 0) {
-                    GL11.glPushMatrix();
-                    GL11.glTranslated(0, 0.75, 0);
+                    GlStateManager.pushMatrix();
+                    GlStateManager.translate(0, 0.75, 0);
                     BeamPronter.prontBeam(new Vec3d(0.4375 * i, 1.1875, 0.4375 * j), BeamPronter.EnumWaveType.RANDOM, BeamPronter.EnumBeamType.SOLID, 0x404040, 0x002040, (int)(System.currentTimeMillis() % 1000) / 50, 15, 0.0625F, 3, 0.025F);
                     BeamPronter.prontBeam(new Vec3d(0.4375 * i, 1.1875, 0.4375 * j), BeamPronter.EnumWaveType.RANDOM, BeamPronter.EnumBeamType.SOLID, 0x404040, 0x002040, (int)(System.currentTimeMillis() % 1000) / 50, 1, 0, 3, 0.025F);
-                    GL11.glPopMatrix();
+                    GlStateManager.popMatrix();
                 }
             }
         }
