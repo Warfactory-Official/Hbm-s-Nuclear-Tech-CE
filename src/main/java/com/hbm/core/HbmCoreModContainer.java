@@ -5,6 +5,7 @@ import net.minecraftforge.fml.common.DummyModContainer;
 import net.minecraftforge.fml.common.LoadController;
 import net.minecraftforge.fml.common.ModMetadata;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 public class HbmCoreModContainer extends DummyModContainer {
@@ -16,8 +17,8 @@ public class HbmCoreModContainer extends DummyModContainer {
         meta.name = "NTMCore";
         meta.description = "Hbm core mod";
         //versioning scheme = MAJOR.MINOR.PATCH
-        meta.version = "1.12.2-3.0.0";
-        meta.authorList = Collections.singletonList("Movblock");
+        meta.version = "1.12.2-3.1.0";
+        meta.authorList = Arrays.asList("Movblock","Leafia (CBR system)");
 	}
 
 	@Override
