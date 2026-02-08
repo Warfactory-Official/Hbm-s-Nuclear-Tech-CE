@@ -24,7 +24,7 @@ To mitigate, move your fluids into a ForgeFluid fluid tank(e.g. Mekanism tanks) 
 - Fixed Fallout Rain pinning worker threads on jvm
 - Fixed Diode texture and energy transfer
 - Fixed fluid tank slot shift-click issue in chemical plant
-- Fixed QMAQ localization
+- Fixed QMAW localization
 - Fixed various turret bugs, see issue #1335
 - Fixed battery socket GL crash
 - Fixed a NBT worldgen ClassCastException
