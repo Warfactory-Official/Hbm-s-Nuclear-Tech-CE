@@ -137,7 +137,7 @@ public abstract class RadioTorchBase extends BlockContainer implements ILookOver
         IBlockState checkState = worldIn.getBlockState(checkPos);
         Block b = checkState.getBlock();
 
-        if (!canBlockStay(worldIn, pos, dir, b, checkPos, checkState)) {
+        if (!canBlockStay(worldIn, dir, b, checkPos, checkState)) {
             worldIn.destroyBlock(pos, true);
         }
     }
@@ -153,10 +153,10 @@ public abstract class RadioTorchBase extends BlockContainer implements ILookOver
         BlockPos checkPos = pos.offset(side.getOpposite());
         IBlockState checkState = worldIn.getBlockState(checkPos);
 
-        return canBlockStay(worldIn, pos, side, checkState.getBlock(), checkPos, checkState);
+        return canBlockStay(worldIn, side, checkState.getBlock(), checkPos, checkState);
     }
 
-    public boolean canBlockStay(World world, BlockPos pos, EnumFacing dir, Block b, BlockPos checkPos, IBlockState checkState) {
+    public boolean canBlockStay(World world, EnumFacing dir, Block b, BlockPos checkPos, IBlockState checkState) {
         return checkState.isSideSolid(world, checkPos, dir) || b.hasComparatorInputOverride(checkState) || b.canProvidePower(checkState) || (checkState.isFullCube() && !b.isAir(checkState, world, checkPos));
     }
 
