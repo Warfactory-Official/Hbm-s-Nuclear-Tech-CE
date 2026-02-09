@@ -993,8 +993,8 @@ public class ModBlocks {
 
     public static final Block machine_electrolyser = new MachineElectrolyser("machine_electrolyser").setHardness(10.0F).setResistance(20.0F).setCreativeTab(MainRegistry.machineTab);
 
-
     public static final Block machine_autocrafter = new MachineAutocrafter(Material.IRON, "machine_autocrafter").setHardness(10.0F).setResistance(20.0F).setCreativeTab(MainRegistry.machineTab);
+    public static final Block machine_funnel = new MachineFunnel("machine_funnel").setHardness(10.0F).setResistance(20.0F).setCreativeTab(MainRegistry.machineTab);
 
     public static final Block anvil_iron = new NTMAnvil(Material.IRON, NTMAnvil.TIER_IRON, "anvil_iron").setCreativeTab(MainRegistry.machineTab);
     public static final Block anvil_lead = new NTMAnvil(Material.IRON, NTMAnvil.TIER_IRON, "anvil_lead").setCreativeTab(MainRegistry.machineTab);
