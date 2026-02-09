@@ -123,7 +123,9 @@ public final class FMLNetworkHook {
             }
         } finally {
             // We retained slices for the packets, so we release the original reference from the FMLProxyPacket
-            payload.release();
+            if(payload.refCnt() > 0){
+                payload.release();
+            }
         }
     }
 
