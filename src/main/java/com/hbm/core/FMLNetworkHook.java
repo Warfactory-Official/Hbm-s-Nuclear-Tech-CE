@@ -108,6 +108,8 @@ public final class FMLNetworkHook {
                     });
                     return;
                 }
+
+                payload.retain();
                 List<Packet<INetHandlerPlayClient>> parts = fmlProxyPacketToS3FPackets(pkt);
                 int last = parts.size() - 1;
 
