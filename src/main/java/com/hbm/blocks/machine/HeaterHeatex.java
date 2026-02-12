@@ -99,8 +99,8 @@ public class HeaterHeatex extends BlockDummyable implements ITooltipProvider, IL
     }
 
     @Override
-    public void printHook(Pre event, World world, int x, int y, int z) {
-        TileEntity te = this.findCoreTE(world, x, y, z);
+    public void printHook(Pre event, World world, BlockPos pos) {
+        TileEntity te = this.findCoreTE(world, pos);
         if (!(te instanceof TileEntityHeaterHeatex heater))
             return;
 

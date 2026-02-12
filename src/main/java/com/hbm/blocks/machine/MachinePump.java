@@ -61,33 +61,31 @@ public class MachinePump extends BlockDummyable implements ITooltipProvider, ILo
     }
 
     @Override
-    public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
+    public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
 
-        int[] pos = this.findCore(world, x, y, z);
+        BlockPos corePos = this.findCore(world, pos);
 
-        if(pos == null)
+        if(corePos == null)
             return;
 
-        TileEntity te = world.getTileEntity(new BlockPos(pos[0], pos[1], pos[2]));
+        TileEntity te = world.getTileEntity(corePos);
 
         if(!(te instanceof TileEntityMachinePumpBase)) return;
 
         List<String> text = new ArrayList();
 
-        if(te instanceof TileEntityMachinePumpSteam) {
-            TileEntityMachinePumpSteam pump = (TileEntityMachinePumpSteam) te;
+        if(te instanceof TileEntityMachinePumpSteam pump) {
             text.add(TextFormatting.GREEN + "-> " + TextFormatting.RESET + pump.steam.getTankType().getLocalizedName() + ": " + String.format(Locale.US, "%,d", pump.steam.getFill()) + " / " + String.format(Locale.US, "%,d", pump.steam.getMaxFill()) + "mB");
             text.add(TextFormatting.RED + "<- " + TextFormatting.RESET + pump.lps.getTankType().getLocalizedName() + ": " + String.format(Locale.US, "%,d", pump.lps.getFill()) + " / " + String.format(Locale.US, "%,d", pump.lps.getMaxFill()) + "mB");
             text.add(TextFormatting.RED + "<- " + TextFormatting.RESET + pump.water.getTankType().getLocalizedName() + ": " + String.format(Locale.US, "%,d", pump.water.getFill()) + " / " + String.format(Locale.US, "%,d", pump.water.getMaxFill()) + "mB");
         }
 
-        if(te instanceof TileEntityMachinePumpElectric) {
-            TileEntityMachinePumpElectric pump = (TileEntityMachinePumpElectric) te;
+        if(te instanceof TileEntityMachinePumpElectric pump) {
             text.add(TextFormatting.GREEN + "-> " + TextFormatting.RESET + String.format(Locale.US, "%,d", pump.power) + " / " + String.format(Locale.US, "%,d", pump.maxPower) + "HE");
             text.add(TextFormatting.RED + "<- " + TextFormatting.RESET + pump.water.getTankType().getLocalizedName() + ": " + String.format(Locale.US, "%,d", pump.water.getFill()) + " / " + String.format(Locale.US, "%,d", pump.water.getMaxFill()) + "mB");
         }
 
-        if(pos[1] > 70) {
+        if(corePos.getY() > 70) {
             text.add("&[" + ( System.currentTimeMillis() % 1000 < 500 ? 0xff0000 : 0xffff00) + "&]! ! ! ALTITUDE ! ! !");
         }
 

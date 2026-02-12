@@ -1,16 +1,11 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.ILookOverlay;
+import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityProxyCombo;
 import com.hbm.tileentity.machine.TileEntityMachineTurbineGas;
 import com.hbm.util.I18nUtil;
-import com.hbm.lib.ForgeDirection;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.blocks.ILookOverlay;
-
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -20,7 +15,9 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.client.event.RenderGameOverlayEvent.Pre;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MachineTurbineGas extends BlockDummyable implements ILookOverlay {
 	
@@ -72,36 +69,32 @@ public class MachineTurbineGas extends BlockDummyable implements ILookOverlay {
 	}
 
 	@Override
-	public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
+	public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
+		BlockPos corePos = this.findCore(world, pos);
+		if(corePos == null) return;
 		
-		int[] pos = this.findCore(world, x, y, z);
+		TileEntity te = world.getTileEntity(corePos);
+		
+		if(!(te instanceof TileEntityMachineTurbineGas turbine)) return;
 
-		if(pos == null) return;
-		
-		TileEntity te = world.getTileEntity(new BlockPos(pos[0], pos[1], pos[2]));
-		
-		if(!(te instanceof TileEntityMachineTurbineGas)) return;
-		
-		TileEntityMachineTurbineGas turbine = (TileEntityMachineTurbineGas) te;
-		
-		ForgeDirection dir = ForgeDirection.getOrientation(turbine.getBlockMetadata() - this.offset);
+        ForgeDirection dir = ForgeDirection.getOrientation(turbine.getBlockMetadata() - this.offset);
 		
 		List<String> text = new ArrayList();
 		
-		if(hitCheck(dir, pos[0], pos[1], pos[2], -1, -1, 0, x, y, z) || hitCheck(dir, pos[0], pos[1], pos[2], 1, -1, 0, x, y, z)) {
+		if(hitCheck(dir, corePos.getX(), corePos.getY(), corePos.getZ(), -1, -1, 0, pos.getX(), pos.getY(), pos.getZ()) || hitCheck(dir, corePos.getX(), corePos.getY(), corePos.getZ(), 1, -1, 0, pos.getX(), pos.getY(), pos.getZ())) {
 			text.add("§2-> §r"+ turbine.tanks[0].getTankType().getLocalizedName());
 			text.add("§2-> §r"+ turbine.tanks[1].getTankType().getLocalizedName());
 		}
 		
-		if(hitCheck(dir, pos[0], pos[1], pos[2], -1, 4, 0, x, y, z) || hitCheck(dir, pos[0], pos[1], pos[2], 1, 4, 0, x, y, z)) {
+		if(hitCheck(dir, corePos.getX(), corePos.getY(), corePos.getZ(), -1, 4, 0, pos.getX(), pos.getY(), pos.getZ()) || hitCheck(dir, corePos.getX(), corePos.getY(), corePos.getZ(), 1, 4, 0, pos.getX(), pos.getY(), pos.getZ())) {
 			text.add("§2-> §r"+ turbine.tanks[2].getTankType().getLocalizedName());
 		}
 		
-		if(hitCheck(dir, pos[0], pos[1], pos[2], 0, 5, 1, x, y, z)) {
+		if(hitCheck(dir, corePos.getX(), corePos.getY(), corePos.getZ(), 0, 5, 1, pos.getX(), pos.getY(), pos.getZ())) {
 			text.add("§4-> §r"+ turbine.tanks[3].getTankType().getLocalizedName());
 		}
 		
-		if(hitCheck(dir, pos[0], pos[1], pos[2], 0, -4, 1, x, y, z)) {
+		if(hitCheck(dir, corePos.getX(), corePos.getY(), corePos.getZ(), 0, -4, 1, pos.getX(), pos.getY(), pos.getZ())) {
 			text.add("§4-> §r"+ "Power");
 		}
 		

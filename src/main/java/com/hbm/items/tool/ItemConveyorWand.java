@@ -400,8 +400,7 @@ public class ItemConveyorWand extends Item implements ILookOverlay {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void printHook(Pre event, World world, int x, int y, int z) {
-        BlockPos pos = new BlockPos(x, y, z);
+    public void printHook(Pre event, World world, BlockPos pos) {
         EntityPlayer player = MainRegistry.proxy.me();
         if (player == null || !player.isSneaking() || !player.capabilities.isCreativeMode) return;
         IBlockState state = world.getBlockState(pos);

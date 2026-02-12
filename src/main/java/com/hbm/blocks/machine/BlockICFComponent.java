@@ -65,8 +65,7 @@ public class BlockICFComponent extends BlockMeta implements IToolable, ILookOver
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
-        BlockPos pos = new BlockPos(x, y, z);
+    public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
         ItemStack held = Minecraft.getMinecraft().player.getHeldItemMainhand();
         ToolType tool = ToolType.getType(held);
         if (tool == null) return;

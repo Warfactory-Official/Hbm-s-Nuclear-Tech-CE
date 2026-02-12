@@ -110,8 +110,7 @@ public class MachineCapacitor extends BlockContainer implements ILookOverlay, IP
     }
 
     @Override
-    public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
-        BlockPos pos = new BlockPos(x, y, z);
+    public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
         TileEntity te = world.getTileEntity(pos);
 
         if(!(te instanceof TileEntityCapacitor))

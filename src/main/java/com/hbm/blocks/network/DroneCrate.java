@@ -121,9 +121,4 @@ public class DroneCrate extends BlockContainer implements ILookOverlay, ITooltip
             ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getTranslationKey() + ".name"), 0xffff00, 0x404000, text);
         }
     }
-
-    @Override
-    public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
-        this.printHook(event, world, new BlockPos(x, y, z));
-    }
 }

@@ -153,7 +153,7 @@ public class MachineRefinery extends BlockDummyable implements IPersistentInfoPr
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
-		IRepairable.addGenericOverlay(event, world, x, y, z, this);
+	public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
+		IRepairable.addGenericOverlay(event, world, pos.getX(), pos.getY(), pos.getZ(), this);
 	}
 }

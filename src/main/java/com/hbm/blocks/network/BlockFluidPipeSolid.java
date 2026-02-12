@@ -37,9 +37,9 @@ public class BlockFluidPipeSolid extends BlockContainer implements ILookOverlay 
 		return EnumBlockRenderType.MODEL;
 	}
 	@Override
-	public void printHook(Pre event, World world, int x, int y, int z) {
+	public void printHook(Pre event, World world, BlockPos pos) {
 
-		TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
+		TileEntity te = world.getTileEntity(pos);
 
 		if(!(te instanceof TileEntityPipeBaseNT duct))
 			return;

@@ -247,10 +247,10 @@ public class CraftingManager {
 		addRecipeAuto(new ItemStack(ModBlocks.radio_torch_sender, 4), "G", "R", "I", 'G', "dustGlowstone", 'R', Blocks.REDSTONE_TORCH, 'I', NETHERQUARTZ.gem() );
 		addRecipeAuto(new ItemStack(ModBlocks.radio_torch_receiver, 4), "G", "R", "I", 'G', "dustGlowstone", 'R', Blocks.REDSTONE_TORCH, 'I', IRON.ingot() );
 		// TODO: finish with radio torches
-		/*addRecipeAuto(new ItemStack(ModBlocks.radio_torch_logic, 4), "G", "R", "I", 'G', "dustGlowstone", 'R', Blocks.REDSTONE_TORCH, 'I', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.CHIP) );
+		//addRecipeAuto(new ItemStack(ModBlocks.radio_torch_logic, 4), "G", "R", "I", 'G', "dustGlowstone", 'R', Blocks.REDSTONE_TORCH, 'I', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.CHIP) );
 		addRecipeAuto(new ItemStack(ModBlocks.radio_torch_counter, 4), "G", "R", "I", 'G', "dustGlowstone", 'R', Blocks.REDSTONE_TORCH, 'I', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.VACUUM_TUBE) );
-		addRecipeAuto(new ItemStack(ModBlocks.radio_torch_reader, 4), " G ", "IRI", 'G', "dustGlowstone", 'R', Blocks.REDSTONE_TORCH, 'I', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.VACUUM_TUBE) );
-		addRecipeAuto(new ItemStack(ModBlocks.radio_torch_controller, 4), " G ", "IRI", 'G', "dustGlowstone", 'R', Blocks.REDSTONE_TORCH, 'I', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.CHIP) );*/
+		//addRecipeAuto(new ItemStack(ModBlocks.radio_torch_reader, 4), " G ", "IRI", 'G', "dustGlowstone", 'R', Blocks.REDSTONE_TORCH, 'I', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.VACUUM_TUBE) );
+		//addRecipeAuto(new ItemStack(ModBlocks.radio_torch_controller, 4), " G ", "IRI", 'G', "dustGlowstone", 'R', Blocks.REDSTONE_TORCH, 'I', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.CHIP) );
 		addRecipeAuto(new ItemStack(ModBlocks.radio_telex, 2), "SCR", "W#W", "WWW", 'S', ModBlocks.radio_torch_sender, 'C', ModItems.crt_display, 'R', ModBlocks.radio_torch_receiver, 'W', KEY_PLANKS, '#', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.ANALOG) );
 
 		addRecipeAuto(DictFrame.fromOne(ModItems.conveyor_wand, ItemConveyorWand.ConveyorType.REGULAR, 16), "LLL", "I I", "LLL", 'L', Items.LEATHER, 'I', IRON.ingot() );

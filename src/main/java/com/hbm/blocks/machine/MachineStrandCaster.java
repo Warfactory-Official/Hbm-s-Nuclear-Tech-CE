@@ -181,8 +181,8 @@ public class MachineStrandCaster extends BlockDummyable implements ICrucibleAcce
     super.breakBlock(world, pos, state);
   }
 
-  public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
-    BlockPos corePos = findCore(world, new BlockPos(x, y, z));
+  public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
+    BlockPos corePos = findCore(world, pos);
     if (corePos == null) return;
 
     TileEntityMachineStrandCaster caster = (TileEntityMachineStrandCaster) world.getTileEntity(corePos);

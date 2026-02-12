@@ -10,8 +10,6 @@ import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.network.energy.TileEntityCableBaseNT;
 import com.hbm.util.I18nUtil;
 import io.netty.buffer.ByteBuf;
-import java.util.ArrayList;
-import java.util.List;
 import li.cil.oc.api.machine.Arguments;
 import li.cil.oc.api.machine.Callback;
 import li.cil.oc.api.machine.Context;
@@ -33,6 +31,9 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent.Pre;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BlockCableGauge extends BlockContainer implements ILookOverlay, ITooltipProvider {
 	
@@ -104,8 +105,8 @@ public class BlockCableGauge extends BlockContainer implements ILookOverlay, ITo
     }
 
     @SideOnly(Side.CLIENT)
-	public void printHook(Pre event, World world, int x, int y, int z){
-		TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
+	public void printHook(Pre event, World world, BlockPos pos){
+		TileEntity te = world.getTileEntity(pos);
 		
 		if(!(te instanceof TileEntityCableGauge diode))
 			return;

@@ -127,20 +127,18 @@ public class MachineCatalyticCracker extends BlockDummyable implements ILookOver
 	}
 
 	@Override
-	public void printHook(Pre event, World world, int x, int y, int z) {
-		int[] pos = this.findCore(world, x, y, z);
+	public void printHook(Pre event, World world, BlockPos pos) {
+		BlockPos corePos = this.findCore(world, pos);
 		
-		if(pos == null)
+		if(corePos == null)
 			return;
 		
-		TileEntity te = world.getTileEntity(new BlockPos(pos[0], pos[1], pos[2]));
+		TileEntity te = world.getTileEntity(corePos);
 		
-		if(!(te instanceof TileEntityMachineCatalyticCracker))
+		if(!(te instanceof TileEntityMachineCatalyticCracker cracker))
 			return;
-		
-		TileEntityMachineCatalyticCracker cracker = (TileEntityMachineCatalyticCracker) te;
-		
-		List<String> text = new ArrayList();
+
+        List<String> text = new ArrayList();
 
 		for(int i = 0; i < cracker.tanks.length; i++)
 			text.add((i < 2 ? ("§a-> ") : ("§c<- ")) + "§r" + cracker.tanks[i].getTankType().getLocalizedName() + ": " + cracker.tanks[i].getFill() + "/" + cracker.tanks[i].getMaxFill() + "mB");

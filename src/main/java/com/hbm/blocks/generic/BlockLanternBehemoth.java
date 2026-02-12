@@ -14,6 +14,7 @@ import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.relauncher.Side;
@@ -62,7 +63,7 @@ public class BlockLanternBehemoth extends BlockDummyable implements IToolable, I
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
-        IRepairable.addGenericOverlay(event, world, x, y, z, this);
+    public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
+        IRepairable.addGenericOverlay(event, world, pos.getX(), pos.getY(), pos.getZ(), this);
     }
 }

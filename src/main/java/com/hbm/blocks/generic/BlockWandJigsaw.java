@@ -203,10 +203,9 @@ public class BlockWandJigsaw extends BlockContainerBakeable implements IBlockSid
     }
 
     @Override
-    public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
-        TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
-        if (!(te instanceof TileEntityWandJigsaw)) return;
-        TileEntityWandJigsaw jigsaw = (TileEntityWandJigsaw) te;
+    public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
+        TileEntity te = world.getTileEntity(pos);
+        if (!(te instanceof TileEntityWandJigsaw jigsaw)) return;
 
         List<String> text = new ArrayList<>();
 

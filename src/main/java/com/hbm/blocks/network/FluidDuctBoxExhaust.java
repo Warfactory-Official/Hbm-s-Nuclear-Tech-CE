@@ -93,7 +93,7 @@ public class FluidDuctBoxExhaust extends FluidDuctBox {
     }
 
     @Override
-    public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
+    public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
         List<String> text = new ArrayList<>();
         text.add(Fluids.SMOKE.getLocalizedName());
         text.add(Fluids.SMOKE_LEADED.getLocalizedName());

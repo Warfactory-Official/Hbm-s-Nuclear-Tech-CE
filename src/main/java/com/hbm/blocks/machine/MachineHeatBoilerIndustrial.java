@@ -116,11 +116,11 @@ public class MachineHeatBoilerIndustrial extends BlockDummyable
   }
 
   @Override
-  public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
-
-    BlockPos corePos = this.findCore(world, new BlockPos(x, y, z));
-
-    if (corePos == null) return;
+  public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
+    BlockPos corePos = this.findCore(world, pos);
+    if (corePos == null) {
+        return;
+    }
 
     TileEntity te = world.getTileEntity(corePos);
 

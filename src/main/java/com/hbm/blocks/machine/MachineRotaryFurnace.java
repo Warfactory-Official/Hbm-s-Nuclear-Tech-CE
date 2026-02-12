@@ -70,12 +70,13 @@ public class MachineRotaryFurnace extends BlockDummyable implements ILookOverlay
   }
 
   @Override
-  public void printHook(Pre event, World world, int x, int y, int z) {
-    int[] pos = this.findCore(world, x, y, z);
+  public void printHook(Pre event, World world, BlockPos pos) {
+      BlockPos corePos = this.findCore(world, pos);
 
-    if (pos == null) return;
+      if(corePos == null)
+          return;
 
-    TileEntity te = world.getTileEntity(new BlockPos(pos[0], pos[1], pos[2]));
+    TileEntity te = world.getTileEntity(corePos);
 
     if (!(te instanceof TileEntityMachineRotaryFurnace furnace)) return;
 
@@ -84,17 +85,17 @@ public class MachineRotaryFurnace extends BlockDummyable implements ILookOverlay
     List<String> text = new ArrayList<>();
 
     // steam
-    if (hitCheck(dir, pos[0], pos[1], pos[2], -1, -1, 0, x, y, z) || hitCheck(dir, pos[0], pos[1], pos[2], -1, -2, 0, x, y, z)) {
+    if (hitCheck(dir, corePos.getX(), corePos.getY(), corePos.getZ(), -1, -1, 0, pos.getX(), pos.getY(), pos.getZ()) || hitCheck(dir, corePos.getX(), corePos.getY(), corePos.getZ(), -1, -2, 0, pos.getX(), pos.getY(), pos.getZ())) {
       text.add(TextFormatting.GREEN + "-> " + TextFormatting.RESET + furnace.tanks[1].getTankType().getLocalizedName());
       text.add(TextFormatting.RED + "<- " + TextFormatting.RESET + furnace.tanks[2].getTankType().getLocalizedName());
     }
 
     // fluids
-    if (hitCheck(dir, pos[0], pos[1], pos[2], 1, 2, 0, x, y, z) || hitCheck(dir, pos[0], pos[1], pos[2], -1, 2, 0, x, y, z)) {
+    if (hitCheck(dir, corePos.getX(), corePos.getY(), corePos.getZ(), 1, 2, 0, pos.getX(), pos.getY(), pos.getZ()) || hitCheck(dir, corePos.getX(), corePos.getY(), corePos.getZ(), -1, 2, 0, pos.getX(), pos.getY(), pos.getZ())) {
       text.add(TextFormatting.GREEN + "-> " + TextFormatting.RESET + furnace.tanks[0].getTankType().getLocalizedName());
     }
 
-    if (hitCheck(dir, pos[0], pos[1], pos[2], 1, 1, 0, x, y, z)) {
+    if (hitCheck(dir, corePos.getX(), corePos.getY(), corePos.getZ(), 1, 1, 0, pos.getX(), pos.getY(), pos.getZ())) {
       text.add(TextFormatting.YELLOW + "-> " + TextFormatting.RESET + "Fuel");
     }
 

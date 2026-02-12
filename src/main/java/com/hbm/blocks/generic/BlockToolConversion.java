@@ -146,8 +146,7 @@ public class BlockToolConversion extends BlockBase implements IToolable, ILookOv
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void printHook(Pre event, World world, int x, int y, int z) {
-        BlockPos pos = new BlockPos(x, y, z);
+    public void printHook(Pre event, World world, BlockPos pos) {
         ItemStack held = Minecraft.getMinecraft().player.getHeldItemMainhand();
         ToolType tool = quickLookup(held);
         if (tool == null) return;

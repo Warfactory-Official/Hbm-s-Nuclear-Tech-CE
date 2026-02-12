@@ -206,8 +206,8 @@ public abstract class FoundryCastingBase extends BlockContainer implements ICruc
     }
 
     @Override
-    public void printHook(Pre event, World world, int x, int y, int z) {
-        TileEntityFoundryCastingBase cast = (TileEntityFoundryCastingBase) world.getTileEntity(new BlockPos(x, y, z));
+    public void printHook(Pre event, World world, BlockPos pos) {
+        TileEntityFoundryCastingBase cast = (TileEntityFoundryCastingBase) world.getTileEntity(pos);
         List<String> text = new ArrayList<>();
         if (cast == null) return;
 //        ItemStack outputStack = cast.inventory.getStackInSlot(1);

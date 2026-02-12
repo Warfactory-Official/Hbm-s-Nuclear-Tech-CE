@@ -80,8 +80,8 @@ public class MachineBatterySocket extends BlockDummyable implements ITooltipProv
     }
 
     @Override
-    public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
-        TileEntity te = this.findCoreTE(world, x, y, z);
+    public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
+        TileEntity te = this.findCoreTE(world, pos);
         if(!(te instanceof TileEntityBatterySocket socket)) return;
         if(socket.syncStack == null) return;
 

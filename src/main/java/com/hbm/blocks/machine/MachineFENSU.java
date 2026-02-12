@@ -2,7 +2,6 @@ package com.hbm.blocks.machine;
 
 import com.hbm.blocks.BlockDummyableMBB;
 import com.hbm.blocks.ILookOverlay;
-import com.hbm.lib.InventoryHelper;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.IPersistentNBT;
@@ -155,9 +154,9 @@ public class MachineFENSU extends BlockDummyableMBB implements ILookOverlay {
 	}
 
 	@Override
-	public void printHook(Pre event, World world, int x, int y, int z) {
+	public void printHook(Pre event, World world, BlockPos pos) {
 			
-		TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
+		TileEntity te = world.getTileEntity(pos);
 		
 		if(!(te instanceof TileEntityMachineFENSU))
 			return;

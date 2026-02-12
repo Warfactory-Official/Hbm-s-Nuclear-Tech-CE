@@ -159,8 +159,8 @@ public class FluidPump extends BlockContainerBakeable implements INBTBlockTransf
     }
 
     @Override
-    public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
-        TileEntity tile = world.getTileEntity(new BlockPos(x, y, z));
+    public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
+        TileEntity tile = world.getTileEntity(pos);
         if (!(tile instanceof TileEntityFluidPump pump)) {
             return;
         }

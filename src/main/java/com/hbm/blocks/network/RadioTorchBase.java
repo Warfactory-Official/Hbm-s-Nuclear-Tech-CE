@@ -41,8 +41,12 @@ public abstract class RadioTorchBase extends BlockContainer implements ILookOver
     }
 
     @Override
-    public @NotNull IBlockState getStateForPlacement(@NotNull World worldIn, @NotNull BlockPos pos, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ, int meta, @NotNull EntityLivingBase placer) {
+    public boolean hasTileEntity(@NotNull IBlockState state) {
+        return true;
+    }
 
+    @Override
+    public @NotNull IBlockState getStateForPlacement(@NotNull World worldIn, @NotNull BlockPos pos, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ, int meta, @NotNull EntityLivingBase placer) {
         return this.getDefaultState().withProperty(FACING, facing).withProperty(LIT, false);
     }
 

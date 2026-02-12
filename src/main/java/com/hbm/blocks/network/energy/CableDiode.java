@@ -157,13 +157,11 @@ public class CableDiode extends BlockContainer implements IEnergyConnectorBlock,
     }
 
     @Override
-    public void printHook(Pre event, World world, int x, int y, int z) {
+    public void printHook(Pre event, World world, BlockPos pos) {
 
-        TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
+        TileEntity te = world.getTileEntity(pos);
 
-        if (!(te instanceof TileEntityDiode)) return;
-
-        TileEntityDiode diode = (TileEntityDiode) te;
+        if (!(te instanceof TileEntityDiode diode)) return;
 
         List<String> text = new ArrayList<>();
         text.add("Max.: " + BobMathUtil.getShortNumber(diode.getMaxPower()) + "HE/t");

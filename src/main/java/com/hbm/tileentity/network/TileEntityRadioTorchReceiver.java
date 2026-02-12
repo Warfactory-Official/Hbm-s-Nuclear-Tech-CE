@@ -20,7 +20,6 @@ public class TileEntityRadioTorchReceiver extends TileEntityRadioTorchBase imple
 
   @Override
   public void update() {
-
     if (!world.isRemote) {
 
       if (!this.channel.isEmpty()) {
@@ -66,12 +65,13 @@ public class TileEntityRadioTorchReceiver extends TileEntityRadioTorchBase imple
                     pos.getX() + dir.getXOffset(),
                     pos.getY() + dir.getYOffset(),
                     pos.getZ() + dir.getZOffset());
-
             world.notifyNeighborsOfStateChange(pos, getBlockType(), true);
             world.notifyNeighborsOfStateChange(strongPos, getBlockType(), true);
             world.neighborChanged(strongPos, getBlockType(), pos);
-            // IBlockState state = world.getBlockState(pos);
-            // world.markAndNotifyBlock(pos, world.getChunk(pos), state, state, 2);
+
+//            world.setBlockState(
+//                pos, world.getBlockState(pos).withProperty(LIT, this.lastState > 0), 2);
+
             this.markDirty();
           }
         }

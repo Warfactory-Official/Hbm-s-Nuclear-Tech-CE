@@ -65,14 +65,14 @@ public class HeaterElectric extends BlockDummyable implements ILookOverlay, IToo
     }
 
 	@Override
-	public void printHook(Pre event, World world, int x, int y, int z) {
+	public void printHook(Pre event, World world, BlockPos pos) {
 		
-		int[] pos = this.findCore(world, x, y, z);
+		BlockPos corePos = this.findCore(world, pos);
 		
-		if(pos == null)
+		if(corePos == null)
 			return;
 		
-		TileEntity te = world.getTileEntity(new BlockPos(pos[0], pos[1], pos[2]));
+		TileEntity te = world.getTileEntity(corePos);
 		
 		if(!(te instanceof TileEntityHeaterElectric))
 			return;

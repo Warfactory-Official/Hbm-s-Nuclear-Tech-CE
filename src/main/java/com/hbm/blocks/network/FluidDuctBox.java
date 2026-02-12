@@ -224,10 +224,9 @@ public class FluidDuctBox extends FluidDuctBase implements IDynamicModels, ILook
     }
 
     @Override
-    public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) { // Adapt if needed for your ILookOverlay system
-        TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
-        if (!(te instanceof TileEntityPipeBaseNT)) return;
-        TileEntityPipeBaseNT duct = (TileEntityPipeBaseNT) te;
+    public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) { // Adapt if needed for your ILookOverlay system
+        TileEntity te = world.getTileEntity(pos);
+        if (!(te instanceof TileEntityPipeBaseNT duct)) return;
 
         List<String> text = new ArrayList<>();
         text.add("&[" + duct.getType().getColor() + "&]" + duct.getType().getLocalizedName());

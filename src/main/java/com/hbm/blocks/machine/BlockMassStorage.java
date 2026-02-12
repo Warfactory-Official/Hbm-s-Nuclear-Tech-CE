@@ -180,9 +180,9 @@ public class BlockMassStorage extends BlockContainer implements ILookOverlay, IT
 	}
 
 	@Override
-	public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
+	public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
 
-		TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
+		TileEntity te = world.getTileEntity(pos);
 
 		if (!(te instanceof TileEntityMassStorage))
 			return;
