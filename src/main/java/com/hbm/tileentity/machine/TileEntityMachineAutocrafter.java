@@ -389,7 +389,7 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase implemen
         }
 
         public void clear() {
-            for(int i = 0; i < this.getSizeInventory(); i++) this.setInventorySlotContents(i, null);
+            for(int i = 0; i < this.getSizeInventory(); i++) this.setInventorySlotContents(i, ItemStack.EMPTY);
         }
 
         public static class ContainerBlank extends Container {
