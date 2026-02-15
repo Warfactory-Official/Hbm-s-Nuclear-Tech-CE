@@ -571,12 +571,12 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 		if(RBMKDials.getOverpressure(world) && !pipes.isEmpty()) {
 			//mlbv: the types here on upstream is a complete mess thanks to raw types
             var pipeBlocks = new ReferenceOpenHashSet<FluidNode>();
-            var pipeReceivers = new ReferenceOpenHashSet<Map.Entry<IFluidReceiverMK2, Long>>();
+            var pipeReceivers = new ReferenceOpenHashSet<IFluidReceiverMK2>();
 
 			//unify all parts into single sets to prevent redundancy
             for (FluidNetMK2 x : pipes) {
                 pipeBlocks.addAll(x.links);
-                pipeReceivers.addAll(x.receiverEntries.entrySet());
+                pipeReceivers.addAll(x.receiverEntries.keySet());
             }
 
             int count = 0;
@@ -596,8 +596,7 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 			}
 
 			while(itReceivers.hasNext()) {
-                var e = itReceivers.next();
-				IFluidReceiverMK2 con = e.getKey();
+                IFluidReceiverMK2 con = itReceivers.next();
 				if(con instanceof TileEntity tile) {
                     if(con instanceof IOverpressurable) {
 						((IOverpressurable) con).explode(world, tile.getPos().getX(), tile.getPos().getY(), tile.getPos().getZ());

@@ -772,7 +772,7 @@ public class ModEventHandler {
         /// ARMOR MODS ///
         for (int i = 2; i < 6; i++) {
 
-            ItemStack armor = e.getItemStackFromSlot(EntityEquipmentSlot.values()[i]);
+            ItemStack armor = e.getItemStackFromSlot(EnumUtil.ENTITY_EQUIPMENT_SLOTS[i]);
 
             if (!armor.isEmpty() && ArmorModHandler.hasMods(armor)) {
 
@@ -1101,9 +1101,9 @@ public class ModEventHandler {
         }
         for (int i = 2; i < 6; i++) {
 
-            ItemStack stack = event.getEntityLiving().getItemStackFromSlot(EntityEquipmentSlot.values()[i]);
+            ItemStack stack = event.getEntityLiving().getItemStackFromSlot(EnumUtil.ENTITY_EQUIPMENT_SLOTS[i]);
 
-            if (stack != null && stack.getItem() instanceof ItemArmor && ArmorModHandler.hasMods(stack)) {
+            if (stack.getItem() instanceof ItemArmor && ArmorModHandler.hasMods(stack)) {
 
                 ItemStack revive = ArmorModHandler.pryMods(stack)[ArmorModHandler.extra];
 
@@ -1215,7 +1215,7 @@ public class ModEventHandler {
         for (int i = 2; i < 6; i++) {
 
             ItemStack prev = armorArray.get(i - 2);
-            ItemStack armor = event.getEntityLiving().getItemStackFromSlot(EntityEquipmentSlot.values()[i]);
+            ItemStack armor = event.getEntityLiving().getItemStackFromSlot(EnumUtil.ENTITY_EQUIPMENT_SLOTS[i]);
 
             boolean reapply = !ItemStack.areItemStacksEqual(prev, armor);
 
@@ -1227,7 +1227,7 @@ public class ModEventHandler {
 
                         if (mod != null && mod.getItem() instanceof ItemArmorMod) {
 
-                            Multimap<String, AttributeModifier> map = ((ItemArmorMod) mod.getItem()).getModifiers(EntityEquipmentSlot.values()[i], prev);
+                            Multimap<String, AttributeModifier> map = ((ItemArmorMod) mod.getItem()).getModifiers(EnumUtil.ENTITY_EQUIPMENT_SLOTS[i], prev);
 
                             if (map != null)
                                 event.getEntityLiving().getAttributeMap().removeAttributeModifiers(map);
@@ -1245,7 +1245,7 @@ public class ModEventHandler {
 
                         if (reapply) {
 
-                            Multimap<String, AttributeModifier> map = ((ItemArmorMod) mod.getItem()).getModifiers(EntityEquipmentSlot.values()[i], armor);
+                            Multimap<String, AttributeModifier> map = ((ItemArmorMod) mod.getItem()).getModifiers(EnumUtil.ENTITY_EQUIPMENT_SLOTS[i], armor);
 
                             if (map != null)
                                 event.getEntityLiving().getAttributeMap().applyAttributeModifiers(map);

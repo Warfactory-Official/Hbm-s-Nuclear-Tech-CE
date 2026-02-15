@@ -8,6 +8,7 @@ import com.hbm.items.armor.IArmorDisableModel;
 import com.hbm.items.weapon.sedna.factory.XFactoryDrill;
 import com.hbm.packet.PermaSyncHandler;
 import com.hbm.render.item.weapon.sedna.ItemRenderWeaponBase;
+import com.hbm.util.EnumUtil;
 import com.hbm.util.ShaderHelper;
 import com.hbm.util.Vec3NT;
 import com.hbm.world.biome.BiomeGenCraterBase;
@@ -142,7 +143,7 @@ public class ModEventHandlerRenderer {
 		EntityPlayer player = event.getEntityPlayer();
 		RenderPlayer renderer = event.getRenderer();
 
-		for (EntityEquipmentSlot slot : EntityEquipmentSlot.values()) {
+		for (EntityEquipmentSlot slot : EnumUtil.ENTITY_EQUIPMENT_SLOTS) {
 			if (slot.getSlotType() != EntityEquipmentSlot.Type.ARMOR)
 				continue;
 
@@ -150,8 +151,8 @@ public class ModEventHandlerRenderer {
 
 			if (!stack.isEmpty() && stack.getItem() instanceof IArmorDisableModel disable) {
 
-                for (int j = 0; j < IArmorDisableModel.EnumPlayerPart.values().length; j++) {
-					IArmorDisableModel.EnumPlayerPart type = IArmorDisableModel.EnumPlayerPart.values()[j];
+                for (int j = 0; j < IArmorDisableModel.EnumPlayerPart.VALUES.length; j++) {
+					IArmorDisableModel.EnumPlayerPart type = IArmorDisableModel.EnumPlayerPart.VALUES[j];
 					ModelRenderer box = getBoxFromType(renderer, type);
 
 					if (box != null && disable.disablesPart(player, stack, type) && !box.isHidden) {
@@ -168,8 +169,8 @@ public class ModEventHandlerRenderer {
 
 		RenderPlayer renderer = event.getRenderer();
 
-		for (int j = 0; j < IArmorDisableModel.EnumPlayerPart.values().length; j++) {
-			IArmorDisableModel.EnumPlayerPart type = IArmorDisableModel.EnumPlayerPart.values()[j];
+		for (int j = 0; j < IArmorDisableModel.EnumPlayerPart.VALUES.length; j++) {
+			IArmorDisableModel.EnumPlayerPart type = IArmorDisableModel.EnumPlayerPart.VALUES[j];
 			if(partsHidden[j]) {
 				getBoxFromType(renderer, type).isHidden = false;
 			}

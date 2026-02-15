@@ -1,5 +1,6 @@
 package com.hbm.util;
 
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.util.EnumHand;
 
 public final class EnumUtil {
@@ -8,6 +9,7 @@ public final class EnumUtil {
     }
 
     public static final EnumHand[] HANDS = EnumHand.values();
+    public static final EntityEquipmentSlot[] ENTITY_EQUIPMENT_SLOTS = EntityEquipmentSlot.values();
 
     /**
      * @deprecated this creates a new E[] object on every call, use {@link #grabEnumSafely(Enum[], int)} instead.

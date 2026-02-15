@@ -997,8 +997,10 @@ public class ModEventHandlerClient {
             RayTraceResult mop = mc.objectMouseOver;
 
             if (mop != null && mop.typeOfHit == mop.typeOfHit.BLOCK) {
-                if (world.getBlockState(mop.getBlockPos()).getBlock() instanceof ILookOverlay) {
-                    ((ILookOverlay) world.getBlockState(mop.getBlockPos()).getBlock()).printHook(event, world, mop.getBlockPos().getX(), mop.getBlockPos().getY(), mop.getBlockPos().getZ());
+                BlockPos pos = mop.getBlockPos();
+                Block blockHit = world.getBlockState(pos).getBlock();
+                if (blockHit instanceof ILookOverlay) {
+                    ((ILookOverlay) blockHit).printHook(event, world, pos);
                 }
             }
             TileEntityRBMKBase.diagnosticPrintHook(event);

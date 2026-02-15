@@ -17,11 +17,6 @@ public interface ILookOverlay {
 	@SideOnly(Side.CLIENT)
     void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos);
 
-	@SideOnly(Side.CLIENT)
-    default void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
-        printHook(event, world, new BlockPos(x, y, z));
-    }
-
     @SideOnly(Side.CLIENT)
 	static void printGeneric(RenderGameOverlayEvent.Pre event, String title, int titleCol, int bgCol, List<String> text) {
 
