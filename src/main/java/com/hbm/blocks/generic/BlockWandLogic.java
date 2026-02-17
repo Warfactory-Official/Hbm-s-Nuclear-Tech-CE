@@ -45,6 +45,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class BlockWandLogic extends BlockContainerBakeable implements ILookOverlay, IToolable, ITooltipProvider, IBomb {
 
@@ -287,19 +288,22 @@ public class BlockWandLogic extends BlockContainerBakeable implements ILookOverl
             @Override
             public void serialize(ByteBuf buf) {
                 buf.writeInt(placedRotation);
-                BufferUtil.writeString(buf, actionID);
-                BufferUtil.writeString(buf, conditionID);
-                BufferUtil.writeString(buf, interactionID);
-                buf.writeInt(Block.getIdFromBlock(disguise));
-                buf.writeInt(disguiseMeta);
+                BufferUtil.writeString(buf, actionID == null ? "" : actionID);
+                BufferUtil.writeString(buf, conditionID == null ? "" : conditionID);
+                BufferUtil.writeString(buf, interactionID == null ? "" : interactionID);
+                buf.writeInt(Block.getIdFromBlock(disguise == null ? Objects.requireNonNull(Blocks.AIR) : disguise));
+                buf.writeInt(Math.max(disguiseMeta, 0));
             }
 
             @Override
             public void deserialize(ByteBuf buf) {
                 placedRotation = buf.readInt();
                 actionID = BufferUtil.readString(buf);
+                if (actionID.isEmpty()) actionID = "FODDER_WAVE";
                 conditionID = BufferUtil.readString(buf);
+                if (conditionID.isEmpty()) conditionID = "PLAYER_CUBE_5";
                 interactionID = BufferUtil.readString(buf);
+                if (interactionID.isEmpty()) interactionID = null;
                 disguise = Block.getBlockById(buf.readInt());
                 disguiseMeta = buf.readInt();
             }
