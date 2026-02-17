@@ -171,6 +171,10 @@ public class JeiRecipes {
 			ingredients.setOutputs(VanillaTypes.ITEM, outputs);
 		}
 
+        public boolean hasHighSpeed() {
+            return isHighSpeed;
+        }
+
 		public ItemStack getInput() {
 			return input;
 		}

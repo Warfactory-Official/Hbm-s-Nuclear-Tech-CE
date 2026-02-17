@@ -2,6 +2,7 @@ package com.hbm.handler.jei;
 
 import com.hbm.Tags;
 import com.hbm.handler.jei.JeiRecipes.GasCentrifugeRecipe;
+import com.hbm.items.ModItems;
 import com.hbm.util.I18nUtil;
 import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.gui.*;
@@ -66,8 +67,14 @@ public class GasCentrifugeRecipeHandler implements IRecipeCategory<GasCentrifuge
     guiItemStacks.init(4, false, 144, 27);
 
     guiItemStacks.init(5, true, 0, 36);
+    guiItemStacks.init(6, true, 23, 19);
 
     guiItemStacks.set(ingredients);
+
+    if(recipeWrapper.hasHighSpeed()) {
+        guiItemStacks.set(6, ModItems.upgrade_gc_speed.getDefaultInstance());
+    }
+    
     guiItemStacks.set(5, JeiRecipes.getBatteries());
   }
 
