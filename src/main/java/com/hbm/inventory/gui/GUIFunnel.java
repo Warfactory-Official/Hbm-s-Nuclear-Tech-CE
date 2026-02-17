@@ -15,7 +15,7 @@ import org.lwjgl.opengl.GL11;
 import java.io.IOException;
 import java.util.Collections;
 
-import static com.hbm.util.GuiUtil.playClickSound;
+import static com.hbm.util.SoundUtil.playClickSound;
 
 public class GUIFunnel extends GuiInfoContainer {
 

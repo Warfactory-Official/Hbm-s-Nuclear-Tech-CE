@@ -7,18 +7,16 @@ import com.hbm.inventory.fluid.trait.FT_Flammable;
 import com.hbm.packet.toserver.NBTControlPacket;
 import com.hbm.tileentity.machine.TileEntityHeaterOilburner;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
 import java.io.IOException;
 import java.util.Locale;
 
-import static com.hbm.util.GuiUtil.playClickSound;
+import static com.hbm.util.SoundUtil.playClickSound;
 
 public class GUIOilburner extends GuiInfoContainer {
 

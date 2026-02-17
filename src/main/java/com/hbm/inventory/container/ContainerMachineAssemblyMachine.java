@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotCraftingOutput;
 import com.hbm.inventory.slot.SlotNonRetarded;
 import com.hbm.items.ModItems;
@@ -18,7 +19,7 @@ public class ContainerMachineAssemblyMachine extends ContainerBase {
         super(invPlayer, assembler);
 
         // Battery
-        this.addSlotToContainer(new SlotNonRetarded(assembler, 0, 152, 81));
+        this.addSlotToContainer(new SlotBattery(assembler, 0, 152, 81));
         // Schematic
         this.addSlotToContainer(new SlotNonRetarded(assembler, 1, 35, 126));
         // Upgrades

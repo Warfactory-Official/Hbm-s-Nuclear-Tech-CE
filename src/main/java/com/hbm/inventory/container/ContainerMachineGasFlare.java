@@ -1,6 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.lib.Library;
@@ -12,33 +13,26 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
-
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 public class ContainerMachineGasFlare extends Container {
 
-	private TileEntityMachineGasFlare gasFlare;
+	private final TileEntityMachineGasFlare gasFlare;
 	
-	public ContainerMachineGasFlare(InventoryPlayer invPlayer, TileEntityMachineGasFlare tedf) {
-		
-		gasFlare = tedf;
+	public ContainerMachineGasFlare(InventoryPlayer invPlayer, TileEntityMachineGasFlare te) {
+		gasFlare = te;
 
 		//Battery
-		this.addSlotToContainer(new SlotBattery(tedf.inventory, 0, 143, 71));
+		this.addSlotToContainer(new SlotBattery(te.inventory, 0, 143, 71));
 		//Fluid in
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 1, 17, 17));
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 1, 17, 17));
 		//Fluid out
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 2, 17, 53) {
-			@Override
-			public boolean isItemValid(@Nonnull ItemStack stack) {
-				return false;
-			}
-		});
+		this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 2, 17, 53));
 		//Fluid ID
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 35, 71));
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 3, 35, 71));
 		//Upgrades
-		this.addSlotToContainer(new SlotUpgrade(tedf.inventory, 4, 80, 71));
-		this.addSlotToContainer(new SlotUpgrade(tedf.inventory, 5, 98, 71));
+		this.addSlotToContainer(new SlotUpgrade(te.inventory, 4, 80, 71));
+		this.addSlotToContainer(new SlotUpgrade(te.inventory, 5, 98, 71));
 
 		int offset = 37;
 		for(int i = 0; i < 3; i++)
@@ -56,7 +50,7 @@ public class ContainerMachineGasFlare extends Container {
 	}
 	
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer player, int index)
+    public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index)
     {
 		return InventoryUtil.transferStack(this.inventorySlots, index, 6,
                 Library::isBattery, 1,
@@ -66,7 +60,7 @@ public class ContainerMachineGasFlare extends Container {
     }
 
 	@Override
-	public boolean canInteractWith(EntityPlayer player) {
+	public boolean canInteractWith(@NotNull EntityPlayer player) {
 		return gasFlare.isUseableByPlayer(player);
 	}
 }

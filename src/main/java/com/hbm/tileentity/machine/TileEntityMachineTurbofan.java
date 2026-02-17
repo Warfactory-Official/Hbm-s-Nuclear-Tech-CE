@@ -30,6 +30,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.Container;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.DamageSource;
@@ -38,11 +39,10 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -75,7 +75,23 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 	public AudioWrapper audio;
 
 	public TileEntityMachineTurbofan() {
-		super(5, 150, true, true);
+		super(0, 150, true, true);
+
+        inventory = new ItemStackHandler(5) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                super.onContentsChanged(slot);
+                markDirty();
+            }
+
+            @Override
+            public void setStackInSlot(int slot, ItemStack stack) {
+                super.setStackInSlot(slot, stack);
+                if (Library.isMachineUpgrade(stack) && slot == 2)
+                    SoundUtil.playUpgradePlugSound(world, pos);
+            }
+        };
+
 		tank = new FluidTankNTM(Fluids.KEROSENE, 24000);
 		blood = new FluidTankNTM(Fluids.BLOOD, 24000);
 		upgradeManager = new UpgradeManagerNT(this);

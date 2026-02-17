@@ -97,6 +97,10 @@ public class MachineSawmill extends BlockDummyable implements ILookOverlay, IToo
 
             TileEntitySawmill sawmill = (TileEntitySawmill)world.getTileEntity(new BlockPos(corePos[0], corePos[1], corePos[2]));
 
+            if(sawmill == null) {
+                return false;
+            }
+
             if(!sawmill.hasBlade && !player.getHeldItem(hand).isEmpty() && player.getHeldItem(hand).getItem() == ModItems.sawblade) {
                 player.getHeldItem(hand).shrink(1);
                 sawmill.hasBlade = true;

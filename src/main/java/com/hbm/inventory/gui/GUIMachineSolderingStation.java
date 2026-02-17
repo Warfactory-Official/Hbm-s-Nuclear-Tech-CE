@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.hbm.util.GuiUtil.playClickSound;
+import static com.hbm.util.SoundUtil.playClickSound;
 
 public class GUIMachineSolderingStation extends GuiInfoContainer {
   private static final ResourceLocation texture =

@@ -11,7 +11,6 @@ import com.hbm.items.machine.ItemCassette;
 import com.hbm.items.machine.ItemStamp;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toserver.ItemFolderPacket;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.GlStateManager;
@@ -19,7 +18,6 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -31,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static com.hbm.util.GuiUtil.playClickSound;
+import static com.hbm.util.SoundUtil.playClickSound;
 
 public class GUIScreenTemplateFolder extends GuiScreen {
 

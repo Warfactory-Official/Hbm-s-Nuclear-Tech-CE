@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static com.hbm.render.NTMRenderHelper.bindTexture;
-import static com.hbm.util.GuiUtil.playClickSound;
+import static com.hbm.util.SoundUtil.playClickSound;
 
 public class GUICounterTorch extends GuiInfoContainer {
 

@@ -8,6 +8,7 @@ import com.hbm.inventory.gui.GUICraneUnboxer;
 import com.hbm.items.ModItems;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IGUIProvider;
+import com.hbm.util.SoundUtil;
 import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
@@ -22,13 +23,29 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 
 @AutoRegister
 public class TileEntityCraneUnboxer extends TileEntityCraneBase implements IGUIProvider {
     private int tickCounter = 0;
     public static int[] allowed_slots = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
     public TileEntityCraneUnboxer() {
-        super(23);
+        super(0);
+
+        inventory = new ItemStackHandler(23) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                super.onContentsChanged(slot);
+                markDirty();
+            }
+
+            @Override
+            public void setStackInSlot(int slot, ItemStack stack) {
+                super.setStackInSlot(slot, stack);
+                if (Library.isMachineUpgrade(stack) && slot >= 21 && slot <= 22)
+                    SoundUtil.playUpgradePlugSound(world, pos);
+            }
+        };
     }
 
     @Override

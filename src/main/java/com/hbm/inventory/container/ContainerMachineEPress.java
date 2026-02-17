@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.items.machine.ItemMachineUpgrade;
@@ -25,8 +26,8 @@ public class ContainerMachineEPress extends Container {
 
         this.ePress = ePress;
 
-        //Battery
-        this.addSlotToContainer(new SlotItemHandler(ePress.inventory, 0, 44, 53));
+        // Battery
+        this.addSlotToContainer(new SlotBattery(ePress.inventory, 0, 44, 53));
         //Stamp
         this.addSlotToContainer(new SlotItemHandler(ePress.inventory, 1, 80, 17));
         //Input

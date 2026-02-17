@@ -23,6 +23,7 @@ import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.I18nUtil;
+import com.hbm.util.SoundUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.EntityLivingBase;
@@ -78,8 +79,8 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
             @Override
             public void setStackInSlot(int slot, ItemStack stack) {
                 super.setStackInSlot(slot, stack);
-                if (stack != null && slot >= 5 && slot <= 6 && stack.getItem() instanceof ItemMachineUpgrade)
-                    world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.upgradePlug, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                if (stack != ItemStack.EMPTY && slot >= 5 && slot <= 6 && stack.getItem() instanceof ItemMachineUpgrade)
+                    SoundUtil.playUpgradePlugSound(world, pos);
             }
         };
         tankNew = new FluidTankNTM(Fluids.PEROXIDE, 8000);

@@ -17,10 +17,7 @@ import com.hbm.items.special.ItemBedrockOreBase;
 import com.hbm.items.special.ItemBedrockOreNew;
 import com.hbm.items.special.ItemBedrockOreNew.BedrockOreGrade;
 import com.hbm.items.special.ItemBedrockOreNew.BedrockOreType;
-import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
-import com.hbm.lib.Library;
-import com.hbm.lib.ModDamageSource;
+import com.hbm.lib.*;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.tileentity.IFluidCopiable;
@@ -28,6 +25,7 @@ import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.I18nUtil;
+import com.hbm.util.SoundUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
@@ -48,6 +46,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -81,7 +80,23 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase implement
     AxisAlignedBB bb = null;
 
     public TileEntityMachineOreSlopper() {
-        super(11, true, true);
+        super(0, true, true);
+
+        inventory = new ItemStackHandler(11) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                super.onContentsChanged(slot);
+                markDirty();
+            }
+
+            @Override
+            public void setStackInSlot(int slot, ItemStack stack) {
+                super.setStackInSlot(slot, stack);
+                if (Library.isMachineUpgrade(stack) && slot >= 9 && slot <= 10)
+                    SoundUtil.playUpgradePlugSound(world, pos);
+            }
+        };
+        
         tanks = new FluidTankNTM[2];
         tanks[0] = new FluidTankNTM(Fluids.WATER, 16_000);
         tanks[1] = new FluidTankNTM(Fluids.SLOP, 16_000);

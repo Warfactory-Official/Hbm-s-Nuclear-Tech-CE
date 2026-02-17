@@ -17,16 +17,16 @@ public class ContainerMachineExposureChamber extends Container {
 
     private final TileEntityMachineExposureChamber chamber;
 
-    public ContainerMachineExposureChamber(InventoryPlayer invPlayer, TileEntityMachineExposureChamber tedf) {
-        this.chamber = tedf;
+    public ContainerMachineExposureChamber(InventoryPlayer invPlayer, TileEntityMachineExposureChamber te) {
+        this.chamber = te;
 
-        this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 8, 18));
-        this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 2, 8, 54));
-        this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 80, 36));
-        this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 4, 116, 36));
-        this.addSlotToContainer(new SlotBattery(tedf.inventory, 5, 152, 54));
-        this.addSlotToContainer(new SlotUpgrade(tedf.inventory, 6, 44, 54));
-        this.addSlotToContainer(new SlotUpgrade(tedf.inventory, 7, 62, 54));
+        this.addSlotToContainer(new SlotItemHandler(te.inventory, 0, 8, 18));
+        this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 2, 8, 54));
+        this.addSlotToContainer(new SlotItemHandler(te.inventory, 3, 80, 36));
+        this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 4, 116, 36));
+        this.addSlotToContainer(new SlotBattery(te.inventory, 5, 152, 54));
+        this.addSlotToContainer(new SlotUpgrade(te.inventory, 6, 44, 54));
+        this.addSlotToContainer(new SlotUpgrade(te.inventory, 7, 62, 54));
 
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; j++) {

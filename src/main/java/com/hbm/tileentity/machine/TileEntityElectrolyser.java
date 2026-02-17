@@ -28,10 +28,7 @@ import com.hbm.main.MainRegistry;
 import com.hbm.packet.threading.ThreadedPacket;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.tileentity.*;
-import com.hbm.util.BobMathUtil;
-import com.hbm.util.CrucibleUtil;
-import com.hbm.util.I18nUtil;
-import com.hbm.util.MutableVec3d;
+import com.hbm.util.*;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
@@ -48,6 +45,7 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.ItemStackHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -88,7 +86,23 @@ public class TileEntityElectrolyser extends TileEntityMachineBase implements IEn
         //// METAL
         //14: Crystal
         //15-20: Outputs
-        super(21, true, true);
+        super(0, true, true);
+
+        inventory = new ItemStackHandler(21) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                super.onContentsChanged(slot);
+                markDirty();
+            }
+
+            @Override
+            public void setStackInSlot(int slot, ItemStack stack) {
+                super.setStackInSlot(slot, stack);
+                if (Library.isMachineUpgrade(stack) && slot >= 1 && slot <= 2)
+                    SoundUtil.playUpgradePlugSound(world, pos);
+            }
+        };
+
         tanks = new FluidTankNTM[4];
         tanks[0] = new FluidTankNTM(Fluids.WATER, 16000);
         tanks[1] = new FluidTankNTM(Fluids.HYDROGEN, 16000);

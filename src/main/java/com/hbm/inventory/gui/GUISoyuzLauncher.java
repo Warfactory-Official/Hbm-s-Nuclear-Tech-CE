@@ -13,7 +13,7 @@ import net.minecraft.util.ResourceLocation;
 
 import java.io.IOException;
 
-import static com.hbm.util.GuiUtil.playClickSound;
+import static com.hbm.util.SoundUtil.playClickSound;
 
 public class GUISoyuzLauncher extends GuiInfoContainer {
 

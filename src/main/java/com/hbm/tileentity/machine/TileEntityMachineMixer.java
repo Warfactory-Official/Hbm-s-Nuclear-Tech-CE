@@ -21,6 +21,7 @@ import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.I18nUtil;
+import com.hbm.util.SoundUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
@@ -34,6 +35,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -56,7 +58,23 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements ICo
     private int consumption = 50;
 
     public TileEntityMachineMixer() {
-        super(5, true, true);
+        super(0, true, true);
+
+        inventory = new ItemStackHandler(5) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                super.onContentsChanged(slot);
+                markDirty();
+            }
+
+            @Override
+            public void setStackInSlot(int slot, ItemStack stack) {
+                super.setStackInSlot(slot, stack);
+                if (Library.isMachineUpgrade(stack) && slot >= 3 && slot <= 4)
+                    SoundUtil.playUpgradePlugSound(world, pos);
+            }
+        };
+
         this.upgradeManager = new UpgradeManagerNT(this);
         this.tanks = new FluidTankNTM[3];
         this.tanks[0] = new FluidTankNTM(Fluids.NONE, 16_000);

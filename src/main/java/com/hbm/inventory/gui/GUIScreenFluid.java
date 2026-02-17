@@ -8,12 +8,10 @@ import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemFluidIDMulti;
 import com.hbm.packet.toserver.NBTItemControlPacket;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Keyboard;
@@ -23,7 +21,7 @@ import java.awt.*;
 import java.util.Arrays;
 import java.util.Locale;
 
-import static com.hbm.util.GuiUtil.playClickSound;
+import static com.hbm.util.SoundUtil.playClickSound;
 
 public class GUIScreenFluid extends GuiScreen {
 

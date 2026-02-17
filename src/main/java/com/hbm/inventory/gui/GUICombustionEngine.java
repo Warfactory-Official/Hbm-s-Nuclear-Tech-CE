@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Locale;
 
-import static com.hbm.util.GuiUtil.playClickSound;
+import static com.hbm.util.SoundUtil.playClickSound;
 
 public class GUICombustionEngine extends GuiInfoContainer {
 

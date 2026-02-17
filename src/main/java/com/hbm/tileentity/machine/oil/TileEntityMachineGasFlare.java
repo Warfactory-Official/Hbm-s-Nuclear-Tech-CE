@@ -30,6 +30,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.DamageSource;
@@ -42,6 +43,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -63,7 +65,23 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
     protected int output = 0;
 
     public TileEntityMachineGasFlare() {
-        super(6, true, true);
+        super(0, true, true);
+
+        inventory = new ItemStackHandler(6) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                super.onContentsChanged(slot);
+                markDirty();
+            }
+
+            @Override
+            public void setStackInSlot(int slot, ItemStack stack) {
+                super.setStackInSlot(slot, stack);
+                if (Library.isMachineUpgrade(stack) && slot >= 4 && slot <= 5)
+                    SoundUtil.playUpgradePlugSound(world, pos);
+            }
+        };
+
         tankType = Fluids.GAS.getFF();
         tank = new FluidTankNTM(Fluids.GAS, 64000);
     }

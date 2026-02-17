@@ -3,7 +3,6 @@ package com.hbm.inventory.container;
 import com.hbm.inventory.recipes.ElectrolyserMetalRecipes;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
-import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityElectrolyser;

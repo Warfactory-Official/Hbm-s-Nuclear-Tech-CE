@@ -12,18 +12,18 @@ import com.hbm.inventory.gui.GUIAssemfac;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.lib.HBMSoundHandler;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.I18nUtil;
+import com.hbm.util.SoundUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
@@ -62,20 +62,20 @@ public class TileEntityMachineAssemfac extends TileEntityMachineAssemblerBase im
         steam = new FluidTankNTM(Fluids.SPENTSTEAM, 64_000);
 
         inventory = new ItemStackHandler(invSize) {
-            @Override
-            protected void onContentsChanged(int slot) {
-                super.onContentsChanged(slot);
-                markDirty();
-            }
+          @Override
+          protected void onContentsChanged(int slot) {
+            super.onContentsChanged(slot);
+            markDirty();
+          }
 
-            @Override
-            public void setStackInSlot(int slot, @Nonnull ItemStack stack) {
-                super.setStackInSlot(slot, stack);
+          @Override
+          public void setStackInSlot(int slot, @Nonnull ItemStack stack) {
+            super.setStackInSlot(slot, stack);
 
-                if (!stack.isEmpty() && slot >= 1 && slot <= 4 && stack.getItem() instanceof ItemMachineUpgrade) {
-                    world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.upgradePlug, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                }
+            if (Library.isMachineUpgrade(stack) && slot >= 1 && slot <= 4) {
+              SoundUtil.playUpgradePlugSound(world, pos);
             }
+          }
         };
     }
 

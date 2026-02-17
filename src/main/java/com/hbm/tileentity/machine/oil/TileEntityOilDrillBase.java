@@ -14,9 +14,11 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.*;
 import com.hbm.util.BobMathUtil;
+import com.hbm.util.SoundUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
@@ -26,6 +28,7 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayDeque;
@@ -47,21 +50,36 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase imple
     HashSet<BlockPos> processed = new HashSet<>();
 
     public TileEntityOilDrillBase() {
-        super(8, true, true);
+        super(0, true, true);
+
+        inventory = new ItemStackHandler(8) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                super.onContentsChanged(slot);
+                markDirty();
+            }
+
+            @Override
+            public void setStackInSlot(int slot, ItemStack stack) {
+                super.setStackInSlot(slot, stack);
+                if (Library.isMachineUpgrade(stack) && slot >= 5 && slot <= 7)
+                    SoundUtil.playUpgradePlugSound(world, pos);
+            }
+        };
+
         tanksOld = new FluidTank[3];
         tankTypes = new Fluid[3];
 
         tanksOld[0] = new FluidTank(128000);
         tankTypes[0] = Fluids.OIL.getFF();
-        ;
+
         tanksOld[1] = new FluidTank(128000);
         tankTypes[1] = Fluids.GAS.getFF();
-        ;
+
 
         tanks = new FluidTankNTM[2];
         tanks[0] = new FluidTankNTM(Fluids.OIL, 64_000);
         tanks[1] = new FluidTankNTM(Fluids.GAS, 64_000);
-
 
         converted = true;
     }

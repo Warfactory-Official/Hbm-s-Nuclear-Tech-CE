@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-import static com.hbm.util.GuiUtil.playClickSound;
+import static com.hbm.util.SoundUtil.playClickSound;
 
 public class GUIMachineAmmoPress extends GuiInfoContainer {
     private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_ammo_press.png");
