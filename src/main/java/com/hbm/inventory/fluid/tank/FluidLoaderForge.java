@@ -57,17 +57,15 @@ public class FluidLoaderForge implements IFluidLoadingHandler {
         if (space <= 0) return false;
         int toDrain = Math.min(space, contained.amount);
         if (toDrain <= 0) return false;
-        FluidStack drained = handler.drain(toDrain, false);
+        FluidStack drained = handler.drain(toDrain, true);
         if (drained == null || drained.amount <= 0) return false;
         ItemStack container = handler.getContainer();
         if (!slots.insertItem(out, container, true).isEmpty()) {
             tank.setFill(tank.getFill() + drained.amount);
-            handler.drain(toDrain, true);
             return true;
         }
         if (tankType == Fluids.NONE) tank.setTankType(itemType);
         slots.extractItem(in, 1, false);
-        handler.drain(toDrain, true);
         tank.setFill(tank.getFill() + drained.amount);
         slots.insertItem(out, container, false);
         return true;
