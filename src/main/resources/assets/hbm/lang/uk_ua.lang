@@ -1404,6 +1404,7 @@ hbmfluid.wastegas=Газоподібні ядерні відходи
 hbmfluid.water=вода
 hbmfluid.watz=Отруйна грязь
 hbmfluid.xenon=Газ ксенон
+hbmfluid.hydrazine=Гідразин
 info.coil=Міцність котушки
 info.template_in=введення:
 info.template_in_p=входи:
