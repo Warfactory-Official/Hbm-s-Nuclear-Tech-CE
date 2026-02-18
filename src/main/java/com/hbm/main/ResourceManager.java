@@ -284,12 +284,12 @@ public class ResourceManager {
     public static final IModelCustom armor_ajr = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/armor/AJR.obj")).asVBO();
     public static final IModelCustom armor_steamsuit = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/armor/steamsuit.obj")).asVBO();
     public static final IModelCustom armor_dieselsuit = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/armor/bnuuy.obj")).asVBO();
+    public static final IModelCustom armor_remnant = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/armor/remnant.obj")).asVBO();
     public static final IModelCustom armor_trenchmaster = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/armor/trenchmaster.obj")).asVBO();
     public static final IModelCustom armor_t51 = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/armor/t51.obj")).asVBO();
     public static final IModelCustom armor_taurun = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/armor/taurun.obj")).asVBO();
     public static final IModelCustom armor_bismuth = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/armor/bismuth.obj")).asVBO();
     public static final IModelCustom armor_envsuit = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/armor/envsuit.obj")).asVBO();
-    public static final IModelCustom armor_RPA = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/armor/rpa.obj")).asVBO();
     public static final IModelCustom armor_fau = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/armor/fau.obj")).asVBO();
     public static final IModelCustom armor_dnt = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/armor/dnt.obj")).asVBO();
     public static final IModelCustom armor_mod_tesla = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/armor/mod_tesla.obj")).asVBO();
