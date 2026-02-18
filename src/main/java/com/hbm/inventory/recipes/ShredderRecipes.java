@@ -400,8 +400,7 @@ public class ShredderRecipes extends SerializableRecipe {
 
         /* Shredding bobbleheads */
         for(int i = 0; i < BobbleType.VALUES.length; i++) {
-            BobbleType type = BobbleType.VALUES[i];
-            ShredderRecipes.setRecipe(new ItemStack(ModBlocks.bobblehead, 1, i), new ItemStack(ModItems.scrap_plastic, 1, type.scrap.ordinal()));
+            ShredderRecipes.setRecipe(new ItemStack(ModBlocks.bobblehead, 1, i), new ItemStack(ModItems.scrap_plastic, 1));
         }
 
         /* Debris shredding */

@@ -1117,7 +1117,7 @@ public class ModItems {
     public static final Item nuclear_waste_tiny = new ItemCustomLore("nuclear_waste_tiny").setCreativeTab(MainRegistry.partsTab);
     public static final Item nuclear_waste_vitrified = new ItemCustomLore("nuclear_waste_vitrified").setCreativeTab(MainRegistry.partsTab);
     public static final Item nuclear_waste_vitrified_tiny = new ItemCustomLore("nuclear_waste_vitrified_tiny").setCreativeTab(MainRegistry.partsTab);
-    public static final Item scrap_plastic = new ItemEnumMulti<>("scrap_plastic", ScrapType.VALUES, false, "scrap_plastic").setCreativeTab(null);
+    public static final Item scrap_plastic = new ItemBakedBase("scrap_plastic").setCreativeTab(null);
     public static final Item scrap = new ItemBase("scrap").setCreativeTab(MainRegistry.partsTab);
     public static final Item scrap_oil = new ItemBase("scrap_oil").setCreativeTab(MainRegistry.partsTab);
     public static final Item scrap_nuclear = new ItemBakedBase("scrap_nuclear").setCreativeTab(MainRegistry.partsTab);
