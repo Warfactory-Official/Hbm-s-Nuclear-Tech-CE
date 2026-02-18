@@ -567,10 +567,10 @@ public class ModItems {
 
     public static final Item taurun_boots = new ArmorTaurun(MaterialRegistry.aMatTaurun, -1, EntityEquipmentSlot.FEET, Tags.MODID + ":textures/armor/starmetal_1.png", "taurun_boots").cloneStats((ArmorFSB) taurun_helmet).setMaxStackSize(1);
     public static final Item bismuth_helmet = new ArmorBismuth(MaterialRegistry.aMatBismuth, -1, EntityEquipmentSlot.HEAD, Tags.MODID + ":textures/armor/starmetal_1.png", "bismuth_helmet")
-            .addEffect(new PotionEffect(MobEffects.NIGHT_VISION, 20, 0))
+            .addEffect(new PotionEffect(MobEffects.JUMP_BOOST, 20, 6))
+            .addEffect(new PotionEffect(MobEffects.SPEED, 20, 6))
             .addEffect(new PotionEffect(MobEffects.REGENERATION, 20, 1))
-            .addEffect(new PotionEffect(MobEffects.JUMP_BOOST, 20, 0))
-            .addEffect(new PotionEffect(MobEffects.SPEED, 20, 0))
+            .addEffect(new PotionEffect(MobEffects.NIGHT_VISION, 15 * 20, 0))
             .setDashCount(3);
     public static final Item bismuth_plate = new ArmorBismuth(MaterialRegistry.aMatBismuth, -1, EntityEquipmentSlot.CHEST, Tags.MODID + ":textures/armor/starmetal_1.png", "bismuth_plate").cloneStats((ArmorFSB) bismuth_helmet).setMaxStackSize(1);
     public static final Item bismuth_legs = new ArmorBismuth(MaterialRegistry.aMatBismuth, -1, EntityEquipmentSlot.LEGS, Tags.MODID + ":textures/armor/starmetal_2.png", "bismuth_legs").cloneStats((ArmorFSB) bismuth_helmet).setMaxStackSize(1);

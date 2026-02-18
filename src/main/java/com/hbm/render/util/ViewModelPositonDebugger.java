@@ -95,7 +95,8 @@ public class ViewModelPositonDebugger {
             tickDebug();
     }
     protected void tickDebug() {
-        boolean[] inputs = new boolean[]{Keyboard.isKeyDown(Keyboard.KEY_UP),Keyboard.isKeyDown(Keyboard.KEY_LEFT),Keyboard.isKeyDown(Keyboard.KEY_DOWN),
+        boolean[] inputs = new boolean[]{
+                Keyboard.isKeyDown(Keyboard.KEY_UP),Keyboard.isKeyDown(Keyboard.KEY_LEFT),Keyboard.isKeyDown(Keyboard.KEY_DOWN),
                 Keyboard.isKeyDown(Keyboard.KEY_RIGHT),Keyboard.isKeyDown(Keyboard.KEY_I),Keyboard.isKeyDown(Keyboard.KEY_J),
                 Keyboard.isKeyDown(Keyboard.KEY_K),Keyboard.isKeyDown(Keyboard.KEY_L),Keyboard.isKeyDown(Keyboard.KEY_SPACE),
                 Keyboard.isKeyDown(Keyboard.KEY_RSHIFT),Keyboard.isKeyDown(Keyboard.KEY_RCONTROL),Keyboard.isKeyDown(Keyboard.KEY_LBRACKET),

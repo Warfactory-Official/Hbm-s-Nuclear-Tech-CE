@@ -2,7 +2,6 @@ package com.hbm.render.model;
 
 import com.hbm.main.ResourceManager;
 import com.hbm.render.loader.ModelRendererObj;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import org.lwjgl.opengl.GL11;
 
@@ -62,23 +61,23 @@ public class ModelArmorT51 extends ModelArmorBase {
     public void renderArmor(Entity par1Entity, float scale) {
         switch (type) {
             case 3 -> {
-                Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.t51_helmet);
+                bindTexture(ResourceManager.t51_helmet);
                 head.render(scale * 1.001F);
             }
             case 2 -> {
-                Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.t51_chest);
+                bindTexture(ResourceManager.t51_chest);
                 body.render(scale);
-                Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.t51_arm);
+                bindTexture(ResourceManager.t51_arm);
                 leftArm.render(scale);
                 rightArm.render(scale);
             }
             case 1 -> {
-                Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.t51_leg);
+                bindTexture(ResourceManager.t51_leg);
                 leftLeg.render(scale);
                 rightLeg.render(scale);
             }
             case 0 -> {
-                Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.t51_leg);
+                bindTexture(ResourceManager.t51_leg);
                 leftFoot.render(scale);
                 rightFoot.render(scale);
             }
