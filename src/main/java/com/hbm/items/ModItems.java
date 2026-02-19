@@ -665,9 +665,9 @@ public class ModItems {
     public static final Item fau_legs = new ArmorDigamma(MaterialRegistry.aMatFau, -1, EntityEquipmentSlot.LEGS, Tags.MODID + ":textures/armor/starmetal_2.png", 10000000, 100000, 25000, 1000, "fau_legs").cloneStats((ArmorFSB) fau_helmet).setHides(IArmorDisableModel.EnumPlayerPart.LEFT_LEG, IArmorDisableModel.EnumPlayerPart.RIGHT_LEG).setFullSetForHide();
     public static final Item fau_boots = new ArmorDigamma(MaterialRegistry.aMatFau, -1, EntityEquipmentSlot.FEET, Tags.MODID + ":textures/armor/starmetal_1.png", 10000000, 100000, 25000, 1000, "fau_boots").cloneStats((ArmorFSB) fau_helmet);
     public static final Item dns_helmet = new ArmorDNT(MaterialRegistry.aMatDNS, -1, EntityEquipmentSlot.HEAD, Tags.MODID + ":textures/armor/starmetal_1.png", 1000000000, 1000000, 100000, 115, "dns_helmet")
-            .addEffect(new PotionEffect(MobEffects.STRENGTH, 30, 9))
-            .addEffect(new PotionEffect(MobEffects.HASTE, 30, 7))
-            .addEffect(new PotionEffect(MobEffects.JUMP_BOOST, 30, 2))
+            .addEffect(new PotionEffect(MobEffects.STRENGTH, 20, 9))
+            .addEffect(new PotionEffect(MobEffects.HASTE, 20, 7))
+            .addEffect(new PotionEffect(MobEffects.JUMP_BOOST, 20, 2))
             .setHasGeigerSound(true)
             .enableVATS(true)
             .enableThermalSight(true)

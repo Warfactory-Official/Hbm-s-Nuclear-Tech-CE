@@ -108,23 +108,23 @@ public class ModelArmorRPA extends ModelArmorBase {
     public void renderArmor(Entity par1Entity, float par7) {
         switch (type) {
             case 3 -> {
-                Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.rpa_helmet);
+                bindTexture(ResourceManager.rpa_helmet);
                 head.render(par7 * 1.05F);
             }
             case 2 -> {
-                Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.rpa_chest);
+                bindTexture(ResourceManager.rpa_chest);
                 body.render(par7 * 1.05F);
-                Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.rpa_arm);
+                bindTexture(ResourceManager.rpa_arm);
                 leftArm.render(par7 * 1.05F);
                 rightArm.render(par7 * 1.05F);
             }
             case 1 -> {
-                Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.rpa_leg);
+                bindTexture(ResourceManager.rpa_leg);
                 leftLeg.render(par7 * 1.05F);
                 rightLeg.render(par7 * 1.05F);
             }
             case 0 -> {
-                Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.rpa_leg);
+                bindTexture(ResourceManager.rpa_leg);
                 leftFoot.render(par7 * 1.05F);
                 rightFoot.render(par7 * 1.05F);
             }

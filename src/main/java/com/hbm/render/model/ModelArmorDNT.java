@@ -2,8 +2,11 @@ package com.hbm.render.model;
 
 import com.hbm.main.ResourceManager;
 import com.hbm.render.loader.ModelRendererObj;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
+import org.lwjgl.opengl.GL11;
+
+import static com.hbm.render.NTMRenderHelper.bindTexture;
 
 public class ModelArmorDNT extends ModelArmorBase {
 	
@@ -20,27 +23,62 @@ public class ModelArmorDNT extends ModelArmorBase {
 		rightFoot = new ModelRendererObj(ResourceManager.armor_dnt, "RightBoot").setRotationPoint(-1.9F, 12.0F, 0.0F);
 	}
 
+    @Override
+    public void render(Entity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor) {
+        super.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entity);
+
+        GlStateManager.pushMatrix();
+        GlStateManager.shadeModel(GL11.GL_SMOOTH);
+
+        switch(type) {
+            case 0 -> {
+                bindTexture(ResourceManager.dnt_helmet);
+                this.head.render(scaleFactor);
+            }
+            case 1 -> {
+                bindTexture(ResourceManager.dnt_chest);
+                this.body.render(scaleFactor);
+                bindTexture(ResourceManager.dnt_arm);
+                this.leftArm.render(scaleFactor);
+                this.rightArm.render(scaleFactor);
+            }
+            case 2 -> {
+                bindTexture(ResourceManager.dnt_leg);
+                this.leftLeg.render(scaleFactor);
+                this.rightLeg.render(scaleFactor);
+            }
+            case 3 -> {
+                bindTexture(ResourceManager.dnt_leg);
+                this.leftFoot.render(scaleFactor);
+                this.rightFoot.render(scaleFactor);
+            }
+        }
+
+        GlStateManager.shadeModel(GL11.GL_FLAT);
+        GlStateManager.popMatrix();
+    }
+
 	@Override
     public void renderArmor(Entity par1Entity, float scale) {
         switch (type) {
             case 3 -> {
-                Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.dnt_helmet);
+                bindTexture(ResourceManager.dnt_helmet);
                 head.render(scale * 1.001F);
             }
             case 2 -> {
-                Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.dnt_chest);
+                bindTexture(ResourceManager.dnt_chest);
                 body.render(scale);
-                Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.dnt_arm);
+                bindTexture(ResourceManager.dnt_arm);
                 leftArm.render(scale);
                 rightArm.render(scale);
             }
             case 1 -> {
-                Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.dnt_leg);
+                bindTexture(ResourceManager.dnt_leg);
                 leftLeg.render(scale);
                 rightLeg.render(scale);
             }
             case 0 -> {
-                Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.dnt_leg);
+                bindTexture(ResourceManager.dnt_leg);
                 leftFoot.render(scale);
                 rightFoot.render(scale);
             }
