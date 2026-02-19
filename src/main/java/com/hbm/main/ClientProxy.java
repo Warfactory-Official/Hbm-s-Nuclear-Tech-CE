@@ -12,6 +12,7 @@ import com.hbm.blocks.generic.BlockModDoor;
 import com.hbm.blocks.generic.TrappedBrick;
 import com.hbm.blocks.machine.BlockSeal;
 import com.hbm.blocks.machine.rbmk.RBMKDebrisRadiating;
+import com.hbm.command.CommandRadVisClient;
 import com.hbm.config.GeneralConfig;
 import com.hbm.entity.grenade.*;
 import com.hbm.entity.particle.*;
@@ -26,7 +27,6 @@ import com.hbm.items.weapon.sedna.factory.GunFactoryClient;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.RecoilHandler;
 import com.hbm.main.client.NTMClientRegistry;
-import com.hbm.command.CommandRadVisClient;
 import com.hbm.particle.*;
 import com.hbm.particle.bfg.*;
 import com.hbm.particle.bullet_hit.ParticleBloodParticle;
@@ -105,13 +105,14 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.IRegistry;
 import net.minecraft.world.World;
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.obj.OBJLoader;
-import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fluids.BlockFluidClassic;
@@ -1303,6 +1304,60 @@ public class ClientProxy extends ServerProxy {
                     Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleSmokeNormal.Factory().createParticle(-1, world, ix + ox, iy, iz + oz, p.motionX + moX * 3, p.motionY + moY * 3, p.motionZ + moZ * 3));
                     Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleSmokeNormal.Factory().createParticle(-1, world, ix - ox, iy,
                             iz - oz, p.motionX + moX * 3, p.motionY + moY * 3, p.motionZ + moZ * 3));
+                }
+            }
+
+            case "jetpack_dns" -> {
+
+                if(particleSetting == 2)
+                    return;
+
+                Entity ent = world.getEntityByID(data.getInteger("player"));
+
+                if(ent instanceof EntityPlayer p) {
+
+                    Vec3d offset = new Vec3d(0.125, 0, 0);
+                    float angle = (float) -Math.toRadians(p.rotationYawHead - (p.rotationYawHead - p.renderYawOffset));
+
+                    offset = offset.rotateYaw(angle);
+
+                    double ix = p.posX;
+                    double iy = p.posY - p.getYOffset() - 0.5D;
+                    double iz = p.posZ;
+                    double ox = offset.x;
+                    double oz = offset.z;
+
+                    if(particleSetting == 0) {
+                        Vec3d pos = new Vec3d(ix, iy, iz);
+                        Vec3d thrust = new Vec3d(0, -1, 0);
+                        Vec3d target = pos.add(thrust.x * 10, thrust.y * 10, thrust.z * 10);
+                        RayTraceResult ray = player.world.rayTraceBlocks(pos, target, false, false, true);
+
+                        if(ray != null && ray.typeOfHit == Type.BLOCK && ray.sideHit == EnumFacing.UP) {
+                            IBlockState state = world.getBlockState(ray.getBlockPos());
+
+                            Vec3d delta = new Vec3d(ix - ray.hitVec.x, iy - ray.hitVec.y, iz - ray.hitVec.z);
+                            Vec3d vel = new Vec3d(0.75 - delta.length() * 0.075, 0, 0);
+
+                            for(int i = 0; i < (10 - delta.length()); i++) {
+                                vel = vel.rotateYaw(world.rand.nextFloat() * (float)Math.PI * 2F);
+                                Particle particle = new ParticleBlockDust.Factory().createParticle(-1, world, ray.hitVec.x, ray.hitVec.y + 0.1, ray.hitVec.z, vel.x, 0.1, vel.z, Block.getStateId(state));
+                                if (particle == null) {
+                                    continue;
+                                }
+
+                                Minecraft.getMinecraft().effectRenderer.addEffect(particle);
+                            }
+                        }
+                    }
+
+                    Particle dust1 = new ParticleRedstone.Factory().createParticle(-1, world, ix + ox, iy, iz + oz, p.motionX, p.motionY, p.motionZ);
+                    Particle dust2 = new ParticleRedstone.Factory().createParticle(-1, world, ix - ox, iy, iz - oz, p.motionX, p.motionY, p.motionZ);
+                    dust1.setRBGColorF(0.01F, 1.0F, 1.0F);
+                    dust2.setRBGColorF(0.01F, 1.0F, 1.0F);
+
+                    Minecraft.getMinecraft().effectRenderer.addEffect(dust1);
+                    Minecraft.getMinecraft().effectRenderer.addEffect(dust2);
                 }
             }
 

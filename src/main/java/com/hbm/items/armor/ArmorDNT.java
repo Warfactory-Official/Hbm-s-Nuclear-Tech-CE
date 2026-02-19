@@ -4,10 +4,12 @@ import com.google.common.collect.Multimap;
 import com.hbm.capability.HbmCapability;
 import com.hbm.capability.HbmCapability.IHBMData;
 import com.hbm.handler.ArmorUtil;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.items.ModItems;
 import com.hbm.items.gear.ArmorFSB;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
+import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.render.model.ModelArmorDNT;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.model.ModelBiped;
@@ -20,12 +22,14 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -74,6 +78,16 @@ public class ArmorDNT extends ArmorFSBPowered {
 		if(player.isSprinting()) {
 			player.getAttributeMap().applyAttributeModifiers(multimap);
 		}
+
+        if(!world.isRemote) {
+            /// JET ///
+            if(hasFSBArmor(player) && (props.isJetpackActive() || (!player.onGround && !player.isSneaking() && props.getEnableBackpack()))) {
+                NBTTagCompound data = new NBTTagCompound();
+                data.setString("type", "jetpack_dns");
+                data.setInteger("player", player.getEntityId());
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, player.posX, player.posY, player.posZ), new NetworkRegistry.TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 100));
+            }
+        }
 
 		if(hasFSBArmor(player)) {
 			
