@@ -20,12 +20,12 @@ public class ArmorRPA extends ArmorFSBPowered implements IItemRendererProvider {
     @SideOnly(Side.CLIENT)
     ModelArmorRPA[] models;
 
+    @SideOnly(Side.CLIENT)
+    protected ViewModelPositonDebugger offsets;
+
     public ArmorRPA(ArmorMaterial material, int layer, EntityEquipmentSlot slot, String texture, long maxPower, long chargeRate, long consumption, long drain, String s) {
         super(material, layer, slot, texture, maxPower, chargeRate, consumption, drain, s);
     }
-
-    @SideOnly(Side.CLIENT)
-    protected ViewModelPositonDebugger offsets;
 
     @Override
     @SideOnly(Side.CLIENT)
@@ -40,7 +40,8 @@ public class ArmorRPA extends ArmorFSBPowered implements IItemRendererProvider {
         return models[armorSlot.getIndex()];
     }
 
-    @Override public Item getItemForRenderer() {
+    @Override
+    public Item getItemForRenderer() {
         return this;
     }
 

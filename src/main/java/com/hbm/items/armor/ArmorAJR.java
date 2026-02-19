@@ -46,6 +46,7 @@ public class ArmorAJR extends ArmorFSBPowered implements IItemRendererProvider {
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public ItemRenderBase getRenderer(Item item) {
         return new ItemRenderBase( ) {
             public void renderInventory() {

@@ -47,7 +47,6 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 // mlbv: heads up! The original 1.7 version has almost all the methods expect a param of EntityPlayer.
