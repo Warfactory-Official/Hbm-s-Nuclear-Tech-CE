@@ -37,8 +37,7 @@ public class RenderOverhead {
 		GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
 
 		if(shouldRenderTag(living)) {
-			float f = 1.6F;
-			double distSq = living.getDistanceSq(thePlayer);
+            double distSq = living.getDistanceSq(thePlayer);
 			float range = living.isSneaking() ? RenderLivingBase.NAME_TAG_RANGE_SNEAK : RenderLivingBase.NAME_TAG_RANGE;
 
 			if(distSq < (double) (range * range)) {
@@ -94,10 +93,10 @@ public class RenderOverhead {
 			buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION);
 			int center = fontrenderer.getStringWidth(name) / 2;
 			GlStateManager.color(0.0F, 0.0F, 0.0F, 0.25F);
-			buf.pos((double) (-center - 1), (double) (-1 + heightOffset), 0.0D).endVertex();
-			buf.pos((double) (-center - 1), (double) (8 + heightOffset), 0.0D).endVertex();
-			buf.pos((double) (center + 1), (double) (8 + heightOffset), 0.0D).endVertex();
-			buf.pos((double) (center + 1), (double) (-1 + heightOffset), 0.0D).endVertex();
+			buf.pos(-center - 1, -1 + heightOffset, 0.0D).endVertex();
+			buf.pos(-center - 1, 8 + heightOffset, 0.0D).endVertex();
+			buf.pos(center + 1, 8 + heightOffset, 0.0D).endVertex();
+			buf.pos(center + 1, -1 + heightOffset, 0.0D).endVertex();
 			tessellator.draw();
 			GlStateManager.enableTexture2D();
 			fontrenderer.drawString(name, -fontrenderer.getStringWidth(name) / 2, heightOffset, 553648127);
@@ -143,10 +142,10 @@ public class RenderOverhead {
 			buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION);
 			int center = fontrenderer.getStringWidth(name) / 2;
 			GlStateManager.color(0.0F, 0.0F, 0.0F, 0.25F);
-			buf.pos((double) (-center - 1), (double) (-1 + heightOffset), 0.0D).endVertex();
-			buf.pos((double) (-center - 1), (double) (8 + heightOffset), 0.0D).endVertex();
-			buf.pos((double) (center + 1), (double) (8 + heightOffset), 0.0D).endVertex();
-			buf.pos((double) (center + 1), (double) (-1 + heightOffset), 0.0D).endVertex();
+			buf.pos(-center - 1, -1 + heightOffset, 0.0D).endVertex();
+			buf.pos(-center - 1, 8 + heightOffset, 0.0D).endVertex();
+			buf.pos(center + 1, 8 + heightOffset, 0.0D).endVertex();
+			buf.pos(center + 1, -1 + heightOffset, 0.0D).endVertex();
 			tessellator.draw();
 			GlStateManager.enableTexture2D();
 			fontrenderer.drawString(name, -fontrenderer.getStringWidth(name) / 2, heightOffset, shadowColor);
@@ -176,38 +175,65 @@ public class RenderOverhead {
 		GlStateManager.disableDepth();
 		GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA);
 
-		net.minecraft.client.renderer.Tessellator tess = net.minecraft.client.renderer.Tessellator.getInstance();
+		Tessellator tess = Tessellator.getInstance();
 		BufferBuilder buf = tess.getBuffer();
 		buf.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
 
-		for(Object o : player.world.loadedEntityList) {
-
-			Entity ent = (Entity) o;
+		for(Entity ent : player.world.loadedEntityList) {
 
 			if(ent == player)
 				continue;
 
 			if(ent.getDistanceSq(player) > 4096)
 				continue;
+
 			float r, g, b;
-			r = g = b = 1;
-			if(ent instanceof IMob){
-				r = 1; g = 0; b = 0;
-			} else if(ent instanceof EntityPlayer){
-				r = 1; g = 0; b = 1;
-			} else if(ent instanceof EntityLiving){
-				r = 0; g = 1; b = 0;
-			} else if(ent instanceof EntityItem){
-				r = 1; g = 1; b = 0.5F;
-			} else if(ent instanceof EntityXPOrb) {
-				if(player.ticksExisted % 10 < 5){
-					r = 1; g = 1; b = 0.5F;
-				} else {
-					r = 0.5F; g = 1; b = 0.5F;
-				}
-			} else {
-				continue;
-			}
+
+            switch (ent) {
+                case IMob _ -> {
+                    r = 1;
+                    g = 0;
+                    b = 0;
+                }
+                case EntityPlayer _ -> {
+                    r = 1;
+                    g = 0;
+                    b = 1;
+                }
+                case EntityLiving _ -> {
+                    r = 0;
+                    g = 1;
+                    b = 0;
+                }
+                case EntityItem _ -> {
+                    r = 1;
+                    g = 1;
+                    b = 0.5F;
+                }
+                case EntityXPOrb _ -> {
+                    if (player.ticksExisted % 10 < 5) {
+                        r = 1;
+                    } else {
+                        r = 0.5F;
+                    }
+
+                    g = 1;
+                    b = 0.5F;
+                }
+                default -> {
+                    continue;
+                }
+            }
+
+            if(!ent.isNonBoss()) {
+                r = 1;
+                g = 0.5F;
+                b = 0;
+            }
+
+            if(ent instanceof EntityLivingBase && ((EntityLivingBase) ent).getHealth() <= 0) {
+                r = g = b = 0;
+            }
 
 			AxisAlignedBB bb = ent.getEntityBoundingBox();
 			buf.pos(bb.minX - x, bb.maxY - y, bb.minZ - z).color(r, g, b, 1).endVertex();
