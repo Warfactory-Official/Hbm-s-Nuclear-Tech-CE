@@ -114,7 +114,7 @@ public class ItemRenderMAS36 extends ItemRenderWeaponBase {
 			GL11.glClipPlane(GL11.GL_CLIP_PLANE0, buf);
 			GlStateManager.translate(bullets[0], bullets[1], bullets[2]);
 			ResourceManager.mas36.renderPart("Bullets");
-			GL11.glEnable(GL11.GL_CLIP_PLANE0);
+			GL11.glDisable(GL11.GL_CLIP_PLANE0);
 			GlStateManager.popMatrix();
 		}
 
@@ -124,7 +124,7 @@ public class ItemRenderMAS36 extends ItemRenderWeaponBase {
 		GlStateManager.translate(0, 1.125, 8);
 		GlStateManager.rotate(90, 0, 1, 0);
 		GlStateManager.scale(smokeScale, smokeScale, smokeScale);
-		this.renderSmokeNodes(gun.getConfig(stack, 0).smokeNodes, 1D);
+		renderSmokeNodes(gun.getConfig(stack, 0).smokeNodes, 1D);
 		GlStateManager.popMatrix();
 
 		GlStateManager.shadeModel(GL11.GL_FLAT);
@@ -134,7 +134,7 @@ public class ItemRenderMAS36 extends ItemRenderWeaponBase {
 		GlStateManager.rotate(90, 0, 1, 0);
 		GlStateManager.rotate(90 * gun.shotRand, 1, 0, 0);
 		GlStateManager.scale(0.5, 0.5, 0.5);
-		this.renderMuzzleFlash(gun.lastShot[0], 75, 7.5);
+		renderMuzzleFlash(gun.lastShot[0], 75, 7.5);
 		GlStateManager.popMatrix();
 	}
 
