@@ -62,6 +62,9 @@ public class ItemCell extends Item {
         return Fluids.fromID(stack.getMetadata());
     }
 
+    /**
+     * Balefire cell is ModItems.cell_balefire, don't use this!
+     */
     public static ItemStack getFullCell(FluidType fluid, int amount) {
         if (EnumCell.contains(fluid)) {
             return new ItemStack(ModItems.cell, amount, fluid.getID());
@@ -69,6 +72,9 @@ public class ItemCell extends Item {
         return ItemStack.EMPTY;
     }
 
+    /**
+     * Balefire cell is ModItems.cell_balefire, don't use this!
+     */
     public static ItemStack getFullCell(FluidType fluid) {
         return getFullCell(fluid, 1);
     }

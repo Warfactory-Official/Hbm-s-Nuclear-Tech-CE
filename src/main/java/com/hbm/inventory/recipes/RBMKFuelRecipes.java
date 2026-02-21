@@ -34,7 +34,6 @@ public class RBMKFuelRecipes {
 		addRod(ModItems.rbmk_fuel_hes);
 		addRod(ModItems.rbmk_fuel_leaus);
 		addRod(ModItems.rbmk_fuel_heaus);
-		addRod(ModItems.rbmk_fuel_unobtainium);
 		addRod(ModItems.rbmk_fuel_ra226be);
 		addRod(ModItems.rbmk_fuel_po210be);
 		addRod(ModItems.rbmk_fuel_pu238be);

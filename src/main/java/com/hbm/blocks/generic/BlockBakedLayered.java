@@ -1,9 +1,9 @@
 package com.hbm.blocks.generic;
 
 import com.google.common.collect.ImmutableMap;
+import com.hbm.Tags;
 import com.hbm.blocks.BlockBase;
 import com.hbm.items.IDynamicModels;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.block.LayeredStateMapper;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
@@ -105,7 +105,7 @@ public class BlockBakedLayered extends BlockBase implements IDynamicModels {
         if (textureSprite != null) {
             map.setTextureEntry(textureSprite);
         } else {
-            map.registerSprite(new ResourceLocation(RefStrings.MODID, ROOT_PATH + texturePath));
+            map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath));
         }
     }
 }

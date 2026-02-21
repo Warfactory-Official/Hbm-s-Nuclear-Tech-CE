@@ -1,10 +1,10 @@
 package com.hbm.items.special;
 
 import com.google.common.collect.ImmutableMap;
+import com.hbm.Tags;
 import com.hbm.inventory.gui.GUIBookLore;
 import com.hbm.items.IDynamicModels;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.util.I18nUtil;
@@ -43,8 +43,8 @@ import java.util.Objects;
  */
 public class ItemBookLore extends Item implements IGUIProvider, IDynamicModels {
 
-    private static final ResourceLocation TEX_COVER = new ResourceLocation(RefStrings.MODID, "items/book_cover");
-    private static final ResourceLocation TEX_TITLE = new ResourceLocation(RefStrings.MODID, "items/book_title");
+    private static final ResourceLocation TEX_COVER = new ResourceLocation(Tags.MODID, "items/book_cover");
+    private static final ResourceLocation TEX_TITLE = new ResourceLocation(Tags.MODID, "items/book_title");
 
     public ItemBookLore(String s) {
         this.setMaxStackSize(1);

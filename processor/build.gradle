@@ -24,7 +24,14 @@ dependencies {
     implementation 'com.squareup:javapoet:1.13.0'
 }
 
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs.addAll([
+            '--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
+            '--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED'
+    ])
+}
+
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }

@@ -18,6 +18,7 @@ public class ItemRenderBase extends TEISRBase {
 				GlStateManager.scale(0.2F, 0.2F, 0.2F);
 				GlStateManager.rotate(135F, 0F, 1F, 0F);
 				renderNonInv(itemStackIn);
+                renderFirstPersonRightHand();
 			}
 			case FIRST_PERSON_LEFT_HAND -> {
 				GlStateManager.translate(0F, 0.3F, 0F);
@@ -70,4 +71,5 @@ public class ItemRenderBase extends TEISRBase {
 	public void renderInventory() { }
 	public void renderCommon() { }
     public void renderGround() { }
+    public void renderFirstPersonRightHand() { }
 }

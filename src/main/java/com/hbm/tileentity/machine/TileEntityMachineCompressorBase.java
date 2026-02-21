@@ -1,8 +1,5 @@
 package com.hbm.tileentity.machine;
 
-import java.util.HashMap;
-import java.util.List;
-
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.blocks.ModBlocks;
@@ -16,26 +13,33 @@ import com.hbm.inventory.recipes.CompressorRecipes;
 import com.hbm.inventory.recipes.CompressorRecipes.CompressorRecipe;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.DirPos;
+import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.BobMathUtil;
-import com.hbm.util.Tuple.Pair;
 import com.hbm.util.I18nUtil;
-
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.util.ITickable;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import com.hbm.util.SoundUtil;
+import com.hbm.util.Tuple.Pair;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ITickable;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.HashMap;
+import java.util.List;
 
 public abstract class TileEntityMachineCompressorBase extends TileEntityMachineBase implements IGUIProvider, IControlReceiver, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, IFluidCopiable, ITickable {
 
@@ -52,7 +56,23 @@ public abstract class TileEntityMachineCompressorBase extends TileEntityMachineB
     public UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
 
     public TileEntityMachineCompressorBase() {
-        super(4, true, true);
+        super(0, true, true);
+
+        inventory = new ItemStackHandler(4) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                super.onContentsChanged(slot);
+                markDirty();
+            }
+
+            @Override
+            public void setStackInSlot(int slot, ItemStack stack) {
+                super.setStackInSlot(slot, stack);
+                if (Library.isMachineUpgrade(stack) && slot >= 2 && slot <= 3)
+                    SoundUtil.playUpgradePlugSound(world, pos);
+            }
+        };
+
         this.tanks = new FluidTankNTM[2];
         this.tanks[0] = new FluidTankNTM(Fluids.NONE, 16_000);
         this.tanks[1] = new FluidTankNTM(Fluids.NONE, 16_000).withPressure(1);

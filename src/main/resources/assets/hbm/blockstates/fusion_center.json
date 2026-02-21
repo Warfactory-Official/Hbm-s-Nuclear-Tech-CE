@@ -1,6 +1,0 @@
-{
-	"variants": {
-		"activated=true": { "model": "hbm:fusion_center" },
-     	   	"activated=false": { "model": "hbm:fusion_center" }
-	}
-}

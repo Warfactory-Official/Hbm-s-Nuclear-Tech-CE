@@ -1,6 +1,7 @@
 package com.hbm.integration.groovy.script;
 
 import com.cleanroommc.groovyscript.api.GroovyLog;
+import com.cleanroommc.groovyscript.api.documentation.annotations.RegistryDescription;
 import com.cleanroommc.groovyscript.helper.recipe.AbstractRecipeBuilder;
 import com.cleanroommc.groovyscript.registry.StandardListRegistry;
 import com.hbm.integration.groovy.HbmGroovyPropertyContainer;
@@ -12,6 +13,7 @@ import java.util.Collection;
 
 import static com.hbm.inventory.recipes.BlastFurnaceRecipes.blastFurnaceRecipes;
 
+@RegistryDescription(linkGenerator = "hbm", isFullyDocumented = false)
 public class BlastFurnace extends StandardListRegistry<Tuple.Triplet<Object, Object, ItemStack>> {
     @Override
     public Collection<Tuple.Triplet<Object, Object, ItemStack>> getRecipes() {

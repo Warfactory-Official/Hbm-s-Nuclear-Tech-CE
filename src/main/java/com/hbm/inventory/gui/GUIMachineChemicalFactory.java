@@ -1,10 +1,10 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerMachineChemicalFactory;
 import com.hbm.inventory.recipes.ChemicalPlantRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.machine.ItemBlueprints;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityMachineChemicalFactory;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
@@ -19,7 +19,7 @@ import java.io.IOException;
 
 public class GUIMachineChemicalFactory extends GuiInfoContainer {
 
-    private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_chemical_factory.png");
+    private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_chemical_factory.png");
     private TileEntityMachineChemicalFactory chemplant;
 
     public GUIMachineChemicalFactory(InventoryPlayer invPlayer, TileEntityMachineChemicalFactory tedf) {

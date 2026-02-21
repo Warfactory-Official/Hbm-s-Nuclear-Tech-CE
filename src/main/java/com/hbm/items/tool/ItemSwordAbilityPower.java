@@ -82,9 +82,9 @@ public class ItemSwordAbilityPower extends ItemSwordAbility implements IBatteryI
 
     	return 0;
     }
-    
-    @Override
-	public long getDischargeRate() {
+
+	@Override
+	public long getDischargeRate(ItemStack stack) {
 		return 0;
 	}
 
@@ -125,10 +125,10 @@ public class ItemSwordAbilityPower extends ItemSwordAbility implements IBatteryI
     	return maxPower;
     }
 
-    @Override
-    public long getChargeRate() {
-    	return chargeRate;
-    }
+	@Override
+	public long getChargeRate(ItemStack stack) {
+		return chargeRate;
+	}
 
     @Override
     public void setDamage(ItemStack stack, int damage) {

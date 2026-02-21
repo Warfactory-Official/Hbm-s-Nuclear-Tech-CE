@@ -1,10 +1,10 @@
 package com.hbm.blocks.machine.pile;
 
+import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.BlockMeta;
 import com.hbm.items.ModItems;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.block.BlockBakeFrame;
 import com.hbm.tileentity.machine.pile.TileEntityPileNeutronDetector;
 import net.minecraft.client.renderer.texture.TextureMap;
@@ -49,8 +49,8 @@ public class BlockGraphiteNeutronDetector extends BlockGraphiteDrilledTE {
     @Override
     public void registerSprite(TextureMap map) {
         super.registerSprite(map);
-        map.registerSprite(new ResourceLocation(RefStrings.MODID, "blocks/" + "block_graphite_detector_out_aluminum"));
-        map.registerSprite(new ResourceLocation(RefStrings.MODID, "blocks/" + "block_graphite_detector_out"));
+        map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/" + "block_graphite_detector_out_aluminum"));
+        map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/" + "block_graphite_detector_out"));
     }
 
     public void triggerRods(World world, BlockPos pos) {

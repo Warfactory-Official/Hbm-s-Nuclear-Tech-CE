@@ -86,7 +86,7 @@ public class PileNeutronHandler {
                     else if(block == ModBlocks.concrete ||
                             block == ModBlocks.concrete_smooth ||
                             block == ModBlocks.concrete_asbestos ||
-                            //block == ModBlocks.concrete_colored ||
+                            block == ModBlocks.concrete_colored ||
                             block == ModBlocks.brick_concrete)
                         fluxQuantity *= 0.25;
 
@@ -94,9 +94,8 @@ public class PileNeutronHandler {
                         return;
                 }
 
-                if(tile instanceof IPileNeutronReceiver) {
+                if(tile instanceof IPileNeutronReceiver rec) {
 
-                    IPileNeutronReceiver rec = (IPileNeutronReceiver) tile;
                     rec.receiveNeutrons((int) Math.floor(fluxQuantity));
 
                     if(block != ModBlocks.block_graphite_detector || (meta & 8) == 0) return;

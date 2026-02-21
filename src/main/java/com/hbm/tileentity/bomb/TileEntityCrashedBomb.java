@@ -25,7 +25,7 @@ public class TileEntityCrashedBomb extends TileEntity implements ITickable {
         if (!world.isRemote) {
 
             if (world.getTotalWorldTime() % 2 == 0) {
-                EnumDudType type = EnumUtil.grabEnumSafely(EnumDudType.class, this.getBlockMetadata());
+                EnumDudType type = EnumUtil.grabEnumSafely(EnumDudType.VALUES, this.getBlockMetadata());
 
                 switch (type) {
                     case BALEFIRE -> affectEntities(
@@ -44,9 +44,9 @@ public class TileEntityCrashedBomb extends TileEntity implements ITickable {
 
     public void affectEntities(BiConsumer<EntityLivingBase, Float> effect, double range) {
         List<EntityLivingBase> list = world.getEntitiesWithinAABB(EntityLivingBase.class,
-                new AxisAlignedBB(0 + 0.5, 0 + 0.5, 0 + 0.5, 1 + 0.5, 1 + 0.5, 1 + 0.5).expand(range, range, range));
+                new AxisAlignedBB(pos.add(0.5, 0.5, 0.5), pos.add(0.5, 0.5, 0.5)).grow(range, range, range));
         for (EntityLivingBase entity : list) {
-            double dist = Math.sqrt(entity.getDistance(entity.posX, entity.posY + entity.height / 2, entity.posZ));
+            double dist = Math.sqrt(getDistanceSq(entity.posX, entity.posY + entity.height / 2, entity.posZ));
             if (dist > range) continue;
             float intensity = (float) (1D - dist / range);
             effect.accept(entity, intensity);

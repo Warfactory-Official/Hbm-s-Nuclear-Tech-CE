@@ -1,11 +1,11 @@
 package com.hbm.blocks.generic;
 
+import com.hbm.Tags;
 import com.hbm.api.energymk2.IBatteryItem;
+import com.hbm.render.loader.HFRWavefrontObject;
 import com.hbm.items.armor.ArmorFSBPowered;
 import com.hbm.items.gear.ArmorFSB;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.lib.RefStrings;
-import com.hbm.render.amlfrom1710.WavefrontObject;
 import com.hbm.render.model.BlockDecoBakedModel;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.BlockFaceShape;
@@ -97,14 +97,14 @@ public class HEVBattery extends BlockBakeBase {
     @Override
     @SideOnly(Side.CLIENT)
     public void bakeModel(ModelBakeEvent event) {
-        WavefrontObject wavefront = null;
+        HFRWavefrontObject wavefront = null;
         try {
-            wavefront = new WavefrontObject(new ResourceLocation(RefStrings.MODID, "models/blocks/battery.obj"));
+            wavefront = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/blocks/battery.obj"));
         } catch (Exception ignored) {}
 
         if (wavefront == null) {
             TextureAtlasSprite missing = Minecraft.getMinecraft().getTextureMapBlocks().getMissingSprite();
-            IBakedModel baked = BlockDecoBakedModel.forBlock(new WavefrontObject(new ResourceLocation("minecraft:empty")), missing, -0.5f);
+            IBakedModel baked = BlockDecoBakedModel.forBlock(new HFRWavefrontObject(new ResourceLocation("minecraft:empty")), missing, -0.5f);
             ModelResourceLocation modelLocation = new ModelResourceLocation(getRegistryName(), "inventory");
             event.getModelRegistry().putObject(modelLocation, baked);
             ModelResourceLocation worldLocation = new ModelResourceLocation(getRegistryName(), "normal");

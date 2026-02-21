@@ -175,8 +175,8 @@ public class EntityMissileAntiBallistic extends EntityThrowableInterp implements
 	}
 
 	@Override
-	public double getGravityVelocity() {
-		return 0.0D;
+	public float getGravityVelocity() {
+		return 0.0F;
 	}
 
 	@Override

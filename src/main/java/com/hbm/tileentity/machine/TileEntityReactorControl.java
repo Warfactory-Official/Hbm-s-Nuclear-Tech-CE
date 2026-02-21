@@ -52,7 +52,7 @@ public class TileEntityReactorControl extends TileEntityMachineBase implements I
         levelUpper = nbt.getDouble("levelUpper");
         heatLower = nbt.getDouble("heatLower");
         heatUpper = nbt.getDouble("heatUpper");
-        function = RodFunction.values()[nbt.getInteger("function")];
+        function = RodFunction.VALUES[nbt.getInteger("function")];
 
         if (nbt.hasKey("inventory", 10)) {
             inventory.deserializeNBT(nbt.getCompoundTag("inventory"));
@@ -149,7 +149,7 @@ public class TileEntityReactorControl extends TileEntityMachineBase implements I
         levelUpper = buf.readDouble();
         heatLower = buf.readDouble();
         heatUpper = buf.readDouble();
-        function = RodFunction.values()[buf.readByte()];
+        function = RodFunction.VALUES[buf.readByte()];
     }
 
     private boolean establishLink() {
@@ -221,7 +221,7 @@ public class TileEntityReactorControl extends TileEntityMachineBase implements I
     public void receiveControl(NBTTagCompound data) {
 
         if(data.hasKey("function")) {
-            this.function = RodFunction.values()[data.getInteger("function")];
+            this.function = RodFunction.VALUES[data.getInteger("function")];
         } else {
             this.levelLower = data.getDouble("levelLower");
             this.levelUpper = data.getDouble("levelUpper");
@@ -240,7 +240,9 @@ public class TileEntityReactorControl extends TileEntityMachineBase implements I
     public enum RodFunction {
         LINEAR,
         QUAD,
-        LOG
+        LOG;
+
+        public static final RodFunction[] VALUES = values();
     }
 
     // do some opencomputer stuff
@@ -270,7 +272,7 @@ public class TileEntityReactorControl extends TileEntityMachineBase implements I
         double newMinHeat = args.checkDouble(2);
         double newMaxLevel = args.checkDouble(3)/100.0;
         double newMinLevel = args.checkDouble(4)/100.0;
-        function = RodFunction.values()[MathHelper.clamp(newFunction, 0, 2)];
+        function = RodFunction.VALUES[MathHelper.clamp(newFunction, 0, 2)];
         heatUpper = MathHelper.clamp(newMaxHeat, 0, 9999);
         heatLower = MathHelper.clamp(newMinHeat, 0, 9999);
         levelUpper = MathHelper.clamp(newMaxLevel, 0, 1);

@@ -1,11 +1,10 @@
 package com.hbm.blocks.machine.pile;
 
+import com.hbm.Tags;
 import com.hbm.api.block.IToolable;
 import com.hbm.blocks.generic.BlockMeta;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.block.BlockBakeFrame;
-import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.player.EntityPlayer;
@@ -42,9 +41,9 @@ public class BlockGraphiteRod extends BlockGraphiteDrilledBase implements IToola
 	@Override
 	public void registerSprite(TextureMap map) {
 		super.registerSprite(map);
-		map.registerSprite(new ResourceLocation(RefStrings.MODID, "blocks/" + "block_graphite_rod_out_aluminum"));
-		map.registerSprite(new ResourceLocation(RefStrings.MODID, "blocks/" + "block_graphite_rod_in_aluminum"));
-		map.registerSprite(new ResourceLocation(RefStrings.MODID, "blocks/" + "block_graphite_rod_out"));
+		map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/" + "block_graphite_rod_out_aluminum"));
+		map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/" + "block_graphite_rod_in_aluminum"));
+		map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/" + "block_graphite_rod_out"));
 	}
 
 	@Override

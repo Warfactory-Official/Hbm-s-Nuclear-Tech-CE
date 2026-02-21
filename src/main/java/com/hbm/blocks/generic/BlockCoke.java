@@ -9,10 +9,10 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import org.jetbrains.annotations.NotNull;
 
-public class BlockCoke extends BlockEnumMeta {
+public class BlockCoke extends BlockEnumMeta<ItemEnums.EnumCokeType> {
 
     public BlockCoke() {
-        super(Material.IRON, SoundType.METAL, "block_coke", ItemEnums.EnumCokeType.class, true, true);
+        super(Material.IRON, SoundType.METAL, "block_coke", ItemEnums.EnumCokeType.VALUES, true, true);
     }
 
     @Override

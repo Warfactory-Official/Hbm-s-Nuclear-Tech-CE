@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.turret.TileEntityTurretBaseNT;
 import com.hbm.tileentity.turret.TileEntityTurretFritz;
 import net.minecraft.client.renderer.GlStateManager;
@@ -10,7 +10,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GUITurretFritz extends GUITurretBase {
 
-    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/weapon/gui_turret_fritz.png");
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/weapon/gui_turret_fritz.png");
 
     public GUITurretFritz(InventoryPlayer invPlayer, TileEntityTurretBaseNT tile) {
         super(invPlayer, tile);
@@ -40,7 +40,5 @@ public class GUITurretFritz extends GUITurretBase {
         return texture;
     }
 
-    @Override
-    public void drawAmmo(int mouseX, int mouseY) {
-    }
+
 }

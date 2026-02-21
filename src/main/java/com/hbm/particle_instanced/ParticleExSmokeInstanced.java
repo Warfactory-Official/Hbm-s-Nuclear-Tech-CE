@@ -1,6 +1,6 @@
 package com.hbm.particle_instanced;
 
-import com.hbm.main.ModEventHandlerClient;
+import com.hbm.main.client.NTMClientRegistry;
 import net.minecraft.world.World;
 
 import java.nio.ByteBuffer;
@@ -15,7 +15,7 @@ public class ParticleExSmokeInstanced extends ParticleInstanced {
 	public ParticleExSmokeInstanced(World worldIn, double posXIn, double posYIn, double posZIn) {
 		super(worldIn, posXIn, posYIn, posZIn);
 		maxAge = 100 + rand.nextInt(40);
-		this.particleTexture = ModEventHandlerClient.contrail;
+		this.particleTexture = NTMClientRegistry.contrail;
 		initVals(worldIn.rand.nextInt());
 	}
 	

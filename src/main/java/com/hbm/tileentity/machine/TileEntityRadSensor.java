@@ -20,10 +20,10 @@ import net.minecraftforge.fml.common.Optional;
 @AutoRegister
 public class TileEntityRadSensor extends TileEntity implements ITickable, SimpleComponent {
 
-	public float chunkRads = 0;
-	public float recievedDose = 0;
+	public double chunkRads = 0;
+	public double recievedDose = 0;
 
-	public float lastChunkRads = 0;
+	public double lastChunkRads = 0;
 
 	public int redstoneOutput = 0;
 	public int comparatorOutput = 0;
@@ -33,15 +33,15 @@ public class TileEntityRadSensor extends TileEntity implements ITickable, Simple
 	
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
-		chunkRads = compound.getFloat("chunkRads");
-		recievedDose = compound.getFloat("recievedDose");
+		chunkRads = compound.getDouble("chunkRads");
+		recievedDose = compound.getDouble("recievedDose");
 		super.readFromNBT(compound);
 	}
 	
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-		compound.setFloat("chunkRads", chunkRads);
-		compound.setFloat("recievedDose", recievedDose);
+		compound.setDouble("chunkRads", chunkRads);
+		compound.setDouble("recievedDose", recievedDose);
 		return super.writeToNBT(compound);
 	}
 
@@ -131,12 +131,12 @@ public class TileEntityRadSensor extends TileEntity implements ITickable, Simple
 	@Override
 	public void update() {
 		if(!world.isRemote) {
-			chunkRads = (ChunkRadiationManager.proxy.getRadiation(world, pos) + lastChunkRads) / 2F;
+            chunkRads = (ChunkRadiationManager.proxy.getRadiation(world, pos) + lastChunkRads) / 2.0;
 			
 			if(0 < getRedstonePower(world, pos, EnumFacing.DOWN)){
 				recievedDose = 0;
 			}else{
-				recievedDose += chunkRads/20F;
+				recievedDose += chunkRads / 20.0;
 			}
 
 			redstoneOutput = getRestoneOutput();

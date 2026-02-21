@@ -1,8 +1,9 @@
 package com.hbm.util;
 
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.IKeypadHandler;
+import com.hbm.packet.threading.ThreadedPacket;
 import com.hbm.packet.toclient.KeypadClientPacket;
-import com.hbm.packet.PacketDispatcher;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
@@ -65,8 +66,10 @@ public class Keypad {
 			}
 			data[19] = successColorTicks;
 			data[20] = failColorTicks;
-			PacketDispatcher.wrapper.sendToAllAround(new KeypadClientPacket(te.getPos(), data), new TargetPoint(te.getWorld().provider.getDimension(), te.getPos().getX(), te.getPos().getY(), te.getPos().getZ(), 10));
-		}
+            ThreadedPacket message = new KeypadClientPacket(te.getPos(), data);
+            PacketThreading.createAllAroundThreadedPacket(message,
+                    new TargetPoint(te.getWorld().provider.getDimension(), te.getPos().getX(), te.getPos().getY(), te.getPos().getZ(), 10));
+        }
 		isActive = active;
 	}
 

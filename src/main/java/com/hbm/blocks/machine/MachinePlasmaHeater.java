@@ -22,6 +22,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
 
@@ -68,7 +69,7 @@ public class MachinePlasmaHeater extends BlockDummyable {
 	}
 	
 	@Override
-	public void breakBlock(World world, BlockPos pos, IBlockState state) {
+	public void breakBlock(@NotNull World world, @NotNull BlockPos pos, IBlockState state) {
 		int i = state.getValue(META);
 		if(i >= 12) {
 
@@ -83,7 +84,7 @@ public class MachinePlasmaHeater extends BlockDummyable {
 	}
 	
 	@Override
-	public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos) {
+	public @NotNull AxisAlignedBB getBoundingBox(@NotNull IBlockState state, @NotNull IBlockAccess world, @NotNull BlockPos pos) {
 		final float f = 1/16F;
 		if(state.getValue(META) == ForgeDirection.UP.ordinal() && world.getBlockState(pos.up()).getBlock() != this) {
     		return new AxisAlignedBB(0, 0, 0, 1, f * 8F, 1);

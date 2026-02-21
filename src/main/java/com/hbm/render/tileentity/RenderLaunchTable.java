@@ -5,7 +5,7 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.weapon.ItemMissile;
 import com.hbm.items.weapon.ItemMissile.PartSize;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.IModelCustom;
+import com.hbm.render.loader.IModelCustom;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.misc.MissileMultipart;
 import com.hbm.render.misc.MissilePronter;

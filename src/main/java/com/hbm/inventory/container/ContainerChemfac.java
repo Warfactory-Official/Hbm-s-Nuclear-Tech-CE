@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotBattery;
-import com.hbm.inventory.SlotUpgrade;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.tileentity.machine.TileEntityMachineChemfac;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;

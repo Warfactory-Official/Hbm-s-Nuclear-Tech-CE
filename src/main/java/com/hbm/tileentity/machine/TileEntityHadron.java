@@ -195,10 +195,10 @@ public class TileEntityHadron extends TileEntityMachineBase implements ITickable
 		this.power = buf.readLong();
 		this.analysisOnly = buf.readBoolean();
 		this.hopperMode = buf.readBoolean();
-		this.state = EnumHadronState.values()[buf.readByte()];
+		this.state = EnumHadronState.VALUES[buf.readByte()];
 
 		this.stat_success = buf.readBoolean();
-		this.stat_state = EnumHadronState.values()[buf.readByte()];
+		this.stat_state = EnumHadronState.VALUES[buf.readByte()];
 		this.stat_charge = buf.readInt();
 		this.stat_x = buf.readInt();
 		this.stat_y = buf.readInt();
@@ -744,6 +744,8 @@ public class TileEntityHadron extends TileEntityMachineBase implements ITickable
 		ERROR_DIODE_COLLISION(0xff0000, true),
 		ERROR_BRANCHING_TURN(0xff0000, true),
 		ERROR_GENERIC(0xff0000, true);
+
+        public static final EnumHadronState[] VALUES = values();
 
 		public int color;
 		public boolean showCoord;

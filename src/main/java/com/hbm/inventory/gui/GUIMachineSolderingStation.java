@@ -1,27 +1,29 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerMachineSolderingStation;
-import com.hbm.lib.RefStrings;
 import com.hbm.packet.toserver.NBTControlPacket;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.machine.TileEntityMachineSolderingStation;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.util.text.TextFormatting;
+import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUIMachineSolderingStation extends GuiInfoContainer {
   private static final ResourceLocation texture =
-      new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_soldering_station.png");
+      new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_soldering_station.png");
   private final TileEntityMachineSolderingStation soldering_station;
 
   public GUIMachineSolderingStation(
@@ -65,8 +67,8 @@ public class GUIMachineSolderingStation extends GuiInfoContainer {
             Arrays.asList(
                 "Recipe Collision Prevention: "
                     + (soldering_station.collisionPrevention
-                        ? ChatFormatting.GREEN + "ON"
-                        : ChatFormatting.RED + "OFF"),
+                        ? TextFormatting.GREEN + "ON"
+                        : TextFormatting.RED + "OFF"),
                 "Prevents no-fluid recipes from being processed",
                 "when fluid is present."));
 
@@ -80,10 +82,10 @@ public class GUIMachineSolderingStation extends GuiInfoContainer {
     super.mouseClicked(x, y, i);
 
     if (guiLeft + 5 <= x && guiLeft + 5 + 10 > x && guiTop + 66 < y && guiTop + 66 + 10 >= y) {
-      playPressSound();
+      playClickSound();
       NBTTagCompound data = new NBTTagCompound();
       data.setBoolean("collision", true);
-      PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, soldering_station.getPos()));
+        PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, soldering_station.getPos()));
     }
   }
 
@@ -96,7 +98,6 @@ public class GUIMachineSolderingStation extends GuiInfoContainer {
   @Override
   protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
     super.drawDefaultBackground();
-    GL11.glPushAttrib(GL11.GL_ENABLE_BIT);
     GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
     GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
@@ -115,7 +116,5 @@ public class GUIMachineSolderingStation extends GuiInfoContainer {
 
     this.drawInfoPanel(guiLeft + 78, guiTop + 67, 8, 8, 8);
     soldering_station.tank.renderTank(guiLeft + 35, guiTop + 79, this.zLevel, 34, 16, 1);
-
-    GlStateManager.popAttrib();
   }
 }

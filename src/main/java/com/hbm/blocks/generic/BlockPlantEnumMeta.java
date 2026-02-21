@@ -1,9 +1,9 @@
 package com.hbm.blocks.generic;
 
 import com.google.common.collect.ImmutableMap;
+import com.hbm.Tags;
 import com.hbm.blocks.BlockEnumMeta;
 import com.hbm.blocks.ModBlocks;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.block.BlockBakeFrame;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
@@ -34,11 +34,11 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public abstract class BlockPlantEnumMeta extends BlockEnumMeta {
+public abstract class BlockPlantEnumMeta<E extends Enum<E>> extends BlockEnumMeta<E> {
 
     public static Set<Block> PLANTABLE_BLOCKS = new HashSet<>();
 
-    public BlockPlantEnumMeta(String registryName, Class<? extends Enum> blockEnum) {
+    public BlockPlantEnumMeta(String registryName, E[] blockEnum) {
         super(Material.PLANTS, SoundType.PLANT, registryName, blockEnum, true, true);
         this.setTickRandomly(true);
     }
@@ -48,7 +48,7 @@ public abstract class BlockPlantEnumMeta extends BlockEnumMeta {
 
     @Override
     protected BlockBakeFrame[] generateBlockFrames(String registryName) {
-        return Arrays.stream(blockEnum.getEnumConstants())
+        return Arrays.stream(blockEnum)
                 .sorted(Comparator.comparing(Enum::ordinal))
                 .map(Enum::name)
                 .map(name -> registryName + "_" + name.toLowerCase(Locale.US))
@@ -169,7 +169,7 @@ public abstract class BlockPlantEnumMeta extends BlockEnumMeta {
 
                 IModel itemModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/generated"));
                 ImmutableMap.Builder<String, String> itemTextureMap = ImmutableMap.builder();
-                ResourceLocation itemTexture = new ResourceLocation(RefStrings.MODID, BlockBakeFrame.ROOT_PATH + blockFrame.textureArray[0]);
+                ResourceLocation itemTexture = new ResourceLocation(Tags.MODID, BlockBakeFrame.ROOT_PATH + blockFrame.textureArray[0]);
                 itemTextureMap.put("layer0", itemTexture.toString());
                 IModel retexturedItemModel = itemModel.retexture(itemTextureMap.build());
                 IBakedModel bakedItemModel = retexturedItemModel.bake(

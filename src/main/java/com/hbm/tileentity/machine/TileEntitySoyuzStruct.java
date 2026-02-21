@@ -1,6 +1,5 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.blocks.IStructTE;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.SoyuzLauncher;
 import com.hbm.interfaces.AutoRegister;
@@ -14,7 +13,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @AutoRegister
-public class TileEntitySoyuzStruct extends TileEntity implements ITickable, IStructTE<TileEntitySoyuzStruct> {
+public class TileEntitySoyuzStruct extends TileEntity implements ITickable {
 
 	int age;
 
@@ -157,10 +156,5 @@ public class TileEntitySoyuzStruct extends TileEntity implements ITickable, IStr
 	@SideOnly(Side.CLIENT)
 	public double getMaxRenderDistanceSquared() {
 		return 65536.0D;
-	}
-
-	@Override
-	public TileEntitySoyuzStruct newInstance() {
-		return this;
 	}
 }

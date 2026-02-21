@@ -1,8 +1,8 @@
 package com.hbm.entity.mob;
 
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -143,7 +143,7 @@ public class EntityQuackos extends EntityDuck {
 			for(int i = 0; i < 150; i++) {
 				NBTTagCompound data = new NBTTagCompound();
 				data.setString("type", "bf");
-				PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data,
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data,
 								posX + rand.nextDouble() * 20 - 10,
 								posY + rand.nextDouble() * 25,
 								posZ + rand.nextDouble() * 20 - 10),

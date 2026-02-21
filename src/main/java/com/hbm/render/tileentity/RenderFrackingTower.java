@@ -1,5 +1,6 @@
 package com.hbm.render.tileentity;
 
+import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.ResourceManager;
@@ -8,10 +9,12 @@ import com.hbm.tileentity.machine.oil.TileEntityMachineFrackingTower;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 @AutoRegister
 public class RenderFrackingTower extends TileEntitySpecialRenderer<TileEntityMachineFrackingTower>
     implements IItemRendererProvider {
+    public static final ResourceLocation pipe_tex = new ResourceLocation(Tags.MODID, "textures/blocks/pipe_silver.png");
 
   @Override
   public boolean isGlobalRenderer(TileEntityMachineFrackingTower te) {
@@ -43,7 +46,7 @@ public class RenderFrackingTower extends TileEntitySpecialRenderer<TileEntityMac
 
     GlStateManager.translate(0, 0.5, 0);
 
-    bindTexture(ResourceManager.pipe_neo_tex);
+    bindTexture(pipe_tex);
     ResourceManager.pipe_neo.renderPart("pX");
     ResourceManager.pipe_neo.renderPart("nX");
     ResourceManager.pipe_neo.renderPart("pZ");

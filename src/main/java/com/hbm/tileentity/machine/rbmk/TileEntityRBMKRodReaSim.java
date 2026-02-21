@@ -4,8 +4,8 @@ import com.hbm.handler.neutron.NeutronNodeWorld;
 import com.hbm.handler.neutron.RBMKNeutronHandler;
 import com.hbm.handler.neutron.RBMKNeutronHandler.RBMKNeutronNode;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole.ColumnType;
-import net.minecraft.util.math.Vec3d;
+import com.hbm.tileentity.machine.rbmk.RBMKColumn.ColumnType;
+import com.hbm.util.MutableVec3d;
 
 import static com.hbm.handler.neutron.RBMKNeutronHandler.makeNode;
 
@@ -39,9 +39,9 @@ public class TileEntityRBMKRodReaSim extends TileEntityRBMKRod {
 		int count = RBMKDials.getReaSimCount(world);
 
 		for(int i = 0; i < count; i++) {
-			Vec3d neutronVector = new Vec3d(1, 0, 0);
+            MutableVec3d neutronVector = new MutableVec3d(1, 0, 0);
 
-			neutronVector.rotateYaw((float)(Math.PI * 2D * world.rand.nextDouble()));
+			neutronVector.rotateYawSelf((float)(Math.PI * 2D * world.rand.nextDouble()));
 
 			new RBMKNeutronHandler.RBMKNeutronStream(makeNode(streamWorld, this), neutronVector, flux, ratio);
 			// Create new neutron streams

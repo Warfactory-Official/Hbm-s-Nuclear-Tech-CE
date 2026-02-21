@@ -1,9 +1,9 @@
 package com.hbm.items.tool;
 
+import com.hbm.Tags;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.color.IItemColor;
@@ -23,10 +23,10 @@ import java.util.List;
 
 public class ItemGasCanister extends Item {
 
-	public static final ModelResourceLocation gasCansiterFullModel = new ModelResourceLocation(
-			RefStrings.MODID + ":gas_full", "inventory");
+	public static final ModelResourceLocation gasCanisterFullModel = new ModelResourceLocation(
+			Tags.MODID + ":gas_full", "inventory");
 	
-	
+
 	public ItemGasCanister(String s){
 		this.setTranslationKey(s);
 		this.setRegistryName(s);
@@ -40,8 +40,8 @@ public class ItemGasCanister extends Item {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public String getItemStackDisplayName(ItemStack stack) {
-		String s = ("" + I18n.format(this.getTranslationKey() + ".name")).trim();
-		String s1 = ("" + I18n.format(Fluids.fromID(stack.getItemDamage()).getConditionalName())).trim();
+		String s = (I18n.format(this.getTranslationKey() + ".name")).trim();
+		String s1 = (I18n.format(Fluids.fromID(stack.getItemDamage()).getConditionalName())).trim();
 
 		if(s1 != null) {
 			s = s + ": " + s1;
@@ -72,7 +72,7 @@ public class ItemGasCanister extends Item {
 	
 	@Override
 	public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
-		tooltip.add(4000 + "/" + 4000 + " mb");
+		tooltip.add("1000/1000 mB");
 	}
 	
 	@Override

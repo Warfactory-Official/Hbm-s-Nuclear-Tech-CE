@@ -28,6 +28,10 @@ public class BlockGasCoal extends BlockGasBase {
 
     @Override
     public void onEntityCollision(World worldIn, BlockPos pos, IBlockState state, Entity entity) {
+        if(!GeneralConfig.enableCoalGas){
+            return;
+        }
+
         ContaminationUtil.applyCoal(entity, 5, 1, 5);
     }
 
@@ -48,7 +52,7 @@ public class BlockGasCoal extends BlockGasBase {
     @Override
     public void updateTick(World world, BlockPos pos, IBlockState state, Random rand) {
 
-        if (!world.isRemote && (!GeneralConfig.enableCoal || rand.nextInt(4) == 0)) {
+        if (!world.isRemote && (!GeneralConfig.enableCoalGas || rand.nextInt(4) == 0)) {
             world.setBlockToAir(pos);
             return;
         }

@@ -55,7 +55,7 @@ public abstract class NeutronStream {
 
         i = 1;
 
-        return new Iterator<BlockPos>() {
+        return new Iterator<>() {
             @Override
             public boolean hasNext() {
                 return i <= range;

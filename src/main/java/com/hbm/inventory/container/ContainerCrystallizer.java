@@ -1,9 +1,12 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotBattery;
-import com.hbm.inventory.SlotTakeOnly;
-import com.hbm.inventory.SlotUpgrade;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotFiltered;
+import com.hbm.inventory.slot.SlotUpgrade;
+import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineCrystallizer;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -13,19 +16,19 @@ import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerCrystallizer extends Container {
 
-	private TileEntityMachineCrystallizer diFurnace;
+	private TileEntityMachineCrystallizer crystallizer;
 
-	public ContainerCrystallizer(InventoryPlayer invPlayer, TileEntityMachineCrystallizer tedf) {
-		diFurnace = tedf;
+	public ContainerCrystallizer(InventoryPlayer invPlayer, TileEntityMachineCrystallizer te) {
+		crystallizer = te;
 
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 62, 45));
-		this.addSlotToContainer(new SlotBattery(tedf.inventory, 1, 152, 72));
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 2, 113, 45));
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 17, 18));
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 4, 17, 54));
-		this.addSlotToContainer(new SlotUpgrade(tedf.inventory, 5, 80, 18));
-		this.addSlotToContainer(new SlotUpgrade(tedf.inventory, 6, 98, 18));
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 7, 35, 72));
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 0, 62, 45));
+		this.addSlotToContainer(new SlotBattery(te.inventory, 1, 152, 72));
+		this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 2, 113, 45));
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 3, 17, 18));
+		this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 4, 17, 54));
+		this.addSlotToContainer(new SlotUpgrade(te.inventory, 5, 80, 18));
+		this.addSlotToContainer(new SlotUpgrade(te.inventory, 6, 98, 18));
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 7, 35, 72));
 
 		for(int i = 0; i < 3; i++)
 		{
@@ -41,45 +44,22 @@ public class ContainerCrystallizer extends Container {
 		}
 	}
 
-	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2)
-    {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-		
-		if (var4 != null && var4.getHasStack())
-		{
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-			
-            if (par2 <= diFurnace.inventory.getSlots() - 1) {
-				if (!this.mergeItemStack(var5, diFurnace.inventory.getSlots(), this.inventorySlots.size(), true))
-				{
-					return ItemStack.EMPTY;
-				}
-			} else {
-				
-				if (!this.mergeItemStack(var5, 0, 2, false))
-					if (!this.mergeItemStack(var5, 3, 4, false))
-						if (!this.mergeItemStack(var5, 5, 7, false))
-							return ItemStack.EMPTY;
-			}
-			
-			if (var5.isEmpty())
-			{
-				var4.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
-				var4.onSlotChanged();
-			}
-		}
-		
-		return var3;
+    private static boolean isNormal(ItemStack stack) {
+        return !Library.isBattery(stack) && !Library.isMachineUpgrade(stack) && !(stack.getItem() instanceof IItemFluidIdentifier);
     }
-	
-	@Override
+
+    @Override
+    public ItemStack transferStackInSlot(EntityPlayer playerIn, int index) {
+        return InventoryUtil.transferStack(this.inventorySlots, index, 8,
+                ContainerCrystallizer::isNormal, 1,
+                Library::isBattery, 2,
+                ContainerCrystallizer::isNormal, 5,
+                Library::isMachineUpgrade, 7,
+                s -> s.getItem() instanceof IItemFluidIdentifier, 8);
+    }
+
+    @Override
 	public boolean canInteractWith(EntityPlayer player) {
-		return diFurnace.isUseableByPlayer(player);
+		return crystallizer.isUseableByPlayer(player);
 	}
 }

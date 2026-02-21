@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "normal": { "model": "hbm:struct_torus_core" }
+  }
+}

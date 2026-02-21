@@ -1,12 +1,12 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotBattery;
-import com.hbm.inventory.SlotCraftingOutput;
-import com.hbm.inventory.SlotUpgrade;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotCraftingOutput;
+import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.items.ModItems;
-import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineCyclotron;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -52,59 +52,19 @@ public class ContainerMachineCyclotron extends Container {
 			this.addSlotToContainer(new Slot(invPlayer, i, 15 + i * 18, 191));
 		}
 	}
-	
+
+    private static boolean isNormal(ItemStack stack) {
+        return !Library.isBattery(stack) && !Library.isMachineUpgrade(stack);
+    }
+
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer player, int index)
-    {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot slot = this.inventorySlots.get(index);
-
-		if(slot != null && slot.getHasStack()) {
-			ItemStack stack = slot.getStack();
-			var3 = stack.copy();
-
-			if(index <= 15) {
-				if(!this.mergeItemStack(stack, 16, this.inventorySlots.size(), true)) {
-					return ItemStack.EMPTY;
-				}
-				
-			} else {
-				
-				if(Library.isItemBattery(stack)) {
-					if(!this.mergeItemStack(stack, 9, 10, true))
-						return ItemStack.EMPTY;
-					
-				} else if(stack.getItem() instanceof ItemMachineUpgrade) {
-					if(!this.mergeItemStack(stack, 10, 11, true))
-						if(!this.mergeItemStack(stack, 11, 12, true))
-							return ItemStack.EMPTY;
-					
-				} else {
-					
-					if(stack.getItem() == ModItems.part_lithium ||
-							stack.getItem() == ModItems.part_beryllium ||
-							stack.getItem() == ModItems.part_carbon ||
-							stack.getItem() == ModItems.part_copper ||
-							stack.getItem() == ModItems.part_plutonium) {
-						
-						if(!this.mergeItemStack(stack, 0, 3, true))
-							return ItemStack.EMPTY;
-					} else {
-						
-						if(!this.mergeItemStack(stack, 3, 6, true))
-							return ItemStack.EMPTY;
-					}
-				}
-			}
-
-			if(stack.isEmpty()) {
-				slot.putStack(ItemStack.EMPTY);
-			} else {
-				slot.onSlotChanged();
-			}
-		}
-
-		return var3;
+    public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+		return InventoryUtil.transferStack(this.inventorySlots, index, 12,
+                s -> s.getItem() == ModItems.part_lithium || s.getItem() == ModItems.part_beryllium ||
+                        s.getItem() == ModItems.part_carbon || s.getItem() == ModItems.part_copper || s.getItem() == ModItems.part_plutonium, 3,
+                        ContainerMachineCyclotron::isNormal, 9,
+                        Library::isBattery, 10,
+                        Library::isMachineUpgrade, 12);
     }
 
 	@Override

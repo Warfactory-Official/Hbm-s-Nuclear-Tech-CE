@@ -1,6 +1,7 @@
 package com.hbm.render.util;
 
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
+import com.hbm.util.MutableVec3d;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -9,19 +10,19 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 public class GaugeUtil {
 
 	public enum Gauge {
 
-		ROUND_SMALL(new ResourceLocation(RefStrings.MODID + ":textures/gui/gauges/small_round.png"), 18, 18, 13),
-		ROUND_LARGE(new ResourceLocation(RefStrings.MODID + ":textures/gui/gauges/large_round.png"), 36, 36, 13),
-		BOW_SMALL(new ResourceLocation(RefStrings.MODID + ":textures/gui/gauges/small_bow.png"), 18, 18, 13),
-		BOW_LARGE(new ResourceLocation(RefStrings.MODID + ":textures/gui/gauges/large_bow.png"), 36, 36, 13),
-		WIDE_SMALL(new ResourceLocation(RefStrings.MODID + ":textures/gui/gauges/small_wide.png"), 18, 12, 7),
-		WIDE_LARGE(new ResourceLocation(RefStrings.MODID + ":textures/gui/gauges/large_wide.png"), 36, 24, 11),
-		BAR_SMALL(new ResourceLocation(RefStrings.MODID + ":textures/gui/gauges/small_bar.png"), 36, 12, 16);
+		ROUND_SMALL(new ResourceLocation(Tags.MODID + ":textures/gui/gauges/small_round.png"), 18, 18, 13),
+		ROUND_LARGE(new ResourceLocation(Tags.MODID + ":textures/gui/gauges/large_round.png"), 36, 36, 13),
+		BOW_SMALL(new ResourceLocation(Tags.MODID + ":textures/gui/gauges/small_bow.png"), 18, 18, 13),
+		BOW_LARGE(new ResourceLocation(Tags.MODID + ":textures/gui/gauges/large_bow.png"), 36, 36, 13),
+		WIDE_SMALL(new ResourceLocation(Tags.MODID + ":textures/gui/gauges/small_wide.png"), 18, 12, 7),
+		WIDE_LARGE(new ResourceLocation(Tags.MODID + ":textures/gui/gauges/large_wide.png"), 36, 24, 11),
+		BAR_SMALL(new ResourceLocation(Tags.MODID + ":textures/gui/gauges/small_bar.png"), 36, 12, 16);
 
 		ResourceLocation texture;
 		int width;
@@ -72,13 +73,13 @@ public class GaugeUtil {
 		progress = MathHelper.clamp(progress, 0, 1);
 		float angle = (float) Math.toRadians(-progress * 270 - 45);
 
-		Vec3d tip = new Vec3d(0, tipLength, 0);
-		Vec3d left = new Vec3d(backSide, -backLength, 0);
-		Vec3d right = new Vec3d(-backSide, -backLength, 0);
+		MutableVec3d tip = new MutableVec3d(0, tipLength, 0);
+		MutableVec3d left = new MutableVec3d(backSide, -backLength, 0);
+		MutableVec3d right = new MutableVec3d(-backSide, -backLength, 0);
 
-		tip = rotateZ(tip, angle);
-		left = rotateZ(left, angle);
-		right = rotateZ(right, angle);
+		tip.rotateRollSelf(angle);
+		left.rotateRollSelf(angle);
+		right.rotateRollSelf(angle);
 
 		Tessellator tessellator = Tessellator.getInstance();
 		BufferBuilder bufferbuilder = tessellator.getBuffer();
@@ -105,13 +106,5 @@ public class GaugeUtil {
 		tessellator.draw();
 
 		GlStateManager.enableTexture2D();
-	}
-
-	public static Vec3d rotateZ(Vec3d vec, float angle) {
-		float cos = MathHelper.cos(angle);
-		float sin = MathHelper.sin(angle);
-		double newX = vec.x * cos - vec.y * sin;
-		double newY = vec.x * sin + vec.y * cos;
-		return new Vec3d(newX, newY, vec.z);
 	}
 }

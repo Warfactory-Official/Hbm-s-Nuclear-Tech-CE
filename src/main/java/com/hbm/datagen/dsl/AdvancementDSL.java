@@ -1,12 +1,10 @@
 package com.hbm.datagen.dsl;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import net.minecraft.advancements.FrameType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.jetbrains.annotations.Contract;
@@ -81,7 +79,8 @@ public final class AdvancementDSL {
      * Quickly build a map for {@link Templates#anyOf}.
      */
     public static Map<String, JsonObject> criteria(Object... nameThenCriterionObjects) {
-        if (nameThenCriterionObjects.length % 2 != 0) throw new IllegalArgumentException("criteria() expects name, JsonObject pairs");
+        if (nameThenCriterionObjects.length % 2 != 0)
+            throw new IllegalArgumentException("criteria() expects name, JsonObject pairs");
         Map<String, JsonObject> map = new LinkedHashMap<>();
         for (int i = 0; i < nameThenCriterionObjects.length; i += 2) {
             String name = (String) nameThenCriterionObjects[i];
@@ -221,8 +220,7 @@ public final class AdvancementDSL {
          * Produces a single OR-group with all generated criteria: [[c1, c2, ...]]
          */
         @Contract("_, _, _, _, _ -> new")
-        public static @NotNull Entry obtainAnyItemStack(String idPath, @Nullable String parentRL, Display display, String criterionName,
-                                                        ItemStack... stacks) {
+        public static @NotNull Entry obtainAnyItemStack(String idPath, @Nullable String parentRL, Display display, String criterionName, ItemStack... stacks) {
             if (stacks == null || stacks.length == 0) {
                 throw new IllegalArgumentException("obtainAnyItemStack requires at least one ItemStack");
             }
@@ -393,6 +391,20 @@ public final class AdvancementDSL {
             return this;
         }
 
+        public Display icon(Item item, int meta, @Nullable NBTTagCompound nbt) {
+            this.icon = Icon.of(item);
+            this.icon.meta = meta;
+            this.icon.withNbt(nbt);
+            return this;
+        }
+
+        public Display icon(String itemRL, int meta, @Nullable NBTTagCompound nbt) {
+            this.icon = Icon.of(itemRL);
+            this.icon.meta = meta;
+            this.icon.withNbt(nbt);
+            return this;
+        }
+
         public Display key(String key) {
             this.title = TitleDesc.key("achievement." + key);
             this.desc = TitleDesc.key("achievement." + key + ".desc");
@@ -415,7 +427,11 @@ public final class AdvancementDSL {
         }
 
         public Display descLiteral(String text) {
-            this.desc = TitleDesc.literal(text);
+            return desc(TitleDesc.literal(text));
+        }
+
+        private Display desc(TitleDesc td) {
+            this.desc = td;
             return this;
         }
 
@@ -464,11 +480,13 @@ public final class AdvancementDSL {
     public static final class Icon {
         private String itemRL;
         private int meta = 0; // include if != 0
+        private @Nullable NBTTagCompound nbt;
 
         public static Icon of(ItemStack stack) {
             Item item = stack.getItem();
             Icon i = of(item);
             i.meta = stack.getMetadata();
+            i.nbt = stack.hasTagCompound() ? stack.getTagCompound().copy() : null;
             return i;
         }
 
@@ -485,10 +503,18 @@ public final class AdvancementDSL {
             return i;
         }
 
+        public Icon withNbt(@Nullable NBTTagCompound tag) {
+            this.nbt = tag;
+            return this;
+        }
+
         JsonObject toJson() {
             JsonObject obj = new JsonObject();
             obj.addProperty("item", itemRL);
             if (meta != 0) obj.addProperty("data", meta);
+            if (nbt != null && !nbt.isEmpty()) {
+                obj.addProperty("nbt", nbt.toString());
+            }
             return obj;
         }
     }
@@ -518,8 +544,7 @@ public final class AdvancementDSL {
         }
 
         private enum Kind {
-            KEY,
-            LITERAL
+            KEY, LITERAL
         }
     }
 

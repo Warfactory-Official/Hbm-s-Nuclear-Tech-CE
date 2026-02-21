@@ -1,8 +1,0 @@
-{
-	"parent": "item/generated",
-	"textures": {
-		"layer0": "hbm:items/rbmk_pellet_unobtainium",
-		"layer1": "hbm:items/rbmk_pellet_overlay_e2",
-		"layer2": "hbm:items/rbmk_pellet_overlay_xenon"
-	}
-}

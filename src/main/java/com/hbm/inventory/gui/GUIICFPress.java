@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerICFPress;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityICFPress;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -11,7 +11,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GUIICFPress extends GuiInfoContainer {
 
-    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_icf_press.png");
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_icf_press.png");
     private final TileEntityICFPress press;
 
     public GUIICFPress(InventoryPlayer invPlayer, TileEntityICFPress tedf) {

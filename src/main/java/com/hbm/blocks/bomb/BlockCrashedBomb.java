@@ -33,10 +33,10 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-public class BlockCrashedBomb extends BlockEnumMeta implements IBomb, ITileEntityProvider {
+public class BlockCrashedBomb extends BlockEnumMeta<BlockCrashedBomb.EnumDudType> implements IBomb, ITileEntityProvider {
 
     public BlockCrashedBomb(Material mat, SoundType type, String registryName) {
-        super(mat, type, registryName, EnumDudType.class, true, true);
+        super(mat, type, registryName, EnumDudType.VALUES, true, true);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class BlockCrashedBomb extends BlockEnumMeta implements IBomb, ITileEntit
             if (tool.getMaxDamage(player.getHeldItem(hand)) > 0) player.getHeldItem(hand).damageItem(1, player);
 
 
-            EnumDudType type = EnumUtil.grabEnumSafely(EnumDudType.class, getMetaFromState(world.getBlockState(pos)));
+            EnumDudType type = EnumUtil.grabEnumSafely(EnumDudType.VALUES, getMetaFromState(world.getBlockState(pos)));
 
             //TODO: make this less scummy
             switch (type) {
@@ -120,7 +120,7 @@ public class BlockCrashedBomb extends BlockEnumMeta implements IBomb, ITileEntit
     @Override
     public BombReturnCode explode(World world, BlockPos pos, Entity detonator) {
         if (!world.isRemote) {
-            EnumDudType type = EnumUtil.grabEnumSafely(EnumDudType.class, getMetaFromState(world.getBlockState(pos)));
+            EnumDudType type = EnumUtil.grabEnumSafely(EnumDudType.VALUES, getMetaFromState(world.getBlockState(pos)));
             world.setBlockToAir(pos);
 
             switch (type) {
@@ -166,6 +166,8 @@ public class BlockCrashedBomb extends BlockEnumMeta implements IBomb, ITileEntit
         BALEFIRE,
         CONVENTIONAL,
         NUKE,
-        SALTED
+        SALTED;
+
+        public static final EnumDudType[] VALUES = values();
     }
 }

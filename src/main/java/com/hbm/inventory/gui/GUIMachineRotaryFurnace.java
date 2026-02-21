@@ -1,10 +1,11 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerMachineRotaryFurnace;
 import com.hbm.inventory.material.Mats;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityMachineRotaryFurnace;
 import com.hbm.util.I18nUtil;
+import com.hbm.util.RenderUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
@@ -21,7 +22,7 @@ import java.util.List;
 public class GUIMachineRotaryFurnace extends GuiInfoContainer {
 
   private static final ResourceLocation texture =
-      new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_rotary_furnace.png");
+      new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_rotary_furnace.png");
   private final TileEntityMachineRotaryFurnace furnace;
 
   public GUIMachineRotaryFurnace(InventoryPlayer playerInv, TileEntityMachineRotaryFurnace tile) {
@@ -67,8 +68,6 @@ public class GUIMachineRotaryFurnace extends GuiInfoContainer {
   @Override
   protected void drawGuiContainerBackgroundLayer(float partialTicks, int x, int y) {
     super.drawDefaultBackground();
-
-    GL11.glPushAttrib(GL11.GL_ENABLE_BIT);
     GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
     GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
@@ -90,10 +89,11 @@ public class GUIMachineRotaryFurnace extends GuiInfoContainer {
       Color color = new Color(hex);
       GlStateManager.color(color.getRed() / 255F, color.getGreen() / 255F, color.getBlue() / 255F);
       drawTexturedModalRect(guiLeft + 98, guiTop + 70 - amount, 176, 76 - amount, 16, amount);
-      GlStateManager.enableBlend();
+      boolean wasBlendEnabled = RenderUtil.isBlendEnabled();
+      if (!wasBlendEnabled) GlStateManager.enableBlend();
       GlStateManager.color(1F, 1F, 1F, 0.3F);
       drawTexturedModalRect(guiLeft + 98, guiTop + 70 - amount, 176, 76 - amount, 16, amount);
-      GlStateManager.disableBlend();
+      if (!wasBlendEnabled) GlStateManager.disableBlend();
 
       GlStateManager.color(1.0F, 1.0F, 1.0F);
     }
@@ -101,7 +101,5 @@ public class GUIMachineRotaryFurnace extends GuiInfoContainer {
     furnace.tanks[0].renderTank(guiLeft + 8, guiTop + 52, this.zLevel, 52, 16, 1);
     furnace.tanks[1].renderTank(guiLeft + 134, guiTop + 70, this.zLevel, 16, 52);
     furnace.tanks[2].renderTank(guiLeft + 152, guiTop + 70, this.zLevel, 16, 52);
-
-    GL11.glPopAttrib();
   }
 }

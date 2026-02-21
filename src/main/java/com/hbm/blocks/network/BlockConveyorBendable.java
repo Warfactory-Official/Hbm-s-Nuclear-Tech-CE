@@ -129,8 +129,8 @@ public class BlockConveyorBendable extends BlockConveyorBase implements IToolabl
         } else {
             // Cycle through curve types: STRAIGHT -> LEFT -> RIGHT -> STRAIGHT
             CurveType curve = state.getValue(CURVE);
-            int nextOrdinal = (curve.ordinal() + 1) % CurveType.values().length;
-            CurveType newCurve = CurveType.values()[nextOrdinal];
+            int nextOrdinal = (curve.ordinal() + 1) % CurveType.VALUES.length;
+            CurveType newCurve = CurveType.VALUES[nextOrdinal];
             world.setBlockState(pos, state.withProperty(CURVE, newCurve), 3);
         }
 
@@ -155,6 +155,8 @@ public class BlockConveyorBendable extends BlockConveyorBase implements IToolabl
         STRAIGHT("straight"),
         LEFT("left"),
         RIGHT("right");
+
+        public static final CurveType[] VALUES = values();
 
         private final String name;
 

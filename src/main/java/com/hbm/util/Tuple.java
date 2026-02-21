@@ -10,6 +10,49 @@ public class Tuple {
 	 * We endure this horribleness in order to provide a way to create classes that hold values of definite types (no more nasty casting)
 	 * that may also be used in hashmaps, should the need arrive. I'm kinda tired of making new classes just to hold values for one single list.
 	 */
+    public static class ObjectLongPair<T> {
+        public T key;
+        public long value;
+
+        public ObjectLongPair(T x, long y) {
+            this.key = x;
+            this.value = y;
+        }
+
+        public T getKey() {
+            return this.key;
+        }
+
+        public long getValue() {
+            return this.value;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((key == null) ? 0 : key.hashCode());
+            result = prime * result + Long.hashCode(value);
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            ObjectLongPair<?> other = (ObjectLongPair<?>) obj;
+            if (key == null) {
+                if (other.key != null)
+                    return false;
+            } else if (!key.equals(other.key))
+                return false;
+            return value == other.value;
+        }
+    }
 
 	public static class Pair<X,Y> {
 

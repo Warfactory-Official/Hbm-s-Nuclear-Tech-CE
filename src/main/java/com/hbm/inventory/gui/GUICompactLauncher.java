@@ -1,8 +1,8 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerCompactLauncher;
 import com.hbm.items.weapon.ItemCustomMissile;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.misc.MissileMultipart;
 import com.hbm.render.misc.MissilePronter;
 import com.hbm.tileentity.bomb.TileEntityCompactLauncher;
@@ -16,7 +16,7 @@ import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManage
 
 public class GUICompactLauncher extends GuiInfoContainer {
 
-	private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/gui_launch_table_small.png");
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/gui_launch_table_small.png");
 	private final TileEntityCompactLauncher launcher;
 	
 	public GUICompactLauncher(InventoryPlayer invPlayer, TileEntityCompactLauncher tile) {

@@ -1,12 +1,12 @@
 package com.hbm.blocks.bomb;
 
+import com.hbm.Tags;
 import com.hbm.api.block.IExploder;
 import com.hbm.api.block.IToolable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.entity.item.EntityTNTPrimedBase;
 import com.hbm.interfaces.IBomb;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.bomb.TileEntityCharge;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
@@ -51,7 +51,7 @@ public abstract class BlockChargeBase extends BlockContainer implements IBomb, I
 
     protected BlockChargeBase(String registryName) {
         super(Material.TNT);
-        this.texture = new ResourceLocation(RefStrings.MODID, "blocks/" + registryName);
+        this.texture = new ResourceLocation(Tags.MODID, "blocks/" + registryName);
 
         setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.UP));
         setTranslationKey(registryName);

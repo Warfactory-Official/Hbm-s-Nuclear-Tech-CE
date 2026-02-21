@@ -29,6 +29,9 @@ public class BlockGasAsbestos extends BlockGasBase {
 
     @Override
     public void onEntityCollision(World worldIn, BlockPos pos, IBlockState state, Entity entity) {
+        if(!GeneralConfig.enableAsbestosDust){
+            return;
+        }
         ContaminationUtil.applyAsbestos(entity, 10, 1);
     }
 
@@ -50,7 +53,7 @@ public class BlockGasAsbestos extends BlockGasBase {
     @Override
     public void updateTick(World world, BlockPos pos, IBlockState state, Random rand) {
 
-        if (!world.isRemote && (!GeneralConfig.enableAsbestos || rand.nextInt(10) == 0)) {
+        if (!world.isRemote && (!GeneralConfig.enableAsbestosDust || rand.nextInt(10) == 0)) {
             world.setBlockToAir(pos);
             return;
         }

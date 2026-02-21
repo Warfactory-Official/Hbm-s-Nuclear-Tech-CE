@@ -1,8 +1,11 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotPattern;
-import com.hbm.inventory.SlotUpgrade;
+import com.hbm.inventory.slot.SlotPattern;
+import com.hbm.inventory.slot.SlotUpgrade;
+import com.hbm.items.ModItems;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.network.TileEntityCraneExtractor;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ClickType;
@@ -10,6 +13,8 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
+
+import java.util.function.Predicate;
 
 public class ContainerCraneExtractor extends Container  {
     protected TileEntityCraneExtractor extractor;
@@ -63,7 +68,6 @@ public class ContainerCraneExtractor extends Container  {
 
         if (clickTypeIn == ClickType.PICKUP && dragType == 1 && slot.getHasStack()) {
             extractor.nextMode(slotId);
-            return ret;
         } else {
             slot.putStack(held.isEmpty() ? ItemStack.EMPTY : held.copy());
 
@@ -73,40 +77,26 @@ public class ContainerCraneExtractor extends Container  {
 
             slot.onSlotChanged();
             extractor.initPattern(slot.getStack(), slotId);
-
-            return ret;
         }
+
+        return ret;
     }
 
     @Override
-    public ItemStack transferStackInSlot(EntityPlayer player, int slot) {
-        ItemStack var3 = ItemStack.EMPTY;
-        Slot var4 = (Slot) this.inventorySlots.get(slot);
+    public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+        return InventoryUtil.transferStack(this.inventorySlots, index, 20,
+                _ -> false, 9,
+                Predicate.not(Library::isMachineUpgrade), 18,
+                ContainerCraneExtractor::isUpgradeStack, 19,
+                ContainerCraneExtractor::isUpgradeEjector, 20);
+    }
 
-        if(var4 != null && var4.getHasStack()) {
-            ItemStack var5 = var4.getStack();
-            var3 = var5.copy();
+    private static boolean isUpgradeStack(ItemStack item) {
+        return item.getItem() == ModItems.upgrade_stack_1 || item.getItem() == ModItems.upgrade_stack_2 || item.getItem() == ModItems.upgrade_stack_3;
+    }
 
-            if(slot < 9) { //filters
-                return ItemStack.EMPTY;
-            }
-
-            if(slot <= this.inventorySlots.size() - 1) {
-                if(!this.mergeItemStack(var5, this.inventorySlots.size(), this.inventorySlots.size(), true)) {
-                    return ItemStack.EMPTY;
-                }
-            }
-
-            if (var5.isEmpty())
-            {
-                var4.putStack(ItemStack.EMPTY);
-            }
-            else {
-                var4.onSlotChanged();
-            }
-        }
-
-        return var3;
+    private static boolean isUpgradeEjector(ItemStack item) {
+        return item.getItem() == ModItems.upgrade_ejector_1 ||  item.getItem() == ModItems.upgrade_ejector_2 ||  item.getItem() == ModItems.upgrade_ejector_3;
     }
 
     @Override

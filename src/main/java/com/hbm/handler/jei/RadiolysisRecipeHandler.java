@@ -1,7 +1,7 @@
 package com.hbm.handler.jei;
 
+import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
-import com.hbm.lib.RefStrings;
 import com.hbm.util.I18nUtil;
 import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.gui.*;
@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 
 public class RadiolysisRecipeHandler implements IRecipeCategory<RadiolysisRecipeHandler.RadiolysisRecipe> {
-    private static final ResourceLocation GUI_TEXTURE = new ResourceLocation(RefStrings.MODID, "textures/gui/jei/gui_jei_radiolysis.png");
+    private static final ResourceLocation GUI_TEXTURE = new ResourceLocation(Tags.MODID, "textures/gui/jei/gui_jei_radiolysis.png");
 
     private final IDrawable background;
     private final IDrawableAnimated progressBar;
@@ -45,7 +45,7 @@ public class RadiolysisRecipeHandler implements IRecipeCategory<RadiolysisRecipe
     @NotNull
     @Override
     public String getModName() {
-        return RefStrings.MODID;
+        return Tags.MODID;
     }
 
     @NotNull

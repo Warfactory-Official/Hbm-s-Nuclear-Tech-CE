@@ -23,6 +23,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
 
@@ -47,7 +48,7 @@ public class WasteEarth extends Block {
     }
 
     @Override
-    protected BlockStateContainer createBlockState() {
+    protected @NotNull BlockStateContainer createBlockState() {
         return new BlockStateContainer(this, META);
     }
 
@@ -57,12 +58,12 @@ public class WasteEarth extends Block {
     }
 
     @Override
-    public IBlockState getStateFromMeta(int meta) {
+    public @NotNull IBlockState getStateFromMeta(int meta) {
         return this.getDefaultState().withProperty(META, meta);
     }
 
     @Override
-    public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+    public @NotNull Item getItemDropped(@NotNull IBlockState state, @NotNull Random rand, int fortune) {
         if (this == ModBlocks.frozen_grass) {
             return Items.SNOWBALL;
         }
@@ -70,22 +71,15 @@ public class WasteEarth extends Block {
     }
 
     @Override
-    public int quantityDropped(IBlockState state, int fortune, Random random) {
+    public int quantityDropped(@NotNull IBlockState state, int fortune, @NotNull Random random) {
         return 1;
     }
 
     @Override
-    public void onEntityWalk(World worldIn, BlockPos pos, Entity entity) {
-        if (entity instanceof EntityLivingBase) {
-            EntityLivingBase castedEntity = ((EntityLivingBase) entity);
-
-            if (this == ModBlocks.waste_earth) {
-                castedEntity.addPotionEffect(new PotionEffect(HbmPotion.radiation, 15 * 20, 4));
-            } else if (this == ModBlocks.waste_dirt) {
-                castedEntity.addPotionEffect(new PotionEffect(HbmPotion.radiation, 20 * 20, 9));
-            } else if (this == ModBlocks.waste_mycelium) {
+    public void onEntityWalk(@NotNull World worldIn, @NotNull BlockPos pos, @NotNull Entity entity) {
+        if (entity instanceof EntityLivingBase castedEntity) {
+            if (this == ModBlocks.waste_mycelium) {
                 castedEntity.addPotionEffect(new PotionEffect(HbmPotion.radiation, 30 * 20, 29));
-                castedEntity.addPotionEffect(new PotionEffect(MobEffects.NAUSEA, 5 * 20, 0));
             } else if (this == ModBlocks.frozen_grass) {
                 castedEntity.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 2 * 60 * 20, 2));
             } else if (this == ModBlocks.burning_earth) {
@@ -96,22 +90,26 @@ public class WasteEarth extends Block {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void randomDisplayTick(IBlockState stateIn, World worldIn, BlockPos pos, Random rand) {
-        super.randomDisplayTick(stateIn, worldIn, pos, rand);
+    public void randomDisplayTick(@NotNull IBlockState stateIn, @NotNull World world, @NotNull BlockPos pos, @NotNull Random rand) {
+        super.randomDisplayTick(stateIn, world, pos, rand);
 
-        if (this == ModBlocks.waste_earth || this == ModBlocks.waste_mycelium) {
-            worldIn.spawnParticle(EnumParticleTypes.TOWN_AURA, pos.getX() + rand.nextFloat(), pos.getY() + 1.1F, pos.getZ() + rand.nextFloat(), 0.0D, 0.0D, 0.0D);
+        if (this == ModBlocks.waste_mycelium) {
+            world.spawnParticle(EnumParticleTypes.TOWN_AURA, pos.getX() + rand.nextFloat(), pos.getY() + 1.1F, pos.getZ() + rand.nextFloat(), 0.0D, 0.0D, 0.0D);
+        }
+        if(this == ModBlocks.burning_earth) {
+            world.spawnParticle(EnumParticleTypes.FLAME, pos.getX() + rand.nextFloat(), pos.getY() + 1.1F, pos.getZ() + rand.nextFloat(), 0.0D, 0.0D, 0.0D);
+            world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, pos.getX() + rand.nextFloat(), pos.getY() + 1.1F, pos.getZ() + rand.nextFloat(), 0.0D, 0.0D, 0.0D);
         }
     }
 
     @Override
-    public boolean canEntitySpawn(IBlockState state, Entity entityIn) {
+    public boolean canEntitySpawn(@NotNull IBlockState state, @NotNull Entity entityIn) {
         return ContaminationUtil.isRadImmune(entityIn);
     }
 
     @Override
-    public void updateTick(World world, BlockPos pos, IBlockState state, Random rand) {
-        if (this == ModBlocks.waste_earth || this == ModBlocks.waste_dirt || this == ModBlocks.waste_mycelium) {
+    public void updateTick(@NotNull World world, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull Random rand) {
+        if (this == ModBlocks.waste_earth || this == ModBlocks.waste_mycelium) {
             if (GeneralConfig.enableAutoCleanup) {
                 world.setBlockState(pos, Blocks.DIRT.getDefaultState());
             }

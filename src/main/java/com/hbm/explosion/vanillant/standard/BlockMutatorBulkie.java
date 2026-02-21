@@ -6,11 +6,28 @@ import com.hbm.inventory.RecipesCommon.MetaBlock;
 import com.hbm.render.amlfrom1710.Vec3;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
+
+import java.util.Optional;
 
 public class BlockMutatorBulkie implements IBlockMutator {
 
 	protected MetaBlock metaBlock;
+
+    public BlockMutatorBulkie(String loc) {
+        this(
+                Optional.ofNullable(ForgeRegistries.BLOCKS.getValue(new ResourceLocation(loc))).orElse(Blocks.STONE)
+                , 0);
+    }
+
+    public BlockMutatorBulkie(String loc, int meta) {
+        this(
+                Optional.ofNullable(ForgeRegistries.BLOCKS.getValue(new ResourceLocation(loc))).orElse(Blocks.STONE)
+                , meta);
+    }
 
 	public BlockMutatorBulkie(Block block) {
 		this(block, 0);

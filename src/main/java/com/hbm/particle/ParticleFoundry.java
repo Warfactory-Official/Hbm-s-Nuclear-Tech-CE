@@ -1,7 +1,7 @@
 package com.hbm.particle;
 
+import com.hbm.Tags;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.lib.RefStrings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -12,7 +12,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 
@@ -27,7 +27,7 @@ public class ParticleFoundry extends Particle {
 	/* how far the base part goes back */
 	protected double offset;
 	
-	public static final ResourceLocation lava = new ResourceLocation(RefStrings.MODID + ":textures/models/machines/lava_gray.png");
+	public static final ResourceLocation lava = new ResourceLocation(Tags.MODID + ":textures/models/machines/lava_gray.png");
 
 	public ParticleFoundry(World world, double x, double y, double z, int color, int direction, double length, double base, double offset) {
 		super(world, x, y, z);

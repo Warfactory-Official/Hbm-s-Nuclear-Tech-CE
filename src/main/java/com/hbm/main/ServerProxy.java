@@ -1,6 +1,7 @@
 package com.hbm.main;
 
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
+import com.hbm.saveddata.TomSaveData;
 import com.hbm.sound.AudioWrapper;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -15,6 +16,7 @@ import net.minecraft.util.registry.IRegistry;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
@@ -100,5 +102,19 @@ public class ServerProxy
 		return list;
 	}
 
+    public float getImpactDust(World world) {
+        return TomSaveData.forWorld(world).dust;
+    }
+
+    public float getImpactFire(World world) {
+        return TomSaveData.forWorld(world).fire;
+    }
+
+    public boolean getImpact(World world) {
+        return TomSaveData.forWorld(world).impact;
+    }
+
 	public int getStackColor(ItemStack stack, boolean amplify) { return 0x000000; }
+    public void onLoadComplete(FMLLoadCompleteEvent event){}
+
 }

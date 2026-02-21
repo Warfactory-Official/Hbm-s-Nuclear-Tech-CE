@@ -68,8 +68,6 @@ public class DFCRecipes {
 		DFCRecipes.setRecipe(30000000000L, ModItems.particle_amat, new ItemStack(ModItems.particle_aschrab));
 
 		DFCRecipes.setRecipe(50000000000L, ModItems.billet_polonium, new ItemStack(ModItems.billet_yharonite));
-			
-		DFCRecipes.setRecipe(100000000000L, ModItems.meteorite_sword_warped, new ItemStack(ModItems.meteorite_sword_demonic));
 		
 		DFCRecipes.setRecipe(200000000000L, SBD.dust(), new ItemStack(ModItems.powder_dineutronium));
 		DFCRecipes.setRecipe(200000000000L, SBD.ingot(), new ItemStack(ModItems.ingot_dineutronium));

@@ -1,28 +1,28 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerMixer;
 import com.hbm.inventory.recipes.MixerRecipes;
-import com.hbm.lib.RefStrings;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toserver.NBTControlPacket;
 import com.hbm.tileentity.machine.TileEntityMachineMixer;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.util.text.TextFormatting;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUIMixer extends GuiInfoContainer {
 
-	private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_mixer.png");
+	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_mixer.png");
 	private TileEntityMachineMixer mixer;
 
 	public GUIMixer(InventoryPlayer player, TileEntityMachineMixer mixer) {
@@ -43,12 +43,12 @@ public class GUIMixer extends GuiInfoContainer {
 
 		if(recipes != null && recipes.length > 1) {
 			List<String> label = new ArrayList<>();
-			label.add(ChatFormatting.YELLOW + "Current recipe (" + (mixer.recipeIndex + 1) + "/" + recipes.length + "):");
+			label.add(TextFormatting.YELLOW + "Current recipe (" + (mixer.recipeIndex + 1) + "/" + recipes.length + "):");
 			MixerRecipes.MixerRecipe recipe = recipes[mixer.recipeIndex % recipes.length];
 			if(recipe.input1 != null) label.add("-" + recipe.input1.type.getLocalizedName());
 			if(recipe.input2 != null) label.add("-" + recipe.input2.type.getLocalizedName());
 			if(recipe.solidInput != null) label.add("-" + recipe.solidInput.extractForCyclingDisplay(20).getDisplayName());
-			label.add(ChatFormatting.RED + "Click to change!");
+			label.add(TextFormatting.RED + "Click to change!");
 			String[] labelArray = label.toArray(new String[0]);
 			this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 62, guiTop + 22, 12, 12, mouseX, mouseY, labelArray);
 		}
@@ -64,11 +64,11 @@ public class GUIMixer extends GuiInfoContainer {
 		super.mouseClicked(x, y, i);
 		if(guiLeft + 62 <= x && guiLeft + 62 + 12 > x && guiTop + 22 < y && guiTop + 22 + 12 >= y) {
 
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
 			NBTTagCompound data = new NBTTagCompound();
 			data.setBoolean("toggle", true);
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, mixer.getPos()));
-		}
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, mixer.getPos()));
+        }
 	}
 
 	@Override

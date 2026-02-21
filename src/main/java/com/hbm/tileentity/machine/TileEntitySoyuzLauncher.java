@@ -191,6 +191,7 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase implements IT
 
     @Override
     public void onChunkUnload() {
+        super.onChunkUnload();
         if (audio != null) {
             audio.stopSound();
             audio = null;

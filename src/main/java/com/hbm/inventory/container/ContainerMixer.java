@@ -1,14 +1,18 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotBattery;
-import com.hbm.inventory.SlotUpgrade;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotUpgrade;
+import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineMixer;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
+import org.jetbrains.annotations.NotNull;
 
 public class ContainerMixer extends Container {
 	
@@ -39,42 +43,16 @@ public class ContainerMixer extends Container {
 	}
 
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2)
-    {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-		
-		if (var4 != null && var4.getHasStack())
-		{
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-			
-            if (par2 <= 3) {
-				if (!this.mergeItemStack(var5, 4, this.inventorySlots.size(), true))
-				{
-					return ItemStack.EMPTY;
-				}
-			}
-			else if (!this.mergeItemStack(var5, 0, 3, false))
-			{
-				return ItemStack.EMPTY;
-			}
-			
-			if (var5.getCount() == 0)
-			{
-				var4.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
-				var4.onSlotChanged();
-			}
-		}
-		
-		return var3;
+    public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
+		return InventoryUtil.transferStack(this.inventorySlots, index, 5,
+                Library::isBattery, 1,
+                s -> !(s.getItem() instanceof IItemFluidIdentifier) && !Library.isMachineUpgrade(s), 2,
+                s -> s.getItem() instanceof IItemFluidIdentifier, 3,
+                Library::isMachineUpgrade, 5);
     }
 
 	@Override
-	public boolean canInteractWith(EntityPlayer player) {
+	public boolean canInteractWith(@NotNull EntityPlayer player) {
 		return mixer.isUseableByPlayer(player);
 	}
 }

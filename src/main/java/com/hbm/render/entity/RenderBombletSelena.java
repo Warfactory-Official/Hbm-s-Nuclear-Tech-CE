@@ -1,10 +1,10 @@
 package com.hbm.render.entity;
 
+import com.hbm.Tags;
 import com.hbm.entity.missile.EntityBombletSelena;
-import com.hbm.hfr.render.loader.HFRWavefrontObject;
+import com.hbm.render.loader.HFRWavefrontObject;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
-import com.hbm.render.amlfrom1710.IModelCustom;
+import com.hbm.render.loader.IModelCustom;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -14,14 +14,14 @@ import net.minecraftforge.fml.client.registry.IRenderFactory;
 public class RenderBombletSelena extends Render<EntityBombletSelena> {
 
 	public static final IRenderFactory<EntityBombletSelena> FACTORY = (RenderManager man) -> {return new RenderBombletSelena(man);};
-	private static final ResourceLocation objTesterModelRL = new ResourceLocation(/*"/assets/" + */RefStrings.MODID, "models/bombletSelena.obj");
+	private static final ResourceLocation objTesterModelRL = new ResourceLocation(/*"/assets/" + */Tags.MODID, "models/bombletSelena.obj");
 	private IModelCustom boyModel;
     private ResourceLocation boyTexture;
 	
 	protected RenderBombletSelena(RenderManager renderManager) {
 		super(renderManager);
 		boyModel = new HFRWavefrontObject(objTesterModelRL).asVBO();
-		boyTexture = new ResourceLocation(RefStrings.MODID, "textures/models/misc/universalDark.png");
+		boyTexture = new ResourceLocation(Tags.MODID, "textures/models/misc/universalDark.png");
 	}
 	
 	@Override

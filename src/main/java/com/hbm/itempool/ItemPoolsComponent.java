@@ -6,6 +6,7 @@ import com.hbm.inventory.material.Mats;
 import com.hbm.items.ItemEnums;
 import com.hbm.items.ItemEnums.EnumCircuitType;
 import com.hbm.items.ModItems;
+import com.hbm.items.machine.ItemBatteryPack;
 import com.hbm.items.tool.ItemBlowtorch;
 import net.minecraft.init.Items;
 
@@ -34,16 +35,16 @@ public class ItemPoolsComponent {
                     weighted(ModItems.bolt, Mats.MAT_TUNGSTEN.id, 4, 16, 3),
                     weighted(ModItems.coil_tungsten, 0, 1, 2, 5),
                     weighted(ModItems.motor, 0, 1, 2, 4),
-                    weighted(ModItems.tank_steel, 0, 1, 2, 3),
                     weighted(ModItems.coil_copper, 0, 1, 3, 4),
                     weighted(ModItems.coil_copper_torus, 0, 1, 2, 3),
                     weighted(ModItems.wire_fine, Mats.MAT_MINGRADE.id, 1, 8, 5),
                     weighted(ModItems.piston_selenium, 0, 1, 1, 3),
-                    weighted(ModItems.battery_advanced_cell, 0, 1, 1, 3),
+                    weighted(ModItems.battery_pack, ItemBatteryPack.EnumBatteryPack.BATTERY_LEAD.ordinal(), 1, 1, 3),
                     weighted(ModItems.circuit, EnumCircuitType.VACUUM_TUBE.ordinal(), 1, 2, 4),
                     weighted(ModItems.circuit, EnumCircuitType.PCB.ordinal(), 1, 3, 5),
                     weighted(ModItems.circuit, EnumCircuitType.CAPACITOR.ordinal(), 1, 1, 3),
-                    weighted(ModItems.blade_titanium, 0, 1, 8, 1)
+                    weighted(ModItems.blade_titanium, 0, 1, 8, 1),
+                    weighted(ModItems.blueprint_folder, 0, 1, 1, 1)
             };
         }};
 
@@ -74,7 +75,7 @@ public class ItemPoolsComponent {
                     weighted(ModItems.missile_generic, 0, 1, 1, 4),
                     weighted(ModItems.missile_incendiary, 0, 1, 1, 4),
                     weighted(ModItems.gas_mask_m65, 0, 1, 1, 5),
-                    weighted(ModItems.battery_advanced, 0, 1, 1, 5),
+                    weighted(ModItems.battery_pack, ItemBatteryPack.EnumBatteryPack.BATTERY_LEAD.ordinal(), 1, 1, 3),
                     weighted(ModItems.designator, 0, 1, 1, 5),
                     weighted(ModItems.thruster_small, 0, 1, 1, 5),
                     weighted(ModItems.thruster_medium, 0, 1, 1, 4),

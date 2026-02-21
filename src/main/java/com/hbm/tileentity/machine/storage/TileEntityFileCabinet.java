@@ -41,11 +41,12 @@ public class TileEntityFileCabinet extends TileEntityCrateBase implements IGUIPr
 
     @Override
     public void openInventory(EntityPlayer player) {
-        if(!world.isRemote) playersUsing++;
+        if(!world.isRemote && !player.isSpectator()) playersUsing++;
     }
+
     @Override
     public void closeInventory(EntityPlayer player) {
-        if(!world.isRemote) playersUsing--;
+        if(!world.isRemote && !player.isSpectator()) playersUsing--;
     }
 
     @Override public void serialize(ByteBuf buf) {

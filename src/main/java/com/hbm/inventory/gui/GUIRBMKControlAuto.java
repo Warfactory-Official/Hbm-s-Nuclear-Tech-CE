@@ -1,28 +1,28 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerRBMKControlAuto;
-import com.hbm.lib.RefStrings;
 import com.hbm.packet.toserver.NBTControlPacket;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKControlAuto;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
 
 import java.io.IOException;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUIRBMKControlAuto extends GuiInfoContainer {
 	
-	private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/reactors/gui_rbmk_control_auto.png");
+	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/reactors/gui_rbmk_control_auto.png");
 	private TileEntityRBMKControlAuto rod;
 	
 	private GuiTextField[] fields;
@@ -97,7 +97,7 @@ public class GUIRBMKControlAuto extends GuiInfoContainer {
 		
 		if(guiLeft + 28 <= x && guiLeft + 28 + 30 > x && guiTop + 70 < y && guiTop + 70 +10 >= y) {
 			
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
 			NBTTagCompound data = new NBTTagCompound();
 			
 			double[] vals = new double[] {0D ,0D, 0D, 0D};
@@ -120,19 +120,19 @@ public class GUIRBMKControlAuto extends GuiInfoContainer {
 			data.setDouble("heatUpper", vals[2]);
 			data.setDouble("heatLower", vals[3]);
 
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, rod.getPos()));
-		}
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, rod.getPos()));
+        }
 		
 		for(int k = 0; k < 3; k++) {
 
 			//manual rod control
 			if(guiLeft + 61 <= x && guiLeft + 61 + 22 > x && guiTop + 48 + k * 11 < y && guiTop + 48 + 10 + k * 11 >= y) {
 	
-				mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+				playClickSound();
 				NBTTagCompound data = new NBTTagCompound();
 				data.setInteger("function", k);
-				PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, rod.getPos()));
-			}
+                PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, rod.getPos()));
+            }
 		}
 	}
 	

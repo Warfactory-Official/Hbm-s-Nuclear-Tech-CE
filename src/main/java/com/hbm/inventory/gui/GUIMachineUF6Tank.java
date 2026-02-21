@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerMachineUF6Tank;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityMachineUF6Tank;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.GlStateManager;
 
 public class GUIMachineUF6Tank extends GuiInfoContainer {
 
-	private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/uf6Tank.png");
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/uf6Tank.png");
 	private final TileEntityMachineUF6Tank uf6Tank;
 	
 	public GUIMachineUF6Tank(InventoryPlayer invPlayer, TileEntityMachineUF6Tank tedf) {

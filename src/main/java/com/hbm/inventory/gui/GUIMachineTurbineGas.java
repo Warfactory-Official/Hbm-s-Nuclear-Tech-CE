@@ -1,24 +1,22 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerMachineTurbineGas;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.trait.FT_Combustible;
 import com.hbm.inventory.fluid.trait.FT_Combustible.FuelGrade;
-import com.hbm.lib.RefStrings;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toserver.NBTControlPacket;
 import com.hbm.tileentity.machine.TileEntityMachineTurbineGas;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
@@ -27,10 +25,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUIMachineTurbineGas extends GuiInfoContainer {
 
-    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/generators/gui_turbinegas.png");
-    private static final ResourceLocation gauge_tex = new ResourceLocation(RefStrings.MODID + ":textures/gui/gauges/button_big.png");
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/generators/gui_turbinegas.png");
+    private static final ResourceLocation gauge_tex = new ResourceLocation(Tags.MODID + ":textures/gui/gauges/button_big.png");
     private final TileEntityMachineTurbineGas turbinegas;
 
     private int yStart;
@@ -58,27 +58,27 @@ public class GUIMachineTurbineGas extends GuiInfoContainer {
         if (Math.sqrt(Math.pow((mouseX - (guiLeft + 88)), 2) + Math.pow((mouseY - (guiTop + 40)), 2)) <= 8) {
             if (turbinegas.counter == 0 || turbinegas.counter == 579) {
                 int state = turbinegas.state - 1; //offline(0) to startup(-1), online(1) to offline(0)
-                mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                playClickSound();
                 NBTTagCompound data = new NBTTagCompound();
                 data.setInteger("state", state);
-                PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, turbinegas.getPos()));
+                PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, turbinegas.getPos()));
             }
         }
         if (turbinegas.state == 1 && mouseX > guiLeft + 74 && mouseX <= guiLeft + 74 + 29 && mouseY >= guiTop + 86 && mouseY < guiTop + 86 + 13) {
             //auto mode button
             boolean automode = !turbinegas.autoMode;
-            mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            playClickSound();
             NBTTagCompound data = new NBTTagCompound();
             data.setBoolean("autoMode", automode);
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, turbinegas.getPos()));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, turbinegas.getPos()));
         }
 
         if (turbinegas.state == 1 && (guiTop + 97 - slidStart) <= yStart && (guiTop + 103 - slidStart) > yStart && guiLeft + 36 < mouseX && guiLeft + 52 >= mouseX) { //power slider
 
             NBTTagCompound data = new NBTTagCompound();
             data.setBoolean("autoMode", false); //if you click the slider with automode on, turns off automode
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, turbinegas.getPos()));
-            mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, turbinegas.getPos()));
+            playClickSound();
         }
     }
 
@@ -100,7 +100,7 @@ public class GUIMachineTurbineGas extends GuiInfoContainer {
 
                 NBTTagCompound data = new NBTTagCompound();
                 data.setDouble("slidPos", slidPos);
-                PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, turbinegas.getPos()));
+                PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, turbinegas.getPos()));
             }
         }
     }
@@ -152,7 +152,6 @@ public class GUIMachineTurbineGas extends GuiInfoContainer {
     @Override
     protected void drawGuiContainerBackgroundLayer(float iinterpolation, int x, int y) {
         super.drawDefaultBackground();
-        GL11.glPushAttrib(GL11.GL_ENABLE_BIT);
         GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
@@ -194,7 +193,6 @@ public class GUIMachineTurbineGas extends GuiInfoContainer {
         turbinegas.tanks[1].renderTank(guiLeft + 8, guiTop + 103, this.zLevel, 16, 32);
         turbinegas.tanks[2].renderTank(guiLeft + 147, guiTop + 98, this.zLevel, 16, 36);
         turbinegas.tanks[3].renderTank(guiLeft + 147, guiTop + 58, this.zLevel, 16, 36);
-        GL11.glPopAttrib();
     }
 
     private void displayStartup() {

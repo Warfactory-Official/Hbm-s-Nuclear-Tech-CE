@@ -14,12 +14,12 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-
+@Deprecated
 public class ItemBattery extends Item implements IBatteryItem {
 
-    private final long maxCharge;
-    private final long chargeRate;
-    private final long dischargeRate;
+    protected long maxCharge;
+    protected long chargeRate;
+    protected long dischargeRate;
 
     public ItemBattery(long dura, long chargeRate, long dischargeRate, String s) {
         this.maxCharge = dura;
@@ -130,13 +130,11 @@ public class ItemBattery extends Item implements IBatteryItem {
     public long getCharge(ItemStack stack) {
         if (stack.getItem() == ModItems.battery_creative) return Long.MAX_VALUE;
         if (stack.getItem() instanceof ItemBattery) {
-            if (stack.hasTagCompound()) {
-                return stack.getTagCompound().getLong("charge");
-            } else {
+            if (!stack.hasTagCompound()) {
                 stack.setTagCompound(new NBTTagCompound());
                 stack.getTagCompound().setLong("charge", ((ItemBattery) stack.getItem()).maxCharge);
-                return stack.getTagCompound().getLong("charge");
             }
+            return stack.getTagCompound().getLong("charge");
         }
 
         return 0;
@@ -148,12 +146,12 @@ public class ItemBattery extends Item implements IBatteryItem {
     }
 
     @Override
-    public long getChargeRate() {
+    public long getChargeRate(ItemStack stack) {
         return chargeRate;
     }
 
     @Override
-    public long getDischargeRate() {
+    public long getDischargeRate(ItemStack stack) {
         return dischargeRate;
     }
 

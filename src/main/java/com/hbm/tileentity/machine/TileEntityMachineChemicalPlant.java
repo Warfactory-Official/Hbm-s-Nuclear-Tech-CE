@@ -25,6 +25,7 @@ import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.I18nUtil;
+import com.hbm.util.SoundUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
@@ -40,6 +41,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.ItemStackHandler;
 
 import java.util.HashMap;
 import java.util.List;
@@ -62,7 +64,22 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase implem
     public UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
 
     public TileEntityMachineChemicalPlant() {
-        super(22, true, true);
+        super(0, true, true);
+
+        inventory = new ItemStackHandler(22) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                super.onContentsChanged(slot);
+                markDirty();
+            }
+
+            @Override
+            public void setStackInSlot(int slot, ItemStack stack) {
+                super.setStackInSlot(slot, stack);
+                if (Library.isMachineUpgrade(stack) && slot >= 2 && slot <= 3)
+                    SoundUtil.playUpgradePlugSound(world, pos);
+            }
+        };
 
         this.inputTanks = new FluidTankNTM[3];
         this.outputTanks = new FluidTankNTM[3];
@@ -169,6 +186,7 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase implem
     }
 
     @Override public void onChunkUnload() {
+        super.onChunkUnload();
         if(audio != null) { audio.stopSound(); audio = null; }
     }
 
@@ -272,7 +290,7 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase implem
     @Override public FluidTankNTM[] getSendingTanks() { return outputTanks; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[] {inputTanks[0], inputTanks[1], inputTanks[2], outputTanks[0], outputTanks[1], outputTanks[2]}; }
 
-    @Override public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) { return new ContainerMachineChemicalPlant(player.inventory, getCheckedInventory()); }
+    @Override public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) { return new ContainerMachineChemicalPlant(player.inventory, getCheckedInventory(), this); }
     @Override @SideOnly(Side.CLIENT) public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) { return new GUIMachineChemicalPlant(player.inventory, this); }
 
     @Override public boolean hasPermission(EntityPlayer player) { return this.isUseableByPlayer(player); }

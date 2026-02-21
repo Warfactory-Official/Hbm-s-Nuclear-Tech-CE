@@ -1,9 +1,9 @@
 package com.hbm.render.item;
 
+import com.hbm.Tags;
 import com.hbm.forgefluid.SpecialContainerFillLists.EnumCanister;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.NTMRenderHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -22,7 +22,7 @@ public class FluidCanisterRender extends TileEntityItemStackRenderer {
 	public ModelResourceLocation setModelLocation(ItemStack stack) {
 		if(EnumCanister.contains(Fluids.fromID(stack.getItemDamage())))
 			return EnumCanister.getEnumFromFluid(Fluids.fromID(stack.getItemDamage())).getResourceLocation();
-		return new ModelResourceLocation(RefStrings.MODID + ":canister_empty", "inventory");
+		return new ModelResourceLocation(Tags.MODID + ":canister_empty", "inventory");
 	}
 	
 	@Override

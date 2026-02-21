@@ -97,13 +97,13 @@ public class CyclotronRecipes extends SerializableRecipe {
 		/// PLUTONIUM END ///
 	}
 
-	private static void makeRecipe(ComparableStack part, RecipesCommon.AStack in, ItemStack out, int amat) {
-		recipes.put(new Tuple.Pair(part, in), new Tuple.Pair(out, amat));
+	public static void makeRecipe(ComparableStack part, RecipesCommon.AStack in, ItemStack out, int amat) {
+		recipes.put(new Tuple.Pair<>(part, in), new Tuple.Pair<>(out, amat));
 	}
 
 	public static Object[] getOutput(ItemStack stack, ItemStack box) {
 
-		if(stack == null || stack.getItem() == null || box == null)
+		if(stack == null || stack.isEmpty() || box == null)
 			return null;
 
 		ComparableStack boxStack = new ComparableStack(box).makeSingular();
@@ -122,7 +122,7 @@ public class CyclotronRecipes extends SerializableRecipe {
 
 	public static Map<Object[], Object> getRecipes() {
 
-		Map<Object[], Object> map = new HashMap<Object[], Object>();
+		Map<Object[], Object> map = new HashMap<>();
 
 		for(Entry<Tuple.Pair<ComparableStack, RecipesCommon.AStack>, Tuple.Pair<ItemStack, Integer>> entry : recipes.entrySet()) {
 			List<ItemStack> stack = entry.getKey().getValue().extractForJEI();
@@ -142,7 +142,7 @@ public class CyclotronRecipes extends SerializableRecipe {
 
 	@Override
 	public Object getRecipeObject() {
-		return this.recipes;
+		return recipes;
 	}
 
 	@Override
@@ -151,11 +151,11 @@ public class CyclotronRecipes extends SerializableRecipe {
 		JsonArray input = ((JsonObject)recipe).get("input").getAsJsonArray();
 		JsonArray output = ((JsonObject)recipe).get("output").getAsJsonArray();
 		int antimatter = ((JsonObject)recipe).get("antimatter").getAsInt();
-		ItemStack partStack = this.readItemStack(particle);
-		RecipesCommon.AStack inStack = this.readAStack(input);
-		ItemStack outStack = this.readItemStack(output);
+		ItemStack partStack = readItemStack(particle);
+		RecipesCommon.AStack inStack = readAStack(input);
+		ItemStack outStack = readItemStack(output);
 
-		this.recipes.put(new Tuple.Pair(new ComparableStack(partStack), inStack),  new Tuple.Pair(outStack, antimatter));
+		recipes.put(new Tuple.Pair<>(new ComparableStack(partStack), inStack),  new Tuple.Pair<>(outStack, antimatter));
 	}
 
 	@Override
@@ -164,11 +164,11 @@ public class CyclotronRecipes extends SerializableRecipe {
 			Entry<Tuple.Pair<ComparableStack, RecipesCommon.AStack>, Tuple.Pair<ItemStack, Integer>> rec = (Entry<Tuple.Pair<ComparableStack, RecipesCommon.AStack>, Tuple.Pair<ItemStack, Integer>>) recipe;
 
 			writer.name("particle");
-			this.writeItemStack(rec.getKey().getKey().toStack(), writer);
+			writeItemStack(rec.getKey().getKey().toStack(), writer);
 			writer.name("input");
-			this.writeAStack(rec.getKey().getValue(), writer);
+			writeAStack(rec.getKey().getValue(), writer);
 			writer.name("output");
-			this.writeItemStack(rec.getValue().getKey(), writer);
+			writeItemStack(rec.getValue().getKey(), writer);
 			writer.name("antimatter").value(rec.getValue().getValue());
 
 		} catch(Exception ex) {
@@ -179,7 +179,7 @@ public class CyclotronRecipes extends SerializableRecipe {
 
 	@Override
 	public void deleteRecipes() {
-		this.recipes.clear();
+		recipes.clear();
 	}
 
 	@Override

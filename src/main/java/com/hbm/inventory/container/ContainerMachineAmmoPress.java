@@ -1,6 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.recipes.AmmoPressRecipes;
 import com.hbm.tileentity.machine.TileEntityMachineAmmoPress;
 import net.minecraft.entity.player.EntityPlayer;
@@ -25,7 +25,7 @@ public class ContainerMachineAmmoPress extends Container {
             }
         }
         // Output
-        this.addSlotToContainer(new SlotTakeOnly(tile.inventory, 9, 134, 72));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tile.inventory, 9, 134, 72));
 
         for(int i = 0; i < 3; i++) {
             for(int j = 0; j < 9; j++) {

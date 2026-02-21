@@ -52,7 +52,7 @@ public class OreEnumUtil {
 
     // --- OreEnum ---
 
-    public enum OreEnum {
+    public enum OreEnum implements IOreType {
 
         COAL(() -> new ItemStack(Items.COAL), OreEnumUtil::vanillaFortune),
         DIAMOND(() -> new ItemStack(Items.DIAMOND), OreEnumUtil::vanillaFortune),
@@ -97,6 +97,12 @@ public class OreEnumUtil {
         OreEnum(Supplier<ItemStack> drop, TriFunction<IBlockState, Integer, Random, Integer> quantity) {
             this((state, rand) -> new ItemStack(drop.get().getItem(), 1, drop.get().getMetadata()), quantity);
         }
+
+        @Override
+        public BiFunction<IBlockState, Random, ItemStack> getDropFunction() { return this.dropFunction; }
+
+        @Override
+        public TriFunction<IBlockState, Integer, Random, Integer> getQuantityFunction() { return this.quantityFunction; }
     }
 
 

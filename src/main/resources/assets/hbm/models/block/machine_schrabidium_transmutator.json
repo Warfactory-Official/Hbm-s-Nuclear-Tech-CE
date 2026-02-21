@@ -1,8 +1,0 @@
-{
-	"parent": "block/cube_bottom_top",
-	"textures": {
-		"top": "hbm:blocks/transmutator_top",
-		"bottom": "hbm:blocks/transmutator_bottom",
-		"side": "hbm:blocks/transmutator_side"
-	}
-}

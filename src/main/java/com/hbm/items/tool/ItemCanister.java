@@ -1,11 +1,11 @@
 package com.hbm.items.tool;
 
 import com.google.common.collect.ImmutableMap;
+import com.hbm.Tags;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.IDynamicModels;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -30,10 +30,10 @@ import static com.hbm.items.ItemEnumMulti.ROOT_PATH;
 
 public class ItemCanister extends Item implements IDynamicModels {
 
-    public static final ModelResourceLocation fluidCanisterModel = new ModelResourceLocation(RefStrings.MODID + ":canister_empty", "inventory");
+    public static final ModelResourceLocation fluidCanisterModel = new ModelResourceLocation(Tags.MODID + ":canister_empty", "inventory");
     public static final String overlay = "canister_overlay";
     public static final String base = "canister_empty";
-    public static final ResourceLocation canisterFullLoc = new ResourceLocation(RefStrings.MODID, ROOT_PATH + "canister_full");
+    public static final ResourceLocation canisterFullLoc = new ResourceLocation(Tags.MODID, ROOT_PATH + "canister_full");
     public int cap;
 
 
@@ -83,8 +83,8 @@ public class ItemCanister extends Item implements IDynamicModels {
     public void bakeModel(ModelBakeEvent event) {
         try {
             IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/generated"));
-            ResourceLocation baseTexture = new ResourceLocation(RefStrings.MODID, ROOT_PATH + base);
-            ResourceLocation overlayTexture = new ResourceLocation(RefStrings.MODID, ROOT_PATH + overlay);
+            ResourceLocation baseTexture = new ResourceLocation(Tags.MODID, ROOT_PATH + base);
+            ResourceLocation overlayTexture = new ResourceLocation(Tags.MODID, ROOT_PATH + overlay);
             IModel retexturedModel = baseModel.retexture(
                     ImmutableMap.of(
                             "layer0", baseTexture.toString(),
@@ -111,8 +111,8 @@ public class ItemCanister extends Item implements IDynamicModels {
     @Override
     public void registerSprite(TextureMap map) {
 
-        map.registerSprite(new ResourceLocation(RefStrings.MODID, ROOT_PATH + base));
-        map.registerSprite(new ResourceLocation(RefStrings.MODID, ROOT_PATH + overlay));
+        map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + base));
+        map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + overlay));
         map.registerSprite(canisterFullLoc);
     }
 

@@ -43,18 +43,22 @@ public class HbmCorePlugin implements IFMLLoadingPlugin {
         return runtimeDeobfEnabled;
     }
 
+    public static String chooseName(String mcp, String srg) {
+        return runtimeDeobfEnabled ? srg : mcp;
+    }
+
     public static Brand getBrand() {
         return brand;
     }
 
     @Override
     public String[] getASMTransformerClass() {
-        return new String[]{GlStateManagerTransformer.class.getName(), ContainerTransformer.class.getName(), InventoryPlayerTransformer.class.getName(), ForgeHooksTransformer.class.getName(), ChunkTransformer.class.getName(), WorldTransformer.class.getName(), WorldServerTransformer.class.getName()};
+        return new String[]{HbmCoreTransformer.class.getName()};
     }
 
     @Override
     public String getModContainerClass() {
-        return "com.hbm.core.HbmCoreModContainer";
+        return HbmCoreModContainer.class.getName();
     }
 
     @Override
@@ -78,6 +82,10 @@ public class HbmCorePlugin implements IFMLLoadingPlugin {
     }
 
     public enum Brand {
-        FORGE, CAT_SERVER, MOHIST, MAGMA, CLEANROOM
+        FORGE, CAT_SERVER, MOHIST, MAGMA, CLEANROOM;
+
+        public boolean isHybrid() {
+            return this == CAT_SERVER || this == MOHIST || this == MAGMA;
+        }
     }
 }

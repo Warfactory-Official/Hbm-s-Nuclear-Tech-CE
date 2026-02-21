@@ -140,8 +140,8 @@ public class EntitySawblade extends EntityThrowableInterp {
     }
 
     @Override
-    public double getGravityVelocity() {
-        return inGround ? 0 : 0.03D;
+    public float getGravityVelocity() {
+        return inGround ? 0F : 0.03F;
     }
 
     @Override

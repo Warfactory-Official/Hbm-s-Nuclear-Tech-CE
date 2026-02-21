@@ -26,18 +26,17 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
 @AutoRegister
+@ParametersAreNonnullByDefault
 public class TileEntityMachineSiren extends TileEntity implements ITickable, IControllable, IGUIProvider {
 
 	public ItemStackHandler inventory;
-
-	///private static final int[] slots_top = new int[] { 0 };
-	///private static final int[] slots_bottom = new int[] { 0 };
-	//private static final int[] slots_side = new int[] { 0 };
 
 	public boolean lock = false;
 	public boolean ctrlActive = false;
@@ -59,7 +58,7 @@ public class TileEntityMachineSiren extends TileEntity implements ITickable, ICo
 	}
 
 	public boolean hasCustomInventoryName() {
-		return this.customName != null && this.customName.length() > 0;
+		return this.customName != null && !this.customName.isEmpty();
 	}
 
 	public void setCustomName(String name) {
@@ -83,7 +82,7 @@ public class TileEntityMachineSiren extends TileEntity implements ITickable, ICo
 	}
 
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+	public @NotNull NBTTagCompound writeToNBT(NBTTagCompound compound) {
 		compound.setTag("inventory", inventory.serializeNBT());
 		return super.writeToNBT(compound);
 	}
@@ -91,9 +90,9 @@ public class TileEntityMachineSiren extends TileEntity implements ITickable, ICo
 	@Override
 	public void update() {
 		if(!world.isRemote) {
-			int id = Arrays.asList(TrackType.values()).indexOf(getCurrentType());
+			int id = getCurrentType().getId();
 
-			if(getCurrentType().name().equals(TrackType.NULL.name())) {
+			if(getCurrentType().getTrackTitle().equals(TrackType.NULL.getTrackTitle())) {
 				PacketDispatcher.wrapper.sendToDimension(new TESirenPacket(pos.getX(), pos.getY(), pos.getZ(), id, false), world.provider.getDimension());
 				return;
 			}
@@ -120,19 +119,19 @@ public class TileEntityMachineSiren extends TileEntity implements ITickable, ICo
 
 	public TrackType getCurrentType() {
 		if(inventory.getStackInSlot(0).getItem() instanceof ItemCassette) {
-			return TrackType.getEnum(inventory.getStackInSlot(0).getItemDamage());
+			return TrackType.byIndex(inventory.getStackInSlot(0).getItemDamage());
 		}
 
 		return TrackType.NULL;
 	}
 
 	@Override
-	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+	public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
 		return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
 	}
 
 	@Override
-	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+	public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
 		return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ? CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(inventory) : super.getCapability(capability, facing);
 	}
 
@@ -145,7 +144,7 @@ public class TileEntityMachineSiren extends TileEntity implements ITickable, ICo
 
 	@Override
 	public List<String> getInEvents(){
-		return Arrays.asList("siren_set_state");
+		return List.of("siren_set_state");
 	}
 
 	@Override

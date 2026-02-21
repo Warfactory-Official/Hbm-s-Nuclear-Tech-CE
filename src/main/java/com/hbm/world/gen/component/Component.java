@@ -29,6 +29,11 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraft.world.gen.structure.StructureComponent;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.IItemHandlerModifiable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
 
@@ -49,21 +54,12 @@ abstract public class Component extends StructureComponent {
 		super(0);
 		this.setCoordBaseMode(EnumFacing.byIndex(rand.nextInt(4)));
 
-		switch(this.getCoordMode()) {
-		case 0:
-			this.boundingBox = new StructureBoundingBox(minX, minY, minZ, minX + maxX, minY + maxY, minZ + maxZ);
-			break;
-		case 1:
-			this.boundingBox = new StructureBoundingBox(minX, minY, minZ, minX + maxZ, minY + maxY, minZ + maxX);
-			break;
-		case 2:
-			this.boundingBox = new StructureBoundingBox(minX, minY, minZ, minX + maxX, minY + maxY, minZ + maxZ);
-			break;
-		case 3:
-			this.boundingBox = new StructureBoundingBox(minX, minY, minZ, minX + maxZ, minY + maxY, minZ + maxX);
-			break;
-		default:
-			this.boundingBox = new StructureBoundingBox(minX, minY, minZ, minX + maxX, minY + maxY, minZ + maxZ);
+		switch (this.getCoordMode()) {
+			case 1, 3:
+				this.boundingBox = new StructureBoundingBox(minX, minY, minZ, minX + maxZ, minY + maxY, minZ + maxX);
+				break;
+            default:
+				this.boundingBox = new StructureBoundingBox(minX, minY, minZ, minX + maxX, minY + maxY, minZ + maxZ);
 
 		}
 	}
@@ -186,9 +182,7 @@ abstract public class Component extends StructureComponent {
 		//N: 0b00, S: 0b01, W: 0b10, E: 0b11
 
 		switch(this.getCoordMode()) {
-		default: //South
-			break;
-		case 1: //West
+            case 1: //West
 			if((metadata & 3) < 2) //N & S can just have bits toggled
 				metadata = metadata ^ 3;
 			else //W & E can just have first bit set to 0
@@ -203,7 +197,9 @@ abstract public class Component extends StructureComponent {
 			else //W & E can just have bits toggled
 				metadata = metadata ^ 3;
 			break;
-		}
+            default: //South
+                break;
+        }
 		//genuinely like. why did i do that
 		return metadata << 2; //To accommodate for BlockDecoModel's shift in the rotation bits; otherwise, simply bit-shift right and or any non-rotation meta after
 	}
@@ -218,24 +214,24 @@ abstract public class Component extends StructureComponent {
 	 * 0 = West, 1 = East, 2 = North, 3 = South
 	 */
 	protected int getStairMeta(int metadata) {
-		switch(this.getCoordMode()) {
-		default: //South
-			break;
-		case 1: //West
-			if((metadata & 3) < 2) //Flip second bit for E/W
-				metadata = metadata ^ 2;
-			else
-				metadata = metadata ^ 3; //Flip both bits for N/S
-			break;
-		case 2: //North
-			metadata = metadata ^ 1; //Flip first bit
-			break;
-		case 3: //East
-			if((metadata & 3) < 2) //Flip both bits for E/W
-				metadata = metadata ^ 3;
-			else //Flip second bit for N/S
-				metadata = metadata ^ 2;
-			break;
+		switch (this.getCoordMode()) {
+			case 1: //West
+				if ((metadata & 3) < 2) //Flip second bit for E/W
+					metadata = metadata ^ 2;
+				else
+					metadata = metadata ^ 3; //Flip both bits for N/S
+				break;
+			case 2: //North
+				metadata = metadata ^ 1; //Flip first bit
+				break;
+			case 3: //East
+				if ((metadata & 3) < 2) //Flip both bits for E/W
+					metadata = metadata ^ 3;
+				else //Flip second bit for N/S
+					metadata = metadata ^ 2;
+				break;
+			default: //South
+				break;
 		}
 
 		return metadata;
@@ -258,14 +254,14 @@ abstract public class Component extends StructureComponent {
 		if(!box.isVecInside(new Vec3i(posX, posY, posZ))) return;
 
 		switch(this.getCoordMode()) {
-		default: //South
-			break;
 		case 1: //West
 			dirMeta = (dirMeta + 1) % 4; break;
 		case 2: //North
 			dirMeta ^= 2; break; //Flip second bit
 		case 3: //East
 			dirMeta = (dirMeta + 3) % 4; break; //fuck you modulo
+		default: //South
+			break;
 		}
 
 		//hee hoo
@@ -317,19 +313,19 @@ abstract public class Component extends StructureComponent {
 
 	/** pain. works for side-facing levers as well */
 	protected int getButtonMeta(int dirMeta) {
-		switch(this.getCoordMode()) { //are you ready for the pain?
-		case 1: //West
-			if(dirMeta <= 2) return dirMeta + 2;
-			else if(dirMeta < 4) return dirMeta - 1;
-			else return dirMeta - 3;// this shit sucks ass
-		case 2: //North
-			return dirMeta + (dirMeta % 2 == 0 ? -1 : 1);
-		case 3: //East
-			if(dirMeta <= 1) return dirMeta + 3;
-			else if(dirMeta <= 2) return dirMeta + 1;
-			else return dirMeta - 2;
-		default: //South
-			return dirMeta;
+		switch (this.getCoordMode()) { //are you ready for the pain?
+			case 1: //West
+				if (dirMeta <= 2) return dirMeta + 2;
+				else if (dirMeta < 4) return dirMeta - 1;
+				else return dirMeta - 3;// this shit sucks ass
+			case 2: //North
+				return dirMeta + (dirMeta % 2 == 0 ? -1 : 1);
+			case 3: //East
+				if (dirMeta <= 1) return dirMeta + 3;
+				else if (dirMeta == 2) return dirMeta + 1;
+				else return dirMeta - 2;
+			default: //South
+				return dirMeta;
 		}
 	}
 
@@ -338,26 +334,33 @@ abstract public class Component extends StructureComponent {
 		int xOffset = 0;
 		int zOffset = 0;
 
-		switch(meta & 3) {
-		default:
-			zOffset = 1; break;
-		case 1:
-			xOffset = -1; break;
-		case 2:
-			zOffset = -1; break;
-		case 3:
-			xOffset = 1; break;
+		switch (meta & 3) {
+			case 1:
+				xOffset = -1;
+				break;
+			case 2:
+				zOffset = -1;
+				break;
+			case 3:
+				xOffset = 1;
+				break;
+			default:
+				zOffset = 1;
+				break;
 		}
 
-		switch(this.getCoordMode()) {
-		default: //S
-			break;
-		case 1: //W
-			meta = (meta + 1) % 4; break;
-		case 2: //N
-			meta ^= 2; break;
-		case 3: //E
-			meta = (meta - 1) % 4; break;
+		switch (this.getCoordMode()) {
+			case 1: //W
+				meta = (meta + 1) % 4;
+				break;
+			case 2: //N
+				meta ^= 2;
+				break;
+			case 3: //E
+				meta = (meta - 1) % 4;
+				break;
+			default: //S
+				break;
 		}
 
 		IBlockState foot = Blocks.BED.getDefaultState()
@@ -373,16 +376,12 @@ abstract public class Component extends StructureComponent {
 
 	/**Tripwire Hook: S:0 W:1 N:2 E:3 */
 	protected int getTripwireMeta(int metadata) {
-		switch(this.getCoordMode()) {
-		default:
-			return metadata;
-		case 1:
-			return (metadata + 1) % 4;
-		case 2:
-			return metadata ^ 2;
-		case 3:
-			return (metadata - 1) % 4;
-		}
+        return switch (this.getCoordMode()) {
+            case 1 -> (metadata + 1) % 4;
+            case 2 -> metadata ^ 2;
+            case 3 -> (metadata - 1) % 4;
+			default -> metadata;
+        };
 	}
 
 
@@ -411,7 +410,7 @@ abstract public class Component extends StructureComponent {
 
 		if(tile != null) {
 			amount = (int)Math.floor(amount * StructureConfig.lootAmountFactor);
-			int rolls = amount < 1 ? 1 : amount;
+			int rolls = Math.max(amount, 1);
 
 			net.minecraftforge.items.IItemHandler handler = tile.getCapability(net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
 			if (handler instanceof net.minecraftforge.items.IItemHandlerModifiable) {
@@ -450,17 +449,17 @@ abstract public class Component extends StructureComponent {
 		TileEntity tile = world.getTileEntity(pos);
 		TileEntityLockableBase lock = (TileEntityLockableBase) tile;
 
-		if(tile != null && lock != null) {
+		if(tile != null) {
 			amount = (int)Math.floor(amount * StructureConfig.lootAmountFactor);
 			int rolls = amount < 1 ? 1 : amount;
 
 			boolean filled = false;
-			net.minecraftforge.items.IItemHandler handler = tile.getCapability(net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-			if (handler instanceof net.minecraftforge.items.IItemHandlerModifiable) {
-				WeightedRandomChestContentFrom1710.generateChestContents(rand, content, (net.minecraftforge.items.IItemHandlerModifiable) handler, rolls);
+			IItemHandler handler = tile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+			if (handler instanceof IItemHandlerModifiable) {
+				WeightedRandomChestContentFrom1710.generateChestContents(rand, content, (IItemHandlerModifiable) handler, rolls);
 				filled = true;
-			} else if (tile instanceof net.minecraftforge.common.capabilities.ICapabilityProvider) {
-				WeightedRandomChestContentFrom1710.generateChestContents(rand, content, (net.minecraftforge.common.capabilities.ICapabilityProvider) tile, rolls);
+			} else if (tile instanceof ICapabilityProvider) {
+				WeightedRandomChestContentFrom1710.generateChestContents(rand, content, (ICapabilityProvider) tile, rolls);
 				filled = true;
 			}
 
@@ -475,7 +474,7 @@ abstract public class Component extends StructureComponent {
 		return false;
 	}
 
-	protected void generateLoreBook(World world, StructureBoundingBox box, int featureX, int featureY, int featureZ, int slot, ItemStack stack) { //kept for compat
+	protected void generateLoreBook(World world, StructureBoundingBox box, int featureX, int featureY, int featureZ, int slot, ItemStack stack) {
 		int posX = this.getXWithOffset(featureX, featureZ);
 		int posY = this.getYWithOffset(featureY);
 		int posZ = this.getZWithOffset(featureX, featureZ);
@@ -483,10 +482,15 @@ abstract public class Component extends StructureComponent {
 
 		if(!box.isVecInside(pos)) return;
 
-		IInventory inventory = (IInventory) world.getTileEntity(pos);
+		TileEntity tile = world.getTileEntity(pos);
 
-		if(inventory != null) {
-			inventory.setInventorySlotContents(slot, stack);
+		if(tile != null) {
+			IItemHandler handler = tile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+			if(handler instanceof IItemHandlerModifiable) {
+				((IItemHandlerModifiable) handler).setStackInSlot(slot, stack);
+			} else if(tile instanceof IInventory) {
+				((IInventory) tile).setInventorySlotContents(slot, stack);
+			}
 		}
 	}
 
@@ -503,7 +507,7 @@ abstract public class Component extends StructureComponent {
 		TileEntityBobble bobble = (TileEntityBobble) world.getTileEntity(pos);
 
 		if(bobble != null) {
-			bobble.type = BobbleType.values()[rand.nextInt(BobbleType.values().length - 1) + 1];
+			bobble.type = BobbleType.VALUES[rand.nextInt(BobbleType.VALUES.length - 1) + 1];
 			bobble.markDirty();
 		}
 	}
@@ -573,39 +577,29 @@ abstract public class Component extends StructureComponent {
 	//Also turns out, it's a scarily easy fix that they somehow didn't see *entirely*
 	@Override
 	public int getXWithOffset(int x, int z) {
-		switch(this.getCoordMode()) {
-		case 0:
-			return this.boundingBox.minX + x;
-		case 1:
-			return this.boundingBox.maxX - z;
-		case 2:
-			return this.boundingBox.maxX - x;
-		case 3:
-			return this.boundingBox.minX + z;
-		default:
-			return x;
-		}
+        return switch (this.getCoordMode()) {
+            case 0 -> this.boundingBox.minX + x;
+            case 1 -> this.boundingBox.maxX - z;
+            case 2 -> this.boundingBox.maxX - x;
+            case 3 -> this.boundingBox.minX + z;
+            default -> x;
+        };
 	}
 
 	@Override
 	public int getZWithOffset(int x, int z) {
-		switch(this.getCoordMode()) {
-		case 0:
-			return this.boundingBox.minZ + z;
-		case 1:
-			return this.boundingBox.minZ + x;
-		case 2:
-			return this.boundingBox.maxZ - z;
-		case 3:
-			return this.boundingBox.maxZ - x;
-		default:
-			return z;
-		}
+        return switch (this.getCoordMode()) {
+            case 0 -> this.boundingBox.minZ + z;
+            case 1 -> this.boundingBox.minZ + x;
+            case 2 -> this.boundingBox.maxZ - z;
+            case 3 -> this.boundingBox.maxZ - x;
+            default -> z;
+        };
 	}
 
 	/** Methods that are actually optimized, including ones that cut out replaceBlock and onlyReplace functionality when it's redundant. */
 	@Override
-	protected void fillWithAir(World world, StructureBoundingBox box, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+	protected void fillWithAir(@NotNull World world, StructureBoundingBox box, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
 
 		if (getYWithOffset(minY) < box.minY || getYWithOffset(maxY) > box.maxY)
 			return;
@@ -627,7 +621,7 @@ abstract public class Component extends StructureComponent {
 	}
 
 	@Override
-	protected void fillWithBlocks(World world, StructureBoundingBox box, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, IBlockState block, IBlockState replaceBlock, boolean onlyReplace) {
+	protected void fillWithBlocks(@NotNull World world, StructureBoundingBox box, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, @NotNull IBlockState block, @NotNull IBlockState replaceBlock, boolean onlyReplace) {
 
 		if (getYWithOffset(minY) < box.minY || getYWithOffset(maxY) > box.maxY)
 			return;
@@ -731,7 +725,7 @@ abstract public class Component extends StructureComponent {
 	}
 
 	@Override
-	protected void fillWithRandomizedBlocks(World world, StructureBoundingBox box, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, boolean onlyReplace, Random rand, StructureComponent.BlockSelector selector) {
+	protected void fillWithRandomizedBlocks(@NotNull World world, StructureBoundingBox box, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, boolean onlyReplace, @NotNull Random rand, StructureComponent.@NotNull BlockSelector selector) {
 
 		if (getYWithOffset(minY) < box.minY || getYWithOffset(maxY) > box.maxY)
 			return;
@@ -811,7 +805,7 @@ abstract public class Component extends StructureComponent {
 	}
 
 	@Override
-	protected void generateMaybeBox(World world, StructureBoundingBox box, Random rand, float randLimit, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, IBlockState block, IBlockState replaceBlock, boolean requireNonAir, int requiredSkylight) {
+	protected void generateMaybeBox(@NotNull World world, StructureBoundingBox box, @NotNull Random rand, float randLimit, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, @NotNull IBlockState block, @NotNull IBlockState replaceBlock, boolean requireNonAir, int requiredSkylight) {
 
 		if (getYWithOffset(minY) < box.minY || getYWithOffset(maxY) > box.maxY)
 			return;
@@ -892,16 +886,12 @@ abstract public class Component extends StructureComponent {
 		EnumFacing mode = this.getCoordBaseMode();
 		if (mode == null) return dir;
 
-		switch (mode) {
-			default: // SOUTH
-				return dir;
-			case WEST:
-				return dir.rotateY();
-			case NORTH:
-				return dir.getOpposite();
-			case EAST:
-				return dir.rotateYCCW();
-		}
+        return switch (mode) {
+			case WEST -> dir.rotateY();
+			case NORTH -> dir.getOpposite();
+			case EAST -> dir.rotateYCCW();
+			default -> dir; // SOUTH
+        };
 	}
 
 	/** Sets the core block for a BlockDummyable multiblock. WARNING: Does not take {@link com.hbm.blocks.BlockDummyable#getDirModified(ForgeDirection)} or {@link com.hbm.blocks.BlockDummyable#getMetaForCore(World, int, int, int, EntityPlayer, int)}
@@ -953,9 +943,7 @@ abstract public class Component extends StructureComponent {
 
 						int meta = 0;
 
-						if (b < posY) {
-							meta = EnumFacing.DOWN.ordinal();
-						} else if (b > posY) {
+						if (b > posY) {
 							meta = EnumFacing.UP.ordinal();
 						} else if (a < posX) {
 							meta = EnumFacing.WEST.ordinal();

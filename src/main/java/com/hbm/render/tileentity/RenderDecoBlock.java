@@ -1,9 +1,8 @@
 package com.hbm.render.tileentity;
 
+import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
-import com.hbm.main.ClientProxy;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.model.ModelSteelCorner;
 import com.hbm.render.model.ModelSteelRoof;
@@ -17,9 +16,9 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister
 public class RenderDecoBlock extends TileEntitySpecialRenderer<TileEntityDecoBlock> {
 
-	private static final ResourceLocation texture1 = new ResourceLocation(RefStrings.MODID + ":" + "textures/models/deco/SteelWall.png");
-	private static final ResourceLocation texture2 = new ResourceLocation(RefStrings.MODID + ":" + "textures/models/deco/SteelCorner.png");
-	private static final ResourceLocation texture3 = new ResourceLocation(RefStrings.MODID + ":" + "textures/models/deco/SteelRoof.png");
+	private static final ResourceLocation texture1 = new ResourceLocation(Tags.MODID + ":" + "textures/models/deco/SteelWall.png");
+	private static final ResourceLocation texture2 = new ResourceLocation(Tags.MODID + ":" + "textures/models/deco/SteelCorner.png");
+	private static final ResourceLocation texture3 = new ResourceLocation(Tags.MODID + ":" + "textures/models/deco/SteelRoof.png");
 
 	private ModelSteelWall model1;
 	private ModelSteelCorner model2;
@@ -96,9 +95,8 @@ public class RenderDecoBlock extends TileEntitySpecialRenderer<TileEntityDecoBlo
 			}
 			GlStateManager.enableCull();
 			bindTexture(ResourceManager.boxcar_tex);
-			// ResourceManager.boxcar.renderAll();
+			 ResourceManager.boxcar.renderAll();
 			// RenderHelper.renderAll(ClientProxy.boxcar);
-			GL11.glCallList(ClientProxy.boxcarCalllist);
 
 			GlStateManager.enableCull();
 		} else if(block == ModBlocks.steel_roof) {

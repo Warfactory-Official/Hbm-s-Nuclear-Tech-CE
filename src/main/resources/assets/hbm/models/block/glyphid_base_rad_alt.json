@@ -1,0 +1,6 @@
+{
+  "parent": "block/cube_all",
+  "textures": {
+    "all": "hbm:blocks/glyphid_base_rad_alt"
+  }
+}

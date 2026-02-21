@@ -8,7 +8,6 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.IPersistentNBT;
 import com.hbm.tileentity.TileEntityProxyCombo;
 import com.hbm.tileentity.machine.oil.TileEntityMachineHydrotreater;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,7 +17,9 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -59,7 +60,7 @@ public class MachineHydrotreater extends BlockDummyable implements IPersistentIn
     }
 
     @Override
-    public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+    public void breakBlock(@NotNull World worldIn, @NotNull BlockPos pos, IBlockState state) {
         IPersistentNBT.breakBlock(worldIn, pos, state);
         super.breakBlock(worldIn, pos, state);
     }
@@ -69,12 +70,12 @@ public class MachineHydrotreater extends BlockDummyable implements IPersistentIn
     }
 
     @Override
-    public void addInformation(ItemStack stack, NBTTagCompound persistentTag, EntityPlayer player, List list, boolean ext) {
+    public void addInformation(ItemStack stack, NBTTagCompound persistentTag, EntityPlayer player, List<String> list, boolean ext) {
 
         for(int i = 0; i < 4; i++) {
             FluidTankNTM tank = new FluidTankNTM(Fluids.NONE, 0);
             tank.readFromNBT(persistentTag, "" + i);
-            list.add(ChatFormatting.YELLOW + "" + tank.getFill() + "/" + tank.getMaxFill() + "mB " + tank.getTankType().getLocalizedName());
+            list.add(TextFormatting.YELLOW + "" + tank.getFill() + "/" + tank.getMaxFill() + "mB " + tank.getTankType().getLocalizedName());
         }
     }
 }

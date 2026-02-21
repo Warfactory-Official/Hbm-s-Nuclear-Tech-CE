@@ -13,6 +13,7 @@ import com.hbm.main.MainRegistry;
 import com.hbm.render.block.BlockBakeFrame;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.util.BufferUtil;
+import com.hbm.util.DelayedTick;
 import com.hbm.util.I18nUtil;
 import com.hbm.util.LootGenerator;
 import com.hbm.world.gen.nbt.INBTTileEntityTransformable;
@@ -86,8 +87,7 @@ public class BlockWandLoot extends BlockContainerBakeable implements ILookOverla
     }
 
     @Override
-    public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
-        BlockPos pos = new BlockPos(x, y, z);
+    public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
         TileEntity te = world.getTileEntity(pos);
 
         if (!(te instanceof TileEntityWandLoot loot)) return;
@@ -252,6 +252,10 @@ public class BlockWandLoot extends BlockContainerBakeable implements ILookOverla
             }
             // Th3_Sl1ze: sometimes it does still output null in cases of vanilla chests, though it works seamlessly with crates for example
             // do I know why? nope..
+            DelayedTick.nextWorldTickEnd(world, w -> applyLoot(w, w.getTileEntity(pos), pool));
+        }
+
+        private void applyLoot(World world, TileEntity te, WeightedRandomChestContentFrom1710[] pool) {
             IItemHandler handler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
 
             if (handler instanceof IItemHandlerModifiable modHandler) {

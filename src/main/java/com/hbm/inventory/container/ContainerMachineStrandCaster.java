@@ -1,7 +1,8 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotTakeOnly;
-import com.hbm.inventory.SlotNonRetarded;
+import com.hbm.inventory.slot.SlotFiltered;
+import com.hbm.inventory.slot.SlotNonRetarded;
+import com.hbm.items.machine.ItemMold;
 import com.hbm.tileentity.machine.TileEntityMachineStrandCaster;
 import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
@@ -26,7 +27,7 @@ public class ContainerMachineStrandCaster extends Container {
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 2; j++) {
         this.addSlotToContainer(
-            new SlotTakeOnly(caster.inventory, j + i * 2 + 1, 125 + j * 18, 26 + i * 18));
+            SlotFiltered.takeOnly(caster.inventory, j + i * 2 + 1, 125 + j * 18, 26 + i * 18));
       }
     }
 
@@ -43,33 +44,8 @@ public class ContainerMachineStrandCaster extends Container {
 
   @Override
   public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-    ItemStack stack = ItemStack.EMPTY;
-    Slot slot = this.inventorySlots.get(index);
-
-    if (slot != null && slot.getHasStack()) {
-      ItemStack originalStack = slot.getStack();
-      stack = originalStack.copy();
-
-      if (index <= 6) {
-        if (!InventoryUtil.mergeItemStack(
-            this.inventorySlots, originalStack, 7, this.inventorySlots.size(), true)) {
-          return ItemStack.EMPTY;
-        }
-
-        slot.onSlotChange(originalStack, stack);
-
-      } else if (!InventoryUtil.mergeItemStack(this.inventorySlots, originalStack, 1, 2, false)) {
-        return ItemStack.EMPTY;
-      }
-
-      if (originalStack.isEmpty()) {
-        slot.putStack(ItemStack.EMPTY);
-      } else {
-        slot.onSlotChanged();
-      }
-    }
-
-    return stack;
+    return InventoryUtil.transferStack(this.inventorySlots, index, 7,
+            s -> s.getItem() instanceof ItemMold, 1);
   }
 
   @Override

@@ -1,13 +1,23 @@
 package com.hbm.blocks.generic;
 
+import com.google.common.collect.ImmutableMap;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
+import com.hbm.items.IDynamicModels;
+import com.hbm.render.block.BlockBakeFrame;
 import com.hbm.util.Tuple.Quartet;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.model.ModelRotation;
+import net.minecraft.client.renderer.block.statemap.StateMapperBase;
+import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
@@ -16,16 +26,26 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.IModel;
+import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.client.model.ModelLoaderRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-public class BlockLoot extends BlockContainer {
+public class BlockLoot extends BlockContainer implements IDynamicModels {
+
+    private final BlockBakeFrame blockFrame = new BlockBakeFrame("block_steel");
 
     private static final AxisAlignedBB SLAB_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 1.0D, 0.0625D, 1.0D);
 
@@ -37,6 +57,7 @@ public class BlockLoot extends BlockContainer {
         this.setResistance(5.0F);
         this.setLightOpacity(0);
         ModBlocks.ALL_BLOCKS.add(this);
+        IDynamicModels.INSTANCES.add(this);
     }
 
     @Override
@@ -182,5 +203,46 @@ public class BlockLoot extends BlockContainer {
             }
             return nbt;
         }
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public void bakeModel(ModelBakeEvent event) {
+        try {
+            IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation(blockFrame.getBaseModel()));
+            ImmutableMap.Builder<String, String> textureMap = ImmutableMap.builder();
+            blockFrame.putTextures(textureMap);
+            IModel retexturedModel = baseModel.retexture(textureMap.build());
+            IBakedModel model = retexturedModel.bake(
+                    ModelRotation.getModelRotation(0, 0), DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()
+            );
+            ModelResourceLocation modelLocation = new ModelResourceLocation(getRegistryName(), "inventory");
+            event.getModelRegistry().putObject(modelLocation, model);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public void registerModel() {
+        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0, new ModelResourceLocation(Objects.requireNonNull(this.getRegistryName()), "inventory"));
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public void registerSprite(TextureMap map) {
+        blockFrame.registerBlockTextures(map);
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public StateMapperBase getStateMapper(ResourceLocation loc) {
+        return new StateMapperBase() {
+            @Override
+            protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
+                return new ModelResourceLocation(loc, "inventory");
+            }
+        };
     }
 }

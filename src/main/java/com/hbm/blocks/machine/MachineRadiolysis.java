@@ -61,7 +61,7 @@ public class MachineRadiolysis extends BlockDummyable {
 
     @Override
     public int getOffset() {
-        return 0;
+        return 1;
     }
 
     protected void fillSpace(World world, int x, int y, int z, ForgeDirection dir, int o) {

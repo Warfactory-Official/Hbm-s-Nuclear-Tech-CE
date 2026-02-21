@@ -1,8 +1,8 @@
 package com.hbm.handler.jei;
 
+import com.hbm.Tags;
 import com.hbm.handler.jei.JeiRecipes.JeiUniversalRecipe;
 import com.hbm.inventory.RecipesCommon;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
 import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.gui.IDrawable;
@@ -19,7 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 public abstract class JEIUniversalHandler implements IRecipeCategory<JeiRecipes.JeiUniversalRecipe> {
-    protected static final ResourceLocation GUI_TEXTURE = new ResourceLocation(RefStrings.MODID, "textures/gui/jei/gui_nei.png");
+    protected static final ResourceLocation GUI_TEXTURE = new ResourceLocation(Tags.MODID, "textures/gui/jei/gui_nei.png");
 
     protected final IDrawable background;
     protected final String titleKey;
@@ -164,7 +164,7 @@ public abstract class JEIUniversalHandler implements IRecipeCategory<JeiRecipes.
 
     @Override
     public @NotNull String getModName() {
-        return RefStrings.MODID;
+        return Tags.MODID;
     }
 
     @Override

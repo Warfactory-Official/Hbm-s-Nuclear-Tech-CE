@@ -1,10 +1,10 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerMachineAssemblyFactory;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.machine.ItemBlueprints;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityMachineAssemblyFactory;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
@@ -19,7 +19,7 @@ import java.io.IOException;
 
 public class GUIMachineAssemblyFactory extends GuiInfoContainer {
 
-    private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_assembly_factory.png");
+    private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_assembly_factory.png");
     private TileEntityMachineAssemblyFactory assembler;
 
     public GUIMachineAssemblyFactory(InventoryPlayer invPlayer, TileEntityMachineAssemblyFactory tedf) {

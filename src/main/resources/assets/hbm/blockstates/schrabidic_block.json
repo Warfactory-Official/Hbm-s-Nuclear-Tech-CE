@@ -4,7 +4,7 @@
 		"normal": [{
 			"model": "forge:fluid",
 			"custom": {
-				"fluid": "schrabidic"
+				"fluid": "schrabidic_fluid"
 			}
 		}]
 	}

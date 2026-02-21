@@ -2,12 +2,12 @@ package com.hbm.inventory.gui;
 
 import java.util.Set;
 
+import com.hbm.Tags;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.renderer.GlStateManager;
 
 import com.hbm.inventory.container.ContainerRadiolysis;
 import com.hbm.items.machine.ItemRTGPellet;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityMachineRadiolysis;
 
 import net.minecraft.client.Minecraft;
@@ -17,7 +17,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GUIRadiolysis extends GuiInfoContainer {
 
-    private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/gui_radiolysis.png");
+    private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/gui_radiolysis.png");
     private TileEntityMachineRadiolysis radiolysis;
 
     public GUIRadiolysis(InventoryPlayer invPlayer, TileEntityMachineRadiolysis tedf) {

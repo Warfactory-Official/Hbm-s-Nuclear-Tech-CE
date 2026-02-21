@@ -2,8 +2,8 @@ package com.hbm.handler;
 
 import com.hbm.items.ModItems;
 import com.hbm.items.armor.ItemModCladding;
-import com.hbm.lib.Library;
 import com.hbm.potion.HbmPotion;
+import com.hbm.util.ShadyUtil;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -58,9 +58,9 @@ public class HazmatRegistry {
 	public static float getResistance(EntityLivingBase player) {
 		float res = 0.0F;
 
-		if (player.getUniqueID().toString().equals(Library.HbMinecraft) || player.getUniqueID().toString().equals(Library.Drillgon) || player.getUniqueID().toString().equals(Library.Alcater)) {
-			res += 1.0F;
-		}
+        if (player.getUniqueID().equals(ShadyUtil.HbMinecraft) || player.getUniqueID().equals(ShadyUtil.Drillgon) || player.getUniqueID().equals(ShadyUtil.Alcater)) {
+            res += 1.0F;
+        }
 
 		for(ItemStack stack : player.getArmorInventoryList()) {
 			if(!stack.isEmpty()) {
@@ -102,11 +102,12 @@ public class HazmatRegistry {
 		double paa = 3.0D; // 99.9%
 		
 
-		double t45 = 1D; // 90%
+		double t51 = 1D; // 90%
 		double ajr = 1.3D; // 95%
 		double hev = 1.6D; // 97.5%
 		double bj = 1D; // 90%
 		double rpa = 2D; // 99%
+        double trench = 1D; // 90%
 		double fau = 4D; // 99.99%
 		double dns = 6D; // 99.9999%
 		double security = 0.01D; // 2.3%
@@ -135,10 +136,10 @@ public class HazmatRegistry {
 		HazmatRegistry.registerHazmat(ModItems.liquidator_legs, fixRounding(liquidator * legs));
 		HazmatRegistry.registerHazmat(ModItems.liquidator_boots, fixRounding(liquidator * boots));
 
-		HazmatRegistry.registerHazmat(ModItems.t45_helmet, fixRounding(t45 * helmet));
-		HazmatRegistry.registerHazmat(ModItems.t45_plate, fixRounding(t45 * chest));
-		HazmatRegistry.registerHazmat(ModItems.t45_legs, fixRounding(t45 * legs));
-		HazmatRegistry.registerHazmat(ModItems.t45_boots, fixRounding(t45 * boots));
+		HazmatRegistry.registerHazmat(ModItems.t51_helmet, fixRounding(t51 * helmet));
+		HazmatRegistry.registerHazmat(ModItems.t51_plate, fixRounding(t51 * chest));
+		HazmatRegistry.registerHazmat(ModItems.t51_legs, fixRounding(t51 * legs));
+		HazmatRegistry.registerHazmat(ModItems.t51_boots, fixRounding(t51 * boots));
 
 		HazmatRegistry.registerHazmat(ModItems.steamsuit_helmet, 1.3 * helmet);
 		HazmatRegistry.registerHazmat(ModItems.steamsuit_plate, 1.3 * chest);
@@ -159,6 +160,11 @@ public class HazmatRegistry {
 		HazmatRegistry.registerHazmat(ModItems.rpa_plate, fixRounding(rpa * chest));
 		HazmatRegistry.registerHazmat(ModItems.rpa_legs, fixRounding(rpa * legs));
 		HazmatRegistry.registerHazmat(ModItems.rpa_boots, fixRounding(rpa * boots));
+
+        HazmatRegistry.registerHazmat(ModItems.trenchmaster_helmet, trench * helmet);
+        HazmatRegistry.registerHazmat(ModItems.trenchmaster_plate, trench * chest);
+        HazmatRegistry.registerHazmat(ModItems.trenchmaster_legs, trench * legs);
+        HazmatRegistry.registerHazmat(ModItems.trenchmaster_boots, trench * boots);
 
 		HazmatRegistry.registerHazmat(ModItems.bj_helmet, fixRounding(bj * helmet));
 		HazmatRegistry.registerHazmat(ModItems.bj_plate, fixRounding(bj * chest));

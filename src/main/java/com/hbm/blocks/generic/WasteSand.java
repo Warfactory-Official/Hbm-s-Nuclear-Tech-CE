@@ -23,7 +23,7 @@ import java.util.Random;
 
 public class WasteSand extends BlockFalling {
 
-    public static final PropertyInteger META = PropertyInteger.create("meta", 0, 15);
+    public static final PropertyInteger META = PropertyInteger.create("meta", 0, 6);
 
     public WasteSand(Material materialIn, String s) {
         super(materialIn);
@@ -48,7 +48,7 @@ public class WasteSand extends BlockFalling {
 
     @Override
     protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, new IProperty[]{META});
+        return new BlockStateContainer(this, META);
     }
 
     @Override
@@ -63,19 +63,6 @@ public class WasteSand extends BlockFalling {
 
     @Override
     public void onEntityWalk(World worldIn, BlockPos pos, Entity entity) {
-        if (entity instanceof EntityLivingBase && this == ModBlocks.waste_sand) {
-
-            ((EntityLivingBase) entity).addPotionEffect(new PotionEffect(HbmPotion.radiation, 15 * 20, 4));
-        }
-        if (entity instanceof EntityLivingBase && this == ModBlocks.waste_sand_red) {
-
-            ((EntityLivingBase) entity).addPotionEffect(new PotionEffect(HbmPotion.radiation, 20 * 20, 3));
-        }
-
-        if (entity instanceof EntityLivingBase && this == ModBlocks.waste_gravel) {
-
-            ((EntityLivingBase) entity).addPotionEffect(new PotionEffect(HbmPotion.radiation, 2 * 60 * 20, 2));
-        }
         if (entity instanceof EntityLivingBase && (this == ModBlocks.waste_trinitite || this == ModBlocks.waste_trinitite_red)) {
 
             ((EntityLivingBase) entity).addPotionEffect(new PotionEffect(HbmPotion.radiation, 1 * 20, 49));

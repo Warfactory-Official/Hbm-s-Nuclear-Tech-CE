@@ -1,6 +1,11 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.ModItems;
+import com.hbm.items.machine.ItemBreedingRod;
+import com.hbm.items.special.ItemCell;
 import com.hbm.tileentity.bomb.TileEntityNukePrototype;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -13,7 +18,6 @@ public class ContainerNukePrototype extends Container {
 	private TileEntityNukePrototype nukeTsar;
 	
 	public ContainerNukePrototype(InventoryPlayer invPlayer, TileEntityNukePrototype tedf) {
-		
 		nukeTsar = tedf;
 		
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 8, 35));
@@ -46,36 +50,20 @@ public class ContainerNukePrototype extends Container {
 	}
 	
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2)
+    public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-		
-		if (var4 != null && var4.getHasStack())
-		{
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-			
-            if (par2 <= 13) {
-				if (!this.mergeItemStack(var5, 14, this.inventorySlots.size(), true))
-				{
-					return ItemStack.EMPTY;
-				}
-			} else {
-				return ItemStack.EMPTY;
-			}
-            
-			if (var5.isEmpty())
-			{
-				var4.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
-				var4.onSlotChanged();
-			}
-		}
-		
-		return var3;
+        return InventoryUtil.transferStack(this.inventorySlots, index, 14,
+                s -> ItemCell.isFullCell(s, Fluids.SAS3)
+                        && !this.inventorySlots.getFirst().getHasStack() && !this.inventorySlots.get(1).getHasStack(), 2,
+                s -> s.isItemEqual(new ItemStack(ModItems.rod_quad, 1, ItemBreedingRod.BreedingRodType.URANIUM.ordinal()))
+                        && !this.inventorySlots.get(2).getHasStack() && !this.inventorySlots.get(3).getHasStack(), 4,
+                s -> s.isItemEqual(new ItemStack(ModItems.rod_quad, 1, ItemBreedingRod.BreedingRodType.LEAD.ordinal()))
+                        && !this.inventorySlots.get(4).getHasStack() && !this.inventorySlots.get(5).getHasStack(), 6,
+                s -> s.isItemEqual(new ItemStack(ModItems.rod_quad, 1, ItemBreedingRod.BreedingRodType.NP237.ordinal())), 8,
+                s -> s.isItemEqual(new ItemStack(ModItems.rod_quad, 1, ItemBreedingRod.BreedingRodType.LEAD.ordinal())), 10,
+                s -> s.isItemEqual(new ItemStack(ModItems.rod_quad, 1, ItemBreedingRod.BreedingRodType.URANIUM.ordinal())), 12,
+                s -> ItemCell.isFullCell(s, Fluids.SAS3), 14
+        );
     }
 
 	@Override

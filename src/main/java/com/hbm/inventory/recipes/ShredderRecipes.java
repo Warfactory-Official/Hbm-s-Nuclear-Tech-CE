@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import com.hbm.blocks.BlockEnums;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.generic.BlockBobble.BobbleType;
 import com.hbm.inventory.OreDictManager;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.recipes.loader.SerializableRecipe;
@@ -42,7 +43,7 @@ public class ShredderRecipes extends SerializableRecipe {
 
         List<ItemStack> matches = OreDictionary.getOres(name);
         if (matches != null && !matches.isEmpty())
-            return matches.get(0).copy();
+            return matches.getFirst().copy();
 
         return new ItemStack(ModItems.scrap);
     }
@@ -133,6 +134,15 @@ public class ShredderRecipes extends SerializableRecipe {
                 continue;
 
             if (name.length() > 5 && name.startsWith("ingot")) {
+                ItemStack dust = getDustByName(name.substring(5));
+
+                if (dust.getItem() != ModItems.scrap) {
+
+                    for (ItemStack stack : matches) {
+                        setRecipe(new ComparableStack(stack), dust);
+                    }
+                }
+            } else if (name.length() > 5 && name.startsWith("plate")) {
                 ItemStack dust = getDustByName(name.substring(5));
 
                 if (dust.getItem() != ModItems.scrap) {
@@ -269,6 +279,8 @@ public class ShredderRecipes extends SerializableRecipe {
         ShredderRecipes.setRecipe(Blocks.SAND, new ItemStack(ModItems.dust, 2));
         ShredderRecipes.setRecipe(ModBlocks.block_slag, new ItemStack(ModItems.powder_cement, 4));
         ShredderRecipes.setRecipe(ModBlocks.ore_aluminium, OreDictManager.DictFrame.fromOne(ModItems.chunk_ore, ItemEnums.EnumChunkType.CRYOLITE, 2));
+        ShredderRecipes.setRecipe(ModBlocks.block_bakelite, new ItemStack(ModItems.powder_bakelite, 9));
+        ShredderRecipes.setRecipe(ModItems.ingot_bakelite, new ItemStack(ModItems.powder_bakelite));
 
         List<ItemStack> logs = OreDictionary.getOres("logWood");
         List<ItemStack> planks = OreDictionary.getOres("plankWood");
@@ -386,6 +398,11 @@ public class ShredderRecipes extends SerializableRecipe {
             ShredderRecipes.setRecipe(new ItemStack(Blocks.WOOL, 1, i), new ItemStack(Items.STRING, 4));
         }
 
+        /* Shredding bobbleheads */
+        for(int i = 0; i < BobbleType.VALUES.length; i++) {
+            ShredderRecipes.setRecipe(new ItemStack(ModBlocks.bobblehead, 1, i), new ItemStack(ModItems.scrap_plastic, 1));
+        }
+
         /* Debris shredding */
         ShredderRecipes.setRecipe(ModItems.debris_concrete, new ItemStack(ModItems.scrap_nuclear, 2));
         ShredderRecipes.setRecipe(ModItems.debris_shrapnel, new ItemStack(ModItems.powder_steel_tiny, 5));
@@ -421,10 +438,10 @@ public class ShredderRecipes extends SerializableRecipe {
     @Override
     public void readRecipe(JsonElement recipe) {
         JsonObject obj = (JsonObject) recipe;
-        ItemStack stack = this.readItemStack(obj.get("input").getAsJsonArray());
+        ItemStack stack = readItemStack(obj.get("input").getAsJsonArray());
         ComparableStack comp = new ComparableStack(stack).makeSingular();
-        ItemStack out = this.readItemStack(obj.get("output").getAsJsonArray());
-        this.shredderRecipes.put(comp, out);
+        ItemStack out = readItemStack(obj.get("output").getAsJsonArray());
+        shredderRecipes.put(comp, out);
     }
 
     @Override
@@ -432,15 +449,15 @@ public class ShredderRecipes extends SerializableRecipe {
         Entry<ComparableStack, ItemStack> entry = (Entry<ComparableStack, ItemStack>) recipe;
 
         writer.name("input");
-        this.writeItemStack(entry.getKey().toStack(), writer);
+        writeItemStack(entry.getKey().toStack(), writer);
         writer.name("output");
-        this.writeItemStack(entry.getValue(), writer);
+        writeItemStack(entry.getValue(), writer);
     }
 
     @Override
     public void deleteRecipes() {
-        this.shredderRecipes.clear();
-        this.jeiShredderRecipes = null;
+        shredderRecipes.clear();
+        jeiShredderRecipes = null;
     }
 
     @Override

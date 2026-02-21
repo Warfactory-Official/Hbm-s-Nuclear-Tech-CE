@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.api.block.IToolable.ToolType;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.handler.radiation.RadiationSystemNT;
 import com.hbm.interfaces.IBomb;
@@ -8,6 +9,7 @@ import com.hbm.interfaces.IMultiBlock;
 import com.hbm.interfaces.IRadResistantBlock;
 import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemLock;
+import com.hbm.items.tool.ItemTooling;
 import com.hbm.tileentity.machine.TileEntityVaultDoor;
 import com.hbm.util.I18nUtil;
 import micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock;
@@ -255,29 +257,35 @@ public class VaultDoor extends BlockContainer implements IBomb, IMultiBlock, IRa
 			return true;
 		} else if(player.getHeldItem(hand).getItem() instanceof ItemLock || player.getHeldItem(hand).getItem() == ModItems.key_kit) {
 			return false;
-			
-		} if(!player.isSneaking()) {
-			
-			TileEntityVaultDoor entity = (TileEntityVaultDoor) world.getTileEntity(pos);
-			if(entity != null) {
-				if(entity.canAccess(player)){
-					entity.tryToggle();
-					return true;
-				}	
-			}
-			return false;
-		} else {
-			
-			TileEntityVaultDoor entity = (TileEntityVaultDoor) world.getTileEntity(pos);
-			if(entity != null)
-			{
-				entity.type++;
-				if(entity.type >= TileEntityVaultDoor.maxTypes)
-					entity.type = 0;
-			}
-			return false;
-		}
-	}
+
+        }
+        TileEntityVaultDoor entity = (TileEntityVaultDoor) world.getTileEntity(pos);
+        if (entity == null) return false;
+
+        if (player.getHeldItem(hand).getItem() instanceof ItemTooling tool && tool.getType() == ToolType.SCREWDRIVER) {
+            if (entity.getConfiguredMode() == IDoor.Mode.TOOLABLE) {
+                if (!entity.canToggleRedstone(player)) {
+                    return false;
+                }
+                entity.toggleRedstoneMode();
+                return true;
+            }
+        }
+        if (!player.isSneaking()) {
+            if (entity.isRedstoneOnly()) {
+                return false;
+            }
+            if (entity.canAccess(player)) {
+                entity.tryToggle();
+                return true;
+            }
+        } else {
+            entity.type++;
+            if (entity.type >= TileEntityVaultDoor.maxTypes)
+                entity.type = 0;
+        }
+        return false;
+    }
 	
 	@Override
 	public EnumBlockRenderType getRenderType(IBlockState state) {
@@ -334,13 +342,13 @@ public class VaultDoor extends BlockContainer implements IBomb, IMultiBlock, IRa
 
 	@Override
 	public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
-		RadiationSystemNT.markChunkForRebuild(worldIn, pos);
+		RadiationSystemNT.markSectionForRebuild(worldIn, pos);
 		super.onBlockAdded(worldIn, pos, state);
 	}
 	
 	@Override
 	public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
-		RadiationSystemNT.markChunkForRebuild(worldIn, pos);
+        RadiationSystemNT.markSectionForRebuild(worldIn, pos);
 		super.breakBlock(worldIn, pos, state);
 	}
 

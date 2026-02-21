@@ -1,6 +1,6 @@
 package com.hbm.render.misc;
 
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
 import com.hbm.main.ClientProxy;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.GLCompat;
@@ -11,14 +11,14 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
 @SideOnly(Side.CLIENT)
-@Mod.EventBusSubscriber(value = Side.CLIENT, modid = RefStrings.MODID)
+@Mod.EventBusSubscriber(value = Side.CLIENT, modid = Tags.MODID)
 public class LensVisibilityHandler {
 
 	static Map<Integer, LensSpikeInfo> lensSpikes = new HashMap<>();

@@ -1,8 +1,8 @@
 package com.hbm.render.entity;
 
+import com.hbm.Tags;
 import com.hbm.entity.projectile.EntityLaserBeam;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.DestFactor;
@@ -18,7 +18,7 @@ import org.lwjgl.opengl.GL11;
 public class RenderBeam2 extends Render<EntityLaserBeam> {
 
 	public static final IRenderFactory<EntityLaserBeam> FACTORY = (RenderManager man) -> {return new RenderBeam2(man);};
-	public static final ResourceLocation beam_rl = new ResourceLocation(RefStrings.MODID + ":textures/models/projectiles/PlasmaBeam.png");
+	public static final ResourceLocation beam_rl = new ResourceLocation(Tags.MODID + ":textures/models/projectiles/PlasmaBeam.png");
 	
 	protected RenderBeam2(RenderManager renderManager) {
 		super(renderManager);

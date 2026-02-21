@@ -4,6 +4,7 @@ import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.entity.projectile.EntityBulletBeamBase;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.items.ModItems;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.GunConfig;
@@ -11,7 +12,7 @@ import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.mags.MagazineSingleReload;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.packet.PacketDispatcher;
+import com.hbm.packet.threading.ThreadedPacket;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna.IType;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
@@ -56,7 +57,9 @@ public class XFactoryFolly {
             data.setFloat("pitch", beam.rotationPitch + 90);
             data.setFloat("yaw", -beam.rotationYaw);
             data.setFloat("scale", 2F + beam.ticksExisted / (float)(beam.beamLength / spacing) * 3F);
-            PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, beam.posX + dir.x * dist, beam.posY + dir.y * dist, beam.posZ + dir.z * dist), new NetworkRegistry.TargetPoint(beam.dimension, beam.posX, beam.posY, beam.posZ, 250));
+            ThreadedPacket message = new AuxParticlePacketNT(data, beam.posX + dir.x * dist, beam.posY + dir.y * dist, beam.posZ + dir.z * dist);
+            PacketThreading.createAllAroundThreadedPacket(message,
+                    new NetworkRegistry.TargetPoint(beam.dimension, beam.posX, beam.posY, beam.posZ, 250));
         }
 
         if(entity.ticksExisted != 2) return;
@@ -91,9 +94,9 @@ public class XFactoryFolly {
 
     public static void init() {
 
-        folly_sm = new BulletConfig().setItem(GunFactory.EnumAmmoSecret.FOLLY_SM).setupDamageClass(DamageResistanceHandler.DamageClass.SUBATOMIC).setBeam().setLife(100).setVel(2F).setGrav(0.015D).setRenderRotations(false).setSpectral(true).setDoesPenetrate(true)
+        folly_sm = new BulletConfig().setItem(GunFactory.EnumAmmoSecret.FOLLY_SM).setupDamageClass(DamageResistanceHandler.DamageClass.SUBATOMIC).setBeam().setLife(100).setVel(2F).setGrav(0.015F).setRenderRotations(false).setSpectral(true).setDoesPenetrate(true)
                 .setOnUpdate(LAMBDA_SM_UPDATE);
-        folly_nuke = new BulletConfig().setItem(GunFactory.EnumAmmoSecret.FOLLY_NUKE).setChunkloading().setLife(600).setVel(4F).setGrav(0.015D)
+        folly_nuke = new BulletConfig().setItem(GunFactory.EnumAmmoSecret.FOLLY_NUKE).setChunkloading().setLife(600).setVel(4F).setGrav(0.015F)
                 .setOnImpact(LAMBDA_NUKE_IMPACT);
 
         ModItems.gun_folly = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.SECRET, "gun_folly", new GunConfig()

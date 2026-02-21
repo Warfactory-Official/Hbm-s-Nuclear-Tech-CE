@@ -186,7 +186,6 @@ public class TileEntityRBMKAutoloader extends TileEntityMachineBase implements I
         stopLiftSound();
     }
 
-    @SideOnly(Side.CLIENT)
     private void stopLiftSound() {
         if (this.audioLift != null) {
             this.audioLift.stopSound();

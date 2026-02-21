@@ -71,7 +71,6 @@ public class WorldConfig {
 	public static int geyserWater = 3000;
 	public static int geyserChlorine = 3000;
 	public static int geyserVapor = 500;
-	public static int meteorStructure = 15000;
 	public static int capsuleStructure = 100;
 	public static int broadcaster = 5000;
 	public static int minefreq = 64;
@@ -93,8 +92,11 @@ public class WorldConfig {
 	public static float craterBiomeInnerRad = 25F;
 	public static float craterBiomeOuterRad = 0.5F;
 	public static float craterBiomeWaterMult = 5F;
+    public static int bedrockGlowstoneSpawn = 100;
+    public static int bedrockPhosphorusSpawn = 50;
+    public static int bedrockQuartzSpawn = 100;
 
-	public static int convertToInt(Object e){
+    public static int convertToInt(Object e){
 		if(e == null)
 			return 0;
 		return (int)e;
@@ -127,14 +129,10 @@ public class WorldConfig {
 		cinnabarSpawn = convertToInt(CompatibilityConfig.cinnabarSpawn.get(0));
 		cobaltSpawn = convertToInt(CompatibilityConfig.cobaltSpawn.get(0));
 
-		newBedrockOres = CommonConfig.createConfigBool(config, CATEGORY_OREGEN, "2.NB_newBedrockOres", "Enables the generation of bedrock ores", true);
-
 		ironClusterSpawn = convertToInt(CompatibilityConfig.ironClusterSpawn.get(0));
 		titaniumClusterSpawn = convertToInt(CompatibilityConfig.titaniumClusterSpawn.get(0));
 		aluminiumClusterSpawn = convertToInt(CompatibilityConfig.aluminiumClusterSpawn.get(0));
 		copperClusterSpawn = convertToInt(CompatibilityConfig.copperClusterSpawn.get(0));
-
-		limestoneSpawn = CommonConfig.createConfigInt(config, CATEGORY_OREGEN, "2.L02_limestoneSpawn", "Amount of limestone block veins per chunk", 1);
 
 		netherUraniumuSpawn = convertToInt(CompatibilityConfig.netherUraniumSpawn.get(-1));
 		netherTungstenSpawn = convertToInt(CompatibilityConfig.netherTungstenSpawn.get(-1));
@@ -145,14 +143,6 @@ public class WorldConfig {
 		netherCobaltSpawn = convertToInt(CompatibilityConfig.netherCobaltSpawn.get(-1));
 
 		endTikiteSpawn = convertToInt(CompatibilityConfig.endTixiteSpawn.get(1));
-
-		enableHematite = CommonConfig.createConfigBool(config, CATEGORY_OREGEN, "2.L00_enableHematite", "Toggles hematite deposits", true);
-		enableMalachite = CommonConfig.createConfigBool(config, CATEGORY_OREGEN, "2.L01_enableMalachite", "Toggles malachite deposits", true);
-		enableBauxite = CommonConfig.createConfigBool(config, CATEGORY_OREGEN, "2.L02_enableBauxite", "Toggles bauxite deposits", true);
-
-		enableSulfurCave = CommonConfig.createConfigBool(config, CATEGORY_OREGEN, "2.C00_enableSulfurCave", "Toggles sulfur caves", true);
-		enableAsbestosCave = CommonConfig.createConfigBool(config, CATEGORY_OREGEN, "2.C01_enableAsbestosCave", "Toggles asbestos caves", true);
-
 
 		radioStructure = convertToInt(CompatibilityConfig.radioStructure.get(0));
 		antennaStructure = convertToInt(CompatibilityConfig.antennaStructure.get(0));
@@ -179,7 +169,6 @@ public class WorldConfig {
 
 
 		geyserVapor = convertToInt(CompatibilityConfig.geyserVapor.get(0));
-		meteorStructure = convertToInt(CompatibilityConfig.meteorStructure.get(0));
 		capsuleStructure = convertToInt(CompatibilityConfig.capsuleStructure.get(0));
 		arcticStructure = convertToInt(CompatibilityConfig.arcticStructure.get(0));
 		jungleStructure = convertToInt(CompatibilityConfig.jungleStructure.get(0));
@@ -189,16 +178,6 @@ public class WorldConfig {
 		meteorStrikeChance = convertToInt(CompatibilityConfig.meteorStrikeChance.get(0));
 		meteorShowerChance = convertToInt(CompatibilityConfig.meteorShowerChance.get(0));
 		meteorShowerDuration = convertToInt(CompatibilityConfig.meteorShowerDuration.get(0));
-
-		final String CATEGORY_BIOMES = CommonConfig.CATEGORY_BIOMES;
-		enableCraterBiomes = CommonConfig.createConfigBool(config, CATEGORY_BIOMES, "17.B_toggle", "Enables the biome change caused by nuclear explosions", true);
-		craterBiomeId = CommonConfig.createConfigInt(config, CATEGORY_BIOMES, "17.B00_craterBiomeId", "The numeric ID for the crater biome", 80);
-		craterBiomeInnerId = CommonConfig.createConfigInt(config, CATEGORY_BIOMES, "17.B01_craterBiomeInnerId", "The numeric ID for the inner crater biome", 81);
-		craterBiomeOuterId = CommonConfig.createConfigInt(config, CATEGORY_BIOMES, "17.B02_craterBiomeOuterId", "The numeric ID for the outer crater biome", 82);
-		craterBiomeRad = (float) CommonConfig.createConfigDouble(config, CATEGORY_BIOMES, "17.R00_craterBiomeRad", "RAD/s for the crater biome", 5D);
-		craterBiomeInnerRad = (float) CommonConfig.createConfigDouble(config, CATEGORY_BIOMES, "17.R01_craterBiomeInnerRad", "RAD/s for the inner crater biome", 25D);
-		craterBiomeOuterRad = (float) CommonConfig.createConfigDouble(config, CATEGORY_BIOMES, "17.R02_craterBiomeOuterRad", "RAD/s for the outer crater biome", 0.5D);
-		craterBiomeWaterMult = (float) CommonConfig.createConfigDouble(config, CATEGORY_BIOMES, "17.R03_craterBiomeWaterMult", "Multiplier for RAD/s in crater biomes when in water", 5D);
 
 	}
 }

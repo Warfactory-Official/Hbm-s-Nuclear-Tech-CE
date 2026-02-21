@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerPARFC;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.albion.TileEntityPARFC;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
@@ -12,7 +12,7 @@ import org.lwjgl.opengl.GL11;
 
 public class GUIPARFC extends GuiInfoContainer {
 
-    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/particleaccelerator/gui_rfc.png");
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/particleaccelerator/gui_rfc.png");
     private final TileEntityPARFC quadrupole;
 
     public GUIPARFC(InventoryPlayer player, TileEntityPARFC slopper) {
@@ -27,8 +27,8 @@ public class GUIPARFC extends GuiInfoContainer {
     public void drawScreen(int mouseX, int mouseY, float f) {
         super.drawScreen(mouseX, mouseY, f);
 
-        quadrupole.tanks[0].renderTankInfo(this, mouseX, mouseY, guiLeft + 89, guiTop + 36, 16, 52);
-        quadrupole.tanks[1].renderTankInfo(this, mouseX, mouseY, guiLeft + 107, guiTop + 36, 16, 52);
+        quadrupole.coolantTanks[0].renderTankInfo(this, mouseX, mouseY, guiLeft + 89, guiTop + 36, 16, 52);
+        quadrupole.coolantTanks[1].renderTankInfo(this, mouseX, mouseY, guiLeft + 107, guiTop + 36, 16, 52);
         this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 53, guiTop + 18, 16, 52, quadrupole.power, quadrupole.getMaxPower());
         super.renderHoveredToolTip(mouseX, mouseY);
     }
@@ -53,7 +53,7 @@ public class GUIPARFC extends GuiInfoContainer {
         int j = (int) (quadrupole.power * 52 / quadrupole.getMaxPower());
         drawTexturedModalRect(guiLeft + 53, guiTop + 70 - j, 184, 52 - j, 16, j);
 
-        quadrupole.tanks[0].renderTank(guiLeft + 89, guiTop + 88, this.zLevel, 16, 52);
-        quadrupole.tanks[1].renderTank(guiLeft + 107, guiTop + 88, this.zLevel, 16, 52);
+        quadrupole.coolantTanks[0].renderTank(guiLeft + 89, guiTop + 88, this.zLevel, 16, 52);
+        quadrupole.coolantTanks[1].renderTank(guiLeft + 107, guiTop + 88, this.zLevel, 16, 52);
     }
 }

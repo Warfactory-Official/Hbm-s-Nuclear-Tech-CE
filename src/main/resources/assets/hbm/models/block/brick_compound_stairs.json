@@ -1,8 +1,0 @@
-{
-    "parent": "block/stairs",
-    "textures": {
-        "bottom": "hbm:blocks/brick_compound",
-        "top": "hbm:blocks/brick_compound",
-        "side": "hbm:blocks/brick_compound"
-    }
-}

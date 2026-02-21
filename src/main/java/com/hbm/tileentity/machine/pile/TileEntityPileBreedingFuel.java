@@ -1,6 +1,8 @@
 package com.hbm.tileentity.machine.pile;
 
 import com.hbm.api.block.IPileNeutronReceiver;
+import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.generic.BlockMeta;
 import com.hbm.config.GeneralConfig;
 import com.hbm.interfaces.AutoRegister;
 import net.minecraft.nbt.NBTTagCompound;
@@ -19,8 +21,7 @@ public class TileEntityPileBreedingFuel extends TileEntityPileBase implements IP
             react();
 
             if(this.progress >= this.maxProgress) {
-                //TODO: graphite tritium
-                //world.setBlockState(pos.getX(), pos.getY(), pos.getZ(), ModBlocks.block_graphite_tritium, this.getBlockMetadata(), 3);
+                world.setBlockState(pos, ModBlocks.block_graphite_tritium.getDefaultState().withProperty(BlockMeta.META, getBlockMetadata()), 3);
             }
         }
     }

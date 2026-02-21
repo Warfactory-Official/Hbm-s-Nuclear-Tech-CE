@@ -1,11 +1,11 @@
 package com.hbm.render;
 
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
 import com.hbm.main.MainRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
 import java.io.BufferedReader;
@@ -29,7 +29,7 @@ public class Shader {
     private int previousProgram;
 
     public Shader(ResourceLocation fragment) {
-        this(new ResourceLocation(RefStrings.MODID, "shaders/default.vert"), fragment);
+        this(new ResourceLocation(Tags.MODID, "shaders/default.vert"), fragment);
     }
 
     public Shader(ResourceLocation vertex, ResourceLocation fragment) {

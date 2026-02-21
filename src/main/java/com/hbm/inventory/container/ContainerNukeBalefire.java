@@ -1,6 +1,8 @@
 package com.hbm.inventory.container;
 
+import com.hbm.items.ModItems;
 import com.hbm.tileentity.bomb.TileEntityNukeBalefire;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -34,36 +36,11 @@ public class ContainerNukeBalefire extends Container {
 	}
 
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2)
+    public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-
-		if (var4 != null && var4.getHasStack())
-		{
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-
-            if (par2 <= 2) {
-				if (!this.mergeItemStack(var5, 2, this.inventorySlots.size(), true))
-				{
-					return ItemStack.EMPTY;
-				}
-			} else {
-				return ItemStack.EMPTY;
-			}
-
-			if (var5.isEmpty())
-			{
-				var4.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
-				var4.onSlotChanged();
-			}
-		}
-
-		return var3;
+		return InventoryUtil.transferStack(this.inventorySlots, index, 2,
+                s -> s.getItem() == ModItems.egg_balefire, 1,
+                s -> s.getItem() == ModItems.battery_spark || s.getItem() == ModItems.battery_trixite, 2);
     }
 
 	@Override

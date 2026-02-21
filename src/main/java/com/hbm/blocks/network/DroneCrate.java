@@ -52,7 +52,7 @@ public class DroneCrate extends BlockContainer implements ILookOverlay, ITooltip
 
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        if(player.getHeldItem(hand) != ItemStack.EMPTY && player.getHeldItem(hand).getItem() == ModItems.drone_linker) return false;
+        if(!player.getHeldItem(hand).isEmpty() && player.getHeldItem(hand).getItem() == ModItems.drone_linker) return false;
 
         if(world.isRemote) {
             return true;
@@ -72,7 +72,7 @@ public class DroneCrate extends BlockContainer implements ILookOverlay, ITooltip
             for(int i = 0; i < tileEntity.inventory.getSlots(); ++i) {
                 ItemStack itemstack = tileEntity.inventory.getStackInSlot(i);
 
-                if(itemstack != ItemStack.EMPTY) {
+                if(!itemstack.isEmpty()) {
                     float f = rand.nextFloat() * 0.8F + 0.1F;
                     float f1 = rand.nextFloat() * 0.8F + 0.1F;
                     float f2 = rand.nextFloat() * 0.8F + 0.1F;
@@ -120,10 +120,5 @@ public class DroneCrate extends BlockContainer implements ILookOverlay, ITooltip
             text.add("Next waypoint: " + tile.nextX + " / " + tile.nextY + " / " + tile.nextZ);
             ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getTranslationKey() + ".name"), 0xffff00, 0x404000, text);
         }
-    }
-
-    @Override
-    public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
-        this.printHook(event, world, new BlockPos(x, y, z));
     }
 }

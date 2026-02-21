@@ -113,7 +113,7 @@ public class EntityZirnoxDebris extends EntityDebrisBase {
     }
 
     public DebrisType getType() {
-        return DebrisType.values()[Math.abs(this.getDataManager().get(TYPE_ID)) % DebrisType.values().length];
+        return DebrisType.VALUES[Math.abs(this.getDataManager().get(TYPE_ID)) % DebrisType.VALUES.length];
     }
 
     public void setType(DebrisType type) {
@@ -127,5 +127,7 @@ public class EntityZirnoxDebris extends EntityDebrisBase {
         GRAPHITE,        //spicy rock
         CONCRETE,        //the all destroying harbinger of annihilation
         EXCHANGER;        //the all destroying harbinger of annihilation: sideways edition
+
+        public static final DebrisType[] VALUES = values();
     }
 }

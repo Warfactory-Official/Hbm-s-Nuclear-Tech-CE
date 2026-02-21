@@ -11,8 +11,11 @@ import com.hbm.inventory.control_panel.ControlEventSystem;
 import com.hbm.inventory.control_panel.DataValueFloat;
 import com.hbm.inventory.control_panel.IControllable;
 import com.hbm.lib.HBMSoundHandler;
+import com.hbm.lib.Library;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.TEVaultPacket;
+import it.unimi.dsi.fastutil.longs.LongIterable;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -35,6 +38,7 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
     public long sysTime;
     private int timer = 0;
     private boolean wasPowered = false;
+    private boolean redstoneOnly = false;
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
@@ -110,7 +114,7 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
 
                         // With door finally closed, mark chunk for rad update since door is now rad resistant
                         // No need to update when open as well, as opening door should update
-                        RadiationSystemNT.markChunkForRebuild(world, pos);
+                        RadiationSystemNT.markSectionsForRebuild(world, getOccupiedSections());
                     }
                 }
             }
@@ -317,6 +321,7 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
         sysTime = compound.getLong("sysTime");
         timer = compound.getInteger("timer");
         wasPowered = compound.getBoolean("wasPowered");
+        redstoneOnly = compound.getBoolean("redstoneOnly");
         super.readFromNBT(compound);
     }
 
@@ -326,6 +331,7 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
         compound.setLong("sysTime", sysTime);
         compound.setInteger("timer", timer);
         compound.setBoolean("wasPowered", wasPowered);
+        compound.setBoolean("redstoneOnly", redstoneOnly);
         return super.writeToNBT(compound);
     }
 
@@ -396,7 +402,7 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
             this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.reactorStart, SoundCategory.BLOCKS, 0.5F, 0.75F);
 
             // With door opening, mark chunk for rad update
-            RadiationSystemNT.markChunkForRebuild(world, pos);
+            RadiationSystemNT.markSectionsForRebuild(world, getOccupiedSections());
         } else if (state == DoorState.OPEN) {
             state = DoorState.CLOSING;
             PacketDispatcher.wrapper.sendToAllTracking(new TEVaultPacket(pos.getX(), pos.getY(), pos.getZ(), state.ordinal(), 1, 0),
@@ -407,7 +413,7 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
 
 
             // With door closing, mark chunk for rad update
-            RadiationSystemNT.markChunkForRebuild(world, pos);
+            RadiationSystemNT.markSectionsForRebuild(world, getOccupiedSections());
         }
     }
 
@@ -417,4 +423,22 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
 
     }
 
+    public boolean getRedstoneOnly() {
+        return redstoneOnly;
+    }
+
+    public void setRedstoneOnly(boolean redstoneOnly) {
+        this.redstoneOnly = redstoneOnly;
+    }
+
+    public LongIterable getOccupiedSections() {
+        LongOpenHashSet sections = new LongOpenHashSet();
+        int ox = pos.getX();
+        int oy = pos.getY();
+        int oz = pos.getZ();
+        for (int i = 0; i <= 5; i++) {
+            sections.add(Library.blockPosToSectionLong(ox, oy + i, oz));
+        }
+        return sections;
+    }
 }

@@ -1,16 +1,16 @@
 package com.hbm.integration.groovy.script;
 
 import com.cleanroommc.groovyscript.api.IIngredient;
+import com.cleanroommc.groovyscript.api.documentation.annotations.RegistryDescription;
 import com.cleanroommc.groovyscript.registry.VirtualizedRegistry;
 import com.hbm.integration.groovy.util.IngredientUtils;
 import com.hbm.inventory.RecipesCommon;
 import com.hbm.inventory.recipes.BlastFurnaceRecipes;
 import com.hbm.util.Tuple;
-import net.minecraft.item.ItemStack;
 
 import static com.hbm.inventory.recipes.BlastFurnaceRecipes.diFuels;
 
-
+@RegistryDescription(linkGenerator = "hbm", isFullyDocumented = false)
 public class BlastFurnaceFuel extends VirtualizedRegistry<Tuple.Pair<RecipesCommon.AStack, Integer>> {
     @Override
     public void onReload() {

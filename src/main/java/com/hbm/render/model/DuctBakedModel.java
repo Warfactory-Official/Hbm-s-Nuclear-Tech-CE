@@ -20,6 +20,8 @@ public class DuctBakedModel extends AbstractBakedModel {
 
     private final int meta;
     private final boolean isExhaust;  // note: I'd do it in an enum but there are only 2 blocks using this model, so it's redundant for now I guess?..
+    @SuppressWarnings("unchecked")
+    private final List<BakedQuad>[] cache = new List[1024]; // 16 metas * 64 connection states
 
     public DuctBakedModel(int meta, boolean isExhaust) {
         super(BakedModelTransforms.standardBlock());
@@ -78,31 +80,38 @@ public class DuctBakedModel extends AbstractBakedModel {
     public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
         if (side != null) return Collections.emptyList();
 
-        List<BakedQuad> quads = new ArrayList<>();
-
         boolean pX, nX, pY, nY, pZ, nZ;
         int useMeta = this.meta;
 
         if (state == null) {
             pX = true; nX = true; pY = false; nY = false; pZ = false; nZ = false;
         } else {
-            IExtendedBlockState ext = (IExtendedBlockState) state;
-            nZ = Boolean.TRUE.equals(ext.getValue(FluidDuctBox.CONN_NORTH));
-            pZ = Boolean.TRUE.equals(ext.getValue(FluidDuctBox.CONN_SOUTH));
-            nX = Boolean.TRUE.equals(ext.getValue(FluidDuctBox.CONN_WEST));
-            pX = Boolean.TRUE.equals(ext.getValue(FluidDuctBox.CONN_EAST));
-            nY = Boolean.TRUE.equals(ext.getValue(FluidDuctBox.CONN_DOWN));
-            pY = Boolean.TRUE.equals(ext.getValue(FluidDuctBox.CONN_UP));
-            useMeta = ext.getValue(FluidDuctBox.META);
+            try {
+                IExtendedBlockState ext = (IExtendedBlockState) state;
+                nZ = ext.getValue(FluidDuctBox.CONN_NORTH);
+                pZ = ext.getValue(FluidDuctBox.CONN_SOUTH);
+                nX = ext.getValue(FluidDuctBox.CONN_WEST);
+                pX = ext.getValue(FluidDuctBox.CONN_EAST);
+                nY = ext.getValue(FluidDuctBox.CONN_DOWN);
+                pY = ext.getValue(FluidDuctBox.CONN_UP);
+                useMeta = ext.getValue(FluidDuctBox.META);
+            } catch (Exception _) {
+                pX = true; nX = true; pY = false; nY = false; pZ = false; nZ = false;
+            }
         }
 
+        int mask = (pX ? 32 : 0) + (nX ? 16 : 0) + (pY ? 8 : 0) + (nY ? 4 : 0) + (pZ ? 2 : 0) + (nZ ? 1 : 0);
+        int cacheIndex = ((useMeta & 0xF) << 6) | mask;
+
+        if (cache[cacheIndex] != null) return cache[cacheIndex];
+
+        List<BakedQuad> quads = new ArrayList<>();
         int sizeLevel = Math.min(useMeta / 3, 4);
         float lower = 0.125f + sizeLevel * 0.0625f;
         float upper = 0.875f - sizeLevel * 0.0625f;
         float jLower = 0.0625f + sizeLevel * 0.0625f;
         float jUpper = 0.9375f - sizeLevel * 0.0625f;
 
-        int mask = (pX ? 32 : 0) + (nX ? 16 : 0) + (pY ? 8 : 0) + (nY ? 4 : 0) + (pZ ? 2 : 0) + (nZ ? 1 : 0);
         int count = Integer.bitCount(mask);
         boolean straightX = (mask & 0b001111) == 0 && mask > 0;
         boolean straightY = (mask & 0b110011) == 0 && mask > 0;
@@ -205,7 +214,7 @@ public class DuctBakedModel extends AbstractBakedModel {
             }
         }
 
-        return quads;
+        return cache[cacheIndex] = Collections.unmodifiableList(quads);
     }
 
     @Override

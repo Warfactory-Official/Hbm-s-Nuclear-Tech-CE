@@ -32,6 +32,6 @@ public class ContainerRBMKControl extends Container {
 
 	@Override
 	public boolean canInteractWith(EntityPlayer player) {
-		return true;
+		return rbmk.isUseableByPlayer(player);
 	}
 }

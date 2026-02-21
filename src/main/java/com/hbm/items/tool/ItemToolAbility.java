@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.hbm.Tags;
 import com.hbm.api.item.IDepthRockTool;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.BlockBedrockOre;
@@ -15,7 +16,7 @@ import com.hbm.items.IDynamicModels;
 import com.hbm.items.IItemControlReceiver;
 import com.hbm.items.IKeybindReceiver;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
+import com.hbm.lib.internal.MethodHandleHelper;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.PlayerInformPacketLegacy;
@@ -46,6 +47,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.play.server.SPacketBlockChange;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
@@ -55,13 +57,13 @@ import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
+import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.IShearable;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
 import java.util.*;
 
 import static com.hbm.items.ItemEnumMulti.ROOT_PATH;
@@ -79,7 +81,7 @@ public class ItemToolAbility extends ItemTool implements IDepthRockTool, IGUIPro
 	protected boolean rockBreaker = false;
     
 	
-	public static enum EnumToolType {
+	public enum EnumToolType {
 		
 		PICKAXE(
 				Sets.newHashSet(Material.IRON, Material.ANVIL, Material.ROCK),
@@ -138,7 +140,7 @@ public class ItemToolAbility extends ItemTool implements IDepthRockTool, IGUIPro
 	public void bakeModel(ModelBakeEvent event) {
 		try {
 			IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/handheld"));
-			ResourceLocation spriteLoc = new ResourceLocation(RefStrings.MODID, ROOT_PATH + texturePath);
+			ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath);
 			IModel retexturedModel = baseModel.retexture(
 					ImmutableMap.of(
 							"layer0", spriteLoc.toString()
@@ -157,12 +159,12 @@ public class ItemToolAbility extends ItemTool implements IDepthRockTool, IGUIPro
 
 	@Override
 	public void registerModel() {
-		ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(new ResourceLocation(RefStrings.MODID, ROOT_PATH + texturePath), "inventory"));
+		ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath), "inventory"));
 	}
 
 	@Override
 	public void registerSprite(TextureMap map) {
-		map.registerSprite(new ResourceLocation(RefStrings.MODID, ROOT_PATH + texturePath));
+		map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath));
 	}
 
 	public ItemToolAbility addAbility(IBaseAbility ability, int level) {
@@ -222,8 +224,7 @@ public class ItemToolAbility extends ItemTool implements IDepthRockTool, IGUIPro
 		 *
 		 * Since keyholes aren't processable and exempt from silk touch anyway, we just default to the vanilla implementation in every case.
 		 */
-		// TODO: stone keyholes
-		//if(block == ModBlocks.stone_keyhole || block == ModBlocks.stone_keyhole_meta) return false;
+		if(block == ModBlocks.stone_keyhole || block == ModBlocks.stone_keyhole_meta) return false;
 
 		if(!world.isRemote && (canHarvestBlock(state, stack) || canShearBlock(block, stack, world, pos.getX(), pos.getY(), pos.getZ())) && canOperate(stack)) {
 			Configuration config = getConfiguration(stack);
@@ -344,8 +345,8 @@ public class ItemToolAbility extends ItemTool implements IDepthRockTool, IGUIPro
 		Block block = state.getBlock();
 		int meta = block.getMetaFromState(state);
 
-		if (!(canHarvestBlock(state, stack) || canShearBlock(block, stack, world, x, y, z)) || (state.getBlockHardness(world, pos) == -1.0F && state.getPlayerRelativeBlockHardness(player, world, pos) == 0.0F))
-				//|| block == ModBlocks.stone_keyhole)
+		if (!(canHarvestBlock(state, stack) || canShearBlock(block, stack, world, x, y, z)) || (state.getBlockHardness(world, pos) == -1.0F && state.getPlayerRelativeBlockHardness(player, world, pos) == 0.0F)
+				|| block == ModBlocks.stone_keyhole)
 			return;
 
 		BlockPos refPos = new BlockPos(refX, refY, refZ);
@@ -354,11 +355,11 @@ public class ItemToolAbility extends ItemTool implements IDepthRockTool, IGUIPro
 		float refStrength = refState.getPlayerRelativeBlockHardness(player, world, refPos);
 		float strength = state.getPlayerRelativeBlockHardness(player, world, pos);
 
-		if (!net.minecraftforge.common.ForgeHooks.canHarvestBlock(state.getBlock(), player, world, pos) || strength <= 0.0F || refStrength / strength > 10f || refState.getPlayerRelativeBlockHardness(player, world, refPos) < 0
+		if (!ForgeHooks.canHarvestBlock(state.getBlock(), player, world, pos) || strength <= 0.0F || refStrength / strength > 10f || refState.getPlayerRelativeBlockHardness(player, world, refPos) < 0
 		)
 			return;
 
-		int exp = net.minecraftforge.common.ForgeHooks.onBlockBreakEvent(world, player.interactionManager.getGameType(), player, pos);
+		int exp = ForgeHooks.onBlockBreakEvent(world, player.interactionManager.getGameType(), player, pos);
 		if (exp == -1)
 			return;
 
@@ -394,7 +395,7 @@ public class ItemToolAbility extends ItemTool implements IDepthRockTool, IGUIPro
 		}
 	} */
 
-	private static final Method blockCaptureDrops = ReflectionHelper.findMethod(Block.class, "captureDrops", null, boolean.class);
+	private static final MethodHandle blockCaptureDrops = MethodHandleHelper.findVirtual(Block.class, "captureDrops", MethodType.methodType(NonNullList.class, boolean.class));
 
 	public static void standardDigPost(World world, int x, int y, int z, EntityPlayerMP player) {
 
@@ -412,7 +413,7 @@ public class ItemToolAbility extends ItemTool implements IDepthRockTool, IGUIPro
 			player.connection.sendPacket(new SPacketBlockChange(world, pos));
 		} else {
 			ItemStack itemstack = player.getHeldItemMainhand();
-			boolean canHarvest = net.minecraftforge.common.ForgeHooks.canHarvestBlock(block, player, world, pos);
+			boolean canHarvest = ForgeHooks.canHarvestBlock(block, player, world, pos);
 
 			removedByPlayer = removeBlock(world, x, y, z, canHarvest, player);
 
@@ -426,19 +427,19 @@ public class ItemToolAbility extends ItemTool implements IDepthRockTool, IGUIPro
 
 			if (removedByPlayer && canHarvest) {
 				try {
-					blockCaptureDrops.invoke(block, true);
+                    //noinspection unchecked
+					NonNullList<ItemStack> ignored = (NonNullList<ItemStack>) blockCaptureDrops.invokeExact(block, true);
 					block.harvestBlock(world, player, pos, state, world.getTileEntity(pos), itemstack);
-					@SuppressWarnings("unchecked")
-					List<ItemStack> drops = (List<ItemStack>) blockCaptureDrops.invoke(block, false);
+					//noinspection unchecked
+					List<ItemStack> drops = (NonNullList<ItemStack>) blockCaptureDrops.invokeExact(block, false);
 					for (ItemStack stack : drops) {
 						Block.spawnAsEntity(world, new BlockPos(dropX, dropY, dropZ), stack);
 					}
-				} catch (IllegalAccessException e) {
-					MainRegistry.logger.error("Failed to capture drops for block " + block, e);
-				} catch (InvocationTargetException e) {
-					MainRegistry.logger.error("Failed to capture drops for block " + block, e);
-				}
-			}
+				} catch (Throwable e) {
+                    MainRegistry.logger.error("Failed to capture drops for block {}", block, e);
+                    throw new RuntimeException(e);
+                }
+            }
 		}
 	}
 

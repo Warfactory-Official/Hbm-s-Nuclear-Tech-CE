@@ -69,7 +69,7 @@ public interface IEnergyProviderMK2 extends IEnergyHandlerMK2 {
         }
 
         if (targetTE instanceof IEnergyReceiverMK2 rec && targetTE != this) {
-            if (rec.canConnect(dir.getOpposite())) {
+            if (rec.canConnect(dir.getOpposite()) && rec.allowDirectProvision()) {
                 long canProvide = Math.min(this.getPower(), this.getProviderSpeed());
                 long canReceive = Math.min(rec.getMaxPower() - rec.getPower(), rec.getReceiverSpeed());
                 long toTransfer = Math.min(canProvide, canReceive);

@@ -19,6 +19,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.*;
 import com.hbm.inventory.gui.GUIMachineFluidTank;
+import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
@@ -32,6 +33,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -64,9 +67,9 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
 	protected boolean sendingBrake = false;
 	public boolean onFire = false;
 	public int age = 0;
-	public static int[] slots = { 2 };
 	public byte lastRedstone = 0;
 	public Explosion lastExplosion = null;
+    public boolean shouldDrop = true;
 
 	public TileEntityMachineFluidTank() {
 		super(6);
@@ -93,7 +96,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
 
 	@Override
 	public int[] getAccessibleSlotsFromSide(EnumFacing e){
-		return slots;
+        return null;
 	}
 
 	@Override
@@ -175,7 +178,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
 				if(mode == 1) {
 					if(this.node == null || this.node.expired || tank.getTankType() != lastType) {
 
-						this.node = (FluidNode) UniNodespace.getNode(world, pos, tank.getTankType().getNetworkProvider());
+                        this.node = UniNodespace.getNode(world, pos, tank.getTankType().getNetworkProvider());
 
 						if(this.node == null || this.node.expired || tank.getTankType() != lastType) {
 							this.node = this.createNode(tank.getTankType());
@@ -195,7 +198,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
 					}
 
 					for(DirPos pos : getConPos()) {
-						FluidNode dirNode = (FluidNode) UniNodespace.getNode(world, pos.getPos(), tank.getTankType().getNetworkProvider());
+                        FluidNode dirNode = UniNodespace.getNode(world, pos.getPos(), tank.getTankType().getNetworkProvider());
 
 						if(mode == 2) {
 							tryProvide(tank, world, pos.getPos(), pos.getDir());
@@ -384,6 +387,43 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
 		}
 		markDirty();
 	}
+
+    @Override
+    public boolean shouldDrop() {
+        return IPersistentNBT.super.shouldDrop() && shouldDrop;
+    }
+
+    /**
+     * 0/1 -> Identifier I/O
+     * 2/3 -> Input canister I/O
+     * 4/5 -> Output canister I/O
+     */
+    @Override
+    public boolean isItemValidForSlot(int i, ItemStack stack) {
+        Item item = stack.getItem();
+        return switch (i) {
+            case 0, 1 -> item instanceof IItemFluidIdentifier;
+            case 2 -> Library.isStackDrainableForTank(stack, tank);
+            case 4 -> Library.isStackFillableForTank(stack, tank);
+            default -> true;
+        };
+    }
+
+    @Override
+    public boolean canInsertItem(int slot, ItemStack stack) {
+        return switch (slot) {
+            case 1, 3, 5 -> false;
+            default -> isItemValidForSlot(slot, stack);
+        };
+    }
+
+    @Override
+    public boolean canExtractItem(int slot, ItemStack stack, int amount) {
+        return switch (slot) {
+            case 1, 3, 5 -> true;
+            default -> !isItemValidForSlot(slot, stack);
+        };
+    }
 
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {

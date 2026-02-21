@@ -3,7 +3,7 @@ package com.hbm.inventory.fluid.trait;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import com.hbm.util.I18nUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
+import net.minecraft.util.text.TextFormatting;
 
 import java.io.IOException;
 import java.util.List;
@@ -31,9 +31,9 @@ public class FT_Corrosive extends FluidTrait {
 	public void addInfo(List<String> info) {
 		
 		if(isHighlyCorrosive())
-			info.add(ChatFormatting.GOLD + "[" + I18nUtil.resolveKey("trait.corrosiveIron") + "]");
+			info.add(TextFormatting.GOLD + "[" + I18nUtil.resolveKey("trait.corrosiveIron") + "]");
 		else
-			info.add(ChatFormatting.YELLOW + "[" + I18nUtil.resolveKey("trait.corrosivePlastic") + "]");
+			info.add(TextFormatting.YELLOW + "[" + I18nUtil.resolveKey("trait.corrosivePlastic") + "]");
 	}
 
 	@Override

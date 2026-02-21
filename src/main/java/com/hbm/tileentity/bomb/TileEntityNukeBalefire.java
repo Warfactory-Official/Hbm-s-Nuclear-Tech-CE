@@ -94,20 +94,15 @@ public class TileEntityNukeBalefire extends TileEntityMachineBase implements ITi
 		loaded = buf.readBoolean();
 		started = buf.readBoolean();
 	}
-	
-	public boolean isLoaded() {
 
-		return hasEgg() && hasBattery();
+	@Override
+	public boolean isLoaded() {
+		return super.isLoaded() && hasEgg() && hasBattery();
 	}
 
 	public boolean hasEgg() {
-
-		if(inventory.getStackInSlot(0).getItem() == ModItems.egg_balefire) {
-			return true;
-		}
-
-		return false;
-	}
+        return inventory.getStackInSlot(0).getItem() == ModItems.egg_balefire;
+    }
 
 	public boolean hasBattery() {
 
@@ -116,14 +111,8 @@ public class TileEntityNukeBalefire extends TileEntityMachineBase implements ITi
 
 	public int getBattery() {
 		ItemStack stackInSlot = inventory.getStackInSlot(1);
-		if(stackInSlot.getItem() == ModItems.battery_spark &&
-				((IBatteryItem)ModItems.battery_spark).getCharge(stackInSlot) == ((IBatteryItem)ModItems.battery_spark).getMaxCharge(stackInSlot)) {
-			return 1;
-		}
-		if(stackInSlot.getItem() == ModItems.battery_trixite &&
-				((IBatteryItem)ModItems.battery_trixite).getCharge(stackInSlot) == ((IBatteryItem)ModItems.battery_trixite).getMaxCharge(stackInSlot)) {
-			return 2;
-		}
+		if(stackInSlot.getItem() == ModItems.battery_spark) return 1;
+		if(stackInSlot.getItem() == ModItems.battery_trixite) return 2;
 
 		return 0;
 	}

@@ -1,22 +1,21 @@
 package com.hbm.items.machine;
 
-import java.util.List;
-
 import com.hbm.items.ItemEnumMulti;
 import com.hbm.util.EnumUtil;
 import com.hbm.util.Function;
 import com.hbm.util.Function.FunctionLogarithmic;
 import com.hbm.util.Function.FunctionSqrt;
-
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 
-public class ItemPWRFuel extends ItemEnumMulti {
+import java.util.List;
+
+public class ItemPWRFuel extends ItemEnumMulti<ItemPWRFuel.EnumPWRFuel> {
 
     public ItemPWRFuel() {
-        super("pwr_fuel", EnumPWRFuel.class, true, true);
+        super("pwr_fuel", EnumPWRFuel.VALUES, true, true);
     }
 
     public enum EnumPWRFuel {
@@ -36,6 +35,8 @@ public class ItemPWRFuel extends ItemEnumMulti {
         BFB_AM_MIX(	2.5D,	new FunctionSqrt(15), 250_000_000),
         BFB_PU241(	2.5D,	new FunctionSqrt(15), 250_000_000);
 
+        public static final EnumPWRFuel[] VALUES = values();
+
         public final double yield;
         public final double heatEmission;
         public final Function function;
@@ -54,7 +55,7 @@ public class ItemPWRFuel extends ItemEnumMulti {
     @Override
     public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
 
-        EnumPWRFuel num = EnumUtil.grabEnumSafely(EnumPWRFuel.class, stack.getItemDamage());
+        EnumPWRFuel num = EnumUtil.grabEnumSafely(EnumPWRFuel.VALUES, stack.getItemDamage());
 
         String color = TextFormatting.GOLD + "";
         String reset = TextFormatting.RESET + "";

@@ -1,6 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.tileentity.machine.TileEntityCoreInjector;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -18,9 +18,9 @@ public class ContainerCoreInjector extends Container {
     public ContainerCoreInjector(InventoryPlayer invPlayer, TileEntityCoreInjector injector) {
         coreInjector = injector;
         this.addSlotToContainer(new SlotItemHandler(injector.inventory, 0, 15, 16));
-        this.addSlotToContainer(new SlotTakeOnly(injector.inventory, 1, 15, 52));
+        this.addSlotToContainer(SlotFiltered.takeOnly(injector.inventory, 1, 15, 52));
         this.addSlotToContainer(new SlotItemHandler(injector.inventory, 2, 146, 17));
-        this.addSlotToContainer(new SlotTakeOnly(injector.inventory, 3, 146, 53));
+        this.addSlotToContainer(SlotFiltered.takeOnly(injector.inventory, 3, 146, 53));
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; j++) {
                 this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
@@ -35,29 +35,29 @@ public class ContainerCoreInjector extends Container {
     @NotNull
     @Override
     public ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-        ItemStack stack = ItemStack.EMPTY;
+        ItemStack result = ItemStack.EMPTY;
         Slot slot = this.inventorySlots.get(index);
 		
         if (slot != null && slot.getHasStack()) {
-            ItemStack var5 = slot.getStack();
-            stack = var5.copy();
+            ItemStack stack = slot.getStack();
+            result = stack.copy();
 
             if (index <= 3) {
-                if (!this.mergeItemStack(var5, 4, this.inventorySlots.size(), true)) {
+                if (!this.mergeItemStack(stack, 4, this.inventorySlots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
             } else {
                 return ItemStack.EMPTY;
             }
 
-            if (var5.isEmpty()) {
+            if (stack.isEmpty()) {
                 slot.putStack(ItemStack.EMPTY);
             } else {
                 slot.onSlotChanged();
             }
         }
 
-        return stack;
+        return result;
     }
 
     @Override

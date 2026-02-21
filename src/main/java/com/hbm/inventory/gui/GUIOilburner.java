@@ -1,26 +1,26 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerOilburner;
 import com.hbm.inventory.fluid.trait.FT_Flammable;
-import com.hbm.lib.RefStrings;
 import com.hbm.packet.toserver.NBTControlPacket;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.machine.TileEntityHeaterOilburner;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.client.renderer.GlStateManager;
 
 import java.io.IOException;
 import java.util.Locale;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUIOilburner extends GuiInfoContainer {
 
-    private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/machine/gui_oilburner.png");
+    private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/machine/gui_oilburner.png");
     private TileEntityHeaterOilburner heater;
 
     public GUIOilburner(InventoryPlayer player, TileEntityHeaterOilburner heater) {
@@ -50,10 +50,10 @@ public class GUIOilburner extends GuiInfoContainer {
         super.mouseClicked(mouseX, mouseY, mouseButton);
 
         if (guiLeft + 80 <= mouseX && guiLeft + 80 + 16 > mouseX && guiTop + 54 < mouseY && guiTop + 54 + 14 >= mouseY) {
-            mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            playClickSound();
             NBTTagCompound data = new NBTTagCompound();
             data.setBoolean("toggle", true);
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, heater.getPos()));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, heater.getPos()));
         }
     }
 

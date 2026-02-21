@@ -1,7 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotPattern;
-import com.hbm.tileentity.network.TileEntityDroneDock;
+import com.hbm.inventory.slot.SlotPattern;
 import com.hbm.tileentity.network.TileEntityDroneRequester;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -41,34 +40,34 @@ public class ContainerDroneRequester extends Container {
     }
 
     @Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2) {
-        ItemStack var3 = ItemStack.EMPTY;
-        Slot var4 = this.inventorySlots.get(par2);
+    public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+        ItemStack result = ItemStack.EMPTY;
+        Slot slot = this.inventorySlots.get(index);
 
-        if(var4 != null && var4.getHasStack()) {
-            ItemStack var5 = var4.getStack();
-            var3 = var5.copy();
+        if(slot != null && slot.getHasStack()) {
+            ItemStack stack = slot.getStack();
+            result = stack.copy();
 
-            if(par2 < 9) return ItemStack.EMPTY; //ignore filters
+            if(index < 9) return ItemStack.EMPTY; //ignore filters
 
-            if(par2 <= crate.getSizeInventory() - 1) {
-                if(!this.mergeItemStack(var5, crate.getSizeInventory(), this.inventorySlots.size(), true)) {
+            if(index <= crate.getSizeInventory() - 1) {
+                if(!this.mergeItemStack(stack, crate.getSizeInventory(), this.inventorySlots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if(!this.mergeItemStack(var5, 9, crate.getSizeInventory(), false)) {
+            } else if(!this.mergeItemStack(stack, 9, crate.getSizeInventory(), false)) {
                 return ItemStack.EMPTY;
             }
 
-            if(var5.getCount() == 0) {
-                var4.putStack(ItemStack.EMPTY);
+            if(stack.getCount() == 0) {
+                slot.putStack(ItemStack.EMPTY);
             } else {
-                var4.onSlotChanged();
+                slot.onSlotChanged();
             }
 
-            var4.onTake(p_82846_1_, var5);
+            slot.onTake(player, stack);
         }
 
-        return var3;
+        return result;
     }
 
     @Override

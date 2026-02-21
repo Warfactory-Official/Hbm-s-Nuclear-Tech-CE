@@ -119,7 +119,7 @@ public class BlockSpinnyLight extends BlockContainer {
 
 	@Override
 	public boolean canPlaceBlockAt(World worldIn, BlockPos pos) {
-		for(EnumFacing enumfacing : EnumFacing.values()) {
+		for(EnumFacing enumfacing : EnumFacing.VALUES) {
 			if(canPlaceBlock(worldIn, pos, enumfacing)) {
 				return true;
 			}

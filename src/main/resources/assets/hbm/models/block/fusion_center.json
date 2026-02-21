@@ -1,7 +1,0 @@
-{
-	"parent": "block/cube_column",
-	"textures": {
-		"end": "hbm:blocks/fusion_center_top_alt",
-		"side": "hbm:blocks/fusion_center_side_alt"
-	}
-}

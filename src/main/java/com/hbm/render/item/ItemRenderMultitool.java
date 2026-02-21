@@ -1,8 +1,8 @@
 package com.hbm.render.item;
 
+import com.hbm.Tags;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.model.ModelMultitoolClaw;
 import com.hbm.render.model.ModelMultitoolFist;
 import com.hbm.render.model.ModelMultitoolOpen;
@@ -48,7 +48,7 @@ public class ItemRenderMultitool extends TEISRBase {
 			GlStateManager.pushMatrix();
 				GlStateManager.enableCull();
 				
-				Minecraft.getMinecraft().renderEngine.bindTexture(new ResourceLocation(RefStrings.MODID +":textures/models/tools/ModelMultitool.png"));
+				Minecraft.getMinecraft().renderEngine.bindTexture(new ResourceLocation(Tags.MODID +":textures/models/tools/ModelMultitool.png"));
 				GlStateManager.scale(0.5F, 0.5F, 0.5F);
 				if(type == TransformType.FIRST_PERSON_RIGHT_HAND){
 					GL11.glRotated(-39, 0, 0, 1);
@@ -96,7 +96,7 @@ public class ItemRenderMultitool extends TEISRBase {
 		case HEAD:
 			GlStateManager.pushMatrix();
 			GlStateManager.enableCull();
-				Minecraft.getMinecraft().renderEngine.bindTexture(new ResourceLocation(RefStrings.MODID +":textures/models/tools/ModelMultitool.png"));
+				Minecraft.getMinecraft().renderEngine.bindTexture(new ResourceLocation(Tags.MODID +":textures/models/tools/ModelMultitool.png"));
 				GlStateManager.scale(0.75F, 0.75F, 0.75F);
 
 				GL11.glRotated(180, 1, 0, 0);

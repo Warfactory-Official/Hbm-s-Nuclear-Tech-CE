@@ -61,7 +61,7 @@ public class TileEntityHadronDiode extends TileEntityTickingBase {
 	@Override
 	public void deserialize(ByteBuf buf) {
 		for(int i = 0; i < 6; i++) {
-			sides[i] = DiodeConfig.values()[buf.readInt()];
+			sides[i] = DiodeConfig.VALUES[buf.readInt()];
 		}
 		//world.markBlockRangeForRenderUpdate(pos, pos);
 	}
@@ -80,7 +80,7 @@ public class TileEntityHadronDiode extends TileEntityTickingBase {
 	}
 
 	public void setConfig(int side, int config) {
-		sides[side] = DiodeConfig.values()[config];
+		sides[side] = DiodeConfig.VALUES[config];
 		this.markDirty();
 		sendSides();
 	}
@@ -88,7 +88,7 @@ public class TileEntityHadronDiode extends TileEntityTickingBase {
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
 		for(int i = 0; i < 6; i++) {
-			sides[i] = DiodeConfig.values()[compound.getInteger("side_" + i)];
+			sides[i] = DiodeConfig.VALUES[compound.getInteger("side_" + i)];
 		}
 
 		fatherIAskOfYouToUpdateMe = true;
@@ -109,7 +109,9 @@ public class TileEntityHadronDiode extends TileEntityTickingBase {
 	public static enum DiodeConfig {
 		NONE,
 		IN,
-		OUT
+		OUT;
+
+        public static final DiodeConfig[] VALUES = values();
 	}
 	
 }

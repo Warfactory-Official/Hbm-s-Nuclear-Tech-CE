@@ -47,7 +47,7 @@ public class ItemAnchorRemote extends ItemBattery {
               + "HE)");
     }
 
-    list.add("Charge rate: " + BobMathUtil.getShortNumber(getChargeRate()) + "HE/t");
+    list.add("Charge rate: " + BobMathUtil.getShortNumber(chargeRate) + "HE/t");
   }
 
   @Override

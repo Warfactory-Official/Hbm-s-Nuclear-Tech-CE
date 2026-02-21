@@ -3,15 +3,18 @@ package com.hbm.tileentity.machine.oil;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import com.hbm.blocks.ModBlocks;
-import com.hbm.dim.SolarSystem;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.container.ContainerMachineOilWell;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.gui.GUIMachineOilWell;
+import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IConfigurableMachine;
+import com.hbm.tileentity.IUpgradeInfoProvider;
+import com.hbm.util.BobMathUtil;
+import com.hbm.util.I18nUtil;
 import com.hbm.world.feature.OilSpot;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -21,12 +24,14 @@ import net.minecraft.inventory.Container;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.io.IOException;
+import java.util.List;
 
 @AutoRegister
 public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
@@ -43,8 +48,6 @@ public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
     protected static int gasPerBedrockDepositMin = 10;
     protected static int gasPerBedrockDepositMax = 50;
     protected static int destructionRange = 75;
-    protected static int oilPerDunaDeposit = 300;
-    protected static double DunadrainChance = 0.05D; //Duna should yield less oil due to it being mostly a meme and also a dead planet
 
     public TileEntityMachineFrackingTower() {
         super();
@@ -86,7 +89,7 @@ public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
     public boolean canPump() {
         boolean b = this.tanks[2].getFill() >= solutionRequired;
 
-        if(!b) {
+        if (!b) {
             this.indicator = 3;
         }
 
@@ -102,7 +105,7 @@ public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
     public void doSuck(BlockPos pos) {
         super.doSuck(pos);
 
-        if(world.getBlockState(pos).getBlock() == ModBlocks.ore_bedrock_oil) {
+        if (world.getBlockState(pos).getBlock() == ModBlocks.ore_bedrock_oil) {
             onSuck(pos);
         }
     }
@@ -116,46 +119,26 @@ public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
         int oil = 0;
         int gas = 0;
 
-        if(b == ModBlocks.ore_oil) {
-            if(meta == SolarSystem.Body.DUNA.ordinal()) {
-                tanks[0].setTankType(Fluids.OIL);
+        if (b == ModBlocks.ore_oil) {
+            tanks[0].setTankType(Fluids.OIL);
 
-                oil = oilPerDunaDeposit;
-                gas = gasPerDepositMin + world.rand.nextInt(gasPerDepositMax - gasPerDepositMin + 1);
+            oil = oilPerDeposit;
+            gas = gasPerDepositMin + world.rand.nextInt(gasPerDepositMax - gasPerDepositMin + 1);
 
-                if(world.rand.nextDouble() < DunadrainChance) {
-                    world.setBlockState(pos, ModBlocks.ore_oil_empty.getDefaultState(), 3);
-                }
-            } else if(meta == SolarSystem.Body.LAYTHE.ordinal()) {
-                tanks[0].setTankType(Fluids.OIL_DS);
-
-                oil = oilPerDeposit;
-                gas = gasPerDepositMin + world.rand.nextInt(gasPerDepositMax - gasPerDepositMin + 1);
-
-                if(world.rand.nextDouble() < drainChance) {
-                    world.setBlockState(pos, ModBlocks.ore_oil_empty.getDefaultState(), 3);
-                }
-            } else {
-                tanks[0].setTankType(Fluids.OIL);
-
-                oil = oilPerDeposit;
-                gas = gasPerDepositMin + world.rand.nextInt(gasPerDepositMax - gasPerDepositMin + 1);
-
-                if(world.rand.nextDouble() < drainChance) {
-                    world.setBlockState(pos, ModBlocks.ore_oil_empty.getDefaultState(), 3);
-                }
+            if (world.rand.nextDouble() < drainChance) {
+                world.setBlockState(pos, ModBlocks.ore_oil_empty.getDefaultState(), 3);
             }
         }
 
-        if(b == ModBlocks.ore_bedrock_oil) {
+        if (b == ModBlocks.ore_bedrock_oil) {
             oil = oilPerBedrockDepsoit;
             gas = gasPerBedrockDepositMin + world.rand.nextInt(gasPerBedrockDepositMax - gasPerBedrockDepositMin + 1);
         }
 
         this.tanks[0].setFill(this.tanks[0].getFill() + oil);
-        if(this.tanks[0].getFill() > this.tanks[0].getMaxFill()) this.tanks[0].setFill(tanks[0].getMaxFill());
+        if (this.tanks[0].getFill() > this.tanks[0].getMaxFill()) this.tanks[0].setFill(tanks[0].getMaxFill());
         this.tanks[1].setFill(this.tanks[1].getFill() + gas);
-        if(this.tanks[1].getFill() > this.tanks[1].getMaxFill()) this.tanks[1].setFill(tanks[1].getMaxFill());
+        if (this.tanks[1].getFill() > this.tanks[1].getMaxFill()) this.tanks[1].setFill(tanks[1].getMaxFill());
 
         this.tanks[2].setFill(tanks[2].getFill() - solutionRequired);
 
@@ -164,12 +147,12 @@ public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
 
     @Override
     public FluidTankNTM[] getSendingTanks() {
-        return new FluidTankNTM[] { tanks[0], tanks[1] };
+        return new FluidTankNTM[]{tanks[0], tanks[1]};
     }
 
     @Override
     public FluidTankNTM[] getReceivingTanks() {
-        return new FluidTankNTM[] { tanks[2] };
+        return new FluidTankNTM[]{tanks[2]};
     }
 
     @Override
@@ -179,7 +162,7 @@ public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
 
     @Override
     public DirPos[] getConPos() {
-        return new DirPos[] {
+        return new DirPos[]{
                 new DirPos(pos.getX() + 1, pos.getY(), pos.getZ(), Library.POS_X),
                 new DirPos(pos.getX() - 1, pos.getY(), pos.getZ(), Library.NEG_X),
                 new DirPos(pos.getX(), pos.getY(), pos.getZ() + 1, Library.POS_Z),
@@ -189,7 +172,7 @@ public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
 
     @Override
     protected void updateConnections() {
-        for(DirPos pos : getConPos()) {
+        for (DirPos pos : getConPos()) {
             this.trySubscribe(world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
             this.trySubscribe(tanks[2].getTankType(), world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
         }
@@ -258,5 +241,23 @@ public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
     public boolean isUseableByPlayer(EntityPlayer player) {
         if (this.world.getTileEntity(this.pos) != this) return false;
         return player.getDistanceSq(this.pos.getX() + 0.5D, this.pos.getY() + 0.5D, this.pos.getZ() + 0.5D) <= 1024.0D;
+    }
+
+    public void provideInfo(ItemMachineUpgrade.UpgradeType type, int level, List<String> info, boolean extendedInfo) {
+        info.add(IUpgradeInfoProvider.getStandardLabel(ModBlocks.machine_fracking_tower));
+        if (type == ItemMachineUpgrade.UpgradeType.SPEED) {
+            info.add(TextFormatting.GREEN + I18nUtil.resolveKey(IUpgradeInfoProvider.KEY_DELAY, "-" + (level * 25) + "%"));
+            info.add(TextFormatting.RED + I18nUtil.resolveKey(IUpgradeInfoProvider.KEY_CONSUMPTION, "+" + (level * 25) + "%"));
+        }
+        if (type == ItemMachineUpgrade.UpgradeType.POWER) {
+            info.add(TextFormatting.GREEN + I18nUtil.resolveKey(IUpgradeInfoProvider.KEY_CONSUMPTION, "-" + (level * 25) + "%"));
+            info.add(TextFormatting.RED + I18nUtil.resolveKey(IUpgradeInfoProvider.KEY_DELAY, "+" + (level * 10) + "%"));
+        }
+        if (type == ItemMachineUpgrade.UpgradeType.AFTERBURN) {
+            info.add(TextFormatting.GREEN + I18nUtil.resolveKey(IUpgradeInfoProvider.KEY_BURN, level * 10, level * 50));
+        }
+        if (type == ItemMachineUpgrade.UpgradeType.OVERDRIVE) {
+            info.add((BobMathUtil.getBlink() ? TextFormatting.RED : TextFormatting.DARK_GRAY) + "YES");
+        }
     }
 }

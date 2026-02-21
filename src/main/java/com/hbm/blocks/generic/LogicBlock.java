@@ -2,6 +2,7 @@ package com.hbm.blocks.generic;
 
 import com.google.common.collect.ImmutableMap;
 import com.hbm.blocks.machine.BlockContainerBakeable;
+import com.hbm.blocks.network.SimpleUnlistedProperty;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.render.block.BlockBakeFrame;
 import com.hbm.world.gen.util.LogicBlockActions;
@@ -254,36 +255,6 @@ public class LogicBlock extends BlockContainerBakeable {
         @Override
         public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
             this.readFromNBT(pkt.getNbtCompound());
-        }
-    }
-
-    public static class SimpleUnlistedProperty<T> implements IUnlistedProperty<T> {
-        private final String name;
-        private final Class<T> type;
-
-        public SimpleUnlistedProperty(String name, Class<T> type) {
-            this.name = name;
-            this.type = type;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public boolean isValid(T value) {
-            return true;
-        }
-
-        @Override
-        public Class<T> getType() {
-            return type;
-        }
-
-        @Override
-        public String valueToString(T value) {
-            return String.valueOf(value);
         }
     }
 

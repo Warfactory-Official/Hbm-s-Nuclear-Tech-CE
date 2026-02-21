@@ -1,8 +1,8 @@
 package com.hbm.render.entity;
 
+import com.hbm.Tags;
 import com.hbm.entity.projectile.EntityRubble;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.model.ModelRubble;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -70,7 +70,7 @@ public class RenderRubble extends Render<EntityRubble> {
 
 	@Override
 	protected ResourceLocation getEntityTexture(EntityRubble entity) {
-		return new ResourceLocation(RefStrings.MODID + ":textures/models/ModelRubbleScrap.png");
+		return new ResourceLocation(Tags.MODID + ":textures/models/ModelRubbleScrap.png");
 	}
 
 }

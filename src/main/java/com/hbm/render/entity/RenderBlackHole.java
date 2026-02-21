@@ -1,14 +1,14 @@
 package com.hbm.render.entity;
 
+import com.hbm.Tags;
 import com.hbm.entity.effect.EntityBlackHole;
 import com.hbm.entity.effect.EntityRagingVortex;
 import com.hbm.entity.effect.EntityVortex;
-import com.hbm.hfr.render.loader.HFRWavefrontObject;
+import com.hbm.render.loader.HFRWavefrontObject;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.ClientProxy;
 import com.hbm.render.NTMRenderHelper;
-import com.hbm.render.amlfrom1710.IModelCustom;
+import com.hbm.render.loader.IModelCustom;
 import com.hbm.render.amlfrom1710.Vec3;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -31,11 +31,11 @@ public class RenderBlackHole extends Render<EntityBlackHole> {
 		return new RenderBlackHole(man);
 	};
 
-	protected static final ResourceLocation objTesterModelRL = new ResourceLocation(RefStrings.MODID, "models/Sphere.obj");
+	protected static final ResourceLocation objTesterModelRL = new ResourceLocation(Tags.MODID, "models/Sphere.obj");
 	protected IModelCustom blastModel;
-	protected ResourceLocation hole = new ResourceLocation(RefStrings.MODID, "textures/models/explosion/BlackHole.png");
-	protected ResourceLocation swirl = new ResourceLocation(RefStrings.MODID, "textures/entity/bhole.png");
-	protected ResourceLocation disc = new ResourceLocation(RefStrings.MODID, "textures/entity/bholeDisc.png");
+	protected ResourceLocation hole = new ResourceLocation(Tags.MODID, "textures/models/explosion/BlackHole.png");
+	protected ResourceLocation swirl = new ResourceLocation(Tags.MODID, "textures/entity/bhole.png");
+	protected ResourceLocation disc = new ResourceLocation(Tags.MODID, "textures/entity/bholeDisc.png");
 
 	protected RenderBlackHole(RenderManager renderManager){
 		super(renderManager);

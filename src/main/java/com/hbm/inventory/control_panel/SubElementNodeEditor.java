@@ -1,7 +1,9 @@
 package com.hbm.inventory.control_panel;
 
+import com.hbm.Tags;
+import com.hbm.inventory.control_panel.modular.INodeMenuCreator;
+import com.hbm.inventory.control_panel.modular.NTMControlPanelRegistry;
 import com.hbm.inventory.control_panel.nodes.*;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.ClientProxy;
 import com.hbm.render.NTMRenderHelper;
 import net.minecraft.client.gui.GuiButton;
@@ -10,32 +12,32 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Matrix4f;
 
 import java.util.*;
 
 public class SubElementNodeEditor extends SubElement {
 
-	public static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/control_panel/gui_placement_front.png");
-	public static ResourceLocation grid = new ResourceLocation(RefStrings.MODID + ":textures/gui/control_panel/grid.png");
+	public static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/control_panel/gui_placement_front.png");
+	public static ResourceLocation grid = new ResourceLocation(Tags.MODID + ":textures/gui/control_panel/grid.png");
 	
 	public GuiButton btn_back;
 	public GuiButton btn_variables;
 
 	public ItemList addMenu;
-	
-	private NodeSystem currentSystem;
-	private Deque<NodeSystem> systemHistoryStack = new ArrayDeque<>();
 
-	private ControlEvent currentEvent;
-	private List<ControlEvent> sendEvents;
-	private boolean gridGrabbed = false;
-	protected float gridX = 0;
-	protected float gridY = 0;
-	protected float gridScale = 1;
-	private float prevMouseX;
-	private float prevMouseY;
+	public NodeSystem currentSystem;
+	public Deque<NodeSystem> systemHistoryStack = new ArrayDeque<>();
+
+	public ControlEvent currentEvent;
+	public List<ControlEvent> sendEvents;
+	public boolean gridGrabbed = false;
+	public float gridX = 0;
+	public float gridY = 0;
+	public float gridScale = 1;
+	public float prevMouseX;
+	public float prevMouseY;
 	
 	public SubElementNodeEditor(GuiControlEdit gui){
 		super(gui);
@@ -85,126 +87,31 @@ public class SubElementNodeEditor extends SubElement {
 				addMenu.close();
 			}
 			addMenu = new ItemList(gui.mouseX, gui.mouseY, 32, s -> {
-				if(s.endsWith("Input")){
-					ItemList list = new ItemList(0, 0, 32, s2 -> {
-						final float x = (gui.mouseX-gui.getGuiLeft())*gridScale + gui.getGuiLeft() + gridX;
-						final float y = (gui.mouseY-gui.getGuiTop())*gridScale + gui.getGuiTop() - gridY;
-						Node node = null;
-						if(s2.equals("Event Data")){
-							Map<String, DataValue> vars = new HashMap<>(currentEvent.vars);
-							vars.put(sendEvents == null ? "to index" : "from index", new DataValueFloat(0));
-							node = new NodeInput(x, y, "Event Data").setVars(vars);
-						} else if(s2.equals("Get Variable")){
-							node = new NodeGetVar(x, y, gui.currentEditControl);
-						} else if (s2.equals("Query Block")) {
-							node = new NodeQueryBlock(x, y, gui.currentEditControl);
-						}
-						if(node != null){
-							addMenu.close();
-							addMenu = null;
-							currentSystem.addNode(node);
-							currentSystem.activeNode = node;
+				final float x = (gui.mouseX-gui.getGuiLeft())*gridScale + gui.getGuiLeft() + gridX;
+				final float y = (gui.mouseY-gui.getGuiTop())*gridScale + gui.getGuiTop() - gridY;
+				List<INodeMenuCreator> controllers = NTMControlPanelRegistry.addMenuControl.get(s.substring(("{expandable}").length()));
+				if (controllers != null) {
+					ItemList list = new ItemList(0, 0, 32,s2 -> {
+						for (INodeMenuCreator controller : controllers) {
+							Node node = controller.selectItem(s2,x,y,this);
+							if (node != null) {
+								addMenu.close();
+								addMenu = null;
+								currentSystem.addNode(node);
+								currentSystem.activeNode = node;
+								break;
+							}
 						}
 						return null;
 					});
-					list.addItems("Event Data");
-					list.addItems("Get Variable");
-					list.addItems("Query Block");
-					return list;
-				} else if(s.endsWith("Math")){
-					ItemList list = new ItemList(0, 0, 32, s2 -> {
-						final float x = (gui.mouseX-gui.getGuiLeft())*gridScale + gui.getGuiLeft() + gridX;
-						final float y = (gui.mouseY-gui.getGuiTop())*gridScale + gui.getGuiTop() - gridY;
-						Node node = null;
-						if(s2.equals("Math Node")){
-							node = new NodeMath(x, y);
-						}
-						if(node != null){
-							addMenu.close();
-							addMenu = null;
-							currentSystem.addNode(node);
-							currentSystem.activeNode = node;
-						}
-						return null;
-					});
-					list.addItems("Math Node");
-					return list;
-				} else if(s.endsWith("Boolean")){
-					ItemList list = new ItemList(0, 0, 32, s2 -> {
-						final float x = (gui.mouseX-gui.getGuiLeft())*gridScale + gui.getGuiLeft() + gridX;
-						final float y = (gui.mouseY-gui.getGuiTop())*gridScale + gui.getGuiTop() - gridY;
-						Node node = null;
-						if(s2.equals("Boolean Node")){
-							node = new NodeBoolean(x, y);
-						}
-						if(node != null){
-							addMenu.close();
-							addMenu = null;
-							currentSystem.addNode(node);
-							currentSystem.activeNode = node;
-						}
-						return null;
-					});
-					list.addItems("Boolean Node");
-					return list;
-				} else if(s.endsWith("Logic")){
-					ItemList list = new ItemList(0, 0, 32, s2 -> {
-						final float x = (gui.mouseX-gui.getGuiLeft())*gridScale + gui.getGuiLeft() + gridX;
-						final float y = (gui.mouseY-gui.getGuiTop())*gridScale + gui.getGuiTop() - gridY;
-						Node node = null;
-						if (s2.equals("Function")) {
-							node = new NodeFunction(x, y);
-						}
-						else if (s2.equals("Buffer")) {
-							node = new NodeBuffer(x, y);
-						}
-						else if (s2.equals("Conditional")) {
-							node = new NodeConditional(x, y);
-						}
-						if (node != null) {
-							addMenu.close();
-							addMenu = null;
-							currentSystem.addNode(node);
-							currentSystem.activeNode = node;
-						}
-						return null;
-					});
-					list.addItems("Function");
-					list.addItems("Buffer");
-					list.addItems("Conditional");
-					return list;
-				} else if(s.endsWith("Output")){
-					ItemList list = new ItemList(0, 0, 32, s2 -> {
-						final float x = (gui.mouseX-gui.getGuiLeft())*gridScale + gui.getGuiLeft() + gridX;
-						final float y = (gui.mouseY-gui.getGuiTop())*gridScale + gui.getGuiTop() - gridY;
-						Node node = null;
-						if(s2.equals("Broadcast")){
-							node = new NodeEventBroadcast(x, y, sendEvents);
-						} else if(s2.equals("Cancel")){
-							node = new NodeCancelEvent(x, y);
-						} else if(s2.equals("Set Variable")){
-							node = new NodeSetVar(x, y, gui.currentEditControl);
-						}
-						if(node != null){
-							addMenu.close();
-							addMenu = null;
-							currentSystem.addNode(node);
-							currentSystem.activeNode = node;
-						}
-						return null;
-					});
-					if(sendEvents != null){
-						if(sendEvents.size() > 0)
-							list.addItems("Broadcast");
-					} else {
-						list.addItems("Cancel");
-					}
-					list.addItems("Set Variable");
+					for (INodeMenuCreator controller : controllers)
+						controller.addItems(list,x,y,this);
 					return list;
 				}
 				return null;
 			});
-			addMenu.addItems("{expandable}Input", "{expandable}Output", "{expandable}Math", "{expandable}Boolean", "{expandable}Logic");
+			for (String item : NTMControlPanelRegistry.addMenuCategories)
+				addMenu.addItems("{expandable}"+item);
 		}
 		if(code == Keyboard.KEY_DELETE || code == Keyboard.KEY_X){
 			List<Node> selected = new ArrayList<>(currentSystem.selectedNodes);

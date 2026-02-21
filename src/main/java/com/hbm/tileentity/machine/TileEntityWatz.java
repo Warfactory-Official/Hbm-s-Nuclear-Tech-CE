@@ -100,96 +100,98 @@ public class TileEntityWatz extends TileEntityMachineBase implements ITickable, 
 	@Override
 	public void update() {
 
+       if(!world.isRemote)
+        resetSharedTanks();
+
 		if (!world.isRemote && !updateLock()) {
-			boolean turnedOn = world.getBlockState(pos.add(0, 3, 0)).getBlock() == ModBlocks.watz_pump && world.getRedstonePower(pos.add(0, 5, 0), EnumFacing.DOWN) > 0;
-			List<TileEntityWatz> segments = new ArrayList<>();
-			segments.add(this);
-			this.subscribeToTop();
+            boolean turnedOn = world.getBlockState(pos.add(0, 3, 0)).getBlock() == ModBlocks.watz_pump && world.getRedstonePower(pos.add(0, 5, 0), EnumFacing.DOWN) > 0;
+            List<TileEntityWatz> segments = new ArrayList<>();
+            segments.add(this);
+            this.subscribeToTop();
 
-			/* accumulate all segments */
-			for (int y = pos.getY() - 3; y >= 0; y -= 3) {
-				TileEntity tile = Compat.getTileStandard(world, pos.getX(), y, pos.getZ());
-				if (tile instanceof TileEntityWatz) {
-					segments.add((TileEntityWatz) tile);
-				} else {
-					break;
-				}
-			}
+            /* accumulate all segments */
+            for (int y = pos.getY() - 3; y >= 0; y -= 3) {
+                TileEntity tile = Compat.getTileStandard(world, pos.getX(), y, pos.getZ());
+                if (tile instanceof TileEntityWatz) {
+                    segments.add((TileEntityWatz) tile);
+                } else {
+                    break;
+                }
+            }
 
-			/* set up shared tanks */
-			this.sharedTanks = new FluidTankNTM[3];
-			for (int i = 0; i < 3; i++) this.sharedTanks[i] = new FluidTankNTM(tanks[i].getTankType(), 0);
+            /* set up shared tanks */
+            this.sharedTanks = new FluidTankNTM[3];
+            for (int i = 0; i < 3; i++) this.sharedTanks[i] = new FluidTankNTM(tanks[i].getTankType(), 0);
 
-			for (TileEntityWatz segment : segments) {
-				segment.setupCoolant();
-				for (int i = 0; i < 3; i++) {
-					this.sharedTanks[i].changeTankSize(this.sharedTanks[i].getMaxFill() + segment.tanks[i].getMaxFill());
-					this.sharedTanks[i].setFill(this.sharedTanks[i].getFill() + segment.tanks[i].getFill());
-				}
-			}
+            for (TileEntityWatz segment : segments) {
+                segment.setupCoolant();
+                for (int i = 0; i < 3; i++) {
+                    this.sharedTanks[i].changeTankSize(this.sharedTanks[i].getMaxFill() + segment.tanks[i].getMaxFill());
+                    this.sharedTanks[i].setFill(this.sharedTanks[i].getFill() + segment.tanks[i].getFill());
+                }
+            }
 
-			//update coolant, bottom to top
-			for (int i = segments.size() - 1; i >= 0; i--) {
-				TileEntityWatz segment = segments.get(i);
-				segment.updateCoolant(this.sharedTanks);
-			}
+            //update coolant, bottom to top
+            for (int i = segments.size() - 1; i >= 0; i--) {
+                TileEntityWatz segment = segments.get(i);
+                segment.updateCoolant(this.sharedTanks);
+            }
 
-			/* update reaction, top to bottom */
-			this.updateReaction(null, this.sharedTanks, turnedOn);
-			for (int i = 1; i < segments.size(); i++) {
-				TileEntityWatz segment = segments.get(i);
-				TileEntityWatz above = segments.get(i - 1);
-				segment.updateReaction(above, this.sharedTanks, turnedOn);
-			}
+            /* update reaction, top to bottom */
+            this.updateReaction(null, this.sharedTanks, turnedOn);
+            for (int i = 1; i < segments.size(); i++) {
+                TileEntityWatz segment = segments.get(i);
+                TileEntityWatz above = segments.get(i - 1);
+                segment.updateReaction(above, this.sharedTanks, turnedOn);
+            }
 
-			/* send sync packets (order doesn't matter) */
-			for (TileEntityWatz segment : segments) {
-				for(int i = 0; i < 3; i++) {
-					segment.sharedTanksSync[i].changeTankSize(this.sharedTanks[i].getMaxFill());
-					segment.sharedTanksSync[i].setFill(this.sharedTanks[i].getFill());
-				}
-				segment.sharedTanks = this.sharedTanks;
-				segment.isOn = turnedOn;
-				segment.networkPackNT(25);
-				segment.heat *= 0.99; //cool 1% per tick
-			}
+            /* send sync packets (order doesn't matter) */
+            for (TileEntityWatz segment : segments) {
+                for (int i = 0; i < 3; i++) {
+                    segment.sharedTanksSync[i].changeTankSize(this.sharedTanks[i].getMaxFill());
+                    segment.sharedTanksSync[i].setFill(this.sharedTanks[i].getFill());
+                }
+                segment.sharedTanks = this.sharedTanks;
+                segment.isOn = turnedOn;
+                segment.networkPackNT(25);
+                segment.heat *= 0.99; //cool 1% per tick
+            }
 
-			/* re-distribute fluid from shared tanks back into actual tanks, bottom to top */
-			for (int i = segments.size() - 1; i >= 0; i--) {
-				TileEntityWatz segment = segments.get(i);
-				for(int j = 0; j < 3; j++) {
+            /* re-distribute fluid from shared tanks back into actual tanks, bottom to top */
+            for (int i = segments.size() - 1; i >= 0; i--) {
+                TileEntityWatz segment = segments.get(i);
+                for (int j = 0; j < 3; j++) {
 
-					int min = Math.min(segment.tanks[j].getMaxFill(), sharedTanks[j].getFill());
-					sharedTanks[j].setFill(sharedTanks[j].getFill() - min);
-					segment.tanks[j].setFill(min);
-				}
-			}
+                    int min = Math.min(segment.tanks[j].getMaxFill(), sharedTanks[j].getFill());
+                    sharedTanks[j].setFill(sharedTanks[j].getFill() - min);
+                    segment.tanks[j].setFill(min);
+                }
+            }
 
-			segments.get(segments.size() - 1).sendOutBottom();
+            segments.get(segments.size() - 1).sendOutBottom();
 
-			/* explode on mud overflow */
-			if(sharedTanks[2].getFill() > 0) {
-				for(int x = -3; x <= 3; x++) {
-					for(int y = 3; y < 6; y++) {
-						for(int z = -3; z <= 3; z++) {
-							world.setBlockToAir(pos.add(x, y, z));
-						}
-					}
-				}
-				this.disassemble();
+            /* explode on mud overflow */
+            if (sharedTanks[2].getFill() > 0) {
+                for (int x = -3; x <= 3; x++) {
+                    for (int y = 3; y < 6; y++) {
+                        for (int z = -3; z <= 3; z++) {
+                            world.setBlockToAir(pos.add(x, y, z));
+                        }
+                    }
+                }
+                this.disassemble();
 
                 ChunkRadiationManager.proxy.incrementRad(world, pos.add(0, 1, 0), 1_000F);
-                world.playSound(null,pos.getX() + 0.5, pos.getY() + 2, pos.getZ() + 0.5, HBMSoundHandler.rbmk_explosion, SoundCategory.BLOCKS, 50.0F, 1.0F);
-				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "rbmkmush");
-				data.setFloat("scale", 5);
-				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.getX() + 0.5, pos.getY() + 2, pos.getZ() + 0.5), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 250));
-				MainRegistry.proxy.effectNT(data);
+                world.playSound(null, pos.getX() + 0.5, pos.getY() + 2, pos.getZ() + 0.5, HBMSoundHandler.rbmk_explosion, SoundCategory.BLOCKS, 50.0F, 1.0F);
+                NBTTagCompound data = new NBTTagCompound();
+                data.setString("type", "rbmkmush");
+                data.setFloat("scale", 5);
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.getX() + 0.5, pos.getY() + 2, pos.getZ() + 0.5), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 250));
+                MainRegistry.proxy.effectNT(data);
 
-			}
-		} else {
-			resetSharedTanks();
-		}
+            }
+
+        }
 	}
 
 	/** basic sanity checking, usually wouldn't do anything except when NBT loading borks */
@@ -233,7 +235,7 @@ public class TileEntityWatz extends TileEntityMachineBase implements ITickable, 
 
 			/* init base flux */
 			for(ItemStack stack : pellets) {
-				EnumWatzType type = EnumUtil.grabEnumSafely(EnumWatzType.class, stack.getItemDamage());
+				EnumWatzType type = EnumUtil.grabEnumSafely(EnumWatzType.VALUES, stack.getItemDamage());
 				baseFlux += type.passive;
 			}
 
@@ -242,7 +244,7 @@ public class TileEntityWatz extends TileEntityMachineBase implements ITickable, 
 			double addedHeat = 0D;
 
 			for(ItemStack stack : pellets) {
-				EnumWatzType type = EnumUtil.grabEnumSafely(EnumWatzType.class, stack.getItemDamage());
+				EnumWatzType type = EnumUtil.grabEnumSafely(EnumWatzType.VALUES, stack.getItemDamage());
 				Function burnFunc = type.burnFunc;
 				Function heatDiv = type.heatDiv;
 
@@ -257,7 +259,7 @@ public class TileEntityWatz extends TileEntityMachineBase implements ITickable, 
 			}
 
 			for(ItemStack stack : pellets) {
-				EnumWatzType type = EnumUtil.grabEnumSafely(EnumWatzType.class, stack.getItemDamage());
+				EnumWatzType type = EnumUtil.grabEnumSafely(EnumWatzType.VALUES, stack.getItemDamage());
 				Function absorbFunc = type.absorbFunc;
 
 				if(absorbFunc != null) {

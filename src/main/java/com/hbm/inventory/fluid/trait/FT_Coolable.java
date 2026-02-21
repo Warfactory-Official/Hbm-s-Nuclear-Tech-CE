@@ -42,7 +42,7 @@ public class FT_Coolable extends FluidTrait {
 	@Override
 	public void addInfoHidden(List<String> info) {
 		info.add(I18nUtil.resolveKey("trait.thermalcap", heatEnergy));
-		for(CoolingType type : CoolingType.values()) {
+		for(CoolingType type : CoolingType.VALUES) {
 			
 			double eff = getEfficiency(type);
 			
@@ -55,6 +55,8 @@ public class FT_Coolable extends FluidTrait {
 	public static enum CoolingType {
 		TURBINE("trait.ctype.turbine"),
 		HEATEXCHANGER("trait.ctype.heatexch");
+
+        public static final CoolingType[] VALUES = values();
 		
 		public String name;
 		
@@ -82,7 +84,7 @@ public class FT_Coolable extends FluidTrait {
 		this.amountProduced = obj.get("amountProd").getAsInt();
 		this.heatEnergy = obj.get("heatEnergy").getAsInt();
 		
-		for(CoolingType type : CoolingType.values()) {
+		for(CoolingType type : CoolingType.VALUES) {
 			if(obj.has(type.name())) efficiency.put(type, obj.get(type.name()).getAsDouble());
 		}
 	}

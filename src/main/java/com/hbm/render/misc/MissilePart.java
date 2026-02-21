@@ -4,9 +4,7 @@ import com.hbm.items.ModItems;
 import com.hbm.items.weapon.ItemMissile;
 import com.hbm.items.weapon.ItemMissile.PartType;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.IModelCustom;
-import com.hbm.render.entity.rocket.part.RenderDropPod;
-import com.hbm.render.entity.rocket.part.RenderRocketPart;
+import com.hbm.render.loader.IModelCustom;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -26,9 +24,7 @@ public class MissilePart {
 	public IModelCustom shroudModel;
 	public ResourceLocation texture;
 	public boolean renderInventoryModel = true;
-	public RenderRocketPart renderer;
-
-	private MissilePart(Item item, PartType type, double height, double guiheight, IModelCustom model, ResourceLocation texture) {
+	protected MissilePart(Item item, PartType type, double height, double guiheight, IModelCustom model, ResourceLocation texture) {
 		this.part = (ItemMissile)item;
 		this.type = type;
 		this.height = height;
@@ -44,11 +40,6 @@ public class MissilePart {
 
 	private MissilePart withShroud(IModelCustom shroudModel) {
 		this.shroudModel = shroudModel;
-		return this;
-	}
-
-	private MissilePart withRenderer(RenderRocketPart renderer) {
-		this.renderer = renderer;
 		return this;
 	}
 
@@ -113,8 +104,8 @@ public class MissilePart {
 		registerPart(ModItems.mp_stability_15_thin, PartType.FINS, 0, 3, ResourceManager.mp_s_15_thin, ResourceManager.mp_s_15_thin_tex);
 		registerPart(ModItems.mp_stability_15_soyuz, PartType.FINS, 0, 3, ResourceManager.mp_s_15_soyuz, ResourceManager.mp_s_15_soyuz_tex);
 		//
-
-		registerPart(ModItems.rp_legs_20, PartType.FINS, 2.4, 3, ResourceManager.rp_s_20_leggy, ResourceManager.universal).withDeployed(ResourceManager.rp_s_20_leggy_deployed);
+		// TODO move rp_legs_20 to space
+		//registerPart(ModItems.rp_legs_20, PartType.FINS, 2.4, 3, ResourceManager.rp_s_20_leggy, ResourceManager.universal).withDeployed(ResourceManager.rp_s_20_leggy_deployed);
 
 		//////
 
@@ -197,10 +188,11 @@ public class MissilePart {
 		registerPart(ModItems.mp_fuselage_15_20_kerosene_magnusson, PartType.FUSELAGE, 16, 10, ResourceManager.mp_f_15_20_kerosene, ResourceManager.mp_f_15_20_kerosene_magnusson_tex);
 		registerPart(ModItems.mp_fuselage_15_20_solid, PartType.FUSELAGE, 16, 10, ResourceManager.mp_f_15_20_kerosene, ResourceManager.mp_f_15_20_solid_tex);
 		//
-		registerPart(ModItems.rp_fuselage_20_12, PartType.FUSELAGE, 12, 8, ResourceManager.mp_f_20_12_usa, ResourceManager.mp_f_20_kerolox_usa);
+		// TODO move them all to fucking space
+		/*registerPart(ModItems.rp_fuselage_20_12, PartType.FUSELAGE, 12, 8, ResourceManager.mp_f_20_12_usa, ResourceManager.mp_f_20_kerolox_usa);
 		registerPart(ModItems.rp_fuselage_20_6, PartType.FUSELAGE, 6, 4.5, ResourceManager.mp_f_20_6_usa, ResourceManager.mp_f_20_kerolox_usa);
 		registerPart(ModItems.rp_fuselage_20_3, PartType.FUSELAGE, 3, 2.5, ResourceManager.mp_f_20_3_usa, ResourceManager.mp_f_20_kerolox).withShroud(ResourceManager.mp_f_20_6_usa);
-		registerPart(ModItems.rp_fuselage_20_1, PartType.FUSELAGE, 1, 1.5, ResourceManager.mp_f_20_1_usa, ResourceManager.mp_f_20_kerolox).withShroud(ResourceManager.mp_f_20_6_usa);
+		registerPart(ModItems.rp_fuselage_20_1, PartType.FUSELAGE, 1, 1.5, ResourceManager.mp_f_20_1_usa, ResourceManager.mp_f_20_kerolox).withShroud(ResourceManager.mp_f_20_6_usa);*/
 		//registerPart(ModItems.rp_fuselage_20_12_hydrazine, PartType.FUSELAGE, 10, 8, ResourceManager.mp_f_20_neo, ResourceManager.mp_f_20_hydrazine_tex);
 
 
@@ -226,22 +218,6 @@ public class MissilePart {
 		registerPart(ModItems.mp_warhead_15_mirv, PartType.WARHEAD, 3, 2, ResourceManager.mp_w_15_mirv, ResourceManager.mp_w_15_mirv_tex);
 		registerPart(ModItems.mp_warhead_15_turbine, PartType.WARHEAD, 2.25, 2, ResourceManager.mp_w_15_turbine, ResourceManager.mp_w_15_turbine_tex);
 
-		// SPACE
-		registerPart(ModItems.rp_capsule_20, PartType.WARHEAD, 3.5, 2.25, ResourceManager.soyuz_lander_neo, ResourceManager.module_lander_tex);
-		registerPart(ModItems.rp_station_core_20, PartType.WARHEAD, 7, 5, ResourceManager.mp_w_fairing, ResourceManager.mp_w_fairing_tex);
-		registerPart(ModItems.rp_pod_20, PartType.WARHEAD, 3.0, 2.25, ResourceManager.drop_pod, ResourceManager.drop_pod_tex).withRenderer(new RenderDropPod());
-
-		registerPart(ModItems.sat_mapper, PartType.WARHEAD, 7, 5, ResourceManager.mp_w_fairing, ResourceManager.mp_w_fairing_tex).hideInventoryModel();
-		registerPart(ModItems.sat_scanner, PartType.WARHEAD, 7, 5, ResourceManager.mp_w_fairing, ResourceManager.mp_w_fairing_tex).hideInventoryModel();
-		registerPart(ModItems.sat_radar, PartType.WARHEAD, 7, 5, ResourceManager.mp_w_fairing, ResourceManager.mp_w_fairing_tex).hideInventoryModel();
-		registerPart(ModItems.sat_laser, PartType.WARHEAD, 7, 5, ResourceManager.mp_w_fairing, ResourceManager.mp_w_fairing_tex).hideInventoryModel();
-		registerPart(ModItems.sat_foeq, PartType.WARHEAD, 7, 5, ResourceManager.mp_w_fairing, ResourceManager.mp_w_fairing_tex).hideInventoryModel();
-		registerPart(ModItems.sat_resonator, PartType.WARHEAD, 7, 5, ResourceManager.mp_w_fairing, ResourceManager.mp_w_fairing_tex).hideInventoryModel();
-		registerPart(ModItems.sat_miner, PartType.WARHEAD, 7, 5, ResourceManager.mp_w_fairing, ResourceManager.mp_w_fairing_tex).hideInventoryModel();
-		registerPart(ModItems.sat_lunar_miner, PartType.WARHEAD, 7, 5, ResourceManager.mp_w_fairing, ResourceManager.mp_w_fairing_tex).hideInventoryModel();
-		registerPart(ModItems.sat_gerald, PartType.WARHEAD, 7, 5, ResourceManager.mp_w_fairing, ResourceManager.mp_w_fairing_tex).hideInventoryModel();
-		registerPart(ModItems.sat_dyson_relay, PartType.WARHEAD, 7, 5, ResourceManager.mp_w_fairing, ResourceManager.mp_w_fairing_tex).hideInventoryModel();
-		
 	}
 
 	public static MissilePart registerPart(Item item, PartType type, double height, double guiheight, IModelCustom model, ResourceLocation texture) {

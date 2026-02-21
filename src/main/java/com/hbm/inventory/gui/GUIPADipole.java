@@ -1,13 +1,12 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerPADipole;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toserver.NBTControlPacket;
 import com.hbm.tileentity.machine.albion.TileEntityPADipole;
 import com.hbm.util.Vec3NT;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -15,7 +14,6 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
@@ -26,9 +24,11 @@ import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUIPADipole extends GuiInfoContainer {
 
-    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/particleaccelerator/gui_dipole.png");
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/particleaccelerator/gui_dipole.png");
     private final TileEntityPADipole dipole;
 
     protected GuiTextField threshold;
@@ -58,8 +58,8 @@ public class GUIPADipole extends GuiInfoContainer {
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         super.drawScreen(mouseX, mouseY, partialTicks);
-        dipole.tanks[0].renderTankInfo(this, mouseX, mouseY, guiLeft + 134, guiTop + 36, 16, 52);
-        dipole.tanks[1].renderTankInfo(this, mouseX, mouseY, guiLeft + 152, guiTop + 36, 16, 52);
+        dipole.coolantTanks[0].renderTankInfo(this, mouseX, mouseY, guiLeft + 134, guiTop + 36, 16, 52);
+        dipole.coolantTanks[1].renderTankInfo(this, mouseX, mouseY, guiLeft + 152, guiTop + 36, 16, 52);
         this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 8, guiTop + 18, 16, 52, dipole.power, dipole.getMaxPower());
 
         this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 62, guiTop + 29, 12, 12, mouseX, mouseY, new String[]{TextFormatting.BLUE + "Player " +
@@ -77,24 +77,24 @@ public class GUIPADipole extends GuiInfoContainer {
         this.threshold.mouseClicked(mouseX, mouseY, mouseButton);
 
         if (isPointInRegion(62, 29, 12, 12, mouseX, mouseY)) {
-            mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            playClickSound();
             NBTTagCompound data = new NBTTagCompound();
             data.setBoolean("lower", true);
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, dipole.getPos()));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, dipole.getPos()));
         }
 
         if (isPointInRegion(62, 43, 12, 12, mouseX, mouseY)) {
-            mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            playClickSound();
             NBTTagCompound data = new NBTTagCompound();
             data.setBoolean("upper", true);
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, dipole.getPos()));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, dipole.getPos()));
         }
 
         if (isPointInRegion(62, 57, 12, 12, mouseX, mouseY)) {
-            mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            playClickSound();
             NBTTagCompound data = new NBTTagCompound();
             data.setBoolean("redstone", true);
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, dipole.getPos()));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, dipole.getPos()));
         }
     }
 
@@ -154,8 +154,8 @@ public class GUIPADipole extends GuiInfoContainer {
 
         this.threshold.drawTextBox();
 
-        dipole.tanks[0].renderTank(guiLeft + 134, guiTop + 88, this.zLevel, 16, 52);
-        dipole.tanks[1].renderTank(guiLeft + 152, guiTop + 88, this.zLevel, 16, 52);
+        dipole.coolantTanks[0].renderTank(guiLeft + 134, guiTop + 88, this.zLevel, 16, 52);
+        dipole.coolantTanks[1].renderTank(guiLeft + 152, guiTop + 88, this.zLevel, 16, 52);
     }
 
     public void addLine(BufferBuilder buffer, int x, int y, int color, Vec3NT vec, float yaw) {
@@ -185,7 +185,7 @@ public class GUIPADipole extends GuiInfoContainer {
                 int num = NumberUtils.toInt(this.threshold.getText());
                 NBTTagCompound data = new NBTTagCompound();
                 data.setInteger("threshold", num);
-                PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, dipole.getPos()));
+                PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, dipole.getPos()));
             }
             return;
         }

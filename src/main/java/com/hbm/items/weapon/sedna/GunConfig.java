@@ -21,6 +21,7 @@ import java.util.function.BiFunction;
  *
  * @author hbm
  * */
+//TODO: maybe parameterize this class?
 public class GunConfig {
 
     public List<ItemGunBaseNT.SmokeNode> smokeNodes = new ArrayList<>();

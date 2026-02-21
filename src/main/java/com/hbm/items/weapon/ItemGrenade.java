@@ -2,6 +2,7 @@ package com.hbm.items.weapon;
 
 import com.hbm.config.BombConfig;
 import com.hbm.entity.grenade.*;
+import com.hbm.items.ItemBakedBase;
 import com.hbm.items.ModItems;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
@@ -17,17 +18,14 @@ import net.minecraft.world.World;
 
 import java.util.List;
 
-public class ItemGrenade extends Item {
+public class ItemGrenade extends ItemBakedBase {
 	
 	protected int fuse = 4;
 	
 	public ItemGrenade(int fuse, String s) {
-		this.setTranslationKey(s);
-		this.setRegistryName(s);
+		super(s);
 		this.maxStackSize = 16;
 		this.fuse = fuse;
-		
-		ModItems.ALL_ITEMS.add(this);
 	}
 	
 	@Override

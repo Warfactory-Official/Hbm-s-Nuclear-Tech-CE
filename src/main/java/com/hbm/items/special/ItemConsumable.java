@@ -11,6 +11,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 
@@ -50,25 +51,30 @@ public class ItemConsumable extends Item {
             return false;
         return ConsumableHandler.handleHit(stack, attacker, (EntityLivingBase) target);
     }
-    static public final Map<Item, List<String>> tooltipMap = new HashMap<>();
+    static public final Map<String, List<String>> tooltipMap = new HashMap<>();
     static {
-        tooltipMap.put(ModItems.syringe_antidote, Collections.singletonList("Removes all potion effects"));
-        tooltipMap.put(ModItems.syringe_awesome, Collections.singletonList("§2Every good effect for 50 seconds"));
-        tooltipMap.put(ModItems.syringe_metal_stimpak, Collections.singletonList("§aHeals 2.5 hearts"));
-        tooltipMap.put(ModItems.syringe_metal_medx, Collections.singletonList("§dResistance III for 4 minutes"));
-        tooltipMap.put(ModItems.syringe_metal_psycho, Arrays.asList("§dResistance I for 2 minutes", "§6Strength I for 2 minutes"));
-        tooltipMap.put(ModItems.syringe_metal_super, Arrays.asList("§aHeals 25 hearts", "§bSlowness I for 10 seconds"));
-        tooltipMap.put(ModItems.syringe_poison, Collections.singletonList("Deadly"));
-        tooltipMap.put(ModItems.syringe_taint, Arrays.asList("§5Tainted I for 60 seconds", "§eNausea I for 5 seconds", "Cloud damage + taint = ghoulified effect"));
-        tooltipMap.put(ModItems.med_bag, Arrays.asList("§aFull heal, regardless of max health", "Removes negative effects"));
-        tooltipMap.put(ModItems.gas_mask_filter_mono, Collections.singletonList("Repairs worn monoxide mask"));
-        tooltipMap.put(ModItems.syringe_mkunicorn, Collections.singletonList(TextFormatting.RED + "?"));
+        tooltipMap.put("syringe_antidote", Collections.singletonList("Removes all potion effects"));
+        tooltipMap.put("syringe_awesome", Collections.singletonList("§2Every good effect for 50 seconds"));
+        tooltipMap.put("syringe_metal_stimpak", Collections.singletonList("§aHeals 2.5 hearts"));
+        tooltipMap.put("syringe_metal_medx", Collections.singletonList("§dResistance III for 4 minutes"));
+        tooltipMap.put("syringe_metal_psycho", Arrays.asList("§dResistance I for 2 minutes", "§6Strength I for 2 minutes"));
+        tooltipMap.put("syringe_metal_super", Arrays.asList("§aHeals 25 hearts", "§bSlowness I for 10 seconds"));
+        tooltipMap.put("syringe_poison", Collections.singletonList("Deadly"));
+        tooltipMap.put("syringe_taint", Arrays.asList("§5Tainted I for 60 seconds", "§eNausea I for 5 seconds", "Cloud damage + taint = ghoulified effect"));
+        tooltipMap.put("med_bag", Arrays.asList("§aFull heal, regardless of max health", "Removes negative effects"));
+        tooltipMap.put("gas_mask_filter_mono", Collections.singletonList("Repairs worn monoxide mask"));
+        tooltipMap.put("syringe_mkunicorn", Collections.singletonList(TextFormatting.RED + "?"));
     }
 
-    @Override //Norwood: Thats how you do shit like that damnit
+    @Override
     public void addInformation(final ItemStack stack, final World worldIn, final List<String> tooltip, final ITooltipFlag flagIn) {
-        if (tooltipMap.containsKey(this)) {
-            tooltip.addAll(tooltipMap.get(this));
+        final ResourceLocation registryName = stack.getItem().getRegistryName();
+        if (registryName == null || !registryName.getNamespace().equals("hbm")) {
+            return;
+        }
+        final List<String> lines = tooltipMap.get(registryName.getPath());
+        if (lines != null) {
+            tooltip.addAll(lines);
         }
     }
 }

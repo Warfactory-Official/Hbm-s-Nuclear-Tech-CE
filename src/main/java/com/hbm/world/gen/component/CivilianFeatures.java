@@ -7,6 +7,7 @@ import com.hbm.handler.WeightedRandomChestContentFrom1710;
 import com.hbm.itempool.ItemPool;
 import com.hbm.itempool.ItemPoolsComponent;
 import com.hbm.itempool.ItemPoolsLegacy;
+import com.hbm.lib.HbmChestContents;
 import com.hbm.util.LootGenerator;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.state.IBlockState;
@@ -292,7 +293,7 @@ public class CivilianFeatures {
 			TileEntityBobble bobble = (TileEntityBobble) world.getTileEntity(new BlockPos(this.getXWithOffset(15 - 5, 4), this.getYWithOffset(1), this.getZWithOffset(15 - 5, 4)));
 
 			if(bobble != null) {
-				bobble.type = BobbleType.values()[rand.nextInt(BobbleType.values().length - 1) + 1];
+				bobble.type = BobbleType.VALUES[rand.nextInt(BobbleType.VALUES.length - 1) + 1];
 				bobble.markDirty();
 			}
 
@@ -1041,7 +1042,7 @@ public class CivilianFeatures {
 			generateInvContents(world, box, rand, Blocks.CHEST, metaE, 7, 5, 5, ItemPool.getPool(ItemPoolsLegacy.POOL_GENERIC), 8);
 			//loot
 			setBlockState(world, ModBlocks.deco_loot.getDefaultState(), 3, 2, 12, box);
-			//LootGenerator.lootBookLore(world, getXWithOffset(3, 12), getYWithOffset(2), getZWithOffset(3, 12), HbmChestContents.generateLabBook(rand)); //TODO write more lore
+			LootGenerator.lootBookLore(world, getXWithOffset(3, 12), getYWithOffset(2), getZWithOffset(3, 12), HbmChestContents.generateLabBook(rand));
 			setBlockState(world, ModBlocks.deco_loot.getDefaultState(), 5, 6, 5, box);
 			LootGenerator.lootMakeshiftGun(world, getXWithOffset(5, 5), getYWithOffset(6), getZWithOffset(5, 5));
 			placeRandomBobble(world, box, rand, 5, 5, 12);
@@ -1049,7 +1050,8 @@ public class CivilianFeatures {
 			return true;
 		}
 
-		//i don't like this class
+		// i don't like this class
+        // now I understood I fucking hate these classes already
 		public static class BrokenStairs extends BlockSelector {
 			private int metadata;
 

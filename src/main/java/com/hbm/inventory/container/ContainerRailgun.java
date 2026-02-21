@@ -1,7 +1,11 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotBattery;
+import com.hbm.api.item.IDesignatorItem;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.items.ModItems;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.bomb.TileEntityRailgun;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -39,38 +43,13 @@ public class ContainerRailgun extends Container {
 	}
 	
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2)
+    public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-		
-		if (var4 != null && var4.getHasStack())
-		{
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-			
-            if (par2 <= 2) {
-				if (!this.mergeItemStack(var5, 3, this.inventorySlots.size(), true))
-				{
-					return ItemStack.EMPTY;
-				}
-			}
-			else if (!this.mergeItemStack(var5, 0, 3, false))
-			{
-				return ItemStack.EMPTY;
-			}
-			
-			if (var5.isEmpty())
-			{
-				var4.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
-				var4.onSlotChanged();
-			}
-		}
-		
-		return var3;
+		return InventoryUtil.transferStack(this.inventorySlots, index, 3,
+                Library::isBattery, 1,
+                s -> s.getItem() instanceof IDesignatorItem, 2,
+                s -> s.getItem() == ModItems.charge_railgun, 3
+        );
     }
 
 	@Override

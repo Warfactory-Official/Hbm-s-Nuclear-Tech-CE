@@ -5,21 +5,27 @@ import com.hbm.inventory.container.ContainerPADetector;
 import com.hbm.inventory.gui.GUIPADetector;
 import com.hbm.inventory.recipes.ParticleAcceleratorRecipes;
 import com.hbm.inventory.recipes.ParticleAcceleratorRecipes.ParticleAcceleratorRecipe;
+import com.hbm.items.ModItems;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.main.AdvancementManager;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.machine.albion.TileEntityPASource.PAState;
 import com.hbm.tileentity.machine.albion.TileEntityPASource.Particle;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
+import java.util.List;
 
 @AutoRegister
 public class TileEntityPADetector extends TileEntityCooledBase implements IGUIProvider, IParticleUser {
@@ -72,6 +78,11 @@ public class TileEntityPADetector extends TileEntityCooledBase implements IGUIPr
     @Override
     public boolean canExtractItem(int slot, ItemStack stack, int amount) {
         return slot == 3 || slot == 4;
+    }
+
+    @Override
+    public int[] getAccessibleSlotsFromSide(EnumFacing side) {
+        return new int[] { 1, 2, 3, 4 };
     }
 
     @Override
@@ -151,6 +162,10 @@ public class TileEntityPADetector extends TileEntityCooledBase implements IGUIPr
                         inventory.insertItem(4, recipe.output2, false);
                     }
                 }
+            }
+            if(recipe.output1.getItem() == ModItems.particle_digamma || recipe.output2 != null && recipe.output2.getItem() == ModItems.particle_digamma) {
+                List<EntityPlayerMP> players = world.getEntitiesWithinAABB(EntityPlayerMP.class, new AxisAlignedBB(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5).grow(100, 50, 100));
+                for(EntityPlayerMP player : players) AdvancementManager.grantAchievement(player, AdvancementManager.achOmega12);
             }
             particle.crash(PAState.SUCCESS);
             return;

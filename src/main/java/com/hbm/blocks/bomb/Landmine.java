@@ -21,6 +21,7 @@ import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -186,6 +187,18 @@ public class Landmine extends BlockContainer implements IBomb {
         }
     }
 
+    public boolean isWaterAbove(World world, int x, int y, int z) {
+        for(int xo = -1; xo <= 1; xo++) {
+            for(int zo = -1; zo <= 1; zo++) {
+                Block blockAbove = world.getBlockState(new BlockPos(x + xo, y + 1, z + zo)).getBlock();
+                if(blockAbove == Blocks.WATER || blockAbove == Blocks.FLOWING_WATER) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     @Override
     public BombReturnCode explode(World world, BlockPos pos, Entity detonator) {
         if (world.isRemote) return BombReturnCode.DETONATED;
@@ -227,6 +240,23 @@ public class Landmine extends BlockContainer implements IBomb {
                     EntityNukeTorex.statFacBale(world, x + 0.5, y + 0.5, z + 0.5, BombConfig.fatmanRadius);
                 } else {
                     EntityNukeTorex.statFac(world, x + 0.5, y + 0.5, z + 0.5, BombConfig.fatmanRadius);
+                }
+            }
+            case "mine_naval" -> {
+                ExplosionVNT vnt = new ExplosionVNT(world, x + 5, y + 5, z + 5, 25F);
+                vnt.setBlockAllocator(new BlockAllocatorWater(32));
+                vnt.setBlockProcessor(new BlockProcessorStandard());
+                vnt.setEntityProcessor(new EntityProcessorCrossSmooth(0.5, 100F /*ServerConfig.MINE_NAVAL_DAMAGE.get()*/ ).setupPiercing(5F, 0.2F)); // TODO
+                vnt.setPlayerProcessor(new PlayerProcessorStandard());
+                vnt.setSFX(new ExplosionEffectWeapon(10, 1F, 0.5F));
+                vnt.explode();
+
+                ExplosionLarge.spawnParticlesRadial(world, x + 0.5, y + 2, z + 0.5, 30);
+                ExplosionLarge.spawnRubble(world,x + 0.5, y + 0.5, z + 0.5, 5 );
+
+                // Only spawn water effects if there's water above the mine
+                if (isWaterAbove(world, x, y, z)) {
+                    ExplosionLarge.spawnFoam(world, x + 0.5, y + 0.5, z + 0.5, 60);
                 }
             }
         }

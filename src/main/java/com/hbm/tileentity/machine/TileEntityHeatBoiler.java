@@ -21,12 +21,8 @@ import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.saveddata.TomSaveData;
 import com.hbm.sound.AudioWrapper;
-import com.hbm.tileentity.IBufPacketReceiver;
-import com.hbm.tileentity.IConfigurableMachine;
-import com.hbm.tileentity.IFluidCopiable;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.tileentity.*;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
@@ -45,7 +41,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 
 @AutoRegister
-public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITickable, IFluidStandardTransceiver, IBufPacketReceiver, IConfigurableMachine, IFluidCopiable {
+public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITickable, IFluidStandardTransceiver, IBufPacketReceiver, IConfigurableMachine, IFluidCopiable, IPersistentNBT {
 
     public Fluid[] types = new Fluid[2];
     public FluidTankNTM[] tanks;
@@ -53,10 +49,11 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITicka
     public int heat;
     public boolean isOn;
     public boolean hasExploded = false;
-    public static int maxHeat = 12_800_000; //the heat required to turn 64k of water into steam
+    public static int maxHeat = 12_800_000;
     public static double diffusion = 0.1D;
     public static boolean canExplode = true;
     private int lastHeat;
+    private boolean destroyedByCreativePlayer = false;
 
     private AudioWrapper audio;
     private int audioTime;
@@ -68,17 +65,13 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITicka
         this.tanks[0] = new FluidTankNTM(Fluids.WATER, 16_000);
         this.tanks[1] = new FluidTankNTM(Fluids.STEAM, 16_000 * 100);
 
-
         types[0] = FluidRegistry.WATER;
         types[1] = Fluids.STEAM.getFF();
-
     }
 
     @Override
     public void update() {
-
         if(!world.isRemote) {
-
             if(!this.hasExploded) {
                 setupTanks();
                 updateConnections();
@@ -87,7 +80,7 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITicka
 
                 int light = this.world.getLightFor(EnumSkyBlock.SKY, this.pos);
                 if(light > 7 && TomSaveData.forWorld(world).fire > 1e-5) {
-                    this.heat += ((maxHeat - heat) * 0.000005D); //constantly heat up 0.0005% of the remaining heat buffer for rampant but diminishing heating
+                    this.heat += ((maxHeat - heat) * 0.000005D);
                 }
                 tanksSync[0] = tanks[0].clone();
                 this.isOn = false;
@@ -102,25 +95,19 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITicka
             }
             networkPackNT(25);
         } else {
-
             if(this.isOn) audioTime = 20;
 
             if(audioTime > 0) {
-
                 audioTime--;
-
                 if(audio == null) {
                     audio = createAudioLoop();
                     audio.startSound();
                 } else if(!audio.isPlaying()) {
                     audio = rebootAudio(audio);
                 }
-
                 audio.updateVolume(getVolume(1F));
                 audio.keepAlive();
-
             } else {
-
                 if(audio != null) {
                     audio.stopSound();
                     audio = null;
@@ -135,16 +122,13 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITicka
     }
 
     private void updateConnections() {
-
         for(DirPos pos : getConPos()) {
             this.trySubscribe(tanks[0].getTankType(), world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
         }
     }
 
     protected DirPos[] getConPos() {
-
         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset).getRotation(ForgeDirection.UP);
-
         return new DirPos[] {
                 new DirPos(pos.getX() + dir.offsetX * 2, pos.getY(), pos.getZ() + dir.offsetZ * 2, dir),
                 new DirPos(pos.getX() - dir.offsetX * 2, pos.getY(), pos.getZ() - dir.offsetZ * 2, dir.getOpposite()),
@@ -172,6 +156,45 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITicka
     }
 
     @Override
+    public void writeNBT(NBTTagCompound nbt) {
+        NBTTagCompound data = new NBTTagCompound();
+        tanks[0].writeToNBT(data, "water");
+        tanks[1].writeToNBT(data, "steam");
+        data.setInteger("heat", heat);
+        data.setBoolean("exploded", hasExploded);
+        nbt.setTag(NBT_PERSISTENT_KEY, data);
+    }
+
+    @Override
+    public void readNBT(NBTTagCompound nbt) {
+        if (!nbt.hasKey(NBT_PERSISTENT_KEY)) return;
+        NBTTagCompound data = nbt.getCompoundTag(NBT_PERSISTENT_KEY);
+        tanks[0].readFromNBT(data, "water");
+        tanks[1].readFromNBT(data, "steam");
+        if (data.hasKey("heat")) {
+            heat = data.getInteger("heat");
+        }
+        if (data.hasKey("exploded")) {
+            hasExploded = data.getBoolean("exploded");
+        }
+    }
+
+    @Override
+    public boolean shouldDrop() {
+        return !destroyedByCreativePlayer && !hasExploded;
+    }
+
+    @Override
+    public void setDestroyedByCreativePlayer() {
+        this.destroyedByCreativePlayer = true;
+    }
+
+    @Override
+    public boolean isDestroyedByCreativePlayer() {
+        return this.destroyedByCreativePlayer;
+    }
+
+    @Override
     public void serialize(ByteBuf buf) {
         buf.writeBoolean(hasExploded);
         if(!this.hasExploded) {
@@ -196,7 +219,6 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITicka
     }
 
     protected void setupTanks() {
-
         if(tanks[0].getTankType().hasTrait(FT_Heatable.class)) {
             FT_Heatable trait = tanks[0].getTankType().getTrait(FT_Heatable.class);
             if(trait.getEfficiency(FT_Heatable.HeatingType.BOILER) > 0) {
@@ -206,13 +228,11 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITicka
                 return;
             }
         }
-
         tanks[0].setTankType(Fluids.NONE);
         tanks[1].setTankType(Fluids.NONE);
     }
 
     protected void tryConvert() {
-
         if(tanks[0].getTankType().hasTrait(FT_Heatable.class)) {
             FT_Heatable trait = tanks[0].getTankType().getTrait(FT_Heatable.class);
             if(trait.getEfficiency(FT_Heatable.HeatingType.BOILER) > 0) {
@@ -261,19 +281,15 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITicka
             }
         }
     }
-    
-    protected void tryPullHeat() {
 
+    protected void tryPullHeat() {
         if(this.heat >= TileEntityHeatBoiler.maxHeat) return;
         BlockPos blockBelow = pos.down();
         TileEntity con = world.getTileEntity(blockBelow);
 
         if(con instanceof IHeatSource source) {
             int diff = source.getHeatStored() - this.heat;
-
-            if(diff == 0) {
-                return;
-            }
+            if(diff == 0) return;
 
             if(diff > 0) {
                 diff = (int) Math.ceil(diff * diffusion);
@@ -284,7 +300,6 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITicka
                 return;
             }
         }
-
         this.heat = Math.max(this.heat - Math.max(this.heat / 1000, 1), 0);
     }
 
@@ -292,7 +307,6 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITicka
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-
         if(bb == null) {
             bb = new AxisAlignedBB(
                     pos.getX() - 1,
@@ -303,7 +317,6 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITicka
                     pos.getZ() + 2
             );
         }
-
         return bb;
     }
 

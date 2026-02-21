@@ -1,13 +1,14 @@
 package com.hbm.render.tileentity;
 
+import com.hbm.Tags;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.material.Mats;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.tileentity.machine.TileEntityCrucible;
+import com.hbm.util.RenderUtil;
 import com.hbm.wiaj.WorldInAJar;
 import com.hbm.wiaj.actors.ITileActorRenderer;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -20,7 +21,7 @@ import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,7 @@ public class RenderCrucible extends TileEntitySpecialRenderer<TileEntityCrucible
     implements IItemRendererProvider, ITileActorRenderer {
 
   public static final ResourceLocation lava =
-      new ResourceLocation(RefStrings.MODID, "textures/models/machines/lava.png");
+      new ResourceLocation(Tags.MODID, "textures/models/machines/lava.png");
 
   @Override
   public void render(
@@ -69,8 +70,8 @@ public class RenderCrucible extends TileEntitySpecialRenderer<TileEntityCrucible
       double level = ((double) totalMass / (double) totalCap) * 0.875D;
 
       GlStateManager.pushMatrix();
-      GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
-      GlStateManager.disableLighting();
+      boolean prevLighting = RenderUtil.isLightingEnabled();
+      if (prevLighting) GlStateManager.disableLighting();
       GlStateManager.disableCull();
       OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
 
@@ -90,7 +91,7 @@ public class RenderCrucible extends TileEntitySpecialRenderer<TileEntityCrucible
       tessellator.draw();
 
       GlStateManager.enableLighting();
-      GL11.glPopAttrib();
+      if (prevLighting) GlStateManager.enableLighting();
       GlStateManager.popMatrix();
     }
 

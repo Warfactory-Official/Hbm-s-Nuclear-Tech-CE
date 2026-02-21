@@ -39,7 +39,7 @@ public class RenderCrashedBomb extends TileEntitySpecialRenderer<TileEntityCrash
         GlStateManager.rotate(roll, 0, 0, 1);
         GlStateManager.translate(0, 0, -offset);
 
-        EnumDudType type = EnumUtil.grabEnumSafely(EnumDudType.class, tile.getBlockMetadata());
+        EnumDudType type = EnumUtil.grabEnumSafely(EnumDudType.VALUES, tile.getBlockMetadata());
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
         switch (type) {
             case BALEFIRE -> {
@@ -82,7 +82,7 @@ public class RenderCrashedBomb extends TileEntitySpecialRenderer<TileEntityCrash
             }
 
             public void renderCommon(ItemStack item) {
-                EnumDudType type = EnumUtil.grabEnumSafely(EnumDudType.class, item.getItemDamage());
+                EnumDudType type = EnumUtil.grabEnumSafely(EnumDudType.VALUES, item.getItemDamage());
                 GlStateManager.rotate(90, 0, 1, 0);
                 GlStateManager.shadeModel(GL11.GL_SMOOTH);
                 switch (type) {

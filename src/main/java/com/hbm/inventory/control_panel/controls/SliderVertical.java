@@ -1,18 +1,17 @@
 package com.hbm.inventory.control_panel.controls;
 
+import com.hbm.render.loader.WaveFrontObjectVAO;
 import com.hbm.inventory.control_panel.*;
 import com.hbm.inventory.control_panel.nodes.*;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.IModelCustom;
-import com.hbm.render.amlfrom1710.Tessellator;
+import com.hbm.render.loader.IModelCustom;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,41 +39,43 @@ public class SliderVertical extends Control {
     public void render() {
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
         Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.ctrl_slider_vertical_tex);
-        Tessellator tes = Tessellator.instance;
-        IModelCustom model = getModel();
 
+        WaveFrontObjectVAO model = (WaveFrontObjectVAO) getModel();
         int position = (int) Math.abs(getVar("value").getNumber()) % 6;
 
-        tes.startDrawing(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-        tes.setTranslation(posX, 0, posY);
-        tes.setColorRGBA_F(1, 1, 1, 1);
-        model.tessellatePart(tes, "base");
-        tes.draw();
+        // --- Base ---
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(posX, 0.0, posY);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        model.renderPart("base");
+        GlStateManager.popMatrix();
 
+        // --- Slider ---
         GlStateManager.disableTexture2D();
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(posX, 0.0, posY - (0.3125F * position));
+        GlStateManager.color(51 / 255F, 51 / 255F, 51 / 255F, 1.0F);
+        model.renderPart("slider");
+        GlStateManager.popMatrix();
 
-        tes.startDrawing(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-        tes.setTranslation(posX, 0, posY-(.3125F*position));
-        tes.setColorRGBA_F(51/255F, 51/255F, 51/255F, 1);
-        model.tessellatePart(tes, "slider");
-        tes.draw();
-
+        // --- Lights ---
         float lX = OpenGlHelper.lastBrightnessX;
         float lY = OpenGlHelper.lastBrightnessY;
-
         OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240, 240);
 
-        for (int i=0; i<=position; i++) {
-            tes.startDrawing(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-            tes.setTranslation(posX, 0, posY);
-            tes.setColorRGBA_F(0, 1, 0, 1);
-            model.tessellatePart(tes, "light"+i);
-            tes.draw();
+        GlStateManager.color(0.0F, 1.0F, 0.0F, 1.0F);
+        for (int i = 0; i <= position; i++) {
+            GlStateManager.pushMatrix();
+            GlStateManager.translate(posX, 0.0, posY);
+            model.renderPart("light" + i);
+            GlStateManager.popMatrix();
         }
 
         OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lX, lY);
+
         GlStateManager.enableTexture2D();
         GlStateManager.shadeModel(GL11.GL_FLAT);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     @Override

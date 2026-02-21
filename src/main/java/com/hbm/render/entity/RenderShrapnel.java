@@ -1,9 +1,9 @@
 package com.hbm.render.entity;
 
+import com.hbm.Tags;
 import com.hbm.entity.item.EntityFireworks;
 import com.hbm.entity.projectile.EntityShrapnel;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.model.ModelShrapnel;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -33,7 +33,7 @@ public class RenderShrapnel extends Render<Entity> {
 		GlStateManager.rotate(180, 1, 0, 0);
 		GlStateManager.rotate((rocket.ticksExisted % 360) * 10, 1, 1, 1);
 
-		bindTexture(new ResourceLocation(RefStrings.MODID + ":textures/entity/shrapnel.png"));
+		bindTexture(new ResourceLocation(Tags.MODID + ":textures/entity/shrapnel.png"));
 		
 		if(rocket instanceof EntityShrapnel) {
 			if(rocket.getDataManager().get(EntityShrapnel.TRAIL) == 2) { //scale up lava blobs
@@ -47,6 +47,6 @@ public class RenderShrapnel extends Render<Entity> {
 
 	@Override
 	protected ResourceLocation getEntityTexture(Entity p_110775_1_) {
-		return new ResourceLocation(RefStrings.MODID + ":textures/models/shrapnel.png");
+		return new ResourceLocation(Tags.MODID + ":textures/models/shrapnel.png");
 	}
 }

@@ -129,6 +129,22 @@ public class ItemStackUtil {
 		return stack;
 	}
 
+    /**
+     * Automatically adds multistack labels for displays that use a ton of items (like construction recipe handlers).
+     * @param stack
+     * @return
+     */
+    public static ItemStack addStackSizeLabel(ItemStack stack) {
+
+        if(stack.getCount() > 64) {
+            int stacks = stack.getCount() / 64;
+            int items = stack.getCount() % 64;
+            addTooltipToStack(stack, TextFormatting.RED + "" + stacks + "x64" + (items > 0 ? (" + " + items) : ""));
+        }
+
+        return stack;
+    }
+
 	public static void addStacksToNBT(final ItemStack stack, final ItemStack... stacks) {
 
 		if(!stack.hasTagCompound())
@@ -147,26 +163,30 @@ public class ItemStackUtil {
 		stack.getTagCompound().setTag("items", tags);
 	}
 
-	public static ItemStack[] readStacksFromNBT(final ItemStack stack) {
+    public static ItemStack[] readStacksFromNBT(ItemStack stack, int count) {
+        if(!stack.hasTagCompound())
+            return null;
 
-		if(!stack.hasTagCompound())
-			return null;
+        final NBTTagList list = stack.getTagCompound().getTagList("items", 10);
+        if (count < 1)
+            count = list.tagCount();
 
-		final NBTTagList list = stack.getTagCompound().getTagList("items", 10);
-		final int count = list.tagCount();
+        final ItemStack[] stacks = new ItemStack[count];
 
-		final ItemStack[] stacks = new ItemStack[count];
+        for(int i = 0; i < count; i++) {
+            final NBTTagCompound slotNBT = list.getCompoundTagAt(i);
+            final byte slot = slotNBT.getByte("slot");
+            if(slot >= 0 && slot < stacks.length) {
+                stacks[slot] = new ItemStack(slotNBT);
+            }
+        }
 
-		for(int i = 0; i < count; i++) {
-			final NBTTagCompound slotNBT = list.getCompoundTagAt(i);
-			final byte slot = slotNBT.getByte("slot");
-			if(slot >= 0 && slot < stacks.length) {
-				stacks[slot] = new ItemStack (slotNBT);
-			}
-		}
+        return stacks;
+    }
 
-		return stacks;
-	}
+    public static ItemStack[] readStacksFromNBT(ItemStack stack) {
+        return readStacksFromNBT(stack, 0);
+    }
 
 	/**
 	 * Returns a List<String> of all ore dict names for this stack. Stack cannot be null, list is empty when there are no ore dict entries.

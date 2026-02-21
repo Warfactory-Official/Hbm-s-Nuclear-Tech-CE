@@ -1,17 +1,17 @@
 package com.hbm.items.machine;
 
 import com.google.common.collect.ImmutableMap;
+import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.inventory.OreDictManager;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
+import com.hbm.items.IModelRegister;
 import com.hbm.items.ItemEnums;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
 import com.hbm.util.I18nUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.model.ModelRotation;
@@ -24,6 +24,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.model.IModel;
@@ -33,13 +34,14 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class ItemMold extends Item {
+public class ItemMold extends Item implements IModelRegister {
 
     public static List<Mold> molds = new ArrayList<>(); //molds in "pretty" order, variable between versions
     public static HashMap<Integer, Mold> moldById = new HashMap<>(); //molds by their static ID -> stack item damage
@@ -129,17 +131,18 @@ public class ItemMold extends Item {
         }
     }
 
+    @Override
     @SideOnly(Side.CLIENT)
     public void registerModels() {
         for (Mold mold : molds) {
-            ModelLoader.setCustomModelResourceLocation(this, mold.id, new ModelResourceLocation(RefStrings.MODID + ":items/mold_" + mold.name, "inventory"));
+            ModelLoader.setCustomModelResourceLocation(this, mold.id, new ModelResourceLocation(Tags.MODID + ":items/mold_" + mold.name, "inventory"));
         }
     }
 
     @SideOnly(Side.CLIENT)
     public static void registerSprites(TextureMap map){
         for (Mold mold : molds) {
-            ResourceLocation loc = new ResourceLocation(RefStrings.MODID + ":items/mold_" + mold.name);
+            ResourceLocation loc = new ResourceLocation(Tags.MODID + ":items/mold_" + mold.name);
             map.registerSprite(loc);
         }
     }
@@ -149,14 +152,14 @@ public class ItemMold extends Item {
         try {
             IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/generated"));
             for (Mold mold : molds) {
-                ResourceLocation spriteLoc = new ResourceLocation(RefStrings.MODID, "items/mold_" + mold.name);
+                ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, "items/mold_" + mold.name);
                 IModel retexturedModel = baseModel.retexture(
                         ImmutableMap.of(
                                 "layer0", spriteLoc.toString()
                         )
                 );
                 IBakedModel bakedModel = retexturedModel.bake(ModelRotation.X0_Y0, DefaultVertexFormats.ITEM, ModelLoader.defaultTextureGetter());
-                ModelResourceLocation bakedModelLocation = new ModelResourceLocation(new ResourceLocation(RefStrings.MODID, "items/mold_" + mold.name), "inventory");
+                ModelResourceLocation bakedModelLocation = new ModelResourceLocation(new ResourceLocation(Tags.MODID, "items/mold_" + mold.name), "inventory");
                 event.getModelRegistry().putObject(bakedModelLocation, bakedModel);
             }
         } catch (Exception e) {
@@ -167,10 +170,10 @@ public class ItemMold extends Item {
     @Override
     public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
         Mold mold = getMold(stack);
-        list.add(ChatFormatting.YELLOW + mold.getTitle());
+        list.add(TextFormatting.YELLOW + mold.getTitle());
 
-        if(mold.size == 0) list.add(ChatFormatting.GOLD + I18nUtil.resolveKey(ModBlocks.foundry_mold.getTranslationKey() + ".name"));
-        if(mold.size == 1) list.add(ChatFormatting.RED + I18nUtil.resolveKey(ModBlocks.foundry_basin.getTranslationKey() + ".name"));
+        if(mold.size == 0) list.add(TextFormatting.GOLD + I18nUtil.resolveKey(ModBlocks.foundry_mold.getTranslationKey() + ".name"));
+        if(mold.size == 1) list.add(TextFormatting.RED + I18nUtil.resolveKey(ModBlocks.foundry_basin.getTranslationKey() + ".name"));
     }
 
     public Mold getMold(ItemStack stack) {
@@ -193,6 +196,7 @@ public class ItemMold extends Item {
             this.name = name;
         }
 
+        @NotNull //FOR FUCKS SAKE IF OUTPUT IS ITEMSTACK, IT SHOULD NEVER BE NULL
         public abstract ItemStack getOutput(NTMMaterial mat);
         public abstract int getCost();
         public abstract String getTitle();
@@ -214,7 +218,7 @@ public class ItemMold extends Item {
         }
 
         @Override
-        public ItemStack getOutput(NTMMaterial mat) {
+        public @NotNull ItemStack getOutput(NTMMaterial mat) {
 
             for(String name : mat.names) {
                 String od = shape.name() + name;
@@ -222,7 +226,7 @@ public class ItemMold extends Item {
                 if(!ores.isEmpty()) {
                     //prioritize NTM items
                     for(ItemStack ore : ores) {
-                        if(Item.REGISTRY.getNameForObject(ore.getItem()).toString().startsWith(RefStrings.MODID)) {
+                        if(Item.REGISTRY.getNameForObject(ore.getItem()).toString().startsWith(Tags.MODID)) {
                             ItemStack copy = ore.copy();
                             copy.setCount(this.amount);
                             return copy;
@@ -235,7 +239,7 @@ public class ItemMold extends Item {
                 }
             }
 
-            return null;
+            return ItemStack.EMPTY;
         }
 
         @Override
@@ -256,7 +260,7 @@ public class ItemMold extends Item {
         }
 
         @Override
-        public ItemStack getOutput(NTMMaterial mat) {
+        public @NotNull ItemStack getOutput(NTMMaterial mat) {
 
             ItemStack override = blockOverrides.get(mat);
 
@@ -285,7 +289,7 @@ public class ItemMold extends Item {
         }
 
         @Override
-        public ItemStack getOutput(NTMMaterial mat) {
+        public @NotNull ItemStack getOutput(NTMMaterial mat) {
             if (this.mat != mat) return ItemStack.EMPTY;
             ItemStack s = outSupplier.get();
             return s.isEmpty() ? ItemStack.EMPTY : s.copy();
@@ -349,7 +353,7 @@ public class ItemMold extends Item {
         }
 
         @Override
-        public ItemStack getOutput(NTMMaterial mat) {
+        public @NotNull ItemStack getOutput(NTMMaterial mat) {
             Supplier<ItemStack> sup = this.map.get(mat);
             if (sup == null) return ItemStack.EMPTY;
             ItemStack out = sup.get();

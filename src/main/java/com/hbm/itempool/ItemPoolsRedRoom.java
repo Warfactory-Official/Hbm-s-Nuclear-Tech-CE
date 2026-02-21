@@ -29,10 +29,9 @@ public class ItemPoolsRedRoom {
                     weighted(ModItems.scrumpy, 0, 1, 1, 10),
 
                     weighted(ModItems.wild_p, 0, 1, 1, 5),
-                    // TODO
-                    /*weighted(ModItems.ballistic_gauntlet, 0, 1, 1, 10),
+                    weighted(ModItems.ballistic_gauntlet, 0, 1, 1, 10),
                     weighted(ModItems.card_aos, 0, 1, 1, 5),
-                    weighted(ModItems.card_qos, 0, 1, 1, 5),*/
+                    weighted(ModItems.card_qos, 0, 1, 1, 5),
                     weighted(ModItems.starmetal_sword, 0, 1, 1, 5),
                     weighted(ModItems.gem_alexandrite, 0, 1, 1, 5),
                     weighted(ModItems.crackpipe, 0, 1, 1, 5),
@@ -48,8 +47,7 @@ public class ItemPoolsRedRoom {
         //pedestal weapons
         new ItemPool(POOL_BLACK_SLAB) {{
             this.pool = new WeightedRandomChestContentFrom1710[] {
-                    // TODO
-                    //weighted(ModItems.clay_tablet, 0, 1, 1, 10)
+                    weighted(ModItems.clay_tablet, 0, 1, 1, 10)
             };
         }};
 

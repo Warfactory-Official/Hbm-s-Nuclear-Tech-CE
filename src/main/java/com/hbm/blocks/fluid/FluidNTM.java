@@ -1,6 +1,6 @@
 package com.hbm.blocks.fluid;
 
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.Fluid;
 
@@ -10,8 +10,8 @@ public class FluidNTM extends Fluid {
     public FluidNTM(String name, String stillName, String flowingName, Color color) {
         super(
                 name,
-                new ResourceLocation(RefStrings.MODID, "blocks/" + stillName),
-                new ResourceLocation(RefStrings.MODID, "blocks/" + flowingName),
+                new ResourceLocation(Tags.MODID, "blocks/" + stillName),
+                new ResourceLocation(Tags.MODID, "blocks/" + flowingName),
                 color);
     }
 

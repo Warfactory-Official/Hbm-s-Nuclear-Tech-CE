@@ -4,7 +4,6 @@ import com.hbm.config.BombConfig;
 import com.hbm.config.CompatibilityConfig;
 import com.hbm.config.GeneralConfig;
 import com.hbm.entity.effect.EntityFalloutRain;
-import com.hbm.entity.effect.EntityFalloutUnderGround;
 import com.hbm.entity.mob.EntityGlowingOne;
 import com.hbm.explosion.ExplosionNukeGeneric;
 import com.hbm.explosion.ExplosionNukeRayBatched;
@@ -16,18 +15,19 @@ import com.hbm.main.MainRegistry;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
 import com.hbm.util.ContaminationUtil.HazardType;
+import com.hbm.util.MutableVec3d;
+import com.hbm.world.WorldUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Biomes;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.Biome;
-import net.minecraftforge.common.ForgeChunkManager;
-import net.minecraftforge.common.ForgeChunkManager.Ticket;
-import net.minecraftforge.common.ForgeChunkManager.Type;
 import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.UUID;
 
 @AutoRegister(name = "entity_nuke_mk5", trackingRange = 1000)
-public class EntityNukeExplosionMK5 extends Entity implements IChunkLoader {
+public class EntityNukeExplosionMK5 extends EntityExplosionChunkloading {
     //Strength of the blast
     private int strength;
     //How many rays are calculated per tick
@@ -44,16 +44,11 @@ public class EntityNukeExplosionMK5 extends Entity implements IChunkLoader {
 
     private boolean fallout = true;
     private IExplosionRay explosion;
-    private EntityFalloutUnderGround falloutBall;
-    private EntityFalloutRain falloutRain;
-    private final List<ChunkPos> loadedChunks = new ArrayList<>();
     private boolean floodPlease = false;
     private boolean initialized = false;
     private int falloutAdd = 0;
     private int algorithm;
-    private Ticket loaderTicket;
     private long explosionStart = 0;
-    private ChunkPos mainChunk;
 
     public UUID detonator;
 
@@ -118,29 +113,25 @@ public class EntityNukeExplosionMK5 extends Entity implements IChunkLoader {
         if (world.isRemote) return;
 
         if (strength == 0 || !CompatibilityConfig.isWarDim(world)) {
-            this.clearLoadedChunks();
-            this.unloadMainChunk();
             this.setDead();
             return;
         }
-        //load own chunk
-        loadMainChunk();
+        if (!world.isRemote) loadChunk(chunkCoordX, chunkCoordZ);
+
         for (EntityPlayer player : this.world.playerEntities) {
             AdvancementManager.grantAchievement(player, AdvancementManager.achManhattan);
         }
+        List<Entity> list = WorldUtil.getEntitiesInRadius(world, this.posX, this.posY, this.posZ, this.radius * 2.0D);
         if (fallout && explosion != null && this.ticksExisted < 10 && strength >= 75) {
-            radiate(2_500_000F / (this.ticksExisted * 5 + 1), this.radius * 2.0D);
+            List<EntityLivingBase> livingList = new ArrayList<>(list.size());
+            for (Entity e : list) if (e instanceof EntityLivingBase livingBase) livingList.add(livingBase);
+            radiate(livingList, 2_500_000F / (this.ticksExisted * 5 + 1));
         }
-        ExplosionNukeGeneric.dealDamage(world, this.posX, this.posY, this.posZ, this.radius * 2.0D);
-        float rads, fire, blast;
-        rads = fire = blast = 0;
 
+        ExplosionNukeGeneric.dealDamage(world, list, this.posX, this.posY, this.posZ, this.radius * 2.0D);
         //radiate until there is fallout rain
-        if (fallout && falloutRain == null) {
-            rads = (float) (Math.pow(radius, 4) * (float) Math.pow(0.5, this.ticksExisted * 0.125) + strength);
-            if (ticksExisted == 42)
-                EntityGlowingOne.convertInRadiusToGlow(world, this.posX, this.posY, this.posZ, radius * 1.5);
-        }
+        if (fallout && ticksExisted == 42)
+            EntityGlowingOne.convertInRadiusToGlow((WorldServer) world, this.posX, this.posY, this.posZ, radius * 1.5);
 
         //Create Explosion Rays
         if (!initialized) {
@@ -178,36 +169,33 @@ public class EntityNukeExplosionMK5 extends Entity implements IChunkLoader {
 //                falloutBall.falloutRainRadius2 = this.radius + 4;
 //                this.world.spawnEntity(falloutBall);
             }
-
-            this.clearLoadedChunks();
-            unloadMainChunk();
             this.setDead();
         }
     }
 
-    private void radiate(float rads, double range) {
-        AxisAlignedBB aabb = new AxisAlignedBB(this.posX, this.posY, this.posZ, this.posX, this.posY, this.posZ).grow(range);
-        List<EntityLivingBase> entities = world.getEntitiesWithinAABB(EntityLivingBase.class, aabb);
+    private void radiate(List<EntityLivingBase> entities, float rads) {
+        MutableVec3d vec = new MutableVec3d();
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (EntityLivingBase e : entities) {
-            Vec3d vec = new Vec3d(e.posX - posX, (e.posY + e.getEyeHeight()) - posY, e.posZ - posZ);
+            vec.set(e.posX - posX, (e.posY + e.getEyeHeight()) - posY, e.posZ - posZ);
             double len = vec.length();
             if (len <= 0.0001D) continue;
-            Vec3d dir = vec.scale(1.0D / len);
+            vec.normalizeSelf();
 
-            float res = 0F;
+            double res = 0F;
             int steps = MathHelper.floor(len);
             for (int i = 1; i < steps; i++) {
-                int ix = MathHelper.floor(posX + dir.x * i);
-                int iy = MathHelper.floor(posY + dir.y * i);
-                int iz = MathHelper.floor(posZ + dir.z * i);
-                float blockRes = world.getBlockState(new BlockPos(ix, iy, iz)).getBlock().getExplosionResistance(null);
+                int ix = MathHelper.floor(posX + vec.x * i);
+                int iy = MathHelper.floor(posY + vec.y * i);
+                int iz = MathHelper.floor(posZ + vec.z * i);
+                float blockRes = world.getBlockState(pos.setPos(ix, iy, iz)).getBlock().getExplosionResistance(null);
                 res += blockRes;
             }
 
-            if (res < 1F) res = 1F;
-            float eRads = rads;
+            if (res < 1.0) res = 1.0;
+            double eRads = rads;
             eRads /= res;
-            eRads /= (float) (len * len);
+            eRads /= len * len;
             ContaminationUtil.contaminate(e, HazardType.RADIATION, ContaminationType.RAD_BYPASS, eRads);
         }
     }
@@ -217,70 +205,6 @@ public class EntityNukeExplosionMK5 extends Entity implements IChunkLoader {
             this.detonator = detonator.getUniqueID();
         }
         return this;
-    }
-
-    @Override
-    protected void entityInit() {
-        init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, Type.ENTITY));
-    }
-
-    @Override
-    public void init(Ticket ticket) {
-        if (!world.isRemote && ticket != null) {
-
-            if (loaderTicket == null) {
-                loaderTicket = ticket;
-                loaderTicket.bindEntity(this);
-                loaderTicket.getModData();
-            }
-
-            ForgeChunkManager.forceChunk(loaderTicket, new ChunkPos(chunkCoordX, chunkCoordZ));
-        }
-    }
-
-    @Override
-    public void loadNeighboringChunks(int newChunkX, int newChunkZ) {
-        if (!world.isRemote && loaderTicket != null) {
-            for (ChunkPos chunk : loadedChunks) {
-                ForgeChunkManager.unforceChunk(loaderTicket, chunk);
-            }
-
-            loadedChunks.clear();
-            loadedChunks.add(new ChunkPos(newChunkX, newChunkZ));
-            loadedChunks.add(new ChunkPos(newChunkX + 1, newChunkZ + 1));
-            loadedChunks.add(new ChunkPos(newChunkX - 1, newChunkZ - 1));
-            loadedChunks.add(new ChunkPos(newChunkX + 1, newChunkZ - 1));
-            loadedChunks.add(new ChunkPos(newChunkX - 1, newChunkZ + 1));
-            loadedChunks.add(new ChunkPos(newChunkX + 1, newChunkZ));
-            loadedChunks.add(new ChunkPos(newChunkX, newChunkZ + 1));
-            loadedChunks.add(new ChunkPos(newChunkX - 1, newChunkZ));
-            loadedChunks.add(new ChunkPos(newChunkX, newChunkZ - 1));
-
-            for (ChunkPos chunk : loadedChunks) {
-                ForgeChunkManager.forceChunk(loaderTicket, chunk);
-            }
-        }
-    }
-
-    public void clearLoadedChunks() {
-        if (!world.isRemote && loaderTicket != null && loadedChunks != null) {
-            for (ChunkPos chunk : loadedChunks) {
-                ForgeChunkManager.unforceChunk(loaderTicket, chunk);
-            }
-        }
-    }
-
-    public void loadMainChunk() {
-        if (!world.isRemote && loaderTicket != null && this.mainChunk == null) {
-            this.mainChunk = new ChunkPos((int) Math.floor(this.posX / 16D), (int) Math.floor(this.posZ / 16D));
-            ForgeChunkManager.forceChunk(loaderTicket, this.mainChunk);
-        }
-    }
-
-    public void unloadMainChunk() {
-        if (!world.isRemote && loaderTicket != null && this.mainChunk != null) {
-            ForgeChunkManager.unforceChunk(loaderTicket, this.mainChunk);
-        }
     }
 
     @Override
@@ -324,7 +248,14 @@ public class EntityNukeExplosionMK5 extends Entity implements IChunkLoader {
     @Override
     public void setDead() {
         if (explosion != null) explosion.cancel();
+        clearChunkLoader();
         super.setDead();
+    }
+
+    @Override
+    public void onRemovedFromWorld() {
+        if (explosion != null) explosion.cancel();
+        super.onRemovedFromWorld();
     }
 
     public EntityNukeExplosionMK5 moreFallout(int fallout) {

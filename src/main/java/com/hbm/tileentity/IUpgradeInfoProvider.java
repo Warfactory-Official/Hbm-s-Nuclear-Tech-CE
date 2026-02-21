@@ -2,8 +2,8 @@ package com.hbm.tileentity;
 
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.util.I18nUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.block.Block;
+import net.minecraft.util.text.TextFormatting;
 
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +16,7 @@ public interface IUpgradeInfoProvider {
     HashMap<ItemMachineUpgrade.UpgradeType, Integer> getValidUpgrades();
 
     static String getStandardLabel(Block block) {
-        return ChatFormatting.YELLOW + ">>> " + I18nUtil.resolveKey(block.getTranslationKey() + ".name") + " <<<";
+        return TextFormatting.YELLOW + ">>> " + I18nUtil.resolveKey(block.getTranslationKey() + ".name") + " <<<";
     }
 
     String KEY_ACID = "upgrade.acid";

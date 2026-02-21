@@ -10,11 +10,14 @@ import com.hbm.inventory.control_panel.ControlEventSystem;
 import com.hbm.inventory.control_panel.DataValueFloat;
 import com.hbm.inventory.control_panel.IControllable;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.TEDoorAnimationPacket;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.machine.TileEntityLockableBase;
+import it.unimi.dsi.fastutil.longs.LongIterable;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -37,31 +40,30 @@ import java.util.Set;
 @AutoRegister
 public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITickable, IAnimatedDoor, IControllable {
 
-    public DoorState state = DoorState.CLOSED;
-    public DoorDecl doorType;
-    private int openTicks = 0;
-    public long animStartTime = 0;
-    private int redstonePower;
-    public boolean shouldUseBB = false;
     private final Set<BlockPos> activatedBlocks = new HashSet<>(4);
-
+    public DoorState state = DoorState.CLOSED;
+    public long animStartTime = 0;
+    public boolean shouldUseBB = false;
+    protected DoorDecl doorType;
+    private int openTicks = 0;
+    private int redstonePower;
     private AudioWrapper audio;
     private AudioWrapper audio2;
-
     // For T flip-flop redstone behavior
     private boolean wasPowered = false;
-
+    private boolean redstoneOnly = false;
 
     public TileEntityDoorGeneric() {
     }
 
     @Override
     public void update() {
-        if (doorType == null && this.getBlockType() instanceof BlockDoorGeneric) doorType = ((BlockDoorGeneric) this.getBlockType()).type;
+        if (getDoorType() == null && this.getBlockType() instanceof BlockDoorGeneric)
+            setDoorType(((BlockDoorGeneric) this.getBlockType()).type);
         if (state == DoorState.OPENING) {
             openTicks++;
-            if (openTicks >= doorType.timeToOpen()) {
-                openTicks = doorType.timeToOpen();
+            if (openTicks >= getDoorType().timeToOpen()) {
+                openTicks = getDoorType().timeToOpen();
             }
         } else if (state == DoorState.CLOSING) {
             openTicks--;
@@ -71,13 +73,13 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
         }
 
         if (!world.isRemote) {
-            int[][] ranges = doorType.getDoorOpenRanges();
+            int[][] ranges = getDoorType().getDoorOpenRanges();
             ForgeDirection dir = ForgeDirection.getOrientation(getBlockMetadata() - BlockDummyable.offset);
             if (state == DoorState.OPENING) {
                 for (int i = 0; i < ranges.length; i++) {
                     int[] range = ranges[i];
                     BlockPos startPos = new BlockPos(range[0], range[1], range[2]);
-                    float time = doorType.getDoorRangeOpenTime(openTicks, i);
+                    float time = getDoorType().getDoorRangeOpenTime(openTicks, i);
                     for (int j = 0; j < Math.abs(range[3]); j++) {
                         if ((float) j / (Math.abs(range[3] - 1)) > time) break;
                         for (int k = 0; k < range[4]; k++) {
@@ -102,7 +104,7 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
                 for (int i = 0; i < ranges.length; i++) {
                     int[] range = ranges[i];
                     BlockPos startPos = new BlockPos(range[0], range[1], range[2]);
-                    float time = doorType.getDoorRangeOpenTime(openTicks, i);
+                    float time = getDoorType().getDoorRangeOpenTime(openTicks, i);
                     for (int j = Math.abs(range[3]) - 1; j >= 0; j--) {
                         if ((float) j / (Math.abs(range[3] - 1)) < time) break;
                         for (int k = 0; k < range[4]; k++) {
@@ -124,7 +126,7 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
                     }
                 }
             }
-            if (state == DoorState.OPENING && openTicks == doorType.timeToOpen()) {
+            if (state == DoorState.OPENING && openTicks == getDoorType().timeToOpen()) {
                 state = DoorState.OPEN;
                 broadcastControlEvt();
             }
@@ -134,7 +136,7 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
 
                 // With door finally closed, mark chunk for rad update since door is now rad resistant
                 // No need to update when open as well, as opening door should update
-                RadiationSystemNT.markChunkForRebuild(world, pos);
+                RadiationSystemNT.markSectionsForRebuild(world, getOccupiedSections());
             }
             PacketDispatcher.wrapper.sendToAllAround(new TEDoorAnimationPacket(pos, (byte) state.ordinal(), (byte) (shouldUseBB ? 1 : 0)),
                     new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
@@ -166,7 +168,7 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
 
     @Override
     public void onLoad() {
-        doorType = ((BlockDoorGeneric) this.getBlockType()).type;
+        setDoorType(((BlockDoorGeneric) this.getBlockType()).type);
     }
 
     public boolean tryToggle(EntityPlayer player) {
@@ -239,11 +241,11 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
         if (state == DoorState.CLOSED) {
             state = DoorState.OPENING;
             // With door opening, mark chunk for rad update
-            RadiationSystemNT.markChunkForRebuild(world, pos);
+            RadiationSystemNT.markSectionsForRebuild(world, getOccupiedSections());
         } else if (state == DoorState.OPEN) {
             state = DoorState.CLOSING;
             // With door closing, mark chunk for rad update
-            RadiationSystemNT.markChunkForRebuild(world, pos);
+            RadiationSystemNT.markSectionsForRebuild(world, getOccupiedSections());
         }
     }
 
@@ -253,25 +255,25 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
         if (this.state != newState) {
             if (this.state == DoorState.CLOSED && newState == DoorState.OPENING) {
                 if (audio == null) {
-                    audio = MainRegistry.proxy.getLoopedSoundStartStop(world, doorType.getOpenSoundLoop(), doorType.getOpenSoundStart(),
-                            doorType.getOpenSoundEnd(), SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), doorType.getSoundVolume(), 1);
+                    audio = MainRegistry.proxy.getLoopedSoundStartStop(world, getDoorType().getOpenSoundLoop(), getDoorType().getOpenSoundStart(),
+                            getDoorType().getOpenSoundEnd(), SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), getDoorType().getSoundVolume(), 1);
                     audio.startSound();
                 }
-                if (audio2 == null && doorType.getSoundLoop2() != null) {
-                    audio2 = MainRegistry.proxy.getLoopedSoundStartStop(world, doorType.getSoundLoop2(), null, null, SoundCategory.BLOCKS,
-                            pos.getX(), pos.getY(), pos.getZ(), doorType.getSoundVolume(), 1);
+                if (audio2 == null && getDoorType().getSoundLoop2() != null) {
+                    audio2 = MainRegistry.proxy.getLoopedSoundStartStop(world, getDoorType().getSoundLoop2(), null, null, SoundCategory.BLOCKS,
+                            pos.getX(), pos.getY(), pos.getZ(), getDoorType().getSoundVolume(), 1);
                     audio2.startSound();
                 }
             }
             if (this.state == DoorState.OPEN && newState == DoorState.CLOSING) {
                 if (audio == null) {
-                    audio = MainRegistry.proxy.getLoopedSoundStartStop(world, doorType.getCloseSoundLoop(), doorType.getCloseSoundStart(),
-                            doorType.getCloseSoundEnd(), SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), doorType.getSoundVolume(), 1);
+                    audio = MainRegistry.proxy.getLoopedSoundStartStop(world, getDoorType().getCloseSoundLoop(), getDoorType().getCloseSoundStart(),
+                            getDoorType().getCloseSoundEnd(), SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), getDoorType().getSoundVolume(), 1);
                     audio.startSound();
                 }
-                if (audio2 == null && doorType.getSoundLoop2() != null) {
-                    audio2 = MainRegistry.proxy.getLoopedSoundStartStop(world, doorType.getSoundLoop2(), null, null, SoundCategory.BLOCKS,
-                            pos.getX(), pos.getY(), pos.getZ(), doorType.getSoundVolume(), 1);
+                if (audio2 == null && getDoorType().getSoundLoop2() != null) {
+                    audio2 = MainRegistry.proxy.getLoopedSoundStartStop(world, getDoorType().getSoundLoop2(), null, null, SoundCategory.BLOCKS,
+                            pos.getX(), pos.getY(), pos.getZ(), getDoorType().getSoundVolume(), 1);
                     audio2.startSound();
                 }
             }
@@ -315,6 +317,7 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
         this.redstonePower = tag.getInteger("redstoned");
         this.shouldUseBB = tag.getBoolean("shouldUseBB");
         this.wasPowered = tag.getBoolean("wasPowered");
+        this.redstoneOnly = tag.getBoolean("redstoneOnly");
         NBTTagCompound activatedBlocks = tag.getCompoundTag("activatedBlocks");
         this.activatedBlocks.clear();
         for (int i = 0; i < activatedBlocks.getKeySet().size() / 3; i++) {
@@ -332,6 +335,7 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
         tag.setInteger("redstoned", redstonePower);
         tag.setBoolean("shouldUseBB", shouldUseBB);
         tag.setBoolean("wasPowered", this.wasPowered);
+        tag.setBoolean("redstoneOnly", this.redstoneOnly);
         NBTTagCompound activatedBlocks = new NBTTagCompound();
         int i = 0;
         for (BlockPos p : this.activatedBlocks) {
@@ -417,5 +421,96 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
                 redstonePower = -1;
             }
         }
+    }
+
+    public DoorDecl getDoorType() {
+        if (this.doorType == null && this.getBlockType() instanceof BlockDoorGeneric)
+            this.doorType = ((BlockDoorGeneric) this.getBlockType()).type;
+
+        return this.doorType;
+    }
+
+    public void setDoorType(DoorDecl doorType) {
+        this.doorType = doorType;
+    }
+
+    public boolean getRedstoneOnly() {
+        return redstoneOnly;
+    }
+
+    public void setRedstoneOnly(boolean redstoneOnly) {
+        this.redstoneOnly = redstoneOnly;
+    }
+
+    public LongIterable getOccupiedSections() {
+        LongOpenHashSet sections = new LongOpenHashSet();
+        sections.add(Library.blockPosToSectionLong(pos));
+
+        if (getDoorType() == null) return sections;
+
+        int[][] ranges = getDoorType().getDoorOpenRanges();
+        ForgeDirection dir = ForgeDirection.getOrientation(getBlockMetadata() - BlockDummyable.offset);
+        Rotation r = dir.getBlockRotation();
+        if (dir.toEnumFacing().getAxis() == EnumFacing.Axis.X) r = r.add(Rotation.CLOCKWISE_180);
+
+        int ox = pos.getX();
+        int oy = pos.getY();
+        int oz = pos.getZ();
+
+        for (int[] range : ranges) {
+            int sx = range[0];
+            int sy = range[1];
+            int sz = range[2];
+            int absRange3 = Math.abs(range[3]);
+            int signRange3 = (int) Math.signum(range[3]);
+            int axisVal = range[5];
+
+            for (int j = 0; j < absRange3; j++) {
+                for (int k = 0; k < range[4]; k++) {
+                    int ax = 0;
+                    int ay = 0;
+                    int az = 0;
+
+                    // EnumFacing.Axis order: X, Y, Z
+                    switch (axisVal) {
+                        case 0 -> {
+                            ay = k;
+                            az = signRange3 * j;
+                        }
+                        case 1 -> {
+                            ax = k;
+                            ay = signRange3 * j;
+                        }
+                        case 2 -> {
+                            ax = signRange3 * j;
+                            ay = k;
+                        }
+                    }
+                    int rx = sx + ax;
+                    int ry = sy + ay;
+                    int rz = sz + az;
+                    int rotX = rx;
+                    int rotZ = rz;
+                    switch (r) {
+                        case CLOCKWISE_90:
+                            rotX = -rz;
+                            rotZ = rx;
+                            break;
+                        case CLOCKWISE_180:
+                            rotX = -rx;
+                            rotZ = -rz;
+                            break;
+                        case COUNTERCLOCKWISE_90:
+                            rotX = rz;
+                            rotZ = -rx;
+                            break;
+                        default:
+                            break;
+                    }
+                    sections.add(Library.blockPosToSectionLong(rotX + ox, ry + oy, rotZ + oz));
+                }
+            }
+        }
+        return sections;
     }
 }

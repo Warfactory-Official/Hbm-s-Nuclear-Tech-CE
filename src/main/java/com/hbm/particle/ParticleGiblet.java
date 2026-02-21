@@ -1,6 +1,6 @@
 package com.hbm.particle;
 
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
@@ -14,11 +14,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 public class ParticleGiblet extends Particle {
 
-	private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/particle/meat.png");
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/particle/meat.png");
 	
 	private float momentumYaw;
 	private float momentumPitch;

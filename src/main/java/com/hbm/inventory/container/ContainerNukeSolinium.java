@@ -1,6 +1,8 @@
 package com.hbm.inventory.container;
 
+import com.hbm.items.ModItems;
 import com.hbm.tileentity.bomb.TileEntityNukeSolinium;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -41,36 +43,17 @@ public class ContainerNukeSolinium extends Container {
 	}
 	
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2)
+    public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-		
-		if (var4 != null && var4.getHasStack())
-		{
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-			
-            if (par2 <= 8) {
-				if (!this.mergeItemStack(var5, 9, this.inventorySlots.size(), true))
-				{
-					return ItemStack.EMPTY;
-				}
-			} else {
-				return ItemStack.EMPTY;
-			}
-            
-			if (var5.isEmpty())
-			{
-				var4.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
-				var4.onSlotChanged();
-			}
-		}
-		
-		return var3;
+        return InventoryUtil.transferStack(this.inventorySlots, index, 9,
+                s -> s.getItem() == ModItems.solinium_igniter && !this.inventorySlots.getFirst().getHasStack(), 1,
+                s -> s.getItem() == ModItems.solinium_propellant && !this.inventorySlots.get(1).getHasStack() && !this.inventorySlots.get(2).getHasStack(), 3,
+                s -> s.getItem() == ModItems.solinium_igniter && !this.inventorySlots.get(3).getHasStack(), 4,
+                s -> s.getItem() == ModItems.solinium_core, 5,
+                s -> s.getItem() == ModItems.solinium_igniter && !this.inventorySlots.get(5).getHasStack(), 6,
+                s -> s.getItem() == ModItems.solinium_propellant, 8,
+                s -> s.getItem() == ModItems.solinium_igniter, 9
+        );
     }
 
 	@Override

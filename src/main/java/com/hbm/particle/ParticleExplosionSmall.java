@@ -1,7 +1,7 @@
 package com.hbm.particle;
 
 import com.hbm.entity.particle.ParticleFXRotating;
-import com.hbm.main.ModEventHandlerClient;
+import com.hbm.main.client.NTMClientRegistry;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
@@ -9,7 +9,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 
@@ -32,7 +32,7 @@ public class ParticleExplosionSmall extends ParticleFXRotating {
         this.setRBGColorF(color.getRed() / 255F, color.getGreen() / 255F, color.getBlue() / 255F);
 
         this.canCollide = true;
-        this.setParticleTexture(ModEventHandlerClient.particle_base);
+        this.setParticleTexture(NTMClientRegistry.particle_base);
     }
 
     @Override

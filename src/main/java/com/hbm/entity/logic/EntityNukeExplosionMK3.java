@@ -1,41 +1,36 @@
 package com.hbm.entity.logic;
 
-import com.hbm.explosion.*;
-import com.hbm.main.AdvancementManager;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.math.MathHelper;
 import com.hbm.config.BombConfig;
 import com.hbm.config.CompatibilityConfig;
 import com.hbm.config.GeneralConfig;
 import com.hbm.entity.effect.EntityFalloutRain;
+import com.hbm.explosion.*;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.Spaghetti;
 import com.hbm.lib.HBMSoundHandler;
+import com.hbm.main.AdvancementManager;
 import com.hbm.main.MainRegistry;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.common.ForgeChunkManager;
-import net.minecraftforge.common.ForgeChunkManager.Ticket;
-import net.minecraftforge.common.ForgeChunkManager.Type;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import org.apache.logging.log4j.Level;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 @Spaghetti("why???")
 @AutoRegister(name = "entity_nuke_mk3", trackingRange = 1000)
-public class EntityNukeExplosionMK3 extends Entity implements IChunkLoader {
+public class EntityNukeExplosionMK3 extends EntityExplosionChunkloading {
 	
 	public int age = 0;
 	public int destructionRange = 0;
@@ -44,7 +39,7 @@ public class EntityNukeExplosionMK3 extends Entity implements IChunkLoader {
 	public ExplosionNukeAdvanced vap;
 	public ExplosionFleija expl;
 	public ExplosionSolinium sol;
-	public ExplosionDrying dry;
+	public ExplosionDrying dry;//mlbv: this one was added by Alcater
 	public int speed = 1;
 	public float coefficient = 1;
 	public float coefficient2 = 1;
@@ -53,10 +48,7 @@ public class EntityNukeExplosionMK3 extends Entity implements IChunkLoader {
 	public boolean waste = true;
 	//Extended Type
 	public int extType = 0;
-	private Ticket loaderTicket;
 	public UUID detonator = null;
-	private int lastChunkX = Integer.MIN_VALUE;
-	private int lastChunkZ = Integer.MIN_VALUE;
 
 	@Override
 	protected void readEntityFromNBT(NBTTagCompound nbt) {
@@ -74,7 +66,6 @@ public class EntityNukeExplosionMK3 extends Entity implements IChunkLoader {
 		long time = nbt.getLong("milliTime");
 		
 		if(BombConfig.limitExplosionLifespan > 0 && System.currentTimeMillis() - time > BombConfig.limitExplosionLifespan * 1000) {
-			clearChunkLoader();
 			this.setDead();
 		}
 
@@ -156,15 +147,8 @@ public class EntityNukeExplosionMK3 extends Entity implements IChunkLoader {
 			return;
 		}
 
-		if(loaderTicket != null) {
-			final int curChunkX = MathHelper.floor(this.posX) >> 4;
-			final int curChunkZ = MathHelper.floor(this.posZ) >> 4;
-			if (curChunkX != lastChunkX || curChunkZ != lastChunkZ) {
-				loadNeighboringChunks(curChunkX, curChunkZ);
-				lastChunkX = curChunkX;
-				lastChunkZ = curChunkZ;
-			}
-		}
+        if (!world.isRemote)
+            loadChunk(chunkCoordX, chunkCoordZ);
 
         if(!this.did)
         {
@@ -215,7 +199,6 @@ public class EntityNukeExplosionMK3 extends Entity implements IChunkLoader {
         		flag3 = vap.update();
         		
         		if(flag3) {
-        			clearChunkLoader();
         			this.setDead();
         		}
         	} else {
@@ -256,57 +239,6 @@ public class EntityNukeExplosionMK3 extends Entity implements IChunkLoader {
         }
         age++;
     }
-
-	@Override
-	protected void entityInit() {
-		init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, Type.ENTITY));
-	}
-
-	@Override
-	public void init(Ticket ticket) {
-		if(!world.isRemote) {
-			
-            if(ticket != null) {
-            	
-                if(loaderTicket == null) {
-                	
-                	loaderTicket = ticket;
-                	loaderTicket.bindEntity(this);
-                	loaderTicket.getModData();
-                }
-
-                ForgeChunkManager.forceChunk(loaderTicket, new ChunkPos(chunkCoordX, chunkCoordZ));
-            }
-        }
-	}
-
-	List<ChunkPos> loadedChunks = new ArrayList<ChunkPos>();
-	@Override
-	public void loadNeighboringChunks(int newChunkX, int newChunkZ) {
-		if(!world.isRemote && loaderTicket != null)
-        {
-            for(ChunkPos chunk : loadedChunks)
-            {
-                ForgeChunkManager.unforceChunk(loaderTicket, chunk);
-            }
-
-            loadedChunks.clear();
-            loadedChunks.add(new ChunkPos(newChunkX, newChunkZ));
-            loadedChunks.add(new ChunkPos(newChunkX + 1, newChunkZ + 1));
-            loadedChunks.add(new ChunkPos(newChunkX - 1, newChunkZ - 1));
-            loadedChunks.add(new ChunkPos(newChunkX + 1, newChunkZ - 1));
-            loadedChunks.add(new ChunkPos(newChunkX - 1, newChunkZ + 1));
-            loadedChunks.add(new ChunkPos(newChunkX + 1, newChunkZ));
-            loadedChunks.add(new ChunkPos(newChunkX, newChunkZ + 1));
-            loadedChunks.add(new ChunkPos(newChunkX - 1, newChunkZ));
-            loadedChunks.add(new ChunkPos(newChunkX, newChunkZ - 1));
-
-            for(ChunkPos chunk : loadedChunks)
-            {
-                ForgeChunkManager.forceChunk(loaderTicket, chunk);
-            }
-        }
-	}
 
 	public static HashMap<ATEntry, Long> at = new HashMap<>();
 
@@ -398,7 +330,7 @@ public class EntityNukeExplosionMK3 extends Entity implements IChunkLoader {
 						data.setFloat("g", 0.75F);
 						data.setFloat("b", 1.0F);
 						data.setFloat("scale", 7.5F);
-						PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, ix, iy, iz), new TargetPoint(entry.dim, ix, iy, iz, 150));
+						PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, ix, iy, iz), new TargetPoint(entry.dim, ix, iy, iz, 150));
 					}
 				}
 
@@ -414,25 +346,9 @@ public class EntityNukeExplosionMK3 extends Entity implements IChunkLoader {
 			this.detonator = detonator.getUniqueID();
 	}
 
-	private void clearChunkLoader() {
-		if (world.isRemote) return;
-		if (loaderTicket != null) {
-			for (ChunkPos chunk : loadedChunks) {
-				ForgeChunkManager.unforceChunk(loaderTicket, chunk);
-			}
-			loadedChunks.clear();
-			try {
-				ForgeChunkManager.releaseTicket(loaderTicket);
-			} catch (Throwable ignored) {}
-			loaderTicket = null;
-		}
-	}
-
 	@Override
 	public void setDead() {
-		if (!world.isRemote) {
-			clearChunkLoader();
-		}
+        clearChunkLoader();
 		super.setDead();
 	}
 

@@ -97,10 +97,6 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
 	int age = 0;
 
 	private void cacheChunksTick(int time) {
-		if(!CompatibilityConfig.isWarDim(world)){
-			isAusf3Complete = true;
-			return;
-		}
 		MutableBlockPos pos = new BlockPos.MutableBlockPos();
 		long raysProcessed = 0;
 		long start = System.currentTimeMillis();
@@ -186,8 +182,13 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
 
 	@Override
 	public void update(int processTimeMs) {
-		cacheChunksTick(processTimeMs);
-		destructionTick(processTimeMs);
+        if(!CompatibilityConfig.isWarDim(world)){
+            isAusf3Complete = true;
+            return;
+        }
+        if (isAusf3Complete)
+		    destructionTick(processTimeMs);
+        else cacheChunksTick(processTimeMs);
 	}
 
 	@Override

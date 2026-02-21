@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import com.hbm.blocks.IOreType;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.hazard.HazardSystem;
 import com.hbm.main.MainRegistry;
@@ -17,10 +18,12 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import com.hbm.util.I18nUtil;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Random;
+import java.util.Arrays;
 
 import static com.hbm.blocks.OreEnumUtil.OreEnum;
 
@@ -28,9 +31,9 @@ public class BlockNTMOre extends BlockOre {
 
 
     public static int xp;
-    protected final OreEnum oreEnum;
+    protected final IOreType oreEnum;
 
-    public BlockNTMOre(String name, OreEnum oreEnum, int harvestLvl, int xp) {
+    public BlockNTMOre(String name, IOreType oreEnum, int harvestLvl, int xp) {
         super();
         BlockNTMOre.xp = xp;
         this.oreEnum = oreEnum;
@@ -42,7 +45,7 @@ public class BlockNTMOre extends BlockOre {
         ModBlocks.ALL_BLOCKS.add(this);
     }
 
-    public BlockNTMOre(String name, @Nullable OreEnum oreEnum, int harvestLvl) {
+    public BlockNTMOre(String name, @Nullable IOreType oreEnum, int harvestLvl) {
         this(name, oreEnum, harvestLvl, 2);
     }
 
@@ -51,7 +54,7 @@ public class BlockNTMOre extends BlockOre {
     }
 
 
-    public BlockNTMOre(SoundType sound, String name, OreEnum oreEnum, int harvestLvl) {
+    public BlockNTMOre(SoundType sound, String name, IOreType oreEnum, int harvestLvl) {
         this(name, oreEnum, harvestLvl);
         super.setSoundType(sound);
     }
@@ -72,7 +75,7 @@ public class BlockNTMOre extends BlockOre {
         //For the time, just normal blocks
 
 
-        int count = (oreEnum == null) ? quantityDropped(state, fortune, rand) : oreEnum.quantityFunction.apply(state, fortune, rand);
+        int count = (oreEnum == null) ? quantityDropped(state, fortune, rand) : oreEnum.getQuantityFunction().apply(state, fortune, rand);
 
         for (int i = 0; i < count; i++)
         {
@@ -81,7 +84,7 @@ public class BlockNTMOre extends BlockOre {
             if(oreEnum  == null) {
                 droppedItem = new ItemStack(this.getItemDropped(state, rand, fortune), 1, this.damageDropped(state));
             } else {
-                droppedItem =  oreEnum.dropFunction.apply(state, rand);
+                droppedItem = oreEnum.getDropFunction().apply(state, rand);
             }
 
             if (!droppedItem.isEmpty())
@@ -108,14 +111,13 @@ public class BlockNTMOre extends BlockOre {
     @Override
     public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
         if (stack.getItem() == Item.getItemFromBlock(ModBlocks.ore_uranium) || stack.getItem() == Item.getItemFromBlock(ModBlocks.ore_gneiss_uranium) || stack.getItem() == Item.getItemFromBlock(ModBlocks.ore_nether_uranium)) {
-            tooltip.add("High-Radiation creates medium amounts of schrabidium inside this block");
+            tooltip.addAll(Arrays.asList(I18nUtil.resolveKey("tile.ore_uranium.desc").split("\\$")));
         }
         if (stack.getItem() == Item.getItemFromBlock(ModBlocks.ore_schrabidium) || stack.getItem() == Item.getItemFromBlock(ModBlocks.ore_gneiss_schrabidium) || stack.getItem() == Item.getItemFromBlock(ModBlocks.ore_nether_schrabidium)) {
-            tooltip.add("High-Radiation has created medium amounts of schrabidium inside this block");
+            tooltip.addAll(Arrays.asList(I18nUtil.resolveKey("tile.ore_schrabidium.desc").split("\\$")));
         }
         if (stack.getItem() == Item.getItemFromBlock(ModBlocks.ore_oil)) {
-            tooltip.add("You weren't supposed to mine that.");
-            tooltip.add("Come on, get a derrick you doofus.");
+            tooltip.addAll(Arrays.asList(I18nUtil.resolveKey("tile.ore_oil.desc").split("\\$")));
         }
     }
 

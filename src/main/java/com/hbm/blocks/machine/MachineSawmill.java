@@ -9,7 +9,6 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.tileentity.TileEntityProxyCombo;
 import com.hbm.tileentity.machine.TileEntitySawmill;
 import com.hbm.util.I18nUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
@@ -25,9 +24,11 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +44,7 @@ public class MachineSawmill extends BlockDummyable implements ILookOverlay, IToo
     }
 
     @Override
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+    public @NotNull AxisAlignedBB getBoundingBox(@NotNull IBlockState state, @NotNull IBlockAccess source, @NotNull BlockPos pos) {
         return FIXED_BOX; // that should prevent items bouncing
     }
 
@@ -96,6 +97,10 @@ public class MachineSawmill extends BlockDummyable implements ILookOverlay, IToo
 
             TileEntitySawmill sawmill = (TileEntitySawmill)world.getTileEntity(new BlockPos(corePos[0], corePos[1], corePos[2]));
 
+            if(sawmill == null) {
+                return false;
+            }
+
             if(!sawmill.hasBlade && !player.getHeldItem(hand).isEmpty() && player.getHeldItem(hand).getItem() == ModItems.sawblade) {
                 player.getHeldItem(hand).shrink(1);
                 sawmill.hasBlade = true;
@@ -133,7 +138,7 @@ public class MachineSawmill extends BlockDummyable implements ILookOverlay, IToo
     }
 
     @Override
-    public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
+    public void onBlockPlacedBy(@NotNull World world, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull EntityLivingBase placer, @NotNull ItemStack stack) {
         super.onBlockPlacedBy(world, pos, state, placer, stack);
 
         if(stack.getItemDamage() == 1) {
@@ -191,14 +196,13 @@ public class MachineSawmill extends BlockDummyable implements ILookOverlay, IToo
     }
 
     @Override
-    public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
+    public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
+        BlockPos corePos = this.findCore(world, pos);
 
-        int[] pos = this.findCore(world, x, y, z);
-
-        if(pos == null)
+        if(corePos == null)
             return;
 
-        TileEntity te = world.getTileEntity(new BlockPos(pos[0], pos[1], pos[2]));
+        TileEntity te = world.getTileEntity(corePos);
 
         if(!(te instanceof TileEntitySawmill))
             return;
@@ -217,22 +221,22 @@ public class MachineSawmill extends BlockDummyable implements ILookOverlay, IToo
         text.add("&[" + color + "&]" + ((stirling.heat * 1000 / 300) / 10D) + "%");
 
         int limiter = stirling.progress * 26 / stirling.processingTime;
-        String bar = ChatFormatting.GREEN + "[ ";
+        String bar = TextFormatting.GREEN + "[ ";
         for(int i = 0; i < 25; i++) {
             if(i == limiter) {
-                bar += ChatFormatting.RESET;
+                bar += TextFormatting.RESET;
             }
 
             bar += "▏";
         }
 
-        bar += ChatFormatting.GREEN + " ]";
+        bar += TextFormatting.GREEN + " ]";
 
         text.add(bar);
 
         for(int i = 0; i < 3; i++) {
             if(!stirling.inventory.getStackInSlot(i).isEmpty()) {
-                text.add((i == 0 ? (ChatFormatting.GREEN + "-> ") : (ChatFormatting.RED + "<- ")) + ChatFormatting.RESET + stirling.inventory.getStackInSlot(i).getDisplayName() + (stirling.inventory.getStackInSlot(i).getCount() > 1 ? " x" + stirling.inventory.getStackInSlot(i).getCount() : ""));
+                text.add((i == 0 ? (TextFormatting.GREEN + "-> ") : (TextFormatting.RED + "<- ")) + TextFormatting.RESET + stirling.inventory.getStackInSlot(i).getDisplayName() + (stirling.inventory.getStackInSlot(i).getCount() > 1 ? " x" + stirling.inventory.getStackInSlot(i).getCount() : ""));
             }
         }
 

@@ -4,11 +4,9 @@ import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluid.IFluidStandardTransceiver;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
-import com.hbm.forgefluid.FFUtils;
 import com.hbm.handler.MultiblockHandlerXR;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.interfaces.IFFtoNTMF;
 import com.hbm.inventory.OreDictManager;
 import com.hbm.inventory.RecipesCommon;
 import com.hbm.inventory.container.ContainerMachineRefinery;
@@ -42,9 +40,6 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
-import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
-import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
@@ -54,22 +49,19 @@ import java.util.List;
 import java.util.Random;
 
 @AutoRegister
-public class TileEntityMachineRefinery extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IOverpressurable, IPersistentNBT, IRepairable, IFluidStandardTransceiver, IGUIProvider, IFluidCopiable, IFFtoNTMF {
+public class TileEntityMachineRefinery extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IOverpressurable, IPersistentNBT, IRepairable, IFluidStandardTransceiver, IGUIProvider, IFluidCopiable {
 
     public static final int maxSulfur = 100;
     public static final long maxPower = 1000;
-    private static boolean converted = false;
     public long power = 0;
     public int sulfur = 0;
     public int itemOutputTimer = 0;
     public boolean isOn;
     public FluidTankNTM[] tanks;
-    public FluidTank[] tanksOld;
-    public Fluid[] tankTypes;
     public boolean hasExploded = false;
     public boolean onFire = false;
     public Explosion lastExplosion = null;
-    List<RecipesCommon.AStack> repair = new ArrayList();
+    List<RecipesCommon.AStack> repair = new ArrayList<>();
     private AudioWrapper audio;
     private int audioTime;
 
@@ -81,16 +73,6 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
         tanks[2] = new FluidTankNTM(Fluids.NAPHTHA, 24_000);
         tanks[3] = new FluidTankNTM(Fluids.LIGHTOIL, 24_000);
         tanks[4] = new FluidTankNTM(Fluids.PETROLEUM, 24_000);
-
-        tanksOld = new FluidTank[5];
-        tankTypes = new Fluid[]{Fluids.HOTOIL.getFF(), Fluids.HEAVYOIL.getFF(), Fluids.NAPHTHA.getFF(), Fluids.LIGHTOIL.getFF(), Fluids.PETROLEUM.getFF()};
-        tanksOld[0] = new FluidTank(64000);
-        tanksOld[1] = new FluidTank(24000);
-        tanksOld[2] = new FluidTank(24000);
-        tanksOld[3] = new FluidTank(24000);
-        tanksOld[4] = new FluidTank(24000);
-
-        converted = true;
     }
 
     public String getDefaultName() {
@@ -102,23 +84,15 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
         super.readFromNBT(nbt);
 
         power = nbt.getLong("power");
-        if (!converted) {
-            if (nbt.hasKey("f")) {
-                this.tankTypes[0] = FluidRegistry.getFluid(nbt.getString("f"));
-            }
-            if (nbt.hasKey("tanks"))
-                FFUtils.deserializeTankArray(nbt.getTagList("tanks", 10), tanksOld);
-        } else {
-            tanks[0].readFromNBT(nbt, "input");
-            tanks[1].readFromNBT(nbt, "heavy");
-            tanks[2].readFromNBT(nbt, "naphtha");
-            tanks[3].readFromNBT(nbt, "light");
-            tanks[4].readFromNBT(nbt, "petroleum");
-            if (nbt.hasKey("f"))
-                nbt.removeTag("f");
-            if (nbt.hasKey("tanks"))
-                nbt.removeTag("tanks");
-        }
+        tanks[0].readFromNBT(nbt, "input");
+        tanks[1].readFromNBT(nbt, "heavy");
+        tanks[2].readFromNBT(nbt, "naphtha");
+        tanks[3].readFromNBT(nbt, "light");
+        tanks[4].readFromNBT(nbt, "petroleum");
+        if (nbt.hasKey("f"))
+            nbt.removeTag("f");
+        if (nbt.hasKey("tanks"))
+            nbt.removeTag("tanks");
         sulfur = nbt.getInteger("sulfur");
         itemOutputTimer = nbt.getInteger("itemOutputTimer");
         super.readFromNBT(nbt);
@@ -128,33 +102,17 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
     public @NotNull NBTTagCompound writeToNBT(NBTTagCompound nbt) {
         nbt.setLong("power", power);
         nbt.setInteger("itemOutputTimer", itemOutputTimer);
-        if (!converted) {
-            if (tankTypes[0] != null) {
-                nbt.setString("f", tankTypes[0].getName());
-            } else {
-                if (tanksOld[0].getFluid() != null) {
-                    nbt.setString("f", tanksOld[0].getFluid().getFluid().getName());
-                }
-            }
-            nbt.setTag("tanks", FFUtils.serializeTankArray(tanksOld));
-        } else {
-            tanks[0].writeToNBT(nbt, "input");
-            tanks[1].writeToNBT(nbt, "heavy");
-            tanks[2].writeToNBT(nbt, "naphtha");
-            tanks[3].writeToNBT(nbt, "light");
-            tanks[4].writeToNBT(nbt, "petroleum");
-        }
+        tanks[0].writeToNBT(nbt, "input");
+        tanks[1].writeToNBT(nbt, "heavy");
+        tanks[2].writeToNBT(nbt, "naphtha");
+        tanks[3].writeToNBT(nbt, "light");
+        tanks[4].writeToNBT(nbt, "petroleum");
         nbt.setInteger("sulfur", sulfur);
         return super.writeToNBT(nbt);
     }
 
     @Override
     public void update() {
-        if (!converted) {
-            resizeInventory(13);
-            convertAndSetFluids(tankTypes, tanksOld, tanks);
-            converted = true;
-        }
         if (!world.isRemote) {
 
             this.isOn = false;
@@ -257,7 +215,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 
     @Override
     public void onChunkUnload() {
-
+        super.onChunkUnload();
         if (audio != null) {
             audio.stopSound();
             audio = null;
@@ -345,7 +303,9 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
                     inventory.setStackInSlot(11, out.copy());
                 } else {
                     if (out.getItem() == inventory.getStackInSlot(11).getItem() && out.getItemDamage() == inventory.getStackInSlot(11).getItemDamage() && inventory.getStackInSlot(11).getCount() + out.getCount() <= inventory.getStackInSlot(11).getMaxStackSize()) {
-                        inventory.getStackInSlot(11).setCount(out.getCount());
+                        ItemStack stack = inventory.getStackInSlot(11).copy();
+                        stack.grow(out.getCount());
+                        inventory.setStackInSlot(11, stack);
                     }
 
                 }
@@ -353,6 +313,8 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 
             this.markDirty();
         }
+
+        if(world.getTotalWorldTime() % 20 == 0) PollutionHandler.incrementPollution(world, pos, PollutionHandler.PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND * 5);
         this.power -= 5;
     }
 
@@ -387,7 +349,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
     }
 
     @Override
-    public AxisAlignedBB getRenderBoundingBox() {
+    public @NotNull AxisAlignedBB getRenderBoundingBox() {
         return TileEntity.INFINITE_EXTENT_AABB;
     }
 

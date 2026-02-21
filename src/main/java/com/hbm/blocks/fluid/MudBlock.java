@@ -19,7 +19,7 @@ import net.minecraftforge.fluids.Fluid;
 
 import java.util.Random;
 
-public class MudBlock extends BlockFluidClassic {
+public class MudBlock extends BlockFluidClassic implements IFluidFog {
 
 	public static DamageSource damageSource;
 	private final Random rand = new Random();
@@ -175,4 +175,14 @@ public class MudBlock extends BlockFluidClassic {
 	public int tickRate(World world) {
 		return 15;
 	}
+
+    @Override
+    public float getFogDensity() {
+        return 2.0F;
+    }
+
+    @Override
+    public int getFogColor() {
+        return 0x895129;
+    }
 }

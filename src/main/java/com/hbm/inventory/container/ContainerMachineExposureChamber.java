@@ -1,10 +1,11 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotBattery;
-import com.hbm.inventory.SlotTakeOnly;
-import com.hbm.items.machine.ItemMachineUpgrade;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotFiltered;
+import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineExposureChamber;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -16,16 +17,16 @@ public class ContainerMachineExposureChamber extends Container {
 
     private final TileEntityMachineExposureChamber chamber;
 
-    public ContainerMachineExposureChamber(InventoryPlayer invPlayer, TileEntityMachineExposureChamber tedf) {
-        this.chamber = tedf;
+    public ContainerMachineExposureChamber(InventoryPlayer invPlayer, TileEntityMachineExposureChamber te) {
+        this.chamber = te;
 
-        this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 8, 18));
-        this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 2, 8, 54));
-        this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 80, 36));
-        this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 4, 116, 36));
-        this.addSlotToContainer(new SlotBattery(tedf.inventory, 5, 152, 54));
-        this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 6, 44, 54));
-        this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 7, 62, 54));
+        this.addSlotToContainer(new SlotItemHandler(te.inventory, 0, 8, 18));
+        this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 2, 8, 54));
+        this.addSlotToContainer(new SlotItemHandler(te.inventory, 3, 80, 36));
+        this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 4, 116, 36));
+        this.addSlotToContainer(new SlotBattery(te.inventory, 5, 152, 54));
+        this.addSlotToContainer(new SlotUpgrade(te.inventory, 6, 44, 54));
+        this.addSlotToContainer(new SlotUpgrade(te.inventory, 7, 62, 54));
 
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; j++) {
@@ -38,44 +39,16 @@ public class ContainerMachineExposureChamber extends Container {
         }
     }
 
+    private static boolean isNormal(ItemStack stack) {
+        return !Library.isBattery(stack) && !Library.isMachineUpgrade(stack);
+    }
+
     @Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2) {
-        ItemStack var3 = ItemStack.EMPTY;
-        Slot var4 = this.inventorySlots.get(par2);
-
-        if (var4 != null && var4.getHasStack()) {
-            ItemStack var5 = var4.getStack();
-            var3 = var5.copy();
-
-            if (par2 <= 6) {
-                if (!this.mergeItemStack(var5, 7, this.inventorySlots.size(), true)) {
-                    return ItemStack.EMPTY;
-                }
-            } else {
-
-                if (var3.getItem() instanceof ItemMachineUpgrade) {
-                    if (!this.mergeItemStack(var5, 5, 7, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                } else if (Library.isItemBattery(var3)) {
-                    if (!this.mergeItemStack(var5, 4, 5, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                } else {
-                    if (!this.mergeItemStack(var5, 0, 3, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                }
-            }
-
-            if (var5.getCount() == 0) {
-                var4.putStack(ItemStack.EMPTY);
-            } else {
-                var4.onSlotChanged();
-            }
-        }
-
-        return var3;
+    public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+        return InventoryUtil.transferStack(this.inventorySlots, index, 7,
+                ContainerMachineExposureChamber::isNormal, 4,
+                Library::isBattery, 5,
+                Library::isMachineUpgrade, 7);
     }
 
     @Override

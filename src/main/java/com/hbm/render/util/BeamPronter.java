@@ -1,10 +1,11 @@
 package com.hbm.render.util;
 
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
 
 import java.util.Random;
@@ -13,19 +14,19 @@ public class BeamPronter {
 
     private static boolean depthMask = false;
 
-    public static void prontBeamwithDepth(Vec3 skeleton, EnumWaveType wave, EnumBeamType beam, int outerColor, int innerColor, int start, int segments, float size, int layers, float thickness) {
+    public static void prontBeamwithDepth(Vec3d skeleton, EnumWaveType wave, EnumBeamType beam, int outerColor, int innerColor, int start, int segments, float size, int layers, float thickness) {
         depthMask = true;
         prontBeam(skeleton, wave, beam, outerColor, innerColor, start, segments, size, layers, thickness);
         depthMask = false;
     }
 
-    public static void prontBeam(Vec3 skeleton, EnumWaveType wave, EnumBeamType beam, int outerColor, int innerColor, int start, int segments, float size, int layers, float thickness) {
+    public static void prontBeam(Vec3d skeleton, EnumWaveType wave, EnumBeamType beam, int outerColor, int innerColor, int start, int segments, float size, int layers, float thickness) {
         GlStateManager.pushMatrix();
         GlStateManager.depthMask(depthMask);
 
-        float sYaw = (float) (Math.atan2(skeleton.xCoord, skeleton.zCoord) * 180F / Math.PI);
-        float sqrt = MathHelper.sqrt(skeleton.xCoord * skeleton.xCoord + skeleton.zCoord * skeleton.zCoord);
-        float sPitch = (float) (Math.atan2(skeleton.yCoord, sqrt) * 180F / Math.PI);
+        float sYaw = (float) (Math.atan2(skeleton.x, skeleton.z) * 180F / Math.PI);
+        float sqrt = MathHelper.sqrt(skeleton.x * skeleton.x + skeleton.z * skeleton.z);
+        float sPitch = (float) (Math.atan2(skeleton.y, sqrt) * 180F / Math.PI);
 
         GlStateManager.rotate(180, 0, 1F, 0);
         GlStateManager.rotate(sYaw, 0, 1F, 0);
@@ -44,7 +45,7 @@ public class BeamPronter {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
 
-        Vec3 unit = Vec3.createVectorHelper(0, 1, 0);
+        Vec3NT unit = new Vec3NT(0, 1, 0);
         Random rand = new Random(start);
         double length = skeleton.length();
         double segLength = length / segments;
@@ -53,19 +54,19 @@ public class BeamPronter {
         double lastZ = 0;
 
         for (int i = 0; i <= segments; i++) {
-            Vec3 spinner = Vec3.createVectorHelper(size, 0, 0);
+            Vec3NT spinner = new Vec3NT(size, 0, 0);
 
             if (wave == EnumWaveType.SPIRAL) {
-                spinner.rotateAroundY((float) Math.PI * (float) start / 180F);
-                spinner.rotateAroundY((float) Math.PI * 45F / 180F * i);
+                spinner.rotateAroundYRad((float) Math.PI * (float) start / 180F);
+                spinner.rotateAroundYRad((float) Math.PI * 45F / 180F * i);
             } else if (wave == EnumWaveType.RANDOM) {
-                spinner.rotateAroundY((float) Math.PI * 2 * rand.nextFloat());
-                spinner.rotateAroundY((float) Math.PI * 2 * rand.nextFloat());
+                spinner.rotateAroundYRad((float) Math.PI * 2 * rand.nextFloat());
+                spinner.rotateAroundYRad((float) Math.PI * 2 * rand.nextFloat());
             }
 
-            double pX = unit.xCoord * segLength * i + spinner.xCoord;
-            double pY = unit.yCoord * segLength * i + spinner.yCoord;
-            double pZ = unit.zCoord * segLength * i + spinner.zCoord;
+            double pX = unit.x * segLength * i + spinner.x;
+            double pY = unit.y * segLength * i + spinner.y;
+            double pZ = unit.z * segLength * i + spinner.z;
 
             if (beam == EnumBeamType.LINE && i > 0) {
                 buffer.begin(GL11.GL_LINE_STRIP, DefaultVertexFormats.POSITION_COLOR);
@@ -154,11 +155,11 @@ public class BeamPronter {
         buffer.pos(x, y, z).color(r, g, b, 255).endVertex();
     }
 
-    public static enum EnumWaveType {
+    public enum EnumWaveType {
         RANDOM, SPIRAL
     }
 
-    public static enum EnumBeamType {
+    public enum EnumBeamType {
         SOLID, LINE
     }
 

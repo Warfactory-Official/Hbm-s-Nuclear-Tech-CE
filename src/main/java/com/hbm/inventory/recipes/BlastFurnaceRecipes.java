@@ -6,7 +6,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
-import com.hbm.blocks.ModBlocks;
 import com.hbm.config.GeneralConfig;
 import com.hbm.handler.imc.IMCBlastFurnace;
 import com.hbm.inventory.RecipesCommon;
@@ -33,43 +32,6 @@ public class BlastFurnaceRecipes extends SerializableRecipe {
     public static final ArrayList<RecipesCommon.ComparableStack> hiddenRecipes = new ArrayList<>();
     public static final LinkedHashMap<RecipesCommon.AStack, Integer> diFuels = new LinkedHashMap<>();
 
-    @Override
-    public void registerDefaults() {
-        registerFuels();
-        /* STEEL */
-        addRecipe(IRON, COAL, new ItemStack(ModItems.ingot_steel, 1));
-        addRecipe(IRON, ANY_COKE, new ItemStack(ModItems.ingot_steel, 1));
-        addRecipe(IRON.ore(), COAL, new ItemStack(ModItems.ingot_steel, 2));
-        addRecipe(IRON.ore(), ANY_COKE, new ItemStack(ModItems.ingot_steel, 3));
-        addRecipe(IRON.ore(), new RecipesCommon.ComparableStack(ModItems.powder_flux), new ItemStack(ModItems.ingot_steel, 3));
-
-        addRecipe(CU, REDSTONE, new ItemStack(ModItems.ingot_red_copper, 2));
-        addRecipe(STEEL, MINGRADE, new ItemStack(ModItems.ingot_advanced_alloy, 2));
-        addRecipe(W, COAL, new ItemStack(ModItems.neutron_reflector, 2));
-        addRecipe(W, ANY_COKE, new ItemStack(ModItems.neutron_reflector, 2));
-        addRecipe(new RecipesCommon.ComparableStack(ModItems.canister_full, 1, Fluids.GASOLINE.getID()), "slimeball", new ItemStack(ModItems.canister_napalm));
-        addRecipe(W, SA326.nugget(), new ItemStack(ModItems.ingot_magnetized_tungsten));
-        addRecipe(STEEL, TC99.nugget(), new ItemStack(ModItems.ingot_tcalloy));
-        addRecipe(GOLD.plate(), ModItems.plate_mixed, new ItemStack(ModItems.plate_paa, 2));
-        addRecipe(BIGMT, ModItems.powder_meteorite, new ItemStack(ModItems.ingot_starmetal, 2));
-        addRecipe(CO, ModBlocks.block_meteor, new ItemStack(ModItems.ingot_meteorite));
-        addRecipe(ModItems.meteorite_sword_hardened, CO, new ItemStack(ModItems.meteorite_sword_alloyed));
-        addRecipe(ModBlocks.block_meteor, CO, new ItemStack(ModItems.ingot_meteorite));
-
-        if(GeneralConfig.enableLBSM && GeneralConfig.enableLBSMSimpleChemsitry) {
-            addRecipe(ModItems.canister_empty, COAL, new ItemStack(ModItems.canister_full, 1, Fluids.OIL.getID()));
-        }
-
-        if (!IMCBlastFurnace.buffer.isEmpty()) {
-            blastFurnaceRecipes.addAll(IMCBlastFurnace.buffer);
-            MainRegistry.logger.info("Fetched {} IMC blast furnace recipes!", IMCBlastFurnace.buffer.size());
-            IMCBlastFurnace.buffer.clear();
-        }
-
-        hiddenRecipes.add(new RecipesCommon.ComparableStack(ModItems.meteorite_sword_alloyed));
-    }
-
-
     private static void registerFuels() {
         addFuel(new RecipesCommon.OreDictStack(COAL.gem()), 200);
         addFuel(new RecipesCommon.OreDictStack(COAL.dust()), 220);
@@ -93,6 +55,7 @@ public class BlastFurnaceRecipes extends SerializableRecipe {
         addFuel(new RecipesCommon.ComparableStack(ModItems.solid_fuel_presto), 800);
         addFuel(new RecipesCommon.ComparableStack(ModItems.solid_fuel_presto_triplet), 2400);
     }
+
     public static void addFuel(RecipesCommon.AStack fuel, int power) {
         diFuels.put(fuel, power);
     }
@@ -289,6 +252,55 @@ public class BlastFurnaceRecipes extends SerializableRecipe {
         return ImmutableList.copyOf(subRecipes);
     }
 
+    private static void writeDictFrame(DictFrame frame, JsonWriter writer) throws IOException {
+        writer.beginArray();
+        writer.setIndent("");
+        writer.value("dictframe");
+        writer.value(frame.mats[0]);
+        writer.endArray();
+        writer.setIndent("  ");
+    }
+
+    private static DictFrame readDictFrame(JsonArray array) {
+        return new DictFrame(array.get(1).getAsString());
+    }
+
+    @Override
+    public void registerDefaults() {
+        registerFuels();
+        /* STEEL */
+        addRecipe(IRON, COAL, new ItemStack(ModItems.ingot_steel, 1));
+        addRecipe(IRON, ANY_COKE, new ItemStack(ModItems.ingot_steel, 1));
+        addRecipe(IRON.ore(), COAL, new ItemStack(ModItems.ingot_steel, 2));
+        addRecipe(IRON.ore(), ANY_COKE, new ItemStack(ModItems.ingot_steel, 3));
+        addRecipe(IRON.ore(), new RecipesCommon.ComparableStack(ModItems.powder_flux), new ItemStack(ModItems.ingot_steel, 3));
+
+        addRecipe(CU, REDSTONE, new ItemStack(ModItems.ingot_red_copper, 2));
+        addRecipe(STEEL, MINGRADE, new ItemStack(ModItems.ingot_advanced_alloy, 2));
+        addRecipe(W, COAL, new ItemStack(ModItems.neutron_reflector, 2));
+        addRecipe(W, ANY_COKE, new ItemStack(ModItems.neutron_reflector, 2));
+        addRecipe(new RecipesCommon.ComparableStack(ModItems.canister_full, 1, Fluids.GASOLINE.getID()), "slimeball", new ItemStack(ModItems.canister_napalm));
+        addRecipe(W, SA326.nugget(), new ItemStack(ModItems.ingot_magnetized_tungsten));
+        addRecipe(STEEL, TC99.nugget(), new ItemStack(ModItems.ingot_tcalloy));
+        addRecipe(GOLD.plate(), ModItems.plate_mixed, new ItemStack(ModItems.plate_paa, 2));
+        addRecipe(BIGMT, ModItems.ingot_meteorite, new ItemStack(ModItems.ingot_starmetal, 2));
+        addRecipe(CO, ModItems.powder_meteorite, new ItemStack(ModItems.ingot_meteorite));
+        addRecipe(ModItems.meteorite_sword_hardened, CO, new ItemStack(ModItems.meteorite_sword_alloyed));
+
+
+        if (GeneralConfig.enableLBSM && GeneralConfig.enableLBSMSimpleChemsitry) {
+            addRecipe(ModItems.canister_empty, COAL, new ItemStack(ModItems.canister_full, 1, Fluids.OIL.getID()));
+        }
+
+        if (!IMCBlastFurnace.buffer.isEmpty()) {
+            blastFurnaceRecipes.addAll(IMCBlastFurnace.buffer);
+            MainRegistry.logger.info("Fetched {} IMC blast furnace recipes!", IMCBlastFurnace.buffer.size());
+            IMCBlastFurnace.buffer.clear();
+        }
+
+        hiddenRecipes.add(new RecipesCommon.ComparableStack(ModItems.meteorite_sword_alloyed));
+    }
+
     @Override
     public String getFileName() {
         return "hbmBlastFurnace.json";
@@ -326,12 +338,14 @@ public class BlastFurnaceRecipes extends SerializableRecipe {
 
             JsonArray array1 = rec.get("input1").getAsJsonArray();
             if (array1.get(0).getAsString().equals("item")) input1 = readAStack(array1);
-            if (array1.get(0).getAsString().equals("dict")) input1 = ((RecipesCommon.OreDictStack) readAStack(array1)).name;
+            if (array1.get(0).getAsString().equals("dict"))
+                input1 = ((RecipesCommon.OreDictStack) readAStack(array1)).name;
             if (array1.get(0).getAsString().equals("dictframe")) input1 = readDictFrame(array1);
 
             JsonArray array2 = rec.get("input2").getAsJsonArray();
             if (array2.get(0).getAsString().equals("item")) input2 = readAStack(array2);
-            if (array2.get(0).getAsString().equals("dict")) input2 = ((RecipesCommon.OreDictStack) readAStack(array2)).name;
+            if (array2.get(0).getAsString().equals("dict"))
+                input2 = ((RecipesCommon.OreDictStack) readAStack(array2)).name;
             if (array2.get(0).getAsString().equals("dictframe")) input2 = readDictFrame(array2);
 
             if (input1 != null && input2 != null) {
@@ -357,12 +371,14 @@ public class BlastFurnaceRecipes extends SerializableRecipe {
             writeItemStack(rec.getZ(), writer);
 
             writer.name("input1");
-            if (rec.getX() instanceof RecipesCommon.ComparableStack) writeAStack((RecipesCommon.ComparableStack) rec.getX(), writer);
+            if (rec.getX() instanceof RecipesCommon.ComparableStack)
+                writeAStack((RecipesCommon.ComparableStack) rec.getX(), writer);
             if (rec.getX() instanceof String) writeAStack(new RecipesCommon.OreDictStack((String) rec.getX()), writer);
             if (rec.getX() instanceof DictFrame) writeDictFrame((DictFrame) rec.getX(), writer);
 
             writer.name("input2");
-            if (rec.getY() instanceof RecipesCommon.ComparableStack) writeAStack((RecipesCommon.ComparableStack) rec.getY(), writer);
+            if (rec.getY() instanceof RecipesCommon.ComparableStack)
+                writeAStack((RecipesCommon.ComparableStack) rec.getY(), writer);
             if (rec.getY() instanceof String) writeAStack(new RecipesCommon.OreDictStack((String) rec.getY()), writer);
             if (rec.getY() instanceof DictFrame) writeDictFrame((DictFrame) rec.getY(), writer);
 
@@ -370,19 +386,6 @@ public class BlastFurnaceRecipes extends SerializableRecipe {
                 writer.name("hidden").value(true);
             }
         }
-    }
-
-    private static void writeDictFrame(DictFrame frame, JsonWriter writer) throws IOException {
-        writer.beginArray();
-        writer.setIndent("");
-        writer.value("dictframe");
-        writer.value(frame.mats[0]);
-        writer.endArray();
-        writer.setIndent("  ");
-    }
-
-    private static DictFrame readDictFrame(JsonArray array) {
-        return new DictFrame(array.get(1).getAsString());
     }
 
     @Override

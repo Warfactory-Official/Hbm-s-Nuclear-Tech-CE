@@ -1,7 +1,7 @@
 package com.hbm.render.tileentity;
 
+import com.hbm.Tags;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.model.ModelSatelliteReceiver;
 import com.hbm.tileentity.deco.TileEntityDecoPoleSatelliteReceiver;
 import net.minecraft.client.renderer.GlStateManager;
@@ -10,7 +10,7 @@ import net.minecraft.util.ResourceLocation;
 @AutoRegister
 public class RenderPoleSatelliteReceiver extends TileEntitySpecialRenderer<TileEntityDecoPoleSatelliteReceiver> {
 
-	private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":" + "textures/models/deco/PoleSatelliteReceiver.png");
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":" + "textures/models/deco/PoleSatelliteReceiver.png");
 	
 	private ModelSatelliteReceiver model;
 	

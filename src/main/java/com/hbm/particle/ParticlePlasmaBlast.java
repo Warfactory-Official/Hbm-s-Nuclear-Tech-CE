@@ -1,6 +1,6 @@
 package com.hbm.particle;
 
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.*;
@@ -14,7 +14,7 @@ import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManage
 
 public class ParticlePlasmaBlast extends Particle {
 
-	private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/particle/shockwave.png");
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/particle/shockwave.png");
 	
 	private float rotationPitch;
 	private float rotationYaw;

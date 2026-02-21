@@ -2,10 +2,10 @@ package com.hbm.items.machine;
 
 import com.hbm.items.ItemEnumMulti;
 
-public class ItemBreedingRod extends ItemEnumMulti {
+public class ItemBreedingRod extends ItemEnumMulti<ItemBreedingRod.BreedingRodType> {
 
     public ItemBreedingRod(String registryName) {
-        super( registryName, BreedingRodType.class, true, true);
+        super( registryName, BreedingRodType.VALUES, true, true);
     }
 
     public enum BreedingRodType {
@@ -28,6 +28,8 @@ public class ItemBreedingRod extends ItemEnumMulti {
         URANIUM,
 
         RA226,
-        AC227
+        AC227;
+
+        public static final BreedingRodType[] VALUES = values();
     }
 }

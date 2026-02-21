@@ -26,18 +26,18 @@ public class ItemWasteLong extends ItemBase {
 	@SideOnly(Side.CLIENT)
 	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items){
 		if(tab == CreativeTabs.SEARCH || tab == this.getCreativeTab())
-			for(int i = 0; i < WasteClass.values().length; ++i) {
+			for(int i = 0; i < WasteClass.VALUES.length; ++i) {
 				items.add(new ItemStack(this, 1, i));
 			}
 	}
 	
 	@Override
 	public void addInformation(ItemStack stack, World world, List<String> list, ITooltipFlag flagIn){
-		list.add(TextFormatting.ITALIC + WasteClass.values()[rectify(stack.getItemDamage())].name);
+		list.add(TextFormatting.ITALIC + WasteClass.VALUES[rectify(stack.getItemDamage())].name);
 	}
 	
 	public static int rectify(int meta) {
-		return Math.abs(meta) % WasteClass.values().length;
+		return Math.abs(meta) % WasteClass.VALUES.length;
 	}
 	
 	public enum WasteClass {
@@ -48,6 +48,8 @@ public class ItemWasteLong extends ItemBase {
 		URANIUM235("Uranium-235", 0, 0),	//plutonium 239 and 240, neptunium 237 / -
 		NEPTUNIUM("Neptunium-237", 0, 100),	//plutonium 239 and uranium 238 / -
 		SCHRABIDIUM("Schrabidium-326", 0, 250); //tantalum, neodymium, solinium, euphemium, ghiorsium-336 / -
+
+        public static final WasteClass[] VALUES = values();
 		
 		public String name;
 		public int liquid;

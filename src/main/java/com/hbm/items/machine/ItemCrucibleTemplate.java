@@ -1,13 +1,12 @@
 package com.hbm.items.machine;
 
+import com.hbm.Tags;
 import com.hbm.interfaces.IHasCustomModel;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.recipes.CrucibleRecipes;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
 import com.hbm.util.I18nUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
@@ -15,6 +14,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -25,7 +25,7 @@ import java.util.List;
 public class ItemCrucibleTemplate extends Item implements IHasCustomModel {
 
     public static final ModelResourceLocation location = new ModelResourceLocation(
-            RefStrings.MODID + ":crucible_template", "inventory");
+            Tags.MODID + ":crucible_template", "inventory");
 
     public ItemCrucibleTemplate(String s) {
         this.setTranslationKey(s);
@@ -75,12 +75,12 @@ public class ItemCrucibleTemplate extends Item implements IHasCustomModel {
             return;
         }
 
-        list.add(ChatFormatting.BOLD + I18nUtil.resolveKey("info.template_out_p"));
+        list.add(TextFormatting.BOLD + I18nUtil.resolveKey("info.template_out_p"));
         for(Mats.MaterialStack out : recipe.output) {
             list.add(I18nUtil.resolveKey(out.material.getTranslationKey()) + ": " + Mats.formatAmount(out.amount, Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)));
         }
 
-        list.add(ChatFormatting.BOLD + I18nUtil.resolveKey("info.template_in_p"));
+        list.add(TextFormatting.BOLD + I18nUtil.resolveKey("info.template_in_p"));
 
         for(Mats.MaterialStack in : recipe.input) {
             list.add(I18nUtil.resolveKey(in.material.getTranslationKey()) + ": " + Mats.formatAmount(in.amount, Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)));

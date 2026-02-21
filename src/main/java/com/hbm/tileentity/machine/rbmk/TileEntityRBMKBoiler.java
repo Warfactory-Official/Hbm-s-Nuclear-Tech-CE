@@ -5,6 +5,7 @@ import com.hbm.api.fluidmk2.FluidNode;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.capability.NTMFluidHandlerWrapper;
 import com.hbm.entity.projectile.EntityRBMKDebris.DebrisType;
+import com.hbm.handler.CompatHandler;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerRBMKBoiler;
@@ -19,9 +20,13 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.tileentity.IGUIProvider;
-import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole.ColumnType;
+import com.hbm.tileentity.machine.rbmk.RBMKColumn.ColumnType;
 import com.hbm.uninos.UniNodespace;
 import io.netty.buffer.ByteBuf;
+import li.cil.oc.api.machine.Arguments;
+import li.cil.oc.api.machine.Callback;
+import li.cil.oc.api.machine.Context;
+import li.cil.oc.api.network.SimpleComponent;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -30,15 +35,16 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.Map;
-
+@Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 @AutoRegister
-public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements IControlReceiver, IFluidStandardTransceiver, IGUIProvider {
+public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements IControlReceiver, IFluidStandardTransceiver, SimpleComponent, IGUIProvider {
 
     public FluidTankNTM feed;
     public FluidTankNTM steam;
@@ -224,9 +230,12 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
 
         if (RBMKDials.getOverpressure(world)) {
             for (DirPos pos : getOutputPos()) {
-                FluidNode node = (FluidNode) UniNodespace.getNode(world, pos.getPos(), steam.getTankType().getNetworkProvider());
-                if (node.net != null) {
-                    this.pipes.add(node.net);
+                //mlbv: this is meant to retrieve all the ducts that are present and connected to this boiler to
+                //and then add to TileEntityRBMKBase#pipes. The pipes field is a temporary collector for all the
+                //ducts connected to boilers within a single meltdown event. Technically it should be a ThreadLocal..
+                FluidNode node = UniNodespace.getNode(world, pos.getPos(), steam.getTankType().getNetworkProvider());
+                if (node != null && node.hasValidNet()) {
+                    pipes.add(node.net);
                 }
             }
         }
@@ -240,13 +249,13 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
     }
 
     @Override
-    public NBTTagCompound getNBTForConsole() {
-        NBTTagCompound data = new NBTTagCompound();
-        data.setInteger("water", this.feed.getFill());
-        data.setInteger("maxWater", this.feed.getMaxFill());
-        data.setInteger("steam", this.steam.getFill());
-        data.setInteger("maxSteam", this.steam.getMaxFill());
-        data.setShort("type", (short) this.steam.getTankType().getID());
+    public RBMKColumn getConsoleData() {
+        RBMKColumn.BoilerColumn data = (RBMKColumn.BoilerColumn) super.getConsoleData();
+        data.water = this.feed.getFill();
+        data.maxWater = this.feed.getMaxFill();
+        data.steam = this.steam.getFill();
+        data.maxSteam = this.steam.getMaxFill();
+        data.steamType = (short) this.steam.getTankType().getID();
         return data;
     }
 
@@ -293,6 +302,68 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
             );
         }
         return super.getCapability(capability, facing);
+    }
+
+    // do some opencomputer stuff
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public String getComponentName() {
+        return "rbmk_boiler";
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getHeat(Context context, Arguments args) {
+        return new Object[] {heat};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getSteam(Context context, Arguments args) {
+        return new Object[] {steam.getFill()};
+    }
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getSteamMax(Context context, Arguments args) {
+        return new Object[] {steam.getMaxFill()};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getWater(Context context, Arguments args) {
+        return new Object[] {feed.getFill()};
+    }
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getWaterMax(Context context, Arguments args) {
+        return new Object[] {feed.getMaxFill()};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getCoordinates(Context context, Arguments args) {
+        return new Object[] {pos.getX(), pos.getY(), pos.getZ()};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getInfo(Context context, Arguments args) {
+        int type_1 = (int) CompatHandler.steamTypeToInt(steam.getTankType())[0];
+        return new Object[] {heat, steam.getFill(), steam.getMaxFill(), feed.getFill(), feed.getMaxFill(), type_1, pos.getX(), pos.getY(), pos.getZ()};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getSteamType(Context context, Arguments args) {
+        return CompatHandler.steamTypeToInt(steam.getTankType());
+    }
+
+    @Callback(direct = true, limit = 4)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] setSteamType(Context context, Arguments args) {
+        int type = args.checkInteger(0);
+        steam.setTankType(CompatHandler.intToSteamType(type));
+        return new Object[] {true};
     }
 
     @Override

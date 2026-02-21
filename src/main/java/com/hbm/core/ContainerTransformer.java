@@ -1,6 +1,5 @@
 package com.hbm.core;
 
-import net.minecraft.launchwrapper.IClassTransformer;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.*;
@@ -9,8 +8,9 @@ import static com.hbm.core.HbmCorePlugin.coreLogger;
 import static com.hbm.core.HbmCorePlugin.fail;
 import static org.objectweb.asm.Opcodes.*;
 
-public class ContainerTransformer implements IClassTransformer {
+final class ContainerTransformer {
     private static final ObfSafeName DETECT_AND_SEND_CHANGES = new ObfSafeName("detectAndSendChanges", "func_75142_b");
+    static final String TARGET = "net.minecraft.inventory.Container";
 
     /**
      * Made safe against Spigot's patch.
@@ -74,11 +74,7 @@ public class ContainerTransformer implements IClassTransformer {
         }
     }
 
-    @Override
-    public byte[] transform(String name, String transformedName, byte[] basicClass) {
-        if (!transformedName.equals("net.minecraft.inventory.Container")) {
-            return basicClass;
-        }
+    static byte[] transform(String name, String transformedName, byte[] basicClass) {
         coreLogger.info("Patching class {} / {}", transformedName, name);
 
         try {

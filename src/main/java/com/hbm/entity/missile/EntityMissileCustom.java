@@ -7,8 +7,10 @@ import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.logic.EntityBalefire;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.entity.logic.IChunkLoader;
+import com.hbm.entity.projectile.EntityBulletBaseNT;
 import com.hbm.explosion.ExplosionChaos;
 import com.hbm.explosion.ExplosionLarge;
+import com.hbm.handler.BulletConfigSyncingUtil;
 import com.hbm.handler.MissileStruct;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.ModItems;
@@ -17,6 +19,9 @@ import com.hbm.items.weapon.ItemMissile.FuelType;
 import com.hbm.items.weapon.ItemMissile.PartSize;
 import com.hbm.items.weapon.ItemMissile.WarheadType;
 import com.hbm.main.MainRegistry;
+import com.hbm.util.MutableVec3d;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -24,11 +29,13 @@ import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @AutoRegister(name = "entity_custom_missile", trackingRange = 1000)
 public class EntityMissileCustom extends EntityMissileBaseNT implements IChunkLoader {
 
@@ -37,8 +44,13 @@ public class EntityMissileCustom extends EntityMissileBaseNT implements IChunkLo
 	public static final DataParameter<Integer> FUSELAGE = EntityDataManager.createKey(EntityMissileCustom.class, DataSerializers.VARINT);
 	public static final DataParameter<Integer> FINS = EntityDataManager.createKey(EntityMissileCustom.class, DataSerializers.VARINT);
 	public static final DataParameter<Integer> THRUSTER = EntityDataManager.createKey(EntityMissileCustom.class, DataSerializers.VARINT);
+
 	public float fuel;
 	public float consumption;
+
+	// MIRV dispersion, 1.12.2 exclusive thanks to seven
+	private static final double[] MIRV_OFF_X = { 0.0,  0.45, -0.45,  0.15, -0.15,  0.15, -0.15 };
+	private static final double[] MIRV_OFF_Z = { 0.0,  0.00,  0.00,  0.30, -0.30, -0.30,  0.30 };
 
 	public EntityMissileCustom(World world) {
 		super(world);
@@ -68,10 +80,10 @@ public class EntityMissileCustom extends EntityMissileBaseNT implements IChunkLo
 			this.dataManager.set(FINS, Integer.valueOf(0));
 		}
 
-		ItemMissile fuselage = (ItemMissile) template.fuselage;
-		ItemMissile thruster = (ItemMissile) template.thruster;
+		ItemMissile fuselage = template.fuselage;
+		ItemMissile thruster = template.thruster;
 
-		this.fuel = (float) fuselage.getTankSize();
+		this.fuel = fuselage.getTankSize();
 		this.consumption = (Float) thruster.attributes[1];
 
 		this.setSize(1.5F, 1.5F);
@@ -93,6 +105,7 @@ public class EntityMissileCustom extends EntityMissileBaseNT implements IChunkLo
 		WarheadType type = (WarheadType) part.attributes[0];
 		if(type != null && type.updateCustom != null) {
 			type.updateCustom.accept(this);
+			if (!world.isRemote && this.isDead) return;
 		}
 
 		if(!world.isRemote) {
@@ -141,7 +154,6 @@ public class EntityMissileCustom extends EntityMissileBaseNT implements IChunkLo
 
 	@Override
 	protected void spawnContrail() {
-
 		Vec3d v = new Vec3d(motionX, motionY, motionZ).normalize();
 		String smoke = "";
 		ItemMissile part = (ItemMissile) Item.getItemById(this.dataManager.get(FUSELAGE));
@@ -153,15 +165,23 @@ public class EntityMissileCustom extends EntityMissileBaseNT implements IChunkLo
 			case KEROSENE: smoke = "exKerosene"; break;
 			case SOLID: smoke = "exSolid"; break;
 			case XENON: break;
-			case HYDRAZINE:
 			case METHALOX: smoke = "exKerosene"; break;
 		}
 
-		if(!smoke.isEmpty()) for(int i = 0; i < velocity; i++) MainRegistry.proxy.spawnParticle(posX - v.x * i, posY - v.y * i, posZ - v.z * i, smoke, null);
+		if(!smoke.isEmpty()) {
+			for (int i = 0; i < velocity; i++) {
+				NBTTagCompound data = new NBTTagCompound();
+				data.setDouble("posX", posX - v.x * i);
+				data.setDouble("posY", posY - v.y * i);
+				data.setDouble("posZ", posZ - v.z * i);
+				data.setString("type", smoke);
+				MainRegistry.proxy.effectNT(data);
+			}
+		}
 	}
 
 	@Override
-	public void onImpact() { //TODO: demolish this steaming pile of shit
+	public void onMissileImpact(RayTraceResult mop) { //TODO: demolish this steaming pile of shit
 
 		ItemMissile part = (ItemMissile) Item.getItemById(this.dataManager.get(WARHEAD));
 
@@ -189,6 +209,7 @@ public class EntityMissileCustom extends EntityMissileBaseNT implements IChunkLo
 				break;
 			case NUCLEAR:
 			case TX:
+			case MIRV:
 				world.spawnEntity(EntityNukeExplosionMK5.statFac(world, (int) strength, posX, posY, posZ).setDetonator(thrower));
 				EntityNukeTorex.statFac(world, posX, posY, posZ, strength);
 				break;
@@ -208,14 +229,15 @@ public class EntityMissileCustom extends EntityMissileBaseNT implements IChunkLo
 				break;
 			case TAINT:
 				int r = (int) strength;
+				BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 				for(int i = 0; i < r * 10; i++) {
 					int a = rand.nextInt(r) + (int) posX - (r / 2 - 1);
 					int b = rand.nextInt(r) + (int) posY - (r / 2 - 1);
 					int c = rand.nextInt(r) + (int) posZ - (r / 2 - 1);
-					BlockPos pos = new BlockPos(a, b, c);
-					if(world.getBlockState(pos).getMaterial().isReplaceable() && BlockTaint.hasPosNeightbour(world, pos)) {
-						world.setBlockState(pos, ModBlocks.taint.getStateFromMeta(rand.nextInt(3) + 4), 2);
-					}
+					pos.setPos(a, b, c);
+					IBlockState state = world.getBlockState(pos);
+					if(state.isNormalCube() && !state.getBlock().isAir(state, world, pos))
+						world.setBlockState(pos, ModBlocks.taint.getDefaultState().withProperty(BlockTaint.TAINTAGE, rand.nextInt(3) + 4), 2);
 				}
 				break;
 			case CLOUD:
@@ -224,29 +246,47 @@ public class EntityMissileCustom extends EntityMissileBaseNT implements IChunkLo
 				break;
 			case TURBINE:
 				ExplosionLarge.explode(world, thrower, posX, posY, posZ, 10, true, false, true);
-				/*
 				int count = (int) strength;
-				Vec3d vec = new Vec3d(0.5, 0, 0);
+				MutableVec3d vec = new MutableVec3d(0.5, 0, 0);
 
 				for(int i = 0; i < count; i++) {
 					EntityBulletBaseNT blade = new EntityBulletBaseNT(world, BulletConfigSyncingUtil.TURBINE);
 					blade.setPositionAndRotation(this.posX - this.motionX, this.posY - this.motionY + rand.nextGaussian(), this.posZ - this.motionZ, 0, 0);
-					blade.motionX = vec.xCoord;
-					blade.motionZ = vec.zCoord;
-					world.spawnEntityInWorld(blade);
-					vec.rotateAroundY((float) (Math.PI * 2F / (float) count));
-				}*/ // TODO: can do this shit only after ammo/gun rework
-
+					blade.motionX = vec.x;
+					blade.motionZ = vec.z;
+					world.spawnEntity(blade);
+					vec.rotateYawSelf((float) (Math.PI * 2F / (float) count));
+				}
 				break;
 			default:
 				break;
+		}
+	}
 
+	public void mirvSplit() {
+		if (world.isRemote) return;
+		if (isDead) return;
+		if (motionY < -1D) {
+			EntityLivingBase t = this.thrower;
+			for (int i = 0; i < 7; i++) {
+				EntityMIRV child = new EntityMIRV(world);
+				child.setPosition(posX, posY, posZ);
+
+				child.motionX = this.motionX + MIRV_OFF_X[i];
+				child.motionY = this.motionY;
+				child.motionZ = this.motionZ + MIRV_OFF_Z[i];
+
+				if (t != null) {
+					child.setThrower(t);
+				}
+				world.spawnEntity(child);
+			}
+			setDead();
 		}
 	}
 
 	@Override
 	public String getTranslationKey() {
-
 		ItemMissile part = (ItemMissile) Item.getItemById(this.dataManager.get(FUSELAGE));
 		PartSize top = part.top;
 		PartSize bottom = part.bottom;
@@ -262,7 +302,6 @@ public class EntityMissileCustom extends EntityMissileBaseNT implements IChunkLo
 
 	@Override
 	public int getBlipLevel() {
-
 		ItemMissile part = (ItemMissile) Item.getItemById(this.dataManager.get(FUSELAGE));
 		PartSize top = part.top;
 		PartSize bottom = part.bottom;
@@ -283,5 +322,4 @@ public class EntityMissileCustom extends EntityMissileBaseNT implements IChunkLo
 	public ItemStack getMissileItemForInfo() {
 		return new ItemStack(ModItems.missile_custom);
 	}
-
 }

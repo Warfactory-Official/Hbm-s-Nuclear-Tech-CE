@@ -1,6 +1,6 @@
 package com.hbm.items.special;
 
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.util.ITooltipFlag;
@@ -35,7 +35,7 @@ public class ItemHotDusted extends ItemHot {
 	@SideOnly(Side.CLIENT)
 	public void registerModel() {
 		super.registerModel();
-		ModelResourceLocation mrl = new ModelResourceLocation(new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseTexturePath), "inventory");
+		ModelResourceLocation mrl = new ModelResourceLocation(new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath), "inventory");
 		for (int meta = 0; meta <= 9; meta++) {
 			ModelLoader.setCustomModelResourceLocation(this, meta, mrl);
 		}

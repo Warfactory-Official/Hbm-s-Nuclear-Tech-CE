@@ -22,7 +22,6 @@ import org.jetbrains.annotations.NotNull;
 
 public class MachineGasCent extends BlockDummyable implements IMultiBlock {
 
-    public static final PropertyDirection FACING = BlockHorizontal.FACING;
 
     public MachineGasCent(Material materialIn, String s) {
         super(materialIn, s);

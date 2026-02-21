@@ -1,5 +1,6 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.Tags;
 import com.hbm.config.ClientConfig;
 import com.hbm.items.ItemEnums;
 import com.hbm.items.ModItems;
@@ -10,7 +11,6 @@ import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.mags.MagazineFullReload;
 import com.hbm.items.weapon.sedna.mods.WeaponModManager;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
 import com.hbm.particle.SpentCasing;
@@ -27,7 +27,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class XFactory556mm {
-    public static final ResourceLocation scope = new ResourceLocation(RefStrings.MODID, "textures/misc/scope_bolt.png");
+    public static final ResourceLocation scope = new ResourceLocation(Tags.MODID, "textures/misc/scope_bolt.png");
 
     public static BulletConfig r556_sp;
     public static BulletConfig r556_fmj;

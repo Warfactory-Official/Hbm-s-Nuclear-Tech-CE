@@ -3,12 +3,13 @@ package com.hbm.modules;
 import com.google.common.annotations.Beta;
 import com.hbm.inventory.gui.GuiInfoContainer;
 import com.hbm.util.BobMathUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.math.MathHelper;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.util.text.TextFormatting;
+import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nonnegative;
 import java.math.BigDecimal;
@@ -68,7 +69,7 @@ public class NumberDisplay {
      * @param y Y coordinate of the display
      * @param c Enum Color to use, invalid enums will default to yellow
      */
-    public NumberDisplay(GuiInfoContainer gui, int x, int y, ChatFormatting c)
+    public NumberDisplay(GuiInfoContainer gui, int x, int y, TextFormatting c)
     {
         this(gui, x, y);
         setColor(enumToColor(c));
@@ -102,7 +103,7 @@ public class NumberDisplay {
      * @param c Color to use
      * @return
      */
-    private int enumToColor(ChatFormatting c) {
+    private int enumToColor(TextFormatting c) {
         if(c.isColor()) {
             switch(c) {
                 case AQUA:
@@ -340,7 +341,7 @@ public class NumberDisplay {
             formatForFloat();
         else
         {
-            toDisp = new Long(Math.round(numIn.doubleValue())).toString().toCharArray();
+            toDisp = Long.toString(Math.round(numIn.doubleValue())).toCharArray();
             toDisp = truncOrExpand();
         }
     }

@@ -1,7 +1,7 @@
 package com.hbm.handler;
 
+import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.util.ResourceLocation;
@@ -17,7 +17,7 @@ import java.util.Map;
 
 public class MultiblockBBHandler {
 
-	public static final MultiblockBounds FENSU_BOUNDS = load(new ResourceLocation(RefStrings.MODID, "multiblock_bounds/bb_fensu0.mbb"));
+	public static final MultiblockBounds FENSU_BOUNDS = load(new ResourceLocation(Tags.MODID, "multiblock_bounds/bb_fensu0.mbb"));
 	
 	public static final Map<Block, MultiblockBounds> REGISTRY = new HashMap<>();
 	

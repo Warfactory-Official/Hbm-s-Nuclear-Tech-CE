@@ -583,13 +583,19 @@ public class EntityNukeTorex extends Entity implements IConstantRenderer {
 		CONDENSATION,
 		SHOCK
 	}
-	
+
+    /**
+     * Spawns a standard Torex. Does play sound!
+     */
 	public static void statFac(World world, double x, double y, double z, float scale) {
 		EntityNukeTorex torex = new EntityNukeTorex(world).setScale(MathHelper.clamp(scale * 0.01F, 0.25F, 5F));
 		torex.setPosition(x, y, z);
 		world.spawnEntity(torex);
 	}
-	
+
+    /**
+     * Spawns a Torex, balefire variant. Does play sound!
+     */
 	public static void statFacBale(World world, double x, double y, double z, float scale) {
 		EntityNukeTorex torex = new EntityNukeTorex(world).setScale(MathHelper.clamp(scale * 0.01F, 0.25F, 5F)).setType(1);
 		torex.setPosition(x, y, z);

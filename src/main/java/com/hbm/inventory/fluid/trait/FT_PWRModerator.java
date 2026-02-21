@@ -3,7 +3,7 @@ package com.hbm.inventory.fluid.trait;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import com.hbm.util.I18nUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
+import net.minecraft.util.text.TextFormatting;
 
 import java.io.IOException;
 import java.util.List;
@@ -22,13 +22,13 @@ public class FT_PWRModerator extends FluidTrait {
 	
 	@Override
 	public void addInfo(List<String> info) {
-		info.add(ChatFormatting.BLUE + "[" + I18nUtil.resolveKey("trait.pwrflux") + "]");
+		info.add(TextFormatting.BLUE + "[" + I18nUtil.resolveKey("trait.pwrflux") + "]");
 	}
 
 	@Override
 	public void addInfoHidden(List<String> info) {
 		int mult = (int) (multiplier * 100 - 100);
-		info.add(ChatFormatting.BLUE + I18nUtil.resolveKey("trait.pwrflux.desc") + " " + (mult >= 0 ? "+" : "") + mult + "%");
+		info.add(TextFormatting.BLUE + I18nUtil.resolveKey("trait.pwrflux.desc") + " " + (mult >= 0 ? "+" : "") + mult + "%");
 	}
 
 	@Override

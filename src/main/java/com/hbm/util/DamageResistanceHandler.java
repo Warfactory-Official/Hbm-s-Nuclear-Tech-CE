@@ -150,8 +150,6 @@ public class DamageResistanceHandler {
                 .addCategory(CATEGORY_FIRE, 0.5F, 0.5F)
                 .addCategory(CATEGORY_EXPLOSION, 2F, 0.15F)
                 .setOther(0F, 0.1F));
-        registerSet(ModItems.t45_helmet, ModItems.t45_plate, ModItems.t45_legs, ModItems.t45_boots,
-                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 2F, 0.15F).addCategory(CATEGORY_FIRE, 0.5F, 0.35F).addCategory(CATEGORY_EXPLOSION, 5F, 0.25F).addExact(DamageSource.FALL.getDamageType(), 0F, 1F).setOther(0F, 0.1F));
         registerSet(ModItems.ajr_helmet, ModItems.ajr_plate, ModItems.ajr_legs, ModItems.ajr_boots,
                 new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 4F, 0.15F).addCategory(CATEGORY_FIRE, 0.5F, 0.35F).addCategory(CATEGORY_EXPLOSION, 7.5F, 0.25F).addExact(DamageSource.FALL.getDamageType(), 0F, 1F).setOther(0F, 0.15F));
         registerSet(ModItems.ajro_helmet, ModItems.ajro_plate, ModItems.ajro_legs, ModItems.ajro_boots,
@@ -185,6 +183,12 @@ public class DamageResistanceHandler {
                 .addCategory(CATEGORY_EXPLOSION, 0F, 0.25F)
                 .addExact(DamageSource.FALL.getDamageType(), 4F, 0.5F)
                 .setOther(2F, 0.1F));
+        registerSet(ModItems.t51_helmet, ModItems.t51_plate, ModItems.t51_legs, ModItems.t51_boots, new ResistanceStats()
+                .addCategory(CATEGORY_PHYSICAL, 2F, 0.15F)
+                .addCategory(CATEGORY_FIRE, 0.5F, 0.35F)
+                .addCategory(CATEGORY_EXPLOSION, 5F, 0.25F)
+                .addExact(DamageSource.FALL.damageType, 0F, 1F)
+                .setOther(0F, 0.1F));
         registerSet(ModItems.trenchmaster_helmet, ModItems.trenchmaster_plate, ModItems.trenchmaster_legs, ModItems.trenchmaster_boots, new
         ResistanceStats()
                 .addCategory(CATEGORY_PHYSICAL, 5F, 0.5F)

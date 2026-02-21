@@ -3,9 +3,15 @@ package com.hbm.handler;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.PlantEnums;
 import com.hbm.blocks.generic.BlockConcreteColoredExt;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.gui.GUIScreenBobmazon.Offer;
 import com.hbm.inventory.gui.GUIScreenBobmazon.Requirement;
 import com.hbm.items.ModItems;
+import com.hbm.items.food.ItemConserve;
+import com.hbm.items.machine.ItemBattery;
+import com.hbm.items.special.ItemKitCustom;
+import com.hbm.items.special.ItemKitNBT;
+import com.hbm.items.weapon.sedna.factory.GunFactory;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -43,7 +49,7 @@ public class BobmazonOfferFactory {
 		standard.add(new Offer(new ItemStack(ModBlocks.plant_flower, 1, PlantEnums.EnumFlowerPlantType.HEMP.ordinal()), Requirement.STEEL, 4, 10));
 		standard.add(new Offer(new ItemStack(ModBlocks.plant_flower, 1, PlantEnums.EnumFlowerPlantType.MUSTARD_WILLOW_0.ordinal()), Requirement.NUCLEAR, 64, 8));
 		//deco
-		for(BlockConcreteColoredExt.EnumConcreteType conc : BlockConcreteColoredExt.EnumConcreteType.values()) standard.add(new Offer(new ItemStack(ModBlocks.concrete_colored_ext, 16, conc.ordinal()), Requirement.CHEMICS, 4));
+		for(BlockConcreteColoredExt.EnumConcreteType conc : BlockConcreteColoredExt.EnumConcreteType.VALUES) standard.add(new Offer(new ItemStack(ModBlocks.concrete_colored_ext, 16, conc.ordinal()), Requirement.CHEMICS, 4));
 		//for(SnowglobeType globe : SnowglobeType.values()) standard.add(new Offer(new ItemStack(ModBlocks.snowglobe, 1, globe.ordinal()), Requirement.CHEMICS, 128));
 		//for(int i = 1; i < PlushieType.values().length; i++) standard.add(new Offer(new ItemStack(ModBlocks.plushie, 1, i), Requirement.OIL, 16, i < 3 ? 10 : 0));
 
@@ -111,8 +117,7 @@ public class BobmazonOfferFactory {
             }
         }
 
-		// TODO ItemKitCustom
-		/*special.add(new Offer(ItemKitCustom.create("Fusion Man", "For the nuclear physicist on the go", 0xff00ff, 0x800080,
+		special.add(new Offer(ItemKitCustom.create("Fusion Man", "For the nuclear physicist on the go", 0xff00ff, 0x800080,
 				new ItemStack(ModBlocks.iter),
 				new ItemStack(ModBlocks.plasma_heater),
 				new ItemStack(ModItems.fusion_shield_vaporwave),
@@ -168,7 +173,7 @@ public class BobmazonOfferFactory {
 				new ItemStack(ModItems.ammo_standard, 64, GunFactory.EnumAmmo.CAPACITOR_OVERCHARGE.ordinal()),
 				new ItemStack(ModItems.ammo_standard, 64, GunFactory.EnumAmmo.CAPACITOR_OVERCHARGE.ordinal()),
 				new ItemStack(ModItems.ammo_standard, 64, GunFactory.EnumAmmo.CAPACITOR_OVERCHARGE.ordinal())
-		).setStackDisplayName("Frenchie's Reward"), Requirement.HIDDEN, 32));*/
+		).setStackDisplayName("Frenchie's Reward"), Requirement.HIDDEN, 32));
 	}
 
 	public static List<Offer> getOffers(ItemStack stack) {

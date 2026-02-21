@@ -57,7 +57,7 @@ public class TileEntityNukeMan extends TileEntity implements IGUIProvider {
 	}
 
 	public boolean hasCustomInventoryName() {
-		return this.customName != null && this.customName.length() > 0;
+		return this.customName != null && !this.customName.isEmpty();
 	}
 	
 	public void setCustomName(String name) {
@@ -76,50 +76,27 @@ public class TileEntityNukeMan extends TileEntity implements IGUIProvider {
 	public boolean isReady() {
 		if(this.exp1() && this.exp2() && this.exp3() && this.exp4())
 		{
-			if(this.inventory.getStackInSlot(0) != ItemStack.EMPTY && this.inventory.getStackInSlot(5) != ItemStack.EMPTY && this.inventory.getStackInSlot(0).getItem() == ModItems.man_igniter && this.inventory.getStackInSlot(5).getItem() == ModItems.man_core)
-			{
-				return true;
-			}
+        return this.inventory.getStackInSlot(0) != ItemStack.EMPTY && this.inventory.getStackInSlot(5) != ItemStack.EMPTY && this.inventory.getStackInSlot(0).getItem() == ModItems.man_igniter && this.inventory.getStackInSlot(5).getItem() == ModItems.man_core;
 		}
 		
 		return false;
 	}
 	
 	public boolean exp1() {
-		if(this.inventory.getStackInSlot(1) != ItemStack.EMPTY && this.inventory.getStackInSlot(1).getItem() == ModItems.early_explosive_lenses)
-		{
-			return true;
-		}
-		
-		return false;
-	}
+        return this.inventory.getStackInSlot(1) != ItemStack.EMPTY && this.inventory.getStackInSlot(1).getItem() == ModItems.early_explosive_lenses;
+    }
 	
 	public boolean exp2() {
-		if(this.inventory.getStackInSlot(2) != ItemStack.EMPTY && this.inventory.getStackInSlot(2).getItem() == ModItems.early_explosive_lenses)
-		{
-			return true;
-		}
-		
-		return false;
-	}
+        return this.inventory.getStackInSlot(2) != ItemStack.EMPTY && this.inventory.getStackInSlot(2).getItem() == ModItems.early_explosive_lenses;
+    }
 	
 	public boolean exp3() {
-		if(this.inventory.getStackInSlot(3) != ItemStack.EMPTY && this.inventory.getStackInSlot(3).getItem() == ModItems.early_explosive_lenses)
-		{
-			return true;
-		}
-		
-		return false;
-	}
+        return this.inventory.getStackInSlot(3) != ItemStack.EMPTY && this.inventory.getStackInSlot(3).getItem() == ModItems.early_explosive_lenses;
+    }
 	
 	public boolean exp4() {
-		if(this.inventory.getStackInSlot(4) != ItemStack.EMPTY && this.inventory.getStackInSlot(4).getItem() == ModItems.early_explosive_lenses)
-		{
-			return true;
-		}
-		
-		return false;
-	}
+        return this.inventory.getStackInSlot(4) != ItemStack.EMPTY && this.inventory.getStackInSlot(4).getItem() == ModItems.early_explosive_lenses;
+    }
 	
 	public void clearSlots() {
 		for(int i = 0; i < inventory.getSlots(); i++)
@@ -140,7 +117,7 @@ public class TileEntityNukeMan extends TileEntity implements IGUIProvider {
 	
 	@Override
 	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
-		return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ? true : super.hasCapability(capability, facing);
+		return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
 	}
 	
 	@Override

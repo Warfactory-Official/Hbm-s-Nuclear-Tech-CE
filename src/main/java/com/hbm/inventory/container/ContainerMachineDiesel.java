@@ -1,7 +1,11 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotFiltered;
+import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineDiesel;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -11,17 +15,17 @@ import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerMachineDiesel extends Container {
 	
-	private TileEntityMachineDiesel diFurnace;
+	private TileEntityMachineDiesel generator;
 	
 	public ContainerMachineDiesel(InventoryPlayer invPlayer, TileEntityMachineDiesel tedf) {
 		
-		diFurnace = tedf;
+		generator = tedf;
 		
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 44, 17));
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 1, 44, 53));
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 2, 116, 53));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 1, 44, 53));
+		this.addSlotToContainer(new SlotBattery(tedf.inventory, 2, 116, 53));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 8, 17));
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 4, 8, 53));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 4, 8, 53));
 		
 		for(int i = 0; i < 3; i++)
 		{
@@ -38,44 +42,16 @@ public class ContainerMachineDiesel extends Container {
 	}
 	
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2)
+    public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-		
-		if (var4 != null && var4.getHasStack())
-		{
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-			
-            if (par2 <= 4) {
-				if (!this.mergeItemStack(var5, 5, this.inventorySlots.size(), true))
-				{
-					return ItemStack.EMPTY;
-				}
-			}
-			else if (!this.mergeItemStack(var5, 0, 1, false))
-			{
-				if (!this.mergeItemStack(var5, 2, 3, false))
-					if (!this.mergeItemStack(var5, 4, 5, false))
-					return ItemStack.EMPTY;
-			}
-			
-			if (var5.isEmpty())
-			{
-				var4.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
-				var4.onSlotChanged();
-			}
-		}
-		
-		return var3;
+		return InventoryUtil.transferStack(this.inventorySlots, index, 5,
+                s -> Library.isStackDrainableForTank(s, generator.tank), 2,
+                Library::isChargeableBattery, 3,
+                s -> s.getItem() instanceof IItemFluidIdentifier, 5);
     }
 
 	@Override
 	public boolean canInteractWith(EntityPlayer player) {
-		return diFurnace.isUseableByPlayer(player);
+		return generator.isUseableByPlayer(player);
 	}
 }

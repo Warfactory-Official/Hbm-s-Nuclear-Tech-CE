@@ -1,18 +1,14 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerCombustionEngine;
 import com.hbm.inventory.fluid.trait.FT_Combustible;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemPistons;
-import com.hbm.lib.RefStrings;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toserver.NBTControlPacket;
 import com.hbm.tileentity.machine.TileEntityMachineCombustionEngine;
 import com.hbm.util.EnumUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
@@ -21,11 +17,18 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.TextFormatting;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Locale;
+
+import static com.hbm.util.SoundUtil.playClickSound;
 
 public class GUICombustionEngine extends GuiInfoContainer {
 
   private static final ResourceLocation texture =
-      new ResourceLocation(RefStrings.MODID + ":textures/gui/generators/gui_combustion.png");
+      new ResourceLocation(Tags.MODID + ":textures/gui/generators/gui_combustion.png");
   private final TileEntityMachineCombustionEngine engine;
   private int setting;
   private boolean isMouseLocked = false;
@@ -76,7 +79,7 @@ public class GUICombustionEngine extends GuiInfoContainer {
         FT_Combustible trait = engine.tank.getTankType().getTrait(FT_Combustible.class);
         int i = engine.inventory.getStackInSlot(2).getItemDamage();
         ItemPistons.EnumPistonType piston =
-            EnumUtil.grabEnumSafely(ItemPistons.EnumPistonType.class, i);
+            EnumUtil.grabEnumSafely(ItemPistons.EnumPistonType.VALUES, i);
         power =
             setting
                 * 0.2
@@ -85,7 +88,7 @@ public class GUICombustionEngine extends GuiInfoContainer {
                 * piston.eff[trait.getGrade().ordinal()];
       }
 
-      String c = String.valueOf(ChatFormatting.YELLOW);
+      String c = String.valueOf(TextFormatting.YELLOW);
 
       String[] text =
           new String[] {
@@ -116,9 +119,8 @@ public class GUICombustionEngine extends GuiInfoContainer {
         this.setting = setting;
         NBTTagCompound data = new NBTTagCompound();
         data.setInteger("setting", setting);
-        PacketDispatcher.wrapper.sendToServer(
-            new NBTControlPacket(
-                data, engine.getPos().getX(), engine.getPos().getY(), engine.getPos().getZ()));
+          PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(
+                  data, engine.getPos().getX(), engine.getPos().getY(), engine.getPos().getZ()));
       }
     }
 
@@ -133,11 +135,10 @@ public class GUICombustionEngine extends GuiInfoContainer {
         && guiLeft + 89 + 16 > mouseX
         && guiTop + 13 < mouseY
         && guiTop + 13 + 14 >= mouseY) {
-      playPressSound();
+      playClickSound();
       NBTTagCompound data = new NBTTagCompound();
       data.setBoolean("turnOn", true);
-      PacketDispatcher.wrapper.sendToServer(
-          new NBTControlPacket(
+        PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(
               data, engine.getPos().getX(), engine.getPos().getY(), engine.getPos().getZ()));
     }
 
@@ -145,7 +146,7 @@ public class GUICombustionEngine extends GuiInfoContainer {
         && guiLeft + 79 + 36 > mouseX
         && guiTop + 38 < mouseY
         && guiTop + 38 + 8 >= mouseY) {
-      playPressSound();
+      playClickSound();
       isMouseLocked = true;
     }
   }

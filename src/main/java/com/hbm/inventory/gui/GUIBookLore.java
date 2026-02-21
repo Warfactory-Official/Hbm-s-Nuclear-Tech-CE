@@ -1,6 +1,6 @@
 package com.hbm.inventory.gui;
 
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
@@ -18,7 +18,7 @@ import static net.minecraft.init.SoundEvents.UI_BUTTON_CLICK;
 
 public class GUIBookLore extends GuiScreen {
 
-    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/book/book_lore.png");
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/book/book_lore.png");
 
     protected int guiLeft;
     protected int guiTop;

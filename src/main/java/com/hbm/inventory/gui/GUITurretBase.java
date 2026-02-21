@@ -1,33 +1,35 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerTurretBase;
-import com.hbm.lib.RefStrings;
+import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toserver.AuxButtonPacket;
 import com.hbm.packet.toserver.NBTControlPacket;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.turret.TileEntityTurretBaseNT;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public abstract class GUITurretBase extends GuiInfoContainer {
 
-	protected static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/weapon/gui_turret_base.png");
+	protected static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/weapon/gui_turret_base.png");
 	protected TileEntityTurretBaseNT turret;
 	protected GuiTextField field;
 	int index;
@@ -137,35 +139,35 @@ public abstract class GUITurretBase extends GuiInfoContainer {
 
 		if(guiLeft + 115 <= x && guiLeft + 115 + 18 > x && guiTop + 25 < y && guiTop + 25 + 18 >= y) {
 
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
 			PacketDispatcher.wrapper.sendToServer(new AuxButtonPacket(turretPos, 0, 0));
 			return;
 		}
 
 		if(guiLeft + 8 <= x && guiLeft + 8 + 10 > x && guiTop + 29 < y && guiTop + 29 + 10 >= y) {
 
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
 			PacketDispatcher.wrapper.sendToServer(new AuxButtonPacket(turretPos, 0, 1));
 			return;
 		}
 
 		if(guiLeft + 22 <= x && guiLeft + 22 + 10 > x && guiTop + 29 < y && guiTop + 29 + 10 >= y) {
 
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
 			PacketDispatcher.wrapper.sendToServer(new AuxButtonPacket(turretPos, 0, 2));
 			return;
 		}
 
 		if(guiLeft + 36 <= x && guiLeft + 36 + 10 > x && guiTop + 29 < y && guiTop + 29 + 10 >= y) {
 
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
 			PacketDispatcher.wrapper.sendToServer(new AuxButtonPacket(turretPos, 0, 3));
 			return;
 		}
 
 		if(guiLeft + 50 <= x && guiLeft + 50 + 10 > x && guiTop + 29 < y && guiTop + 29 + 10 >= y) {
 
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
 			PacketDispatcher.wrapper.sendToServer(new AuxButtonPacket(turretPos, 0, 4));
 			return;
 		}
@@ -179,7 +181,7 @@ public abstract class GUITurretBase extends GuiInfoContainer {
 				index--;
 				if(index < 0)
 					index = count - 1;
-				mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+				playClickSound();
 				return;
 			}
 
@@ -187,34 +189,34 @@ public abstract class GUITurretBase extends GuiInfoContainer {
 	
 				index++;
 				index %= count;
-				mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+				playClickSound();
 				return;
 			}
 		}
 		
 		if(guiLeft + 7 <= x && guiLeft + 7 + 18 > x && guiTop + 98 < y && guiTop + 98 + 18 >= y) {
 			
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
 			
 			if(this.field.getText().isEmpty())
 				return;
 			
 			NBTTagCompound data = new NBTTagCompound();
 			data.setString("name", this.field.getText());
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, turretPos));
-			
-			this.field.setText("");
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, turretPos));
+
+            this.field.setText("");
 			return;
 		}
 
 		if(guiLeft + 43 <= x && guiLeft + 43 + 18 > x && guiTop + 98 < y && guiTop + 98 + 18 >= y) {
 			
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
 			
 			NBTTagCompound data = new NBTTagCompound();
 			data.setInteger("del", this.index);
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, turretPos));
-		}
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, turretPos));
+        }
 	}
 
 	public int getTurretFontColor(){

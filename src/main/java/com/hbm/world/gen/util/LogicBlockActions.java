@@ -83,8 +83,7 @@ public class LogicBlockActions {
 				if (world.rand.nextInt(5) == 0) {
 					skeleton.item = new ItemStack(ModItems.item_secret, 1, ItemEnums.EnumSecretType.ABERRATOR.ordinal());
 				} else {
-					//skeleton.item = new ItemStack(ModItems.clay_tablet, 1, 1); TODO
-					skeleton.item = ItemStack.EMPTY;
+					skeleton.item = new ItemStack(ModItems.clay_tablet, 1, 1);
 				}
 				skeleton.markDirty();
 				IBlockState state = world.getBlockState(holderPos);

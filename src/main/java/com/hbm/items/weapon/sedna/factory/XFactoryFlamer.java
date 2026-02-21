@@ -111,29 +111,29 @@ public class XFactoryFlamer {
     }
 
     public static void init() {
-        flame_diesel = new BulletConfig().setItem(GunFactory.EnumAmmo.FLAME_DIESEL).setCasing(new ItemStack(ModItems.plate_steel, 2), 500).setupDamageClass(DamageResistanceHandler.DamageClass.FIRE).setLife(100).setVel(1F).setGrav(0.02D).setReloadCount(500).setSelfDamageDelay(20).setKnockback(0F)
+        flame_diesel = new BulletConfig().setItem(GunFactory.EnumAmmo.FLAME_DIESEL).setCasing(new ItemStack(ModItems.plate_steel, 2), 500).setupDamageClass(DamageResistanceHandler.DamageClass.FIRE).setLife(100).setVel(1F).setGrav(0.02F).setReloadCount(500).setSelfDamageDelay(20).setKnockback(0F)
                 .setOnUpdate(LAMBDA_FIRE).setOnRicochet(LAMBDA_LINGER_DIESEL);
-        flame_gas = new BulletConfig().setItem(GunFactory.EnumAmmo.FLAME_GAS).setCasing(new ItemStack(ModItems.plate_steel, 2), 500).setupDamageClass(DamageResistanceHandler.DamageClass.FIRE).setLife(10).setSpread(0.05F).setVel(1F).setGrav(0.0D).setReloadCount(500).setSelfDamageDelay(20).setKnockback(0F)
+        flame_gas = new BulletConfig().setItem(GunFactory.EnumAmmo.FLAME_GAS).setCasing(new ItemStack(ModItems.plate_steel, 2), 500).setupDamageClass(DamageResistanceHandler.DamageClass.FIRE).setLife(10).setSpread(0.05F).setVel(1F).setGrav(0.0F).setReloadCount(500).setSelfDamageDelay(20).setKnockback(0F)
                 .setOnUpdate(LAMBDA_FIRE).setOnRicochet(LAMBDA_LINGER_GAS);
-        flame_napalm = new BulletConfig().setItem(GunFactory.EnumAmmo.FLAME_NAPALM).setCasing(new ItemStack(ModItems.plate_steel, 2), 500).setupDamageClass(DamageResistanceHandler.DamageClass.FIRE).setLife(200).setVel(1F).setGrav(0.02D).setReloadCount(500).setSelfDamageDelay(20).setKnockback(0F)
+        flame_napalm = new BulletConfig().setItem(GunFactory.EnumAmmo.FLAME_NAPALM).setCasing(new ItemStack(ModItems.plate_steel, 2), 500).setupDamageClass(DamageResistanceHandler.DamageClass.FIRE).setLife(200).setVel(1F).setGrav(0.02F).setReloadCount(500).setSelfDamageDelay(20).setKnockback(0F)
                 .setOnUpdate(LAMBDA_FIRE).setOnRicochet(LAMBDA_LINGER_NAPALM);
-        flame_balefire = new BulletConfig().setItem(GunFactory.EnumAmmo.FLAME_BALEFIRE).setCasing(new ItemStack(ModItems.plate_steel, 2), 500).setupDamageClass(DamageResistanceHandler.DamageClass.FIRE).setLife(200).setVel(1F).setGrav(0.02D).setReloadCount(500).setSelfDamageDelay(20).setKnockback(0F)
+        flame_balefire = new BulletConfig().setItem(GunFactory.EnumAmmo.FLAME_BALEFIRE).setCasing(new ItemStack(ModItems.plate_steel, 2), 500).setupDamageClass(DamageResistanceHandler.DamageClass.FIRE).setLife(200).setVel(1F).setGrav(0.02F).setReloadCount(500).setSelfDamageDelay(20).setKnockback(0F)
                 .setOnUpdate(LAMBDA_BALEFIRE).setOnRicochet(LAMBDA_LINGER_BALEFIRE);
 
         flame_nograv = flame_diesel.clone().setGrav(0);
 
-        flame_topaz_diesel = flame_diesel		.clone().setProjectiles(2).setSpread(0.05F).setLife(60).setGrav(0.0D);
+        flame_topaz_diesel = flame_diesel		.clone().setProjectiles(2).setSpread(0.05F).setLife(60).setGrav(0.0F);
         flame_topaz_gas = flame_gas				.clone().setProjectiles(2).setSpread(0.05F);
-        flame_topaz_napalm = flame_napalm		.clone().setProjectiles(2).setSpread(0.05F).setLife(60).setGrav(0.0D);
-        flame_topaz_balefire = flame_balefire	.clone().setProjectiles(2).setSpread(0.05F).setLife(60).setGrav(0.0D);
+        flame_topaz_napalm = flame_napalm		.clone().setProjectiles(2).setSpread(0.05F).setLife(60).setGrav(0.0F);
+        flame_topaz_balefire = flame_balefire	.clone().setProjectiles(2).setSpread(0.05F).setLife(60).setGrav(0.0F);
 
-        flame_daybreaker_diesel = flame_diesel.clone().setLife(200).setVel(2F).setGrav(0.035D)
+        flame_daybreaker_diesel = flame_diesel.clone().setLife(200).setVel(2F).setGrav(0.035F)
                 .setOnImpact((bullet, mop) -> { Lego.standardExplode(bullet, mop, 5F); spawnFire(bullet, mop, 6F, 2F, 200, EntityFireLingering.TYPE_DIESEL); bullet.setDead(); });
-        flame_daybreaker_gas = flame_gas.clone().setLife(200).setVel(2F).setGrav(0.035D)
+        flame_daybreaker_gas = flame_gas.clone().setLife(200).setVel(2F).setGrav(0.035F)
                 .setOnImpact((bullet, mop) -> { Lego.standardExplode(bullet, mop, 5F); bullet.setDead(); });
-        flame_daybreaker_napalm = flame_napalm.clone().setLife(200).setVel(2F).setGrav(0.035D)
+        flame_daybreaker_napalm = flame_napalm.clone().setLife(200).setVel(2F).setGrav(0.035F)
                 .setOnImpact((bullet, mop) -> { Lego.standardExplode(bullet, mop, 7.5F); spawnFire(bullet, mop, 6F, 2F, 300, EntityFireLingering.TYPE_DIESEL); bullet.setDead(); });
-        flame_daybreaker_balefire = flame_balefire.clone().setLife(200).setVel(2F).setGrav(0.035D)
+        flame_daybreaker_balefire = flame_balefire.clone().setLife(200).setVel(2F).setGrav(0.035F)
                 .setOnImpact((bullet, mop) -> { Lego.standardExplode(bullet, mop, 5F); spawnFire(bullet, mop, 7.5F, 2.5F, 400, EntityFireLingering.TYPE_BALEFIRE); bullet.setDead(); });
 
         ModItems.gun_flamer = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_flamer", new GunConfig()

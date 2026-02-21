@@ -1,8 +1,8 @@
 package com.hbm.render.tileentity;
 
+import com.hbm.Tags;
 import com.hbm.blocks.machine.FoundryChannel;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityFoundryChannel;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -17,16 +17,16 @@ import net.minecraft.world.World;
 import java.awt.*;
 @AutoRegister
 public class RenderFoundryChannel extends TileEntitySpecialRenderer<TileEntityFoundryChannel> {
-    public static final ResourceLocation LAVA_TEXTURE = new ResourceLocation(RefStrings.MODID, "textures/models/machines/lava_gray.png");
+    public static final ResourceLocation LAVA_TEXTURE = new ResourceLocation(Tags.MODID, "textures/models/machines/lava_gray.png");
 
     @Override
     public void render(TileEntityFoundryChannel tile, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
-        if (tile == null || !tile.hasWorld()) {
+        BlockPos pos = tile.getPos();
+        if (getWorld().isAirBlock(pos) || !tile.hasWorld()) {
             return;
         }
 
         World world = tile.getWorld();
-        BlockPos pos = tile.getPos();
         FoundryChannel channel = (FoundryChannel) tile.getBlockType();
 
         boolean doRender = tile.amount > 0 && tile.type != null;

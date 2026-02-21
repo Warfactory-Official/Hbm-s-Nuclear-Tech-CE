@@ -1,7 +1,7 @@
 package com.hbm.handler.jei;
 
+import com.hbm.Tags;
 import com.hbm.handler.jei.JeiRecipes.SILEXRecipe;
-import com.hbm.lib.RefStrings;
 import com.hbm.util.I18nUtil;
 import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.gui.IDrawable;
@@ -13,7 +13,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class SILEXRecipeHandler implements IRecipeCategory<SILEXRecipe> {
 
-	public static final ResourceLocation gui_rl = new ResourceLocation(RefStrings.MODID, "textures/gui/jei/gui_nei_silex.png");
+	public static final ResourceLocation gui_rl = new ResourceLocation(Tags.MODID, "textures/gui/jei/gui_nei_silex.png");
 	
 	protected final IDrawable background;
 	
@@ -35,7 +35,7 @@ public class SILEXRecipeHandler implements IRecipeCategory<SILEXRecipe> {
 
 	@Override
 	public String getModName(){
-		return RefStrings.MODID;
+		return Tags.MODID;
 	}
 
 	@Override

@@ -26,7 +26,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent.Pre;
 
 import java.util.ArrayList;
 import java.util.List;
-
+@Deprecated
 public class MachineBattery extends BlockContainer implements ILookOverlay {
 
 	public static final PropertyDirection FACING = BlockHorizontal.FACING;
@@ -210,9 +210,9 @@ public class MachineBattery extends BlockContainer implements ILookOverlay {
 	}
 
 	@Override
-	public void printHook(Pre event, World world, int x, int y, int z) {
+	public void printHook(Pre event, World world, BlockPos pos) {
 			
-		TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
+		TileEntity te = world.getTileEntity(pos);
 		
 		if(!(te instanceof TileEntityMachineBattery battery))
 			return;

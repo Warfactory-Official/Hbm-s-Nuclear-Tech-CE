@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerDroneProvider;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.network.TileEntityDroneProvider;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
@@ -12,7 +12,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GUIDroneProvider extends GuiContainer {
 
-    private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID, "textures/gui/storage/gui_drone_provider.png");
+    private static ResourceLocation texture = new ResourceLocation(Tags.MODID, "textures/gui/storage/gui_drone_provider.png");
     private TileEntityDroneProvider provider;
 
     public GUIDroneProvider(InventoryPlayer invPlayer, TileEntityDroneProvider tedf) {

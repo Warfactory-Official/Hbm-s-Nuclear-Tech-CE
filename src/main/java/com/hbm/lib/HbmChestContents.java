@@ -1,9 +1,12 @@
 package com.hbm.lib;
 
 import com.hbm.handler.WeightedRandomChestContentFrom1710;
+import com.hbm.items.special.ItemBookLore;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+
+import java.util.Random;
 
 public class HbmChestContents {
 
@@ -13,7 +16,7 @@ public class HbmChestContents {
 
 	/** ITEMBOOKLORE SHIT */
 	//one downside of all this huge flexibility, make a wrapper if it's too annoying
-	/*public static ItemStack generateOfficeBook(Random rand) { //TODO make ItemBookLore
+	public static ItemStack generateOfficeBook(Random rand) { //TODO make ItemBookLore
 		String key;
 		int pages;
 		switch(rand.nextInt(5)) {
@@ -42,5 +45,5 @@ public class HbmChestContents {
 		}
 
 		return ItemBookLore.createBook(key, pages, 0x1E1E1E, 0x46EA44);
-	}*/
+	}
 }

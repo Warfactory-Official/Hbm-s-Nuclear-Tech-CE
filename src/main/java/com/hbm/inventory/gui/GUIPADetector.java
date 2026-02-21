@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerPADetector;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.albion.TileEntityPADetector;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
@@ -12,7 +12,7 @@ import org.lwjgl.opengl.GL11;
 
 public class GUIPADetector extends GuiInfoContainer {
 
-    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/particleaccelerator/gui_detector.png");
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/particleaccelerator/gui_detector.png");
     private final TileEntityPADetector source;
 
     public GUIPADetector(InventoryPlayer player, TileEntityPADetector source) {
@@ -27,8 +27,8 @@ public class GUIPADetector extends GuiInfoContainer {
     public void drawScreen(int mouseX, int mouseY, float f) {
         super.drawScreen(mouseX, mouseY, f);
 
-        source.tanks[0].renderTankInfo(this, mouseX, mouseY, guiLeft + 134, guiTop + 36, 16, 52);
-        source.tanks[1].renderTankInfo(this, mouseX, mouseY, guiLeft + 152, guiTop + 36, 16, 52);
+        source.coolantTanks[0].renderTankInfo(this, mouseX, mouseY, guiLeft + 134, guiTop + 36, 16, 52);
+        source.coolantTanks[1].renderTankInfo(this, mouseX, mouseY, guiLeft + 152, guiTop + 36, 16, 52);
         this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 8, guiTop + 18, 16, 52, source.power, source.getMaxPower());
         super.renderHoveredToolTip(mouseX, mouseY);
     }
@@ -59,7 +59,7 @@ public class GUIPADetector extends GuiInfoContainer {
         if (heat <= 123) drawTexturedModalRect(guiLeft + 44, guiTop + 18, 176, 8, 8, 8);
         if (source.power >= TileEntityPADetector.usage) drawTexturedModalRect(guiLeft + 44, guiTop + 43, 176, 8, 8, 8);
 
-        source.tanks[0].renderTank(guiLeft + 134, guiTop + 88, this.zLevel, 16, 52);
-        source.tanks[1].renderTank(guiLeft + 152, guiTop + 88, this.zLevel, 16, 52);
+        source.coolantTanks[0].renderTank(guiLeft + 134, guiTop + 88, this.zLevel, 16, 52);
+        source.coolantTanks[1].renderTank(guiLeft + 152, guiTop + 88, this.zLevel, 16, 52);
     }
 }

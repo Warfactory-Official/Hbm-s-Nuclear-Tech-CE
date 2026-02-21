@@ -2,6 +2,7 @@ package com.hbm.inventory.container;
 
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.tileentity.network.TileEntityDroneCrate;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -35,40 +36,10 @@ public class ContainerDroneCrate extends Container {
     }
 
     @Override
-    public ItemStack transferStackInSlot(EntityPlayer player, int slot) {
-        ItemStack var3 = ItemStack.EMPTY;
-        Slot var4 = this.inventorySlots.get(slot);
-
-        if(var4 != null && var4.getHasStack()) {
-            ItemStack var5 = var4.getStack();
-            var3 = var5.copy();
-
-            if(slot <= crate.inventory.getSlots() - 1) {
-                if(!this.mergeItemStack(var5, crate.inventory.getSlots(), this.inventorySlots.size(), true)) {
-                    return ItemStack.EMPTY;
-                }
-            } else {
-
-                if(var3.getItem() instanceof IItemFluidIdentifier) {
-                    if(!this.mergeItemStack(var5, 18, 19, false))
-                        return ItemStack.EMPTY;
-                } else if(!this.mergeItemStack(var5, 0, 18, false)) {
-                    return ItemStack.EMPTY;
-                }
-
-                return ItemStack.EMPTY;
-            }
-
-            if(var5.getCount() == 0) {
-                var4.putStack(ItemStack.EMPTY);
-            } else {
-                var4.onSlotChanged();
-            }
-
-            var4.onTake(player, var5);
-        }
-
-        return var3;
+    public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+        return InventoryUtil.transferStack(this.inventorySlots, index, 19,
+                s -> !(s.getItem() instanceof IItemFluidIdentifier), 18,
+                s -> s.getItem() instanceof IItemFluidIdentifier, 19);
     }
 
     @Override

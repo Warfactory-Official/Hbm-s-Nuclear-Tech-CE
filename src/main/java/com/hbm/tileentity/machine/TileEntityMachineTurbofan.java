@@ -23,6 +23,7 @@ import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.util.I18nUtil;
+import com.hbm.util.SoundUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.Entity;
@@ -30,6 +31,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.Container;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.DamageSource;
@@ -38,11 +40,10 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -53,7 +54,6 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 
 	public long power;
 	public static final long maxPower = 1_000_000;
-	public FluidTank tankOld;
 	public FluidTankNTM tank;
 	public FluidTankNTM blood;
 
@@ -75,17 +75,29 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 
 	public AudioWrapper audio;
 
-	private Fluid oldFluid =Fluids.NONE.getFF();
-    private static boolean converted = false;
-
 	public TileEntityMachineTurbofan() {
-		super(5, 150, true, true);
-		tankOld = new FluidTank(64000);
+		super(0, 150, true, true);
+
+        inventory = new ItemStackHandler(5) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                super.onContentsChanged(slot);
+                markDirty();
+            }
+
+            @Override
+            public void setStackInSlot(int slot, ItemStack stack) {
+                super.setStackInSlot(slot, stack);
+                if (Library.isMachineUpgrade(stack) && slot == 2)
+                    SoundUtil.playUpgradePlugSound(world, pos);
+            }
+        };
+
 		tank = new FluidTankNTM(Fluids.KEROSENE, 24000);
 		blood = new FluidTankNTM(Fluids.BLOOD, 24000);
 		upgradeManager = new UpgradeManagerNT(this);
-		converted = true;
 	}
+
 	@Override
 	public String getDefaultName() {
 		return "container.machineTurbofan";
@@ -102,16 +114,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
 		this.power = compound.getLong("powerTime");
-		converted = compound.getBoolean("converted");
 		tank.readFromNBT(compound,"tank");
-		if (!converted && tank.getTankType() == Fluids.NONE){
-			if(tankOld == null || tankOld.getCapacity() <= 0)
-				tankOld = new FluidTank(64000);
-			tankOld.readFromNBT(compound);
-			if(tankOld.getFluid() != null) {
-				oldFluid = tankOld.getFluid().getFluid();
-			}
-		}
 		if(compound.hasKey("inventory"))
 			inventory.deserializeNBT(compound.getCompoundTag("inventory"));
 		super.readFromNBT(compound);
@@ -120,10 +123,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 	@Override
 	public @NotNull NBTTagCompound writeToNBT(NBTTagCompound compound) {
 		compound.setLong("powerTime", power);
-		if(!converted && tank.getTankType() == Fluids.NONE){
-			tankOld.writeToNBT(compound);
-			compound.setBoolean("converted", true);
-		} else tank.writeToNBT(compound, "tank");
+		tank.writeToNBT(compound, "tank");
 		compound.setTag("inventory", inventory.serializeNBT());
 		return super.writeToNBT(compound);
 	}
@@ -147,11 +147,6 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 	
 	@Override
 	public void update() {
-		if(!converted && tank.getTankType() == Fluids.NONE) {
-			this.resizeInventory(6);
-			convertAndSetFluid(oldFluid, tankOld, tank);
-			converted = true;
-		}
 		if(!world.isRemote) {
 			this.output = 0;
 			this.consumption = 0;
@@ -170,7 +165,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 
 			long burnValue = 0;
 			int amount = 1 + this.afterburner;
-			int amountToBurn = breatheAir(this.tank.getFill() > 0 ? amount : 0) ? Math.min(amount, this.tank.getFill()) : 0;
+			int amountToBurn = Math.min(amount, this.tank.getFill());
 
 			boolean redstone = false;
 			for(DirPos pos : getConPos()) {
@@ -432,7 +427,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 
 	@Override
 	public void onChunkUnload() {
-
+        super.onChunkUnload();
 		if(audio != null) {
 			audio.stopSound();
 			audio = null;

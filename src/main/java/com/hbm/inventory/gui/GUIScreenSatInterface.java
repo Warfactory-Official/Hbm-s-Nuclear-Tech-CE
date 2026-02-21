@@ -1,11 +1,11 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.inventory.BedrockOreRegistry;
 import com.hbm.items.ISatChip;
 import com.hbm.items.tool.ItemSatInterface;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.lib.RefStrings;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toserver.SatLaserPacket;
 import com.hbm.render.NTMRenderHelper;
@@ -26,14 +26,13 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.oredict.OreDictionary;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
 
 import java.util.Arrays;
 import java.util.List;
 
 public class GUIScreenSatInterface extends GuiScreen {
 	
-    protected static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/satellites/gui_sat_interface.png");
+    protected static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/satellites/gui_sat_interface.png");
     protected int xSize = 216;
     protected int ySize = 216;
     protected int guiLeft;

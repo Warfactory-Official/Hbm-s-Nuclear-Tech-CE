@@ -1,9 +1,0 @@
-{
-	"ctm": {
-		"ctm_version": 1,
-		"type": "CTM",
-		"textures": [
-			"hbm:blocks/block_verticium_ctm"
-		]
-	}
-}

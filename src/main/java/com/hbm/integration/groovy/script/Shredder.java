@@ -1,6 +1,7 @@
 package com.hbm.integration.groovy.script;
 
 import com.cleanroommc.groovyscript.api.GroovyLog;
+import com.cleanroommc.groovyscript.api.documentation.annotations.RegistryDescription;
 import com.cleanroommc.groovyscript.helper.recipe.AbstractRecipeBuilder;
 import com.cleanroommc.groovyscript.registry.VirtualizedRegistry;
 import com.hbm.integration.groovy.HbmGroovyPropertyContainer;
@@ -12,6 +13,7 @@ import net.minecraft.item.ItemStack;
 import static com.hbm.inventory.recipes.ShredderRecipes.jeiShredderRecipes;
 import static com.hbm.inventory.recipes.ShredderRecipes.shredderRecipes;
 
+@RegistryDescription(linkGenerator = "hbm", isFullyDocumented = false)
 public class Shredder extends VirtualizedRegistry<Tuple.Pair<RecipesCommon.ComparableStack, ItemStack>> {
     @Override
     public void onReload() {

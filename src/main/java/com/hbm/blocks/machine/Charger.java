@@ -1,5 +1,7 @@
 package com.hbm.blocks.machine;
 
+import com.google.common.collect.ImmutableMap;
+import com.hbm.items.IDynamicModels;
 import com.hbm.render.block.BlockBakeFrame;
 import com.hbm.tileentity.machine.TileEntityCharger;
 import com.hbm.world.gen.nbt.INBTBlockTransformable;
@@ -7,14 +9,29 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.model.ModelRotation;
+import net.minecraft.client.renderer.block.statemap.StateMapperBase;
+import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.IModel;
+import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.client.model.ModelLoaderRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 public class Charger extends BlockContainerBakeable implements INBTBlockTransformable {
 
@@ -98,5 +115,58 @@ public class Charger extends BlockContainerBakeable implements INBTBlockTransfor
     @Override
     public int transformMeta(int meta, int coordBaseMode) {
         return INBTBlockTransformable.transformMetaDeco(meta, coordBaseMode);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void bakeModel(ModelBakeEvent event) {
+        try {
+            IModel blockBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("block/cube_all"));
+            ImmutableMap<String, String> blockTextures = ImmutableMap.of("all", "hbm:blocks/block_steel");
+            IModel blockRetextured = blockBaseModel.retexture(blockTextures);
+            IBakedModel blockBaked = blockRetextured.bake(
+                    ModelRotation.X0_Y0,
+                    DefaultVertexFormats.BLOCK,
+                    ModelLoader.defaultTextureGetter()
+            );
+            ModelResourceLocation worldLocation = new ModelResourceLocation(getRegistryName(), "normal");
+            event.getModelRegistry().putObject(worldLocation, blockBaked);
+            IModel itemBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
+            ImmutableMap<String, String> itemTextures = ImmutableMap.of("layer0", "hbm:blocks/" + getRegistryName().getPath());
+            IModel itemRetextured = itemBaseModel.retexture(itemTextures);
+            IBakedModel itemBaked = itemRetextured.bake(
+                    ModelRotation.X0_Y0,
+                    DefaultVertexFormats.ITEM,
+                    ModelLoader.defaultTextureGetter()
+            );
+            ModelResourceLocation inventoryLocation = new ModelResourceLocation(getRegistryName(), "inventory");
+            event.getModelRegistry().putObject(inventoryLocation, itemBaked);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void registerModel() {
+        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0, new ModelResourceLocation(this.getRegistryName(), "inventory"));
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void registerSprite(TextureMap map) {
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public StateMapperBase getStateMapper(ResourceLocation loc) {
+        return new StateMapperBase() {
+            @Override
+            protected @NotNull ModelResourceLocation getModelResourceLocation(@NotNull IBlockState state) {
+                return new ModelResourceLocation(loc, "normal");
+            }
+        };
     }
 }

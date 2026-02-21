@@ -1,7 +1,7 @@
 {
     "display": {
         "icon": {
-            "item": "hbm:decontamination_module"
+            "item": "hbm:nuke_man"
         },
         "title": {
             "translate": "hbm.advancement.root"

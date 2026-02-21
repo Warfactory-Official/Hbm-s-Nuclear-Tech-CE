@@ -1,16 +1,14 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerMassStorage;
-import com.hbm.lib.RefStrings;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toserver.NBTControlPacket;
 import com.hbm.tileentity.machine.storage.TileEntityMassStorage;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Keyboard;
@@ -18,9 +16,11 @@ import org.lwjgl.input.Keyboard;
 import java.io.IOException;
 import java.util.Locale;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUIMassStorage extends GuiInfoContainer {
 
-	private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/storage/gui_mass_storage.png");
+	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/storage/gui_mass_storage.png");
 	private TileEntityMassStorage storage;
 
 	public GUIMassStorage(InventoryPlayer invPlayer, TileEntityMassStorage tile) {
@@ -65,19 +65,21 @@ public class GUIMassStorage extends GuiInfoContainer {
 
 		if(guiLeft + 62 <= x && guiLeft + 62 + 14 > x && guiTop + 72 < y && guiTop + 72 + 14 >= y) {
 
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
 			NBTTagCompound data = new NBTTagCompound();
 			data.setBoolean("provide", Keyboard.isKeyDown(Keyboard.KEY_LSHIFT));
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, storage.getPos().getX(), storage.getPos().getY(), storage.getPos().getZ()));
-		}
+            PacketThreading.createSendToServerThreadedPacket(
+                    new NBTControlPacket(data, storage.getPos().getX(), storage.getPos().getY(), storage.getPos().getZ()));
+        }
 
 		if(guiLeft + 80 <= x && guiLeft + 80 + 14 > x && guiTop + 72 < y && guiTop + 72 + 14 >= y) {
 
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
 			NBTTagCompound data = new NBTTagCompound();
 			data.setBoolean("toggle", false);
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, storage.getPos().getX(), storage.getPos().getY(), storage.getPos().getZ()));
-		}
+            PacketThreading.createSendToServerThreadedPacket(
+                    new NBTControlPacket(data, storage.getPos().getX(), storage.getPos().getY(), storage.getPos().getZ()));
+        }
 	}
 
 	@Override

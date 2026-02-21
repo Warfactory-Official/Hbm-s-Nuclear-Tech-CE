@@ -1,8 +1,8 @@
 package com.hbm.entity.projectile;
 
 import com.hbm.explosion.vanillant.ExplosionVNT;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.particle.helper.ExplosionCreator;
 import net.minecraft.entity.projectile.EntityThrowable;
@@ -29,7 +29,7 @@ public class EntityTorpedo extends EntityThrowable {
             for(int i = 0; i < 15; i++) {
                 NBTTagCompound data = new NBTTagCompound();
                 data.setString("type", "bf");
-                PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data,
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data,
                                 posX + (rand.nextDouble() - 0.5) * 2,
                                 posY + (rand.nextDouble() - 0.5) * 1,
                                 posZ + (rand.nextDouble() - 0.5) * 2),

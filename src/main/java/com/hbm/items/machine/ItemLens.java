@@ -14,15 +14,11 @@ import java.util.List;
 public class ItemLens extends Item {
 
 	public long maxDamage;
-	public float fieldMod;
-	public float drainMod;
 	
-	public ItemLens(long maxDamage, float fieldMod, float drainMod, String s) {
+	public ItemLens(long maxDamage, String s) {
 		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		this.maxDamage = maxDamage;
-		this.fieldMod = fieldMod;
-		this.drainMod = drainMod;
 		
 		ModItems.ALL_ITEMS.add(this);
 	}
@@ -32,12 +28,8 @@ public class ItemLens extends Item {
 		long damage = getLensDamage(stack);
 		double percent = (int)((maxDamage - damage) * 100000000D / maxDamage) / 1000000D;
 
-
 		tooltip.add(TextFormatting.DARK_AQUA+I18nUtil.resolveKey("desc.durticks")+" " + (maxDamage - damage) + " / " + maxDamage);
 		tooltip.add(TextFormatting.DARK_AQUA+I18nUtil.resolveKey("desc.durpercents")+" " + percent + "%");
-
-		tooltip.add(TextFormatting.YELLOW+I18nUtil.resolveKey("desc.fieldmodifier")+" " + (fieldMod >= 1 ? "§a+" : "§c") + (Math.round(fieldMod * 1000) * .10 - 100) + "%");
-		tooltip.add(TextFormatting.YELLOW+I18nUtil.resolveKey("desc.powdrainmodifier")+" " + (drainMod >= 1 ? "§c+" : "§a") + (Math.round(drainMod * 1000) * .10 - 100) + "%");
 	}
 	
 	@Override
@@ -68,6 +60,4 @@ public class ItemLens extends Item {
 		
 		stack.getTagCompound().setLong("damage", damage);
 	}
-	
-	
 }

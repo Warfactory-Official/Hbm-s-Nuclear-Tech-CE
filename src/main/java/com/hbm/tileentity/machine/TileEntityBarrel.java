@@ -32,6 +32,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.Container;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -75,6 +76,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements
     private int age = 0;
     // Th3_Sl1ze: Ugh. Maybe there's a smarter way to convert fluids from forge tank to NTM tank but I don't know any other client-seamless methods.
     private Fluid oldFluid =Fluids.NONE.getFF();;
+    private boolean shouldDrop = true;
 
     public TileEntityBarrel() {
         super(6);
@@ -311,12 +313,14 @@ public class TileEntityBarrel extends TileEntityMachineBase implements
 
         //for when you fill antimatter into a matter tank
         if (b != ModBlocks.barrel_antimatter && tankNew.getTankType().isAntimatter()) {
+            shouldDrop = false;
             world.destroyBlock(pos, false);
             world.newExplosion(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 5, true, true);
         }
 
         //for when you fill hot or corrosive liquids into a plastic tank
         if (b == ModBlocks.barrel_plastic && (tankNew.getTankType().isCorrosive() || tankNew.getTankType().isHot())) {
+            shouldDrop = false;
             world.destroyBlock(pos, false);
             world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS, 1.0F, 1.0F);
         }
@@ -332,6 +336,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements
             }
 
             this.inventory = new ItemStackHandler(6);
+            shouldDrop = false;
             world.setBlockState(pos, ModBlocks.barrel_corroded.getDefaultState());
 
             TileEntityBarrel barrel = (TileEntityBarrel) world.getTileEntity(pos);
@@ -347,8 +352,16 @@ public class TileEntityBarrel extends TileEntityMachineBase implements
             if (world.rand.nextInt(3) == 0) {
                 tankNew.setFill(tankNew.getFill() - 1);
             }
-            if (world.rand.nextInt(3 * 60 * 20) == 0) world.destroyBlock(pos, false);
+            if (world.rand.nextInt(3 * 60 * 20) == 0) {
+                shouldDrop = false;
+                world.destroyBlock(pos, false);
+            }
         }
+    }
+
+    @Override
+    public boolean shouldDrop() {
+        return IPersistentNBT.super.shouldDrop() && shouldDrop;
     }
 
     @Override
@@ -435,22 +448,28 @@ public class TileEntityBarrel extends TileEntityMachineBase implements
 
     @Override
     public boolean isItemValidForSlot(int i, ItemStack stack) {
-        if (i == 0 && stack.getItem() instanceof IItemFluidIdentifier) {
-            return true;
-        }
-        return i == 2;
+        Item item = stack.getItem();
+        return switch (i) {
+            case 0, 1 -> item instanceof IItemFluidIdentifier;
+            case 2 -> Library.isStackDrainableForTank(stack, tankNew);
+            case 4 -> Library.isStackFillableForTank(stack, tankNew);
+            default -> true;
+        };
     }
 
     @Override
-    public boolean canInsertItem(int slot, ItemStack itemStack) {
-        return this.isItemValidForSlot(slot, itemStack);
-    }
-
-    @Override
-    public boolean canExtractItem(int slot, ItemStack itemStack, int amount) {
+    public boolean canInsertItem(int slot, ItemStack stack) {
         return switch (slot) {
-            case 1, 3 -> true;
-            default -> false;
+            case 1, 3, 5 -> false;
+            default -> isItemValidForSlot(slot, stack);
+        };
+    }
+
+    @Override
+    public boolean canExtractItem(int slot, ItemStack stack, int amount) {
+        return switch (slot) {
+            case 1, 3, 5 -> true;
+            default -> !isItemValidForSlot(slot, stack);
         };
     }
 

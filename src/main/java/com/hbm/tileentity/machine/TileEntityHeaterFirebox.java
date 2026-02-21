@@ -2,10 +2,10 @@ package com.hbm.tileentity.machine;
 
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
+import com.hbm.Tags;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.container.ContainerFirebox;
 import com.hbm.inventory.gui.GUIFirebox;
-import com.hbm.lib.RefStrings;
 import com.hbm.modules.ModuleBurnTime;
 import com.hbm.tileentity.IConfigurableMachine;
 import net.minecraft.client.gui.GuiScreen;
@@ -78,7 +78,7 @@ public class TileEntityHeaterFirebox extends TileEntityFireboxBase implements IC
 	@Override
 	@SideOnly(Side.CLIENT)
 	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
-		if(texture == null) texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/machine/gui_firebox.png");
+		if(texture == null) texture = new ResourceLocation(Tags.MODID + ":textures/gui/machine/gui_firebox.png");
 		return new GUIFirebox(player.inventory, this, texture);
 	}
 

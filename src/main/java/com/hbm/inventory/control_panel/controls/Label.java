@@ -2,14 +2,13 @@ package com.hbm.inventory.control_panel.controls;
 
 import com.hbm.inventory.control_panel.*;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.IModelCustom;
+import com.hbm.render.loader.IModelCustom;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
 
 import java.util.List;
 import java.util.Map;
@@ -95,7 +94,7 @@ public class Label extends Control {
 
         float s = scale/500F;
         GlStateManager.scale(s, -s, s);
-        GL11.glNormal3f(0.0F, 0.0F, -1.0F);
+        GlStateManager.color(0.0F, 0.0F, -1.0F);
         GlStateManager.rotate(90, 1, 0, 0);
         GlStateManager.translate(0, 0, .1F);
 

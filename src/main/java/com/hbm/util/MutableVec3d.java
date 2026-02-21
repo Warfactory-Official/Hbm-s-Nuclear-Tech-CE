@@ -1,6 +1,6 @@
 package com.hbm.util;
 
-import com.hbm.lib.UnsafeHolder;
+import com.hbm.lib.internal.UnsafeHolder;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
@@ -8,7 +8,7 @@ import net.minecraft.util.math.Vec3i;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import static com.hbm.lib.UnsafeHolder.U;
+import static com.hbm.lib.internal.UnsafeHolder.U;
 
 /**
  * A mutable version of {@link Vec3d}, with some extra utilities and supports double precision rotation with intrinsics.

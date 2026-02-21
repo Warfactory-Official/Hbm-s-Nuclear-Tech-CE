@@ -5,8 +5,6 @@ import com.hbm.packet.threading.ThreadedPacket;
 import gnu.trove.map.hash.TByteObjectHashMap;
 import gnu.trove.map.hash.TObjectByteHashMap;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.CodecException;
@@ -31,6 +29,7 @@ import java.util.List;
 import static net.minecraftforge.fml.common.network.FMLIndexedMessageToMessageCodec.INBOUNDPACKETTRACKER;
 
 // Essentially the `SimpleNetworkWrapper` from FML but doesn't flush the packets immediately. Also now with a custom codec!
+// sendTo*Direct is only intended for PacketThreading usage.
 public class NetworkHandler {
 
     // Network codec for allowing packets to be "precompiled".
@@ -47,51 +46,89 @@ public class NetworkHandler {
 
         @Override
         public void handlerAdded(ChannelHandlerContext ctx) {
-            ctx.attr(INBOUNDPACKETTRACKER).set(new ThreadLocal<>());
+            ctx.channel().attr(INBOUNDPACKETTRACKER).set(new ThreadLocal<>());
         }
 
         @Override
         protected void encode(ChannelHandlerContext ctx, Object msg, List<Object> out) {
-            ByteBuf outboundBuf = PooledByteBufAllocator.DEFAULT.heapBuffer();
-            byte discriminator;
-            Class<?> msgClass = msg.getClass();
-            discriminator = types.get(msgClass);
-            outboundBuf.writeByte(discriminator);
+            ByteBuf headerBuf = null;
+            ByteBuf payload = null;
+            ByteBuf combined = null;
+            try {
+                headerBuf = ctx.alloc().ioBuffer(1);
+                final byte discriminator;
+                final Class<?> msgClass = msg.getClass();
+                if (msg instanceof ThreadedPacket packet) {
+                    if (!types.containsKey(msgClass)) {
+                        throw new CodecException("Unregistered packet type " + msgClass.getName());
+                    }
+                    discriminator = types.get(msgClass);
+                    headerBuf.writeByte(discriminator);
+                    ByteBuf cb = packet.getCompiledBuffer();
+                    payload = cb.retainedDuplicate();
+                } else if (msg instanceof IMessage message) {
+                    if (!types.containsKey(msgClass)) {
+                        throw new CodecException("Unregistered packet type " + msgClass.getName());
+                    }
+                    discriminator = types.get(msgClass);
+                    headerBuf.writeByte(discriminator);
 
-            if(msg instanceof ThreadedPacket) // Precompiled packet to avoid race conditions/speed up serialization.
-                outboundBuf.writeBytes(((ThreadedPacket) msg).getCompiledBuffer());
-            else if(msg instanceof IMessage)
-                ((IMessage) msg).toBytes(outboundBuf);
-            else
-                throw new CodecException("Unknown packet codec requested during encoding, expected IMessage/PrecompiledPacket, got " + msg.getClass().getName());
+                    payload = ctx.alloc().ioBuffer();
+                    message.toBytes(payload);
+                } else {
+                    throw new CodecException("Unknown packet type " + msgClass.getName());
+                }
+                combined = ctx.alloc().compositeBuffer(2)
+                                      .addComponent(true, headerBuf)
+                                      .addComponent(true, payload);
+                headerBuf = null;
+                payload = null;
 
-            FMLProxyPacket proxy = new FMLProxyPacket(new PacketBuffer(Unpooled.buffer().writeBytes(outboundBuf)), ctx.channel().attr(NetworkRegistry.FML_CHANNEL).get());            outboundBuf.release();
-            WeakReference<FMLProxyPacket> ref = ctx.attr(INBOUNDPACKETTRACKER).get().get();
-            FMLProxyPacket old = ref == null ? null : ref.get();
-            if (old != null) {
-                proxy.setDispatcher(old.getDispatcher());
+                FMLProxyPacket proxy = new FMLProxyPacket(new PacketBuffer(combined),
+                        ctx.channel().attr(NetworkRegistry.FML_CHANNEL).get());
+                ThreadLocal<WeakReference<FMLProxyPacket>> tl = ctx.channel().attr(INBOUNDPACKETTRACKER).get();
+                WeakReference<FMLProxyPacket> ref = tl == null ? null : tl.get();
+                FMLProxyPacket old = ref == null ? null : ref.get();
+                if (old != null) proxy.setDispatcher(old.getDispatcher());
+                out.add(proxy);
+                //noinspection UnusedAssignment
+                combined = null;
+            } catch (Throwable t) {
+                if (combined != null && combined.refCnt() > 0) combined.release();
+                if (payload != null && payload.refCnt() > 0) payload.release();
+                if (headerBuf != null && headerBuf.refCnt() > 0) headerBuf.release();
+                throw t;
             }
-            out.add(proxy);
         }
 
         @Override
         protected void decode(ChannelHandlerContext ctx, FMLProxyPacket msg, List<Object> out) throws Exception {
             ByteBuf inboundBuf = msg.payload();
-            byte discriminator = inboundBuf.readByte();
-            Class<?> originalMsgClass = discriminators.get(discriminator);
+            try {
+                byte discriminator = inboundBuf.readByte();
+                Class<?> originalMsgClass = discriminators.get(discriminator);
 
-            if(originalMsgClass == null)
-                throw new CodecException("Undefined message for discriminator " + discriminator + " in channel " + msg.channel());
+                if (originalMsgClass == null)
+                    throw new CodecException("Undefined message for discriminator " + discriminator + " in channel " + msg.channel());
 
-            Object newMsg = originalMsgClass.getDeclaredConstructor().newInstance();
-            ctx.attr(INBOUNDPACKETTRACKER).get().set(new WeakReference<>(msg));
+                Object newMsg = originalMsgClass.getDeclaredConstructor().newInstance();
+                ctx.channel().attr(INBOUNDPACKETTRACKER).get().set(new WeakReference<>(msg));
 
-            if(newMsg instanceof IMessage) // pretty much always the case
-                ((IMessage) newMsg).fromBytes(inboundBuf.slice());
-            else
-                throw new CodecException("Unknown packet codec requested during decoding, expected IMessage/PrecompiledPacket, got " + msg.getClass().getName());
+                if (newMsg instanceof IMessage message)
+                    // If 'message' is a BufPacket, it performs a retainedSlice() here.
+                    // This increments the count to 2.
+                    // The finally block below decrements to 1.
+                    // The BufPacket handler eventually decrements to 0. Safe.
+                    message.fromBytes(inboundBuf.slice());
+                else
+                    throw new CodecException("Unknown packet codec requested during decoding, expected IMessage/PrecompiledPacket, got " + msg.getClass().getName());
 
-            out.add(newMsg);
+                out.add(newMsg);
+            } finally {
+                if (inboundBuf != null) {
+                    inboundBuf.release();
+                }
+            }
         }
     }
 
@@ -133,89 +170,176 @@ public class NetworkHandler {
         return serverChannel.generatePacketFrom(message);
     }
 
-    public static void flush() {
+    // ClientTickEvent Phase END
+    public static void flushClient() {
+        PacketThreading.LOCK.lock();
+        try {
+            flushClientDirect();
+        } finally {
+            PacketThreading.LOCK.unlock();
+        }
+    }
+
+    // ServerTickEvent Phase END
+    public static void flushServer() {
+        PacketThreading.LOCK.lock();
+        try {
+            flushServerDirect();
+        } finally {
+            PacketThreading.LOCK.unlock();
+        }
+    }
+
+    public static void flushClientDirect() {
         clientChannel.flush();
+    }
+
+    public static void flushServerDirect() {
         serverChannel.flush();
     }
 
-    public void sendToServer(IMessage message) { // No thread protection needed here, since the client never threads packets to the server.
+    public void sendToServer(IMessage message) {
+        if (message instanceof ThreadedPacket packet) {
+            MainRegistry.logger.warn("[NetworkHandler] Deprecated API usage: ThreadedPacket {} is sent through sendToServer. " +
+                    "Delegating to PacketThreading.createSendToServerThreadedPacket.", packet.getClass().getName());
+            PacketThreading.createSendToServerThreadedPacket(packet);
+            return;
+        }
+        PacketThreading.LOCK.lock();
+        try {
+            sendToServerDirect(message);
+        } finally {
+            PacketThreading.LOCK.unlock();
+        }
+    }
+
+    public void sendToServerDirect(IMessage message) {
         clientChannel.attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.TOSERVER);
         clientChannel.write(message);
     }
 
     public void sendToDimension(IMessage message, int dimensionId) {
-        try {
-            PacketThreading.lock.lock();
-            serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.DIMENSION);
-            serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).set(dimensionId);
-            serverChannel.write(message);
-        } finally {
-            PacketThreading.lock.unlock();
+        if (message instanceof ThreadedPacket packet) {
+            MainRegistry.logger.warn("[NetworkHandler] Deprecated API usage: ThreadedPacket {} is sent through sendToDimension. " +
+                    "Delegating to PacketThreading.createSendToDimensionThreadedPacket.", packet.getClass().getName());
+            PacketThreading.createSendToDimensionThreadedPacket(packet, dimensionId);
+            return;
         }
+        PacketThreading.LOCK.lock();
+        try {
+            sendToDimensionDirect(message, dimensionId);
+        } finally {
+            PacketThreading.LOCK.unlock();
+        }
+    }
+
+    public void sendToDimensionDirect(IMessage message, int dimensionId) {
+        serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.DIMENSION);
+        serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).set(dimensionId);
+        serverChannel.write(message);
     }
 
     public void sendToAllAround(IMessage message, NetworkRegistry.TargetPoint point) {
+        if (message instanceof ThreadedPacket packet) {
+            MainRegistry.logger.warn("[NetworkHandler] Deprecated API usage: ThreadedPacket {} is sent through sendToAllAround. " +
+                    "Delegating to PacketThreading.createAllAroundThreadedPacket.", packet.getClass().getName());
+            PacketThreading.createAllAroundThreadedPacket(packet, point);
+            return;
+        }
+        PacketThreading.LOCK.lock();
         try {
-            PacketThreading.lock.lock();
-            serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.ALLAROUNDPOINT);
-            serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).set(point);
-            serverChannel.write(message);
+            sendToAllAroundDirect(message, point);
         } finally {
-            PacketThreading.lock.unlock();
+            PacketThreading.LOCK.unlock();
         }
     }
 
-    public void sendToAllAround(ByteBuf message, NetworkRegistry.TargetPoint point) {
-        try {
-            PacketThreading.lock.lock();
-            serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.ALLAROUNDPOINT);
-            serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).set(point);
-            serverChannel.write(message);
-        } finally {
-            PacketThreading.lock.unlock();
-        }
+    public void sendToAllAroundDirect(IMessage message, NetworkRegistry.TargetPoint point) {
+        serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.ALLAROUNDPOINT);
+        serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).set(point);
+        serverChannel.write(message);
     }
 
     public void sendToAllTracking(IMessage message, NetworkRegistry.TargetPoint point) {
-        try {
-            PacketThreading.lock.lock();
-            serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.TRACKING_POINT);
-            serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).set(point);
-            serverChannel.write(message);
-        } finally {
-            PacketThreading.lock.unlock();
+        if (message instanceof ThreadedPacket packet) {
+            MainRegistry.logger.warn("[NetworkHandler] Deprecated API usage: ThreadedPacket {} is sent through sendToAllTracking. " +
+                    "Delegating to PacketThreading.createSendToAllTrackingThreadedPacket.", packet.getClass().getName());
+            PacketThreading.createSendToAllTrackingThreadedPacket(packet, point);
+            return;
         }
+        PacketThreading.LOCK.lock();
+        try {
+            sendToAllTrackingDirect(message, point);
+        } finally {
+            PacketThreading.LOCK.unlock();
+        }
+    }
+
+    public void sendToAllTrackingDirect(IMessage message, NetworkRegistry.TargetPoint point) {
+        serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.TRACKING_POINT);
+        serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).set(point);
+        serverChannel.write(message);
     }
 
     public void sendToAllTracking(IMessage message, Entity entity) {
-        try {
-            PacketThreading.lock.lock();
-            serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.TRACKING_ENTITY);
-            serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).set(entity);
-            serverChannel.write(message);
-        } finally {
-            PacketThreading.lock.unlock();
+        if (message instanceof ThreadedPacket packet) {
+            MainRegistry.logger.warn("[NetworkHandler] Deprecated API usage: ThreadedPacket {} is sent through sendToAllTracking. " +
+                    "Delegating to PacketThreading.createSendToAllTrackingThreadedPacket.", packet.getClass().getName());
+            PacketThreading.createSendToAllTrackingThreadedPacket(packet, entity);
+            return;
         }
+        PacketThreading.LOCK.lock();
+        try {
+            sendToAllTrackingDirect(message, entity);
+        } finally {
+            PacketThreading.LOCK.unlock();
+        }
+    }
+
+    public void sendToAllTrackingDirect(IMessage message, Entity entity) {
+        serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.TRACKING_ENTITY);
+        serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).set(entity);
+        serverChannel.write(message);
     }
 
     public void sendTo(IMessage message, EntityPlayerMP player) {
+        if (message instanceof ThreadedPacket packet) {
+            MainRegistry.logger.warn("[NetworkHandler] Deprecated API usage: ThreadedPacket {} is sent through sendTo. " +
+                    "Delegating to PacketThreading.createSendToThreadedPacket.", packet.getClass().getName());
+            PacketThreading.createSendToThreadedPacket(packet, player);
+            return;
+        }
+        PacketThreading.LOCK.lock();
         try {
-            PacketThreading.lock.lock();
-            serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.PLAYER);
-            serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).set(player);
-            serverChannel.write(message);
+            sendToDirect(message, player);
         } finally {
-            PacketThreading.lock.unlock();
+            PacketThreading.LOCK.unlock();
         }
     }
 
+    public void sendToDirect(IMessage message, EntityPlayerMP player) {
+        serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.PLAYER);
+        serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).set(player);
+        serverChannel.write(message);
+    }
+
     public void sendToAll(IMessage message) {
-        try {
-            PacketThreading.lock.lock();
-            serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.ALL);
-            serverChannel.write(message);
-        } finally {
-            PacketThreading.lock.unlock();
+        if (message instanceof ThreadedPacket packet) {
+            MainRegistry.logger.warn("[NetworkHandler] Deprecated API usage: ThreadedPacket {} is sent through sendToAll. " +
+                    "Delegating to PacketThreading.createSendToAllThreadedPacket.", packet.getClass().getName());
+            PacketThreading.createSendToAllThreadedPacket(packet);
+            return;
         }
+        PacketThreading.LOCK.lock();
+        try {
+            sendToAllDirect(message);
+        } finally {
+            PacketThreading.LOCK.unlock();
+        }
+    }
+
+    public void sendToAllDirect(IMessage message) {
+        serverChannel.attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.ALL);
+        serverChannel.write(message);
     }
 }

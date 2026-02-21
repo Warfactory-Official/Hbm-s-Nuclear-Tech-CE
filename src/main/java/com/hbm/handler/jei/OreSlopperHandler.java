@@ -21,7 +21,7 @@ public class OreSlopperHandler extends JEIUniversalHandler{
     private static HashMap<Object, Object> getSlopperRecipes() {
         HashMap<Object, Object> recipes = new HashMap<>();
         List<ItemStack> outputs = new ArrayList<>();
-        for(ItemBedrockOreNew.BedrockOreType type : ItemBedrockOreNew.BedrockOreType.values()) outputs.add(ItemBedrockOreNew.make(ItemBedrockOreNew.BedrockOreGrade.BASE, type));
+        for(ItemBedrockOreNew.BedrockOreType type : ItemBedrockOreNew.BedrockOreType.VALUES) outputs.add(ItemBedrockOreNew.make(ItemBedrockOreNew.BedrockOreGrade.BASE, type));
         outputs.add(ItemFluidIcon.make(Fluids.SLOP, 1000));
         recipes.put(new ItemStack[] {ItemFluidIcon.make(Fluids.WATER, 1000), new ItemStack(ModItems.bedrock_ore_base)}, outputs.toArray(new ItemStack[0]));
         return recipes;

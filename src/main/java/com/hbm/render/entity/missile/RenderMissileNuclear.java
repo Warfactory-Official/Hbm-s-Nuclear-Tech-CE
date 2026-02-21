@@ -5,17 +5,19 @@ import com.hbm.entity.missile.EntityMissileTier4;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.NTMRenderHelper;
+import com.hbm.util.RenderUtil;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
-import org.lwjgl.opengl.GL11;
 // PRACTICALLY - TIER 4 MISSILES
 @AutoRegister(entity = EntityMissileTier4.EntityMissileN2.class, factory = "FACTORY")
 @AutoRegister(entity = EntityMissileTier4.EntityMissileNuclear.class, factory = "FACTORY")
 @AutoRegister(entity = EntityMissileTier4.EntityMissileMirv.class, factory = "FACTORY")
 @AutoRegister(entity = EntityMissileTier4.EntityMissileVolcano.class, factory = "FACTORY")
+@AutoRegister(entity = EntityMissileTier4.EntityMissileDoomsday.class, factory = "FACTORY")
+@AutoRegister(entity = EntityMissileTier4.EntityMissileDoomsdayRusted.class, factory = "FACTORY")
 public class RenderMissileNuclear extends Render<EntityMissileBaseNT> {
 
 	public static final IRenderFactory<EntityMissileBaseNT> FACTORY = (RenderManager man) -> {return new RenderMissileNuclear(man);};
@@ -27,8 +29,8 @@ public class RenderMissileNuclear extends Render<EntityMissileBaseNT> {
 	@Override
 	public void doRender(EntityMissileBaseNT missile, double x, double y, double z, float entityYaw, float partialTicks) {
 		GlStateManager.pushMatrix();
-		GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
-		GlStateManager.enableLighting();
+        boolean prevLighting = RenderUtil.isLightingEnabled();
+        if (!prevLighting) GlStateManager.enableLighting();
         double[] renderPos = NTMRenderHelper.getRenderPosFromMissile(missile, partialTicks);
         x = renderPos[0];
         y = renderPos[1];
@@ -44,10 +46,14 @@ public class RenderMissileNuclear extends Render<EntityMissileBaseNT> {
 			bindTexture(ResourceManager.missileNuclear_tex);
 		else if(missile instanceof EntityMissileTier4.EntityMissileMirv)
 			bindTexture(ResourceManager.missileMIRV_tex);
+		else if(missile instanceof EntityMissileTier4.EntityMissileDoomsdayRusted)
+			bindTexture(ResourceManager.missileDoomsdayRusted_tex);
+		else if(missile instanceof EntityMissileTier4.EntityMissileDoomsday)
+			bindTexture(ResourceManager.missileDoomsday_tex);
 		else
 			bindTexture(ResourceManager.missileN2_tex);
         ResourceManager.missileNuclear.renderAll();
-        GL11.glPopAttrib();
+        if (!prevLighting) GlStateManager.disableLighting();
 		GlStateManager.popMatrix();
 	}
 

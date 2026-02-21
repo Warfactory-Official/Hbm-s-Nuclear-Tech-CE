@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.OreDictStack;
@@ -7,11 +8,9 @@ import com.hbm.inventory.container.ContainerAnvil;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilConstructionRecipe;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilOutput;
-import com.hbm.lib.RefStrings;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toserver.AnvilCraftPacket;
 import com.hbm.util.I18nUtil;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.inventory.GuiContainer;
@@ -19,7 +18,6 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
@@ -35,9 +33,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUIAnvil extends GuiContainer {
 
-	public static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_anvil.png");
+	public static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_anvil.png");
 	
 	private int tier;
 	private List<AnvilConstructionRecipe> originList = new ArrayList<>();
@@ -161,7 +161,7 @@ public class GUIAnvil extends GuiContainer {
 		this.search.mouseClicked(x, y, k);
 		
 		if(guiLeft + 7 <= x && guiLeft + 7 + 9 > x && guiTop + 71 < y && guiTop + 71 + 36 >= y) {
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
 			if(this.index > 0)
 				this.index--;
 			
@@ -169,7 +169,7 @@ public class GUIAnvil extends GuiContainer {
 		}
 		
 		if(guiLeft + 106 <= x && guiLeft + 106 + 9 > x && guiTop + 71 < y && guiTop + 71 + 36 >= y) {
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
 			if(this.index < this.size)
 				this.index++;
 			
@@ -181,14 +181,14 @@ public class GUIAnvil extends GuiContainer {
 			if(this.selection == -1)
 				return;
 			
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
 			PacketDispatcher.wrapper.sendToServer(new AnvilCraftPacket(this.recipes.get(this.selection), Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) ? 1 : 0));
 			
 			return;
 		}
 		
 		if(guiLeft + 97 <= x && guiLeft + 97 + 18 > x && guiTop + 107 < y && guiTop + 107 + 18 >= y) {
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
 			search(this.search.getText());
 			return;
 		}
@@ -209,7 +209,7 @@ public class GUIAnvil extends GuiContainer {
 				else
 					this.selection = -1;
 				
-				mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+				playClickSound();
 				return;
 			}
 		}

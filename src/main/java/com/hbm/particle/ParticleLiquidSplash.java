@@ -1,6 +1,6 @@
 package com.hbm.particle;
 
-import com.hbm.main.ModEventHandlerClient;
+import com.hbm.main.client.NTMClientRegistry;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.entity.Entity;
@@ -11,7 +11,7 @@ public class ParticleLiquidSplash extends Particle {
 
     public ParticleLiquidSplash(World world, double x, double y, double z) {
         super(world, x, y, z);
-        this.setParticleTexture(ModEventHandlerClient.particle_base);
+        this.setParticleTexture(NTMClientRegistry.particle_base);
         this.particleRed = this.particleGreen = this.particleBlue = 1F - world.rand.nextFloat() * 0.2F;
         this.particleAlpha = 0.5F;
         this.particleScale = 0.4F;

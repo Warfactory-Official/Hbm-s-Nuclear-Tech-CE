@@ -1,9 +1,9 @@
 package com.hbm.handler.jei;
 
+import com.hbm.Tags;
 import com.hbm.inventory.RecipesCommon;
 import com.hbm.inventory.recipes.PressRecipes;
 import com.hbm.items.machine.ItemStamp;
-import com.hbm.lib.RefStrings;
 import com.hbm.util.I18nUtil;
 import com.hbm.util.Tuple;
 import mezz.jei.api.IGuiHelper;
@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 public class PressRecipeHandler implements IRecipeCategory<PressRecipeHandler.Wrapper> {
-	private static final ResourceLocation GUI_TEXTURE = new ResourceLocation(RefStrings.MODID, "textures/gui/jei/gui_nei_press.png");
+	private static final ResourceLocation GUI_TEXTURE = new ResourceLocation(Tags.MODID, "textures/gui/jei/gui_nei_press.png");
 
 	private final IDrawable background;
 
@@ -47,7 +47,7 @@ public class PressRecipeHandler implements IRecipeCategory<PressRecipeHandler.Wr
 
 	@Override
 	public @NotNull String getModName() {
-		return RefStrings.MODID;
+		return Tags.MODID;
 	}
 
 	@Override

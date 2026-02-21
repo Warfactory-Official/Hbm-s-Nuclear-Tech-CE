@@ -6,8 +6,13 @@ import com.hbm.capability.HbmLivingCapability.IEntityHbmProps;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.capability.HbmLivingProps.ContaminationEffect;
 import com.hbm.config.CompatibilityConfig;
+import com.hbm.config.GeneralConfig;
 import com.hbm.config.RadiationConfig;
 import com.hbm.config.WorldConfig;
+import com.hbm.entity.mob.EntityCreeperNuclear;
+import com.hbm.entity.mob.EntityDuck;
+import com.hbm.entity.mob.EntityQuackos;
+import com.hbm.entity.mob.EntityRADBeast;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.radiation.ChunkRadiationManager;
@@ -18,6 +23,7 @@ import com.hbm.items.gear.ArmorFSB;
 import com.hbm.items.weapon.sedna.factory.ConfettiUtil;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;
+import com.hbm.main.AdvancementManager;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.packet.toclient.ExtPropPacket;
@@ -35,6 +41,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.monster.EntityBlaze;
+import net.minecraft.entity.monster.EntityCreeper;
+import net.minecraft.entity.monster.EntityZombie;
+import net.minecraft.entity.monster.EntityZombieVillager;
+import net.minecraft.entity.passive.*;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
@@ -55,14 +66,16 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
-import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
 public class EntityEffectHandler {
 	public static void onUpdate(EntityLivingBase entity) {
-		
-		if(!entity.world.isRemote) {
+        //mlbv: placed at top to prevent getting transient radiation from code below
+        handleRadiationEffect(entity);
+
+        if(!entity.world.isRemote) {
 			
 			if(entity.ticksExisted % 20 == 0) {
 				HbmLivingProps.setRadBuf(entity, HbmLivingProps.getRadEnv(entity));
@@ -77,7 +90,7 @@ public class EntityEffectHandler {
             if(entity.isWet()) radiation *= WorldConfig.craterBiomeWaterMult;
 
             if(radiation > 0) {
-                ContaminationUtil.contaminate(entity, HazardType.RADIATION, ContaminationType.CREATIVE, radiation / 20F);
+                ContaminationUtil.contaminate(entity, HazardType.RADIATION, ContaminationType.CREATIVE, (double) radiation / 20D);
             }
 			
 			if(entity instanceof EntityPlayerMP) {
@@ -111,7 +124,7 @@ public class EntityEffectHandler {
                 }
             }
         }
-		
+
 		handleContamination(entity);
 		handleContagion(entity);
 		handleRadiation(entity);
@@ -129,20 +142,17 @@ public class EntityEffectHandler {
 		
 		if(entity.world.isRemote)
 			return;
-		
-		List<ContaminationEffect> contamination = HbmLivingProps.getCont(entity);
-		List<ContaminationEffect> rem = new ArrayList<>();
-		
-		for(ContaminationEffect con : contamination) {
-			ContaminationUtil.contaminate(entity, HazardType.RADIATION, con.ignoreArmor ? ContaminationType.RAD_BYPASS : ContaminationType.CREATIVE, con.getRad());
-			
-			con.time--;
-			
-			if(con.time <= 0)
-				rem.add(con);
-		}
-		
-		contamination.removeAll(rem);
+
+        Iterator<ContaminationEffect> iterator = HbmLivingProps.getCont(entity).iterator();
+        while (iterator.hasNext()) {
+            ContaminationEffect con = iterator.next();
+            ContaminationUtil.contaminate(entity, HazardType.RADIATION, con.ignoreArmor ? ContaminationType.RAD_BYPASS : ContaminationType.CREATIVE, con.getRad());
+
+            con.time--;
+
+            if (con.time <= 0)
+                iterator.remove();
+        }
 	}
 	
 	private static void handleRadiation(EntityLivingBase entity) {
@@ -157,27 +167,27 @@ public class EntityEffectHandler {
 			int iy = MathHelper.floor(entity.posY);
 			int iz = MathHelper.floor(entity.posZ);
 
-			BlockPos pos = new BlockPos(ix, iy, iz);
-			float offset = ChunkRadiationManager.proxy.getRadiation(world, pos);
+            BlockPos pos = new BlockPos(ix, iy, iz);
+            double offset = ChunkRadiationManager.proxy.getRadiation(world, pos);
 
 			Object v = CompatibilityConfig.dimensionRad.get(world.provider.getDimension());
-			float background = (v instanceof Number) ? ((Number) v).floatValue() : 0f;
-			float rad = Math.max(0F, offset + background);
-			if (rad > 0F) {
-				ContaminationUtil.contaminate(entity, HazardType.RADIATION, ContaminationType.CREATIVE, rad / 20F);
-			}
-	
+            float background = (v instanceof Number) ? ((Number) v).floatValue() : 0f;
+            double radD = Math.max(0D, offset + background);
+            if (radD > 0D) {
+                ContaminationUtil.contaminate(entity, HazardType.RADIATION, ContaminationType.CREATIVE, (float) (radD / 20D));
+            }
+
 			if(entity.world.isRaining() && RadiationConfig.cont > 0 && AuxSavedData.getThunder(entity.world) > 0 && entity.world.canBlockSeeSky(pos)) {
 				ContaminationUtil.contaminate(entity, HazardType.RADIATION, ContaminationType.CREATIVE, RadiationConfig.cont * 0.0005F);
 			}
-			
+
 			if(entity instanceof EntityPlayer player && (player.capabilities.isCreativeMode || player.isSpectator()))
 				return;
-			
+
 			Random rand = new Random(entity.getEntityId());
 			int r600 = rand.nextInt(600);
 			int r1200 = rand.nextInt(1200);
-			
+
 			if(HbmLivingProps.getRadiation(entity) > 600 && (world.getTotalWorldTime() + r600) % 600 < 20 && canVomit(entity)) {
 				NBTTagCompound nbt = new NBTTagCompound();
 				nbt.setString("type", "vomit");
@@ -185,42 +195,42 @@ public class EntityEffectHandler {
 				nbt.setInteger("count", 25);
 				nbt.setInteger("entity", entity.getEntityId());
 				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(nbt, 0, 0, 0),  new TargetPoint(entity.dimension, entity.posX, entity.posY, entity.posZ, 25));
-				
+
 				if((world.getTotalWorldTime() + r600) % 600 == 1) {
 					world.playSound(null, ix, iy, iz, HBMSoundHandler.vomit, SoundCategory.NEUTRAL, 1.0F, 1.0F);
 					entity.addPotionEffect(new PotionEffect(MobEffects.HUNGER, 60, 19));
 				}
 
 			} else if(HbmLivingProps.getRadiation(entity) > 200 && (world.getTotalWorldTime() + r1200) % 1200 < 20 && canVomit(entity)) {
-				
+
 				NBTTagCompound nbt = new NBTTagCompound();
 				nbt.setString("type", "vomit");
 				nbt.setString("mode", "normal");
 				nbt.setInteger("count", 15);
 				nbt.setInteger("entity", entity.getEntityId());
 				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(nbt, 0, 0, 0),  new TargetPoint(entity.dimension, entity.posX, entity.posY, entity.posZ, 25));
-				
+
 				if((world.getTotalWorldTime() + r1200) % 1200 == 1) {
 					world.playSound(null, ix, iy, iz, HBMSoundHandler.vomit, SoundCategory.NEUTRAL, 1.0F, 1.0F);
 					entity.addPotionEffect(new PotionEffect(MobEffects.HUNGER, 60, 19));
 				}
 			}
-			
+
 			if(HbmLivingProps.getRadiation(entity) > 900 && (world.getTotalWorldTime() + rand.nextInt(10)) % 10 == 0) {
-				
+
 				NBTTagCompound nbt = new NBTTagCompound();
 				nbt.setString("type", "sweat");
 				nbt.setInteger("count", 1);
 				nbt.setInteger("block", Block.getIdFromBlock(Blocks.REDSTONE_BLOCK));
 				nbt.setInteger("entity", entity.getEntityId());
 				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(nbt, 0, 0, 0),  new TargetPoint(entity.dimension, entity.posX, entity.posY, entity.posZ, 25));
-			
+
 			}
 		} else {
-			float radiation = HbmLivingProps.getRadiation(entity);
-			
+            double radiation = HbmLivingProps.getRadiation(entity);
+
 			if(entity instanceof EntityPlayer && radiation > 600) {
-				
+
 				NBTTagCompound nbt = new NBTTagCompound();
 				nbt.setString("type", "radiation");
 				nbt.setInteger("count", radiation > 900 ? 4 : radiation > 800 ? 2 : 1);
@@ -228,17 +238,116 @@ public class EntityEffectHandler {
 			}
 		}
 	}
-	
-	private static void handleDigamma(EntityLivingBase entity) {
+
+    private static void handleRadiationEffect(EntityLivingBase entity) {
+        World world = entity.world;
+        if (world.isRemote) return;
+        if (!GeneralConfig.enableRads || entity.isEntityInvulnerable(ModDamageSource.radiation) || (entity instanceof EntityPlayerMP player && player.isSpectator()))
+            return;
+
+        double eRad = HbmLivingProps.getRadiation(entity);
+        if (eRad < 50) return;
+        int rng = world.rand.nextInt(21000);
+
+        if (eRad >= 200 && entity.getHealth() > 0 && entity instanceof EntityCreeper) {
+            if (rng % 3 == 0) {
+                EntityCreeperNuclear creep = new EntityCreeperNuclear(world);
+                creep.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
+                if (!entity.isDead && world.spawnEntity(creep)) entity.setDead();
+            } else {
+                entity.attackEntityFrom(ModDamageSource.radiation, 100F);
+            }
+            return;
+        } else if (eRad >= 50 && entity instanceof EntityCow && !(entity instanceof EntityMooshroom)) {
+            EntityMooshroom creep = new EntityMooshroom(world);
+            creep.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
+            if (!entity.isDead && world.spawnEntity(creep)) entity.setDead();
+            return;
+        } else if (eRad >= 500 && entity instanceof EntityVillager vil) {
+            EntityZombieVillager creep = new EntityZombieVillager(world);
+            creep.setForgeProfession(vil.getProfessionForge());
+            creep.setChild(vil.isChild());
+            creep.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
+            if (!entity.isDead && world.spawnEntity(creep)) entity.setDead();
+            return;
+        } else if (eRad >= 700 && entity instanceof EntityBlaze) {
+            EntityRADBeast creep = new EntityRADBeast(world);
+            creep.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
+            if (!entity.isDead && world.spawnEntity(creep)) entity.setDead();
+            return;
+        } else if (eRad >= 800 && entity instanceof EntityHorse horsie) {
+            EntityZombieHorse zomhorsie = new EntityZombieHorse(world);
+            zomhorsie.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
+            zomhorsie.setGrowingAge(horsie.getGrowingAge());
+            zomhorsie.setTemper(horsie.getTemper());
+            zomhorsie.setHorseSaddled(horsie.isHorseSaddled());
+            zomhorsie.setHorseTamed(horsie.isTame());
+            zomhorsie.setOwnerUniqueId(horsie.getOwnerUniqueId());
+            zomhorsie.makeMad();
+            if (!entity.isDead && world.spawnEntity(zomhorsie)) entity.setDead();
+            return;
+        } else if (eRad >= 200 && entity instanceof EntityDuck) {
+            EntityQuackos quacc = new EntityQuackos(world);
+            quacc.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
+            if (!entity.isDead && world.spawnEntity(quacc)) entity.setDead();
+            return;
+        }
+
+        if (eRad < 200) return;
+        if (eRad > 2500000) HbmLivingProps.setRadiation(entity, 2500000);
+
+        if (eRad >= 1000) {
+            entity.attackEntityFrom(ModDamageSource.radiation, 1000F);
+            HbmLivingProps.setRadiation(entity, 0);
+
+            if (entity.getHealth() > 0) {
+                entity.setHealth(0);
+                entity.onDeath(ModDamageSource.radiation);
+            }
+
+            if (entity instanceof EntityPlayerMP) AdvancementManager.grantAchievement((EntityPlayerMP) entity, AdvancementManager.achRadDeath);
+        } else if (eRad >= 800) {
+            if (rng % 300 == 0) entity.addPotionEffect(new PotionEffect(MobEffects.NAUSEA, 5 * 30, 0));
+            if (rng % 300 == 50) entity.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 10 * 20, 2));
+            if (rng % 300 == 100) entity.addPotionEffect(new PotionEffect(MobEffects.WEAKNESS, 10 * 20, 2));
+            if (rng % 500 == 0) entity.addPotionEffect(new PotionEffect(MobEffects.POISON, 3 * 20, 2));
+            if (rng % 700 == 0) entity.addPotionEffect(new PotionEffect(MobEffects.WITHER, 3 * 20, 1));
+            if (rng % 300 == 150) entity.addPotionEffect(new PotionEffect(MobEffects.HUNGER, 5 * 20, 3));
+            if (rng % 300 == 200) entity.addPotionEffect(new PotionEffect(MobEffects.MINING_FATIGUE, 5 * 20, 3));
+        } else if (eRad >= 600) {
+            if (rng % 300 == 0) entity.addPotionEffect(new PotionEffect(MobEffects.NAUSEA, 5 * 30, 0));
+            if (rng % 300 == 50) entity.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 10 * 20, 2));
+            if (rng % 300 == 100) entity.addPotionEffect(new PotionEffect(MobEffects.WEAKNESS, 10 * 20, 2));
+            if (rng % 500 == 0) entity.addPotionEffect(new PotionEffect(MobEffects.POISON, 3 * 20, 1));
+            if (rng % 300 == 150) entity.addPotionEffect(new PotionEffect(MobEffects.HUNGER, 3 * 20, 3));
+            if (rng % 400 == 0) entity.addPotionEffect(new PotionEffect(MobEffects.MINING_FATIGUE, 6 * 20, 2));
+        } else if (eRad >= 400) {
+            if (rng % 300 == 0) entity.addPotionEffect(new PotionEffect(MobEffects.NAUSEA, 5 * 30, 0));
+            if (rng % 500 == 50) entity.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 5 * 20, 0));
+            if (rng % 300 == 100) entity.addPotionEffect(new PotionEffect(MobEffects.WEAKNESS, 5 * 20, 1));
+            if (rng % 500 == 150) entity.addPotionEffect(new PotionEffect(MobEffects.HUNGER, 3 * 20, 2));
+            if (rng % 600 == 0) entity.addPotionEffect(new PotionEffect(MobEffects.MINING_FATIGUE, 4 * 20, 1));
+        } else if (eRad >= 200) {
+            if (rng % 300 == 0) entity.addPotionEffect(new PotionEffect(MobEffects.NAUSEA, 5 * 20, 0));
+            if (rng % 500 == 0) entity.addPotionEffect(new PotionEffect(MobEffects.WEAKNESS, 5 * 20, 0));
+            if (rng % 700 == 0) entity.addPotionEffect(new PotionEffect(MobEffects.HUNGER, 3 * 20, 2));
+            if (rng % 800 == 0) entity.addPotionEffect(new PotionEffect(MobEffects.MINING_FATIGUE, 4 * 20, 0));
+            if (entity instanceof EntityPlayerMP) {
+                AdvancementManager.grantAchievement((EntityPlayerMP) entity, AdvancementManager.achRadPoison);
+            }
+        }
+    }
+
+    private static void handleDigamma(EntityLivingBase entity) {
 		
 		if(!entity.world.isRemote) {
-			
-			float digamma = HbmLivingProps.getDigamma(entity);
+
+            double digamma = HbmLivingProps.getDigamma(entity);
 			
 			if(digamma < 0.01F)
 				return;
-			
-			int chance = Math.max(10 - (int)(digamma), 1);
+
+            int chance = Math.max(10 - (int) (digamma), 1);
 			
 			if(chance == 1 || entity.getRNG().nextInt(chance) == 0) {
 				
@@ -477,7 +586,7 @@ public class EntityEffectHandler {
 
 		if(!RadiationConfig.enablePollution) return;
 
-		if(RadiationConfig.enablePoison && !ArmorRegistry.hasProtection(entity, EntityEquipmentSlot.HEAD, ArmorRegistry.HazardClass.GAS_CORROSIVE) && entity.ticksExisted % 60 == 0) {
+		if(RadiationConfig.enablePoison && !ArmorRegistry.hasProtection(entity, EntityEquipmentSlot.HEAD, ArmorRegistry.HazardClass.GAS_BLISTERING) && entity.ticksExisted % 60 == 0) {
 
 			float poison = PollutionHandler.getPollution(entity.world, new BlockPos((int) Math.floor(entity.posX), (int) Math.floor(entity.posY + entity.getEyeHeight()), (int) Math.floor(entity.posZ)), PollutionHandler.PollutionType.POISON);
 
@@ -612,8 +721,7 @@ public class EntityEffectHandler {
 					if(dashActivated && stamina >= perDash) {
 
 						Vec3d lookingIn = player.getLookVec();
-						Vec3d strafeVec = player.getLookVec();
-						strafeVec.rotatePitch((float)Math.PI * 0.5F);
+						Vec3d strafeVec = lookingIn.rotateYaw((float)Math.PI * 0.5F);
 
 						int forward = (int) Math.signum(player.moveForward);
 						int strafe = (int) Math.signum(player.moveStrafing);

@@ -13,15 +13,15 @@
  */
 package com.hbm.lib.maps;
 
+import it.unimi.dsi.fastutil.objects.*;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicLongFieldUpdater;
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
-import static com.hbm.lib.UnsafeHolder.U;
-import static com.hbm.lib.UnsafeHolder.fieldOffset;
+import static com.hbm.lib.internal.UnsafeHolder.U;
+import static com.hbm.lib.internal.UnsafeHolder.fieldOffset;
 
 /**
  * A lock-free alternate implementation of {@link java.util.concurrent.ConcurrentHashMap}
@@ -79,7 +79,7 @@ import static com.hbm.lib.UnsafeHolder.fieldOffset;
  */
 
 public class NonBlockingHashMap<TypeK, TypeV>
-        extends AbstractMap<TypeK, TypeV>
+        extends AbstractObject2ObjectMap<TypeK, TypeV>
         implements ConcurrentMap<TypeK, TypeV>, Cloneable, Serializable {
 
     private static final long serialVersionUID = 1234123412341234123L;
@@ -87,7 +87,7 @@ public class NonBlockingHashMap<TypeK, TypeV>
     private static final int REPROBE_LIMIT=10; // Too many reprobes then force a table-resize
 
     // --- Bits to allow Unsafe access to arrays
-    private static final int _Obase  = U.arrayBaseOffset(Object[].class);
+    private static final long _Obase  = U.arrayBaseOffset(Object[].class);
     private static final int _Oscale = U.arrayIndexScale(Object[].class);
     private static final int _Olog   = _Oscale==4?2:(_Oscale==8?3:9999);
     private static long rawIndex(final Object[] ary, final int idx) {
@@ -101,7 +101,7 @@ public class NonBlockingHashMap<TypeK, TypeV>
     private static final long _kvs_offset = fieldOffset(NonBlockingHashMap.class, "_kvs");
 
     private final boolean CAS_kvs( final Object[] oldkvs, final Object[] newkvs ) {
-        return U.compareAndSwapObject(this, _kvs_offset, oldkvs, newkvs );
+        return U.compareAndSetReference(this, _kvs_offset, oldkvs, newkvs);
     }
 
     // --- Adding a 'prime' bit onto Values via wrapping with a junk wrapper class
@@ -117,10 +117,7 @@ public class NonBlockingHashMap<TypeK, TypeV>
     // null Key.
     private static final int hash(final Object key) {
         int h = key.hashCode();     // The real hashCode call
-        h ^= (h>>>20) ^ (h>>>12);
-        h ^= (h>>> 7) ^ (h>>> 4);
-        h += h<<7; // smear low bits up high, for hashcodes that only differ by 1
-        return h;
+        return it.unimi.dsi.fastutil.HashCommon.mix(h);
     }
 
     // --- The Hash Table --------------------
@@ -175,10 +172,10 @@ public class NonBlockingHashMap<TypeK, TypeV>
     private static final Object key(Object[] kvs,int idx) { return kvs[(idx<<1)+2]; }
     private static final Object val(Object[] kvs,int idx) { return kvs[(idx<<1)+3]; }
     private static final boolean CAS_key( Object[] kvs, int idx, Object old, Object key ) {
-        return U.compareAndSwapObject( kvs, rawIndex(kvs,(idx<<1)+2), old, key );
+        return U.compareAndSetReference(kvs, rawIndex(kvs, (idx << 1) + 2), old, key);
     }
     private static final boolean CAS_val( Object[] kvs, int idx, Object old, Object val ) {
-        return U.compareAndSwapObject( kvs, rawIndex(kvs,(idx<<1)+3), old, val );
+        return U.compareAndSetReference(kvs, rawIndex(kvs, (idx << 1) + 3), old, val);
     }
 
 
@@ -430,19 +427,13 @@ public class NonBlockingHashMap<TypeK, TypeV>
     @Override
     public Object clone() {
         try {
-            // Must clone, to get the class right; NBHM might have been
-            // extended so it would be wrong to just make a new NBHM.
-            NonBlockingHashMap<TypeK,TypeV> t = (NonBlockingHashMap<TypeK,TypeV>) super.clone();
-            // But I don't have an atomic clone operation - the underlying _kvs
-            // structure is undergoing rapid change.  If I just clone the _kvs
-            // field, the CHM in _kvs[0] won't be in sync.
-            //
-            // Wipe out the cloned array (it was shallow anyways).
-            t.clear();
-            // Now copy sanely
-            for( TypeK K : keySet() ) {
-                final TypeV V = get(K);  // Do an official 'get'
-                t.put(K,V);
+            // noinspection unchecked
+            NonBlockingHashMap<TypeK, TypeV> t = (NonBlockingHashMap<TypeK, TypeV>) super.clone();
+            t._reprobes = new ConcurrentAutoTable();
+            int sz = size();
+            t.initialize(sz);
+            for (Map.Entry<TypeK, TypeV> e : entrySet()) {
+                t.put(e.getKey(), e.getValue());
             }
             return t;
         } catch (CloneNotSupportedException e) {
@@ -465,14 +456,14 @@ public class NonBlockingHashMap<TypeK, TypeV>
      */
     @Override
     public String toString() {
-        Iterator<Entry<TypeK,TypeV>> i = entrySet().iterator();
+        Iterator<Object2ObjectMap.Entry<TypeK,TypeV>> i = object2ObjectEntrySet().fastIterator();
         if( !i.hasNext())
             return "{}";
 
         StringBuilder sb = new StringBuilder();
         sb.append('{');
         for (;;) {
-            Entry<TypeK,TypeV> e = i.next();
+            Object2ObjectMap.Entry<TypeK,TypeV> e = i.next();
             TypeK key = e.getKey();
             TypeV value = e.getValue();
             sb.append(key   == this ? "(this Map)" : key);
@@ -622,7 +613,6 @@ public class NonBlockingHashMap<TypeK, TypeV>
         }
     }
 
-    static volatile int DUMMY_VOLATILE;
     /**
      * Put, Remove, PutIfAbsent, etc.  Return the old value.  If the returned value is equal to expVal (or expVal is
      * {@link #NO_MATCH_OLD}) then the put can be assumed to work (although might have been immediately overwritten).
@@ -689,10 +679,10 @@ public class NonBlockingHashMap<TypeK, TypeV>
                 // apparently spuriously fail - and we avoid apparent spurious failure
                 // by not allowing Keys to ever change.
 
-                // Volatile read, to force loads of K to retry despite JIT, otherwise
+                // Force loads of K to retry despite JIT, otherwise
                 // it is legal to e.g. haul the load of "K = key(kvs,idx);" outside of
                 // this loop (since failed CAS ops have no memory ordering semantics).
-                int dummy = DUMMY_VOLATILE;
+                U.loadFence();
                 continue;
             }
             // Key slot was not null, there exists a Key here
@@ -792,7 +782,7 @@ public class NonBlockingHashMap<TypeK, TypeV>
             // Simply retry from the start.
             // NOTE: need the fence, since otherwise 'val(kvs,idx)' load could be hoisted
             // out of loop.
-            int dummy = DUMMY_VOLATILE;
+            U.loadFence();
         }
 
         // CAS succeeded - we did the update!
@@ -853,12 +843,12 @@ public class NonBlockingHashMap<TypeK, TypeV>
         // to get the required memory orderings.  It monotonically transits from
         // null to set (once).
         volatile Object[] _newkvs;
-        private static final AtomicReferenceFieldUpdater<CHM,Object[]> _newkvsUpdater =
-                AtomicReferenceFieldUpdater.newUpdater(CHM.class,Object[].class, "_newkvs");
+        private static final long _newkvsOffset =
+                fieldOffset(CHM.class, "_newkvs");
         // Set the _next field if we can.
         boolean CAS_newkvs( Object[] newkvs ) {
             while( _newkvs == null )
-                if( _newkvsUpdater.compareAndSet(this,null,newkvs) )
+                if( U.compareAndSetReference(this, _newkvsOffset, null, newkvs) )
                     return true;
             return false;
         }
@@ -876,8 +866,8 @@ public class NonBlockingHashMap<TypeK, TypeV>
         // could in parallel initialize the array.  Java does not allow
         // un-initialized array creation (especially of ref arrays!).
         volatile long _resizers; // count of threads attempting an initial resize
-        private static final AtomicLongFieldUpdater<CHM> _resizerUpdater =
-                AtomicLongFieldUpdater.newUpdater(CHM.class, "_resizers");
+        private static final long _resizersOffset =
+                fieldOffset(CHM.class, "_resizers");
 
         // ---
         // Simple constructor
@@ -967,9 +957,7 @@ public class NonBlockingHashMap<TypeK, TypeV>
             // Now limit the number of threads actually allocating memory to a
             // handful - lest we have 750 threads all trying to allocate a giant
             // resized array.
-            long r = _resizers;
-            while( !_resizerUpdater.compareAndSet(this,r,r+1) )
-                r = _resizers;
+            long r = U.getAndAddLong(this, _resizersOffset, 1);
             // Size calculation: 2 words (K+V) per table entry, plus a handful.  We
             // guess at 64-bit pointers; 32-bit pointers screws up the size calc by
             // 2x but does not screw up the heuristic very much.
@@ -1021,15 +1009,15 @@ public class NonBlockingHashMap<TypeK, TypeV>
         // the counter simply wraps and work is copied duplicately until somebody
         // somewhere completes the count.
         volatile long _copyIdx = 0;
-        static private final AtomicLongFieldUpdater<CHM> _copyIdxUpdater =
-                AtomicLongFieldUpdater.newUpdater(CHM.class, "_copyIdx");
+        static private final long _copyIdxOffset =
+                fieldOffset(CHM.class, "_copyIdx");
 
         // Work-done reporting.  Used to efficiently signal when we can move to
         // the new table.  From 0 to len(oldkvs) refers to copying from the old
         // table to the new.
         volatile long _copyDone= 0;
-        static private final AtomicLongFieldUpdater<CHM> _copyDoneUpdater =
-                AtomicLongFieldUpdater.newUpdater(CHM.class, "_copyDone");
+        static private final long _copyDoneOffset =
+                fieldOffset(CHM.class,  "_copyDone");
 
         // --- help_copy_impl ----------------------------------------------------
         // Help along an existing resize operation.  We hope its the top-level
@@ -1057,9 +1045,7 @@ public class NonBlockingHashMap<TypeK, TypeV>
                 // algorithm) or do the copy work ourselves.  Tiny tables with huge
                 // thread counts trying to copy the table often 'panic'.
                 if( panic_start == -1 ) { // No panic?
-                    copyidx = (int)_copyIdx;
-                    while( !_copyIdxUpdater.compareAndSet(this,copyidx,copyidx+MIN_COPY_WORK) )
-                        copyidx = (int)_copyIdx;      // Re-read
+                    copyidx = (int)U.getAndAddLong(this, _copyIdxOffset, MIN_COPY_WORK);
                     if( !(copyidx < (oldlen<<1)) )  // Panic!
                         panic_start = copyidx;        // Record where we started to panic-copy
                 }
@@ -1117,12 +1103,7 @@ public class NonBlockingHashMap<TypeK, TypeV>
             // We made a slot unusable and so did some of the needed copy work
             long copyDone = _copyDone;
             assert (copyDone+workdone) <= oldlen;
-            if( workdone > 0 ) {
-                while( !_copyDoneUpdater.compareAndSet(this,copyDone,copyDone+workdone) ) {
-                    copyDone = _copyDone; // Reload, retry
-                    assert (copyDone+workdone) <= oldlen;
-                }
-            }
+            copyDone = U.getAndAddLong(this, _copyDoneOffset, workdone);
 
             // Check for copy being ALL done, and promote.  Note that we might have
             // nested in-progress copies and manage to finish a nested copy before
@@ -1204,7 +1185,7 @@ public class NonBlockingHashMap<TypeK, TypeV>
     // --- Snapshot ------------------------------------------------------------
     // The main class for iterating over the NBHM.  It "snapshots" a clean
     // view of the K/V array.
-    private class SnapshotV implements Iterator<TypeV>, Enumeration<TypeV> {
+    private class SnapshotV implements ObjectIterator<TypeV>, Enumeration<TypeV> {
         final Object[] _sskvs;
         public SnapshotV() {
             while( true ) {           // Verify no table-copy-in-progress
@@ -1267,6 +1248,13 @@ public class NonBlockingHashMap<TypeK, TypeV>
 
         public TypeV nextElement() { return next(); }
         public boolean hasMoreElements() { return hasNext(); }
+
+        @Override
+        public int skip(int n) {
+            int i = n;
+            while (i-- > 0 && hasNext()) { next(); }
+            return n - (i + 1);
+        }
     }
     public Object[] raw_array() { return new SnapshotV()._sskvs; }
 
@@ -1276,6 +1264,8 @@ public class NonBlockingHashMap<TypeK, TypeV>
     public Enumeration<TypeV> elements() { return new SnapshotV(); }
 
     // --- values --------------------------------------------------------------
+    private transient AbstractObjectCollection<TypeV> _values = null;
+
     /** Returns a {@link Collection} view of the values contained in this map.
      *  The collection is backed by the map, so changes to the map are reflected
      *  in the collection, and vice-versa.  The collection supports element
@@ -1290,17 +1280,18 @@ public class NonBlockingHashMap<TypeK, TypeV>
      *  and may (but is not guaranteed to) reflect any modifications subsequent
      *  to construction. */
     @Override
-    public Collection<TypeV> values() {
-        return new AbstractCollection<TypeV>() {
+    public ObjectCollection<TypeV> values() {
+        if( _values == null ) _values = new AbstractObjectCollection<TypeV>() {
             @Override public void    clear   (          ) {        NonBlockingHashMap.this.clear        ( ); }
             @Override public int     size    (          ) { return NonBlockingHashMap.this.size         ( ); }
             @Override public boolean contains( Object v ) { return NonBlockingHashMap.this.containsValue(v); }
-            @Override public Iterator<TypeV> iterator()   { return new SnapshotV(); }
+            @Override public ObjectIterator<TypeV> iterator()   { return new SnapshotV(); }
         };
+        return _values;
     }
 
     // --- keySet --------------------------------------------------------------
-    private class SnapshotK implements Iterator<TypeK>, Enumeration<TypeK> {
+    private class SnapshotK implements ObjectIterator<TypeK>, Enumeration<TypeK> {
         final SnapshotV _ss;
         public SnapshotK() { _ss = new SnapshotV(); }
         public void remove() { _ss.removeKey(); }
@@ -1308,12 +1299,15 @@ public class NonBlockingHashMap<TypeK, TypeV>
         public boolean hasNext() { return _ss.hasNext(); }
         public TypeK nextElement() { return next(); }
         public boolean hasMoreElements() { return hasNext(); }
+        public int skip(int n) { return _ss.skip(n); }
     }
 
     /** Returns an enumeration of the keys in this table.
      *  @return an enumeration of the keys in this table
      *  @see #keySet()  */
     public Enumeration<TypeK> keys() { return new SnapshotK(); }
+
+    private transient ObjectSet<TypeK> _keySet = null;
 
     /** Returns a {@link Set} view of the keys contained in this map.  The set
      *  is backed by the map, so changes to the map are reflected in the set,
@@ -1329,13 +1323,13 @@ public class NonBlockingHashMap<TypeK, TypeV>
      *  and may (but is not guaranteed to) reflect any modifications subsequent
      *  to construction.  */
     @Override
-    public Set<TypeK> keySet() {
-        return new AbstractSet<TypeK> () {
+    public ObjectSet<TypeK> keySet() {
+        if( _keySet == null ) _keySet = new AbstractObjectSet<TypeK>() {
             @Override public void    clear   (          ) {        NonBlockingHashMap.this.clear   ( ); }
             @Override public int     size    (          ) { return NonBlockingHashMap.this.size    ( ); }
             @Override public boolean contains( Object k ) { return NonBlockingHashMap.this.containsKey(k); }
             @Override public boolean remove  ( Object k ) { return NonBlockingHashMap.this.remove  (k) != null; }
-            @Override public Iterator<TypeK> iterator()   { return new SnapshotK(); }
+            @Override public ObjectIterator<TypeK> iterator()   { return new SnapshotK(); }
             // This is an efficient implementation of toArray instead of the standard
             // one.  In particular it uses a smart iteration over the NBHM.
             @Override public <T> T[] toArray(T[] a) {
@@ -1366,21 +1360,35 @@ public class NonBlockingHashMap<TypeK, TypeV>
                 return Arrays.copyOf(r,j);
             }
         };
+        return _keySet;
     }
 
 
     // --- entrySet ------------------------------------------------------------
     // Warning: Each call to 'next' in this iterator constructs a new NBHMEntry.
-    private class NBHMEntry extends AbstractEntry<TypeK,TypeV> {
-        NBHMEntry( final TypeK k, final TypeV v ) { super(k,v); }
+    private final class NBHMEntry implements Object2ObjectMap.Entry<TypeK, TypeV> {
+        TypeK _k;
+        TypeV _v;
+        NBHMEntry() {}
+        NBHMEntry( final TypeK k, final TypeV v ) { _k = k; _v = v; }
+        @Override public TypeK getKey() { return _k; }
+        @Override public TypeV getValue() { return _v; }
         public TypeV setValue(final TypeV val) {
             if( val == null ) throw new NullPointerException();
-            _val = val;
-            return put(_key, val);
+            _v = val;
+            return put(_k, val);
         }
+        @Override public boolean equals(Object o) {
+            if (!(o instanceof Map.Entry<?, ?> e)) return false;
+            Object k = e.getKey();
+            Object v = e.getValue();
+            return Objects.equals(_k, k) && Objects.equals(_v, v);
+        }
+        @Override public int hashCode() { return Objects.hashCode(_k) ^ Objects.hashCode(_v); }
+        @Override public String toString() { return _k + "=" + _v; }
     }
 
-    private class SnapshotE implements Iterator<Map.Entry<TypeK,TypeV>> {
+    private class SnapshotE implements ObjectIterator<Object2ObjectMap.Entry<TypeK,TypeV>> {
         final SnapshotV _ss;
         public SnapshotE() { _ss = new SnapshotV(); }
         public void remove() {
@@ -1388,9 +1396,48 @@ public class NonBlockingHashMap<TypeK, TypeV>
             // the JDK always removes by key, even when the value has changed.
             _ss.removeKey();
         }
-        public Map.Entry<TypeK,TypeV> next() { _ss.next(); return new NBHMEntry((TypeK)_ss._prevK,_ss._prevV); }
+        public Object2ObjectMap.Entry<TypeK,TypeV> next() { _ss.next(); return new NBHMEntry((TypeK)_ss._prevK,_ss._prevV); }
         public boolean hasNext() { return _ss.hasNext(); }
+        public int skip(int n) { return _ss.skip(n); }
     }
+
+    private class FastSnapshotE implements ObjectIterator<Object2ObjectMap.Entry<TypeK,TypeV>> {
+        final SnapshotV _ss;
+        final NBHMEntry _entry;
+        public FastSnapshotE() {
+            _ss = new SnapshotV();
+            _entry = new NBHMEntry();
+        }
+        @Override public void remove() { _ss.removeKey(); }
+        @Override public Object2ObjectMap.Entry<TypeK, TypeV> next() {
+            _ss.next();
+            _entry._k = (TypeK)_ss._prevK;
+            _entry._v = _ss._prevV;
+            return _entry;
+        }
+        @Override public boolean hasNext() { return _ss.hasNext(); }
+        @Override public int skip(int n) { return _ss.skip(n); }
+    }
+
+    private final class EntrySet extends AbstractObjectSet<Object2ObjectMap.Entry<TypeK, TypeV>> implements FastEntrySet<TypeK, TypeV> {
+        @Override public void clear() { NonBlockingHashMap.this.clear(); }
+        @Override public int size() { return NonBlockingHashMap.this.size(); }
+        @Override public boolean remove(final Object o) {
+            if (!(o instanceof Map.Entry)) return false;
+            final Map.Entry<?,?> e = (Map.Entry<?,?>)o;
+            return NonBlockingHashMap.this.remove(e.getKey(), e.getValue());
+        }
+        @Override public boolean contains(final Object o) {
+            if (!(o instanceof Map.Entry)) return false;
+            final Map.Entry<?,?> e = (Map.Entry<?,?>)o;
+            TypeV v = get(e.getKey());
+            return v != null && v.equals(e.getValue());
+        }
+        @Override public ObjectIterator<Object2ObjectMap.Entry<TypeK, TypeV>> iterator() { return new SnapshotE(); }
+        @Override public ObjectIterator<Object2ObjectMap.Entry<TypeK, TypeV>> fastIterator() { return new FastSnapshotE(); }
+    }
+
+    private transient FastEntrySet<TypeK, TypeV> _entrySet = null;
 
     /** Returns a {@link Set} view of the mappings contained in this map.  The
      *  set is backed by the map, so changes to the map are reflected in the
@@ -1414,23 +1461,15 @@ public class NonBlockingHashMap<TypeK, TypeV>
      *  Map#values} will be more efficient.
      */
     @Override
-    public Set<Map.Entry<TypeK,TypeV>> entrySet() {
-        return new AbstractSet<Map.Entry<TypeK,TypeV>>() {
-            @Override public void    clear   (          ) {        NonBlockingHashMap.this.clear( ); }
-            @Override public int     size    (          ) { return NonBlockingHashMap.this.size ( ); }
-            @Override public boolean remove( final Object o ) {
-                if( !(o instanceof Map.Entry)) return false;
-                final Map.Entry<?,?> e = (Map.Entry<?,?>)o;
-                return NonBlockingHashMap.this.remove(e.getKey(), e.getValue());
-            }
-            @Override public boolean contains(final Object o) {
-                if( !(o instanceof Map.Entry)) return false;
-                final Map.Entry<?,?> e = (Map.Entry<?,?>)o;
-                TypeV v = get(e.getKey());
-                return v != null && v.equals(e.getValue());
-            }
-            @Override public Iterator<Map.Entry<TypeK,TypeV>> iterator() { return new SnapshotE(); }
-        };
+    public ObjectSet<Map.Entry<TypeK,TypeV>> entrySet() {
+        //noinspection unchecked, rawtypes
+        return (ObjectSet) object2ObjectEntrySet();
+    }
+
+    @Override
+    public FastEntrySet<TypeK, TypeV> object2ObjectEntrySet() {
+        if( _entrySet == null ) _entrySet = new EntrySet();
+        return _entrySet;
     }
 
     // --- writeObject -------------------------------------------------------

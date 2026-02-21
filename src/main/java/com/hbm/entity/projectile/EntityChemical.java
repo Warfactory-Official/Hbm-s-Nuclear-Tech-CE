@@ -2,6 +2,7 @@ package com.hbm.entity.projectile;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.capability.HbmLivingProps;
+import com.hbm.entity.mob.glyphid.EntityGlyphid;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.interfaces.AutoRegister;
@@ -269,26 +270,25 @@ public class EntityChemical extends EntityThrowableNT{
             }
         }
 
-        //TODO
-//        if(type.hasTrait(FT_Pheromone.class)){
-//
-//            FT_Pheromone pheromone = type.getTrait(FT_Pheromone.class);
-//
-//            if(living != null) {
-//                living.addPotionEffect(new PotionEffect(MobEffects.RESISTANCE, 2 * 60 * 20, 2));
-//                living.addPotionEffect(new PotionEffect(MobEffects.SPEED, 5 * 60 * 20, 1));
-//                living.addPotionEffect(new PotionEffect(MobEffects.HASTE, 2 * 60 * 20, 4));
-//
-//                if (living instanceof EntityGlyphid && pheromone.getType() == 1) {
-//                    living.addPotionEffect(new PotionEffect(MobEffects.STRENGTH, 5 * 60 * 20, 4));
-//                    living.addPotionEffect(new PotionEffect(MobEffects.FIRE_RESISTANCE,  60 * 20, 0));
-//                    living.addPotionEffect(new PotionEffect(MobEffects.ABSORPTION,  60 * 20, 19));
-//
-//                } else if (living instanceof EntityPlayer && pheromone.getType() == 2) {
-//                    living.addPotionEffect(new PotionEffect(MobEffects.STRENGTH, 2 * 60 * 20, 2));
-//                }
-//            }
-//        }
+        if(type.hasTrait(FT_Pheromone.class)){
+
+            FT_Pheromone pheromone = type.getTrait(FT_Pheromone.class);
+
+            if(living != null) {
+                living.addPotionEffect(new PotionEffect(MobEffects.RESISTANCE, 2 * 60 * 20, 2));
+                living.addPotionEffect(new PotionEffect(MobEffects.SPEED, 5 * 60 * 20, 1));
+                living.addPotionEffect(new PotionEffect(MobEffects.HASTE, 2 * 60 * 20, 4));
+
+                if (living instanceof EntityGlyphid && pheromone.getType() == 1) {
+                    living.addPotionEffect(new PotionEffect(MobEffects.STRENGTH, 5 * 60 * 20, 4));
+                    living.addPotionEffect(new PotionEffect(MobEffects.FIRE_RESISTANCE,  60 * 20, 0));
+                    living.addPotionEffect(new PotionEffect(MobEffects.ABSORPTION,  60 * 20, 19));
+
+                } else if (living instanceof EntityPlayer && pheromone.getType() == 2) {
+                    living.addPotionEffect(new PotionEffect(MobEffects.STRENGTH, 2 * 60 * 20, 2));
+                }
+            }
+        }
 
         if(type == Fluids.XPJUICE) {
 
@@ -410,7 +410,7 @@ public class EntityChemical extends EntityThrowableNT{
                 ChemicalStyle style = getStyle();
 
                 if (style == ChemicalStyle.BURNING || style == ChemicalStyle.GASFLAME) {
-                    for (EnumFacing dir : EnumFacing.values()) {
+                    for (EnumFacing dir : EnumFacing.VALUES) {
                         BlockPos offsetPos = pos.offset(dir);
                         if (world.isAirBlock(offsetPos)) {
                             Block fire = (type == Fluids.BALEFIRE) ? ModBlocks.balefire : Blocks.FIRE;
@@ -420,7 +420,7 @@ public class EntityChemical extends EntityThrowableNT{
                 }
 
                 if (this.isExtinguishing()) {
-                    for (EnumFacing dir : EnumFacing.values()) {
+                    for (EnumFacing dir : EnumFacing.VALUES) {
                         BlockPos offsetPos = pos.offset(dir);
                         if (world.getBlockState(offsetPos).getBlock() == Blocks.FIRE) {
                             world.setBlockToAir(offsetPos);
@@ -513,16 +513,16 @@ public class EntityChemical extends EntityThrowableNT{
     }
 
     @Override
-    public double getGravityVelocity() {
+    public float getGravityVelocity() {
 
         ChemicalStyle type = getStyle();
 
-        if(type == ChemicalStyle.AMAT) return 0D;
-        if(type == ChemicalStyle.LIGHTNING) return 0D;
-        if(type == ChemicalStyle.GAS) return 0D;
-        if(type == ChemicalStyle.GASFLAME) return -0.01D;
+        if(type == ChemicalStyle.AMAT) return 0F;
+        if(type == ChemicalStyle.LIGHTNING) return 0F;
+        if(type == ChemicalStyle.GAS) return 0f;
+        if(type == ChemicalStyle.GASFLAME) return -0.01F;
 
-        return 0.03D;
+        return 0.03F;
     }
 
     public ChemicalStyle getStyle() {

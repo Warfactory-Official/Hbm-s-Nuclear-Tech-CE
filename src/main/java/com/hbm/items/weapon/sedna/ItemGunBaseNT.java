@@ -38,6 +38,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.text.DecimalFormat;
@@ -131,7 +132,7 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
         this.lastShot = new long[cfg.length];
         for(int i = 0; i < cfg.length; i++) cfg[i].index = i;
         if(quality == WeaponQuality.A_SIDE || quality == WeaponQuality.SPECIAL || quality == WeaponQuality.UTILITY) this.setCreativeTab(MainRegistry.weaponTab);
-        if(quality == WeaponQuality.LEGENDARY || quality == WeaponQuality.SECRET) this.secrets.add(this);
+        if(quality == WeaponQuality.LEGENDARY || quality == WeaponQuality.SECRET) secrets.add(this);
         ModItems.ALL_ITEMS.add(this);
         INSTANCES.add(this);
     }
@@ -151,7 +152,9 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
         IDLE,		//the gun is ready to fire or reload
         COOLDOWN,	//forced delay, but with option for refire
         RELOADING,	//forced delay after which a reload action happens, may be canceled (TBI)
-        JAMMED,		//forced delay due to jamming
+        JAMMED;		//forced delay due to jamming
+
+        public static final GunState[] VALUES = values();
     }
 
     public ItemGunBaseNT setNameMutator(Function<ItemStack, String> lambda) {
@@ -159,7 +162,8 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
         return this;
     }
 
-    public String getItemStackDisplayName(ItemStack stack) {
+    @Override
+    public @NotNull String getItemStackDisplayName(@NotNull ItemStack stack) {
 
         if(this.LAMBDA_NAME_MUTATOR != null) {
             String unloc = this.LAMBDA_NAME_MUTATOR.apply(stack);
@@ -171,7 +175,7 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
 
     @SideOnly(Side.CLIENT)
     @Override
-    public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+    public void addInformation(@NotNull ItemStack stack, @Nullable World worldIn, @NotNull List<String> tooltip, @NotNull ITooltipFlag flagIn) {
         EntityPlayer player = Minecraft.getMinecraft().player;
         if (player == null) {
             tooltip.add("Error: Player not found");
@@ -194,7 +198,7 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
             }
             float maxDura = config.getDurability(stack);
             if(maxDura > 0) {
-                int dura = MathHelper.clamp((int)((maxDura - this.getWear(stack, i)) * 100 / maxDura), 0, 100);
+                int dura = MathHelper.clamp((int)((maxDura - getWear(stack, i)) * 100 / maxDura), 0, 100);
                 tooltip.add("Condition: " + dura + "%");
             }
 
@@ -221,13 +225,10 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
     }
 
     @Override
-    public boolean onBlockStartBreak(ItemStack itemstack, BlockPos pos, EntityPlayer player)
-    {
-        return true;
-    }
+    public boolean onBlockStartBreak(@NotNull ItemStack itemstack, @NotNull BlockPos pos, @NotNull EntityPlayer player) { return true; }
 
     @Override
-    public boolean onLeftClickEntity(ItemStack stack, EntityPlayer player, Entity entity) { return true;}
+    public boolean onLeftClickEntity(@NotNull ItemStack stack, @NotNull EntityPlayer player, @NotNull Entity entity) { return true; }
 
     @Override
     public boolean canHandleKeybind(EntityPlayer player, ItemStack stack, HbmKeybinds.EnumKeybind keybind) {
@@ -246,14 +247,14 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
             GunConfig config = getConfig(stack, i);
             LambdaContext ctx = new LambdaContext(config, entity, inventory, i);
 
-            if(keybind == HbmKeybinds.EnumKeybind.GUN_PRIMARY &&	newState && !getPrimary(stack, i)) {	if(config.getPressPrimary(stack) != null)		config.getPressPrimary(stack).accept(stack, ctx);		this.setPrimary(stack, i, true);	continue; }
-            if(keybind == HbmKeybinds.EnumKeybind.GUN_PRIMARY &&	!newState && getPrimary(stack, i)) {	if(config.getReleasePrimary(stack) != null)		config.getReleasePrimary(stack).accept(stack, ctx);		this.setPrimary(stack, i, false);	continue; }
-            if(keybind == HbmKeybinds.EnumKeybind.GUN_SECONDARY &&	newState && !getSecondary(stack, i)) {	if(config.getPressSecondary(stack) != null)		config.getPressSecondary(stack).accept(stack, ctx);		this.setSecondary(stack, i, true);	continue; }
-            if(keybind == HbmKeybinds.EnumKeybind.GUN_SECONDARY &&	!newState && getSecondary(stack, i)) {	if(config.getReleaseSecondary(stack) != null)	config.getReleaseSecondary(stack).accept(stack, ctx);	this.setSecondary(stack, i, false);	continue; }
-            if(keybind == HbmKeybinds.EnumKeybind.GUN_TERTIARY &&	newState && !getTertiary(stack, i)) {	if(config.getPressTertiary(stack) != null)		config.getPressTertiary(stack).accept(stack, ctx);		this.setTertiary(stack, i, true);	continue; }
-            if(keybind == HbmKeybinds.EnumKeybind.GUN_TERTIARY &&	!newState && getTertiary(stack, i)) {	if(config.getReleaseTertiary(stack) != null)	config.getReleaseTertiary(stack).accept(stack, ctx);	this.setTertiary(stack, i, false);	continue; }
-            if(keybind == HbmKeybinds.EnumKeybind.RELOAD &&			newState && !getReloadKey(stack, i)) {	if(config.getPressReload(stack) != null)		config.getPressReload(stack).accept(stack, ctx);		this.setReloadKey(stack, i, true);	continue; }
-            if(keybind == HbmKeybinds.EnumKeybind.RELOAD &&			!newState && getReloadKey(stack, i)) {	if(config.getReleaseReload(stack) != null)		config.getReleaseReload(stack).accept(stack, ctx);		this.setReloadKey(stack, i, false);
+            if(keybind == HbmKeybinds.EnumKeybind.GUN_PRIMARY &&	newState && !getPrimary(stack, i)) {	if(config.getPressPrimary(stack) != null)		config.getPressPrimary(stack).accept(stack, ctx);		setPrimary(stack, i, true);	continue; }
+            if(keybind == HbmKeybinds.EnumKeybind.GUN_PRIMARY &&	!newState && getPrimary(stack, i)) {	if(config.getReleasePrimary(stack) != null)		config.getReleasePrimary(stack).accept(stack, ctx);		setPrimary(stack, i, false);	continue; }
+            if(keybind == HbmKeybinds.EnumKeybind.GUN_SECONDARY &&	newState && !getSecondary(stack, i)) {	if(config.getPressSecondary(stack) != null)		config.getPressSecondary(stack).accept(stack, ctx);		setSecondary(stack, i, true);	continue; }
+            if(keybind == HbmKeybinds.EnumKeybind.GUN_SECONDARY &&	!newState && getSecondary(stack, i)) {	if(config.getReleaseSecondary(stack) != null)	config.getReleaseSecondary(stack).accept(stack, ctx);	setSecondary(stack, i, false);	continue; }
+            if(keybind == HbmKeybinds.EnumKeybind.GUN_TERTIARY &&	newState && !getTertiary(stack, i)) {	if(config.getPressTertiary(stack) != null)		config.getPressTertiary(stack).accept(stack, ctx);		setTertiary(stack, i, true);	continue; }
+            if(keybind == HbmKeybinds.EnumKeybind.GUN_TERTIARY &&	!newState && getTertiary(stack, i)) {	if(config.getReleaseTertiary(stack) != null)	config.getReleaseTertiary(stack).accept(stack, ctx);	setTertiary(stack, i, false);	continue; }
+            if(keybind == HbmKeybinds.EnumKeybind.RELOAD &&			newState && !getReloadKey(stack, i)) {	if(config.getPressReload(stack) != null)		config.getPressReload(stack).accept(stack, ctx);		setReloadKey(stack, i, true);	continue; }
+            if(keybind == HbmKeybinds.EnumKeybind.RELOAD &&			!newState && getReloadKey(stack, i)) {	if(config.getReleaseReload(stack) != null)		config.getReleaseReload(stack).accept(stack, ctx);		setReloadKey(stack, i, false);
             }
         }
     }
@@ -262,10 +263,10 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
     public void onEquip(EntityPlayer player, ItemStack stack) {
         for(int i = 0; i < this.configs_DNA.length; i++) {
             playAnimation(player, stack, HbmAnimationsSedna.AnimType.EQUIP, i);
-            this.setPrimary(stack, i, false);
-            this.setSecondary(stack, i, false);
-            this.setTertiary(stack, i, false);
-            this.setReloadKey(stack, i, false);
+            setPrimary(stack, i, false);
+            setSecondary(stack, i, false);
+            setTertiary(stack, i, false);
+            setReloadKey(stack, i, false);
         }
     }
 
@@ -278,7 +279,7 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
     }
 
     @Override
-    public void onUpdate(ItemStack stack, World world, Entity entity, int slot, boolean isHeld) {
+    public void onUpdate(@NotNull ItemStack stack, @NotNull World world, @NotNull Entity entity, int slot, boolean isHeld) {
 
         if(!(entity instanceof EntityLivingBase)) return;
         EntityPlayer player = entity instanceof EntityPlayer ? (EntityPlayer) entity : null;
@@ -302,7 +303,7 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
 
                 /// AIMING ///
                 prevAimingProgress = aimingProgress;
-                boolean aiming = this.getIsAiming(stack);
+                boolean aiming = getIsAiming(stack);
                 float aimSpeed = 0.25F;
                 if(aiming && aimingProgress < 1F) aimingProgress += aimSpeed;
                 if(!aiming && aimingProgress > 0F) aimingProgress -= aimSpeed;
@@ -322,26 +323,26 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
         }
 
         if(player != null) {
-            boolean wasHeld = this.getIsEquipped(stack);
+            boolean wasHeld = getIsEquipped(stack);
 
-            if(!wasHeld && isHeld && player != null) {
+            if(!wasHeld && isHeld) {
                 this.onEquip(player, stack);
             }
         }
-        this.setIsEquipped(stack, isHeld);
+        setIsEquipped(stack, isHeld);
 
         /// RESET WHEN NOT EQUIPPED ///
         if(!isHeld) {
             for(int i = 0; i < confNo; i++) {
-                GunState current = this.getState(stack, i);
+                GunState current = getState(stack, i);
                 if(current != GunState.JAMMED) {
-                    this.setState(stack, i, GunState.DRAWING);
-                    this.setTimer(stack, i, configs[i].getDrawDuration(stack));
+                    setState(stack, i, GunState.DRAWING);
+                    setTimer(stack, i, configs[i].getDrawDuration(stack));
                 }
-                this.setLastAnim(stack, i, HbmAnimationsSedna.AnimType.CYCLE); //prevents new guns from initializing with DRAWING, 0
+                setLastAnim(stack, i, HbmAnimationsSedna.AnimType.CYCLE); //prevents new guns from initializing with DRAWING, 0
             }
-            this.setIsAiming(stack, false);
-            this.setReloadCancel(stack, false);
+            setIsAiming(stack, false);
+            setReloadCancel(stack, false);
             return;
         }
 
@@ -351,9 +352,9 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
 
             setAnimTimer(stack, i, getAnimTimer(stack, i) + 1);
 
-            /// STTATE MACHINE ///
-            int timer = this.getTimer(stack, i);
-            if(timer > 0) this.setTimer(stack, i, timer - 1);
+            /// STATE MACHINE ///
+            int timer = getTimer(stack, i);
+            if(timer > 0) setTimer(stack, i, timer - 1);
             if(timer <= 1) configs[i].getDecider(stack).accept(stack, ctx[i]);
         }
     }
@@ -365,7 +366,7 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
     public static int getTimer(ItemStack stack, int index) { return getValueInt(stack, KEY_TIMER + index); }
     public static void setTimer(ItemStack stack, int index, int value) { setValueInt(stack, KEY_TIMER + index, value); }
     // GUN STATE //
-    public static GunState getState(ItemStack stack, int index) { return EnumUtil.grabEnumSafely(GunState.class, getValueByte(stack, KEY_STATE + index)); }
+    public static GunState getState(ItemStack stack, int index) { return EnumUtil.grabEnumSafely(GunState.VALUES, getValueByte(stack, KEY_STATE + index)); }
     public static void setState(ItemStack stack, int index, GunState value) { setValueByte(stack, KEY_STATE + index, (byte) value.ordinal()); }
     // GUN MODE //
     public static int getMode(ItemStack stack, int index) { return getValueInt(stack, KEY_MODE + index); }
@@ -382,7 +383,7 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
     public static boolean getIsLockedOn(ItemStack stack) { return getValueBool(stack, KEY_LOCKEDON); }
     public static void setIsLockedOn(ItemStack stack, boolean value) { setValueBool(stack, KEY_LOCKEDON, value); }
     // ANIM TRACKING //
-    public static HbmAnimationsSedna.AnimType getLastAnim(ItemStack stack, int index) { return EnumUtil.grabEnumSafely(HbmAnimationsSedna.AnimType.class, getValueInt(stack, KEY_LASTANIM + index)); }
+    public static HbmAnimationsSedna.AnimType getLastAnim(ItemStack stack, int index) { return EnumUtil.grabEnumSafely(HbmAnimationsSedna.AnimType.VALUES, getValueInt(stack, KEY_LASTANIM + index)); }
     public static void setLastAnim(ItemStack stack, int index, HbmAnimationsSedna.AnimType value) { setValueInt(stack, KEY_LASTANIM + index, value.ordinal()); }
     public static int getAnimTimer(ItemStack stack, int index) { return getValueInt(stack, KEY_ANIMTIMER + index); }
     public static void setAnimTimer(ItemStack stack, int index, int value) { setValueInt(stack, KEY_ANIMTIMER + index, value); }

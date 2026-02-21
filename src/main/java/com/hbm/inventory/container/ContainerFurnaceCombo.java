@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotSmelting;
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotSmelting;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.tileentity.machine.TileEntityFurnaceCombination;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -22,7 +22,7 @@ public class ContainerFurnaceCombo extends ContainerBase {
         // output
         this.addSlotToContainer(new SlotSmelting(invPlayer.player, furnace.inventory, 1, 89, 36));
         this.addSlotToContainer(new SlotItemHandler(furnace.inventory, 2, 136, 18));
-        this.addSlotToContainer(new SlotTakeOnly(furnace.inventory, 3, 136, 54));
+        this.addSlotToContainer(SlotFiltered.takeOnly(furnace.inventory, 3, 136, 54));
         for(int i = 0; i < 3; i++) {
             for(int j = 0; j < 9; j++) {
                 this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 104 + i * 18));

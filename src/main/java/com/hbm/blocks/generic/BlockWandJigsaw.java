@@ -5,11 +5,11 @@ import com.hbm.api.block.IBlockSideRotation;
 import com.hbm.blocks.ILookOverlay;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.BlockContainerBakeable;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.items.ModItems;
 import com.hbm.main.MainRegistry;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toserver.NBTControlPacket;
 import com.hbm.render.block.BlockBakeFrame;
 import com.hbm.tileentity.IGUIProvider;
@@ -203,10 +203,9 @@ public class BlockWandJigsaw extends BlockContainerBakeable implements IBlockSid
     }
 
     @Override
-    public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
-        TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
-        if (!(te instanceof TileEntityWandJigsaw)) return;
-        TileEntityWandJigsaw jigsaw = (TileEntityWandJigsaw) te;
+    public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
+        TileEntity te = world.getTileEntity(pos);
+        if (!(te instanceof TileEntityWandJigsaw jigsaw)) return;
 
         List<String> text = new ArrayList<>();
 
@@ -232,7 +231,7 @@ public class BlockWandJigsaw extends BlockContainerBakeable implements IBlockSid
             IModel retexturedModel = baseModel.retexture(textureMap.build());
             IBakedModel[] models = new IBakedModel[6];
 
-            for (EnumFacing facing : EnumFacing.values()) {
+            for (EnumFacing facing : EnumFacing.VALUES) {
                 IBakedModel baked = retexturedModel.bake(
                         ModelRotation.getModelRotation(BlockBakeFrame.getXRotationForFacing(facing), BlockBakeFrame.getYRotationForFacing(facing)),
                         DefaultVertexFormats.BLOCK,
@@ -244,7 +243,7 @@ public class BlockWandJigsaw extends BlockContainerBakeable implements IBlockSid
             ModelResourceLocation inv = new ModelResourceLocation(Objects.requireNonNull(getRegistryName()), "inventory");
             event.getModelRegistry().putObject(inv, models[EnumFacing.SOUTH.getIndex()]);
 
-            for (EnumFacing facing : EnumFacing.values()) {
+            for (EnumFacing facing : EnumFacing.VALUES) {
                 ModelResourceLocation worldLoc = new ModelResourceLocation(Objects.requireNonNull(getRegistryName()), "facing=" + facing.getName());
                 event.getModelRegistry().putObject(worldLoc, models[facing.getIndex()]);
             }
@@ -428,7 +427,8 @@ public class BlockWandJigsaw extends BlockContainerBakeable implements IBlockSid
 
             data.setBoolean("roll", "Rollable".equals(jointToggle.displayString));
 
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, jigsaw.getPos().getX(), jigsaw.getPos().getY(), jigsaw.getPos().getZ()));
+            PacketThreading.createSendToServerThreadedPacket(
+                    new NBTControlPacket(data, jigsaw.getPos().getX(), jigsaw.getPos().getY(), jigsaw.getPos().getZ()));
         }
 
         @Override

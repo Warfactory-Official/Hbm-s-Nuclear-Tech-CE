@@ -5,7 +5,6 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.render.util.BeamPronter;
 import com.hbm.render.util.BeamPronter.EnumBeamType;
 import com.hbm.render.util.BeamPronter.EnumWaveType;
@@ -23,6 +22,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
 
 import java.awt.*;
@@ -261,8 +261,8 @@ public class CannerySILEX extends CanneryBase {
 				if(color == 0)
 					color = Color.HSBtoRGB(Minecraft.getMinecraft().world.getTotalWorldTime() / 50.0F, 0.5F, 0.1F) & 16777215;
 				
-				BeamPronter.prontBeamwithDepth(Vec3.createVectorHelper(0, 0, -length - 1), EnumWaveType.SPIRAL, EnumBeamType.SOLID, color, color, 0, 1, 0F, 2, 0.0625F);
-				BeamPronter.prontBeamwithDepth(Vec3.createVectorHelper(0, 0, -length - 1), EnumWaveType.RANDOM, EnumBeamType.SOLID, color, color, (int)(Minecraft.getMinecraft().world.getTotalWorldTime() % 1000 / 2), (length / 2) + 1, 0.0625F, 2, 0.0625F);
+				BeamPronter.prontBeamwithDepth(new Vec3d(0, 0, -length - 1), EnumWaveType.SPIRAL, EnumBeamType.SOLID, color, color, 0, 1, 0F, 2, 0.0625F);
+				BeamPronter.prontBeamwithDepth(new Vec3d(0, 0, -length - 1), EnumWaveType.RANDOM, EnumBeamType.SOLID, color, color, (int)(Minecraft.getMinecraft().world.getTotalWorldTime() % 1000 / 2), (length / 2) + 1, 0.0625F, 2, 0.0625F);
 			}
 		}
 

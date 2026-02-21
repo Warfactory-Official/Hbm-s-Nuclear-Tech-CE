@@ -110,8 +110,8 @@ public class BlockPWR extends BlockContainer implements ILookOverlay {
     }
 
     @Override
-    public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
-        TileEntity tePWR = world.getTileEntity(new BlockPos(x, y, z));
+    public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
+        TileEntity tePWR = world.getTileEntity(pos);
         List<String> text = new ArrayList<>();
         if (!(tePWR instanceof TileEntityBlockPWR blockPWR)) return;
         if (!(blockPWR.corePos != null && world.getTileEntity(blockPWR.corePos) instanceof TileEntityPWRController controller)) {

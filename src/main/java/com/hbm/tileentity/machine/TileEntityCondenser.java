@@ -4,12 +4,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import com.hbm.api.fluid.IFluidStandardTransceiver;
 import com.hbm.capability.NTMFluidHandlerWrapper;
-import com.hbm.dim.CelestialBody;
-import com.hbm.dim.trait.CBT_Atmosphere;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.saveddata.TomSaveData;
 import com.hbm.tileentity.IConfigurableMachine;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.TileEntityLoadedBase;
@@ -17,12 +14,11 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
-import net.minecraft.world.EnumSkyBlock;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 
 @AutoRegister
@@ -33,7 +29,6 @@ public class TileEntityCondenser extends TileEntityLoadedBase implements ITickab
 	
 	public int waterTimer = 0;
 	protected int throughput;
-	public boolean vacuumOptimised = false;
 
 	//Configurable values
 	public static int inputTankSize = 100;
@@ -84,21 +79,8 @@ public class TileEntityCondenser extends TileEntityLoadedBase implements ITickab
 				if(convert > 0)
 					this.waterTimer = 20;
 
-				int light = this.world.getLightFor(EnumSkyBlock.SKY, pos);
-
-				boolean shouldEvaporate = TomSaveData.forWorld(world).fire > 1e-5 && light > 7;
-				if(!shouldEvaporate && !vacuumOptimised) {
-					CBT_Atmosphere atmosphere = CelestialBody.getTrait(world, CBT_Atmosphere.class);
-					if(CelestialBody.inOrbit(world) || atmosphere == null || atmosphere.getPressure() < 0.01) shouldEvaporate = true;
-				}
-
-				if(shouldEvaporate) { // Make both steam and water evaporate during firestorms and in vacuums
-					tanks[1].setFill(tanks[1].getFill() - convert);
-					postConvert(convert);
-				} else {
-					tanks[1].setFill(tanks[1].getFill() + convert);
-					postConvert(convert);
-				}
+				tanks[1].setFill(tanks[1].getFill() + convert);
+				postConvert(convert);
 			}
 
 			this.subscribeToAllAround(tanks[0].getTankType(), this);

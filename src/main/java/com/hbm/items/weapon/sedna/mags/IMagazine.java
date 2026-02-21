@@ -65,7 +65,7 @@ public interface IMagazine<T> {
         if(inv instanceof InventoryPlayer) {
             InventoryPlayer invPlayer = (InventoryPlayer) inv;
             boolean trenchie = ArmorTrenchmaster.isTrenchMaster(invPlayer.player);
-            boolean aos = false; // TODO ArmorTrenchmaster.hasAoS(invPlayer.player);
+            boolean aos = ArmorTrenchmaster.hasAoS(invPlayer.player);
             if(trenchie || aos) return invPlayer.player.getRNG().nextInt(3) < 2;
         }
         return true;

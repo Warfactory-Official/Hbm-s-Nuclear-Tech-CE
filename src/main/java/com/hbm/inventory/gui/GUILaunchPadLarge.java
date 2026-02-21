@@ -1,10 +1,10 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.container.ContainerLaunchPadLarge;
 import com.hbm.items.ModItems;
 import com.hbm.items.weapon.ItemMissileStandard;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.item.ItemRenderMissileGeneric;
 import com.hbm.tileentity.bomb.TileEntityLaunchPadBase;
 import com.hbm.util.I18nUtil;
@@ -24,7 +24,7 @@ import java.util.function.Consumer;
 
 public class GUILaunchPadLarge extends GuiInfoContainer {
 	
-	private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/weapon/gui_launch_pad_large.png");
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/weapon/gui_launch_pad_large.png");
 	private final TileEntityLaunchPadBase launchpad;
 
 	public GUILaunchPadLarge(InventoryPlayer invPlayer, TileEntityLaunchPadBase tile) {

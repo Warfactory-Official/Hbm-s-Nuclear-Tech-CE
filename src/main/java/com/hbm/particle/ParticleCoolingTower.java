@@ -1,6 +1,6 @@
 package com.hbm.particle;
 
-import com.hbm.main.ModEventHandlerClient;
+import com.hbm.main.client.NTMClientRegistry;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -22,7 +22,7 @@ public class ParticleCoolingTower extends Particle {
         this.particleAlpha = 0.30F; //Norwood: best solution to make the particle transparent with current minecraft version
         this.particleRed = this.particleGreen = this.particleBlue = 0.9F + world.rand.nextFloat() * 0.05F;
         this.canCollide = false;
-        this.setParticleTexture(ModEventHandlerClient.particle_base);
+        this.setParticleTexture(NTMClientRegistry.particle_base);
     }
 
     public void setBaseScale(float f) {

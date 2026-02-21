@@ -1,8 +1,8 @@
 package com.hbm.render.entity.projectile;
 
+import com.hbm.Tags;
 import com.hbm.entity.projectile.EntityZirnoxDebris;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.ResourceManager;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.Render;
@@ -16,8 +16,8 @@ public class RenderZirnoxDebris extends Render<EntityZirnoxDebris> {
     public static final IRenderFactory<EntityZirnoxDebris> FACTORY = man -> new RenderZirnoxDebris(man);
 
     //for fallback only
-    public static final ResourceLocation tex_graphite = new ResourceLocation(RefStrings.MODID + ":textures/blocks/block_graphite.png");
-    private static final ResourceLocation tex_rod = new ResourceLocation(RefStrings.MODID + ":textures/models/zirnox/zirnox_deb_element.png");
+    public static final ResourceLocation tex_graphite = new ResourceLocation(Tags.MODID + ":textures/blocks/block_graphite.png");
+    private static final ResourceLocation tex_rod = new ResourceLocation(Tags.MODID + ":textures/models/zirnox/zirnox_deb_element.png");
 
     protected RenderZirnoxDebris(RenderManager renderManager){
         super(renderManager);

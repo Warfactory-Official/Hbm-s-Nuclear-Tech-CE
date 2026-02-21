@@ -33,7 +33,7 @@ public class HeaterFirebox extends BlockDummyable implements ITooltipProvider, I
 		if(meta >= 12)
 			return new TileEntityHeaterFirebox();
 		
-		return new TileEntityProxyCombo(true, false, false);
+		return new TileEntityProxyCombo(true, false, true);
 	}
 	
     @Override
@@ -58,13 +58,13 @@ public class HeaterFirebox extends BlockDummyable implements ITooltipProvider, I
 	}
 
 	@Override
-    public void printHook(Pre event, World world, int x, int y, int z) {
-        int[] pos = this.findCore(world, x, y, z);
-
-        if (pos == null)
+    public void printHook(Pre event, World world, BlockPos pos) {
+        BlockPos corePos = this.findCore(world, pos);
+        if(corePos == null) {
             return;
+        }
 
-        TileEntity te = world.getTileEntity(new BlockPos(pos[0], pos[1], pos[2]));
+        TileEntity te = world.getTileEntity(corePos);
 
         if (!(te instanceof TileEntityHeaterFirebox))
             return;

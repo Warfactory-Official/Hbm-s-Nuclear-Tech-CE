@@ -102,7 +102,7 @@ public class GunEnergyFactory {
 		bullet.velocity = 1F;
 		bullet.spread = 0.125F;
 		bullet.maxAge = 100;
-		bullet.gravity = 0D;
+		bullet.gravity = 0F;
 		bullet.bulletsMin = 5;
 		bullet.bulletsMax = 5;
 		bullet.dmgMin = 10000;

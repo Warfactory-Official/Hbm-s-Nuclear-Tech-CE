@@ -2,6 +2,7 @@ package com.hbm.blocks.generic;
 
 import com.hbm.items.IDynamicModels;
 import com.hbm.render.model.BlockBarrierBakedModel;
+import com.hbm.util.UnlistedPropertyBoolean;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
@@ -55,7 +56,6 @@ public class BlockBarrier extends BlockBakeBase implements IDynamicModels {
   public BlockBarrier(Material mat, String name) {
     super(mat, name);
     this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
-    IDynamicModels.INSTANCES.add(this);
   }
 
   @Override
@@ -244,25 +244,5 @@ public class BlockBarrier extends BlockBakeBase implements IDynamicModels {
 
     event.getModelRegistry().putObject(worldLoc, worldModel);
     event.getModelRegistry().putObject(invLoc, itemModel);
-  }
-
-  public static class UnlistedPropertyBoolean implements IUnlistedProperty<Boolean> {
-    private final String name;
-
-    public UnlistedPropertyBoolean(String name) {
-      this.name = name;
-    }
-
-    @Override
-    public String getName() { return name; }
-
-    @Override
-    public boolean isValid(Boolean value) { return value != null; }
-
-    @Override
-    public Class<Boolean> getType() { return Boolean.class; }
-
-    @Override
-    public String valueToString(Boolean value) { return value.toString(); }
   }
 }

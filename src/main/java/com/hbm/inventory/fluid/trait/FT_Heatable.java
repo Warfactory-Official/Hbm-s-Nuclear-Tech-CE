@@ -42,7 +42,7 @@ public class FT_Heatable extends FluidTrait {
 	@Override
 	public void addInfoHidden(List<String> info) {
 		info.add(I18nUtil.resolveKey("trait.thermalcap", this.getFirstStep().heatReq));
-		for(HeatingType type : HeatingType.values()) {
+		for(HeatingType type : HeatingType.VALUES) {
 			
 			double eff = getEfficiency(type);
 			
@@ -72,6 +72,8 @@ public class FT_Heatable extends FluidTrait {
 		PWR("trait.htype.pwr"),
 		ICF("trait.htype.icf"),
 		PA("trait.htype.pa");
+
+        public static final HeatingType[] VALUES = values();
 		
 		public final String name;
 		
@@ -116,7 +118,7 @@ public class FT_Heatable extends FluidTrait {
 			));
 		}
 		
-		for(HeatingType type : HeatingType.values()) {
+		for(HeatingType type : HeatingType.VALUES) {
 			if(obj.has(type.name())) efficiency.put(type, obj.get(type.name()).getAsDouble());
 		}
 	}

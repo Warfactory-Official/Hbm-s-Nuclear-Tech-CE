@@ -96,7 +96,7 @@ public class MachineRefinery extends BlockDummyable implements IPersistentInfoPr
     }
 
     @Override
-    public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+    public void breakBlock(@NotNull World worldIn, @NotNull BlockPos pos, IBlockState state) {
         IPersistentNBT.breakBlock(worldIn, pos, state);
         super.breakBlock(worldIn, pos, state);
     }
@@ -106,7 +106,7 @@ public class MachineRefinery extends BlockDummyable implements IPersistentInfoPr
     }
 
 	@Override
-	public void addInformation(ItemStack stack, NBTTagCompound persistentTag, EntityPlayer player, List list, boolean ext) {
+	public void addInformation(ItemStack stack, NBTTagCompound persistentTag, EntityPlayer player, List<String> list, boolean ext) {
 
 		for(int i = 0; i < 5; i++) {
 			FluidTankNTM tank = new FluidTankNTM(Fluids.NONE, 0);
@@ -153,7 +153,7 @@ public class MachineRefinery extends BlockDummyable implements IPersistentInfoPr
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
-		IRepairable.addGenericOverlay(event, world, x, y, z, this);
+	public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
+		IRepairable.addGenericOverlay(event, world, pos.getX(), pos.getY(), pos.getZ(), this);
 	}
 }

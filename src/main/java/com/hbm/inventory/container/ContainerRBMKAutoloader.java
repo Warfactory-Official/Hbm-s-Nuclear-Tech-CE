@@ -20,33 +20,6 @@ public class ContainerRBMKAutoloader extends ContainerBase {
     }
 
     @Override
-    public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        ItemStack rStack = ItemStack.EMPTY;
-        Slot slot = this.inventorySlots.get(index);
-
-        if (slot != null && slot.getHasStack()) {
-            ItemStack stack = slot.getStack();
-            rStack = stack.copy();
-
-            if (index <= 17) {
-                if (!this.mergeItemStack(stack, 18, this.inventorySlots.size(), true)) {
-                    return ItemStack.EMPTY;
-                }
-            } else {
-                if (!this.mergeItemStack(stack, 0, 9, false)) return ItemStack.EMPTY;
-            }
-
-            if (stack.isEmpty()) {
-                slot.putStack(ItemStack.EMPTY);
-            } else {
-                slot.onSlotChanged();
-            }
-        }
-
-        return rStack;
-    }
-
-    @Override
     public boolean canInteractWith(EntityPlayer player) {
         return loader.isUseableByPlayer(player);
     }

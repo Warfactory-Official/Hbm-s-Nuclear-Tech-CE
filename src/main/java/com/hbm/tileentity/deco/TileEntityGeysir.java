@@ -6,7 +6,7 @@ import com.hbm.entity.projectile.EntityShrapnel;
 import com.hbm.entity.projectile.EntityWaterSplash;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.packet.PacketDispatcher;
+import com.hbm.packet.threading.ThreadedPacket;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -124,8 +124,10 @@ public class TileEntityGeysir extends TileEntity implements ITickable {
 				data.setDouble("mX", world.rand.nextGaussian() * 0.05);
 				data.setDouble("mY", 0.2);
 				data.setDouble("mZ", world.rand.nextGaussian() * 0.05);
-				PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, pos.getX() + 0.5F, pos.getY() + 1.1F, pos.getZ() + 0.5F), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 75));
-			}
+                ThreadedPacket message = new AuxParticlePacketNT(data, pos.getX() + 0.5F, pos.getY() + 1.1F, pos.getZ() + 0.5F);
+                PacketThreading.createAllAroundThreadedPacket(message,
+                        new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 75));
+            }
 		}
 	}
 

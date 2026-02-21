@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerMachineShredder;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityMachineShredder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -11,7 +11,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GUIMachineShredder extends GuiInfoContainer {
 
-	private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/gui_shredder.png");
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/gui_shredder.png");
 	private TileEntityMachineShredder shredder;
 
 	public GUIMachineShredder(InventoryPlayer invPlayer, TileEntityMachineShredder teMachineShredder) {

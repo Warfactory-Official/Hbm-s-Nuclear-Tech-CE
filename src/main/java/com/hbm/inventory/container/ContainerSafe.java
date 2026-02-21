@@ -3,6 +3,7 @@ package com.hbm.inventory.container;
 import com.cleanroommc.bogosorter.api.ISortableContainer;
 import com.cleanroommc.bogosorter.api.ISortingContextBuilder;
 import com.hbm.tileentity.machine.TileEntitySafe;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -15,10 +16,10 @@ import net.minecraftforge.items.SlotItemHandler;
 @Optional.Interface(iface = "com.cleanroommc.bogosorter.api.ISortableContainer", modid = "bogosorter")
 public class ContainerSafe extends Container implements ISortableContainer {
 	
-	private TileEntitySafe diFurnace;
+	private TileEntitySafe safe;
 	
 	public ContainerSafe(InventoryPlayer invPlayer, TileEntitySafe tedf) {
-		diFurnace = tedf;
+		safe = tedf;
 		
 		for(int i = 0; i < 3; i++)
 		{
@@ -43,48 +44,19 @@ public class ContainerSafe extends Container implements ISortableContainer {
 	}
 	
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2)
+    public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-		
-		if (var4 != null && var4.getHasStack())
-		{
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-			
-            if (par2 <= diFurnace.inventory.getSlots() - 1) {
-				if (!this.mergeItemStack(var5, diFurnace.inventory.getSlots(), this.inventorySlots.size(), true))
-				{
-					return ItemStack.EMPTY;
-				}
-			}
-			else if (!this.mergeItemStack(var5, 0, diFurnace.inventory.getSlots(), false))
-			{
-					return ItemStack.EMPTY;
-			}
-			
-			if (var5.isEmpty())
-			{
-				var4.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
-				var4.onSlotChanged();
-			}
-		}
-		
-		return var3;
+		return InventoryUtil.transferStack(this.inventorySlots, index, safe.inventory.getSlots());
     }
 
 	@Override
 	public boolean canInteractWith(EntityPlayer player) {
-		return diFurnace.isUseableByPlayer(player);
+		return safe.isUseableByPlayer(player);
 	}
 
 	@Override
 	@Optional.Method(modid = "bogosorter")
 	public void buildSortingContext(ISortingContextBuilder builder) {
-		builder.addSlotGroup(0, diFurnace.inventory.getSlots(), 5);
+		builder.addSlotGroup(0, safe.inventory.getSlots(), 5);
 	}
 }

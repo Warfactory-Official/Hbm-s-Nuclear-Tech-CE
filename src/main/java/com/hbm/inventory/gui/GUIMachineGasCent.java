@@ -1,10 +1,10 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerMachineGasCent;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityMachineGasCent;
 import com.hbm.util.I18nUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
+import com.hbm.util.RenderUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -13,12 +13,13 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.opengl.GL11;
 
 public class GUIMachineGasCent extends GuiInfoContainer {
 
   private static final ResourceLocation TEXTURE =
-      new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_centrifuge_gas.png");
+      new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_centrifuge_gas.png");
 
   private final TileEntityMachineGasCent gasCent;
 
@@ -48,8 +49,8 @@ public class GUIMachineGasCent extends GuiInfoContainer {
     if (gasCent.inputTank.getTankType().getIfHighSpeed()) {
       inTankInfo[0] =
           (gasCent.processingSpeed > gasCent.processingSpeed - 70)
-              ? ChatFormatting.DARK_RED + inTankInfo[0]
-              : ChatFormatting.GOLD + inTankInfo[0];
+              ? TextFormatting.DARK_RED + inTankInfo[0]
+              : TextFormatting.GOLD + inTankInfo[0];
     }
 
     String[] outTankInfo = {
@@ -58,7 +59,7 @@ public class GUIMachineGasCent extends GuiInfoContainer {
     };
 
     if (gasCent.outputTank.getTankType().getIfHighSpeed()) {
-      outTankInfo[0] = ChatFormatting.GOLD + outTankInfo[0];
+      outTankInfo[0] = TextFormatting.GOLD + outTankInfo[0];
     }
 
     drawCustomInfoStat(
@@ -160,9 +161,8 @@ public class GUIMachineGasCent extends GuiInfoContainer {
   }
 
   public void renderTank(int x, int y, double z, int width, int height, int fluid, int maxFluid) {
-    GL11.glPushAttrib(GL11.GL_ENABLE_BIT);
-
-    GlStateManager.enableBlend();
+    boolean wasBlendEnabled = RenderUtil.isBlendEnabled();
+    if (!wasBlendEnabled) GlStateManager.enableBlend();
     GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
     y += height;
@@ -189,6 +189,6 @@ public class GUIMachineGasCent extends GuiInfoContainer {
     buffer.pos(minX, minY, z).tex(minU, minV).endVertex();
     tessellator.draw();
 
-    GL11.glPopAttrib();
+    if (!wasBlendEnabled) GlStateManager.disableBlend();
   }
 }

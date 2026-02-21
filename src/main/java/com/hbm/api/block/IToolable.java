@@ -18,13 +18,15 @@ public interface IToolable {
 		return onScrew(world, player, pos.getX(), pos.getY(), pos.getZ(), side, fX, fY, fZ, hand, tool);
 	};
 
-	public static enum ToolType {
+	enum ToolType {
 		SCREWDRIVER,
 		HAND_DRILL,
 		DEFUSER,
 		WRENCH,
 		TORCH,
 		BOLT;
+
+        public static final ToolType[] VALUES = values();
 
 		public List<ItemStack> stacksForDisplay = new ArrayList();
 		private static HashMap<RecipesCommon.ComparableStack, ToolType> map = new HashMap();
@@ -39,7 +41,7 @@ public interface IToolable {
 				return map.get(new RecipesCommon.ComparableStack(stack));
 			}
 
-			for(ToolType type : ToolType.values()) {
+			for(ToolType type : ToolType.VALUES) {
 				for(ItemStack tool : type.stacksForDisplay) {
 					map.put(new RecipesCommon.ComparableStack(tool), type);
 				}

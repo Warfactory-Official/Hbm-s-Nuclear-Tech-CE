@@ -1,5 +1,17 @@
 {
-    "variants": {
-	   "normal": { "model": "hbm:radio_torch_sender" }
+  "forge_marker": 1,
+  "variants": {
+    "facing": {
+      "up":    { "x": 0 },
+      "down":  { "x": 180 },
+      "east":  { "y": 90,  "x": 90 },
+      "south": { "y": 180, "x": 90 },
+      "west":  { "y": 270, "x": 90 },
+      "north": { "x": 90 }
+    },
+    "lit": {
+      "false": { "model": "hbm:radio_torch_sender_off" },
+      "true":  { "model": "hbm:radio_torch_sender_on" }
     }
+  }
 }

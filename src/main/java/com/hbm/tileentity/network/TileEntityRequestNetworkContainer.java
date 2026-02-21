@@ -73,7 +73,7 @@ public abstract class TileEntityRequestNetworkContainer extends TileEntityReques
 
     @Override
     public void setInventorySlotContents(int slot, ItemStack stack) {
-        if (stack != ItemStack.EMPTY && stack.getMaxStackSize() > this.getInventoryStackLimit()) {
+        if (!stack.isEmpty() && stack.getMaxStackSize() > this.getInventoryStackLimit()) {
             this.inventory.setStackInSlot(slot, stack.splitStack(this.getInventoryStackLimit()));
         } else {
             this.inventory.setStackInSlot(slot, stack);
@@ -101,7 +101,7 @@ public abstract class TileEntityRequestNetworkContainer extends TileEntityReques
 
     @Override
     public ItemStack decrStackSize(int slot, int amount) {
-        if(this.inventory.getStackInSlot(slot) != ItemStack.EMPTY) {
+        if(!this.inventory.getStackInSlot(slot).isEmpty()) {
             ItemStack itemstack;
 
             if (this.inventory.getStackInSlot(slot).getMaxStackSize() <= amount) {
@@ -153,7 +153,7 @@ public abstract class TileEntityRequestNetworkContainer extends TileEntityReques
 
         for(int i = 0; i < inventory.getSlots(); i++)
         {
-            if(inventory.getStackInSlot(i) != ItemStack.EMPTY)
+            if(!inventory.getStackInSlot(i).isEmpty())
             {
                 NBTTagCompound nbt1 = new NBTTagCompound();
                 nbt1.setByte("slot", (byte)i);

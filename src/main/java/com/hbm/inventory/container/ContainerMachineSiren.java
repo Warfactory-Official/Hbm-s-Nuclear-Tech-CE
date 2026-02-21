@@ -1,6 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.tileentity.machine.TileEntityMachineSiren;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -10,11 +11,11 @@ import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerMachineSiren extends Container {
 	
-	private TileEntityMachineSiren diFurnace;
+	private TileEntityMachineSiren siren;
 	
 	public ContainerMachineSiren(InventoryPlayer invPlayer, TileEntityMachineSiren tedf) {
 		
-		diFurnace = tedf;
+		siren = tedf;
 		
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 8, 35));
 		
@@ -33,42 +34,13 @@ public class ContainerMachineSiren extends Container {
 	}
 	
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2)
+    public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-		
-		if (var4 != null && var4.getHasStack())
-		{
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-			
-            if (par2 <= 0) {
-				if (!this.mergeItemStack(var5, 1, this.inventorySlots.size(), true))
-				{
-					return ItemStack.EMPTY;
-				}
-			}
-			else if (!this.mergeItemStack(var5, 0, 1, false))
-			{
-				return ItemStack.EMPTY;
-			}
-			
-			if (var5.isEmpty())
-			{
-				var4.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
-				var4.onSlotChanged();
-			}
-		}
-		
-		return var3;
+		return InventoryUtil.transferStack(this.inventorySlots, index, 1);
     }
 
 	@Override
 	public boolean canInteractWith(EntityPlayer player) {
-		return diFurnace.isUseableByPlayer(player);
+		return siren.isUseableByPlayer(player);
 	}
 }

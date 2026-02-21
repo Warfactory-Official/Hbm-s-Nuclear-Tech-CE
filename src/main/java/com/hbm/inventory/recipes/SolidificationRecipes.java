@@ -55,7 +55,7 @@ public class SolidificationRecipes extends SerializableRecipe {
     //aromatics can be idfk wax or soap or sth, perhaps artificial lubricant?
     //on that note, add more leaded variants
 
-    private static HashMap<FluidType, Tuple.Pair<Integer, ItemStack>> recipes = new HashMap();
+    public static HashMap<FluidType, Tuple.Pair<Integer, ItemStack>> recipes = new HashMap<>();
 
     @Override
     public void registerDefaults() {
@@ -116,10 +116,10 @@ public class SolidificationRecipes extends SerializableRecipe {
 
     }
 
-    private static void registerSFAuto(FluidType fluid) {
+    public static void registerSFAuto(FluidType fluid) {
         registerSFAuto(fluid, 1_440_000L, ModItems.solid_fuel); //3200 burntime * 1.5 burntime bonus * 300 TU/t
     }
-    private static void registerSFAuto(FluidType fluid, long tuPerSF, Item fuel) {
+    public static void registerSFAuto(FluidType fluid, long tuPerSF, Item fuel) {
         long tuPerBucket = fluid.getTrait(FT_Flammable.class).getHeatEnergy();
         double penalty = 1.25D;
 
@@ -134,10 +134,10 @@ public class SolidificationRecipes extends SerializableRecipe {
         registerRecipe(fluid, mB, fuel);
     }
 
-    private static void registerRecipe(FluidType type, int quantity, Item output) { registerRecipe(type, quantity, new ItemStack(output)); }
-    private static void registerRecipe(FluidType type, int quantity, Block output) { registerRecipe(type, quantity, new ItemStack(output)); }
-    private static void registerRecipe(FluidType type, int quantity, ItemStack output) {
-        recipes.put(type, new Tuple.Pair<Integer, ItemStack>(quantity, output));
+    public static void registerRecipe(FluidType type, int quantity, Item output) { registerRecipe(type, quantity, new ItemStack(output)); }
+    public static void registerRecipe(FluidType type, int quantity, Block output) { registerRecipe(type, quantity, new ItemStack(output)); }
+    public static void registerRecipe(FluidType type, int quantity, ItemStack output) {
+        recipes.put(type, new Tuple.Pair<>(quantity, output));
     }
 
     public static Tuple.Pair<Integer, ItemStack> getOutput(FluidType type) {
@@ -146,7 +146,7 @@ public class SolidificationRecipes extends SerializableRecipe {
 
     public static HashMap<ItemStack, ItemStack> getRecipes() {
 
-        HashMap<ItemStack, ItemStack> recipes = new HashMap<ItemStack, ItemStack>();
+        HashMap<ItemStack, ItemStack> recipes = new HashMap<>();
 
         for(Map.Entry<FluidType, Tuple.Pair<Integer, ItemStack>> entry : SolidificationRecipes.recipes.entrySet()) {
 
@@ -178,9 +178,9 @@ public class SolidificationRecipes extends SerializableRecipe {
     @Override
     public void readRecipe(JsonElement recipe) {
         JsonObject obj = (JsonObject) recipe;
-        FluidStack in = this.readFluidStack(obj.get("input").getAsJsonArray());
-        ItemStack out = this.readItemStack(obj.get("output").getAsJsonArray());
-        recipes.put(in.type, new Tuple.Pair(in.fill, out));
+        FluidStack in = readFluidStack(obj.get("input").getAsJsonArray());
+        ItemStack out = readItemStack(obj.get("output").getAsJsonArray());
+        recipes.put(in.type, new Tuple.Pair<>(in.fill, out));
     }
 
     @Override
@@ -188,8 +188,8 @@ public class SolidificationRecipes extends SerializableRecipe {
         Map.Entry<FluidType, Tuple.Pair<Integer, ItemStack>> rec = (Map.Entry<FluidType, Tuple.Pair<Integer, ItemStack>>) recipe;
         FluidStack in = new FluidStack(rec.getKey(), rec.getValue().getKey());
         writer.name("input");
-        this.writeFluidStack(in, writer);
+        writeFluidStack(in, writer);
         writer.name("output");
-        this.writeItemStack(rec.getValue().getValue(), writer);
+        writeItemStack(rec.getValue().getValue(), writer);
     }
 }

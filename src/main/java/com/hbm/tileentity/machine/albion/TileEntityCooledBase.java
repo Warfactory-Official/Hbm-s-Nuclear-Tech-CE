@@ -1,7 +1,7 @@
 package com.hbm.tileentity.machine.albion;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.api.fluid.IFluidStandardTransceiver;
+import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
@@ -13,9 +13,9 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class TileEntityCooledBase extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiver {
+public abstract class TileEntityCooledBase extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiverMK2 {
 
-    public FluidTankNTM[] tanks;
+    public FluidTankNTM[] coolantTanks;
 
     public long power;
 
@@ -28,16 +28,16 @@ public abstract class TileEntityCooledBase extends TileEntityMachineBase impleme
 
     public TileEntityCooledBase(int slotCount, int slotLimit) {
         super(slotCount, slotLimit, true, true);
-        tanks = new FluidTankNTM[2];
-        tanks[0] = new FluidTankNTM(Fluids.PERFLUOROMETHYL_COLD, 4_000);
-        tanks[1] = new FluidTankNTM(Fluids.PERFLUOROMETHYL, 4_000);
+        coolantTanks = new FluidTankNTM[2];
+        coolantTanks[0] = new FluidTankNTM(Fluids.PERFLUOROMETHYL_COLD, 4_000);
+        coolantTanks[1] = new FluidTankNTM(Fluids.PERFLUOROMETHYL, 4_000);
     }
 
     public TileEntityCooledBase(int slotCount) {
         super(slotCount, true, true);
-        tanks = new FluidTankNTM[2];
-        tanks[0] = new FluidTankNTM(Fluids.PERFLUOROMETHYL_COLD, 4_000);
-        tanks[1] = new FluidTankNTM(Fluids.PERFLUOROMETHYL, 4_000);
+        coolantTanks = new FluidTankNTM[2];
+        coolantTanks[0] = new FluidTankNTM(Fluids.PERFLUOROMETHYL_COLD, 4_000);
+        coolantTanks[1] = new FluidTankNTM(Fluids.PERFLUOROMETHYL, 4_000);
     }
 
     @Override
@@ -45,11 +45,17 @@ public abstract class TileEntityCooledBase extends TileEntityMachineBase impleme
 
         if(!world.isRemote) {
 
-            for(DirPos dir : this.getConPos()) {
-                BlockPos pos = dir.getPos();
-                this.trySubscribe(world, pos.getX(), pos.getY(), pos.getZ(), dir.getDir());
-                this.trySubscribe(tanks[0].getTankType(), world, pos.getX(), pos.getY(), pos.getZ(), dir.getDir());
-                this.sendFluid(tanks[1], world, pos.getX(), pos.getY(), pos.getZ(), dir.getDir());
+            DirPos[] conPos = this.getConPos();
+            if (conPos != null) {
+                for (DirPos dir : conPos) {
+                    if (dir == null || dir.getPos() == null) continue;
+                    BlockPos pos = dir.getPos();
+                    this.trySubscribe(world, pos.getX(), pos.getY(), pos.getZ(), dir.getDir());
+                    if (coolantTanks[0] != null)
+                        this.trySubscribe(coolantTanks[0].getTankType(), world, pos.getX(), pos.getY(), pos.getZ(), dir.getDir());
+                    if (coolantTanks[1] != null)
+                        this.tryProvide(coolantTanks[1], world, pos.getX(), pos.getY(), pos.getZ(), dir.getDir());
+                }
             }
 
             this.temperature += temp_passive_heating;
@@ -57,12 +63,12 @@ public abstract class TileEntityCooledBase extends TileEntityMachineBase impleme
 
             if(this.temperature > temperature_target) {
                 int cyclesTemp = (int) Math.ceil((Math.min(this.temperature - temperature_target, temp_change_max)) / temp_change_per_mb);
-                int cyclesCool = tanks[0].getFill();
-                int cyclesHot = tanks[1].getMaxFill() - tanks[1].getFill();
+                int cyclesCool = coolantTanks[0].getFill();
+                int cyclesHot = coolantTanks[1].getMaxFill() - coolantTanks[1].getFill();
                 int cycles = BobMathUtil.min(cyclesTemp, cyclesCool, cyclesHot);
 
-                tanks[0].setFill(tanks[0].getFill() - cycles);
-                tanks[1].setFill(tanks[1].getFill() + cycles);
+                coolantTanks[0].setFill(coolantTanks[0].getFill() - cycles);
+                coolantTanks[1].setFill(coolantTanks[1].getFill() + cycles);
                 this.temperature -= temp_change_per_mb * cycles;
             }
 
@@ -79,8 +85,8 @@ public abstract class TileEntityCooledBase extends TileEntityMachineBase impleme
     @Override
     public void serialize(ByteBuf buf) {
         super.serialize(buf);
-        tanks[0].serialize(buf);
-        tanks[1].serialize(buf);
+        coolantTanks[0].serialize(buf);
+        coolantTanks[1].serialize(buf);
         buf.writeFloat(temperature);
         buf.writeLong(power);
     }
@@ -88,8 +94,8 @@ public abstract class TileEntityCooledBase extends TileEntityMachineBase impleme
     @Override
     public void deserialize(ByteBuf buf) {
         super.deserialize(buf);
-        tanks[0].deserialize(buf);
-        tanks[1].deserialize(buf);
+        coolantTanks[0].deserialize(buf);
+        coolantTanks[1].deserialize(buf);
         this.temperature = buf.readFloat();
         this.power = buf.readLong();
     }
@@ -98,8 +104,8 @@ public abstract class TileEntityCooledBase extends TileEntityMachineBase impleme
     public void readFromNBT(NBTTagCompound nbt) {
         super.readFromNBT(nbt);
 
-        tanks[0].readFromNBT(nbt, "t0");
-        tanks[1].readFromNBT(nbt, "t1");
+        coolantTanks[0].readFromNBT(nbt, "t0");
+        coolantTanks[1].readFromNBT(nbt, "t1");
         this.temperature = nbt.getFloat("temperature");
         this.power = nbt.getLong("power");
     }
@@ -108,8 +114,8 @@ public abstract class TileEntityCooledBase extends TileEntityMachineBase impleme
     public @NotNull NBTTagCompound writeToNBT(NBTTagCompound nbt) {
         super.writeToNBT(nbt);
 
-        tanks[0].writeToNBT(nbt, "t0");
-        tanks[1].writeToNBT(nbt, "t1");
+        coolantTanks[0].writeToNBT(nbt, "t0");
+        coolantTanks[1].writeToNBT(nbt, "t1");
         nbt.setFloat("temperature", temperature);
         nbt.setLong("power", power);
         return nbt;
@@ -118,7 +124,7 @@ public abstract class TileEntityCooledBase extends TileEntityMachineBase impleme
     @Override public long getPower() { return this.power; }
     @Override public void setPower(long power) { this.power = power; }
 
-    @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[] {tanks[1]}; }
-    @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[] {tanks[0]}; }
-    @Override public FluidTankNTM[] getAllTanks() { return tanks; }
+    @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[] {coolantTanks[1]}; }
+    @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[] {coolantTanks[0]}; }
+    @Override public FluidTankNTM[] getAllTanks() { return coolantTanks; }
 }

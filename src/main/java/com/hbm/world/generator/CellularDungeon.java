@@ -4,7 +4,6 @@ import com.hbm.world.phased.AbstractPhasedStructure;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -129,6 +128,12 @@ public class CellularDungeon {
 
 		return true;
 	}
+
+    public int getRadius() {
+        int radiusX = (dimX * width) / 2;
+        int radiusZ = (dimZ * width) / 2;
+        return Math.max(radiusX, radiusZ);
+    }
 
 	public static EnumFacing getRandomDir(Random rand) {
 

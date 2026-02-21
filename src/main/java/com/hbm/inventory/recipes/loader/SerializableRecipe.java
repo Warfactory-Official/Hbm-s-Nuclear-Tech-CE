@@ -58,14 +58,16 @@ public abstract class SerializableRecipe {
         recipeHandlers.add(new CyclotronRecipes());
         recipeHandlers.add(new ElectrolyserFluidRecipes());
         recipeHandlers.add(new ElectrolyserMetalRecipes());
+        recipeHandlers.add(new FluidBreederRecipes());
         recipeHandlers.add(new FractionRecipes());
         recipeHandlers.add(new HydrotreatingRecipes());
         recipeHandlers.add(new LiquefactionRecipes());
         recipeHandlers.add(new MatDistribution());
         recipeHandlers.add(new MixerRecipes());
+        recipeHandlers.add(new PedestalRecipes());
         recipeHandlers.add(new PressRecipes());
         recipeHandlers.add(new PyroOvenRecipes());
-        recipeHandlers.add(new RBMKOutgasserRecipes());
+        recipeHandlers.add(new OutgasserRecipes());
         recipeHandlers.add(new ReformingRecipes());
         recipeHandlers.add(new RotaryFurnaceRecipes());
         recipeHandlers.add(new ShredderRecipes());
@@ -80,6 +82,7 @@ public abstract class SerializableRecipe {
         recipeHandlers.add(AssemblyMachineRecipes.INSTANCE);
         recipeHandlers.add(ChemicalPlantRecipes.INSTANCE);
         recipeHandlers.add(PUREXRecipes.INSTANCE);
+        recipeHandlers.add(FusionRecipes.INSTANCE);
     }
 
     public static void initialize() {
@@ -435,7 +438,7 @@ public abstract class SerializableRecipe {
         Collections.addAll(recipeList, recipe);
 
         for (ItemStack inputStack : inputs) {
-            if (inputStack != ItemStack.EMPTY) {
+            if (!inputStack.isEmpty()) {
                 boolean hasMatch = false;
 
                 for (RecipesCommon.AStack recipeStack : recipeList) {

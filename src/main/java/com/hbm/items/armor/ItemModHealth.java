@@ -27,7 +27,7 @@ public class ItemModHealth extends ItemArmorMod {
 	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn){
 		String color = "" + (System.currentTimeMillis() % 1000 < 500 ? TextFormatting.RED : TextFormatting.LIGHT_PURPLE);
 
-		list.add(color + "+" + (Math.round(health * 10 / 2) * 0.1) + " health");
+		list.add(color + "+" + (Math.round(health * 10) * 0.1) + " health");
 		if(this == ModItems.heart_piece)
 			list.add("Dropped by 1:1000 Mobs");
 		list.add("");
@@ -44,7 +44,7 @@ public class ItemModHealth extends ItemArmorMod {
 		
 		String color = "" + (System.currentTimeMillis() % 1000 < 500 ? TextFormatting.RED : TextFormatting.LIGHT_PURPLE);
 		
-		list.add(color + "  " + stack.getDisplayName() + " (+" + (Math.round(health * 10 / 2) * 0.1) + " health)");
+		list.add(color + "  " + stack.getDisplayName() + " (+" + (Math.round(health * 10) * 0.1) + " health)");
 	}
 	
 	@Override

@@ -1,19 +1,19 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerNukeN2;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.bomb.TileEntityNukeN2;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.GlStateManager;
 
 public class GUINukeN2 extends GuiContainer {
 	
-	private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/n2Schematic.png");
+	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/n2Schematic.png");
 	private TileEntityNukeN2 testNuke;
 	
 	public GUINukeN2(InventoryPlayer invPlayer, TileEntityNukeN2 tedf) {

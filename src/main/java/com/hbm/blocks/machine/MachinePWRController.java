@@ -200,7 +200,7 @@ public class MachinePWRController extends BlockContainerBakeable implements IToo
             if (block == ModBlocks.pwr_fuelrod) fuelRods.put(pos, state);
             if (block == ModBlocks.pwr_neutron_source) sources.put(pos, state);
 
-            for (EnumFacing facing : EnumFacing.values()) {
+            for (EnumFacing facing : EnumFacing.VALUES) {
                 floodFill(world, pos.offset(facing), player);
             }
             return;

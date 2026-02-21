@@ -1,7 +1,8 @@
 package com.hbm.inventory.container;
 
-import com.hbm.items.ModItems;
+import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.tileentity.machine.TileEntityHeaterOilburner;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -42,37 +43,8 @@ public class ContainerOilburner extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer playerIn, int index) {
-        ItemStack stack = ItemStack.EMPTY;
-        Slot slot = this.inventorySlots.get(index);
-
-        if (slot != null && slot.getHasStack()) {
-            ItemStack originalStack = slot.getStack();
-            stack = originalStack.copy();
-
-            if (index <= 2) {
-                if (!this.mergeItemStack(originalStack, 3, this.inventorySlots.size(), true)) {
-                    return ItemStack.EMPTY;
-                }
-            } else {
-
-                if (stack.getItem() == ModItems.fluid_identifier) {
-                    if (!this.mergeItemStack(originalStack, 2, 3, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                } else {
-                    if (!this.mergeItemStack(originalStack, 0, 1, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                }
-            }
-
-            if (originalStack.getCount() == 0) {
-                slot.putStack(ItemStack.EMPTY);
-            } else {
-                slot.onSlotChanged();
-            }
-        }
-
-        return stack;
+        return InventoryUtil.transferStack(this.inventorySlots, index, 3,
+                s -> !(s.getItem() instanceof IItemFluidIdentifier), 2,
+                s -> s.getItem() instanceof IItemFluidIdentifier, 3);
     }
 }

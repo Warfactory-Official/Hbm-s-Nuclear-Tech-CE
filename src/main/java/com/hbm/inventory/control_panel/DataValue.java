@@ -39,7 +39,8 @@ public abstract class DataValue {
 		NUMBER(new float[]{0.4F, 0.6F, 0}),
 		STRING(new float[]{0, 1, 1}),
 		ENUM(new float[]{0.29F, 0, 0.5F});
-		
+
+        public static final DataType[] VALUES = values();
 		private float[] color;
 		
 		private DataType(float[] color){

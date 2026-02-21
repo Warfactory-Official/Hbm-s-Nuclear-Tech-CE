@@ -16,25 +16,34 @@ import java.util.concurrent.Callable;
 
 public class HbmLivingCapability {
 
-	public interface IEntityHbmProps {
-		float getRads();
-		void setRads(float rads);
-		void increaseRads(float rads);
-		void decreaseRads(float rads);
+    public interface IEntityHbmProps {
+        double getRads();
 
-		float getNeutrons();
-		void setNeutrons(float rads);
+        void setRads(double rads);
 
-		float getRadsEnv();
-		void setRadsEnv(float rads);
+        void increaseRads(double rads);
 
-		float getRadBuf();
-		void setRadBuf(float buf);
+        void decreaseRads(double rads);
 
-		float getDigamma();
-		void setDigamma(float dig);
-		void increaseDigamma(float dig);
-		void decreaseDigamma(float dig);
+        double getNeutrons();
+
+        void setNeutrons(double rads);
+
+        double getRadsEnv();
+
+        void setRadsEnv(double rads);
+
+        double getRadBuf();
+
+        void setRadBuf(double buf);
+
+        double getDigamma();
+
+        void setDigamma(double dig);
+
+        void increaseDigamma(double dig);
+
+        void decreaseDigamma(double dig);
 
 		int getAsbestos();
 		void setAsbestos(int asbestos);
@@ -70,11 +79,11 @@ public class HbmLivingCapability {
 
 		public static final Callable<IEntityHbmProps> FACTORY = EntityHbmProps::new;
 
-		private float rads = 0;
-		private float neutrons = 0;
-		private float envRads = 0;
-		private float radBuf = 0;
-		private float digamma = 0;
+        private double rads = 0D;
+        private double neutrons = 0D;
+        private double envRads = 0D;
+        private double radBuf = 0D;
+        private double digamma = 0D;
 		private int asbestos = 0;
 		public static final int maxAsbestos = 60 * 60 * 20;
 		private int blacklung;
@@ -87,75 +96,75 @@ public class HbmLivingCapability {
 		public int balefire;
 		private final List<HbmLivingProps.ContaminationEffect> contamination = new ArrayList<>();
 
-		@Override
-		public float getRads() {
-			return rads;
-		}
+        @Override
+        public double getRads() {
+            return rads;
+        }
+
+        @Override
+        public void setRads(double rads) {
+            this.rads = MathHelper.clamp(rads, 0D, 2500D);
+        }
 
 		@Override
-		public void setRads(float rads) {
-			this.rads = MathHelper.clamp(rads, 0, 2500);
-		}
+        public double getNeutrons() {
+            return neutrons;
+        }
+
+        @Override
+        public void setNeutrons(double neutrons) {
+            this.neutrons = Math.max(neutrons, 0D);
+        }
+
+        @Override
+        public void increaseRads(double rads) {
+            this.rads = MathHelper.clamp(this.rads + rads, 0D, 2500D);
+        }
+
+        @Override
+        public void decreaseRads(double rads) {
+            this.rads = MathHelper.clamp(this.rads - rads, 0D, 2500D);
+        }
 
 		@Override
-		public float getNeutrons() {
-			return neutrons;
-		}
+        public double getRadsEnv() {
+            return envRads;
+        }
+
+        @Override
+        public void setRadsEnv(double rads) {
+            envRads = rads;
+        }
 
 		@Override
-		public void setNeutrons(float neutrons) {
-			this.neutrons = Math.max(neutrons, 0);
-		}
+        public double getRadBuf() {
+            return radBuf;
+        }
+
+        @Override
+        public void setRadBuf(double buf) {
+            radBuf = buf;
+        }
 
 		@Override
-		public void increaseRads(float rads){
-			this.rads = MathHelper.clamp(this.rads + rads, 0, 2500);
-		}
+        public double getDigamma() {
+            return digamma;
+        }
 
-		@Override
-		public void decreaseRads(float rads){
-			this.rads = MathHelper.clamp(this.rads - rads, 0, 2500);
-		}
+        @Override
+        public void setDigamma(double dig) {
+            digamma = dig;
+        }
 
-		@Override
-		public float getRadsEnv(){
-			return envRads;
-		}
+        @Override
+        public void increaseDigamma(double dig) {
+            this.digamma = MathHelper.clamp(this.digamma + dig, 0D, 1000D);
+        }
 
-		@Override
-		public void setRadsEnv(float rads){
-			envRads = rads;
-		}
-
-		@Override
-		public float getRadBuf(){
-			return radBuf;
-		}
-
-		@Override
-		public void setRadBuf(float buf){
-			radBuf = buf;
-		}
-
-		@Override
-		public float getDigamma(){
-			return digamma;
-		}
-
-		@Override
-		public void setDigamma(float dig){
-			digamma = dig;
-		}
-
-		@Override
-		public void increaseDigamma(float dig){
-			this.digamma = MathHelper.clamp(this.digamma + dig, 0, 1000);
-		}
-
-		@Override
-		public void decreaseDigamma(float dig){
-			this.digamma = MathHelper.clamp(this.digamma - dig, 0, 1000);
-		}
+        @Override
+        public void decreaseDigamma(double dig) {
+            this.digamma = MathHelper.clamp(this.digamma - dig, 0D, 1000D);
+        }
 
 		@Override
 		public int getAsbestos(){
@@ -221,46 +230,58 @@ public class HbmLivingCapability {
 		}
 
 		@Override
-		public void saveNBTData(NBTTagCompound tag){
-			tag.setFloat("rads", getRads());
-			tag.setFloat("neutrons", getNeutrons());
-			tag.setFloat("envRads", getRadsEnv());
-			tag.setFloat("radBuf", getRadBuf());
-			tag.setFloat("digamma", getDigamma());
-			tag.setInteger("asbestos", getAsbestos());
-			tag.setInteger("blacklung", blacklung);
-			tag.setInteger("bombtimer", bombTimer);
-			tag.setInteger("contagion", contagion);
-			tag.setInteger("oil", getOil());
-			tag.setInteger("fire", getFire());
-			tag.setInteger("phosphorus", getPhosphorus());
-			tag.setInteger("balefire", getBalefire());
-			tag.setInteger("conteffectsize", contamination.size());
-			for(int i = 0; i < contamination.size(); i ++){
-				contamination.get(i).save(tag, i);
-			}
-		}
+        public void saveNBTData(NBTTagCompound tag) {
+            // Versioned payload (v1): doubles
+            tag.setString("fmt", "v1");
+            tag.setDouble("rads", this.rads);
+            tag.setDouble("neutrons", this.neutrons);
+            tag.setDouble("envRads", this.envRads);
+            tag.setDouble("radBuf", this.radBuf);
+            tag.setDouble("digamma", this.digamma);
+            tag.setInteger("asbestos", getAsbestos());
+            tag.setInteger("blacklung", blacklung);
+            tag.setInteger("bombtimer", bombTimer);
+            tag.setInteger("contagion", contagion);
+            tag.setInteger("oil", getOil());
+            tag.setInteger("fire", getFire());
+            tag.setInteger("phosphorus", getPhosphorus());
+            tag.setInteger("balefire", getBalefire());
+            tag.setInteger("conteffectsize", contamination.size());
+            for (int i = 0; i < contamination.size(); i++) {
+                contamination.get(i).save(tag, i);
+            }
+        }
 
 		@Override
-		public void loadNBTData(NBTTagCompound tag){
-			setRads(tag.getFloat("rads"));
-			setNeutrons(tag.getFloat("neutrons"));
-			setRadsEnv(tag.getFloat("envRads"));
-			setRadBuf(tag.getFloat("radBuf"));
-			setDigamma(tag.getFloat("digamma"));
-			setAsbestos(tag.getInteger("asbestos"));
-			setBlacklung(tag.getInteger("blacklung"));
-			setBombTimer(tag.getInteger("bombtimer"));
-			setContagion(tag.getInteger("contagion"));
-			setOil(tag.getInteger("oil"));
-			setFire(tag.getInteger("fire"));
-			setPhosphorus(tag.getInteger("phosphorus"));
-			setBalefire(tag.getInteger("balefire"));
-			contamination.clear();
-			for(int i = 0; i < tag.getInteger("conteffectsize"); i ++){
-				contamination.add(HbmLivingProps.ContaminationEffect.load(tag, i));
-			}
-		}
+        public void loadNBTData(NBTTagCompound tag) {
+            final boolean isV1 = tag.hasKey("fmt") && "v1".equals(tag.getString("fmt"));
+            if (isV1) {
+                this.rads = tag.getDouble("rads");
+                this.neutrons = tag.getDouble("neutrons");
+                this.envRads = tag.getDouble("envRads");
+                this.radBuf = tag.getDouble("radBuf");
+                this.digamma = tag.getDouble("digamma");
+            } else {
+                // Legacy payload (floats)
+                this.rads = tag.getFloat("rads");
+                this.neutrons = tag.getFloat("neutrons");
+                this.envRads = tag.getFloat("envRads");
+                this.radBuf = tag.getFloat("radBuf");
+                this.digamma = tag.getFloat("digamma");
+            }
+            setAsbestos(tag.getInteger("asbestos"));
+            setBlacklung(tag.getInteger("blacklung"));
+            setBombTimer(tag.getInteger("bombtimer"));
+            setContagion(tag.getInteger("contagion"));
+            setOil(tag.getInteger("oil"));
+            setFire(tag.getInteger("fire"));
+            setPhosphorus(tag.getInteger("phosphorus"));
+            setBalefire(tag.getInteger("balefire"));
+            contamination.clear();
+            for (int i = 0; i < tag.getInteger("conteffectsize"); i++) {
+                contamination.add(HbmLivingProps.ContaminationEffect.load(tag, i));
+            }
+        }
 	}
 
 	public static class EntityHbmPropsStorage implements IStorage<IEntityHbmProps>{
@@ -283,54 +304,67 @@ public class HbmLivingCapability {
 
 	public static class EntityHbmPropsProvider implements ICapabilitySerializable<NBTBase> {
 
-		public static final IEntityHbmProps DUMMY = new IEntityHbmProps(){
-			@Override
-			public float getRads() {
-				return 0;
-			}
-			@Override
-			public void setRads(float rads) {
-			}
-			@Override
-			public float getNeutrons() {
-				return 0;
-			}
-			@Override
-			public void setNeutrons(float neutrons) {
-			}
-			@Override
-			public void increaseRads(float rads) {
-			}
-			@Override
-			public void decreaseRads(float rads) {
-			}
-			@Override
-			public float getRadsEnv(){
-				return 0;
-			}
-			@Override
-			public void setRadsEnv(float rads){
-			}
-			@Override
-			public float getRadBuf(){
-				return 0;
-			}
-			@Override
-			public void setRadBuf(float buf){
-			}
-			@Override
-			public float getDigamma(){
-				return 0;
-			}
-			@Override
-			public void setDigamma(float dig){
-			}
-			@Override
-			public void increaseDigamma(float dig){
-			}
-			@Override
-			public void decreaseDigamma(float dig){
-			}
+        public static final IEntityHbmProps DUMMY = new IEntityHbmProps() {
+            @Override
+            public double getRads() {
+                return 0D;
+            }
+
+            @Override
+            public void setRads(double rads) {
+            }
+
+            @Override
+            public double getNeutrons() {
+                return 0D;
+            }
+
+            @Override
+            public void setNeutrons(double neutrons) {
+            }
+
+            @Override
+            public void increaseRads(double rads) {
+            }
+
+            @Override
+            public void decreaseRads(double rads) {
+            }
+
+            @Override
+            public double getRadsEnv() {
+                return 0D;
+            }
+
+            @Override
+            public void setRadsEnv(double rads) {
+            }
+
+            @Override
+            public double getRadBuf() {
+                return 0D;
+            }
+
+            @Override
+            public void setRadBuf(double buf) {
+            }
+
+            @Override
+            public double getDigamma() {
+                return 0D;
+            }
+
+            @Override
+            public void setDigamma(double dig) {
+            }
+
+            @Override
+            public void increaseDigamma(double dig) {
+            }
+
+            @Override
+            public void decreaseDigamma(double dig) {
+            }
 			@Override
 			public int getAsbestos(){
 				return 0;
@@ -388,7 +422,7 @@ public class HbmLivingCapability {
 		};
 		
 		@CapabilityInject(IEntityHbmProps.class)
-		public static final Capability<IEntityHbmProps> ENT_HBM_PROPS_CAP = null;
+		public static Capability<IEntityHbmProps> ENT_HBM_PROPS_CAP = null;
 
 		private final IEntityHbmProps instance = ENT_HBM_PROPS_CAP.getDefaultInstance();
 

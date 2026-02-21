@@ -30,7 +30,7 @@ public class ItemOreDensityScanner extends Item {
 
         EntityPlayerMP player = (EntityPlayerMP) entity;
 
-        for(ItemBedrockOreNew.BedrockOreType type : ItemBedrockOreNew.BedrockOreType.values()) {
+        for(ItemBedrockOreNew.BedrockOreType type : ItemBedrockOreNew.BedrockOreType.VALUES) {
             double level = ItemBedrockOreBase.getOreLevel((int) Math.floor(player.posX), (int) Math.floor(player.posZ), type);
             PacketDispatcher.wrapper.sendTo(new PlayerInformPacketLegacy(
                     new TextComponentTranslation("item.bedrock_ore.type." + type.suffix + ".name")

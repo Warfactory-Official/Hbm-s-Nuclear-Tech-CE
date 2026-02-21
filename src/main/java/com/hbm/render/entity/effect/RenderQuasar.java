@@ -1,9 +1,9 @@
 package com.hbm.render.entity.effect;
 
+import com.hbm.Tags;
 import com.hbm.entity.effect.EntityBlackHole;
 import com.hbm.entity.effect.EntityQuasar;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.ClientProxy;
 import com.hbm.render.entity.RenderBlackHole;
 import net.minecraft.client.renderer.GlStateManager;
@@ -15,7 +15,7 @@ public class RenderQuasar extends RenderBlackHole {
 
 	public static final IRenderFactory<EntityQuasar> FACTORY = man -> new RenderQuasar(man);
 	
-	protected ResourceLocation quasar = new ResourceLocation(RefStrings.MODID, "textures/entity/bholeD.png");
+	protected ResourceLocation quasar = new ResourceLocation(Tags.MODID, "textures/entity/bholeD.png");
 	
 	public RenderQuasar(RenderManager renderManager){
 		super(renderManager);

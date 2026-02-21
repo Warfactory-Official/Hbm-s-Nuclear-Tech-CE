@@ -49,6 +49,8 @@ public class ItemModDoor extends Item {
             	block1 = ModBlocks.door_metal;
             else if(this == ModItems.door_office)
             	block1 = ModBlocks.door_office;
+            else if(this == ModItems.door_red)
+                block1 = ModBlocks.door_red;
             else
             	block1 = ModBlocks.door_bunker;
 

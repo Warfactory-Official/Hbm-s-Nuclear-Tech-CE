@@ -2,6 +2,7 @@ package com.hbm.inventory.control_panel.nodes;
 
 import com.hbm.inventory.control_panel.*;
 import com.hbm.inventory.control_panel.DataValue.DataType;
+import com.hbm.inventory.control_panel.modular.StockNodesRegister;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 
@@ -100,8 +101,8 @@ public class NodeSetVar extends NodeOutput {
 
 
 	@Override
-	public NodeType getType(){
-		return NodeType.OUTPUT;
+	public float[] getColor() {
+		return StockNodesRegister.colorOutput;
 	}
 
 	@Override

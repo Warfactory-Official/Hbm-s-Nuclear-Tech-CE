@@ -1,7 +1,7 @@
 package com.hbm.render.tileentity;
 
+import com.hbm.Tags;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.IRenderFoundry;
 import com.hbm.tileentity.machine.TileEntityFoundryCastingBase;
 import com.hbm.wiaj.WorldInAJar;
@@ -31,7 +31,7 @@ import java.util.Objects;
 @AutoRegister
 public class RenderFoundry extends TileEntitySpecialRenderer<TileEntityFoundryCastingBase> implements ITileActorRenderer {
 	
-	public static final ResourceLocation lava = new ResourceLocation(RefStrings.MODID, "textures/models/machines/lava_gray.png");
+	public static final ResourceLocation lava = new ResourceLocation(Tags.MODID, "textures/models/machines/lava_gray.png");
 
 	private static void drawItem(ItemStack stack, double height, World world) {
 		GlStateManager.pushMatrix();

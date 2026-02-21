@@ -3,8 +3,8 @@ package com.hbm.items.weapon.sedna.factory;
 import com.hbm.entity.mob.EntityCyberCrab;
 import com.hbm.entity.mob.EntityTaintCrab;
 import com.hbm.entity.mob.EntityTeslaCrab;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.particle.helper.AshesCreator;
 import com.hbm.particle.helper.SkeletonCreator;
@@ -55,7 +55,7 @@ public class ConfettiUtil {
         NBTTagCompound vdat = new NBTTagCompound();
         vdat.setString("type", "giblets");
         vdat.setInteger("ent", entity.getEntityId());
-        PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(vdat, entity.posX, entity.posY + entity.height * 0.5, entity.posZ), new NetworkRegistry.TargetPoint(entity.dimension, entity.posX, entity.posY + entity.height * 0.5, entity.posZ, 150));
+        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(vdat, entity.posX, entity.posY + entity.height * 0.5, entity.posZ), new NetworkRegistry.TargetPoint(entity.dimension, entity.posX, entity.posY + entity.height * 0.5, entity.posZ, 150));
         entity.world.playSound(
                 null,
                 entity.posX, entity.posY, entity.posZ,

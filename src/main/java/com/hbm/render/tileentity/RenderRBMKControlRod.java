@@ -1,8 +1,8 @@
 package com.hbm.render.tileentity;
 
+import com.hbm.Tags;
 import com.hbm.blocks.machine.rbmk.RBMKBase;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.ResourceManager;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKControl;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKControlAuto;
@@ -15,7 +15,7 @@ import net.minecraft.util.ResourceLocation;
 @AutoRegister(tileentity = TileEntityRBMKControlAuto.class)
 public class RenderRBMKControlRod extends TileEntitySpecialRenderer<TileEntityRBMKControl>{
 
-	private ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/blocks/rbmk/rbmk_control.png");
+	private ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_control.png");
 	
 	@Override
 	public boolean isGlobalRenderer(TileEntityRBMKControl te){

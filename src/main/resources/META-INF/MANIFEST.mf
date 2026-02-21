@@ -1,4 +1,0 @@
-Manifest-Version: 1.0
-FMLCorePlugin: com.hbm.core.HbmCorePlugin
-FMLCorePluginContainsFMLMod: com.hbm.main.MainRegistry
-Created-By: 1.12.0 (Oracle Corporation)

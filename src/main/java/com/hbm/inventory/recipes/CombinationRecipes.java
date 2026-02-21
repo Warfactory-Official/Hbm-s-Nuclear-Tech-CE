@@ -120,7 +120,7 @@ public class CombinationRecipes extends SerializableRecipe {
         recipes.put(new ComparableStack(Items.REEDS), new Pair<>(new ItemStack(Items.SUGAR, 2), new FluidStack(Fluids.ETHANOL, 50)));
         recipes.put(new ComparableStack(Blocks.CLAY), new Pair<>(new ItemStack(Blocks.BRICK_BLOCK, 1), null));
 
-        for (BedrockOreType type : BedrockOreType.values()) {
+        for (BedrockOreType type : BedrockOreType.VALUES) {
             recipes.put(new ComparableStack(ItemBedrockOreNew.make(BedrockOreGrade.BASE, type)),
                     new Pair<>(ItemBedrockOreNew.make(BedrockOreGrade.BASE_ROASTED, type), new FluidStack(Fluids.VITRIOL, 50)));
             recipes.put(new ComparableStack(ItemBedrockOreNew.make(BedrockOreGrade.PRIMARY, type)),

@@ -1,12 +1,6 @@
 {
-	"parent": "block/cube",
-	"textures": {
-		"down": "hbm:blocks/cable_diode_top",
-		"up": "hbm:blocks/cable_diode_bottom",
-		"north": "hbm:blocks/cable_diode_back",
-		"south": "hbm:blocks/cable_diode_front",
-		"west": "hbm:blocks/cable_diode_right",
-		"east": "hbm:blocks/cable_diode_left",
-		"particle": "hbm:blocks/cable_diode_bottom"
-	}
+  "parent": "block/cube_all",
+  "textures": {
+    "all": "hbm:blocks/cable_diode"
+  }
 }

@@ -1,6 +1,6 @@
 package com.hbm.handler.jei;
 
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
 import com.hbm.util.I18nUtil;
 import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.gui.*;
@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class BreederRecipeHandler implements IRecipeCategory<JeiRecipes.BreederRecipe> {
     public static final ResourceLocation gui_rl =
-            new ResourceLocation(RefStrings.MODID, "textures/gui/processing/gui_breeder.png");
+            new ResourceLocation(Tags.MODID, "textures/gui/processing/gui_breeder.png");
     protected final IDrawable background;
     protected final IDrawableStatic progressStatic;
     protected final IDrawableAnimated progressAnimated;
@@ -36,7 +36,7 @@ public class BreederRecipeHandler implements IRecipeCategory<JeiRecipes.BreederR
 
     @Override
     public @NotNull String getModName() {
-        return RefStrings.MODID;
+        return Tags.MODID;
     }
 
     @Override

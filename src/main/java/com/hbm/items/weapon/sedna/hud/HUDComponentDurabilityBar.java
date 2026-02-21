@@ -1,7 +1,7 @@
 package com.hbm.items.weapon.sedna.hud;
 
+import com.hbm.Tags;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
-import com.hbm.lib.RefStrings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
@@ -12,7 +12,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 
 public class HUDComponentDurabilityBar implements IHUDComponent {
 
-    private static final ResourceLocation misc = new ResourceLocation(RefStrings.MODID + ":textures/misc/overlay_misc.png");
+    private static final ResourceLocation misc = new ResourceLocation(Tags.MODID + ":textures/misc/overlay_misc.png");
 
     protected boolean mirrored = false;
 

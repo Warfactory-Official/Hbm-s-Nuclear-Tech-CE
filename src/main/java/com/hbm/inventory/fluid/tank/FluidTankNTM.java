@@ -6,7 +6,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.gui.GuiInfoContainer;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.IItemFluidIdentifier;
-import com.mojang.realmsclient.gui.ChatFormatting;
+import com.hbm.util.RenderUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -14,9 +14,9 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
@@ -48,8 +48,6 @@ public class FluidTankNTM implements IFluidHandler, IFluidTank, Cloneable {
         noDualUnload.add(ModItems.fluid_barrel_infinite);
         noDualUnload.add(ModItems.inf_water);
         noDualUnload.add(ModItems.inf_water_mk2);
-        noDualUnload.add(ModItems.inf_water_mk3);
-        noDualUnload.add(ModItems.inf_water_mk4);
     }
 
     @Deprecated
@@ -139,7 +137,7 @@ public class FluidTankNTM implements IFluidHandler, IFluidTank, Cloneable {
     //Fills tank from canisters
     public boolean loadTank(int in, int out, @NotNull IItemHandler slots) {
 
-        if (slots.getStackInSlot(in) == ItemStack.EMPTY) return false;
+        if (slots.getStackInSlot(in).isEmpty()) return false;
 
         boolean isInfiniteBarrel = slots.getStackInSlot(in).getItem() == ModItems.fluid_barrel_infinite;
 
@@ -159,7 +157,7 @@ public class FluidTankNTM implements IFluidHandler, IFluidTank, Cloneable {
     //Fills canisters from tank
     public boolean unloadTank(int in, int out, @NotNull IItemHandler slots) {
 
-        if (slots.getStackInSlot(in) == ItemStack.EMPTY) return false;
+        if (slots.getStackInSlot(in).isEmpty()) return false;
 
         int prev = this.getFill();
 
@@ -226,8 +224,8 @@ public class FluidTankNTM implements IFluidHandler, IFluidTank, Cloneable {
     }
 
     public void renderTank(int x, int y, double z, int width, int height, int orientation) {
-
-        GlStateManager.enableBlend();
+        boolean wasBlendEnabled = RenderUtil.isBlendEnabled();
+        if (!wasBlendEnabled) GlStateManager.enableBlend();
 
         int color = type.getTint();
         double r = ((color & 0xff0000) >> 16) / 255D;
@@ -278,7 +276,7 @@ public class FluidTankNTM implements IFluidHandler, IFluidTank, Cloneable {
         tessellator.draw();
 
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        GlStateManager.disableBlend();
+        if (!wasBlendEnabled) GlStateManager.disableBlend();
     }
 
     public void renderTankInfo(@NotNull GuiInfoContainer gui, int mouseX, int mouseY, int x, int y, int width, int height) {
@@ -289,7 +287,7 @@ public class FluidTankNTM implements IFluidHandler, IFluidTank, Cloneable {
             list.add(fluid + "/" + maxFluid + "mB");
 
             if (this.pressure != 0) {
-                list.add(ChatFormatting.RED + "Pressure: " + this.pressure + " PU");
+                list.add(TextFormatting.RED + "Pressure: " + this.pressure + " PU");
             }
 
             type.addInfo(list);
@@ -333,8 +331,12 @@ public class FluidTankNTM implements IFluidHandler, IFluidTank, Cloneable {
         pressure = buf.readShort();
     }
 
+    /**
+     * @deprecated use {@link #getTankType()}, {@link #getFill()}, {@link #getMaxFill()} whenever possible
+     */
     @NotNull
     @Override
+    @Deprecated
     public IFluidTankProperties[] getTankProperties() {
         Fluid fluid = getTankTypeFF();
         int amount = getFill();
@@ -345,8 +347,12 @@ public class FluidTankNTM implements IFluidHandler, IFluidTank, Cloneable {
         return new IFluidTankProperties[]{new FluidTankProperties(stack, capacity)};
     }
 
+    /**
+     * @deprecated use {@link #getTankType()} whenever possible
+     */
     @Nullable
     @Override
+    @Deprecated
     public FluidStack getFluid() {
         Fluid fluid = getTankTypeFF();
         int amount = getFill();
@@ -354,23 +360,39 @@ public class FluidTankNTM implements IFluidHandler, IFluidTank, Cloneable {
         return (fluid != null && amount > 0) ? new FluidStack(fluid, amount) : null;
     }
 
+    /**
+     * @deprecated use {@link #getFill()} whenever possible
+     */
     @Override
+    @Deprecated
     public int getFluidAmount() {
         return getFill();
     }
 
+    /**
+     * @deprecated use {@link #getMaxFill()} whenever possible
+     */
     @Override
+    @Deprecated
     public int getCapacity() {
         return getMaxFill();
     }
 
+    /**
+     * @deprecated use {@link #getTankType()}, {@link #getFill()}, {@link #getMaxFill()} whenever possible
+     */
     @NotNull
     @Override
+    @Deprecated
     public FluidTankInfo getInfo() {
         return new FluidTankInfo(getFluid(), getCapacity());
     }
 
+    /**
+     * @deprecated use {@link #fill(FluidType, int, boolean)} and {@link #setFill(int)} whenever possible
+     */
     @Override
+    @Deprecated
     public int fill(@Nullable FluidStack resource, boolean doFill) {
         if (resource == null || resource.amount <= 0) {
             return 0;
@@ -415,8 +437,12 @@ public class FluidTankNTM implements IFluidHandler, IFluidTank, Cloneable {
         }
     }
 
+    /**
+     * @deprecated use {@link #setFill(int)} whenever possible
+     */
     @Nullable
     @Override
+    @Deprecated
     public FluidStack drain(@Nullable FluidStack resource, boolean doDrain) {
         Fluid currentType = getTankTypeFF();
         if (resource == null || !resource.getFluid().equals(currentType)) return null;
@@ -428,8 +454,12 @@ public class FluidTankNTM implements IFluidHandler, IFluidTank, Cloneable {
         return drained;
     }
 
+    /**
+     * @deprecated use {@link #setFill(int)} whenever possible
+     */
     @Nullable
     @Override
+    @Deprecated
     public FluidStack drain(int maxDrain, boolean doDrain) {
         if (getTankType() == Fluids.NONE || getTankTypeFF() == null || getFill() == 0) return null;
         int toDrain = Math.min(maxDrain, getFill());

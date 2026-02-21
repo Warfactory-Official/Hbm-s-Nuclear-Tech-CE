@@ -10,7 +10,7 @@ import java.util.*;
 
 public class BedrockOreJsonConfig {
 
-	public static final String bedrockOreJsonConfigFile = "hbm_bedrock_ores.json";
+	public static final String FILENAME = "hbm_bedrock_ores.json";
 
 	public static HashMap<Integer, HashSet<String>> dimOres = new HashMap<>();
 	public static HashMap<Integer, Boolean> dimWhiteList = new HashMap<>();
@@ -20,6 +20,7 @@ public class BedrockOreJsonConfig {
 		if(!loadFromJson()){
 			clear();
 			setDefaults();
+            if (JsonConfig.isFileNonexistent(FILENAME)) writeToJson();
 		}
 	}
 
@@ -110,9 +111,10 @@ public class BedrockOreJsonConfig {
 	}
 
 	// foont: who would ever overwrite config if it's wrong. I don't see a reason to have this, in release mod definitely
+    // vidarin: this is needed to generate the file the first time minecraft loads
 	public static void writeToJson(){
 		try {
-			JsonWriter writer = JsonConfig.startWriting(bedrockOreJsonConfigFile);
+			JsonWriter writer = JsonConfig.startWriting(FILENAME);
 			writer.name("dimConfig").beginArray();
 			for(Integer dimID : dimOres.keySet()){
 				writer.beginObject();
@@ -128,13 +130,13 @@ public class BedrockOreJsonConfig {
 			writer.endArray();
 			JsonConfig.stopWriting(writer);
 		} catch(Exception ex) {
-			ex.printStackTrace();
+			MainRegistry.logger.error(ex.getStackTrace());
 		}
 	}
 
 	public static boolean loadFromJson() {
 		try {
-			JsonObject reader = JsonConfig.startReading(bedrockOreJsonConfigFile);
+			JsonObject reader = JsonConfig.startReading(FILENAME);
 
 			if(reader == null || !reader.has("dimConfig")) return false;
 
@@ -166,7 +168,7 @@ public class BedrockOreJsonConfig {
 			return true;
 		} catch(Exception ex) {
 			MainRegistry.logger.error("Loading the bedrock ore config resulted in an error. Falling back to defaults.");
-			ex.printStackTrace();
+            MainRegistry.logger.error(ex.getStackTrace());
 			return false;
 		}
 	}

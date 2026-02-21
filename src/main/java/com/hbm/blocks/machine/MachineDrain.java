@@ -6,7 +6,6 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.tileentity.machine.TileEntityMachineDrain;
 import com.hbm.util.I18nUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -78,16 +77,17 @@ public class MachineDrain extends BlockDummyable implements ILookOverlay {
     }
 
     @Override
-    public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
-        int[] pos = this.findCore(world, x, y, z);
-        if(pos == null) return;
+    public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
+        BlockPos corePos = this.findCore(world, pos);
 
-        TileEntity te = world.getTileEntity(new BlockPos(pos[0], pos[1], pos[2]));
-        if(!(te instanceof TileEntityMachineDrain)) return;
+        if(corePos == null)
+            return;
 
-        TileEntityMachineDrain drain = (TileEntityMachineDrain) te;
+        TileEntity te = world.getTileEntity(corePos);
+        if(!(te instanceof TileEntityMachineDrain drain)) return;
+
         List<String> text = new ArrayList();
-        text.add(ChatFormatting.GREEN + "-> " + ChatFormatting.RESET + drain.tank.getTankType().getLocalizedName() + ": " + drain.tank.getFill() + "/" + drain.tank.getMaxFill() + "mB");
+        text.add(TextFormatting.GREEN + "-> " + TextFormatting.RESET + drain.tank.getTankType().getLocalizedName() + ": " + drain.tank.getFill() + "/" + drain.tank.getMaxFill() + "mB");
         ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getTranslationKey() + ".name"), 0xffff00, 0x404000, text);
     }
 }

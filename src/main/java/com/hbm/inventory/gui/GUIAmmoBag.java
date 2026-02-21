@@ -1,8 +1,8 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerAmmoBag;
 import com.hbm.items.tool.ItemAmmoBag;
-import com.hbm.lib.RefStrings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
@@ -12,7 +12,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GUIAmmoBag extends GuiContainer {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation(RefStrings.MODID, "textures/gui/gui_ammo_bag.png");
+    private static final ResourceLocation TEXTURE = new ResourceLocation(Tags.MODID, "textures/gui/gui_ammo_bag.png");
     private final ItemAmmoBag.InventoryAmmoBag inventory;
 
     public GUIAmmoBag(InventoryPlayer invPlayer, ItemAmmoBag.InventoryAmmoBag bag) {

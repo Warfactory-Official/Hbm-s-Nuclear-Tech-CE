@@ -28,16 +28,15 @@ public class ItemDigamma extends ItemBase {
 	@Override
 	public void onUpdate(ItemStack stack, World worldIn, Entity entity, int itemSlot, boolean isSelected) {
 		super.onUpdate(stack, worldIn, entity, itemSlot, isSelected);
-		if(entity instanceof EntityPlayer) {
-			EntityPlayer player = (EntityPlayer) entity;
-			ContaminationUtil.applyDigammaData(player, 1F / ((float) digamma));
+		if(entity instanceof EntityPlayer player) {
+            ContaminationUtil.applyDigammaData(player, 1.0 / digamma);
 		}
 	}
 	
 	@Override
 	public void addInformation(ItemStack stack, World world, List<String> list, ITooltipFlag flagIn) {
 		list.add(TextFormatting.GOLD + I18nUtil.resolveKey("trait.hlParticle", "1.67*10³⁴ a"));
-		list.add(TextFormatting.RED + I18nUtil.resolveKey("trait.hlPlayer", (digamma / 20F) + "s"));
+		list.add(TextFormatting.RED + I18nUtil.resolveKey("trait.hlPlayer", (digamma / 20.0) + "s"));
 		list.add("");
 		list.add(TextFormatting.RED + "[" + I18nUtil.resolveKey("trait.drop") + "]");
 	}

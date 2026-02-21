@@ -85,7 +85,7 @@ public class TESirenPacket implements IMessage {
                     return;
                 }
 
-                TrackType track = TrackType.getEnum(m.id);
+                TrackType track = TrackType.byIndex(m.id);
                 SoundEvent soundLocation = track.getSoundLocation();
 
                 if (soundLocation == null || track == TrackType.NULL) {

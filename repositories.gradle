@@ -1,18 +1,12 @@
 // Add any additional repositories for your dependencies here
 
 repositories {
-    maven {
-        // location of the maven that hosts JEI files
-        name = "Progwml6 maven"
-        url = "https://dvs1.progwml6.com/files/maven/"
-    }
-    maven {
-        url 'https://maven.cleanroommc.com'
-    }
 //    maven { //GC
 //        name = "galacticraft"
 //        url = "https://maven.galacticraft.net/repository/legacy/"
 //    }
+
+    mavenCentral()
     maven { //  baubles
         name = "thiakil"
         url = "https://maven.thiakil.com"
@@ -20,10 +14,5 @@ repositories {
     maven {
         name = 'CoFH Maven'
         url = 'https://maven.covers1624.net'
-    }
-
-    maven {
-        name = 'Maven central'
-        url = 'https://repo1.maven.org/maven2/'
     }
 }

@@ -6,6 +6,7 @@ import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.items.ItemBakedBase;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;
+import com.hbm.util.I18nUtil;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
@@ -34,6 +35,11 @@ public class ItemUnstable extends ItemBakedBase {
 		this.setHasSubtypes(true);
 	}
 
+	private int scaledRadiusForCount(int count) {
+		if (count <= 1) return radius;
+		return (int) Math.max(1, Math.round(radius * Math.cbrt(count)));
+	}
+
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int itemSlot, boolean isSelected) {
 		if(stack.getItemDamage() != 0)
@@ -41,8 +47,10 @@ public class ItemUnstable extends ItemBakedBase {
 		this.setTimer(stack, this.getTimer(stack) + 1);
 
 		if(this.getTimer(stack) == timer && !world.isRemote) {
+			final int count = stack.getCount();
+			final int radius = scaledRadiusForCount(count);
 			IItemHandler handler = entity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-			if (handler != null) handler.extractItem(itemSlot, stack.getCount(), false);
+			if (handler != null) handler.extractItem(itemSlot, count, false);
 			world.spawnEntity(EntityNukeExplosionMK5.statFac(world, radius, entity.posX, entity.posY, entity.posZ).setDetonator(entity));
 
 			if(BombConfig.enableNukeClouds) {
@@ -62,6 +70,8 @@ public class ItemUnstable extends ItemBakedBase {
 		this.setTimer(itemEntity.getItem(), this.getTimer(itemEntity.getItem()) + 1);
 
 		if(this.getTimer(itemEntity.getItem()) == timer && !world.isRemote) {
+			final int count = itemEntity.getItem().getCount();
+			final int radius = scaledRadiusForCount(count);
 			EntityPlayerMP thrower = itemEntity.world.getMinecraftServer().getPlayerList().getPlayerByUsername(itemEntity.getThrower());
 			world.spawnEntity(EntityNukeExplosionMK5.statFac(world, radius, itemEntity.posX, itemEntity.posY, itemEntity.posZ).setDetonator(thrower));
 
@@ -114,8 +124,8 @@ public class ItemUnstable extends ItemBakedBase {
 	public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
 		if(stack.getItemDamage() != 0)
     		return;
-    	tooltip.add("§4[Unstable]§r");
-		tooltip.add("§cDecay Time: " + (int)timer/20 + "s - Explosion Radius: "+ radius+"m§r");
+        tooltip.add("§4"+ I18nUtil.resolveKey("trait.unstable") + "§r");
+		tooltip.add("§cDecay Time: " + (timer / 20) + "s - Explosion Radius: " + scaledRadiusForCount(stack.getCount()) + "m§r");
 		tooltip.add("§cDecay: " + (getTimer(stack) * 100 / timer) + "%§r");
 	}
 

@@ -3,7 +3,7 @@ package com.hbm.inventory.fluid.trait;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import com.hbm.util.I18nUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
+import net.minecraft.util.text.TextFormatting;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,9 +24,9 @@ public class FT_Pheromone extends  FluidTrait{
 	public void addInfo(List<String> info) {
 
 		if(type == 1) {
-			info.add(ChatFormatting.AQUA + "[" + I18nUtil.resolveKey("trait.pherg") + "]");
+			info.add(TextFormatting.AQUA + "[" + I18nUtil.resolveKey("trait.pherg") + "]");
 		} else {
-			info.add(ChatFormatting.BLUE + "[" + I18nUtil.resolveKey("trait.pherm") + "]");
+			info.add(TextFormatting.BLUE + "[" + I18nUtil.resolveKey("trait.pherm") + "]");
 		}
 	}
 

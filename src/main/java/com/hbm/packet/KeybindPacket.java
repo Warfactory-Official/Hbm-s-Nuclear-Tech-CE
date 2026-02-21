@@ -45,7 +45,7 @@ public class KeybindPacket implements IMessage {
 		@Override
 		public IMessage onMessage(KeybindPacket m, MessageContext ctx) {
 			EntityPlayer p = ctx.getServerHandler().player;
-			HbmKeybindsServer.onPressedServer(p, EnumKeybind.values()[m.key], m.pressed);
+			HbmKeybindsServer.onPressedServer(p, EnumKeybind.VALUES[m.key], m.pressed);
 			return null;
 		}
 	}

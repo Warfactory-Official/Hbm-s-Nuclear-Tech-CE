@@ -1,9 +1,9 @@
 package com.hbm.items.gear;
 
+import com.hbm.Tags;
 import com.hbm.api.item.IGasMask;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.NTMRenderHelper;
 import com.hbm.render.model.ModelGasMask;
 import com.hbm.render.model.ModelM65;
@@ -27,9 +27,10 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class ArmorGasMask extends ItemArmor implements IGasMask {
@@ -41,18 +42,18 @@ public class ArmorGasMask extends ItemArmor implements IGasMask {
 	@SideOnly(Side.CLIENT)
 	private ModelM65 modelM65;
 	
-	private ResourceLocation goggleBlur0 = new ResourceLocation(RefStrings.MODID + ":textures/misc/overlay_goggles_0.png");
-	private ResourceLocation goggleBlur1 = new ResourceLocation(RefStrings.MODID + ":textures/misc/overlay_goggles_1.png");
-	private ResourceLocation goggleBlur2 = new ResourceLocation(RefStrings.MODID + ":textures/misc/overlay_goggles_2.png");
-	private ResourceLocation goggleBlur3 = new ResourceLocation(RefStrings.MODID + ":textures/misc/overlay_goggles_3.png");
-	private ResourceLocation goggleBlur4 = new ResourceLocation(RefStrings.MODID + ":textures/misc/overlay_goggles_4.png");
-	private ResourceLocation goggleBlur5 = new ResourceLocation(RefStrings.MODID + ":textures/misc/overlay_goggles_5.png");
-	private ResourceLocation gasmaskBlur0 = new ResourceLocation(RefStrings.MODID + ":textures/misc/overlay_gasmask_0.png");
-	private ResourceLocation gasmaskBlur1 = new ResourceLocation(RefStrings.MODID + ":textures/misc/overlay_gasmask_1.png");
-	private ResourceLocation gasmaskBlur2 = new ResourceLocation(RefStrings.MODID + ":textures/misc/overlay_gasmask_2.png");
-	private ResourceLocation gasmaskBlur3 = new ResourceLocation(RefStrings.MODID + ":textures/misc/overlay_gasmask_3.png");
-	private ResourceLocation gasmaskBlur4 = new ResourceLocation(RefStrings.MODID + ":textures/misc/overlay_gasmask_4.png");
-	private ResourceLocation gasmaskBlur5 = new ResourceLocation(RefStrings.MODID + ":textures/misc/overlay_gasmask_5.png");
+	private final ResourceLocation goggleBlur0 = new ResourceLocation(Tags.MODID + ":textures/misc/overlay_goggles_0.png");
+	private final ResourceLocation goggleBlur1 = new ResourceLocation(Tags.MODID + ":textures/misc/overlay_goggles_1.png");
+	private final ResourceLocation goggleBlur2 = new ResourceLocation(Tags.MODID + ":textures/misc/overlay_goggles_2.png");
+	private final ResourceLocation goggleBlur3 = new ResourceLocation(Tags.MODID + ":textures/misc/overlay_goggles_3.png");
+	private final ResourceLocation goggleBlur4 = new ResourceLocation(Tags.MODID + ":textures/misc/overlay_goggles_4.png");
+	private final ResourceLocation goggleBlur5 = new ResourceLocation(Tags.MODID + ":textures/misc/overlay_goggles_5.png");
+	private final ResourceLocation gasmaskBlur0 = new ResourceLocation(Tags.MODID + ":textures/misc/overlay_gasmask_0.png");
+	private final ResourceLocation gasmaskBlur1 = new ResourceLocation(Tags.MODID + ":textures/misc/overlay_gasmask_1.png");
+	private final ResourceLocation gasmaskBlur2 = new ResourceLocation(Tags.MODID + ":textures/misc/overlay_gasmask_2.png");
+	private final ResourceLocation gasmaskBlur3 = new ResourceLocation(Tags.MODID + ":textures/misc/overlay_gasmask_3.png");
+	private final ResourceLocation gasmaskBlur4 = new ResourceLocation(Tags.MODID + ":textures/misc/overlay_gasmask_4.png");
+	private final ResourceLocation gasmaskBlur5 = new ResourceLocation(Tags.MODID + ":textures/misc/overlay_gasmask_5.png");
 	
 	public ArmorGasMask(ArmorMaterial materialIn, int renderIndexIn, EntityEquipmentSlot equipmentSlotIn, String s) {
 		super(materialIn, renderIndexIn, equipmentSlotIn);
@@ -64,13 +65,13 @@ public class ArmorGasMask extends ItemArmor implements IGasMask {
 	}
 	
 	@Override
-	public boolean isValidArmor(ItemStack stack, EntityEquipmentSlot armorType, Entity entity) {
+	public boolean isValidArmor(@NotNull ItemStack stack, @NotNull EntityEquipmentSlot armorType, @NotNull Entity entity) {
 		return armorType == EntityEquipmentSlot.HEAD;
 	}
 
 	@SideOnly(Side.CLIENT)
 	@Override
-	public ModelBiped getArmorModel(EntityLivingBase entityLiving, ItemStack itemStack, EntityEquipmentSlot armorSlot, ModelBiped _default) {
+	public ModelBiped getArmorModel(@NotNull EntityLivingBase entityLiving, @NotNull ItemStack itemStack, @NotNull EntityEquipmentSlot armorSlot, @NotNull ModelBiped _default) {
 		if (this == ModItems.gas_mask) {
 			if (armorSlot == EntityEquipmentSlot.HEAD) {
 				if (this.modelGas == null) {
@@ -91,37 +92,37 @@ public class ArmorGasMask extends ItemArmor implements IGasMask {
 	}
 	
 	@Override
-	public String getArmorTexture(ItemStack stack, Entity entity, EntityEquipmentSlot slot, String type) {
+	public String getArmorTexture(ItemStack stack, @NotNull Entity entity, @NotNull EntityEquipmentSlot slot, @NotNull String type) {
 		if (stack.getItem() == ModItems.gas_mask) {
-			return (RefStrings.MODID + ":textures/armor/GasMask.png");
+			return (Tags.MODID + ":textures/armor/GasMask.png");
 		}
 		if (stack.getItem() == ModItems.gas_mask_m65) {
-			return (RefStrings.MODID + ":textures/armor/ModelM65.png");
+			return (Tags.MODID + ":textures/armor/ModelM65.png");
 		}
 		if(stack.getItem() == ModItems.gas_mask_olde) {
 			return "hbm:textures/armor/mask_olde.png";
 		}
 		if (stack.getItem() == ModItems.gas_mask_mono) {
-			return (RefStrings.MODID + ":textures/armor/ModelM65Mono.png");
+			return (Tags.MODID + ":textures/armor/ModelM65Mono.png");
 		}
 		if(stack.getItem() == ModItems.hazmat_helmet) {
-			return (RefStrings.MODID + ":textures/armor/hazmat_1.png");
+			return (Tags.MODID + ":textures/armor/hazmat_1.png");
 		}
 		if (stack.getItem() == ModItems.hazmat_helmet_red) {
-			return (RefStrings.MODID + ":textures/armor/ModelHazRed.png");
+			return (Tags.MODID + ":textures/armor/ModelHazRed.png");
 		}
 		if (stack.getItem() == ModItems.hazmat_helmet_grey) {
-			return (RefStrings.MODID + ":textures/armor/ModelHazGrey.png");
+			return (Tags.MODID + ":textures/armor/ModelHazGrey.png");
 		}
 		if(stack.getItem() == ModItems.hazmat_paa_helmet) {
-			return (RefStrings.MODID + ":textures/armor/ModelHazPaa.png");
+			return (Tags.MODID + ":textures/armor/ModelHazPaa.png");
 		}
 		return "hbm:textures/models/capes/CapeUnknown.png";
 	}
 	
 	@SideOnly(Side.CLIENT)
 	@Override
-	public void renderHelmetOverlay(ItemStack stack, EntityPlayer player, ScaledResolution resolution, float partialTicks) {
+	public void renderHelmetOverlay(@NotNull ItemStack stack, @NotNull EntityPlayer player, @NotNull ScaledResolution resolution, float partialTicks) {
 		if(this != ModItems.gas_mask && this != ModItems.gas_mask_m65 && this != ModItems.hazmat_helmet_red && this != ModItems.hazmat_helmet_grey)
     		return;
     	
@@ -144,9 +145,7 @@ public class ArmorGasMask extends ItemArmor implements IGasMask {
             	Minecraft.getMinecraft().getTextureManager().bindTexture(goggleBlur3); break;
         	case 4:
             	Minecraft.getMinecraft().getTextureManager().bindTexture(goggleBlur4); break;
-        	case 5:
-            	Minecraft.getMinecraft().getTextureManager().bindTexture(goggleBlur5); break;
-        	default:
+            default:
             	Minecraft.getMinecraft().getTextureManager().bindTexture(goggleBlur5); break;
         	}
         }
@@ -162,17 +161,15 @@ public class ArmorGasMask extends ItemArmor implements IGasMask {
             	Minecraft.getMinecraft().getTextureManager().bindTexture(gasmaskBlur3); break;
         	case 4:
             	Minecraft.getMinecraft().getTextureManager().bindTexture(gasmaskBlur4); break;
-        	case 5:
-            	Minecraft.getMinecraft().getTextureManager().bindTexture(gasmaskBlur5); break;
-        	default:
+            default:
             	Minecraft.getMinecraft().getTextureManager().bindTexture(gasmaskBlur5); break;
         	}
         }
         
         NTMRenderHelper.startDrawingTexturedQuads();
-        NTMRenderHelper.addVertexWithUV(0.0D, (double)resolution.getScaledHeight(), -90.0D, 0.0D, 1.0D);
-        NTMRenderHelper.addVertexWithUV((double)resolution.getScaledWidth(), (double)resolution.getScaledHeight(), -90.0D, 1.0D, 1.0D);
-        NTMRenderHelper.addVertexWithUV((double)resolution.getScaledWidth(), 0.0D, -90.0D, 1.0D, 0.0D);
+        NTMRenderHelper.addVertexWithUV(0.0D, resolution.getScaledHeight(), -90.0D, 0.0D, 1.0D);
+        NTMRenderHelper.addVertexWithUV(resolution.getScaledWidth(), resolution.getScaledHeight(), -90.0D, 1.0D, 1.0D);
+        NTMRenderHelper.addVertexWithUV(resolution.getScaledWidth(), 0.0D, -90.0D, 1.0D, 0.0D);
         NTMRenderHelper.addVertexWithUV(0.0D, 0.0D, -90.0D, 0.0D, 0.0D);
         NTMRenderHelper.draw();
         GlStateManager.depthMask(true);
@@ -182,7 +179,7 @@ public class ArmorGasMask extends ItemArmor implements IGasMask {
 	}
 	
 	@Override
-	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn){
+	public void addInformation(@NotNull ItemStack stack, World worldIn, @NotNull List<String> list, @NotNull ITooltipFlag flagIn){
 		super.addInformation(stack, worldIn, list, flagIn);
 		ArmorUtil.addGasMaskTooltip(stack, worldIn, list, flagIn);
 		List<HazardClass> haz = getBlacklist(stack);
@@ -197,17 +194,17 @@ public class ArmorGasMask extends ItemArmor implements IGasMask {
 	}
 
 	@Override
-	public ArrayList<HazardClass> getBlacklist(ItemStack stack) {
+	public List<HazardClass> getBlacklist(ItemStack stack) {
 		if(stack.getItem() == ModItems.gas_mask_mono) {
-			return new ArrayList<HazardClass>(Arrays.asList(new HazardClass[] {HazardClass.GAS_CHLORINE, HazardClass.GAS_CORROSIVE, HazardClass.NERVE_AGENT, HazardClass.BACTERIA}));
-		} else if(stack.getItem() == ModItems.gas_mask || stack.getItem() == ModItems.gas_mask_m65){
-			return new ArrayList<HazardClass>(Arrays.asList(new HazardClass[] {HazardClass.GAS_CORROSIVE, HazardClass.NERVE_AGENT}));
+			return Arrays.asList(HazardClass.GAS_LUNG, HazardClass.GAS_BLISTERING, HazardClass.NERVE_AGENT, HazardClass.BACTERIA);
+		} else if(stack.getItem() == ModItems.gas_mask || stack.getItem() == ModItems.gas_mask_m65 || stack.getItem() == ModItems.gas_mask_olde){
+			return Arrays.asList(HazardClass.GAS_BLISTERING, HazardClass.NERVE_AGENT);
 		} else {
-			return new ArrayList();
+			return Collections.emptyList();
 		}
 	}
 
-	@Override
+	@Override @NotNull
 	public ItemStack getFilter(ItemStack stack) {
 		return ArmorUtil.getGasMaskFilter(stack);
 	}
@@ -228,7 +225,7 @@ public class ArmorGasMask extends ItemArmor implements IGasMask {
 	}
 
 	@Override
-	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
+	public @NotNull ActionResult<ItemStack> onItemRightClick(@NotNull World world, EntityPlayer player, @NotNull EnumHand hand) {
 		if(player.isSneaking()) {
 			ItemStack stack = player.getHeldItem(hand);
 			ItemStack filter = this.getFilter(stack);

@@ -2,6 +2,7 @@ package com.hbm.blocks.gas;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.capability.HbmLivingProps;
+import com.hbm.config.GeneralConfig;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.lib.ForgeDirection;
@@ -31,12 +32,10 @@ public class BlockGasMeltdown extends BlockGasBase {
     @Override
     public void onEntityCollision(World world, BlockPos pos, IBlockState state, Entity entity) {
 
-        if (!(entity instanceof EntityLivingBase))
+        if (!(entity instanceof EntityLivingBase entityLiving) || !GeneralConfig.enableMeltdownGas)
             return;
 
-        EntityLivingBase entityLiving = (EntityLivingBase) entity;
-
-        ContaminationUtil.contaminate((EntityLivingBase) entity, ContaminationUtil.HazardType.RADIATION, ContaminationUtil.ContaminationType.CREATIVE, 0.5F);
+        ContaminationUtil.contaminate(entityLiving, ContaminationUtil.HazardType.RADIATION, ContaminationUtil.ContaminationType.CREATIVE, 0.5F);
         entityLiving.addPotionEffect(new PotionEffect(HbmPotion.radiation, 60 * 20, 2));
 
         if (ArmorRegistry.hasAllProtection(entityLiving, EntityEquipmentSlot.HEAD, ArmorRegistry.HazardClass.PARTICLE_FINE)) {
@@ -71,6 +70,11 @@ public class BlockGasMeltdown extends BlockGasBase {
     public void updateTick(World world, BlockPos pos, IBlockState state, Random rand) {
 
         if (!world.isRemote) {
+
+            if(!GeneralConfig.enableMeltdownGas){
+                world.setBlockToAir(pos);
+                return;
+            }
 
             ForgeDirection dir = ForgeDirection.getOrientation(rand.nextInt(6));
 

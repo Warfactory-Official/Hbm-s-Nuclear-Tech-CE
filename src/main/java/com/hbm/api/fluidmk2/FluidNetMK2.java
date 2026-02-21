@@ -3,12 +3,12 @@ package com.hbm.api.fluidmk2;
 import com.hbm.api.energymk2.IEnergyReceiverMK2.ConnectionPriority;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.uninos.NodeNet;
-import com.hbm.util.Tuple.Pair;
+import com.hbm.util.Tuple;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 public class FluidNetMK2 extends NodeNet<IFluidReceiverMK2, IFluidProviderMK2, FluidNode, FluidNetMK2> {
 
@@ -21,7 +21,7 @@ public class FluidNetMK2 extends NodeNet<IFluidReceiverMK2, IFluidProviderMK2, F
     public FluidNetMK2(FluidType type) {
         this.type = type;
         for(int i = 0; i < IFluidUserMK2.HIGHEST_VALID_PRESSURE + 1; i++) providers[i] = new ArrayList<>();
-        for(int i = 0; i < IFluidUserMK2.HIGHEST_VALID_PRESSURE + 1; i++) for(int j = 0; j < ConnectionPriority.values().length; j++) receivers[i][j] = new ArrayList<>();
+        for(int i = 0; i < IFluidUserMK2.HIGHEST_VALID_PRESSURE + 1; i++) for(int j = 0; j < ConnectionPriority.VALUES.length; j++) receivers[i][j] = new ArrayList<>();
     }
 
     @Override public void resetTrackers() { this.fluidTracker = 0; }
@@ -42,39 +42,39 @@ public class FluidNetMK2 extends NodeNet<IFluidReceiverMK2, IFluidProviderMK2, F
 
     //this sucks ass, but it makes the code just a smidge more structured
     public long[] fluidAvailable = new long[IFluidUserMK2.HIGHEST_VALID_PRESSURE + 1];
-    public List<Pair<IFluidProviderMK2, Long>>[] providers = new ArrayList[IFluidUserMK2.HIGHEST_VALID_PRESSURE + 1];
-    public long[][] fluidDemand = new long[IFluidUserMK2.HIGHEST_VALID_PRESSURE + 1][ConnectionPriority.values().length];
-    public List<Pair<IFluidReceiverMK2, Long>>[][] receivers = new ArrayList[IFluidUserMK2.HIGHEST_VALID_PRESSURE + 1][ConnectionPriority.values().length];
+    public List<Tuple.ObjectLongPair<IFluidProviderMK2>>[] providers = new ArrayList[IFluidUserMK2.HIGHEST_VALID_PRESSURE + 1];
+    public long[][] fluidDemand = new long[IFluidUserMK2.HIGHEST_VALID_PRESSURE + 1][ConnectionPriority.VALUES.length];
+    public List<Tuple.ObjectLongPair<IFluidReceiverMK2>>[][] receivers = new ArrayList[IFluidUserMK2.HIGHEST_VALID_PRESSURE + 1][ConnectionPriority.VALUES.length];
     public long[] transfered = new long[IFluidUserMK2.HIGHEST_VALID_PRESSURE + 1];
 
     public void setupFluidProviders() {
-        Iterator<Map.Entry<IFluidProviderMK2, Long>> iterator = providerEntries.entrySet().iterator();
+        ObjectIterator<Object2LongMap.Entry<IFluidProviderMK2>> iterator = providerEntries.object2LongEntrySet().fastIterator();
 
         while(iterator.hasNext()) {
-            Map.Entry<IFluidProviderMK2, Long> entry = iterator.next();
-            if(currentTime - entry.getValue() > timeout || isBadLink(entry.getKey())) { iterator.remove(); continue; }
+            Object2LongMap.Entry<IFluidProviderMK2> entry = iterator.next();
+            if(currentTime - entry.getLongValue() > timeout || isBadLink(entry.getKey())) { iterator.remove(); continue; }
             IFluidProviderMK2 provider = entry.getKey();
             int[] pressureRange = provider.getProvidingPressureRange(type);
             for(int p = pressureRange[0]; p <= pressureRange[1]; p++) {
                 long available = Math.min(provider.getFluidAvailable(type, p), provider.getProviderSpeed(type, p));
-                providers[p].add(new Pair<>(provider, available));
+                providers[p].add(new Tuple.ObjectLongPair<>(provider, available));
                 fluidAvailable[p] += available;
             }
         }
     }
 
     public void setupFluidReceivers() {
-        Iterator<Map.Entry<IFluidReceiverMK2, Long>> iterator = receiverEntries.entrySet().iterator();
+        ObjectIterator<Object2LongMap.Entry<IFluidReceiverMK2>> iterator = receiverEntries.object2LongEntrySet().fastIterator();
 
         while(iterator.hasNext()) {
-            Map.Entry<IFluidReceiverMK2, Long> entry = iterator.next();
-            if(currentTime - entry.getValue() > timeout || isBadLink(entry.getKey())) { iterator.remove(); continue; }
+            Object2LongMap.Entry<IFluidReceiverMK2> entry = iterator.next();
+            if(currentTime - entry.getLongValue() > timeout || isBadLink(entry.getKey())) { iterator.remove(); continue; }
             IFluidReceiverMK2 receiver = entry.getKey();
             int[] pressureRange = receiver.getReceivingPressureRange(type);
             for(int p = pressureRange[0]; p <= pressureRange[1]; p++) {
                 long required = Math.min(receiver.getDemand(type, p), receiver.getReceiverSpeed(type, p));
                 int priority = receiver.getFluidPriority().ordinal();
-                receivers[p][priority].add(new Pair(receiver, required));
+                receivers[p][priority].add(new Tuple.ObjectLongPair(receiver, required));
                 fluidDemand[p][priority] += required;
             }
         }
@@ -89,22 +89,24 @@ public class FluidNetMK2 extends NodeNet<IFluidReceiverMK2, IFluidProviderMK2, F
 
             long totalAvailable = fluidAvailable[p];
 
-            for(int i = ConnectionPriority.values().length - 1; i >= 0; i--) {
+            for(int i = ConnectionPriority.VALUES.length - 1; i >= 0; i--) {
 
                 long toTransfer = Math.min(fluidDemand[p][i], totalAvailable);
                 if(toTransfer <= 0) continue;
 
                 long priorityDemand = fluidDemand[p][i];
+                long sentThisPriority = 0L;
 
-                for(Pair<IFluidReceiverMK2, Long> entry : receivers[p][i]) {
+                for(Tuple.ObjectLongPair<IFluidReceiverMK2> entry : receivers[p][i]) {
                     double weight = (double) entry.getValue() / (double) (priorityDemand);
                     long toSend = (long) Math.max(toTransfer * weight, 0D);
                     toSend -= entry.getKey().transferFluid(type, p, toSend);
+                    sentThisPriority += toSend;
                     received[p] += toSend;
                     fluidTracker += toSend;
                 }
 
-                totalAvailable -= received[p];
+                totalAvailable -= sentThisPriority;
             }
 
             notAccountedFor[p] = received[p];
@@ -112,7 +114,7 @@ public class FluidNetMK2 extends NodeNet<IFluidReceiverMK2, IFluidProviderMK2, F
 
         for(int p = 0; p <= IFluidUserMK2.HIGHEST_VALID_PRESSURE; p++) {
 
-            for(Pair<IFluidProviderMK2, Long> entry : providers[p]) {
+            for(Tuple.ObjectLongPair<IFluidProviderMK2> entry : providers[p]) {
                 double weight = (double) entry.getValue() / (double) fluidAvailable[p];
                 long toUse = (long) Math.max(received[p] * weight, 0D);
                 entry.getKey().useUpFluid(type, p, toUse);
@@ -126,7 +128,7 @@ public class FluidNetMK2 extends NodeNet<IFluidReceiverMK2, IFluidProviderMK2, F
             while(iterationsLeft > 0 && notAccountedFor[p] > 0 && !providers[p].isEmpty()) {
                 iterationsLeft--;
 
-                Pair<IFluidProviderMK2, Long> selected = providers[p].get(rand.nextInt(providers[p].size()));
+                Tuple.ObjectLongPair<IFluidProviderMK2> selected = providers[p].get(rand.nextInt(providers[p].size()));
                 IFluidProviderMK2 scapegoat = selected.getKey();
 
                 long toUse = Math.min(notAccountedFor[p], scapegoat.getFluidAvailable(type, p));
@@ -142,7 +144,7 @@ public class FluidNetMK2 extends NodeNet<IFluidReceiverMK2, IFluidProviderMK2, F
             providers[i].clear();
             transfered[i] = 0;
 
-            for(int j = 0; j < ConnectionPriority.values().length; j++) {
+            for(int j = 0; j < ConnectionPriority.VALUES.length; j++) {
                 fluidDemand[i][j] = 0;
                 receivers[i][j].clear();
             }

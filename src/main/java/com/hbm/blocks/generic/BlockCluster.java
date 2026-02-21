@@ -2,6 +2,7 @@ package com.hbm.blocks.generic;
 
 import com.hbm.api.block.IDrillInteraction;
 import com.hbm.api.block.IMiningDrill;
+import com.hbm.blocks.IOreType;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
@@ -19,7 +20,7 @@ import static com.hbm.blocks.OreEnumUtil.OreEnum;
 
 public class BlockCluster extends BlockNTMOre implements IDrillInteraction {
 
-    public BlockCluster(String s, OreEnum oreEnum) {
+    public BlockCluster(String s, IOreType oreEnum) {
         super(s, oreEnum, 1);
     }
 
@@ -55,7 +56,7 @@ public class BlockCluster extends BlockNTMOre implements IDrillInteraction {
     private ItemStack getDrop(Random rand, IBlockState state) {
 
         if (this.oreEnum != null)
-            return oreEnum.dropFunction.apply(state, rand);
+            return oreEnum.getDropFunction().apply(state, rand);
 
 
         return null;

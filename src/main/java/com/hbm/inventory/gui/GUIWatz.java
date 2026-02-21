@@ -1,9 +1,9 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerWatz;
-import com.hbm.lib.RefStrings;
 import com.hbm.packet.toserver.NBTControlPacket;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.render.util.GaugeUtil;
 import com.hbm.render.util.GaugeUtil.Gauge;
 import com.hbm.tileentity.machine.TileEntityWatz;
@@ -16,14 +16,14 @@ import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 import java.util.Locale;
 
 public class GUIWatz extends GuiInfoContainer {
 
-	private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/reactors/gui_watz.png");
+	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/reactors/gui_watz.png");
 	private TileEntityWatz watz;
 
 	public GUIWatz(InventoryPlayer invPlayer, TileEntityWatz watz) {
@@ -65,8 +65,9 @@ public class GUIWatz extends GuiInfoContainer {
 		if(guiLeft + 142 <= x && guiLeft + 142 + 18 > x && guiTop + 70 < y && guiTop + 70 + 18 >= y) {
 			NBTTagCompound control = new NBTTagCompound();
 			control.setBoolean("lock", true);
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(control, watz.getPos().getX(), watz.getPos().getY(), watz.getPos().getZ()));
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1F));
+            PacketThreading.createSendToServerThreadedPacket(
+                    new NBTControlPacket(control, watz.getPos().getX(), watz.getPos().getY(), watz.getPos().getZ()));
+            mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1F));
 		}
 	}
 
@@ -74,7 +75,6 @@ public class GUIWatz extends GuiInfoContainer {
 	protected void drawGuiContainerBackgroundLayer(float interp, int x, int y) {
 		super.drawDefaultBackground();
 		Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
-		GL11.glPushAttrib(GL11.GL_ENABLE_BIT);
 		GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		float col = MathHelper.clamp(1 - (float) Math.log(watz.heat / 100_000D + 1) * 0.4F, 0F, 1F);
@@ -96,6 +96,5 @@ public class GUIWatz extends GuiInfoContainer {
 		watz.tanks[0].renderTank(guiLeft + 143, guiTop + 69, this.zLevel, 4, 43);
 		watz.tanks[1].renderTank(guiLeft + 149, guiTop + 69, this.zLevel, 4, 43);
 		watz.tanks[2].renderTank(guiLeft + 155, guiTop + 69, this.zLevel, 4, 43);
-		GL11.glPopAttrib();
 	}
 }

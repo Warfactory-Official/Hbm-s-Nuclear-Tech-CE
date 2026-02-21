@@ -5,6 +5,7 @@ import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.mods.WeaponModManager;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.anim.sedna.HbmAnimationsSedna;
+import com.hbm.util.RenderUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.item.ItemStack;
@@ -57,11 +58,11 @@ public class ItemRenderGreasegun extends ItemRenderWeaponBase {
         GlStateManager.rotate(lift[0], 1, 0, 0);
         GlStateManager.translate(0, 3, 3);
 
-        if(gun.aimingProgress < 1F) GlStateManager.rotate(turn[2], 0, 0, 1);
+        if(ItemGunBaseNT.aimingProgress < 1F) GlStateManager.rotate(turn[2], 0, 0, 1);
 
         GlStateManager.translate(0, 0, recoil[2]);
 
-        GL11.glShadeModel(GL11.GL_SMOOTH);
+        GlStateManager.shadeModel(GL11.GL_SMOOTH);
         ResourceManager.greasegun.renderPart("Gun");
 
         GlStateManager.pushMatrix();
@@ -96,7 +97,7 @@ public class ItemRenderGreasegun extends ItemRenderWeaponBase {
         GlStateManager.rotate(turn[2], 0, 0, -1);
         GlStateManager.rotate(90, 0, 1, 0);
         GlStateManager.scale(smokeScale, smokeScale, smokeScale);
-        this.renderSmokeNodes(gun.getConfig(stack, 0).smokeNodes, 1D);
+        renderSmokeNodes(gun.getConfig(stack, 0).smokeNodes, 1D);
         GlStateManager.popMatrix();
 
         GlStateManager.pushMatrix();
@@ -104,17 +105,17 @@ public class ItemRenderGreasegun extends ItemRenderWeaponBase {
         GlStateManager.rotate(turn[2], 0, 0, -1);
         GlStateManager.rotate(90, 0, 1, 0);
         GlStateManager.scale(smokeScale, smokeScale, smokeScale);
-        this.renderSmokeNodes(gun.getConfig(stack, 0).smokeNodes, 1D);
+        renderSmokeNodes(gun.getConfig(stack, 0).smokeNodes, 1D);
         GlStateManager.popMatrix();
 
-        GL11.glShadeModel(GL11.GL_FLAT);
+        GlStateManager.shadeModel(GL11.GL_FLAT);
 
         GlStateManager.pushMatrix();
         GlStateManager.translate(0, 0, 8);
         GlStateManager.rotate(90, 0, 1, 0);
         GlStateManager.rotate(90 * gun.shotRand, 1, 0, 0);
         GlStateManager.scale(0.5, 0.5, 0.5);
-        this.renderMuzzleFlash(gun.lastShot[0], 75, 7.5);
+        renderMuzzleFlash(gun.lastShot[0], 75, 7.5);
         GlStateManager.popMatrix();
     }
 
@@ -144,12 +145,13 @@ public class ItemRenderGreasegun extends ItemRenderWeaponBase {
 
     @Override
     public void renderOther(ItemStack stack, Object type) {
-        GL11.glEnable(GL11.GL_LIGHTING);
+        int prevShade = RenderUtil.getShadeModel();
+        GlStateManager.enableLighting();
 
-        GL11.glShadeModel(GL11.GL_SMOOTH);
+        GlStateManager.shadeModel(GL11.GL_SMOOTH);
         Minecraft.getMinecraft().renderEngine.bindTexture(isRefurbished(stack) ? ResourceManager.greasegun_clean_tex : ResourceManager.greasegun_tex);
         ResourceManager.greasegun.renderAll();
-        GL11.glShadeModel(GL11.GL_FLAT);
+        GlStateManager.shadeModel(prevShade);
     }
 
     public boolean isRefurbished(ItemStack stack) {

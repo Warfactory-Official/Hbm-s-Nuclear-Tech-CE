@@ -181,7 +181,7 @@ public abstract class TileEntityCrateBase extends TileEntityLockableBase impleme
 
     /**
      * {@inheritDoc}
-     * This method is only called client-side.
+     * @implNote this method is only called client-side. Use com.hbm.interfaces.IContainerOpenEventListener to make it work server-side.
      */
     public void openInventory(EntityPlayer player) {
         player.world.playSound(player.posX, player.posY, player.posZ, HBMSoundHandler.crateOpen, SoundCategory.BLOCKS, 1.0F, 1.0F, false);
@@ -189,7 +189,7 @@ public abstract class TileEntityCrateBase extends TileEntityLockableBase impleme
 
     /**
      * {@inheritDoc}
-     * This method is only called client-side.
+     * @implNote this method is only called client-side. Override Container#onContainerClosed to make it work server-side.
      */
     public void closeInventory(EntityPlayer player) {
         player.world.playSound(player.posX, player.posY, player.posZ, HBMSoundHandler.crateClose, SoundCategory.BLOCKS, 1.0F, 1.0F, false);

@@ -14,8 +14,7 @@ public class ContainerCoreReceiver extends Container {
 
     public ContainerCoreReceiver(EntityPlayer player, TileEntityCoreReceiver te) {
 		InventoryPlayer invPlayer = player.inventory;
-		if(player instanceof EntityPlayerMP)
-		this.te = te;
+		if (player instanceof EntityPlayerMP) this.te = te;
 
 		for(int i = 0; i < 3; i++) {
 			for(int j = 0; j < 9; j++) {
@@ -34,14 +33,14 @@ public class ContainerCoreReceiver extends Container {
 	}
 
 	@Override
-	public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2) {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
+	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+		ItemStack result = ItemStack.EMPTY;
+		Slot slot = this.inventorySlots.get(index);
 
-		if(var4 != null && var4.getHasStack()) {
+		if(slot != null && slot.getHasStack()) {
 			return ItemStack.EMPTY;
 		}
 
-		return var3;
+		return result;
 	}
 }

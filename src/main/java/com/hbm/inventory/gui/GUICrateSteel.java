@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerCrateSteel;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityCrateSteel;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -9,7 +9,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GUICrateSteel extends GUICrateBase<TileEntityCrateSteel, ContainerCrateSteel> {
 
-    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/storage/gui_crate_steel.png");
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/storage/gui_crate_steel.png");
 
     public GUICrateSteel(InventoryPlayer invPlayer, TileEntityCrateSteel tedf) {
         super(tedf, new ContainerCrateSteel(invPlayer, tedf), 176, 222, texture);

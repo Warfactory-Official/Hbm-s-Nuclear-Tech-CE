@@ -158,7 +158,7 @@ public class TrappedBrick extends BlockContainer {
 	@SideOnly(Side.CLIENT)
 	public void getSubBlocks(CreativeTabs tab, NonNullList<ItemStack> items) {
 		if(tab == this.getCreativeTab() || tab == CreativeTabs.SEARCH)
-			for (int i = 0; i < Trap.values().length; ++i) {
+			for (int i = 0; i < Trap.VALUES.length; ++i) {
 				items.add(new ItemStack(this, 1, i));
 			}
 	}
@@ -185,6 +185,7 @@ public class TrappedBrick extends BlockContainer {
 		POISON_DART(TrapType.DETECTOR),
 		ZOMBIE(TrapType.DETECTOR),
 		SPIDERS(TrapType.DETECTOR);
+        public static final Trap[] VALUES = values();
 
 		public TrapType type;
 
@@ -194,8 +195,8 @@ public class TrappedBrick extends BlockContainer {
 
 		public static Trap get(int i) {
 
-			if(i >= 0 && i < Trap.values().length)
-				return Trap.values()[i];
+			if(i >= 0 && i < Trap.VALUES.length)
+				return Trap.VALUES[i];
 
 			return FIRE;
 		}

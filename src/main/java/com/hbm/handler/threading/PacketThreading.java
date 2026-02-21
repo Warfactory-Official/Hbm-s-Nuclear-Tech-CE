@@ -6,253 +6,435 @@ import com.hbm.main.MainRegistry;
 import com.hbm.main.NetworkHandler;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.threading.ThreadedPacket;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import org.jctools.queues.MpscBlockingConsumerArrayQueue;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.LongAdder;
+import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static com.hbm.lib.internal.UnsafeHolder.*;
+
+/**
+ * Methods here are safe to call off-thread
+ */
 public class PacketThreading {
-
-    public static final String threadPrefix = "NTM-Packet-Thread-";
-    public static final ThreadFactory packetThreadFactory = new ThreadFactoryBuilder().setNameFormat(threadPrefix + "%d").build();
-    public static final ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(1, packetThreadFactory);
-
     /**
-     * Futures returned by {@link #threadPool}. The list is cleared by {@link #waitUntilThreadFinished()} once all
-     * packets have either completed, errored, or timed out.
+     * Global lock guarding the FML channel state for outbound packets.
      */
-    public static final List<Future<?>> futureList = new ArrayList<>();
+    public static final ReentrantLock LOCK = new ReentrantLock();
+    public static final String THREAD_PREFIX = "NTM-Packet-Thread-";
+    private static final Object IN_FLIGHT_BASE = staticFieldBase(PacketThreading.class, "inFlightDispatch");
+    private static final long IN_FILGHT_OFF = staticfieldOffset(PacketThreading.class, "inFlightDispatch");
+    private static final Object LAST_S_FLUSH_BASE = staticFieldBase(PacketThreading.class, "lastServerFlushNs");
+    private static final long LAST_S_FLUSH_OFF = staticfieldOffset(PacketThreading.class, "lastServerFlushNs");
+    private static final Object LAST_C_FLUSH_BASE = staticFieldBase(PacketThreading.class, "lastClientFlushNs");
+    private static final long LAST_C_FLUSH_OFF = staticfieldOffset(PacketThreading.class, "lastClientFlushNs");
+    private static final int QUEUE_CAPACITY = 4096;
+    private static final int BATCH_SIZE = 128;
+    // Coalesce flushes in multi-threaded mode to avoid flush storms.
+    private static final long MIN_FLUSH_NS = 1_000_000L; // 1ms
 
-    /**
-     * Global lock guarding the FML channel state for outbound server packets.
-     * <p>
-     * This lock is acquired by the methods within the {@link NetworkHandler} class
-     * before they write to the server channel. This ensures that while packet serialization
-     * happens concurrently on worker threads, the final stateful write to the network is
-     * properly serialized, preventing race conditions.
-     */
-    public static final ReentrantLock lock = new ReentrantLock();
+    private static final ThreadFactory packetThreadFactory = new ThreadFactoryBuilder().setNameFormat(THREAD_PREFIX + "%d").setDaemon(true).build();
 
-    /** Total packets submitted since the last flush. */
-    public static AtomicInteger totalCnt = new AtomicInteger(0);
-    /** Total nanoseconds the main thread waited for worker completion. */
-    public static long nanoTimeWaited = 0;
-
-    public static int clearCnt = 0;
-    public static boolean hasTriggered = false;
+    private static final LongAdder totalCnt = new LongAdder();
+    private static final LongAdder nanosWaited = new LongAdder();
+    @SuppressWarnings("FieldMayBeFinal")
+    private static volatile long lastServerFlushNs = 0L, lastClientFlushNs = 0L;
+    private static volatile boolean multiThreaded = false;
+    private static volatile boolean running = true;
+    private static volatile boolean enabled = false;
+    @SuppressWarnings("unused")
+    private static volatile int inFlightDispatch;
+    private static volatile MpscBlockingConsumerArrayQueue<PacketTask> singleThreadQueue;
+    private static volatile Thread singleWorkerThread;
+    private static volatile ThreadPoolExecutor threadPool;
 
     /**
      * Sets up thread pool settings during mod initialization.
      */
-    public static void init() {
-        threadPool.setKeepAliveTime(50, TimeUnit.MILLISECONDS);
-        if (GeneralConfig.enablePacketThreading) {
-            int coreCount = GeneralConfig.packetThreadingCoreCount;
-            int maxCount = GeneralConfig.packetThreadingMaxCount;
+    public static synchronized void init() {
+        shutdown();
 
-            if (coreCount <= 0 || maxCount <= 0) {
-                MainRegistry.logger.error("packetThreadingCoreCount ({}) or packetThreadingMaxCount ({}) is <= 0. Defaulting to a single-threaded pool.", coreCount, maxCount);
-                threadPool.setCorePoolSize(1);
-                threadPool.setMaximumPoolSize(1);
-            } else if (maxCount < coreCount) {
-                MainRegistry.logger.warn("packetThreadingMaxCount ({}) cannot be less than packetThreadingCoreCount ({}). Setting max count to core count.", maxCount, coreCount);
-                threadPool.setCorePoolSize(coreCount);
-                threadPool.setMaximumPoolSize(coreCount);
+        if (!GeneralConfig.enablePacketThreading) {
+            enabled = false;
+            return;
+        }
+
+        int coreCount = GeneralConfig.packetThreadingCoreCount;
+        int maxCount = GeneralConfig.packetThreadingMaxCount;
+
+        if (coreCount <= 0 || maxCount <= 0) {
+            MainRegistry.logger.error("packetThreadingCoreCount ({}) or packetThreadingMaxCount ({}) is <= 0. Defaulting to single-threaded mode.",
+                    coreCount, maxCount);
+            coreCount = 1;
+        } else if (maxCount < coreCount) {
+            MainRegistry.logger.warn(
+                    "packetThreadingMaxCount ({}) cannot be less than packetThreadingCoreCount ({}). Setting max count to core count.", maxCount,
+                    coreCount);
+            maxCount = coreCount;
+        }
+
+        enabled = true;
+
+        if (coreCount > 1) {
+            multiThreaded = true;
+            singleThreadQueue = null;
+            MainRegistry.logger.info("Initializing PacketThreading in Multi-Threaded mode (Core: {}, Max: {}).", coreCount, maxCount);
+            ThreadPoolExecutor tp = new ThreadPoolExecutor(coreCount, maxCount, 50L, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(QUEUE_CAPACITY),
+                    packetThreadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
+            tp.allowCoreThreadTimeOut(false);
+            threadPool = tp;
+        } else {
+            multiThreaded = false;
+            threadPool = null;
+            MainRegistry.logger.info("Initializing PacketThreading in Optimized Single-Threaded mode.");
+            running = true;
+            MpscBlockingConsumerArrayQueue<PacketTask> q = new MpscBlockingConsumerArrayQueue<>(QUEUE_CAPACITY);
+            singleThreadQueue = q;
+            Thread t = new Thread(() -> processBatch(q), "NTM-Packet-Thread-0");
+            t.setDaemon(true);
+            singleWorkerThread = t;
+            t.start();
+        }
+    }
+
+    private static void shutdown() {
+        enabled = false;
+        running = false;
+        int spin = 0;
+        while (inFlightDispatch != 0) {
+            spin++;
+            if (spin < 1000) {
+                Thread.yield();
             } else {
-                threadPool.setCorePoolSize(coreCount);
-                threadPool.setMaximumPoolSize(maxCount);
+                LockSupport.parkNanos(500L);
             }
-            threadPool.allowCoreThreadTimeOut(false);
-        } else {
-            threadPool.allowCoreThreadTimeOut(true);
-            try {
-                lock.lock();
-                for (Runnable task : threadPool.getQueue()) {
-                    task.run(); // Drain outstanding tasks synchronously.
+        }
+        ThreadPoolExecutor tp = threadPool;
+        threadPool = null;
+        if (tp != null) {
+            List<Runnable> pendingTasks = tp.shutdownNow();
+            for (Runnable r : pendingTasks) {
+                if (r instanceof PacketRunner runner) {
+                    runner.free();
                 }
-                clearThreadPoolTasks();
-            } finally {
-                lock.unlock();
+            }
+        }
+        Thread t = singleWorkerThread;
+        singleWorkerThread = null;
+        if (t != null && t.isAlive()) t.interrupt();
+        MpscBlockingConsumerArrayQueue<PacketTask> q = singleThreadQueue;
+        singleThreadQueue = null;
+        if (q != null) {
+            PacketTask task;
+            while ((task = q.relaxedPoll()) != null) {
+                task.packet.releaseBuffer();
             }
         }
     }
 
-    private static void addTask(Runnable task) {
-        if (isTriggered()) {
-            task.run();
-        } else if (GeneralConfig.enablePacketThreading) {
-            futureList.add(threadPool.submit(task));
-        } else {
-            task.run();
+    private static void maybeFlushServer() {
+        long now = System.nanoTime();
+        long prev = lastServerFlushNs;
+        if (now - prev >= MIN_FLUSH_NS && U.compareAndSetLong(LAST_S_FLUSH_BASE, LAST_S_FLUSH_OFF, prev, now)) {
+            NetworkHandler.flushServer();
         }
     }
 
-    /**
-     * A helper method to create a runnable task for a {@link ThreadedPacket}.
-     * This moves the expensive serialization to the worker thread and minimizes lock contention.
-     *
-     * @param packet     The packet to serialize and send.
-     * @param sendAction The lambda performing the network write (e.g., {@code () -> wrapper.sendTo(...)}).
-     * @return A {@link Runnable} to be submitted to the thread pool.
-     */
-    private static Runnable createTask(@NotNull ThreadedPacket packet, @NotNull Runnable sendAction) {
-        return () -> {
-            packet.getCompiledBuffer();
-            sendAction.run();
-        };
+    private static void maybeFlushClient() {
+        long now = System.nanoTime();
+        long prev = lastClientFlushNs;
+        if (now - prev >= MIN_FLUSH_NS && U.compareAndSetLong(LAST_C_FLUSH_BASE, LAST_C_FLUSH_OFF, prev, now)) {
+            NetworkHandler.flushClient();
+        }
     }
 
-    /** Mirrors {@link com.hbm.main.NetworkHandler#sendToServer(IMessage)}. */
-    public static void createSendToServerThreadedPacket(@NotNull ThreadedPacket message) {
-        totalCnt.incrementAndGet();
-        addTask(createTask(message, () -> PacketDispatcher.wrapper.sendToServer(message)));
-    }
+    private static void processBatch(MpscBlockingConsumerArrayQueue<PacketTask> q) {
+        List<PacketTask> batchBuffer = new ArrayList<>(BATCH_SIZE);
 
-    /** Mirrors {@link com.hbm.main.NetworkHandler#sendToDimension(IMessage, int)}. */
-    public static void createSendToDimensionThreadedPacket(@NotNull ThreadedPacket message, int dimensionId) {
-        totalCnt.incrementAndGet();
-        addTask(createTask(message, () -> PacketDispatcher.wrapper.sendToDimension(message, dimensionId)));
-    }
-
-    /** Mirrors {@link com.hbm.main.NetworkHandler#sendToAllAround(IMessage, TargetPoint)}. */
-    public static void createAllAroundThreadedPacket(@NotNull ThreadedPacket message, @NotNull TargetPoint target) {
-        totalCnt.incrementAndGet();
-        addTask(createTask(message, () -> PacketDispatcher.wrapper.sendToAllAround(message, target)));
-    }
-
-    /**
-     * Mirrors {@link com.hbm.main.NetworkHandler#sendToAllAround(ByteBuf, TargetPoint)}.
-     * This method is safer for concurrency as it deals with a stateless buffer.
-     */
-    public static void createAllAroundThreadedPacket(@NotNull ByteBuf buffer, @NotNull TargetPoint target) {
-        totalCnt.incrementAndGet();
-
-        // Retain a reference for thread-safe use; will be released inside the task.
-        final ByteBuf retained = buffer.retainedDuplicate();
-
-        Runnable task = () -> {
+        while (running) {
             try {
-                PacketDispatcher.wrapper.sendToAllAround(retained, target);
-            } finally {
-                retained.release();
-            }
-        };
+                PacketTask first = q.take();
+                batchBuffer.add(first);
+                for (int i = 0; i < BATCH_SIZE - 1; i++) {
+                    PacketTask next = q.relaxedPoll();
+                    if (next == null) break;
+                    batchBuffer.add(next);
+                }
 
-        addTask(task);
-    }
-
-    /** Mirrors {@link com.hbm.main.NetworkHandler#sendToAllTracking(IMessage, TargetPoint)}. */
-    public static void createSendToAllTrackingThreadedPacket(@NotNull ThreadedPacket message, @NotNull TargetPoint point) {
-        totalCnt.incrementAndGet();
-        addTask(createTask(message, () -> PacketDispatcher.wrapper.sendToAllTracking(message, point)));
-    }
-
-    /** Mirrors {@link com.hbm.main.NetworkHandler#sendToAllTracking(IMessage, Entity)}. */
-    public static void createSendToAllTrackingThreadedPacket(@NotNull ThreadedPacket message, @NotNull Entity entity) {
-        totalCnt.incrementAndGet();
-        addTask(createTask(message, () -> PacketDispatcher.wrapper.sendToAllTracking(message, entity)));
-    }
-
-    /** Mirrors {@link com.hbm.main.NetworkHandler#sendTo(IMessage, EntityPlayerMP)}. */
-    public static void createSendToThreadedPacket(@NotNull ThreadedPacket message, @NotNull EntityPlayerMP player) {
-        totalCnt.incrementAndGet();
-        addTask(createTask(message, () -> PacketDispatcher.wrapper.sendTo(message, player)));
-    }
-
-    /** Mirrors {@link com.hbm.main.NetworkHandler#sendToAll(IMessage)}. */
-    public static void createSendToAllThreadedPacket(@NotNull ThreadedPacket message) {
-        totalCnt.incrementAndGet();
-        addTask(createTask(message, () -> PacketDispatcher.wrapper.sendToAll(message)));
-    }
-
-    /**
-     * Blocks the caller until every previously scheduled packet task finishes execution,
-     * but gives up if the total wait time exceeds 50 milliseconds to prevent stalling the main thread.
-     */
-    public static void waitUntilThreadFinished() {
-        if (futureList.isEmpty() || !GeneralConfig.enablePacketThreading || isTriggered()) {
-            futureList.clear();
-            totalCnt.set(0);
-            return;
-        }
-
-        long startTime = System.nanoTime();
-        try {
-            if (GeneralConfig.enablePacketThreading && !hasTriggered) {
-                long deadline = startTime + TimeUnit.MILLISECONDS.toNanos(50);
-                for (Future<?> future : futureList) {
-                    long timeoutLeft = deadline - System.nanoTime();
-                    if (timeoutLeft <= 0) {
-                        throw new TimeoutException("Packet processing deadline exceeded.");
+                for (int i = 0; i < batchBuffer.size(); i++) {
+                    PacketTask task = batchBuffer.get(i);
+                    try {
+                        task.packet.getCompiledBuffer();
+                    } catch (Throwable t) {
+                        MainRegistry.logger.error("Failed to compile threaded packet", t);
+                        task.packet.releaseBuffer();
+                        batchBuffer.set(i, null);
                     }
-                    future.get(timeoutLeft, TimeUnit.NANOSECONDS);
+                }
+
+                LOCK.lock();
+                try {
+                    boolean doFlushServer = false;
+                    boolean doFlushClient = false;
+
+                    for (PacketTask task : batchBuffer) {
+                        if (task == null) continue;
+                        try {
+                            send(task);
+                            if (task.op == PacketOp.SERVER) doFlushClient = true;
+                            else doFlushServer = true;
+                        } catch (Throwable t) {
+                            MainRegistry.logger.error("Failed to write packet to channel", t);
+                        }
+                    }
+
+                    // Early flush to reduce latency (tick-end flush stays as a backstop).
+                    if (doFlushServer) NetworkHandler.flushServerDirect();
+                    if (doFlushClient) NetworkHandler.flushClientDirect();
+
+                } finally {
+                    LOCK.unlock();
+                }
+
+                for (PacketTask task : batchBuffer) {
+                    if (task != null) task.packet.releaseBuffer();
+                }
+            } catch (InterruptedException e) {
+                MainRegistry.logger.warn("Packet worker interrupted");
+                Thread.currentThread().interrupt();
+                break;
+            } catch (Throwable t) {
+                MainRegistry.logger.error("Crash in packet worker loop", t);
+                for (PacketTask task : batchBuffer) {
+                    if (task != null) task.packet.releaseBuffer();
+                }
+            } finally {
+                batchBuffer.clear();
+            }
+        }
+
+        PacketTask task;
+        while ((task = q.relaxedPoll()) != null) {
+            task.packet.releaseBuffer();
+        }
+    }
+
+    // caller shall release() the buffer sent once after send()
+    // FML fan-out retains pkt.payload() for each dispatcher, so the underlying memory
+    // stays alive until all downstream retains are released.
+    private static void send(PacketTask task) {
+        switch (task.op) {
+            case SERVER -> PacketDispatcher.wrapper.sendToServerDirect(task.packet);
+            case PLAYER -> PacketDispatcher.wrapper.sendToDirect(task.packet, (EntityPlayerMP) task.target);
+            case ALL -> PacketDispatcher.wrapper.sendToAllDirect(task.packet);
+            case DIMENSION -> PacketDispatcher.wrapper.sendToDimensionDirect(task.packet, task.dimension);
+            case ALL_AROUND -> PacketDispatcher.wrapper.sendToAllAroundDirect(task.packet, (TargetPoint) task.target);
+            case TRACKING_POINT -> PacketDispatcher.wrapper.sendToAllTrackingDirect(task.packet, (TargetPoint) task.target);
+            case TRACKING_ENTITY -> PacketDispatcher.wrapper.sendToAllTrackingDirect(task.packet, (Entity) task.target);
+        }
+    }
+
+    private static void dispatch(ThreadedPacket packet, PacketOp op, Object target, int dimension) {
+        totalCnt.increment();
+        U.getAndAddInt(IN_FLIGHT_BASE, IN_FILGHT_OFF, 1);
+        try {
+            if (!enabled || !GeneralConfig.enablePacketThreading) {
+                runSynchronously(packet, op, target, dimension);
+                return;
+            }
+
+            PacketTask task = new PacketTask(packet, op, target, dimension);
+
+            if (multiThreaded) {
+                ThreadPoolExecutor tp = threadPool;
+                if (tp == null || tp.isShutdown()) {
+                    runSynchronously(packet, op, target, dimension);
+                    return;
+                }
+                tp.execute(new PacketRunner(task));
+            } else {
+                MpscBlockingConsumerArrayQueue<PacketTask> q = singleThreadQueue;
+                if (q == null || !q.offer(task)) {
+                    MainRegistry.logger.warn("Packet Queue full (size > {}). Running synchronously.", QUEUE_CAPACITY);
+                    runSynchronously(packet, op, target, dimension);
                 }
             }
-        } catch (ExecutionException e) {
-            MainRegistry.logger.error("A packet processing task threw an exception.", e.getCause());
-        } catch (TimeoutException e) {
-            if (!GeneralConfig.packetThreadingErrorBypass && !hasTriggered) {
-                MainRegistry.logger.warn("A packet task timed out or the total wait time (>50ms) was exceeded. Discarding {} remaining packets out of {} total to prevent server stall.", threadPool.getQueue().size(), totalCnt);
-            }
-            clearThreadPoolTasks();
-        } catch (InterruptedException e) {
-            MainRegistry.logger.warn("Packet waiting thread was interrupted.");
-            Thread.currentThread().interrupt();
         } finally {
-            nanoTimeWaited = System.nanoTime() - startTime;
-            futureList.clear();
-            if (!threadPool.getQueue().isEmpty()) {
-                if (!GeneralConfig.packetThreadingErrorBypass && !hasTriggered) {
-                    MainRegistry.logger.warn("Residual packets detected in queue after processing. Discarding {} packets.", threadPool.getQueue().size());
-                }
-                clearThreadPoolTasks();
+            U.getAndAddInt(IN_FLIGHT_BASE, IN_FILGHT_OFF, -1);
+        }
+    }
+
+    private static void runSynchronously(ThreadedPacket packet, PacketOp op, Object target, int dimension) {
+        long start = System.nanoTime();
+        try {
+            packet.getCompiledBuffer();
+            LOCK.lock();
+            try {
+                send(new PacketTask(packet, op, target, dimension));
+            } finally {
+                LOCK.unlock();
             }
-            totalCnt.set(0);
+        } catch (Throwable t) {
+            MainRegistry.logger.error("Error sending packet synchronously", t);
+            throw t;
+        } finally {
+            packet.releaseBuffer();
+            nanosWaited.add(System.nanoTime() - start);
         }
     }
 
     /**
-     * Forcibly removes every queued task without executing them.
+     * Mirrors {@link com.hbm.main.NetworkHandler#sendToDimension(IMessage, int)}.
      */
-    public static void clearThreadPoolTasks() {
-        if (threadPool.getQueue().isEmpty()) {
-            clearCnt = 0;
-            return;
-        }
-
-        threadPool.getQueue().clear();
-
-        if (!GeneralConfig.packetThreadingErrorBypass && !hasTriggered) {
-            MainRegistry.logger.warn("Packet work queue cleared forcefully (clear count: {}).", clearCnt);
-        }
-
-        clearCnt++;
-
-        if (clearCnt > 5 && !isTriggered()) {
-            MainRegistry.logger.error(
-                    "Something has gone wrong and the packet pool has cleared 5 times (or more) in a row. "
-                            + "This can indicate that the thread has been killed, suspended, or is otherwise non-functioning. "
-                            + "This message will only be logged once, further packet operations will continue on the main thread. "
-                            + "If this message is a common occurrence and is *completely expected*, then it can be bypassed permanently by setting "
-                            + "the \"0.04_packetThreadingErrorBypass\" config option to true. This can lead to adverse effects, so do this at your own risk. "
-                            + "Running \"/ntmpacket resetState\" resets this trigger as a temporary fix."
-            );
-            hasTriggered = true;
-        }
+    public static void createSendToDimensionThreadedPacket(@NotNull ThreadedPacket message, int dimensionId) {
+        dispatch(message, PacketOp.DIMENSION, null, dimensionId);
     }
 
     /**
-     * Indicates whether packet threading is presently bypassed due to repeated failures.
+     * Mirrors {@link com.hbm.main.NetworkHandler#sendToAllAround(IMessage, TargetPoint)}.
      */
-    public static boolean isTriggered() {
-        return hasTriggered && !GeneralConfig.packetThreadingErrorBypass;
+    public static void createAllAroundThreadedPacket(@NotNull ThreadedPacket message, @NotNull TargetPoint target) {
+        dispatch(message, PacketOp.ALL_AROUND, target, Integer.MIN_VALUE);
+    }
+
+    /**
+     * Mirrors {@link com.hbm.main.NetworkHandler#sendToAllTracking(IMessage, TargetPoint)}.
+     */
+    public static void createSendToAllTrackingThreadedPacket(@NotNull ThreadedPacket message, @NotNull TargetPoint point) {
+        dispatch(message, PacketOp.TRACKING_POINT, point, Integer.MIN_VALUE);
+    }
+
+    /**
+     * Mirrors {@link com.hbm.main.NetworkHandler#sendToAllTracking(IMessage, Entity)}.
+     */
+    public static void createSendToAllTrackingThreadedPacket(@NotNull ThreadedPacket message, @NotNull Entity entity) {
+        dispatch(message, PacketOp.TRACKING_ENTITY, entity, Integer.MIN_VALUE);
+    }
+
+    /**
+     * Mirrors {@link com.hbm.main.NetworkHandler#sendTo(IMessage, EntityPlayerMP)}.
+     */
+    public static void createSendToThreadedPacket(@NotNull ThreadedPacket message, @NotNull EntityPlayerMP player) {
+        dispatch(message, PacketOp.PLAYER, player, Integer.MIN_VALUE);
+    }
+
+    /**
+     * Mirrors {@link com.hbm.main.NetworkHandler#sendToAll(IMessage)}.
+     */
+    public static void createSendToAllThreadedPacket(@NotNull ThreadedPacket message) {
+        dispatch(message, PacketOp.ALL, null, Integer.MIN_VALUE);
+    }
+
+    /**
+     * Mirrors {@link com.hbm.main.NetworkHandler#sendToServer(IMessage)}.
+     */
+    public static void createSendToServerThreadedPacket(@NotNull ThreadedPacket message) {
+        dispatch(message, PacketOp.SERVER, null, Integer.MIN_VALUE);
+    }
+
+    // debugging
+    public static int getPoolSize() {
+        ThreadPoolExecutor tp = threadPool;
+        if (tp == null) return -1;
+        return tp.getPoolSize();
+    }
+
+    public static int getCorePoolSize() {
+        ThreadPoolExecutor tp = threadPool;
+        if (tp == null) return -1;
+        return tp.getCorePoolSize();
+    }
+
+    public static int getActiveCount() {
+        ThreadPoolExecutor tp = threadPool;
+        if (tp == null) return -1;
+        return tp.getActiveCount();
+    }
+
+    public static int getMaximumPoolSize() {
+        ThreadPoolExecutor tp = threadPool;
+        if (tp == null) return -1;
+        return tp.getMaximumPoolSize();
+    }
+
+    public static int getThreadPoolQueueSize() {
+        ThreadPoolExecutor tp = threadPool;
+        if (tp == null) return -1;
+        return tp.getQueue().size();
+    }
+
+    public static int getQueueSize() {
+        MpscBlockingConsumerArrayQueue<PacketTask> q = singleThreadQueue;
+        if (q == null) return -1;
+        return q.size();
+    }
+
+    public static boolean isMultiThreaded() {
+        return multiThreaded;
+    }
+
+    public static long getTotalCount() {
+        return totalCnt.sum();
+    }
+
+    public static long getNanosWaited() {
+        return nanosWaited.sum();
+    }
+
+    private enum PacketOp {
+        PLAYER, ALL, DIMENSION, ALL_AROUND, TRACKING_POINT, TRACKING_ENTITY, SERVER
+    }
+
+    @SuppressWarnings("ClassCanBeRecord") // dude
+    static class PacketRunner implements Runnable {
+        final PacketTask task;
+
+        PacketRunner(PacketTask task) {
+            this.task = task;
+        }
+
+        @Override
+        public void run() {
+            try {
+                task.packet.getCompiledBuffer();
+                LOCK.lock();
+                try {
+                    send(task);
+                } finally {
+                    LOCK.unlock();
+                }
+                if (task.op == PacketOp.SERVER) {
+                    maybeFlushClient();
+                } else {
+                    maybeFlushServer();
+                }
+            } catch (Throwable t) {
+                MainRegistry.logger.error("Error processing packet in thread pool", t);
+                throw t;
+            } finally {
+                task.packet.releaseBuffer();
+            }
+        }
+
+        void free() {
+            if (task != null && task.packet != null) {
+                task.packet.releaseBuffer();
+            }
+        }
+    }
+
+    record PacketTask(ThreadedPacket packet, PacketOp op, Object target, int dimension) {
     }
 }

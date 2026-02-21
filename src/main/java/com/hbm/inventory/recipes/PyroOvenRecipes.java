@@ -64,7 +64,7 @@ public class PyroOvenRecipes extends SerializableRecipe {
 
         //bedrock ores
 
-        for(ItemBedrockOreNew.BedrockOreType type : ItemBedrockOreNew.BedrockOreType.values()) {
+        for(ItemBedrockOreNew.BedrockOreType type : ItemBedrockOreNew.BedrockOreType.VALUES) {
             recipes.add(new PyroOvenRecipe(10).in(new RecipesCommon.ComparableStack(ItemBedrockOreNew.make(ItemBedrockOreNew.BedrockOreGrade.BASE, type))).out(new FluidStack(Fluids.VITRIOL, 50)).out(ItemBedrockOreNew.make(ItemBedrockOreNew.BedrockOreGrade.BASE_ROASTED, type)));
             recipes.add(new PyroOvenRecipe(10).in(new RecipesCommon.ComparableStack(ItemBedrockOreNew.make(ItemBedrockOreNew.BedrockOreGrade.PRIMARY, type))).out(new FluidStack(Fluids.VITRIOL, 50)).out(ItemBedrockOreNew.make(ItemBedrockOreNew.BedrockOreGrade.PRIMARY_ROASTED, type)));
             recipes.add(new PyroOvenRecipe(10).in(new RecipesCommon.ComparableStack(ItemBedrockOreNew.make(ItemBedrockOreNew.BedrockOreGrade.SULFURIC_BYPRODUCT, type))).out(new FluidStack(Fluids.VITRIOL, 50)).out(ItemBedrockOreNew.make(ItemBedrockOreNew.BedrockOreGrade.SULFURIC_ROASTED, type)));
@@ -120,10 +120,10 @@ public class PyroOvenRecipes extends SerializableRecipe {
                 .out(new FluidStack(Fluids.HYDROGEN, 8_000)).out(new ItemStack(ModItems.ingot_graphite, 1)));
     }
 
-    private static void registerSFAuto(FluidType fluid) {
+    public static void registerSFAuto(FluidType fluid) {
         registerSFAuto(fluid, 1_440_000L, ModItems.solid_fuel); //3200 burntime * 1.5 burntime bonus * 300 TU/t
     }
-    private static void registerSFAuto(FluidType fluid, long tuPerSF, Item fuel) {
+    public static void registerSFAuto(FluidType fluid, long tuPerSF, Item fuel) {
         long tuPerBucket = fluid.getTrait(FT_Flammable.class).getHeatEnergy();
         double bonus = 0.5D; //double efficiency!!
 
@@ -138,11 +138,11 @@ public class PyroOvenRecipes extends SerializableRecipe {
         registerRecipe(fluid, mB, fuel);
     }
 
-    private static void registerRecipe(FluidType type, int quantity, Item output) { registerRecipe(type, quantity, new ItemStack(output)); }
-    private static void registerRecipe(FluidType type, int quantity, ItemStack output) { recipes.add(new PyroOvenRecipe(60).in(new FluidStack(type, quantity)).out(output)); }
+    public static void registerRecipe(FluidType type, int quantity, Item output) { registerRecipe(type, quantity, new ItemStack(output)); }
+    public static void registerRecipe(FluidType type, int quantity, ItemStack output) { recipes.add(new PyroOvenRecipe(60).in(new FluidStack(type, quantity)).out(output)); }
 
     public static HashMap<Object[], Object[]> getRecipes() {
-        HashMap<Object[], Object[]> map = new HashMap<Object[], Object[]>();
+        HashMap<Object[], Object[]> map = new HashMap<>();
 
         for(PyroOvenRecipe rec : recipes) {
 
@@ -184,10 +184,10 @@ public class PyroOvenRecipes extends SerializableRecipe {
     public void readRecipe(JsonElement recipe) {
         JsonObject obj = (JsonObject) recipe;
 
-        RecipesCommon.AStack inputItem = obj.has("inputItem") ? this.readAStack(obj.get("inputItem").getAsJsonArray()) : null;
-        FluidStack inputFluid = obj.has("inputFluid") ? this.readFluidStack(obj.get("inputFluid").getAsJsonArray()) : null;
-        ItemStack outputItem = obj.has("outputItem") ? this.readItemStack(obj.get("outputItem").getAsJsonArray()) : null;
-        FluidStack outputFluid = obj.has("outputFluid") ? this.readFluidStack(obj.get("outputFluid").getAsJsonArray()) : null;
+        RecipesCommon.AStack inputItem = obj.has("inputItem") ? readAStack(obj.get("inputItem").getAsJsonArray()) : null;
+        FluidStack inputFluid = obj.has("inputFluid") ? readFluidStack(obj.get("inputFluid").getAsJsonArray()) : null;
+        ItemStack outputItem = obj.has("outputItem") ? readItemStack(obj.get("outputItem").getAsJsonArray()) : null;
+        FluidStack outputFluid = obj.has("outputFluid") ? readFluidStack(obj.get("outputFluid").getAsJsonArray()) : null;
         int duration = obj.get("duration").getAsInt();
 
         recipes.add(new PyroOvenRecipe(duration).in(inputFluid).in(inputItem).out(outputFluid).out(outputItem));
@@ -198,10 +198,10 @@ public class PyroOvenRecipes extends SerializableRecipe {
 
         PyroOvenRecipe rec = (PyroOvenRecipe) recipe;
 
-        if(rec.inputFluid != null) { writer.name("inputFluid"); this.writeFluidStack(rec.inputFluid, writer); }
-        if(rec.inputItem != null) { writer.name("inputItem"); this.writeAStack(rec.inputItem, writer); }
-        if(rec.outputFluid != null) { writer.name("outputFluid"); this.writeFluidStack(rec.outputFluid, writer); }
-        if(rec.outputItem != null) { writer.name("outputItem"); this.writeItemStack(rec.outputItem, writer); }
+        if(rec.inputFluid != null) { writer.name("inputFluid"); writeFluidStack(rec.inputFluid, writer); }
+        if(rec.inputItem != null) { writer.name("inputItem"); writeAStack(rec.inputItem, writer); }
+        if(rec.outputFluid != null) { writer.name("outputFluid"); writeFluidStack(rec.outputFluid, writer); }
+        if(rec.outputItem != null) { writer.name("outputItem"); writeItemStack(rec.outputItem, writer); }
         writer.name("duration").value(rec.duration);
     }
 

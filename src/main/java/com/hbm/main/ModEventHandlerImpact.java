@@ -1,7 +1,6 @@
 package com.hbm.main;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.dim.WorldProviderEarth;
 import com.hbm.handler.ImpactWorldHandler;
 import com.hbm.saveddata.TomSaveData;
 import net.minecraft.block.*;
@@ -134,13 +133,6 @@ public class ModEventHandlerImpact {
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void onLoad(WorldEvent.Load event) {
 		TomSaveData.resetLastCached();
-
-		if (event.getWorld().provider.getDimension() == 0) {
-			WorldProviderEarth customProvider = new WorldProviderEarth();
-			customProvider.setWorld(event.getWorld());
-			customProvider.setDimension(0);
-			event.getWorld().provider = customProvider;
-		}
 	}
 
 	@SubscribeEvent
@@ -231,6 +223,10 @@ public class ModEventHandlerImpact {
 		}
 	}
 
+	@SubscribeEvent
+	public void populateChunkPre(PopulateChunkEvent.Pre event) {
+		TomSaveData.forWorld(event.getWorld()); /* forces the data to be cached so it is accurate by the time ModEventHandlerImpact#modifyVillageGen is called. */
+	}
 
 	@SubscribeEvent
 	public void populateChunkPost(PopulateChunkEvent.Post event) {

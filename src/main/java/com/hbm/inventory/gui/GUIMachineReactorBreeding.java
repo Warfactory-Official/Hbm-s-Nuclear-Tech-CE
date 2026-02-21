@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerMachineReactorBreeding;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityMachineReactorBreeding;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.GlStateManager;
 
 public class GUIMachineReactorBreeding extends GuiInfoContainer {
 
-    public static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_breeder.png");
+    public static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_breeder.png");
     private TileEntityMachineReactorBreeding breeder;
 
     public GUIMachineReactorBreeding(InventoryPlayer invPlayer, TileEntityMachineReactorBreeding tedf) {

@@ -3,6 +3,7 @@ package com.hbm.items.weapon.sedna;
 import com.hbm.config.GeneralConfig;
 import com.hbm.entity.projectile.EntityBulletBaseNT;
 import com.hbm.handler.*;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.IHoldableWeapon;
 import com.hbm.interfaces.IItemHUD;
 import com.hbm.inventory.RecipesCommon;
@@ -832,7 +833,7 @@ public class ItemGunBaseSedna extends ItemBakedBase implements IHoldableWeapon, 
         data.setBoolean("crouched", entity.isSneaking());
         data.setString("name", bullet.spentCasing.getName());
         data.setInteger("ej", ejector.getId());
-        PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, entity.posX, entity.posY + entity.getEyeHeight(), entity.posZ), new NetworkRegistry.TargetPoint(entity.dimension, entity.posX, entity.posY, entity.posZ, 50));
+        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, entity.posX, entity.posY + entity.getEyeHeight(), entity.posZ), new NetworkRegistry.TargetPoint(entity.dimension, entity.posX, entity.posY, entity.posZ, 50));
     }
 
     public static int getReloadDuration(EntityPlayer player, ItemStack stack) {

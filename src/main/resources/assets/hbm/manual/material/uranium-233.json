@@ -1,13 +1,15 @@
 {
 	"name": "Uranium-233",
 	"icon": ["hbm:billet_u233", 1, 0],
-    "trigger": [["hbm:ingot_u233"], ["hbm:billet_u233"], ["hbm:nugget_u233"]],
-    "title": {
-        "en_us": "Uranium-233",
-		"ru_ru": "Уран-233"
-    },
+	"trigger": [["hbm:ingot_u233"], ["hbm:billet_u233"], ["hbm:nugget_u233"]],
+	"title": {
+		"en_us": "Uranium-233",
+		"ru_ru": "Уран-233",
+		"ja_jp": "ウラニウム233"
+	},
 	"content": {
 		"en_us": "Artificial type of fissile uranium (i.e. reactor capable), created by reprocessing [[thorium-based fuels|Thorium Fuel]]. High enriched uranium-233 fuel is generally more powerful than fuel derived from [[uranium-235|Uranium-235]].<br><br>Moderately radioactive.",
-		"ru_ru": "Искусственный тип делящегося урана (т. е. пригодного для реакторов), получаемый при переработке [[ториевого топлива|Thorium Fuel]]. Высокообогащённое топливо на основе урана-233 обычно мощнее топлива на основе [[урана-235|Uranium-235]].<br><br>Умеренно радиоактивен."
+		"ru_ru": "Искусственный тип делящегося урана (т. е. пригодного для реакторов), получаемый при переработке [[ториевого топлива|Thorium Fuel]]. Высокообогащённое топливо на основе урана-233 обычно мощнее топлива на основе [[урана-235|Uranium-235]].<br><br>Умеренно радиоактивен.",
+		"ja_jp": "[[トリウム関係の燃料|Thorium Fuel]]を再処理して作られた人工的な核分裂性のウラニウム。 高濃縮のウラニウム233は基本的に[[ウラニウム235|Uranium-235]]から派生した燃料よりも強力です。<br><br>中程度に放射性。"
 	}
 }

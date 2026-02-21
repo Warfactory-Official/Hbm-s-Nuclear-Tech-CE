@@ -1,5 +1,6 @@
 package com.hbm.lib;
 
+import com.hbm.Tags;
 import com.hbm.handler.GunConfiguration;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
@@ -14,6 +15,7 @@ public final class HBMSoundHandler {
 
     public static SoundEvent assemblerOperate;
     public static SoundEvent fel;
+    public static SoundEvent fensuHum;
     public static SoundEvent hephaestusRunning;
     public static SoundEvent siloopen;
     public static SoundEvent siloclose;
@@ -26,6 +28,12 @@ public final class HBMSoundHandler {
     public static SoundEvent b92Reload;
     public static SoundEvent techBleep;
     public static SoundEvent techBoop;
+    public static SoundEvent hornNearSingle;
+    public static SoundEvent hornNearDual;
+    public static SoundEvent largeTurbineRunning;
+    public static SoundEvent engine;
+    public static SoundEvent hornFarSingle;
+    public static SoundEvent hornFarDual;
     public static SoundEvent reactorLoop;
     public static SoundEvent reactorStart;
     public static SoundEvent reactorStop;
@@ -43,6 +51,7 @@ public final class HBMSoundHandler {
     public static SoundEvent tauShoot;
     public static SoundEvent oldExplosion;
     public static SoundEvent nuclearExplosion;
+    public static SoundEvent robinExplosion;
     public static SoundEvent ciwsSpindown;
     public static SoundEvent ciwsSpinup;
     public static SoundEvent ciwsFiringLoop;
@@ -135,8 +144,6 @@ public final class HBMSoundHandler {
     public static SoundEvent geiger4;
     public static SoundEvent geiger5;
     public static SoundEvent geiger6;
-    public static SoundEvent geiger7;
-    public static SoundEvent geiger8;
     public static SoundEvent voices1;
     public static SoundEvent voices2;
     public static SoundEvent voices3;
@@ -350,7 +357,13 @@ public final class HBMSoundHandler {
     public static SoundEvent assemblerStrike;
     public static SoundEvent assemblerStart;
     public static SoundEvent assemblerStop;
+    public static SoundEvent meteoriteFallingLoop;
     public static SoundEvent assemblerCut;
+    public static SoundEvent fusionReactorRunning;
+    public static SoundEvent plinkShell;
+    public static SoundEvent plinkSmall;
+    public static SoundEvent plinkMedium;
+    public static SoundEvent plinkLarge;
 
     public static SoundEvent alarmHatch = registerBypass("alarm.hatch");
     public static SoundEvent alarmAutopilot = registerBypass("alarm.autopilot");
@@ -402,12 +415,14 @@ public final class HBMSoundHandler {
     public static void init() {
 
         explosionSmallNear = register("weapon.explosion_small_near");
-        explosionSmallFar  = register("weapon.explosion_small_far");
+        explosionSmallFar = register("weapon.explosion_small_far");
         explosionLargeNear = register("weapon.explosion_large_near");
-        explosionLargeFar  = register("weapon.explosion_large_far");
+        explosionLargeFar = register("weapon.explosion_large_far");
         assemblerOperate = register("block.assembleroperate");
         fel = register("block.fel");
+        fensuHum = register("block.fensuHum");
         hephaestusRunning = register("block.hephaestusRunning");
+        meteoriteFallingLoop = register("entity.meteoriteFallingLoop");
         pressOperate = register("block.pressoperate");
         laserBang = register("weapon.laserBang");
         blockDebris = register("block.debris");
@@ -417,6 +432,12 @@ public final class HBMSoundHandler {
         b92Reload = register("weapon.b92Reload");
         techBleep = register("item.techBleep");
         techBoop = register("item.techBoop");
+        hornNearSingle = register("block.hornNearSingle");
+        largeTurbineRunning = register("block.largeTurbine");
+        engine = register("block.engine");
+        hornNearDual = register("block.hornNearDual");
+        hornFarSingle = register("block.hornFarSingle");
+        hornFarDual = register("block.hornFarDual");
         reactorLoop = register("block.reactorLoop");
         reactorStart = register("block.reactorStart");
         reactorStop = register("block.reactorStop");
@@ -435,6 +456,7 @@ public final class HBMSoundHandler {
         tauShoot = register("weapon.tauShoot");
         oldExplosion = register("entity.oldExplosion");
         nuclearExplosion = register("weapon.nuclearExplosion");
+        robinExplosion = register("weapon.robin_explosion");
         boiler = register("block.boiler");
         boiler_groan1 = register("block.boilerGroan0");
         boiler_groan2 = register("block.boilerGroan1");
@@ -529,8 +551,6 @@ public final class HBMSoundHandler {
         geiger4 = register("item.geiger4");
         geiger5 = register("item.geiger5");
         geiger6 = register("item.geiger6");
-        geiger7 = register("item.geiger7");
-        geiger8 = register("item.geiger8");
         voices1 = register("item.voices1");
         voices2 = register("item.voices2");
         voices3 = register("item.voices3");
@@ -738,21 +758,28 @@ public final class HBMSoundHandler {
         assemblerStop = register("block.assemblerStop");
         assemblerCut = register("block.assemblerCut");
         tubeFwoomp = register("weapon.reload.tubeFwoomp");
+        fusionReactorRunning = register("block.fusionReactorRunning");
 
-        geigerSounds = new SoundEvent[]{geiger1, geiger2, geiger3, geiger4, geiger5, geiger6, geiger7, geiger8};
+
+        plinkShell = register("weapon.casing.shell");
+        plinkSmall = register("weapon.casing.small");
+        plinkMedium = register("weapon.casing.medium");
+        plinkLarge = register("weapon.casing.large");
+
+        geigerSounds = new SoundEvent[]{geiger1, geiger2, geiger3, geiger4, geiger5, geiger6};
         voiceSounds = new SoundEvent[]{voices1, voices2, voices3, voices4, voices5, voices6, voices7, voices8};
         boilerGroanSounds = new SoundEvent[]{boiler_groan1, boiler_groan2, boiler_groan3};
     }
 
     public static SoundEvent register(String name) {
-        SoundEvent e = new SoundEvent(new ResourceLocation(RefStrings.MODID, name));
+        SoundEvent e = new SoundEvent(new ResourceLocation(Tags.MODID, name));
         e.setRegistryName(name);
         ALL_SOUNDS.add(e);
         return e;
     }
 
     public static SoundEvent registerBypass(String name) {
-        SoundEvent e = new SoundEvent(new ResourceLocation(RefStrings.MODID, name));
+        SoundEvent e = new SoundEvent(new ResourceLocation(Tags.MODID, name));
         e.setRegistryName(name);
         ForgeRegistries.SOUND_EVENTS.register(e);
         return e;

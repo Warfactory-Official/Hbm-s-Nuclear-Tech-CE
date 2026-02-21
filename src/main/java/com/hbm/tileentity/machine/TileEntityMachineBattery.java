@@ -35,7 +35,7 @@ import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
-
+@Deprecated
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 @AutoRegister
 public class TileEntityMachineBattery extends TileEntityMachineBase implements ITickable, IEnergyConductorMK2, IEnergyProviderMK2, IEnergyReceiverMK2, IPersistentNBT, SimpleComponent, IGUIProvider {
@@ -140,8 +140,8 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements I
 	
 	@Override
 	public boolean isItemValidForSlot(int i, ItemStack stack) {
-		if(i == 0) return Library.isItemDischargeableBattery(stack);
-		if(i == 2) return Library.isItemChargeableBattery(stack);
+		if(i == 0) return Library.isDischargeableBattery(stack);
+		if(i == 2) return Library.isChargeableBattery(stack);
 		return false;
 	}
 	
@@ -157,14 +157,14 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements I
 
 	public void tryMoveItems() {
 		ItemStack itemStackDrain = inventory.getStackInSlot(0);
-		if(Library.isItemEmptyBattery(itemStackDrain)) {
+		if(Library.isEmptyBattery(itemStackDrain)) {
 			if(inventory.getStackInSlot(1).isEmpty()){
 				inventory.setStackInSlot(1, itemStackDrain);
 				inventory.setStackInSlot(0, ItemStack.EMPTY);
 			}
 		}
 		ItemStack itemStackFill = inventory.getStackInSlot(2);
-		if(Library.isItemFullBattery(itemStackFill)) {
+		if(Library.isFullBattery(itemStackFill)) {
 			if(inventory.getStackInSlot(3).isEmpty()){
 				inventory.setStackInSlot(3, itemStackFill);
 				inventory.setStackInSlot(2, ItemStack.EMPTY);

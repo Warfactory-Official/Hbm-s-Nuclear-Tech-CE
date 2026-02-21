@@ -6,6 +6,30 @@ local call = component.invoke
 colorGradient = {0x00FF00, 0x6BEE00, 0x95DB00, 0xB0C800, 0xC5B400, 0xD79F00, 0xE68700, 0xF46900, 0xFC4700, 0xFF0000}
 coreHeatESTOP = true
 coolantLossESTOP = true
+hotCoolantESTOP = true
+
+local const = {}
+local initialized = {}
+local mt = {
+    __newindex = function(t, k, v)
+        if not initialized[k] then
+            rawset(t, k, v)
+            initialized[k] = true
+        else
+            error(k .. " is a constant")
+        end
+    end
+}
+setmetatable(const, mt)
+
+for address, _ in component.list("ntm_pwr_control") do
+    pwrController = address
+end
+
+_, _, const.coreHeatCapacity = call(pwrController, "getHeat")
+const.fullCoreHeatMAX = const.coreHeatCapacity * 0.9
+const.coldCoolantLevelMIN = 10000
+const.hotCoolantLevelMAX = 0.5
 
 runSig = true
 
@@ -57,23 +81,17 @@ end
 
 buttons = {}
 
-buttons[1] = newButton(61, 6, 6, 2, 0xFFFFFF, 0xAAAAAA, function() component.proxy(pwrController).setLevel(call(pwrController, "getLevel")+1) end)
-buttons[2] = newButton(68, 6, 6, 2, 0xFFFFFF, 0xAAAAAA, function() component.proxy(pwrController).setLevel(call(pwrController, "getLevel")+5) end)
-buttons[3] = newButton(75, 6, 6, 2, 0xFFFFFF, 0xAAAAAA, function() component.proxy(pwrController).setLevel(call(pwrController, "getLevel")+10) end)
-
-buttons[4] = newButton(61, 9, 6, 2, 0xFFFFFF, 0xAAAAAA, function() component.proxy(pwrController).setLevel(call(pwrController, "getLevel")-1) end)
-buttons[5] = newButton(68, 9, 6, 2, 0xFFFFFF, 0xAAAAAA, function() component.proxy(pwrController).setLevel(call(pwrController, "getLevel")-5) end)
-buttons[6] = newButton(75, 9, 6, 2, 0xFFFFFF, 0xAAAAAA, function() component.proxy(pwrController).setLevel(call(pwrController, "getLevel")-10) end)
+local deltas = {1,5,10} -- This is very bad. Need new buttons
+for i, d in ipairs(deltas) do
+    buttons[i] = newButton(61+(i-1)*7, 6, 6, 2, 0xFFFFFF, 0xAAAAAA, function() component.proxy(pwrController).setLevel(call(pwrController, "getLevel")+d) end)
+    buttons[i+3] = newButton(61+(i-1)*7, 9, 6, 2, 0xFFFFFF, 0xAAAAAA, function() component.proxy(pwrController).setLevel(call(pwrController, "getLevel")-d) end)
+end
 
 buttons[7] = newButton(82, 6, 11, 5, 0xFF0000, 0xAA0000, function() component.proxy(pwrController).setLevel(100) end)
 buttons[8] = newButton(94, 6, 12, 2, 0x00FF00, 0x00AA00, function() coreHeatESTOP = not coreHeatESTOP if coreHeatESTOP == true then buttons[8].colorUp = 0x00FF00 buttons[8].colorDown = 0x00AA00 else buttons[8].colorUp = 0xFF0000 buttons[8].colorDown = 0xAA0000 end end)
 buttons[9] = newButton(94, 9, 12, 2, 0x00FF00, 0x00AA00, function() coolantLossESTOP = not coolantLossESTOP if coolantLossESTOP == true then buttons[9].colorUp = 0x00FF00 buttons[9].colorDown = 0x00AA00 else buttons[9].colorUp = 0xFF0000 buttons[9].colorDown = 0xAA0000 end  end)
 
 buttons[10] = newButton(107, 8, 5, 3, 0xFF0000, 0xAA0000, function() runSig = false end)
-
-for address, _ in component.list("ntm_pwr_control") do
-    pwrController = address
-end
 
 gpu.setForeground(0xAAAAAA)
 
@@ -165,11 +183,9 @@ gpu.fill(99,15,7,1,"█")
 --HotDelta
 
 gpu.set(66,19,"┃ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┃")
-gpu.fill(66,22,19,1,"█")
-gpu.fill(66,24,19,1,"█")
-gpu.fill(66,26,19,1,"█")
-gpu.fill(66,28,19,1,"█")
-gpu.fill(66,30,19,1,"█")
+for y=22,30,2 do
+    gpu.fill(66,y,19,1,"█")
+end
 gpu.set(66,32,"┃ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┃")
 gpu.setForeground(0xAAAAAA)
 
@@ -188,7 +204,7 @@ while (runSig == true) do
     rodLevel = call(pwrController, "getLevel")
 
     coreHeat, _ = call(pwrController, "getHeat")
-    coreHeat = coreHeat//1000000
+    coreHeat = coreHeat // (const.coreHeatCapacity / 10)
 
     for _, b in pairs(buttons) do
         drawButton(b, b.colorUp)
@@ -213,11 +229,9 @@ while (runSig == true) do
     gpu.setBackground(0xFFFFFF)
 
     gpu.setForeground(0xFFFFFF)
-    gpu.fill(66,22,19,1,"█")
-    gpu.fill(66,24,19,1,"█")
-    gpu.fill(66,26,19,1,"█")
-    gpu.fill(66,28,19,1,"█")
-    gpu.fill(66,30,19,1,"█")
+    for y = 22, 30, 2 do
+        gpu.fill(66,y,19,1,"█")
+    end
 
     gpu.fill(92,15,6,5,"█")
     gpu.fill(92,32,6,5,"█")
@@ -229,8 +243,8 @@ while (runSig == true) do
     prevHotCoolantFlow = hotCoolantLevel
 
     fullCoreHeat, fullHullHeat = call(pwrController, "getHeat")
-    coldCoolantLevel, _, hotCoolantLevel, _ = call(pwrController, "getCoolantInfo")
-    
+    coldCoolantLevel, _, hotCoolantLevel, maxHotCoolantLevel = call(pwrController, "getCoolantInfo")
+
     coldCoolantOutflow = coldCoolantLevel - prevCoolantFlow
     hotCoolantOutflow = hotCoolantLevel - prevHotCoolantFlow
 
@@ -242,8 +256,8 @@ while (runSig == true) do
     gpu.fill(92,32+(5-coldCoolantLevel//25600),6,coldCoolantLevel//25600, "█")
     gpu.setForeground(0x000000)
 
-    gpu.set(66,22,tostring(fullCoreHeat))
-    gpu.set(66,24,tostring(fullHullHeat))
+    gpu.set(66,22,tostring(fullCoreHeat)) -- What the heck? This is too declarative!
+    gpu.set(66,24,tostring(fullHullHeat)) -- Will fix that garbage later :P
     gpu.set(66,26,tostring(call(pwrController, "getFlux")))
     gpu.set(66,28,tostring(coldCoolantLevel))
     gpu.set(66,30,tostring(hotCoolantLevel))
@@ -257,11 +271,15 @@ while (runSig == true) do
     gpu.setBackground(0x000000)
     gpu.setForeground(0xFFFFFF)
 
-    if (coreHeatESTOP == true) and (fullCoreHeat) > 9000000 then
+    if (coreHeatESTOP == true) and (fullCoreHeat) > const.fullCoreHeatMAX then
         component.proxy(pwrController).setLevel(100)
     end
 
-    if (coolantLossESTOP == true) and (coldCoolantLevel) < 10000 then
+    if (coolantLossESTOP == true) and (coldCoolantLevel) < const.coldCoolantLevelMIN then
+        component.proxy(pwrController).setLevel(100)
+    end
+
+    if (hotCoolantESTOP == true) and (hotCoolantLevel) > const.hotCoolantLevelMAX * maxHotCoolantLevel then
         component.proxy(pwrController).setLevel(100)
     end
 

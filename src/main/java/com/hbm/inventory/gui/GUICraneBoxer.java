@@ -1,23 +1,23 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerCraneBoxer;
-import com.hbm.lib.RefStrings;
 import com.hbm.packet.toserver.NBTControlPacket;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.network.TileEntityCraneBoxer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.client.renderer.GlStateManager;
 
 import java.io.IOException;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUICraneBoxer extends GuiInfoContainer {
-    private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/storage/gui_crane_boxer.png");
+    private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/storage/gui_crane_boxer.png");
     private TileEntityCraneBoxer boxer;
 
     private String[] modeDesc = new String[] { 
@@ -50,10 +50,10 @@ public class GUICraneBoxer extends GuiInfoContainer {
 
         if(guiLeft + 151 <= x && guiLeft + 151 + 18 > x && guiTop + 34 < y && guiTop + 34 + 18 >= y) {
 
-            mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            playClickSound();
             NBTTagCompound data = new NBTTagCompound();
             data.setBoolean("toggle", true);
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, boxer.getPos()));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, boxer.getPos()));
         }
     }
 

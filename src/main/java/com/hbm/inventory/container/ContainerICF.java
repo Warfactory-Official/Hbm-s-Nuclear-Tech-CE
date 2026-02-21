@@ -1,6 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.tileentity.machine.TileEntityICF;
 import net.minecraft.entity.player.EntityPlayer;
@@ -19,7 +19,7 @@ public class ContainerICF extends Container {
 
         for (int i = 0; i < 5; i++) this.addSlotToContainer(new SlotItemHandler(icf.inventory, i, 80 + i * 18, 18));
         this.addSlotToContainer(new SlotItemHandler(icf.inventory, 5, 116, 54));
-        for (int i = 0; i < 5; i++) this.addSlotToContainer(new SlotTakeOnly(icf.inventory, 6 + i, 80 + i * 18, 90));
+        for (int i = 0; i < 5; i++) this.addSlotToContainer(SlotFiltered.takeOnly(icf.inventory, 6 + i, 80 + i * 18, 90));
         this.addSlotToContainer(new SlotItemHandler(icf.inventory, 11, 44, 90));
 
         for (int i = 0; i < 3; i++) {

@@ -13,7 +13,6 @@ import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 import java.nio.DoubleBuffer;
-// FIXME inventory render
 @AutoRegister
 public class RenderRefueler extends TileEntitySpecialRenderer<TileEntityRefueler> implements IItemRendererProvider {
 
@@ -85,6 +84,7 @@ public class RenderRefueler extends TileEntitySpecialRenderer<TileEntityRefueler
             }
             public void renderCommon() {
                 GlStateManager.scale(2, 2, 2);
+                GlStateManager.translate(0.5, 0, 0);
                 GlStateManager.shadeModel(GL11.GL_SMOOTH);
                 RenderRefueler.this.bindTexture(ResourceManager.refueler_tex);
                 ResourceManager.refueler.renderPart("Fueler");

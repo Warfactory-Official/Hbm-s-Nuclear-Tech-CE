@@ -3,9 +3,9 @@ package com.hbm.wiaj.cannery;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.items.ModItems;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.tileentity.RenderStirling;
 import com.hbm.tileentity.machine.TileEntityStirling;
 import com.hbm.util.I18nUtil;
+import com.hbm.util.RenderUtil;
 import com.hbm.wiaj.JarScene;
 import com.hbm.wiaj.JarScript;
 import com.hbm.wiaj.WorldInAJar;
@@ -15,6 +15,7 @@ import com.hbm.wiaj.actors.ActorFancyPanel.Orientation;
 import com.hbm.wiaj.actors.ActorTileEntity;
 import com.hbm.wiaj.actors.ITileActorRenderer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.init.Blocks;
@@ -22,7 +23,7 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.MathHelper;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 
 public class CanneryFirebox extends CanneryBase {
@@ -169,18 +170,10 @@ public class CanneryFirebox extends CanneryBase {
             GlStateManager.enableCull();
 
             switch (rotation) {
-                case 3:
-                    GlStateManager.rotate(0, 0F, 1F, 0F);
-                    break;
-                case 5:
-                    GlStateManager.rotate(90, 0F, 1F, 0F);
-                    break;
-                case 2:
-                    GlStateManager.rotate(180, 0F, 1F, 0F);
-                    break;
-                case 4:
-                    GlStateManager.rotate(270, 0F, 1F, 0F);
-                    break;
+                case 3 -> GlStateManager.rotate(0, 0F, 1F, 0F);
+                case 5 -> GlStateManager.rotate(90, 0F, 1F, 0F);
+                case 2 -> GlStateManager.rotate(180, 0F, 1F, 0F);
+                case 4 -> GlStateManager.rotate(270, 0F, 1F, 0F);
             }
 
             ITileActorRenderer.bindTexture(ResourceManager.heater_firebox_tex);
@@ -197,15 +190,12 @@ public class CanneryFirebox extends CanneryBase {
 
             if (isOn) {
                 GlStateManager.pushMatrix();
-                GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
-
+                boolean prevLighting = RenderUtil.isLightingEnabled();
                 GlStateManager.disableLighting();
                 GlStateManager.disableCull();
                 OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
                 ResourceManager.heater_firebox.renderPart("InnerBurning");
-                GlStateManager.enableLighting();
-
-                GL11.glPopAttrib();
+                if (prevLighting) GlStateManager.enableLighting();
                 GlStateManager.popMatrix();
             } else {
                 ResourceManager.heater_firebox.renderPart("InnerEmpty");

@@ -204,8 +204,8 @@ public class FoundryOutlet extends BlockContainer implements ICrucibleAcceptor, 
 	}
 
 	@Override
-	public void printHook(Pre event, World world, int x, int y, int z) {
-		TileEntityFoundryOutlet outlet = (TileEntityFoundryOutlet) world.getTileEntity(new BlockPos(x, y, z));
+	public void printHook(Pre event, World world, BlockPos pos) {
+		TileEntityFoundryOutlet outlet = (TileEntityFoundryOutlet) world.getTileEntity(pos);
 		List<String> text = new ArrayList<>();
 
 //		if(outlet.isClosed()) {

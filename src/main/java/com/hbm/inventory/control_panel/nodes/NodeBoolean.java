@@ -2,6 +2,7 @@ package com.hbm.inventory.control_panel.nodes;
 
 import com.hbm.inventory.control_panel.*;
 import com.hbm.inventory.control_panel.DataValue.DataType;
+import com.hbm.inventory.control_panel.modular.StockNodesRegister;
 import net.minecraft.nbt.NBTTagCompound;
 
 public class NodeBoolean extends Node {
@@ -16,7 +17,7 @@ public class NodeBoolean extends Node {
             if (op != null) setOperation(op);
             return null;
         }, () -> op.name());
-        for (BoolOperation op : BoolOperation.values()) {
+        for (BoolOperation op : BoolOperation.VALUES) {
             opSelector.list.addItems(op.name());
         }
         this.otherElements.add(opSelector);
@@ -25,8 +26,8 @@ public class NodeBoolean extends Node {
     }
 
     @Override
-    public NodeType getType() {
-        return NodeType.BOOLEAN;
+    public float[] getColor() {
+        return StockNodesRegister.colorBoolean;
     }
 
     @Override
@@ -43,7 +44,7 @@ public class NodeBoolean extends Node {
 
     @Override
     public void readFromNBT(NBTTagCompound tag, NodeSystem sys) {
-        op = BoolOperation.values()[tag.getInteger("op")%BoolOperation.values().length];
+        op = BoolOperation.VALUES[tag.getInteger("op")%BoolOperation.VALUES.length];
         super.readFromNBT(tag, sys);
     }
 
@@ -106,8 +107,10 @@ public class NodeBoolean extends Node {
         NOR,
         XNOR;
 
+        public static final BoolOperation[] VALUES = values();
+
         public static BoolOperation getByName(String name) {
-            for (BoolOperation o : BoolOperation.values()) {
+            for (BoolOperation o : BoolOperation.VALUES) {
                 if (o.name().equals(name)) {
                     return o;
                 }

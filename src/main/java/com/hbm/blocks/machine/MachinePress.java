@@ -51,7 +51,7 @@ public class MachinePress extends BlockDummyable implements IToolable {
     }
 
     @Override
-    public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
+    public void onBlockPlacedBy(@NotNull World worldIn, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull EntityLivingBase placer, @NotNull ItemStack stack) {
         super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
 
         if (stack.hasDisplayName()) {

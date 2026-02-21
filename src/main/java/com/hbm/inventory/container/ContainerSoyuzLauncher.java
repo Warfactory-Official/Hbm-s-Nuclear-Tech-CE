@@ -1,7 +1,14 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotBattery;
+import com.hbm.api.item.IDesignatorItem;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotFiltered;
+import com.hbm.items.ModItems;
+import com.hbm.items.machine.ItemSatellite;
+import com.hbm.items.special.ItemSoyuz;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntitySoyuzLauncher;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -11,11 +18,11 @@ import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerSoyuzLauncher extends Container {
 
-	private TileEntitySoyuzLauncher nukeBoy;
+	private TileEntitySoyuzLauncher launcher;
 	
 	public ContainerSoyuzLauncher(InventoryPlayer invPlayer, TileEntitySoyuzLauncher tedf) {
 		
-		nukeBoy = tedf;
+		launcher = tedf;
 
 		//Soyuz
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 62, 18));
@@ -28,11 +35,11 @@ public class ContainerSoyuzLauncher extends Container {
 		//Kerosene IN
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 4, 8, 90));
 		//Kerosene OUT
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 5, 8, 108));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 5, 8, 108));
 		//Peroxide IN
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 6, 26, 90));
 		//Peroxide OUT
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 7, 26, 108));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 7, 26, 108));
 		//Battery
 		this.addSlotToContainer(new SlotBattery(tedf.inventory, 8, 44, 108));
 		
@@ -59,40 +66,20 @@ public class ContainerSoyuzLauncher extends Container {
 	}
 	
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2)
-    {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-		
-		if (var4 != null && var4.getHasStack())
-		{
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-			
-            if (par2 <= 27) {
-				if (!this.mergeItemStack(var5, 9, this.inventorySlots.size(), true))
-				{
-					return ItemStack.EMPTY;
-				}
-			}
-			else if (!this.mergeItemStack(var5, 0, 1, false))
-				return ItemStack.EMPTY;
-			
-			if (var5.isEmpty())
-			{
-				var4.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
-				var4.onSlotChanged();
-			}
-		}
-		
-		return var3;
+    public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+		return InventoryUtil.transferStack(this.inventorySlots, index, 27,
+                s -> s.getItem() instanceof ItemSoyuz, 1,
+                s -> s.getItem() instanceof IDesignatorItem, 2,
+                s -> s.getItem() instanceof ItemSatellite, 3,
+                s -> s.getItem() == ModItems.missile_soyuz_lander, 4,
+                s -> Library.isStackDrainableForTank(s, launcher.tanks[0]), 6,
+                s -> Library.isStackDrainableForTank(s, launcher.tanks[1]), 8,
+                Library::isBattery, 9
+        );
     }
 
 	@Override
 	public boolean canInteractWith(EntityPlayer player) {
-		return nukeBoy.isUseableByPlayer(player);
+		return launcher.isUseableByPlayer(player);
 	}
 }

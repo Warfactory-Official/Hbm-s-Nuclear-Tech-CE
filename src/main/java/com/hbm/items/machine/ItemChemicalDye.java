@@ -1,9 +1,9 @@
 package com.hbm.items.machine;
 
 import com.google.common.collect.ImmutableMap;
+import com.hbm.Tags;
 import com.hbm.items.ItemEnumMulti;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
 import com.hbm.util.EnumUtil;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -22,10 +22,10 @@ import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class ItemChemicalDye extends ItemEnumMulti {
+public class ItemChemicalDye extends ItemEnumMulti<ItemChemicalDye.EnumChemDye> {
     protected String baseName;
     public ItemChemicalDye(String s) {
-        super(s, EnumChemDye.class, true, false);
+        super(s, EnumChemDye.VALUES, true, false);
         baseName = s;
     }
 
@@ -38,8 +38,8 @@ public class ItemChemicalDye extends ItemEnumMulti {
     @Override
     @SideOnly(Side.CLIENT)
     public void registerSprite(TextureMap map) {
-        ResourceLocation base = new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseName);
-        ResourceLocation overlay = new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseName + "_overlay");
+        ResourceLocation base = new ResourceLocation(Tags.MODID, ROOT_PATH + baseName);
+        ResourceLocation overlay = new ResourceLocation(Tags.MODID, ROOT_PATH + baseName + "_overlay");
 
         map.registerSprite(base);
         map.registerSprite(overlay);
@@ -48,11 +48,11 @@ public class ItemChemicalDye extends ItemEnumMulti {
     @SideOnly(Side.CLIENT)
     public void registerModel() {
         ModelResourceLocation mrl = new ModelResourceLocation(
-                new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseName),
+                new ResourceLocation(Tags.MODID, ROOT_PATH + baseName),
                 "inventory"
         );
 
-        for (int i = 0; i < theEnum.getEnumConstants().length; i++) {
+        for (int i = 0; i < theEnum.length; i++) {
             ModelLoader.setCustomModelResourceLocation(this, i, mrl);
         }
     }
@@ -62,8 +62,8 @@ public class ItemChemicalDye extends ItemEnumMulti {
         try {
             IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/generated"));
 
-            ResourceLocation layer0 = new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseName);
-            ResourceLocation layer1 = new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseName + "_overlay");
+            ResourceLocation layer0 = new ResourceLocation(Tags.MODID, ROOT_PATH + baseName);
+            ResourceLocation layer1 = new ResourceLocation(Tags.MODID, ROOT_PATH + baseName + "_overlay");
 
             IModel retexturedModel = baseModel.retexture(ImmutableMap.of(
                     "layer0", layer0.toString(),
@@ -73,7 +73,7 @@ public class ItemChemicalDye extends ItemEnumMulti {
             IBakedModel bakedModel = retexturedModel.bake(ModelRotation.X0_Y0, DefaultVertexFormats.ITEM, ModelLoader.defaultTextureGetter());
 
             ModelResourceLocation bakedModelLocation = new ModelResourceLocation(
-                    new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseName),
+                    new ResourceLocation(Tags.MODID, ROOT_PATH + baseName),
                     "inventory"
             );
 
@@ -87,7 +87,7 @@ public class ItemChemicalDye extends ItemEnumMulti {
         @Override
         public int colorMultiplier(ItemStack stack, int tintIndex) {
             if(tintIndex == 1) {
-                EnumChemDye dye = EnumUtil.grabEnumSafely(EnumChemDye.class, stack.getItemDamage());
+                EnumChemDye dye = EnumUtil.grabEnumSafely(EnumChemDye.VALUES, stack.getItemDamage());
                 return dye.color;
             }
 
@@ -113,6 +113,8 @@ public class ItemChemicalDye extends ItemEnumMulti {
         MAGENTA(12801229, "Magenta"),
         ORANGE(15435844, "Orange"),
         WHITE(15790320, "White");
+
+        public static final EnumChemDye[] VALUES = values();
 
         public final int color;
         public final String dictName;

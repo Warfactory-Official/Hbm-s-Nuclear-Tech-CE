@@ -1,9 +1,9 @@
 package com.hbm.render.tileentity;
 
+import com.hbm.Tags;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.item.ItemRenderBase;
@@ -13,7 +13,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 @AutoRegister
 public class RenderCatalyticReformer
@@ -21,7 +21,7 @@ public class RenderCatalyticReformer
     implements IItemRendererProvider {
 
   private static ResourceLocation extra =
-      new ResourceLocation(RefStrings.MODID, "textures/models/horse/dyx.png");
+      new ResourceLocation(Tags.MODID, "textures/models/horse/dyx.png");
 
   @Override
   public void render(

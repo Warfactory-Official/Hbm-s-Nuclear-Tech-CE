@@ -1,7 +1,0 @@
-{
-	"parent": "item/generated",
-	"textures": {
-		"layer0": "hbm:items/fluid_tank_full",
-		"layer1": "hbm:items/fluid_tank_overlay"
-	}
-}

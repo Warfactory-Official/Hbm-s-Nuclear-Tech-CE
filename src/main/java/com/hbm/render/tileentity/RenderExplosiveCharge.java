@@ -1,11 +1,11 @@
 package com.hbm.render.tileentity;
 
+import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.bomb.*;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.IModelCustom;
+import com.hbm.render.loader.IModelCustom;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.tileentity.bomb.TileEntityCharge;
 import net.minecraft.block.state.IBlockState;
@@ -25,13 +25,13 @@ public class RenderExplosiveCharge extends TileEntitySpecialRenderer<TileEntityC
   private static final IModelCustom MODEL_DYN = ResourceManager.charge_dynamite;
 
   private static final ResourceLocation TEX_C4 =
-      new ResourceLocation(RefStrings.MODID, "textures/blocks/charge_c4.png");
+      new ResourceLocation(Tags.MODID, "textures/blocks/charge_c4.png");
   private static final ResourceLocation TEX_SEM =
-      new ResourceLocation(RefStrings.MODID, "textures/blocks/charge_semtex.png");
+      new ResourceLocation(Tags.MODID, "textures/blocks/charge_semtex.png");
   private static final ResourceLocation TEX_DYN =
-      new ResourceLocation(RefStrings.MODID, "textures/blocks/charge_dynamite.png");
+      new ResourceLocation(Tags.MODID, "textures/blocks/charge_dynamite.png");
   private static final ResourceLocation TEX_MIN =
-      new ResourceLocation(RefStrings.MODID, "textures/blocks/charge_miner.png");
+      new ResourceLocation(Tags.MODID, "textures/blocks/charge_miner.png");
 
   @Override
   public void render(

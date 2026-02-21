@@ -11,13 +11,15 @@ public enum ControlType {
     METER("Meter"),
     LABEL("Label");
 
+    public static final ControlType[] VALUES = values();
+
     public String name;
     ControlType(String name){
         this.name = name;
     }
 
     public static ControlType getByName(String name){
-        for(ControlType o : values()){
+        for(ControlType o : VALUES){
             if(o.name.equals(name)){
                 return o;
             }

@@ -2,7 +2,6 @@ package com.hbm.blocks.machine;
 
 import com.hbm.blocks.BlockDummyableMBB;
 import com.hbm.blocks.ILookOverlay;
-import com.hbm.lib.InventoryHelper;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.IPersistentNBT;
@@ -22,10 +21,11 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.Pre;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.oredict.OreDictionary;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-
+@Deprecated
 public class MachineFENSU extends BlockDummyableMBB implements ILookOverlay {
 
 	public MachineFENSU(Material materialIn, String s) {
@@ -98,13 +98,8 @@ public class MachineFENSU extends BlockDummyableMBB implements ILookOverlay {
     }
 
     @Override
-    public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
-        TileEntity tileentity = worldIn.getTileEntity(pos);
-        if (tileentity instanceof TileEntityMachineFENSU) {
-            IPersistentNBT.breakBlock(worldIn, pos, state);
-            InventoryHelper.dropInventoryItems(worldIn, pos, tileentity);
-            worldIn.updateComparatorOutputLevel(pos, this);
-        }
+    public void breakBlock(@NotNull World worldIn, @NotNull BlockPos pos, IBlockState state) {
+		IPersistentNBT.breakBlock(worldIn, pos, state);
         super.breakBlock(worldIn, pos, state);
     }
 
@@ -159,9 +154,9 @@ public class MachineFENSU extends BlockDummyableMBB implements ILookOverlay {
 	}
 
 	@Override
-	public void printHook(Pre event, World world, int x, int y, int z) {
+	public void printHook(Pre event, World world, BlockPos pos) {
 			
-		TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
+		TileEntity te = world.getTileEntity(pos);
 		
 		if(!(te instanceof TileEntityMachineFENSU))
 			return;

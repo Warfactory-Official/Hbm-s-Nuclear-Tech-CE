@@ -52,13 +52,14 @@ public class CommonConfig {
 		return prop.getStringList();
 	}
 
-	public static HashMap createConfigHashMap(Configuration config, String category, String name, String comment, String keyType, String valueType, String[] defaultValues, String splitReg) {
-		HashMap<Object, Object> configDictionary = new HashMap<>();
+    @SuppressWarnings("unchecked")
+	public static <K, V> HashMap<K, V> createConfigHashMap(Configuration config, String category, String name, String comment, Class<K> keyType, Class<V> valueType, String[] defaultValues, String splitReg) {
+		HashMap<K, V> configDictionary = new HashMap<>();
 		Property prop = config.get(category, name, defaultValues);
 		prop.setComment(comment);
 		for(String entry: prop.getStringList()){
 			String[] pairs = entry.split(splitReg, 0);
-			configDictionary.put(parseType(pairs[0], keyType), parseType(pairs[1], valueType));
+			configDictionary.put((K) parseType(pairs[0], keyType), (V) parseType(pairs[1], valueType));
 		}
 		return configDictionary;
 	}
@@ -69,49 +70,40 @@ public class CommonConfig {
 		return prop.getIntList();
 	}
 
-	public static HashSet createConfigHashSet(Configuration config, String category, String name, String comment, String valueType, String[] defaultValues) {
-		HashSet<Object> configSet = new HashSet<>();
+    @SuppressWarnings("unchecked")
+	public static <T> HashSet<T> createConfigHashSet(Configuration config, String category, String name, String comment, Class<T> valueType, String[] defaultValues) {
+		HashSet<T> configSet = new HashSet<>();
 		Property prop = config.get(category, name, defaultValues);
 		prop.setComment(comment);
 		for(String entry: prop.getStringList()){
-			configSet.add(parseType(entry, valueType));
+			configSet.add((T) parseType(entry, valueType));
 		}
 		return configSet;
 	}
 
-	private static Object parseType(String value, String type){
-		if(type == "Float"){
-			return Float.parseFloat(value);
-		}
-		if(type == "Int"){
-			return Integer.parseInt(value);
-		}
-		if(type == "Long"){
-			return Float.parseFloat(value);
-		}
-		if(type == "Double"){
-			return Double.parseDouble(value);
-		}
-		return value;
+	private static Object parseType(String value, Class<?> type) {
+        if (type == Float.class) return Float.parseFloat(value);
+        if (type == Integer.class) return Integer.parseInt(value);
+        if (type == Long.class) return Long.parseLong(value);
+        if (type == Double.class) return Double.parseDouble(value);
+        if (type.isEnum()) return Enum.valueOf((Class<Enum>) type, value);
+        return value;
 	}
 
 	public static int createConfigInt(Configuration config, String category, String name, String comment, int def) {
-	
 	    Property prop = config.get(category, name, def);
 	    prop.setComment(comment);
 	    return prop.getInt();
 	}
 
 	public static double createConfigDouble(Configuration config, String category, String name, String comment, double def) {
-	
 	    Property prop = config.get(category, name, def);
 	    prop.setComment(comment);
 	    return prop.getDouble();
 	}
 
 	public static int setDefZero(int value, int def) {
-
-		if(value < 0) {
+		if (value < 0) {
 			MainRegistry.logger.error("Fatal error config: Randomizer value has been below zero, despite bound having to be positive integer!");
 			MainRegistry.logger.error(String.format("Errored value will default back to %d, PLEASE REVIEW CONFIGURATION DESCRIPTION BEFORE MEDDLING WITH VALUES!", def));
 			return def;
@@ -121,7 +113,6 @@ public class CommonConfig {
 	}
 	
 	public static int setDef(int value, int def) {
-	
 		if(value <= 0) {
 			MainRegistry.logger.error("Fatal error config: Randomizer value has been set to zero, despite bound having to be positive integer!");
 			MainRegistry.logger.error(String.format("Errored value will default back to %d, PLEASE REVIEW CONFIGURATION DESCRIPTION BEFORE MEDDLING WITH VALUES!", def));

@@ -6,9 +6,9 @@ import com.hbm.explosion.ExplosionChaos;
 import com.hbm.explosion.ExplosionLarge;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.ModItems;
+import com.hbm.particle.helper.ExplosionCreator;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -43,8 +43,9 @@ public abstract class EntityMissileTier2 extends EntityMissileBaseNT {
 	public static class EntityMissileStrong extends EntityMissileTier2 {
 		public EntityMissileStrong(World world) { super(world); }
 		public EntityMissileStrong(World world, float x, float y, float z, int a, int b) { super(world, x, y, z, a, b); }
-		@Override public void onImpact()  {
-			ExplosionLarge.explode(world, thrower, posX, posY, posZ, 30.0F, true, true, true);
+		@Override public void onMissileImpact(RayTraceResult mop)  {
+			this.explodeStandard(30F, 32, false);
+			ExplosionCreator.composeEffectStandard(world, posX, posY, posZ);
 		}
 		@Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_generic_medium); }
 		@Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModItems.missile_strong); }
@@ -53,9 +54,10 @@ public abstract class EntityMissileTier2 extends EntityMissileBaseNT {
 	public static class EntityMissileIncendiaryStrong extends EntityMissileTier2 {
 		public EntityMissileIncendiaryStrong(World world) { super(world); }
 		public EntityMissileIncendiaryStrong(World world, float x, float y, float z, int a, int b) { super(world, x, y, z, a, b); }
-		@Override public void onImpact() {
-			ExplosionLarge.explodeFire(world, thrower, this.posX + 0.5F, this.posY + 0.5F, this.posZ + 0.5F, 30.0F, true, true, true);
-			ExplosionChaos.flameDeath(this.world, thrower, new BlockPos((int)((float)this.posX + 0.5F), (int)((float)this.posY + 0.5F), (int)((float)this.posZ + 0.5F)), 25);
+		@Override public void onMissileImpact(RayTraceResult mop) {
+			this.explodeStandard(30F, 32, true);
+			ExplosionCreator.composeEffectStandard(world, posX, posY, posZ);
+			ExplosionChaos.flameDeath(this.world, thrower, getPosition(), 25);
 		}
 		@Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_incendiary_medium); }
 		@Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModItems.missile_incendiary_strong); }
@@ -64,11 +66,11 @@ public abstract class EntityMissileTier2 extends EntityMissileBaseNT {
 	public static class EntityMissileClusterStrong extends EntityMissileTier2 {
 		public EntityMissileClusterStrong(World world) { super(world); }
 		public EntityMissileClusterStrong(World world, float x, float y, float z, int a, int b) { super(world, x, y, z, a, b); this.isCluster = true; }
-		@Override public void onImpact() {
-			ExplosionLarge.explode(world, thrower, this.posX, this.posY, this.posZ, 15F, true, false, false);
-			ExplosionChaos.cluster(this.world, (int)this.posX, (int)this.posY, (int)this.posZ, 50, 100);
+		@Override public void onMissileImpact(RayTraceResult mop) {
+			this.world.createExplosion(this, this.posX, this.posY, this.posZ, 15F, true);
+			ExplosionChaos.cluster(this.world, (int) this.posX, (int) this.posY, (int) this.posZ, 50, 100);
 		}
-		@Override public void cluster() { this.onImpact(); }
+		@Override public void cluster() { this.onMissileImpact(null); }
 		@Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_cluster_medium); }
 		@Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModItems.missile_cluster_strong); }
 	}
@@ -76,8 +78,11 @@ public abstract class EntityMissileTier2 extends EntityMissileBaseNT {
 	public static class EntityMissileBusterStrong extends EntityMissileTier2 {
 		public EntityMissileBusterStrong(World world) { super(world); }
 		public EntityMissileBusterStrong(World world, float x, float y, float z, int a, int b) { super(world, x, y, z, a, b); }
-		@Override public void onImpact() {
-			ExplosionLarge.buster(world, thrower, this.posX, this.posY, this.posZ, new Vec3d(motionX, motionY, motionZ), 25, 20);
+		@Override public void onMissileImpact(RayTraceResult mop) {
+			for (int i = 0; i < 20; i++) this.world.createExplosion(this, this.posX, this.posY - i, this.posZ, 7.5F, true);
+			ExplosionLarge.spawnParticles(world, this.posX, this.posY, this.posZ, 8);
+			ExplosionLarge.spawnShrapnels(world, this.posX, this.posY, this.posZ, 8);
+			ExplosionLarge.spawnRubble(world, this.posX, this.posY, this.posZ, 8);
 		}
 		@Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_buster_medium); }
 		@Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModItems.missile_buster_strong); }
@@ -86,7 +91,7 @@ public abstract class EntityMissileTier2 extends EntityMissileBaseNT {
 	public static class EntityMissileEMPStrong extends EntityMissileTier2 {
 		public EntityMissileEMPStrong(World world) { super(world); }
 		public EntityMissileEMPStrong(World world, float x, float y, float z, int a, int b) { super(world, x, y, z, a, b); }
-		@Override public void onImpact() {
+		@Override public void onMissileImpact(RayTraceResult mop) {
 			EntityEMP emp = new EntityEMP(world);
 			emp.posX = posX;
 			emp.posY = posY;

@@ -1,15 +1,13 @@
 package com.hbm.hazard;
 
-import com.github.bsideup.jabel.Desugar;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.config.GeneralConfig;
 import com.hbm.config.RadiationConfig;
-import com.hbm.hazard.modifier.HazardModifier;
-import com.hbm.hazard.transformer.HazardTransformerBase;
-import com.hbm.hazard.type.HazardTypeBase;
+import com.hbm.hazard.modifier.IHazardModifier;
+import com.hbm.hazard.transformer.IHazardTransformer;
+import com.hbm.hazard.type.IHazardType;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.main.MainRegistry;
 import com.hbm.util.ContaminationUtil;
@@ -21,7 +19,6 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
-import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -30,17 +27,16 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Tuple;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.registries.IForgeRegistry;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static com.hbm.util.ContaminationUtil.NTM_NEUTRON_NBT_KEY;
 
@@ -79,7 +75,7 @@ public class HazardSystem {
     /**
      * List of hazard transformers, called in order before and after unrolling all the HazardEntries.
      */
-    public static final List<HazardTransformerBase> trafos = new ArrayList<>();
+    public static final List<IHazardTransformer> trafos = new ArrayList<>();
     private static final int VOLATILITY_THRESHOLD = 16;
     private static final int VOLATILITY_WINDOW_SECONDS = 30;
     private static final int FINAL_HAZARD_CACHE_SIZE = 2048;
@@ -90,13 +86,10 @@ public class HazardSystem {
             CacheBuilder.newBuilder().expireAfterWrite(VOLATILITY_WINDOW_SECONDS, TimeUnit.SECONDS).build();
     private static final Set<ComparableStack> volatileItemsBlacklist = ConcurrentHashMap.newKeySet();
     private static final ConcurrentHashMap<UUID, PlayerHazardData> playerHazardDataMap = new ConcurrentHashMap<>();
-    private static final ExecutorService hazardScanExecutor = Executors.newFixedThreadPool(Math.max(1,
-            Runtime.getRuntime().availableProcessors() - 1),
-            new ThreadFactoryBuilder().setNameFormat("HBM-Hazard-Scanner-%d").setDaemon(true).build());
     private static final Queue<InventoryDelta> inventoryDeltas = new ConcurrentLinkedQueue<>();
     private static final Set<UUID> playersToUpdate = ConcurrentHashMap.newKeySet();
-    private static final float minRadRate = 0.000005F;
-    private static CompletableFuture<Void> scanFuture = CompletableFuture.completedFuture(null);
+    private static final double minRadRate = 0.000005D;
+    private static volatile CompletableFuture<Void> scanFuture = CompletableFuture.completedFuture(null);
     private static long tickCounter = 0;
 
     /**
@@ -108,7 +101,11 @@ public class HazardSystem {
         playersToUpdate.add(player.getUniqueID());
     }
 
-    // note: oldStack isn't implemented
+    /**
+     * Records a delta for a single slot in the player's container.
+     *
+     * @apiNote hazard lookup count-insensitive; effects may be count-sensitive via modifiers; neutron handling delegated to ContaminationUtil
+     */
     public static void onInventoryDelta(EntityPlayer player, int serverSlotIndex, ItemStack oldStack, ItemStack newStack) {
         inventoryDeltas.add(new InventoryDelta(player.getUniqueID(), serverSlotIndex, oldStack.copy(), newStack.copy()));
     }
@@ -116,11 +113,9 @@ public class HazardSystem {
     /**
      * Main entry point, called from ServerTickEvent.
      */
-    public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.START) return;
+    public static CompletableFuture<Void> onServerTickAsync(Executor backgroundExecutor) {
         MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
-        if (server == null) return;
-
+        if (server == null) return CompletableFuture.completedFuture(null);
         tickCounter++;
         if (tickCounter % RadiationConfig.hazardRate == 0) {
             for (EntityPlayerMP player : server.getPlayerList().getPlayers()) {
@@ -134,61 +129,92 @@ public class HazardSystem {
                 phd.applyActiveHazards();
             }
         }
-
-        if (scanFuture.isDone() && (!playersToUpdate.isEmpty() || !inventoryDeltas.isEmpty())) {
-            final List<EntityPlayer> playersForFullScan = new ArrayList<>();
-            playersToUpdate.removeIf(uuid -> {
-                EntityPlayer player = server.getPlayerList().getPlayerByUUID(uuid);
-                playersForFullScan.add(player);
-                return true;
-            });
-
-            final List<InventoryDelta> deltasForProcessing = new ArrayList<>();
-            InventoryDelta delta;
-            while ((delta = inventoryDeltas.poll()) != null) {
-                deltasForProcessing.add(delta);
+        CompletableFuture<Void> cur = scanFuture;
+        if (!cur.isDone()) return cur;
+        if (playersToUpdate.isEmpty() && inventoryDeltas.isEmpty()) return CompletableFuture.completedFuture(null);
+        final List<EntityPlayer> playersForFullScan = new ArrayList<>();
+        if (!playersToUpdate.isEmpty()) {
+            for (UUID uuid : playersToUpdate) {
+                EntityPlayer p = server.getPlayerList().getPlayerByUUID(uuid);
+                if (p != null && !p.isDead) playersForFullScan.add(p);
             }
-
-            if (!playersForFullScan.isEmpty() || !deltasForProcessing.isEmpty()) {
-                scanFuture =
-                        CompletableFuture.supplyAsync(() -> processHazardsAsync(playersForFullScan, deltasForProcessing), hazardScanExecutor).thenAcceptAsync(results -> {
-                    results.fullScanResults.forEach((uuid, result) -> {
-                        PlayerHazardData phd = playerHazardDataMap.get(uuid);
-                        if (phd != null) phd.setScanResult(result);
-                    });
-                    results.deltaResults.forEach((uuid, result) -> {
-                        PlayerHazardData phd = playerHazardDataMap.get(uuid);
-                        if (phd != null) phd.applyDeltaResult(result);
-                    });
-                }, server::addScheduledTask);
-            }
+            playersToUpdate.clear();
         }
+        final List<InventoryDelta> deltasForProcessing = new ArrayList<>();
+        InventoryDelta delta;
+        while ((delta = inventoryDeltas.poll()) != null) {
+            deltasForProcessing.add(delta);
+        }
+        if (playersForFullScan.isEmpty() && deltasForProcessing.isEmpty()) {
+            return CompletableFuture.completedFuture(null);
+        }
+        scanFuture = processHazardsAsync(playersForFullScan, deltasForProcessing, backgroundExecutor).thenAccept(HazardSystem::applyUpdateResult);
+        return scanFuture;
     }
 
-    private static HazardUpdateResult processHazardsAsync(List<EntityPlayer> playersForFullScan, List<InventoryDelta> deltas) {
-        Map<UUID, PlayerHazardData.HazardScanResult> fullScanResults =
-                playersForFullScan.parallelStream().collect(Collectors.toConcurrentMap(EntityPlayer::getUniqueID,
-                        PlayerHazardData::calculateHazardScanForPlayer));
-        Map<UUID, List<InventoryDelta>> deltasByPlayer =
-                deltas.stream().filter(d -> !fullScanResults.containsKey(d.playerUUID())).collect(Collectors.groupingBy(InventoryDelta::playerUUID));
+    private static void applyUpdateResult(HazardUpdateResult results) {
+        results.fullScanResults.forEach((uuid, result) -> {
+            PlayerHazardData phd = playerHazardDataMap.get(uuid);
+            if (phd != null) phd.setScanResult(result);
+        });
+        results.deltaResults.forEach((uuid, result) -> {
+            PlayerHazardData phd = playerHazardDataMap.get(uuid);
+            if (phd != null) phd.applyDeltaResult(result);
+        });
+    }
 
-        Map<UUID, PlayerDeltaResult> deltaResults = deltasByPlayer.entrySet().parallelStream().collect(Collectors.toConcurrentMap(Map.Entry::getKey
-                , entry -> {
-            float totalNeutronDelta = 0;
-            Map<Integer, Optional<Consumer<EntityPlayer>>> finalApplicators = new HashMap<>();
-            for (InventoryDelta delta : entry.getValue()) {
-                DeltaUpdate update = calculateDeltaUpdate(delta);
-                totalNeutronDelta += update.neutronRadsDelta();
-                finalApplicators.put(delta.serverSlotIndex(), update.applicator());
+    private static CompletableFuture<HazardUpdateResult> processHazardsAsync(List<EntityPlayer> playersForFullScan, List<InventoryDelta> deltas,
+                                                                             Executor executor) {
+        final HashMap<UUID, CompletableFuture<PlayerHazardData.HazardScanResult>> fullScanFutures = new HashMap<>();
+        for (EntityPlayer p : playersForFullScan) {
+            if (p == null || p.isDead) continue;
+            UUID uuid = p.getUniqueID();
+            fullScanFutures.put(uuid, CompletableFuture.supplyAsync(() -> PlayerHazardData.calculateHazardScanForPlayer(p), executor));
+        }
+        final CompletableFuture<Void> fullBarrier = CompletableFuture.allOf(fullScanFutures.values().toArray(new CompletableFuture[0]));
+        return fullBarrier.thenCompose(_ -> {
+            final HashMap<UUID, PlayerHazardData.HazardScanResult> fullScanResults = new HashMap<>(fullScanFutures.size() * 2);
+            for (Map.Entry<UUID, CompletableFuture<PlayerHazardData.HazardScanResult>> e : fullScanFutures.entrySet()) {
+                fullScanResults.put(e.getKey(), e.getValue().join());
             }
-            return new PlayerDeltaResult(finalApplicators, totalNeutronDelta);
-        }));
+            final HashMap<UUID, ArrayList<InventoryDelta>> deltasByPlayer = new HashMap<>();
+            for (InventoryDelta d : deltas) {
+                if (fullScanResults.containsKey(d.playerUUID())) continue;
+                deltasByPlayer.computeIfAbsent(d.playerUUID(), _ -> new ArrayList<>()).add(d);
+            }
+            final HashMap<UUID, CompletableFuture<PlayerDeltaResult>> deltaFutures = new HashMap<>();
+            for (Map.Entry<UUID, ArrayList<InventoryDelta>> e : deltasByPlayer.entrySet()) {
+                UUID uuid = e.getKey();
+                ArrayList<InventoryDelta> list = e.getValue();
+                deltaFutures.put(uuid, CompletableFuture.supplyAsync(() -> computeDeltaForPlayer(list), executor));
+            }
+            final CompletableFuture<Void> deltaBarrier = CompletableFuture.allOf(deltaFutures.values().toArray(new CompletableFuture[0]));
+            return deltaBarrier.thenApply(_ -> {
+                final HashMap<UUID, PlayerDeltaResult> deltaResults = new HashMap<>(deltaFutures.size() * 2);
+                for (Map.Entry<UUID, CompletableFuture<PlayerDeltaResult>> e : deltaFutures.entrySet()) {
+                    deltaResults.put(e.getKey(), e.getValue().join());
+                }
+                return new HazardUpdateResult(Collections.unmodifiableMap(fullScanResults), Collections.unmodifiableMap(deltaResults));
+            });
+        });
+    }
 
-        return new HazardUpdateResult(fullScanResults, deltaResults);
+    private static PlayerDeltaResult computeDeltaForPlayer(List<InventoryDelta> deltas) {
+        float totalNeutronDelta = 0f;
+        Map<Integer, Optional<Consumer<EntityPlayer>>> finalApplicators = new HashMap<>(Math.max(16, deltas.size() * 2));
+
+        for (InventoryDelta delta : deltas) {
+            DeltaUpdate update = calculateDeltaUpdate(delta);
+            totalNeutronDelta += update.neutronRadsDelta();
+            finalApplicators.put(delta.serverSlotIndex(), update.applicator());
+        }
+        return new PlayerDeltaResult(Collections.unmodifiableMap(finalApplicators), totalNeutronDelta);
     }
 
     /**
      * Calculates the change for a single slot. Runs on a background thread.
+     *
+     * @apiNote hazard presence comparison count-insensitive; applicator effects may be count-sensitive; neutron delta delegated to ContaminationUtil
      */
     private static DeltaUpdate calculateDeltaUpdate(InventoryDelta delta) {
         ItemStack oldStack = delta.oldStack();
@@ -227,7 +253,7 @@ public class HazardSystem {
     }
 
     /**
-     * Call when doing hot reload. Currently unused.
+     * Call when doing hot reload.
      */
     public static void clearCaches() {
         MainRegistry.logger.info("Clearing HBM hazard calculation caches.");
@@ -237,6 +263,11 @@ public class HazardSystem {
         volatileItemsBlacklist.clear();
     }
 
+    /**
+     * @return {@code true} if there exists any applicable {@link HazardEntry} for the stack.
+     *
+     * @apiNote count insensitive
+     */
     public static boolean isStackHazardous(@Nullable ItemStack stack) {
         if (stack == null || stack.isEmpty()) {
             return false;
@@ -244,51 +275,234 @@ public class HazardSystem {
         return !getHazardsFromStack(stack).isEmpty();
     }
 
-    public static void register(final Object o, final HazardData data) {
-        if (o instanceof String) oreMap.put((String) o, data);
-        if (o instanceof Item) itemMap.put((Item) o, data);
-        if (o instanceof ResourceLocation) retriveAndRegister((ResourceLocation) o, data);
-        if (o instanceof Block) itemMap.put(Item.getItemFromBlock((Block) o), data);
-        if (o instanceof ItemStack) stackMap.put(ItemStackUtil.comparableStackFrom((ItemStack) o), data);
-        if (o instanceof ComparableStack) stackMap.put((ComparableStack) o, data);
+    /**
+     * Registers {@link HazardData} for a specific OreDictionary key.
+     * <p>
+     * <b>Priority:</b> OreDictionary mappings are evaluated before item and stack mappings. If multiple ore keys
+     * match a stack, their entries are consulted in the same order as returned by
+     * {@link net.minecraftforge.oredict.OreDictionary#getOreIDs(net.minecraft.item.ItemStack)}.
+     * </p>
+     * <p>
+     * Avoid relying on {@code doesOverride} across different ore keys to fix ordering; prefer using mutex flags or
+     * more specific registrations when keys collide.
+     * </p>
+     *
+     * @param oreName non-null OreDictionary name (e.g. {@code "ingotUranium"}).
+     * @param data    mapping to associate; its {@code entries}, {@code doesOverride}, and {@code mutex} bits control
+     *                how it interacts with previously gathered data.
+     * @apiNote lookup is <em>count-insensitive</em>; stack count is only considered later by modifiers/types at
+     *          application time.
+     */
+    public static void register(final String oreName, final HazardData data) {
+        oreMap.put(oreName, data);
     }
 
+    /**
+     * Registers {@link HazardData} for all stacks of a given {@link Item} (any damage value).
+     * <p>
+     * This mapping is evaluated after OreDictionary mappings and before exact-stack mappings.
+     * </p>
+     *
+     * @param item target item (non-null).
+     * @param data hazard data to associate.
+     * @apiNote lookup is <em>count-insensitive</em>.
+     */
+    public static void register(final Item item, final HazardData data) {
+        itemMap.put(item, data);
+    }
+
+    /**
+     * Registers {@link HazardData} for an item addressed by a {@link ResourceLocation}.
+     * <p>
+     * If the item is already present in {@link IForgeRegistry} at call time, the
+     * mapping is applied immediately. Otherwise it is queued in {@link #locationRateRegisterList} and applied near the
+     * end of FML loading once the item appears.
+     * </p>
+     *
+     * @param loc  item registry name (e.g. {@code modid:item_name}).
+     * @param data hazard data to associate.
+     * @apiNote lookup is <em>count-insensitive</em>.
+     */
+    public static void register(final ResourceLocation loc, final HazardData data) {
+        retriveAndRegister(loc, data);
+    }
+
+    /**
+     * Registers {@link HazardData} for the {@link Item} form of a {@link Block}.
+     * <p>
+     * Equivalent to calling {@link #register(Item, HazardData)} with {@link Item#getItemFromBlock(Block)}.
+     * </p>
+     *
+     * @param block target block whose item form will be mapped.
+     * @param data  hazard data to associate.
+     * @apiNote lookup is <em>count-insensitive</em>.
+     */
+    public static void register(final Block block, final HazardData data) {
+        itemMap.put(Item.getItemFromBlock(block), data);
+    }
+
+    /**
+     * Registers {@link HazardData} for an exact item/meta pair.
+     * <p>
+     * The key is normalized via {@link ComparableStack#makeSingular()} so the
+     * registration is <em>count-insensitive</em>. <b>NBТ is not considered</b> by the key; to vary hazard level by NBT
+     * use {@link IHazardModifier} (or a transformer) rather than separate registrations.
+     * </p>
+     *
+     * @param stack representative stack; only its item and meta are used to form the key.
+     * @param data  hazard data to associate.
+     */
+    public static void register(final ItemStack stack, final HazardData data) {
+        stackMap.put(ItemStackUtil.comparableStackFrom(stack), data);
+    }
+
+    /**
+     * Registers {@link HazardData} for an exact {@link ComparableStack} key.
+     * <p>
+     * Callers are responsible for providing a <em>singular</em> key if count-insensitivity is desired, e.g.
+     * {@code comp.makeSingular()}.
+     * </p>
+     *
+     * @param comp normalized key (typically {@code makeSingular()}).
+     * @param data hazard data to associate.
+     */
+    public static void register(final ComparableStack comp, final HazardData data) {
+        stackMap.put(comp, data);
+    }
+
+    /**
+     * Register hazard data for an object key (ore name, item, block, ItemStack, ComparableStack, or ResourceLocation).
+     *
+     * @apiNote count insensitive (ItemStack keys normalized via ComparableStack.makeSingular)
+     */
+    public static void register(final Object o, final HazardData data) {
+        if (o instanceof String s) {
+            register(s, data);
+            return;
+        }
+        if (o instanceof Item i) {
+            register(i, data);
+            return;
+        }
+        if (o instanceof ResourceLocation rl) {
+            register(rl, data);
+            return;
+        }
+        if (o instanceof Block b) {
+            register(b, data);
+            return;
+        }
+        if (o instanceof ItemStack is) {
+            register(is, data);
+            return;
+        }
+        if (o instanceof ComparableStack cs) {
+            register(cs, data);
+            return;
+        }
+        throw new IllegalArgumentException("Unsupported key type for register: " + (o == null ? "null" : o.getClass().getName()));
+    }
+
+    /**
+     * Removes the OreDictionary mapping for {@code oreName}, if present.
+     *
+     * @param oreName target key.
+     * @return {@code true} if a mapping was removed.
+     */
+    public static boolean unregister(final String oreName) {
+        return oreMap.remove(oreName) != null;
+    }
+
+    /**
+     * Removes the item-level mapping for {@code item}, if present.
+     *
+     * @param item target item.
+     * @return {@code true} if a mapping was removed.
+     */
+    public static boolean unregister(final Item item) {
+        return itemMap.remove(item) != null;
+    }
+
+    /**
+     * Removes mappings associated with {@code loc}.
+     * <p>
+     * This removes an already-resolved item mapping and/or a pending entry in
+     * {@link #locationRateRegisterList} if it was queued earlier.
+     * </p>
+     *
+     * @param loc item registry name.
+     * @return {@code true} if anything was removed.
+     */
+    public static boolean unregister(final ResourceLocation loc) {
+        return removeResourceLocation(loc);
+    }
+
+    /**
+     * Removes the mapping for the item form of {@code block}, if present.
+     *
+     * @param block target block.
+     * @return {@code true} if a mapping was removed.
+     */
+    public static boolean unregister(final Block block) {
+        Item item = Item.getItemFromBlock(block);
+        return item != Items.AIR && itemMap.remove(item) != null;
+    }
+
+    /**
+     * Removes the exact-stack mapping corresponding to {@code stack}'s item/meta.
+     * <p>
+     * The lookup key is normalized and does not include NBT.
+     * </p>
+     *
+     * @param stack representative stack; only item/meta are considered.
+     * @return {@code true} if a mapping was removed.
+     */
+    public static boolean unregister(final ItemStack stack) {
+        return stackMap.remove(ItemStackUtil.comparableStackFrom(stack)) != null;
+    }
+
+    /**
+     * Removes the mapping for an exact {@link ComparableStack} key.
+     *
+     * @param comp key to remove.
+     * @return {@code true} if a mapping was removed.
+     */
+    public static boolean unregister(final ComparableStack comp) {
+        return stackMap.remove(comp) != null;
+    }
+
+    /**
+     * Unregister hazard data for the given key or collection/array of keys.
+     *
+     * @apiNote count insensitive (mirrors registration semantics)
+     */
     public static boolean unregister(final Object o) {
-        if (o instanceof Collection<?>) {
+        if (o instanceof Collection<?> c) {
             boolean removed = false;
-            for (Object element : (Collection<?>) o) {
+            for (Object element : c) {
                 removed |= unregister(element);
             }
             return removed;
         }
         if (o == null) return false;
 
-        boolean removed = false;
-        if (o instanceof String) {
-            removed |= oreMap.remove(o) != null;
-        } else if (o instanceof Item) {
-            removed |= itemMap.remove(o) != null;
-        } else if (o instanceof ResourceLocation) {
-            removed |= removeResourceLocation((ResourceLocation) o);
-        } else if (o instanceof Block) {
-            Item item = Item.getItemFromBlock((Block) o);
-            if (item != Items.AIR) {
-                removed |= itemMap.remove(item) != null;
-            }
-        } else if (o instanceof ItemStack) {
-            removed |= stackMap.remove(ItemStackUtil.comparableStackFrom((ItemStack) o)) != null;
-        } else if (o instanceof ComparableStack) {
-            removed |= stackMap.remove(o) != null;
-        } else if (o.getClass().isArray()) {
-            int length = java.lang.reflect.Array.getLength(o);
+        if (o instanceof String s) return unregister(s);
+        if (o instanceof Item i) return unregister(i);
+        if (o instanceof ResourceLocation rl) return unregister(rl);
+        if (o instanceof Block b) return unregister(b);
+        if (o instanceof ItemStack is) return unregister(is);
+        if (o instanceof ComparableStack cs) return unregister(cs);
+        if (o.getClass().isArray()) {
+            boolean removed = false;
+            int length = Array.getLength(o);
             for (int i = 0; i < length; i++) {
-                Object element = java.lang.reflect.Array.get(o, i);
+                Object element = Array.get(o, i);
                 removed |= unregister(element);
             }
+            return removed;
         }
-        return removed;
+        throw new IllegalArgumentException("Unsupported key type for unregister: " + o.getClass().getName());
     }
-
 
     /**
      * Attempts to retrive and append an item onto the map from resource location, helpful for groovy users
@@ -299,7 +513,7 @@ public class HazardSystem {
         if(registry.containsKey(loc))
             itemMap.put(registry.getValue(loc),data);
         else
-           locationRateRegisterList.add(new Tuple<>(loc,data));
+            locationRateRegisterList.add(new Tuple<>(loc,data));
 
     }
 
@@ -324,40 +538,123 @@ public class HazardSystem {
     }
 
     /**
-     * Prevents the stack from returning any HazardData
+     * Blacklists an exact item/meta so that <em>no configured hazards</em> are returned for matching stacks.
+     * <p>
+     * The key is normalized via {@link ComparableStack#makeSingular()} and is <b>NBT-agnostic</b>.
+     * </p>
+     *
+     * @param stack representative stack to blacklist (item/meta are used).
+     * @apiNote Blacklisting suppresses configured {@link HazardEntry} evaluation only; neutron contamination (if
+     *          enabled) is handled separately by {@link com.hbm.util.ContaminationUtil} and is not affected.
      */
-    public static void blacklist(final Object o) {
-        if (o instanceof ItemStack) stackBlacklist.add(ItemStackUtil.comparableStackFrom((ItemStack) o).makeSingular());
-        else if (o instanceof String) dictBlacklist.add((String) o);
+    public static void blacklist(final ItemStack stack) {
+        stackBlacklist.add(ItemStackUtil.comparableStackFrom(stack).makeSingular());
     }
 
+    /**
+     * Blacklists an OreDictionary key so that stacks with that key yield no configured hazards.
+     *
+     * @param oreName OreDictionary name to blacklist.
+     */
+    public static void blacklist(final String oreName) {
+        dictBlacklist.add(oreName);
+    }
+
+    /**
+     * Blacklists an exact {@link ComparableStack} key (usually {@code makeSingular()}).
+     *
+     * @param comp normalized key to blacklist.
+     */
+    public static void blacklist(final ComparableStack comp) {
+        stackBlacklist.add(comp.makeSingular());
+    }
+
+    /**
+     * Prevents the stack from returning any HazardData
+     *
+     * @apiNote count insensitive (ItemStacks normalized via ComparableStack.makeSingular)
+     */
+    public static void blacklist(final Object o) {
+        if (o instanceof ItemStack is) {
+            blacklist(is);
+            return;
+        }
+        if (o instanceof String s) {
+            blacklist(s);
+            return;
+        }
+        if (o instanceof ComparableStack cs) {
+            blacklist(cs);
+            return;
+        }
+        throw new IllegalArgumentException("Unsupported key type for blacklist: " + (o == null ? "null" : o.getClass().getName()));
+    }
+
+    /**
+     * Removes a previous blacklist entry for an exact item/meta pair.
+     *
+     * @param stack representative stack; only item/meta are considered.
+     * @return {@code true} if an entry was removed.
+     */
+    public static boolean unblacklist(final ItemStack stack) {
+        return stackBlacklist.remove(ItemStackUtil.comparableStackFrom(stack).makeSingular());
+    }
+
+    /**
+     * Removes a previous blacklist entry for an OreDictionary key.
+     *
+     * @param oreName key to remove.
+     * @return {@code true} if an entry was removed.
+     */
+    public static boolean unblacklist(final String oreName) {
+        return dictBlacklist.remove(oreName);
+    }
+
+    /**
+     * Removes a previous blacklist entry for an exact {@link ComparableStack} key.
+     *
+     * @param comp key to remove.
+     * @return {@code true} if an entry was removed.
+     */
+    public static boolean unblacklist(final ComparableStack comp) {
+        return stackBlacklist.remove(comp.makeSingular());
+    }
+
+    /**
+     * Removes a previous blacklist entry. Collections/arrays expanded recursively.
+     *
+     * @apiNote count insensitive
+     */
     public static boolean unblacklist(final Object o) {
-        if (o instanceof Collection<?>) {
+        if (o instanceof Collection<?> c) {
             boolean removed = false;
-            for (Object element : (Collection<?>) o) {
+            for (Object element : c) {
                 removed |= unblacklist(element);
             }
             return removed;
         }
         if (o == null) return false;
 
-        boolean removed = false;
-        if (o instanceof ItemStack) {
-            removed |= stackBlacklist.remove(ItemStackUtil.comparableStackFrom((ItemStack) o).makeSingular());
-        } else if (o instanceof String) {
-            removed |= dictBlacklist.remove(o);
-        } else if (o instanceof ComparableStack) {
-            removed |= stackBlacklist.remove(((ComparableStack) o).makeSingular());
-        } else if (o.getClass().isArray()) {
-            int length = java.lang.reflect.Array.getLength(o);
+        if (o instanceof ItemStack is) return unblacklist(is);
+        if (o instanceof String s) return unblacklist(s);
+        if (o instanceof ComparableStack cs) return unblacklist(cs);
+        if (o.getClass().isArray()) {
+            boolean removed = false;
+            int length = Array.getLength(o);
             for (int i = 0; i < length; i++) {
-                Object element = java.lang.reflect.Array.get(o, i);
+                Object element = Array.get(o, i);
                 removed |= unblacklist(element);
             }
+            return removed;
         }
-        return removed;
+        throw new IllegalArgumentException("Unsupported key type for unblacklist: " + o.getClass().getName());
     }
 
+    /**
+     * Checks whether the given stack is blacklisted by exact (item,meta) or by ore dictionary.
+     *
+     * @apiNote count insensitive
+     */
     public static boolean isItemBlacklisted(final ItemStack stack) {
         if (stackBlacklist.contains(ItemStackUtil.comparableStackFrom(stack).makeSingular())) return true;
         final int[] ids = OreDictionary.getOreIDs(stack);
@@ -380,8 +677,11 @@ public class HazardSystem {
      * Entries that are marked as "overriding" will delete all fetched entries that came before it.
      * Entries that use mutex will prevent subsequent entries from being considered, shall they collide. The mutex system already assumes that
      * two keys are the same in priority, so the flipped order doesn't matter.
+     *
+     * @apiNote count insensitive (matching uses ComparableStack.makeSingular; NBT sensitivity handled via sanitized hash; neutron NBT ignored)<br>
+     * the returned list is transformed by HazardTransformers but hasn't been modified by modifiers yet.
      */
-    private static List<HazardEntry> getHazardsFromStack(final ItemStack stack) {
+    public static List<HazardEntry> getHazardsFromStack(final ItemStack stack) {
         if (stack.isEmpty() || isItemBlacklisted(stack)) {
             return Collections.emptyList();
         }
@@ -417,7 +717,17 @@ public class HazardSystem {
         }
     }
 
+    /**
+     * Builds the final, NBT-aware list of hazard entries for a stack.
+     *
+     * @apiNote count insensitive (chronology keyed by ComparableStack without count; modifiers/types may read count at application time)
+     */
     private static List<HazardEntry> computeHazards(ItemStack stack, ComparableStack compStack) {
+        if (stack.isEmpty() || compStack.isEmpty()) {
+            MainRegistry.logger.debug("HazardSystem.computeHazards got an empty stack or compStack(ItemStack: {}, ComparableStack: {}). " +
+                    "This is not supposed to happen, please check for mod incompatibilities.", stack, compStack);
+            return Collections.emptyList();
+        }
         // Get NBT-agnostic base data
         List<HazardData> chronological = hazardDataChronologyCache.computeIfAbsent(compStack, cs -> {
             final List<HazardData> data = new ArrayList<>();
@@ -440,7 +750,7 @@ public class HazardSystem {
 
         // Apply NBT-sensitive transformers and build the final list
         final List<HazardEntry> entries = new ArrayList<>();
-        for (final HazardTransformerBase trafo : trafos) {
+        for (final IHazardTransformer trafo : trafos) {
             trafo.transformPre(stack, entries);
         }
 
@@ -453,26 +763,41 @@ public class HazardSystem {
             }
         }
 
-        for (final HazardTransformerBase trafo : trafos) {
+        for (final IHazardTransformer trafo : trafos) {
             trafo.transformPost(stack, entries);
         }
 
         return Collections.unmodifiableList(entries);
     }
 
-    public static float getHazardLevelFromStack(ItemStack stack, HazardTypeBase hazard) {
-        return getHazardsFromStack(stack).stream().filter(entry -> entry.type == hazard).findFirst().map(entry -> HazardModifier.evalAllModifiers(stack, null, entry.baseLevel, entry.mods)).orElse(0F);
+    /**
+     * Computes the effective level for a specific hazard type from the stack.
+     *
+     * @apiNote lookup count insensitive; result may be count-sensitive via modifiers
+     */
+    public static double getHazardLevelFromStack(ItemStack stack, IHazardType hazard) {
+        return getHazardsFromStack(stack).stream().filter(entry -> entry.type == hazard).findFirst().map(entry -> IHazardModifier.evalAllModifiers(stack, null, entry.baseLevel, entry.mods)).orElse(0D);
     }
 
-    public static float getRawRadsFromBlock(Block b) {
+    public static double getRawRadsFromBlock(Block b) {
         return getHazardLevelFromStack(new ItemStack(Item.getItemFromBlock(b)), HazardRegistry.RADIATION);
     }
 
-    public static float getRawRadsFromStack(ItemStack stack) {
+    /**
+     * Radiation from configured entries (pre-contamination).
+     *
+     * @apiNote lookup count insensitive; value may be count-sensitive via modifiers
+     */
+    public static double getRawRadsFromStack(ItemStack stack) {
         return getHazardLevelFromStack(stack, HazardRegistry.RADIATION);
     }
 
-    public static float getTotalRadsFromStack(ItemStack stack) {
+    /**
+     * Total radiation = configured radiation + neutron contamination.
+     *
+     * @apiNote configured part may be count-sensitive via modifiers; neutron part delegated to ContaminationUtil
+     */
+    public static double getTotalRadsFromStack(ItemStack stack) {
         return getHazardLevelFromStack(stack, HazardRegistry.RADIATION) + ContaminationUtil.getNeutronRads(stack);
     }
 
@@ -482,6 +807,8 @@ public class HazardSystem {
 
     /**
      * Will grab and iterate through all assigned hazards of the given stack and apply their effects to the holder.
+     *
+     * @apiNote entry selection count insensitive; effect application may be count-sensitive via modifiers/types
      */
     public static void applyHazards(ItemStack stack, EntityLivingBase entity) {
         if (stack.isEmpty()) return;
@@ -491,26 +818,26 @@ public class HazardSystem {
         }
     }
 
-    public static void updateLivingInventory(EntityLivingBase entity) {
-
-        for (EntityEquipmentSlot i : EntityEquipmentSlot.values()) {
-            ItemStack stack = entity.getItemStackFromSlot(i);
-
-            if (!stack.isEmpty()) {
-                applyHazards(stack, entity);
-            }
-        }
-    }
-
+    /**
+     * Updates hazards emitted by a dropped {@link EntityItem}.
+     *
+     * @apiNote entry selection count insensitive; evaluated level may be count-sensitive via modifiers
+     */
+    @SuppressWarnings("unused") // called by asm hook
     public static void updateDroppedItem(EntityItem entity) {
-        if (entity.isDead) return;
+        if (entity.world.isRemote || entity.isDead) return;
         ItemStack stack = entity.getItem();
-        if (stack.isEmpty() || stack.getCount() <= 0) return;
+        if (stack.isEmpty()) return;
         for (HazardEntry entry : getHazardsFromStack(stack)) {
-            entry.type.updateEntity(entity, HazardModifier.evalAllModifiers(stack, null, entry.baseLevel, entry.mods));
+            entry.type.updateEntity(entity, IHazardModifier.evalAllModifiers(stack, null, entry.baseLevel, entry.mods));
         }
     }
 
+    /**
+     * Adds hazard tooltip info.
+     *
+     * @apiNote entry selection count insensitive; display content may be count-sensitive inside type/modifiers
+     */
     public static void addHazardInfo(ItemStack stack, EntityPlayer player, List<String> list, ITooltipFlag flagIn) {
         for (HazardEntry hazard : getHazardsFromStack(stack)) {
             hazard.type.addHazardInformation(player, list, hazard.baseLevel, stack, hazard.mods);
@@ -527,6 +854,11 @@ public class HazardSystem {
             schedulePlayerUpdate(player);
         }
 
+        /**
+         * Performs a full scan of the player's inventory to build per-slot applicators, and aggregates neutron rads for non-hazardous stacks.
+         *
+         * @apiNote applicator presence count insensitive; neutron accumulation delegated to ContaminationUtil
+         */
         static HazardScanResult calculateHazardScanForPlayer(EntityPlayer player) {
             Map<Integer, Consumer<EntityPlayer>> applicators = new HashMap<>();
             float totalNeutronRads = 0f;
@@ -614,28 +946,22 @@ public class HazardSystem {
             }
         }
 
-        @Desugar
         record HazardScanResult(Map<Integer, Consumer<EntityPlayer>> applicatorMap, float totalNeutronRads) {
         }
     }
 
-    @Desugar
     private record NbtSensitiveCacheKey(ComparableStack stack, int nbtHash) {
     }
 
-    @Desugar
     private record InventoryDelta(UUID playerUUID, int serverSlotIndex, ItemStack oldStack, ItemStack newStack) {
     }
 
-    @Desugar
     private record DeltaUpdate(Optional<Consumer<EntityPlayer>> applicator, float neutronRadsDelta) {
     }
 
-    @Desugar
     private record PlayerDeltaResult(Map<Integer, Optional<Consumer<EntityPlayer>>> finalApplicators, float totalNeutronDelta) {
     }
 
-    @Desugar
     private record HazardUpdateResult(Map<UUID, PlayerHazardData.HazardScanResult> fullScanResults, Map<UUID, PlayerDeltaResult> deltaResults) {
     }
 }

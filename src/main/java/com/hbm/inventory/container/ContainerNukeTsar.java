@@ -1,6 +1,8 @@
 package com.hbm.inventory.container;
 
+import com.hbm.items.ModItems;
 import com.hbm.tileentity.bomb.TileEntityNukeTsar;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -49,36 +51,16 @@ private TileEntityNukeTsar nukeTsar;
 	}
 	
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2)
+    public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-		
-		if (var4 != null && var4.getHasStack())
-		{
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-			
-            if (par2 <= 5) {
-				if (!this.mergeItemStack(var5, 6, this.inventorySlots.size(), true))
-				{
-					return ItemStack.EMPTY;
-				}
-			} else {
-				return ItemStack.EMPTY;
-			}
-            
-			if (var5.isEmpty())
-			{
-				var4.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
-				var4.onSlotChanged();
-			}
-		}
-		
-		return var3;
+		return InventoryUtil.transferStack(this.inventorySlots, index, 9,
+                s -> s.getItem() == ModItems.man_core, 1,
+                s -> s.getItem() == ModItems.explosive_lenses, 5,
+                s -> s.getItem() == ModItems.mike_core && !this.inventorySlots.get(5).getHasStack(), 6,
+                s -> s.getItem() == ModItems.mike_deut && !this.inventorySlots.get(6).getHasStack(), 7,
+                s -> s.getItem() == ModItems.mike_core, 8,
+                s -> s.getItem() == ModItems.mike_deut, 9
+        );
     }
 
 	@Override

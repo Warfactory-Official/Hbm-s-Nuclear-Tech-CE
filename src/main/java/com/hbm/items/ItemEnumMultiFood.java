@@ -1,7 +1,7 @@
 package com.hbm.items;
 
 import com.google.common.collect.ImmutableMap;
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
 import com.hbm.util.EnumUtil;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -22,7 +22,6 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Locale;
 
 /**
@@ -31,29 +30,29 @@ import java.util.Locale;
 public class ItemEnumMultiFood<E extends Enum<E> & ItemEnumMultiFood.FoodSpec> extends ItemFood implements IDynamicModels {
 
     public static final String ROOT_PATH = "items/";
-    protected final Class<E> theEnum;
+    protected final E[] theEnum;
     protected final boolean multiName;
     protected final boolean multiTexture;
     protected final String[] textures;
 
-    public ItemEnumMultiFood(String registryName, Class<E> theEnum, boolean multiName, boolean multiTexture) {
+    public ItemEnumMultiFood(String registryName, E[] theEnum, boolean multiName, boolean multiTexture) {
         super(0, 0.0F, false);
         this.setHasSubtypes(true);
-        this.setRegistryName(new ResourceLocation(RefStrings.MODID, registryName));
+        this.setRegistryName(new ResourceLocation(Tags.MODID, registryName));
         this.setTranslationKey(registryName);
         this.theEnum = theEnum;
         this.multiName = multiName;
         this.multiTexture = multiTexture;
-        this.textures = Arrays.stream(theEnum.getEnumConstants()).sorted(Comparator.comparing(Enum::ordinal)).map(Enum::name)
+        this.textures = Arrays.stream(theEnum).map(Enum::name)
                               .map(name -> getPrefix() + getSeparator() + name.toLowerCase(Locale.US)).toArray(String[]::new);
         ModItems.ALL_ITEMS.add(this);
         IDynamicModels.INSTANCES.add(this);
     }
 
-    public ItemEnumMultiFood(String registryName, Class<E> theEnum, boolean multiName, String texture) {
+    public ItemEnumMultiFood(String registryName, E[] theEnum, boolean multiName, String texture) {
         super(0, 0.0F, false);
         this.setHasSubtypes(true);
-        this.setRegistryName(new ResourceLocation(RefStrings.MODID, registryName));
+        this.setRegistryName(new ResourceLocation(Tags.MODID, registryName));
         this.setTranslationKey(registryName);
         this.theEnum = theEnum;
         this.multiName = multiName;
@@ -110,7 +109,7 @@ public class ItemEnumMultiFood<E extends Enum<E> & ItemEnumMultiFood.FoodSpec> e
 
     @Override
     public boolean isWolfsFavoriteMeat() {
-        for (E v : theEnum.getEnumConstants()) {
+        for (E v : theEnum) {
             if (v.wolfFood()) return true;
         }
         return false;
@@ -120,7 +119,7 @@ public class ItemEnumMultiFood<E extends Enum<E> & ItemEnumMultiFood.FoodSpec> e
     @SideOnly(Side.CLIENT)
     public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
         if (this.isInCreativeTab(tab)) {
-            for (int i = 0; i < theEnum.getEnumConstants().length; i++) {
+            for (int i = 0; i < theEnum.length; i++) {
                 items.add(new ItemStack(this, 1, i));
             }
         }
@@ -129,16 +128,16 @@ public class ItemEnumMultiFood<E extends Enum<E> & ItemEnumMultiFood.FoodSpec> e
     @SideOnly(Side.CLIENT)
     public void registerSprite(TextureMap map) {
         for (String texture : textures) {
-            map.registerSprite(new ResourceLocation(RefStrings.MODID, ROOT_PATH + texture));
+            map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + texture));
         }
     }
 
     @SideOnly(Side.CLIENT)
     public void registerModel() {
-        for (int i = 0; i < theEnum.getEnumConstants().length; i++) {
+        for (int i = 0; i < theEnum.length; i++) {
             String tex = multiTexture ? textures[i] : textures[0];
             ModelLoader.setCustomModelResourceLocation(this, i,
-                    new ModelResourceLocation(new ResourceLocation(RefStrings.MODID, ROOT_PATH + tex), "inventory"));
+                    new ModelResourceLocation(new ResourceLocation(Tags.MODID, ROOT_PATH + tex), "inventory"));
         }
     }
 
@@ -146,9 +145,9 @@ public class ItemEnumMultiFood<E extends Enum<E> & ItemEnumMultiFood.FoodSpec> e
     public void bakeModel(ModelBakeEvent event) {
         try {
             IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/generated"));
-            for (int i = 0; i < theEnum.getEnumConstants().length; i++) {
+            for (int i = 0; i < theEnum.length; i++) {
                 String texName = multiTexture ? textures[i] : textures[0];
-                ResourceLocation spriteLoc = new ResourceLocation(RefStrings.MODID, ROOT_PATH + texName);
+                ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, ROOT_PATH + texName);
                 IModel retextured = baseModel.retexture(ImmutableMap.of("layer0", spriteLoc.toString()));
                 IBakedModel baked = retextured.bake(ModelRotation.X0_Y0, DefaultVertexFormats.ITEM, ModelLoader.defaultTextureGetter());
                 ModelResourceLocation bakedLoc = new ModelResourceLocation(spriteLoc, "inventory");
@@ -165,6 +164,12 @@ public class ItemEnumMultiFood<E extends Enum<E> & ItemEnumMultiFood.FoodSpec> e
         E v = getVariant(stack);
         if (v == null) return super.getTranslationKey(stack);
         return "item." + getPrefix() + getSeparator() + v.name().toLowerCase(Locale.US);
+    }
+
+    @Override
+    public ItemEnumMultiFood<E> setCreativeTab(CreativeTabs tab) {
+        // noinspection unchecked
+        return (ItemEnumMultiFood<E>) super.setCreativeTab(tab);
     }
 
     public interface FoodSpec {

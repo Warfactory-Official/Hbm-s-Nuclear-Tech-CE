@@ -5,7 +5,7 @@ import com.hbm.handler.radiation.ChunkRadiationManager;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
@@ -14,9 +14,34 @@ import net.minecraft.util.text.TextComponentTranslation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
-//Well this class is a big mess. Needs some helper methods, should add later
 public class CommandRadiation extends CommandBase {
+
+    private static double parseDoubleMinMax(String arg) throws CommandException {
+        return switch (arg.toLowerCase()) {
+            case "max" -> Double.MAX_VALUE;
+            case "min" -> Double.MIN_VALUE;
+            default -> parseDouble(arg);
+        };
+    }
+
+    private static void handleClearAll(ICommandSender sender) {
+        ChunkRadiationManager.proxy.clearSystem(sender.getEntityWorld());
+        sender.sendMessage(new TextComponentTranslation("commands.hbmrad.removeall", sender.getEntityWorld().provider.getDimension()));
+    }
+
+    private static void handleResetPlayers(MinecraftServer server, ICommandSender sender) {
+        server.getPlayerList().getPlayers().stream().map(CommandRadiation::getRadiationCap).filter(Objects::nonNull).forEach(cap -> cap.setRads(0.0D));
+        sender.sendMessage(new TextComponentTranslation("commands.hbmrad.player_success"));
+    }
+
+    private static HbmLivingCapability.IEntityHbmProps getRadiationCap(EntityPlayer player) {
+        if (player.hasCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null)) {
+            return player.getCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null);
+        }
+        return null;
+    }
 
     @Override
     public String getName() {
@@ -25,34 +50,13 @@ public class CommandRadiation extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "Usage: /hbmrad <block x> <block y>  <block z> <new rad>\n" + " /hbmrad <clearall/reset>\n" +
-               " or /hbmrad player <player> <newRad>\n" + " or /hbmrad player <player>";
-    }
-
-    @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos targetPos) {
-        List<String> list = new ArrayList<>();
-        if (args.length == 1) {
-            list.add("set");
-            list.add("clearall");
-            list.add("reset");
-            list.add("player");
-            list.add("resetplayers");
-        } else if (args.length == 2 && (args[0].equals("clearall") || args[0].equals("reset") || args[0].equals("resetplayers"))) {
-        } else if (args.length == 2 && args[0].equals("player")) {
-            Collections.addAll(list, server.getOnlinePlayerNames());
-        } else if (args.length == 2 && args[0].equals("set")) {
-            list.add(String.valueOf(sender.getPosition().getX()));
-        } else if (args.length == 3 && args[0].equals("set")) {
-            list.add(String.valueOf(sender.getPosition().getY()));
-        } else if (args.length == 4 && args[0].equals("set")) {
-            list.add(String.valueOf(sender.getPosition().getZ()));
-        } else if (args.length == 5 && args[0].equals("set")) {
-            list.add(String.valueOf(0));
-        } else if (args.length == 3 && getPlayer(server, args[1]) != null) {
-            list.add(String.valueOf(0));
-        }
-        return list;
+        return """
+                Usage:
+                 /hbmrad set <x> <y> <z> <value>
+                 /hbmrad <clearall/reset>
+                 /hbmrad player <player> [value]
+                 /hbmrad resetplayers
+                """;
     }
 
     @Override
@@ -61,88 +65,75 @@ public class CommandRadiation extends CommandBase {
     }
 
     @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-        if (args.length == 0) throw new CommandException(this.getUsage(sender));
+    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos targetPos) {
+        if (args.length == 0) return Collections.emptyList();
 
-        switch (args[0]) {
+        String sub = args[0].toLowerCase();
+        if (args.length == 1) return getListOfStringsMatchingLastWord(args, "set", "clearall", "reset", "player", "resetplayers", "dumpgeometry");
+        else return switch (sub) {
             case "set" -> {
-                if (args.length != 5 || !isInteger(args[1]) || !isInteger(args[2]) || !isInteger(args[3]))
-                    throw new CommandException(this.getUsage(sender));
-
-                int blockX = parseCoord(args[1], sender.getPosition().getX());
-                int blockY = parseCoord(args[2], sender.getPosition().getY());
-                int blockZ = parseCoord(args[3], sender.getPosition().getZ());
-                int amount = Integer.parseInt(args[4]);
-                ChunkRadiationManager.proxy.setRadiation(sender.getEntityWorld(), new BlockPos(blockX, blockY, blockZ), amount);
-                sender.sendMessage(
-                        new TextComponentTranslation("Set radiation at coords (" + blockX + ", " + blockY + ", " + blockZ + ") to " + amount + "."));
-            }
-            case "clearall", "reset" -> {
-                ChunkRadiationManager.proxy.clearSystem(sender.getEntityWorld());
-                sender.sendMessage(new TextComponentTranslation("commands.hbmrad.removeall", sender.getEntityWorld().provider.getDimension()));
+                // /hbmrad set <x> <y> <z> <value>
+                if (args.length <= 4) {
+                    yield getTabCompletionCoordinate(args, 1, targetPos);
+                }
+                if (args.length == 5) {
+                    yield getListOfStringsMatchingLastWord(args, "0", "1", "5", "10", "min", "max");
+                }
+                yield Collections.emptyList();
             }
             case "player" -> {
+                // /hbmrad player <player> [value]
                 if (args.length == 2) {
-                    EntityPlayerMP player = getPlayer(server, args[1]);
-                    if (player == null) throw new CommandException("commands.hbmrad.not_found_player", args[1]);
-
-                    float rads = 0.0F;
-                    if (player.hasCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null)) {
-                        rads = player.getCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null).getRads();
-                    }
-                    sender.sendMessage(new TextComponentString(String.valueOf(rads)));
-                } else if (args.length == 3) {
-                    EntityPlayerMP player = getPlayer(server, args[1]);
-                    if (player == null) throw new CommandException("commands.hbmrad.not_found_player", args[1]);
-                    if (!isFloat(args[2])) throw new CommandException("commands.hbmrad.rad_not_int");
-
-                    float newRads = Float.parseFloat(args[2]);
-                    if (newRads < 0.0F) newRads = 0.0F;
-
-                    if (player.hasCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null)) {
-                        player.getCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null).setRads(newRads);
-                    }
-                    sender.sendMessage(new TextComponentTranslation("Set radiation for player " + player.getName() + " to " + newRads + "."));
-                } else {
-                    throw new CommandException(this.getUsage(sender));
+                    var opts = new ArrayList<String>();
+                    Collections.addAll(opts, server.getOnlinePlayerNames());
+                    Collections.addAll(opts, "@p", "@r", "@s");
+                    yield getListOfStringsMatchingLastWord(args, opts);
                 }
+                if (args.length == 3) {
+                    yield getListOfStringsMatchingLastWord(args, "0", "1", "5", "10", "min", "max");
+                }
+                yield Collections.emptyList();
             }
-            case "resetplayers" -> {
-                if (args.length != 1) throw new CommandException(this.getUsage(sender));
-                server.getPlayerList().getPlayers().forEach(player -> {
-                    if (player.hasCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null)) {
-                        player.getCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null).setRads(0.0F);
-                    }
-                });
-                sender.sendMessage(new TextComponentTranslation("commands.hbmrad.player_success"));
-            }
-            default -> throw new CommandException(this.getUsage(sender));
+            default -> Collections.emptyList();
+        };
+    }
+
+    @Override
+    public boolean isUsernameIndex(String[] args, int index) {
+        // /hbmrad player <player>
+        return args.length > 0 && "player".equalsIgnoreCase(args[0]) && index == 1;
+    }
+
+    @Override
+    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+        if (args.length < 1) throw new CommandException(getUsage(sender));
+        switch (args[0].toLowerCase()) {
+            case "set" -> handleSet(sender, args);
+            case "clearall", "reset" -> handleClearAll(sender);
+            case "player" -> handlePlayer(server, sender, args);
+            case "resetplayers" -> handleResetPlayers(server, sender);
+            default -> throw new CommandException(getUsage(sender));
         }
     }
 
-    private int parseCoord(String s, int current) {
-        return "~".equals(s) ? current : Integer.parseInt(s);
+    private void handleSet(ICommandSender sender, String[] args) throws CommandException {
+        if (args.length != 5) throw new CommandException(getUsage(sender));
+        var pos = parseBlockPos(sender, args, 1, false);
+        var amount = parseDoubleMinMax(args[4]);
+        ChunkRadiationManager.proxy.setRadiation(sender.getEntityWorld(), pos, amount);
+        sender.sendMessage(new TextComponentTranslation("Set radiation at coords (%s, %s, %s) to %s.", pos.getX(), pos.getY(), pos.getZ(), amount));
     }
 
-    public boolean isInteger(String s) {
-        try {
-            Integer.parseInt(s);
-            return true;
-        } catch (NumberFormatException e) {
-            return s.equals("~");
+    private void handlePlayer(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+        if (args.length < 2) throw new CommandException(getUsage(sender));
+        var cap = getRadiationCap(getPlayer(server, sender, args[1]));
+        if (cap == null) return;
+        if (args.length == 2) {
+            sender.sendMessage(new TextComponentString(String.valueOf(cap.getRads())));
+        } else {
+            var newRads = Math.max(0.0D, parseDoubleMinMax(args[2]));
+            cap.setRads(newRads);
+            sender.sendMessage(new TextComponentTranslation("Set radiation for player " + getPlayer(server, sender, args[1]).getName() + " to " + newRads + "."));
         }
-    }
-
-    public boolean isFloat(String s) {
-        try {
-            Float.parseFloat(s);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
-    public EntityPlayerMP getPlayer(MinecraftServer server, String name) {
-        return server.getPlayerList().getPlayerByUsername(name);
     }
 }

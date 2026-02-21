@@ -1,10 +1,10 @@
 {
-	"variants": {
-		"facing=north": { "model": "hbm:cable_diode" },
- 	   	"facing=south": { "model": "hbm:cable_diode", "y": 180 },
-  	  	"facing=west":  { "model": "hbm:cable_diode", "y": 270 },
-  		"facing=east":  { "model": "hbm:cable_diode", "y": 90 },
-		"facing=up": 	{ "model": "hbm:cable_diode", "x": 270 },
-		"facing=down":  { "model": "hbm:cable_diode", "x": 90 }
-	}
+  "variants": {
+    "facing=north": { "model": "hbm:block/cable_diode" },
+    "facing=south": { "model": "hbm:block/cable_diode" },
+    "facing=west":  { "model": "hbm:block/cable_diode" },
+    "facing=east":  { "model": "hbm:block/cable_diode" },
+    "facing=up":  { "model": "hbm:block/cable_diode" },
+    "facing=down":  { "model": "hbm:block/cable_diode" }
+  }
 }

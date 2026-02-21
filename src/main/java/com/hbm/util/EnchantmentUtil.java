@@ -3,6 +3,9 @@ package com.hbm.util;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.ResourceLocation;
 
 public class EnchantmentUtil {
 
@@ -54,4 +57,24 @@ public class EnchantmentUtil {
 		}
 		entityPlayer.experience -= amount / (float)entityPlayer.xpBarCap();
 	}
+	public static int getEnchantmentLevel(ItemStack stack, Enchantment enchantment) {
+		if (stack.isEmpty() || enchantment == null)
+			return 0;
+
+		NBTTagList list = stack.getEnchantmentTagList();
+		if (list == null)
+			return 0;
+
+		ResourceLocation targetId = Enchantment.REGISTRY.getNameForObject(enchantment);
+
+		for (int i = 0; i < list.tagCount(); i++) {
+			NBTTagCompound tag = list.getCompoundTagAt(i);
+			Enchantment ench = Enchantment.getEnchantmentByID(tag.getShort("id"));
+			if (ench != null && Enchantment.REGISTRY.getNameForObject(ench).equals(targetId))
+				return tag.getShort("lvl");
+		}
+
+		return 0;
+	}
+
 }

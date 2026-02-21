@@ -1,11 +1,11 @@
 package com.hbm.items.machine;
 
 import com.google.common.collect.ImmutableMap;
+import com.hbm.Tags;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.items.ItemBakedBase;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -70,9 +70,9 @@ public class ItemBlueprints extends ItemBakedBase {
         try {
             IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/generated"));
 
-            spriteBase = new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseTexturePath);
-            spriteDiscover = new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseTexturePath + "_discover");
-            spriteSecret = new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseTexturePath + "_secret");
+            spriteBase = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath);
+            spriteDiscover = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_discover");
+            spriteSecret = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_secret");
 
             mrlBase = new ModelResourceLocation(spriteBase, "inventory");
             mrlDiscover = new ModelResourceLocation(spriteDiscover, "inventory");
@@ -101,9 +101,9 @@ public class ItemBlueprints extends ItemBakedBase {
     @Override
     @SideOnly(Side.CLIENT)
     public void registerModel() {
-        spriteBase = new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseTexturePath);
-        spriteDiscover = new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseTexturePath + "_discover");
-        spriteSecret = new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseTexturePath + "_secret");
+        spriteBase = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath);
+        spriteDiscover = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_discover");
+        spriteSecret = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_secret");
 
         mrlBase = new ModelResourceLocation(spriteBase, "inventory");
         mrlDiscover = new ModelResourceLocation(spriteDiscover, "inventory");
@@ -124,9 +124,9 @@ public class ItemBlueprints extends ItemBakedBase {
     @Override
     @SideOnly(Side.CLIENT)
     public void registerSprite(TextureMap map) {
-        map.registerSprite(new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseTexturePath));
-        map.registerSprite(new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseTexturePath + "_discover"));
-        map.registerSprite(new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseTexturePath + "_secret"));
+        map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath));
+        map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_discover"));
+        map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_secret"));
     }
 
     @Override
@@ -144,7 +144,7 @@ public class ItemBlueprints extends ItemBakedBase {
         player.swingArm(hand);
 
         ItemStack copy = stack.copy();
-        copy.grow(1);
+        copy.setCount(1);
 
         if(!player.capabilities.isCreativeMode) {
             if(stack.getCount() < stack.getMaxStackSize()) {
@@ -154,7 +154,7 @@ public class ItemBlueprints extends ItemBakedBase {
 
             if(!player.inventory.addItemStackToInventory(copy)) {
                 copy = stack.copy();
-                copy.grow(1);
+                copy.setCount(1);
                 player.dropItem(copy, false);
             }
 

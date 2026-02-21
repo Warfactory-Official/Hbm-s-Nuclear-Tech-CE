@@ -1,8 +1,8 @@
 package com.hbm.render.tileentity;
 
+import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.util.RenderMiscEffects;
@@ -57,7 +57,7 @@ public class RenderNukeFstbmb extends TileEntitySpecialRenderer<TileEntityNukeBa
     ResourceManager.fstbmb.renderPart("Balefire");
 
     if (bf.loaded) {
-      bindTexture(new ResourceLocation(RefStrings.MODID + ":textures/misc/glintBF.png"));
+      bindTexture(new ResourceLocation(Tags.MODID + ":textures/misc/glintBF.png"));
       RenderMiscEffects.renderClassicGlint(
           bf.getWorld(),
           partialTicks,
@@ -73,7 +73,7 @@ public class RenderNukeFstbmb extends TileEntitySpecialRenderer<TileEntityNukeBa
       float f3 = 0.04F;
       GlStateManager.translate(0.815F, 0.9275F, 0.5F);
       GlStateManager.scale(f3, -f3, f3);
-      GL11.glNormal3f(0.0F, 0.0F, -1.0F * f3);
+      GlStateManager.color(0.0F, 0.0F, -1.0F * f3);
       GlStateManager.rotate(90, 0, 1, 0);
       GlStateManager.depthMask(false);
       GlStateManager.translate(0, 1, 0);

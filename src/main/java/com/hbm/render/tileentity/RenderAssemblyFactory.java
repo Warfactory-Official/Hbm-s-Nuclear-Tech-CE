@@ -193,7 +193,7 @@ public class RenderAssemblyFactory extends TileEntitySpecialRenderer<TileEntityM
             GlStateManager.disableCull();
             GlStateManager.enableBlend();
             GlStateManager.alphaFunc(GL11.GL_GREATER, 0F);
-            OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+            GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
             bindTexture(ResourceManager.assembly_factory_sparks_tex);
 
             Tessellator tessellator = Tessellator.getInstance();

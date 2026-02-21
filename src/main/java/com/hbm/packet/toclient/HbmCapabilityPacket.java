@@ -2,6 +2,7 @@ package com.hbm.packet.toclient;
 
 import com.hbm.capability.HbmCapability;
 import com.hbm.capability.HbmCapability.IHBMData;
+import com.hbm.main.MainRegistry;
 import com.hbm.packet.threading.PrecompiledPacket;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
@@ -28,7 +29,7 @@ public class HbmCapabilityPacket extends PrecompiledPacket {
 
     @Override
     public void fromBytes(ByteBuf buf) {
-        this.buf = buf;
+        this.buf = buf.retainedSlice();
     }
 
     @Override
@@ -41,10 +42,19 @@ public class HbmCapabilityPacket extends PrecompiledPacket {
         @Override
         @SideOnly(Side.CLIENT)
         public IMessage onMessage(HbmCapabilityPacket m, MessageContext ctx) {
-            if(Minecraft.getMinecraft().world == null) return null;
-            IHBMData pprps = HbmCapability.getData(Minecraft.getMinecraft().player);
-            pprps.deserialize(m.buf);
-            m.buf.release();
+            if (m.buf == null) throw new NullPointerException();
+            try {
+                if (Minecraft.getMinecraft().world == null) return null;
+                if (Minecraft.getMinecraft().player == null) return null;
+                IHBMData pprps = HbmCapability.getData(Minecraft.getMinecraft().player);
+                if (pprps != null) {
+                    pprps.deserialize(m.buf);
+                }
+            } catch (Exception e) {
+                MainRegistry.logger.error("Failed to sync HBM Capability", e);
+            } finally {
+                m.buf.release();
+            }
             return null;
         }
     }

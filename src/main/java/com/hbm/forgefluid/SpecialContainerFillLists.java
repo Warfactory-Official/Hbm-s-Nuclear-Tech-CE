@@ -1,8 +1,8 @@
 package com.hbm.forgefluid;
 
+import com.hbm.Tags;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.lib.RefStrings;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -17,24 +17,26 @@ public class SpecialContainerFillLists {
 	
 	//Drillgon200: I don't even know what I'm trying to do here, but hopefully it works.
 	public enum EnumCanister {
-		EMPTY(null, new ModelResourceLocation(RefStrings.MODID + ":canister_empty", "inventory")),
-		DIESEL(Fluids.DIESEL, new ModelResourceLocation(RefStrings.MODID + ":canister_fuel", "inventory")),
-		OIL(Fluids.OIL, new ModelResourceLocation(RefStrings.MODID + ":canister_oil", "inventory")),
-		PETROIL(Fluids.PETROIL, new ModelResourceLocation(RefStrings.MODID + ":canister_petroil", "inventory")),
-		FRACKSOL(Fluids.FRACKSOL, new ModelResourceLocation(RefStrings.MODID + ":canister_fracksol", "inventory")),
-		KEROSENE(Fluids.KEROSENE, new ModelResourceLocation(RefStrings.MODID + ":canister_kerosene", "inventory")),
-		NITAN(Fluids.NITAN, new ModelResourceLocation(RefStrings.MODID + ":canister_superfuel", "inventory")),
-		BIOFUEL(Fluids.BIOFUEL, new ModelResourceLocation(RefStrings.MODID + ":canister_biofuel", "inventory")),
-		CANOLA(Fluids.LUBRICANT, new ModelResourceLocation(RefStrings.MODID + ":canister_canola", "inventory")),
-		REOIL(Fluids.RECLAIMED, new ModelResourceLocation(RefStrings.MODID + ":canister_reoil", "inventory")),
-		HEAVYOIL(Fluids.HEAVYOIL, new ModelResourceLocation(RefStrings.MODID + ":canister_heavyoil", "inventory")),
-		BITUMEN(Fluids.BITUMEN, new ModelResourceLocation(RefStrings.MODID + ":canister_bitumen", "inventory")),
-		SMEAR(Fluids.SMEAR, new ModelResourceLocation(RefStrings.MODID + ":canister_smear", "inventory")),
-		HEATINGOIL(Fluids.HEATINGOIL, new ModelResourceLocation(RefStrings.MODID + ":canister_heatingoil", "inventory")),
-		NAPHTHA(Fluids.NAPHTHA, new ModelResourceLocation(RefStrings.MODID + ":canister_naphtha", "inventory")),
-		LIGHTOIL(Fluids.LIGHTOIL, new ModelResourceLocation(RefStrings.MODID + ":canister_lightoil", "inventory")),
-		GASOLINE(Fluids.GASOLINE, new ModelResourceLocation(RefStrings.MODID + ":canister_gasoline", "inventory"));
-		
+		EMPTY(null, new ModelResourceLocation(Tags.MODID + ":canister_empty", "inventory")),
+		DIESEL(Fluids.DIESEL, new ModelResourceLocation(Tags.MODID + ":canister_fuel", "inventory")),
+		OIL(Fluids.OIL, new ModelResourceLocation(Tags.MODID + ":canister_oil", "inventory")),
+		PETROIL(Fluids.PETROIL, new ModelResourceLocation(Tags.MODID + ":canister_petroil", "inventory")),
+		FRACKSOL(Fluids.FRACKSOL, new ModelResourceLocation(Tags.MODID + ":canister_fracksol", "inventory")),
+		KEROSENE(Fluids.KEROSENE, new ModelResourceLocation(Tags.MODID + ":canister_kerosene", "inventory")),
+		NITAN(Fluids.NITAN, new ModelResourceLocation(Tags.MODID + ":canister_superfuel", "inventory")),
+		BIOFUEL(Fluids.BIOFUEL, new ModelResourceLocation(Tags.MODID + ":canister_biofuel", "inventory")),
+		CANOLA(Fluids.LUBRICANT, new ModelResourceLocation(Tags.MODID + ":canister_canola", "inventory")),
+		REOIL(Fluids.RECLAIMED, new ModelResourceLocation(Tags.MODID + ":canister_reoil", "inventory")),
+		HEAVYOIL(Fluids.HEAVYOIL, new ModelResourceLocation(Tags.MODID + ":canister_heavyoil", "inventory")),
+		BITUMEN(Fluids.BITUMEN, new ModelResourceLocation(Tags.MODID + ":canister_bitumen", "inventory")),
+		SMEAR(Fluids.SMEAR, new ModelResourceLocation(Tags.MODID + ":canister_smear", "inventory")),
+		HEATINGOIL(Fluids.HEATINGOIL, new ModelResourceLocation(Tags.MODID + ":canister_heatingoil", "inventory")),
+		NAPHTHA(Fluids.NAPHTHA, new ModelResourceLocation(Tags.MODID + ":canister_naphtha", "inventory")),
+		LIGHTOIL(Fluids.LIGHTOIL, new ModelResourceLocation(Tags.MODID + ":canister_lightoil", "inventory")),
+		GASOLINE(Fluids.GASOLINE, new ModelResourceLocation(Tags.MODID + ":canister_gasoline", "inventory"));
+
+        public static final EnumCanister[] VALUES = values();
+
 		private FluidType fluid;
 		private Pair<ModelResourceLocation, IBakedModel> renderPair;
 		private String translateKey;
@@ -62,7 +64,7 @@ public class SpecialContainerFillLists {
 		public static boolean contains(FluidType f){
 			if(f == null)
 				return false;
-			for(EnumCanister e : EnumCanister.values()){
+			for(EnumCanister e : EnumCanister.VALUES){
 				if(e.getFluid() == f)
 					return true;
 			}
@@ -71,7 +73,7 @@ public class SpecialContainerFillLists {
 		public static EnumCanister getEnumFromFluid(FluidType f){
 			if(f == null || f == Fluids.NONE)
 				return EnumCanister.EMPTY;
-			for(EnumCanister e : EnumCanister.values()){
+			for(EnumCanister e : EnumCanister.VALUES){
 				if(e.getFluid() == f){
 					return e;
 				}
@@ -79,34 +81,35 @@ public class SpecialContainerFillLists {
 			return null;
 		}
 		public static FluidType[] getFluids() {
-			FluidType[] f = new FluidType[EnumCanister.values().length];
-			for(int i = 0; i < EnumCanister.values().length; i ++){
-				f[i] = EnumCanister.values()[i].getFluid();
+			FluidType[] f = new FluidType[EnumCanister.VALUES.length];
+			for(int i = 0; i < EnumCanister.VALUES.length; i ++){
+				f[i] = EnumCanister.VALUES[i].getFluid();
 			}
 			return f;
 		}
 	}
 
 	public enum EnumCell {
-		EMPTY(null, new ModelResourceLocation(RefStrings.MODID + ":cell_empty", "inventory")),
-		UF6(Fluids.UF6, new ModelResourceLocation(RefStrings.MODID + ":cell_uf6", "inventory")),
-		PUF6(Fluids.PUF6, new ModelResourceLocation(RefStrings.MODID + ":cell_puf6", "inventory")),
-		ANTIMATTER(Fluids.AMAT, new ModelResourceLocation(RefStrings.MODID + ":cell_antimatter", "inventory")),
-		DEUTERIUM(Fluids.DEUTERIUM, new ModelResourceLocation(RefStrings.MODID + ":cell_deuterium", "inventory")),
-		TRITIUM(Fluids.TRITIUM, new ModelResourceLocation(RefStrings.MODID + ":cell_tritium", "inventory")),
-		SAS3(Fluids.SAS3, new ModelResourceLocation(RefStrings.MODID + ":cell_sas3", "inventory")),
-		ANTISCHRABIDIUM(Fluids.ASCHRAB, new ModelResourceLocation(RefStrings.MODID + ":cell_anti_schrabidium", "inventory"));
+		EMPTY(null, new ModelResourceLocation(Tags.MODID + ":cell_empty", "inventory")),
+		UF6(Fluids.UF6, new ModelResourceLocation(Tags.MODID + ":cell_uf6", "inventory")),
+		PUF6(Fluids.PUF6, new ModelResourceLocation(Tags.MODID + ":cell_puf6", "inventory")),
+		ANTIMATTER(Fluids.AMAT, new ModelResourceLocation(Tags.MODID + ":cell_antimatter", "inventory")),
+		DEUTERIUM(Fluids.DEUTERIUM, new ModelResourceLocation(Tags.MODID + ":cell_deuterium", "inventory")),
+		TRITIUM(Fluids.TRITIUM, new ModelResourceLocation(Tags.MODID + ":cell_tritium", "inventory")),
+		SAS3(Fluids.SAS3, new ModelResourceLocation(Tags.MODID + ":cell_sas3", "inventory")),
+		ANTISCHRABIDIUM(Fluids.ASCHRAB, new ModelResourceLocation(Tags.MODID + ":cell_anti_schrabidium", "inventory"));
+        public static final EnumCell[] VALUES = values();
 
 		private static final Map<FluidType, EnumCell> FLUID_TO_CELL_MAP;
 		private static final Set<FluidType> VALID_FLUIDS;
 		private static final FluidType[] FLUID_ARRAY;
 
 		static {
-			FLUID_TO_CELL_MAP = Arrays.stream(values()).filter(e -> e.fluid != null)
+			FLUID_TO_CELL_MAP = Arrays.stream(VALUES).filter(e -> e.fluid != null)
 					.collect(Collectors.toMap(EnumCell::getFluid, e -> e));
 
 			VALID_FLUIDS = FLUID_TO_CELL_MAP.keySet();
-			FLUID_ARRAY = Arrays.stream(values()).map(EnumCell::getFluid).toArray(FluidType[]::new);
+			FLUID_ARRAY = Arrays.stream(VALUES).map(EnumCell::getFluid).toArray(FluidType[]::new);
 		}
 		private final FluidType fluid;
 		private final Pair<ModelResourceLocation, IBakedModel> renderPair;
@@ -155,14 +158,15 @@ public class SpecialContainerFillLists {
 	}
 
 	public enum EnumGasCanister {
-		NATURAL(Fluids.GAS, new ModelResourceLocation(RefStrings.MODID + ":gas_full", "inventory")),
-		PETROLEUM(Fluids.PETROLEUM, new ModelResourceLocation(RefStrings.MODID + ":gas_petroleum", "inventory")),
-		BIOGAS(Fluids.BIOGAS, new ModelResourceLocation(RefStrings.MODID + ":gas_biogas", "inventory")),
-		HYDROGEN(Fluids.HYDROGEN, new ModelResourceLocation(RefStrings.MODID + ":gas_hydrogen", "inventory")),
-		DEUTERIUM(Fluids.DEUTERIUM, new ModelResourceLocation(RefStrings.MODID + ":gas_deuterium", "inventory")),
-		TRITIUM(Fluids.TRITIUM, new ModelResourceLocation(RefStrings.MODID + ":gas_tritium", "inventory")),
-		OXYGEN(Fluids.OXYGEN, new ModelResourceLocation(RefStrings.MODID + ":gas_oxygen", "inventory"));
-		
+		NATURAL(Fluids.GAS, new ModelResourceLocation(Tags.MODID + ":gas_full", "inventory")),
+		PETROLEUM(Fluids.PETROLEUM, new ModelResourceLocation(Tags.MODID + ":gas_petroleum", "inventory")),
+		BIOGAS(Fluids.BIOGAS, new ModelResourceLocation(Tags.MODID + ":gas_biogas", "inventory")),
+		HYDROGEN(Fluids.HYDROGEN, new ModelResourceLocation(Tags.MODID + ":gas_hydrogen", "inventory")),
+		DEUTERIUM(Fluids.DEUTERIUM, new ModelResourceLocation(Tags.MODID + ":gas_deuterium", "inventory")),
+		TRITIUM(Fluids.TRITIUM, new ModelResourceLocation(Tags.MODID + ":gas_tritium", "inventory")),
+		OXYGEN(Fluids.OXYGEN, new ModelResourceLocation(Tags.MODID + ":gas_oxygen", "inventory"));
+        public static final EnumGasCanister[] VALUES = values();
+
 		private FluidType fluid;
 		private Pair<ModelResourceLocation, IBakedModel> renderPair;
 		private String translateKey;
@@ -190,16 +194,16 @@ public class SpecialContainerFillLists {
 		public static boolean contains(FluidType f){
 			if(f == null)
 				return false;
-			for(EnumGasCanister e : EnumGasCanister.values()){
+			for(EnumGasCanister e : EnumGasCanister.VALUES){
 				if(e.getFluid() == f)
 					return true;
 			}
 			return false;
 		}
 		public static FluidType[] getFluids() {
-			FluidType[] f = new FluidType[EnumGasCanister.values().length];
-			for(int i = 0; i < EnumGasCanister.values().length; i ++){
-				f[i] = EnumGasCanister.values()[i].getFluid();
+			FluidType[] f = new FluidType[EnumGasCanister.VALUES.length];
+			for(int i = 0; i < EnumGasCanister.VALUES.length; i ++){
+				f[i] = EnumGasCanister.VALUES[i].getFluid();
 			}
 			return f;
 		}

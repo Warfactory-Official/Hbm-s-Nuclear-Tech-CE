@@ -200,10 +200,10 @@ public class EntityArtilleryShell extends EntityThrowableNT implements IChunkLoa
     }
 
     @SideOnly(Side.CLIENT)
-    public void setVelocity(double p_70016_1_, double p_70016_3_, double p_70016_5_) {
-        this.velocityX = this.motionX = p_70016_1_;
-        this.velocityY = this.motionY = p_70016_3_;
-        this.velocityZ = this.motionZ = p_70016_5_;
+    public void setVelocity(double x, double y, double z) {
+        this.velocityX = this.motionX = x;
+        this.velocityY = this.motionY = y;
+        this.velocityZ = this.motionZ = z;
     }
 
     @SideOnly(Side.CLIENT)
@@ -230,7 +230,7 @@ public class EntityArtilleryShell extends EntityThrowableNT implements IChunkLoa
             MainRegistry.logger.info("########################\n Motion Values On Impact " + this.motionX + ", " + this.motionY + ", " + this.motionZ + "\n########################");
            
 
-            if(mop.typeOfHit == mop.typeOfHit.ENTITY && mop.entityHit instanceof EntityArtilleryShell) return;
+            if(mop.typeOfHit == RayTraceResult.Type.ENTITY && mop.entityHit instanceof EntityArtilleryShell) return;
             this.getType().onImpact(this, mop);
         }
     }
@@ -315,8 +315,8 @@ public class EntityArtilleryShell extends EntityThrowableNT implements IChunkLoa
     }
 
     @Override
-    public double getGravityVelocity() {
-        return 9.81 * 0.05;
+    public float getGravityVelocity() {
+        return 9.81F * 0.05F;
         //try changing to *0.03 as SuperClass assumes 0.03 for grav velocity,
         //also grav massivley effects where the shell lands
     }

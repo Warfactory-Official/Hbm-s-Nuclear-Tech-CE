@@ -12,6 +12,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.CasingCreator;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.util.Vec3dUtil;
@@ -37,20 +38,22 @@ import java.util.List;
 @AutoRegister
 public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implements IGUIProvider {
 
-    public short mode = 0;
     public static final short MODE_ARTILLERY = 0;
     public static final short MODE_CANNON = 1;
     public static final short MODE_MANUAL = 2;
-    private boolean didJustShoot = false;
-    private boolean retracting = false;
+    protected static CasingEjector ejector = new CasingEjector().setMotion(0, 0.6, -1).setAngleRange(0.1F, 0.1F);
+    public short mode = 0;
     public double barrelPos = 0;
     public double lastBarrelPos = 0;
+    int timer;
+    private boolean didJustShoot = false;
+    private boolean retracting = false;
 
     @Override
     @SideOnly(Side.CLIENT)
     public List<ItemStack> getAmmoTypesForDisplay() {
 
-        if(ammoStacks != null)
+        if (ammoStacks != null)
             return ammoStacks;
 
         ammoStacks = new ArrayList<>();
@@ -170,9 +173,9 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
 
     public ItemStack getShellLoaded() {
 
-        for(int i = 1; i < 10; i++) {
-            if(inventory.getStackInSlot(i) != ItemStack.EMPTY) {
-                if(inventory.getStackInSlot(i).getItem() == ModItems.ammo_arty) {
+        for (int i = 1; i < 10; i++) {
+            if (!inventory.getStackInSlot(i).isEmpty()) {
+                if (inventory.getStackInSlot(i).getItem() == ModItems.ammo_arty) {
                     return inventory.getStackInSlot(i);
                 }
             }
@@ -183,11 +186,11 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
 
     public void consumeAmmo(Item ammo) {
 
-        for(int i = 1; i < 10; i++) {
+        for (int i = 1; i < 10; i++) {
             ItemStack stack = this.inventory.getStackInSlot(i);
-            if(!stack.isEmpty() && stack.getItem() == ammo) {
+            if (!stack.isEmpty() && stack.getItem() == ammo) {
                 stack.shrink(1);
-                if(stack.isEmpty()) {
+                if (stack.isEmpty()) {
                     this.inventory.setStackInSlot(i, ItemStack.EMPTY);
                 }
                 this.markDirty();
@@ -209,13 +212,13 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
         proj.setTarget((int) tPos.x, (int) tPos.y, (int) tPos.z);
         proj.setType(type.getItemDamage());
 
-        if(type.getItemDamage() == 8 && type.hasTagCompound()) {
+        if (type.getItemDamage() == 8 && type.hasTagCompound()) {
             assert type.getTagCompound() != null;
             NBTTagCompound cargo = type.getTagCompound().getCompoundTag("cargo");
             proj.setCargo(new ItemStack(cargo));
         }
 
-        if(this.mode != MODE_CANNON)
+        if (this.mode != MODE_CANNON)
             proj.setWhistle(true);
 
         world.spawnEntity(proj);
@@ -231,19 +234,19 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
     @Override
     public void update() {
 
-        if(world.isRemote) {
+        if (world.isRemote) {
             this.lastBarrelPos = this.barrelPos;
 
-            if(this.retracting) {
+            if (this.retracting) {
                 this.barrelPos += 0.5;
 
-                if(this.barrelPos >= 1) {
+                if (this.barrelPos >= 1) {
                     this.retracting = false;
                 }
 
             } else {
                 this.barrelPos -= 0.05;
-                if(this.barrelPos < 0) {
+                if (this.barrelPos < 0) {
                     this.barrelPos = 0;
                 }
             }
@@ -253,12 +256,12 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
             this.rotationYaw = this.syncRotationYaw;
         }
 
-        if(!world.isRemote) {
+        if (!world.isRemote) {
             // mlbv: this is NOT how 1.7 deals with it, but I had to put it here to make the retraction work
             // I frankly don't know why
             this.didJustShoot = false;
-            if(this.mode == MODE_MANUAL) {
-                if(!this.targetQueue.isEmpty()) {
+            if (this.mode == MODE_MANUAL) {
+                if (!this.targetQueue.isEmpty()) {
                     this.tPos = this.targetQueue.get(0);
                 }
             } else {
@@ -269,58 +272,58 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
 
             this.updateConnections();
 
-            if(this.target != null && !target.isEntityAlive()) {
+            if (this.target != null && !target.isEntityAlive()) {
                 this.target = null;
                 this.stattrak++;
             }
 
-            if(target != null && this.mode != MODE_MANUAL) {
-                if(!this.entityInLOS(this.target)) {
+            if (target != null && this.mode != MODE_MANUAL) {
+                if (!this.entityInLOS(this.target)) {
                     this.target = null;
                 }
             }
 
-            if(target != null) {
+            if (target != null) {
                 this.tPos = this.getEntityPos(target);
             } else {
-                if(this.mode != MODE_MANUAL) {
+                if (this.mode != MODE_MANUAL) {
                     this.tPos = null;
                 }
             }
 
-            if(isOn() && hasPower()) {
+            if (isOn() && hasPower()) {
 
-                if(tPos != null)
+                if (tPos != null)
                     this.alignTurret();
             } else {
                 this.target = null;
                 this.tPos = null;
             }
 
-            if(!isOn()) this.targetQueue.clear();
+            if (!isOn()) this.targetQueue.clear();
 
-            if(this.target != null && !target.isEntityAlive()) {
+            if (this.target != null && !target.isEntityAlive()) {
                 this.target = null;
                 this.tPos = null;
                 this.stattrak++;
             }
 
-            if(isOn() && hasPower()) {
+            if (isOn() && hasPower()) {
                 searchTimer--;
 
                 this.setPower(this.getPower() - this.getConsumption());
 
-                if(searchTimer <= 0) {
+                if (searchTimer <= 0) {
                     searchTimer = this.getDecetorInterval();
 
-                    if(this.target == null && this.mode != MODE_MANUAL)
+                    if (this.target == null && this.mode != MODE_MANUAL)
                         this.seekNewTarget();
                 }
             } else {
                 searchTimer = 0;
             }
 
-            if(this.aligned) {
+            if (this.aligned) {
                 this.updateFiringTick();
             }
 
@@ -328,7 +331,7 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
 
             networkPackNT(250);
 
-            if(casingDelay > 0) {
+            if (casingDelay > 0) {
                 casingDelay--;
             } else {
                 spawnCasing();
@@ -337,17 +340,15 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
         } else {
 
             //this will fix the interpolation error when the turret crosses the 360° point
-            if(Math.abs(this.lastRotationYaw - this.rotationYaw) > Math.PI) {
+            if (Math.abs(this.lastRotationYaw - this.rotationYaw) > Math.PI) {
 
-                if(this.lastRotationYaw < this.rotationYaw)
+                if (this.lastRotationYaw < this.rotationYaw)
                     this.lastRotationYaw += Math.PI * 2;
                 else
                     this.lastRotationYaw -= Math.PI * 2;
             }
         }
     }
-
-    int timer;
 
     @Override
     public void updateFiringTick() {
@@ -356,11 +357,11 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
 
         int delay = mode == MODE_ARTILLERY ? 300 : 40;
 
-        if(timer % delay == 0) {
+        if (timer % delay == 0) {
 
             ItemStack conf = this.getShellLoaded();
 
-            if(conf != null) {
+            if (conf != null) {
                 cachedCasingConfig = ItemAmmoArty.itemTypes[conf.getItemDamage()].casing;
                 this.spawnShell(conf);
                 this.consumeAmmo(ModItems.ammo_arty);
@@ -375,18 +376,16 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
                 data.setString("type", "vanillaExt");
                 data.setString("mode", "largeexplode");
                 data.setFloat("size", 0F);
-                data.setByte("count", (byte)5);
+                data.setByte("count", (byte) 5);
                 PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.xCoord + vec.xCoord, pos.yCoord + vec.yCoord, pos.zCoord + vec.zCoord), new TargetPoint(world.provider.getDimension(), pos.xCoord, pos.yCoord, pos.zCoord, 150));
             }
 
-            if(this.mode == MODE_MANUAL && !this.targetQueue.isEmpty()) {
+            if (this.mode == MODE_MANUAL && !this.targetQueue.isEmpty()) {
                 this.targetQueue.remove(0);
                 this.tPos = null;
             }
         }
     }
-
-    protected static CasingEjector ejector = new CasingEjector().setMotion(0, 0.6, -1).setAngleRange(0.1F, 0.1F);
 
     @Override
     protected CasingEjector getEjector() {
@@ -400,15 +399,15 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
 
     @Override
     public void handleButtonPacket(int value, int meta) {
-        if(meta == 5) {
+        if (meta == 5) {
             this.mode++;
-            if(this.mode > 2)
+            if (this.mode > 2)
                 this.mode = 0;
 
             this.tPos = null;
             this.targetQueue.clear();
 
-        } else{
+        } else {
             super.handleButtonPacket(value, meta);
         }
     }
@@ -443,18 +442,19 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
     @Override
     protected void spawnCasing() {
 
-        if(cachedCasingConfig == null) return;
-        CasingEjector ej = getEjector();
+        if (cachedCasingConfig == null) return;
 
         Vec3d spawn = this.getCasingSpawnPos();
-        NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "casing");
-        data.setFloat("pitch", (float) 0);
-        data.setFloat("yaw", (float) rotationYaw);
-        data.setBoolean("crouched", false);
-        data.setString("name", cachedCasingConfig.getName());
-        if(ej != null) data.setInteger("ej", ej.getId());
-        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, spawn.x, spawn.y, spawn.z), new TargetPoint(world.provider.getDimension(), getPos().getX(), getPos().getY(), getPos().getZ(), 50));
+        float yaw = (float) Math.toDegrees(rotationYaw);
+        float pitch = (float) -Math.toDegrees(this.rotationPitch);
+
+        CasingCreator.composeEffect(world,
+                spawn,
+                yaw, pitch,
+                -0.6, 0.3, 0,
+                0.01, world.rand.nextFloat() * 20F - 10F, 0,
+                cachedCasingConfig.getName(),
+                true, 200, 1, 20);
 
         cachedCasingConfig = null;
     }

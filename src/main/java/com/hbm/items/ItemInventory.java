@@ -1,11 +1,13 @@
 package com.hbm.items;
 
 import com.hbm.lib.HBMSoundHandler;
+import com.hbm.util.ItemStackUtil;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
@@ -36,13 +38,10 @@ public class ItemInventory extends ItemStackHandler {
         }
 
         // Load from NBT
-        NBTTagCompound nbt = this.target.getTagCompound();
-        for (int i = 0; i < this.getSlots(); i++) {
-            if (nbt.hasKey("slot" + i)) {
-                this.setStackInSlot(i, new ItemStack(nbt.getCompoundTag("slot" + i)));
-            } else {
-                this.setStackInSlot(i, ItemStack.EMPTY);
-            }
+        ItemStack[] stacks = ItemStackUtil.readStacksFromNBT(target, getSlots());
+        for (int i = 0; i < stacks.length; i++) {
+            if (stacks[i] == null) this.setStackInSlot(i, ItemStack.EMPTY);
+            else this.setStackInSlot(i, stacks[i]);
         }
     }
 
@@ -57,19 +56,11 @@ public class ItemInventory extends ItemStackHandler {
         }
 
         // Write back inventory into target NBT (preserving other keys)
-        NBTTagCompound nbt = target.getTagCompound() != null ? target.getTagCompound() : new NBTTagCompound();
+        ItemStack[] stacks = new ItemStack[getSlots()];
         for (int i = 0; i < getSlots(); i++) {
-            ItemStack stack = getStackInSlot(i);
-            if (stack.isEmpty()) {
-                nbt.removeTag("slot" + i);
-            } else {
-                NBTTagCompound slotTag = new NBTTagCompound();
-                stack.writeToNBT(slotTag);
-                nbt.setTag("slot" + i, slotTag);
-            }
+            stacks[i] = getStackInSlot(i);
         }
-        if (nbt.isEmpty()) nbt = null;
-        target.setTagCompound(nbt);
+        ItemStackUtil.addStacksToNBT(target, stacks);
     }
 
     public NBTTagCompound checkNBT(NBTTagCompound nbt) {

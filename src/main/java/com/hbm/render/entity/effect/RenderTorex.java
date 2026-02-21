@@ -1,9 +1,9 @@
 package com.hbm.render.entity.effect;
 
+import com.hbm.Tags;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.effect.EntityNukeTorex.Cloudlet;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ModEventHandlerClient;
 import com.hbm.render.amlfrom1710.Vec3;
@@ -27,8 +27,8 @@ public class RenderTorex extends Render<EntityNukeTorex> {
 
 	public static final IRenderFactory<EntityNukeTorex> FACTORY = man -> new RenderTorex(man);
 	
-	private static final ResourceLocation cloudlet = new ResourceLocation(RefStrings.MODID + ":textures/particle/particle_base.png");
-	private static final ResourceLocation flare = new ResourceLocation(RefStrings.MODID + ":textures/particle/flare.png");
+	private static final ResourceLocation cloudlet = new ResourceLocation(Tags.MODID + ":textures/particle/particle_base.png");
+	private static final ResourceLocation flare = new ResourceLocation(Tags.MODID + ":textures/particle/flare.png");
 
 	public static final int flashBaseDuration = 30;
 	public static final int flareBaseDuration = 100;

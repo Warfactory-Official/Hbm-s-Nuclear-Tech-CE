@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerDiFurnaceRTG;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityDiFurnaceRTG;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
@@ -12,7 +12,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.client.renderer.GlStateManager;
 
 public class GUIDiFurnaceRTG extends GuiInfoContainer {
-	public static ResourceLocation texture = new ResourceLocation(RefStrings.MODID, "textures/gui/processing/gui_rtg_difurnace.png");
+	public static ResourceLocation texture = new ResourceLocation(Tags.MODID, "textures/gui/processing/gui_rtg_difurnace.png");
 	private TileEntityDiFurnaceRTG bFurnace;
 
 	public GUIDiFurnaceRTG(InventoryPlayer playerInv, TileEntityDiFurnaceRTG te) {

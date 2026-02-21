@@ -1,7 +1,7 @@
 package com.hbm.items.gear;
 
+import com.hbm.Tags;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.NTMRenderHelper;
 import com.hbm.render.model.ModelCloak;
 import com.hbm.render.model.ModelGoggles;
@@ -36,12 +36,12 @@ public class ArmorModel extends ItemArmor {
 	@SideOnly(Side.CLIENT)
 	private ModelHat modelHat;
 	
-	private ResourceLocation goggleBlur0 = new ResourceLocation(RefStrings.MODID + ":textures/misc/overlay_goggles_0.png");
-	private ResourceLocation goggleBlur1 = new ResourceLocation(RefStrings.MODID + ":textures/misc/overlay_goggles_1.png");
-	private ResourceLocation goggleBlur2 = new ResourceLocation(RefStrings.MODID + ":textures/misc/overlay_goggles_2.png");
-	private ResourceLocation goggleBlur3 = new ResourceLocation(RefStrings.MODID + ":textures/misc/overlay_goggles_3.png");
-	private ResourceLocation goggleBlur4 = new ResourceLocation(RefStrings.MODID + ":textures/misc/overlay_goggles_4.png");
-	private ResourceLocation goggleBlur5 = new ResourceLocation(RefStrings.MODID + ":textures/misc/overlay_goggles_5.png");
+	private ResourceLocation goggleBlur0 = new ResourceLocation(Tags.MODID + ":textures/misc/overlay_goggles_0.png");
+	private ResourceLocation goggleBlur1 = new ResourceLocation(Tags.MODID + ":textures/misc/overlay_goggles_1.png");
+	private ResourceLocation goggleBlur2 = new ResourceLocation(Tags.MODID + ":textures/misc/overlay_goggles_2.png");
+	private ResourceLocation goggleBlur3 = new ResourceLocation(Tags.MODID + ":textures/misc/overlay_goggles_3.png");
+	private ResourceLocation goggleBlur4 = new ResourceLocation(Tags.MODID + ":textures/misc/overlay_goggles_4.png");
+	private ResourceLocation goggleBlur5 = new ResourceLocation(Tags.MODID + ":textures/misc/overlay_goggles_5.png");
 
 	public ArmorModel(ArmorMaterial materialIn, int renderIndexIn, EntityEquipmentSlot equipmentSlotIn, String s) {
 		super(materialIn, renderIndexIn, equipmentSlotIn);
@@ -179,6 +179,7 @@ public class ArmorModel extends ItemArmor {
 	}
 	
 	@Override
+    @SideOnly(Side.CLIENT)
 	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
 		if (stack.getItem() == ModItems.cape_radiation) {
 			list.add("Avalible for everyone");

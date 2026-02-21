@@ -1,9 +1,9 @@
 package com.hbm.render.tileentity;
 
+import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.NTMRenderHelper;
 import com.hbm.render.model.ModelGun;
 import com.hbm.render.model.ModelStatue;
@@ -20,8 +20,8 @@ import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManage
 @AutoRegister
 public class RenderDecoBlockAlt extends TileEntitySpecialRenderer<TileEntityDecoBlockAlt> {
 
-	private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":" + "textures/models/misc/ModelStatue.png");
-	private static final ResourceLocation gunTexture = new ResourceLocation(RefStrings.MODID + ":" + "textures/models/weapons/ModelGun.png");
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":" + "textures/models/misc/ModelStatue.png");
+	private static final ResourceLocation gunTexture = new ResourceLocation(Tags.MODID + ":" + "textures/models/weapons/ModelGun.png");
 
 	private ModelStatue model;
 	private ModelGun gun;

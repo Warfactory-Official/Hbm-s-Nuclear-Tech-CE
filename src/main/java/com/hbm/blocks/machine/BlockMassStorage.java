@@ -180,9 +180,9 @@ public class BlockMassStorage extends BlockContainer implements ILookOverlay, IT
 	}
 
 	@Override
-	public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
+	public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
 
-		TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
+		TileEntity te = world.getTileEntity(pos);
 
 		if (!(te instanceof TileEntityMassStorage))
 			return;
@@ -191,7 +191,7 @@ public class BlockMassStorage extends BlockContainer implements ILookOverlay, IT
 
 		List<String> text = new ArrayList();
 		String title = "Empty";
-		boolean full = storage.type != ItemStack.EMPTY && storage.type != null && storage.type.getItem() != Items.AIR;
+		boolean full =  storage.type != null && !storage.type.isEmpty() && storage.type.getItem() != Items.AIR;
 
 		if (full) {
 
@@ -215,7 +215,7 @@ public class BlockMassStorage extends BlockContainer implements ILookOverlay, IT
 
 		ItemStack type = new ItemStack(stack.getTagCompound().getCompoundTag("slot1"));
 
-		if (type != ItemStack.EMPTY) {
+		if (!type.isEmpty()) {
 			tooltip.add("§6" + type.getDisplayName());
 			tooltip.add(String.format(Locale.US, "%,d", stack.getTagCompound().getInteger("stack")) + " / " + String.format(Locale.US, "%,d", getCapacity()));
 		}

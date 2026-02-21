@@ -39,31 +39,7 @@ public class ContainerCasingBag extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        ItemStack itemstack = ItemStack.EMPTY;
-        Slot slot = (Slot) this.inventorySlots.get(index);
-
-        if(slot != null && slot.getHasStack()) {
-            ItemStack itemstack1 = slot.getStack();
-            itemstack = itemstack1.copy();
-
-            if(index <= bag.getSlots() - 1) {
-                if(!InventoryUtil.mergeItemStack(this.inventorySlots, itemstack1, bag.getSlots(), this.inventorySlots.size(), true)) {
-                    return ItemStack.EMPTY;
-                }
-            } else if(!InventoryUtil.mergeItemStack(this.inventorySlots, itemstack1, 0, bag.getSlots(), false)) {
-                return ItemStack.EMPTY;
-            }
-
-            if(itemstack1.isEmpty()) {
-                slot.putStack(ItemStack.EMPTY);
-            } else {
-                slot.onSlotChanged();
-            }
-
-            slot.onTake(player, itemstack1);
-        }
-
-        return itemstack;
+        return InventoryUtil.transferStack(this.inventorySlots, index, bag.getSlots(), true, player);
     }
 
     @Override

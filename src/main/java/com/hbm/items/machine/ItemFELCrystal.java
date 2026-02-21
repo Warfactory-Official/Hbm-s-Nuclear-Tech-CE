@@ -32,11 +32,11 @@ public class ItemFELCrystal extends Item {
 
 	public enum EnumWavelengths{
 		NULL("la creatura", "6 dollar", 0x010101, 0x010101, TextFormatting.WHITE), //why do you exist?
-		IR("wavelengths.name.ir", "wavelengths.waveRange.ir", 0x802010, 0xFE2010, TextFormatting.RED),
+		IR("wavelengths.name.ir", "wavelengths.waveRange.ir", 0xBB1010, 0xCC4040, TextFormatting.RED),
 		VISIBLE("wavelengths.name.visible", "wavelengths.waveRange.visible", 0, 0, TextFormatting.GREEN),
-		UV("wavelengths.name.uv", "wavelengths.waveRange.uv", 0x801080, 0xFF00FF, TextFormatting.LIGHT_PURPLE),
-		GAMMA("wavelengths.name.gamma", "wavelengths.waveRange.gamma", 0x108010, 0x00FF00, TextFormatting.DARK_GREEN),
-		DRX("wavelengths.name.drx", "wavelengths.waveRange.drx", 0x801010, 0xFF0000, TextFormatting.DARK_RED);
+		UV("wavelengths.name.uv", "wavelengths.waveRange.uv", 0x0A1FC4, 0x00EFFF, TextFormatting.AQUA),
+		GAMMA("wavelengths.name.gamma", "wavelengths.waveRange.gamma", 0x150560, 0xEF00FF, TextFormatting.LIGHT_PURPLE),
+		DRX("wavelengths.name.drx", "wavelengths.waveRange.drx", 0xFF0000, 0xFF0000, TextFormatting.DARK_RED);
 
 		public final String name;
 		public final String wavelengthRange;

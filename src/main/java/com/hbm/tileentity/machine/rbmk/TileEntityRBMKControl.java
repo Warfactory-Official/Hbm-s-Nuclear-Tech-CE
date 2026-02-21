@@ -1,19 +1,26 @@
 package com.hbm.tileentity.machine.rbmk;
 
 import com.hbm.entity.projectile.EntityRBMKDebris.DebrisType;
+import com.hbm.handler.CompatHandler;
 import com.hbm.handler.neutron.RBMKNeutronHandler;
 import com.hbm.inventory.control_panel.DataValue;
 import com.hbm.inventory.control_panel.DataValueFloat;
 import io.netty.buffer.ByteBuf;
+import li.cil.oc.api.machine.Arguments;
+import li.cil.oc.api.machine.Callback;
+import li.cil.oc.api.machine.Context;
+import li.cil.oc.api.network.SimpleComponent;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.math.MathHelper;
+import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
-
-public abstract class TileEntityRBMKControl extends TileEntityRBMKSlottedBase {
+@Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
+public abstract class TileEntityRBMKControl extends TileEntityRBMKSlottedBase implements SimpleComponent, CompatHandler.OCComponent {
 
 	@SideOnly(Side.CLIENT)
 	public double lastLevel;
@@ -136,9 +143,9 @@ public abstract class TileEntityRBMKControl extends TileEntityRBMKSlottedBase {
 	}
 
 	@Override
-	public NBTTagCompound getNBTForConsole() {
-		NBTTagCompound data = new NBTTagCompound();
-		data.setDouble("level", this.level);
+	public RBMKColumn getConsoleData() {
+		RBMKColumn.ControlColumn data = (RBMKColumn.ControlColumn) super.getConsoleData();
+		data.level = this.level;
 		return data;
 	}
 
@@ -150,5 +157,49 @@ public abstract class TileEntityRBMKControl extends TileEntityRBMKSlottedBase {
 		data.put("level", new DataValueFloat((float) this.level*100));
 
 		return data;
+	}
+
+	@Override
+	@Optional.Method(modid = "opencomputers")
+	public String getComponentName() {
+		return "rbmk_control_rod";
+	}
+
+	@Callback(direct = true)
+	@Optional.Method(modid = "opencomputers")
+	public Object[] getLevel(Context context, Arguments args) {
+		return new Object[] {getMult() * 100};
+	}
+
+	@Callback(direct = true)
+	@Optional.Method(modid = "opencomputers")
+	public Object[] getTargetLevel(Context context, Arguments args) {
+		return new Object[] {targetLevel * 100};
+	}
+
+	@Callback(direct = true)
+	@Optional.Method(modid = "opencomputers")
+	public Object[] getCoordinates(Context context, Arguments args) {
+		return new Object[] {pos.getX(), pos.getY(), pos.getZ()};
+	}
+
+	@Callback(direct = true)
+	@Optional.Method(modid = "opencomputers")
+	public Object[] getHeat(Context context, Arguments args) {
+		return new Object[] {heat};
+	}
+
+	@Callback(direct = true)
+	@Optional.Method(modid = "opencomputers")
+	public Object[] getInfo(Context context, Arguments args) {
+		return new Object[] {heat, getMult() * 100, targetLevel * 100, pos.getX(), pos.getY(), pos.getZ()};
+	}
+
+	@Callback(direct = true, limit = 4)
+	@Optional.Method(modid = "opencomputers")
+	public Object[] setLevel(Context context, Arguments args) {
+		double newLevel = args.checkDouble(0)/100.0;
+		targetLevel = MathHelper.clamp(newLevel, 0, 1);
+		return new Object[] {};
 	}
 }

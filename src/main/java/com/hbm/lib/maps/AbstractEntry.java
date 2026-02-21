@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 package com.hbm.lib.maps;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+
 import java.util.Map;
 
 /**
@@ -24,7 +26,7 @@ import java.util.Map;
  * @param <TypeV> the type of mapped values
  */
 
-abstract class AbstractEntry<TypeK,TypeV> implements Map.Entry<TypeK,TypeV> {
+abstract class AbstractEntry<TypeK,TypeV> implements Object2ObjectMap.Entry<TypeK, TypeV>, Map.Entry<TypeK,TypeV> {
     /** Strongly typed key */
     protected final TypeK _key;
     /** Strongly typed value */

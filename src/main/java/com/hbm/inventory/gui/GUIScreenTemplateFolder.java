@@ -1,16 +1,16 @@
 package com.hbm.inventory.gui;
 
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.inventory.fluid.Fluids;
+import com.hbm.Tags;
+import com.hbm.config.MachineConfig;
 import com.hbm.inventory.recipes.AssemblerRecipes;
+import com.hbm.inventory.recipes.ChemplantRecipes;
 import com.hbm.inventory.recipes.CrucibleRecipes;
 import com.hbm.items.ModItems;
+import com.hbm.items.machine.ItemAssemblyTemplate;
 import com.hbm.items.machine.ItemCassette;
 import com.hbm.items.machine.ItemStamp;
-import com.hbm.lib.RefStrings;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toserver.ItemFolderPacket;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.GlStateManager;
@@ -18,7 +18,7 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Keyboard;
@@ -29,10 +29,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUIScreenTemplateFolder extends GuiScreen {
 
-	private static final ResourceLocation TEXTURE = new ResourceLocation(RefStrings.MODID, "textures/gui/gui_planner.png");
-	private static final ResourceLocation TEXTURE_JOURNAL = new ResourceLocation(RefStrings.MODID, "textures/gui/gui_planner_journal.png");
+	private static final ResourceLocation TEXTURE = new ResourceLocation(Tags.MODID, "textures/gui/gui_planner.png");
+	private static final ResourceLocation TEXTURE_JOURNAL = new ResourceLocation(Tags.MODID, "textures/gui/gui_planner_journal.png");
 	private final boolean isJournal;
 	private final List<ItemStack> allStacks = new ArrayList<>();
 	private final List<ItemStack> stacks = new ArrayList<>();
@@ -63,26 +65,27 @@ public class GUIScreenTemplateFolder extends GuiScreen {
 			for(ItemStack i : ItemStamp.stamps.get(ItemStamp.StampType.WIRE)) allStacks.add(i.copy());
 			for(ItemStack i : ItemStamp.stamps.get(ItemStamp.StampType.CIRCUIT)) allStacks.add(i.copy());
 			// Tracks
-			for (int i = 1; i < ItemCassette.TrackType.values().length; i++) {
+			for (int i = 1; i < ItemCassette.TrackType.VALUES.size(); i++) {
 				allStacks.add(new ItemStack(ModItems.siren_track, 1, i));
 			}
-
-			// Fluid IDs
-			FluidType[] fluids = Fluids.getInNiceOrder();
-			for (FluidType fluid : fluids) {
-				if (fluid != null && !fluid.hasNoID()) {
-					allStacks.add(new ItemStack(ModItems.fluid_identifier, 1, fluid.getID()));
-				}
-			}
 		}
 
-		if (!this.isJournal) {
+        if (MachineConfig.enableOldTemplates) {
+            Item heldFolderItem = heldItem.getItem();
+            AssemblerRecipes.recipes.forEach((compStack, recipe) -> {
+                if (recipe.folders.contains(heldFolderItem)) {
+                    allStacks.add(ItemAssemblyTemplate.writeType(new ItemStack(ModItems.assembly_template), compStack));
+                }
+            });
+        }
 
-			// Crucible Templates
-			CrucibleRecipes.recipes.forEach(recipe -> {
-				allStacks.add(new ItemStack(ModItems.crucible_template, 1, recipe.getId()));
-			});
-		}
+        if (!this.isJournal) {
+            if (MachineConfig.enableOldTemplates) ChemplantRecipes.recipes.forEach(recipe -> allStacks.add(new ItemStack(ModItems.chemistry_template, 1, recipe.getId())));
+            // Crucible Templates
+            CrucibleRecipes.recipes.forEach(recipe -> {
+                allStacks.add(new ItemStack(ModItems.crucible_template, 1, recipe.getId()));
+            });
+        }
 
 		search(null);
 	}
@@ -105,12 +108,6 @@ public class GUIScreenTemplateFolder extends GuiScreen {
 				if (line.toLowerCase(Locale.US).contains(sub)) {
 					stacks.add(stack);
 					continue outer;
-				}
-			}
-			if (stack.getItem() == ModItems.fluid_identifier) {
-				FluidType fluid = Fluids.fromID(stack.getMetadata());
-				if (fluid != null && fluid.getLocalizedName().toLowerCase(Locale.US).contains(sub)) {
-					stacks.add(stack);
 				}
 			}
 		}
@@ -313,7 +310,7 @@ public class GUIScreenTemplateFolder extends GuiScreen {
 		}
 
 		void executeAction() {
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
 			switch (type) {
 				case 0 -> PacketDispatcher.wrapper.sendToServer(new ItemFolderPacket(stack.copy()));
 				case 1 -> {

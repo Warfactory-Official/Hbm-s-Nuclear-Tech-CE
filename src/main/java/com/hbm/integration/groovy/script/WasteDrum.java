@@ -1,6 +1,7 @@
 package com.hbm.integration.groovy.script;
 
 import com.cleanroommc.groovyscript.api.IIngredient;
+import com.cleanroommc.groovyscript.api.documentation.annotations.RegistryDescription;
 import com.cleanroommc.groovyscript.registry.VirtualizedRegistry;
 import com.hbm.integration.groovy.HbmGroovyPropertyContainer;
 import com.hbm.inventory.RecipesCommon;
@@ -11,6 +12,7 @@ import net.minecraft.item.ItemStack;
 import static com.hbm.inventory.recipes.StorageDrumRecipes.outputs;
 import static com.hbm.inventory.recipes.WasteDrumRecipes.recipes;
 
+@RegistryDescription(linkGenerator = "hbm", isFullyDocumented = false)
 public class WasteDrum extends VirtualizedRegistry<Tuple.Pair<RecipesCommon.ComparableStack, ItemStack>> {
 
     @Override

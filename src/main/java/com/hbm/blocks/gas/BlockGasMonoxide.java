@@ -1,5 +1,6 @@
 package com.hbm.blocks.gas;
 
+import com.hbm.config.GeneralConfig;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.ModDamageSource;
@@ -22,10 +23,8 @@ public class BlockGasMonoxide extends BlockGasBase {
 
     @Override
     public void onEntityCollision(World worldIn, BlockPos pos, IBlockState state, Entity entity) {
-        if (!(entity instanceof EntityLivingBase))
+        if (!(entity instanceof EntityLivingBase entityLiving) || !GeneralConfig.enableCarbonMonoxide)
             return;
-
-        EntityLivingBase entityLiving = (EntityLivingBase) entity;
 
         if (ArmorRegistry.hasAllProtection(entityLiving, EntityEquipmentSlot.HEAD, HazardClass.GAS_MONOXIDE))
             ArmorUtil.damageGasMaskFilter(entityLiving, 1);
@@ -46,7 +45,11 @@ public class BlockGasMonoxide extends BlockGasBase {
     @Override
     public void updateTick(World world, BlockPos pos, IBlockState state, Random rand) {
 
-        if (!world.isRemote && rand.nextInt(100) == 0) {
+        if(world.isRemote){
+            return;
+        }
+
+        if (rand.nextInt(100) == 0 || !GeneralConfig.enableCarbonMonoxide) {
             world.setBlockToAir(pos);
             return;
         }

@@ -15,13 +15,14 @@ public class FluidLoaderInfinite implements IFluidLoadingHandler {
 	@Override
 	public boolean fillItem(IItemHandler slots, int in, int out, FluidTankNTM tank) {
 
-		if(slots.getStackInSlot(in) == ItemStack.EMPTY || !(slots.getStackInSlot(in).getItem() instanceof ItemFluidContainerInfinite item)) return false;
+        ItemStack inputStack = slots.getStackInSlot(in);
+        if(inputStack.isEmpty() || !(inputStack.getItem() instanceof ItemFluidContainerInfinite item)) return false;
 
         if(!item.allowPressure(tank.pressure)) return false;
 		if(item.getType() != null && tank.type != item.getType()) return false;
 
 		if(item.getChance() <= 1 || rand.nextInt(item.getChance()) == 0) {
-			tank.setFill(Math.max(tank.getFill() - item.getAmount(), 0));
+			tank.setFill(Math.max(tank.getFill() - item.getAmount() * inputStack.getCount(), 0));
 		}
 
 		return true;
@@ -39,12 +40,10 @@ public class FluidLoaderInfinite implements IFluidLoadingHandler {
 				tank.setTankType(itemType);
 			} else return false;
 		}
-		if (itemType != null && tank.getTankType() != itemType) {
-			return false;
-		}
+		if (itemType != null && tank.getTankType() != itemType) return false;
 
 		if (item.getChance() <= 1 || rand.nextInt(item.getChance()) == 0) {
-			tank.setFill(Math.min(tank.getFill() + item.getAmount(), tank.getMaxFill()));
+			tank.setFill(Math.min(tank.getFill() + item.getAmount() * inputStack.getCount(), tank.getMaxFill()));
 		}
 
 		return true;

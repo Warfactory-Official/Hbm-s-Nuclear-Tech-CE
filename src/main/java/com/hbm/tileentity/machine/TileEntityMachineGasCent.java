@@ -23,6 +23,7 @@ import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.BufferUtil;
 import com.hbm.util.InventoryUtil;
+import com.hbm.util.SoundUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
@@ -38,6 +39,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
@@ -62,7 +64,23 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
 		// 4 = battery
 		// 5 = fluid ID
 		// 6 = upgrade
-		super(9, true, true);
+		super(0, true, true);
+
+        inventory = new ItemStackHandler(9) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                super.onContentsChanged(slot);
+                markDirty();
+            }
+
+            @Override
+            public void setStackInSlot(int slot, ItemStack stack) {
+                super.setStackInSlot(slot, stack);
+                if (Library.isMachineUpgrade(stack) && slot == 6)
+                    SoundUtil.playUpgradePlugSound(world, pos);
+            }
+        };
+
 		tank = new FluidTankNTM(Fluids.UF6, 2000);
 		inputTank = new PseudoFluidTank(GasCentrifugeRecipes.PseudoFluidType.NUF6, 8000);
 		outputTank = new PseudoFluidTank(GasCentrifugeRecipes.PseudoFluidType.LEUF6, 8000);
@@ -251,7 +269,7 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
 
 	@Override
 	public void onChunkUnload() {
-
+        super.onChunkUnload();
 		if(audio != null) {
 			audio.stopSound();
 			audio = null;
@@ -321,7 +339,7 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
 
 	public void setTankType(int in) {
 
-		if(inventory.getStackInSlot(in) != ItemStack.EMPTY && inventory.getStackInSlot(in).getItem() instanceof IItemFluidIdentifier id) {
+		if(!inventory.getStackInSlot(in).isEmpty() && inventory.getStackInSlot(in).getItem() instanceof IItemFluidIdentifier id) {
             FluidType newType = id.getType(world, pos.getX(), pos.getY(), pos.getZ(), inventory.getStackInSlot(in));
 
 			if(tank.getTankType() != newType) {

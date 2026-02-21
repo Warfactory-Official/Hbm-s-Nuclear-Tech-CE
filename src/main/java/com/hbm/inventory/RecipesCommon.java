@@ -246,6 +246,7 @@ public class RecipesCommon {
             return entries;
         }
 
+        //mlbv: the hashmap lookup + string hashing are really heavy, we should only mix the id + meta + stack integers if possible
         @Override
         @Contract(pure = true)
         public int hashCode() {
@@ -335,6 +336,11 @@ public class RecipesCommon {
         @Contract("-> new")
         public List<ItemStack> extractForJEI() {
             return Collections.singletonList(this.toStack());
+        }
+
+        @Contract(pure = true)
+        public boolean isEmpty() {
+            return item == Items.AIR || stacksize <= 0 || meta < -32768 || meta > 65535;
         }
     }
 

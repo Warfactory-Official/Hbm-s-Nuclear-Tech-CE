@@ -1,11 +1,13 @@
 package com.hbm.entity.missile;
 
-import com.hbm.explosion.ExplosionLarge;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.OreDictManager.DictFrame;
+import com.hbm.inventory.material.Mats;
 import com.hbm.items.ItemEnums.EnumAshType;
 import com.hbm.items.ModItems;
+import com.hbm.particle.helper.ExplosionCreator;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -18,15 +20,15 @@ public class EntityMissileStealth extends EntityMissileBaseNT {
 
 	@Override
 	public List<ItemStack> getDebris() {
-		List<ItemStack> list = new ArrayList<ItemStack>();
-		//list.add(new ItemStack(ModItems.bolt, 4, Mats.MAT_STEEL.id));
+		List<ItemStack> list = new ArrayList<>();
+		list.add(new ItemStack(ModItems.bolt, 4, Mats.MAT_STEEL.id));
 		return list;
 	}
 
 	@Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModItems.missile_stealth); }
 	@Override public boolean canBeSeenBy(Object radar) { return false; }
-	
-	@Override public void onImpact() { ExplosionLarge.explode(world, thrower, posX, posY, posZ, 20F, true, false, false); }
+
+	@Override public void onMissileImpact(RayTraceResult mop) { this.explodeStandard(20F, 24, false); ExplosionCreator.composeEffectStandard(world, posX, posY, posZ); }
 	@Override public ItemStack getDebrisRareDrop() { return DictFrame.fromOne(ModItems.powder_ash, EnumAshType.MISC); }
 
 }

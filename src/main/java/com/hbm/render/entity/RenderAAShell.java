@@ -1,10 +1,10 @@
 package com.hbm.render.entity;
 
+import com.hbm.Tags;
 import com.hbm.entity.projectile.EntityAAShell;
-import com.hbm.hfr.render.loader.HFRWavefrontObject;
+import com.hbm.render.loader.HFRWavefrontObject;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
-import com.hbm.render.amlfrom1710.IModelCustom;
+import com.hbm.render.loader.IModelCustom;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -15,14 +15,14 @@ public class RenderAAShell extends Render<EntityAAShell> {
 
 	public static final IRenderFactory<EntityAAShell> FACTORY = (RenderManager man) -> {return new RenderAAShell(man);};
 	
-	private static final ResourceLocation objTesterModelRL = new ResourceLocation(/*"/assets/" + */RefStrings.MODID, "models/Mirv.obj");
+	private static final ResourceLocation objTesterModelRL = new ResourceLocation(/*"/assets/" + */Tags.MODID, "models/Mirv.obj");
 	private IModelCustom boyModel;
     private ResourceLocation boyTexture;
 	
 	protected RenderAAShell(RenderManager renderManager) {
 		super(renderManager);
 		boyModel = new HFRWavefrontObject(objTesterModelRL).asVBO();
-		boyTexture = new ResourceLocation(RefStrings.MODID, "textures/models/TheGadget3_.png");
+		boyTexture = new ResourceLocation(Tags.MODID, "textures/models/TheGadget3_.png");
 	}
 	
 	@Override

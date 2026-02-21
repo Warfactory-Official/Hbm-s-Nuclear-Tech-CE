@@ -1,8 +1,10 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.FluidContainerRegistry;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.tileentity.machine.TileEntitySILEX;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -23,7 +25,7 @@ public class ContainerSILEX extends Container {
 		this.addSlotToContainer(new SlotItemHandler(te.inventory, 1, 8, 24));
 		//Fluid Container
 		this.addSlotToContainer(new SlotItemHandler(te.inventory, 2, 8 + 18, 24));
-		this.addSlotToContainer(new SlotItemHandler(te.inventory, 3, 8 + 18*2, 24));
+		this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 3, 8 + 18*2, 24));
 		//Output
 		this.addSlotToContainer(new SlotItemHandler(te.inventory, 4, 116, 90));
 		//Output Queue
@@ -48,79 +50,14 @@ public class ContainerSILEX extends Container {
 		}
 	}
 
-//	@Override
-//	public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2) {
-//		ItemStack var3 = ItemStack.EMPTY;
-//		Slot var4 = this.inventorySlots.get(par2);
-//
-//		if(var4 != null && var4.getHasStack()) {
-//			ItemStack var5 = var4.getStack();
-//			var3 = var5.copy();
-//
-//			if(par2 <= silex.inventory.getSlots() - 1) {
-//				if(!this.mergeItemStack(var5, silex.inventory.getSlots(), this.inventorySlots.size(), true)) {
-//					return ItemStack.EMPTY;
-//				}
-//			} else if(var5.getItem() == ModItems.turret_chip) { //did i copy this from turrets? tf is happening lol
-//
-//				if(!this.mergeItemStack(var5, 0, 1, false))
-//					return ItemStack.EMPTY;
-//
-//			} else if(!this.mergeItemStack(var5, 1, silex.inventory.getSlots(), false)) {
-//				return ItemStack.EMPTY;
-//			}
-//
-//			if(var5.isEmpty()) {
-//				var4.putStack(ItemStack.EMPTY);
-//			} else {
-//				var4.onSlotChanged();
-//			}
-//
-//			var4.onTake(p_82846_1_, var5);
-//		}
-//
-//		return var3;
-//	}
 	@Override
-	public ItemStack transferStackInSlot(EntityPlayer player, int par2) {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = this.inventorySlots.get(par2);
-
-		if (var4 != null && var4.getHasStack()) {
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-
-			if (par2 <= 10) {
-				if (!this.mergeItemStack(var5, 11, this.inventorySlots.size(), true)) {
-					return ItemStack.EMPTY;
-				}
-			} else {
-
-				if (var3.getItem() instanceof IItemFluidIdentifier) {
-					if (!this.mergeItemStack(var5, 1, 2, false)) {
-						return ItemStack.EMPTY ;
-					}
-				} else if (FluidContainerRegistry.getFluidContent(var3, silex.tank.getTankType()) > 0) {
-					if (!this.mergeItemStack(var5, 2, 3, false)) {
-						return ItemStack.EMPTY;
-					}
-				} else {
-					if (!this.mergeItemStack(var5, 0, 1, false)) {
-						return ItemStack.EMPTY;
-					}
-				}
-			}
-
-			if (var5.isEmpty()) {
-				var4.putStack(ItemStack.EMPTY);
-			} else {
-				var4.onSlotChanged();
-			}
-
-			var4.onTake(player, var5);
-		}
-
-		return var3;
+	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+        return InventoryUtil.transferStack(this.inventorySlots, index, 11,
+                s -> !(s.getItem() instanceof IItemFluidIdentifier) && FluidContainerRegistry.getFluidContent(s, silex.tank.getTankType()) == 0, 1,
+                s -> s.getItem() instanceof IItemFluidIdentifier, 2,
+                s -> FluidContainerRegistry.getFluidContent(s, silex.tank.getTankType()) > 0, 4,
+                _ -> false, 11
+        );
 	}
 
 	@Override

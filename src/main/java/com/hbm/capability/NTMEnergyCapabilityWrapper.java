@@ -27,6 +27,9 @@ public class NTMEnergyCapabilityWrapper implements IEnergyStorage {
     @Nullable
     private final BlockPos accessor;
 
+    /**
+     * @param pos The position of the accessor. Null -> Internal access.
+     */
     public NTMEnergyCapabilityWrapper(@NotNull TileEntity handler, @Nullable BlockPos pos) {
         if (handler instanceof IEnergyHandlerMK2 energyHandlerMK2) this.handler = energyHandlerMK2;
         else throw new IllegalArgumentException("Handler must implement EnergyHandlerMK2");

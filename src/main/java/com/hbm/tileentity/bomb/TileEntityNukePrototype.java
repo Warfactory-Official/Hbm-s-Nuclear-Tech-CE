@@ -22,6 +22,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
@@ -39,7 +40,17 @@ public class TileEntityNukePrototype extends TileEntity implements IGUIProvider 
 				markDirty();
 				super.onContentsChanged(slot);
 			}
-		};
+
+            @Override
+            protected int getStackLimit(int slot, @NotNull ItemStack stack) {
+                return 1;
+            }
+
+            @Override
+            public int getSlotLimit(int slot) {
+                return 1;
+            }
+        };
 	}
 	
 	public String getInventoryName() {
@@ -47,7 +58,7 @@ public class TileEntityNukePrototype extends TileEntity implements IGUIProvider 
 	}
 
 	public boolean hasCustomInventoryName() {
-		return this.customName != null && this.customName.length() > 0;
+		return this.customName != null && !this.customName.isEmpty();
 	}
 	
 	public void setCustomName(String name) {

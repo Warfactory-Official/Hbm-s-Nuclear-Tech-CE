@@ -1,9 +1,7 @@
 package com.hbm.handler.ability;
 
 import com.hbm.config.ToolConfig;
-import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.CentrifugeRecipes;
-import com.hbm.inventory.recipes.CrystallizerRecipes;
 import com.hbm.inventory.recipes.ShredderRecipes;
 import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemToolAbility;
@@ -18,21 +16,22 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.oredict.OreDictionary;
 
 import java.util.List;
 
 public interface IToolHarvestAbility extends IBaseAbility {
 
-    public default void preHarvestAll(int level, World world, EntityPlayer player) { }
-    public default void postHarvestAll(int level, World world, EntityPlayer player) { }
+    default void preHarvestAll(int level, World world, EntityPlayer player) { }
+    default void postHarvestAll(int level, World world, EntityPlayer player) { }
 
     // You must call harvestBlock to actually break the block.
     // If you don't, visual glitches ensue
-    public default void onHarvestBlock(int level, World world, int x, int y, int z, EntityPlayer player, Block block, int meta) {
+    default void onHarvestBlock(int level, World world, int x, int y, int z, EntityPlayer player, Block block, int meta) {
         harvestBlock(false, world, x, y, z, player);
     }
 
-    public static void harvestBlock(boolean skipDefaultDrops, World world, int x, int y, int z, EntityPlayer player) {
+    static void harvestBlock(boolean skipDefaultDrops, World world, int x, int y, int z, EntityPlayer player) {
         if(skipDefaultDrops) {
             // Emulate the block breaking without drops
             world.setBlockToAir(new BlockPos(x, y, z));
@@ -44,10 +43,10 @@ public interface IToolHarvestAbility extends IBaseAbility {
         }
     }
 
-    public final static int SORT_ORDER_BASE = 100;
+    int SORT_ORDER_BASE = 100;
 
     // region handlers
-    public static final IToolHarvestAbility NONE = new IToolHarvestAbility() {
+    IToolHarvestAbility NONE = new IToolHarvestAbility() {
         @Override
         public String getName() {
             return "";
@@ -55,11 +54,11 @@ public interface IToolHarvestAbility extends IBaseAbility {
 
         @Override
         public int sortOrder() {
-            return SORT_ORDER_BASE + 0;
+            return SORT_ORDER_BASE;
         }
     };
 
-    public static final IToolHarvestAbility SILK = new IToolHarvestAbility() {
+    IToolHarvestAbility SILK = new IToolHarvestAbility() {
         @Override
         public String getName() {
             return "tool.ability.silktouch";
@@ -92,7 +91,7 @@ public interface IToolHarvestAbility extends IBaseAbility {
         }
     };
 
-    public static final IToolHarvestAbility LUCK = new IToolHarvestAbility() {
+    IToolHarvestAbility LUCK = new IToolHarvestAbility() {
         @Override
         public String getName() {
             return "tool.ability.luck";
@@ -123,7 +122,7 @@ public interface IToolHarvestAbility extends IBaseAbility {
         @Override
         public void preHarvestAll(int level, World world, EntityPlayer player) {
             ItemStack stack = player.getHeldItemMainhand();
-            if(stack != null) EnchantmentUtil.addEnchantment(stack, Enchantments.FORTUNE, powerAtLevel[level]);
+            if(!stack.isEmpty()) EnchantmentUtil.addEnchantment(stack, Enchantments.FORTUNE, powerAtLevel[level]);
         }
 
         @Override
@@ -133,11 +132,11 @@ public interface IToolHarvestAbility extends IBaseAbility {
             // Even if can be forced somehow, the player doesn't gain any
             // benefit from it.
             ItemStack stack = player.getHeldItemMainhand();
-            if(stack != null) EnchantmentUtil.removeEnchantment(stack, Enchantments.FORTUNE);
+            if(!stack.isEmpty()) EnchantmentUtil.removeEnchantment(stack, Enchantments.FORTUNE);
         }
     };
 
-    public static final IToolHarvestAbility SMELTER = new IToolHarvestAbility() {
+    IToolHarvestAbility SMELTER = new IToolHarvestAbility() {
         @Override
         public String getName() {
             return "tool.ability.smelter";
@@ -181,7 +180,7 @@ public interface IToolHarvestAbility extends IBaseAbility {
         }
     };
 
-    public static final IToolHarvestAbility SHREDDER = new IToolHarvestAbility() {
+    IToolHarvestAbility SHREDDER = new IToolHarvestAbility() {
         @Override
         public String getName() {
             return "tool.ability.shredder";
@@ -205,7 +204,7 @@ public interface IToolHarvestAbility extends IBaseAbility {
             ItemStack stack = new ItemStack(block, 1, meta);
             ItemStack result = ShredderRecipes.getShredderResult(stack);
 
-            boolean doesShred = result != null && result.getItem() != ModItems.scrap;
+            boolean doesShred = !result.isEmpty() && result.getItem() != ModItems.scrap;
 
             harvestBlock(doesShred, world, x, y, z, player);
 
@@ -215,7 +214,7 @@ public interface IToolHarvestAbility extends IBaseAbility {
         }
     };
 
-    public static final IToolHarvestAbility CENTRIFUGE = new IToolHarvestAbility() {
+    IToolHarvestAbility CENTRIFUGE = new IToolHarvestAbility() {
         @Override
         public String getName() {
             return "tool.ability.centrifuge";
@@ -253,7 +252,7 @@ public interface IToolHarvestAbility extends IBaseAbility {
         }
     };
 
-    public static final IToolHarvestAbility CRYSTALLIZER = new IToolHarvestAbility() {
+    IToolHarvestAbility CRYSTALLIZER = new IToolHarvestAbility() {
         @Override
         public String getName() {
             return "tool.ability.crystallizer";
@@ -275,19 +274,35 @@ public interface IToolHarvestAbility extends IBaseAbility {
             if(block == Blocks.LIT_REDSTONE_ORE) block = Blocks.REDSTONE_ORE;
 
             ItemStack stack = new ItemStack(block, 1, meta);
-            CrystallizerRecipes.CrystallizerRecipe result = CrystallizerRecipes.getOutput(stack, Fluids.PEROXIDE);
+            ItemStack crystal = ItemStack.EMPTY;
+            // I think that may be intended by 1.7, but smth tells me that NOT auto-crystallizing everything isn't right..
+            for (int id : OreDictionary.getOreIDs(stack)) {
+                String name = OreDictionary.getOreName(id);
+                if (name != null && name.startsWith("ore") && name.length() > 3) {
+                    String crystalName = "crystal" + name.substring(3);
+                    List<ItemStack> list = OreDictionary.getOres(crystalName);
+                    for (ItemStack is : list) {
+                        if (is.getItem().getRegistryName().getNamespace().equals("hbm")) {
+                            crystal = is.copy();
+                            crystal.setCount(1);
+                            break;
+                        }
+                    }
+                }
+                if (!crystal.isEmpty()) break;
+            }
 
-            boolean doesCrystallize = result != null;
+            boolean doesCrystallize = !crystal.isEmpty();
 
             harvestBlock(doesCrystallize, world, x, y, z, player);
 
             if(doesCrystallize) {
-                world.spawnEntity(new EntityItem(world, ItemToolAbility.dropX + 0.5, ItemToolAbility.dropY + 0.5, ItemToolAbility.dropZ + 0.5, result.output.copy()));
+                world.spawnEntity(new EntityItem(world, ItemToolAbility.dropX + 0.5, ItemToolAbility.dropY + 0.5, ItemToolAbility.dropZ + 0.5, crystal.copy()));
             }
         }
     };
 
-    public static final IToolHarvestAbility MERCURY = new IToolHarvestAbility() {
+    IToolHarvestAbility MERCURY = new IToolHarvestAbility() {
         @Override
         public String getName() {
             return "tool.ability.mercury";
@@ -326,7 +341,7 @@ public interface IToolHarvestAbility extends IBaseAbility {
     };
     // endregion handlers
 
-    static final IToolHarvestAbility[] abilities = { NONE, SILK, LUCK, SMELTER, SHREDDER, CENTRIFUGE, CRYSTALLIZER, MERCURY };
+    IToolHarvestAbility[] abilities = { NONE, SILK, LUCK, SMELTER, SHREDDER, CENTRIFUGE, CRYSTALLIZER, MERCURY };
 
     static IToolHarvestAbility getByName(String name) {
         for(IToolHarvestAbility ability : abilities) {

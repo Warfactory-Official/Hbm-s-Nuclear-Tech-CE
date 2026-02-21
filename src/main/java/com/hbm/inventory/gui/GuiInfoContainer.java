@@ -1,19 +1,17 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.Library;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -28,7 +26,7 @@ import java.util.List;
 public abstract class GuiInfoContainer extends GuiContainer {
 
   ResourceLocation guiUtil =
-      new ResourceLocation(RefStrings.MODID + ":textures/gui/gui_utility.png");
+      new ResourceLocation(Tags.MODID + ":textures/gui/gui_utility.png");
 
   public GuiInfoContainer(Container inventorySlotsIn) {
     super(inventorySlotsIn);
@@ -359,9 +357,5 @@ public abstract class GuiInfoContainer extends GuiContainer {
         && guiLeft + left + sizeX > x
         && guiTop + top < y
         && guiTop + top + sizeY >= y;
-  }
-
-  protected void playPressSound() {
-    mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
   }
 }

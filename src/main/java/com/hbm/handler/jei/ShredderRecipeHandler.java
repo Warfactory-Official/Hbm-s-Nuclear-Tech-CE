@@ -1,8 +1,8 @@
 package com.hbm.handler.jei;
 
+import com.hbm.Tags;
 import com.hbm.inventory.RecipesCommon;
 import com.hbm.inventory.recipes.ShredderRecipes;
-import com.hbm.lib.RefStrings;
 import com.hbm.util.I18nUtil;
 import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.gui.*;
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ShredderRecipeHandler implements IRecipeCategory<ShredderRecipeHandler.ShredderRecipeWrapper> {
-	private static final ResourceLocation GUI_TEXTURE = new ResourceLocation(RefStrings.MODID, "textures/gui/jei/gui_nei_shredder.png");
+	private static final ResourceLocation GUI_TEXTURE = new ResourceLocation(Tags.MODID, "textures/gui/jei/gui_nei_shredder.png");
 
 	private final IDrawable background;
 	private final IDrawableAnimated powerBar;
@@ -47,7 +47,7 @@ public class ShredderRecipeHandler implements IRecipeCategory<ShredderRecipeHand
 
 	@Override
 	public String getModName() {
-		return RefStrings.MODID;
+		return Tags.MODID;
 	}
 
 	@Override

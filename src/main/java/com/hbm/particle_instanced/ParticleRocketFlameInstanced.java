@@ -1,6 +1,6 @@
 package com.hbm.particle_instanced;
 
-import com.hbm.main.ModEventHandlerClient;
+import com.hbm.main.client.NTMClientRegistry;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
@@ -16,7 +16,7 @@ public class ParticleRocketFlameInstanced extends ParticleInstanced {
 	public ParticleRocketFlameInstanced(World worldIn, double posXIn, double posYIn, double posZIn) {
 		super(worldIn, posXIn, posYIn, posZIn);
 		maxAge = 300 + rand.nextInt(50);
-		this.particleTexture = ModEventHandlerClient.particle_base;
+		this.particleTexture = NTMClientRegistry.particle_base;
 		initVals(worldIn.rand.nextInt());
 	}
 	

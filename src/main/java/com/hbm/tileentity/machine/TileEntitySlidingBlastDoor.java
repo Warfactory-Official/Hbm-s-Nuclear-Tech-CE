@@ -8,9 +8,12 @@ import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemKeyPin;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
+import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.sound.AudioWrapper;
 import io.netty.buffer.ByteBuf;
+import it.unimi.dsi.fastutil.longs.LongIterable;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -31,6 +34,7 @@ public class TileEntitySlidingBlastDoor extends TileEntityLockableBase implement
     public boolean keypadLocked = false;
     private int timer = 0;
     private boolean wasPowered = false;
+    private boolean redstoneOnly = false;
     private AudioWrapper audio;
 
     @Override
@@ -67,7 +71,7 @@ public class TileEntitySlidingBlastDoor extends TileEntityLockableBase implement
                         if (state != oldState) {
                             // With door finally closed, mark chunk for rad update since door is now rad resistant
                             // No need to update when open as well, as opening door should update
-                            RadiationSystemNT.markChunkForRebuild(world, pos);
+                            RadiationSystemNT.markSectionsForRebuild(world, getOccupiedSections());
                         }
                     }
                 } else if (state == DoorState.OPENING) {
@@ -252,6 +256,7 @@ public class TileEntitySlidingBlastDoor extends TileEntityLockableBase implement
         wasPowered = compound.getBoolean("wasPowered");
         keypadLocked = compound.getBoolean("keypadLocked");
         shouldUseBB = compound.getBoolean("shouldUseBB");
+        redstoneOnly = compound.getBoolean("redstoneOnly");
         texture = compound.getByte("texture");
         super.readFromNBT(compound);
     }
@@ -264,6 +269,7 @@ public class TileEntitySlidingBlastDoor extends TileEntityLockableBase implement
         compound.setBoolean("wasPowered", wasPowered);
         compound.setBoolean("keypadLocked", keypadLocked);
         compound.setBoolean("shouldUseBB", shouldUseBB);
+        compound.setBoolean("redstoneOnly", redstoneOnly);
         compound.setByte("texture", texture);
         return super.writeToNBT(compound);
     }
@@ -338,11 +344,11 @@ public class TileEntitySlidingBlastDoor extends TileEntityLockableBase implement
         if (state == DoorState.CLOSED) {
             state = DoorState.OPENING;
             // With door opening, mark chunk for rad update
-            RadiationSystemNT.markChunkForRebuild(world, pos);
+            RadiationSystemNT.markSectionsForRebuild(world, getOccupiedSections());
         } else if (state == DoorState.OPEN) {
             state = DoorState.CLOSING;
             // With door closing, mark chunk for rad update
-            RadiationSystemNT.markChunkForRebuild(world, pos);
+            RadiationSystemNT.markSectionsForRebuild(world, getOccupiedSections());
         }
     }
 
@@ -364,5 +370,37 @@ public class TileEntitySlidingBlastDoor extends TileEntityLockableBase implement
             return true;
         }
         return false;
+    }
+
+    public boolean getRedstoneOnly() {
+        return redstoneOnly;
+    }
+
+    public void setRedstoneOnly(boolean redstoneOnly) {
+        this.redstoneOnly = redstoneOnly;
+    }
+
+    public LongIterable getOccupiedSections() {
+        LongOpenHashSet sections = new LongOpenHashSet();
+        ForgeDirection dir = ForgeDirection.getOrientation(getBlockMetadata() - BlockDummyable.offset);
+
+        int ox = pos.getX();
+        int oy = pos.getY();
+        int oz = pos.getZ();
+
+        for (int offset = -2; offset <= 2; offset++) {
+            int px = ox;
+            int pz = oz;
+            switch (dir) {
+                case SOUTH -> px += offset;
+                case NORTH -> px -= offset;
+                case EAST -> pz += offset;
+                case WEST -> pz -= offset;
+            }
+            for (int y = 0; y <= 3; y++) {
+                sections.add(Library.blockPosToSectionLong(px, oy + y, pz));
+            }
+        }
+        return sections;
     }
 }

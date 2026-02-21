@@ -23,6 +23,7 @@ import com.hbm.tileentity.IMetalCopiable;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.CrucibleUtil;
+import com.hbm.util.MutableVec3d;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.EntityLivingBase;
@@ -159,12 +160,11 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
             if(!this.wasteStack.isEmpty()) {
 
                 ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset).getOpposite();
+                MutableVec3d impact = new MutableVec3d();
                 double sx = pos.getX() + 0.5D + dir.offsetX * 1.875D;
                 double sy = pos.getY() + 0.25D;
                 double sz = pos.getZ() + 0.5D + dir.offsetZ * 1.875D;
-                RayTraceResult[] mop = new RayTraceResult[1];
-                CrucibleUtil.getPouringTarget(world, new Vec3d(sx, sy, sz), new Vec3d(sx, sy - 4D, sz), mop);
-                Mats.MaterialStack didPour = CrucibleUtil.pourFullStack(world, sx, sy, sz, 6, true, this.wasteStack, MaterialShapes.NUGGET.q(3), new Vec3d(0, 0, 0));
+                Mats.MaterialStack didPour = CrucibleUtil.pourFullStack(world, sx, sy, sz, 6, true, this.wasteStack, MaterialShapes.NUGGET.q(3), impact);
 
                 if(didPour != null) {
                     NBTTagCompound data = new NBTTagCompound();
@@ -173,8 +173,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
                     data.setByte("dir", (byte) dir.ordinal());
                     data.setFloat("off", 0.625F);
                     data.setFloat("base", 0.625F);
-                    double hitY = mop[0] != null ? mop[0].getBlockPos().getY() + 1 : pos.getY();
-                    data.setFloat("len", Math.max(1F, pos.getY() - (float) (Math.ceil(hitY) - 0.875)));
+                    data.setFloat("len", Math.max(1F, pos.getY() - (float) (Math.ceil(impact.y) - 0.875)));
                     PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, sx, pos.getY(), sz), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 50));
                 }
 
@@ -202,13 +201,11 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
                         }
                     }
                 }
-
+                MutableVec3d impact = new MutableVec3d();
                 double sx = pos.getX() + 0.5D + dir.offsetX * 1.875D;
                 double sy = pos.getY() + 0.25D;
                 double sz = pos.getZ() + 0.5D + dir.offsetZ * 1.875D;
-                RayTraceResult[] mop = new RayTraceResult[1];
-                CrucibleUtil.getPouringTarget(world, new Vec3d(sx, sy, sz), new Vec3d(sx, sy - 4D, sz), mop);
-                Mats.MaterialStack didPour = CrucibleUtil.pourFullStack(world, sx, sy, sz, 6, true, toCast, MaterialShapes.NUGGET.q(3), new Vec3d(0, 0, 0));
+                Mats.MaterialStack didPour = CrucibleUtil.pourFullStack(world, sx, sy, sz, 6, true, toCast, MaterialShapes.NUGGET.q(3), impact);
 
                 if(didPour != null) {
                     NBTTagCompound data = new NBTTagCompound();
@@ -217,8 +214,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
                     data.setByte("dir", (byte) dir.ordinal());
                     data.setFloat("off", 0.625F);
                     data.setFloat("base", 0.625F);
-                    double hitY = mop[0] != null ? mop[0].getBlockPos().getY() + 1 : pos.getY();
-                    data.setFloat("len", Math.max(1F, pos.getY() - (float) (Math.ceil(hitY) - 0.875)));
+                    data.setFloat("len", Math.max(1F, pos.getY() - (float) (Math.ceil(impact.y) - 0.875)));
                     PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, sx, pos.getY(), sz), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 50));
                 }
 

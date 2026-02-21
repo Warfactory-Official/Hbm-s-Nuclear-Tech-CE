@@ -12,18 +12,10 @@ import net.minecraft.item.Item;
 import net.minecraft.world.biome.Biome;
 import org.lwjgl.opengl.GL11;
 @AutoRegister
-public class RenderLandmine extends TileEntitySpecialRenderer<TileEntityLandmine>
-    implements IItemRendererProvider {
+public class RenderLandmine extends TileEntitySpecialRenderer<TileEntityLandmine> implements IItemRendererProvider {
 
   @Override
-  public void render(
-      TileEntityLandmine te,
-      double x,
-      double y,
-      double z,
-      float partialTicks,
-      int destroyStage,
-      float alpha) {
+  public void render(TileEntityLandmine te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
     GlStateManager.pushMatrix();
     GlStateManager.translate(x + 0.5D, y, z + 0.5D);
     GlStateManager.enableLighting();
@@ -63,6 +55,14 @@ public class RenderLandmine extends TileEntitySpecialRenderer<TileEntityLandmine
       bindTexture(ResourceManager.mine_fat_tex);
       ResourceManager.mine_fat.renderAll();
     }
+    if (block == ModBlocks.mine_naval) {
+      GlStateManager.scale(1.0D, 1.0D, 1.0D);
+      GlStateManager.translate(0.0D, 0.5D, 0.0D);
+      GlStateManager.shadeModel(GL11.GL_SMOOTH);
+      bindTexture(ResourceManager.mine_naval_tex);
+      ResourceManager.mine_naval.renderAll();
+      GlStateManager.shadeModel(GL11.GL_FLAT);
+    }
 
     GlStateManager.enableCull();
     GlStateManager.popMatrix();
@@ -79,7 +79,8 @@ public class RenderLandmine extends TileEntitySpecialRenderer<TileEntityLandmine
       Item.getItemFromBlock(ModBlocks.mine_ap),
       Item.getItemFromBlock(ModBlocks.mine_he),
       Item.getItemFromBlock(ModBlocks.mine_shrap),
-      Item.getItemFromBlock(ModBlocks.mine_fat)
+      Item.getItemFromBlock(ModBlocks.mine_fat),
+      Item.getItemFromBlock(ModBlocks.mine_naval)
     };
   }
 
@@ -135,6 +136,25 @@ public class RenderLandmine extends TileEntitySpecialRenderer<TileEntityLandmine
           bindTexture(ResourceManager.mine_shrap_tex);
           ResourceManager.mine_ap.renderAll();
         }
+      };
+    } else if(item == Item.getItemFromBlock(ModBlocks.mine_naval)) {
+      return new ItemRenderBase() {
+        @Override
+        public void renderInventory() {
+          GlStateManager.translate(0.0D, 2.0D, -1.0D);
+          GlStateManager.scale(5.0D, 5.0D, 5.0D);
+        }
+
+        @Override
+        public void renderCommon() {
+          GlStateManager.translate(0.0D, 0.0D, 0.0D);
+          GlStateManager.disableCull();
+          GlStateManager.shadeModel(GL11.GL_SMOOTH);
+          bindTexture(ResourceManager.mine_naval_tex);
+          ResourceManager.mine_naval.renderAll();
+          GlStateManager.enableCull();
+        }
+
       };
     }
 

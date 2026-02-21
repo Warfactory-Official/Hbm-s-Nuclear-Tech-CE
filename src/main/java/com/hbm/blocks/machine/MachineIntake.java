@@ -1,14 +1,10 @@
 package com.hbm.blocks.machine;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ILookOverlay;
 import com.hbm.tileentity.TileEntityProxyCombo;
 import com.hbm.tileentity.machine.TileEntityMachineIntake;
 import com.hbm.util.BobMathUtil;
-
 import com.hbm.util.I18nUtil;
 import net.minecraft.block.material.Material;
 import net.minecraft.tileentity.TileEntity;
@@ -16,6 +12,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.Pre;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MachineIntake extends BlockDummyable implements ILookOverlay {
 
@@ -33,11 +32,13 @@ public class MachineIntake extends BlockDummyable implements ILookOverlay {
     @Override public int getOffset() { return 0; }
 
     @Override
-    public void printHook(Pre event, World world, int x, int y, int z) {
+    public void printHook(Pre event, World world, BlockPos pos) {
+        BlockPos corePos = this.findCore(world, pos);
+        if(corePos == null) {
+            return;
+        }
 
-        BlockPos pos = this.findCore(world, new BlockPos(x, y, z));
-        if(pos == null) return;
-        TileEntity te = world.getTileEntity(pos);
+        TileEntity te = world.getTileEntity(corePos);
         if(!(te instanceof TileEntityMachineIntake intake)) return;
 
         List<String> text = new ArrayList<>();

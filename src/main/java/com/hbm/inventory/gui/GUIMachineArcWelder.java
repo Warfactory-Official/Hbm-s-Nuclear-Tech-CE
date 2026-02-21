@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerMachineArcWelder;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityMachineArcWelder;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
@@ -11,7 +11,7 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
 
 public class GUIMachineArcWelder extends GuiInfoContainer {
-    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_arc_welder.png");
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_arc_welder.png");
     private final TileEntityMachineArcWelder welder;
 
     public GUIMachineArcWelder(InventoryPlayer playerInv, TileEntityMachineArcWelder tile) {

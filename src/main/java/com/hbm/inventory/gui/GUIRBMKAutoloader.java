@@ -1,26 +1,24 @@
 package com.hbm.inventory.gui;
 
-import net.minecraft.init.SoundEvents;
-import org.lwjgl.opengl.GL11;
-
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerRBMKAutoloader;
-import com.hbm.lib.RefStrings;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toserver.NBTControlPacket;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKAutoloader;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
+import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 
 public class GUIRBMKAutoloader extends GuiInfoContainer {
 
-    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/machine/gui_autoloader.png");
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/machine/gui_autoloader.png");
     private final TileEntityRBMKAutoloader loader;
 
     public GUIRBMKAutoloader(InventoryPlayer invPlayer, TileEntityRBMKAutoloader tile) {
@@ -44,14 +42,14 @@ public class GUIRBMKAutoloader extends GuiInfoContainer {
             mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1F));
             NBTTagCompound data = new NBTTagCompound();
             data.setBoolean("minus", true);
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, loader.getPos()));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, loader.getPos()));
         }
 
         if(guiLeft + 90 <= x && guiLeft + 90 + 12 > x && guiTop + 36 < y && guiTop + 36 + 12 >= y) {
             mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1F));
             NBTTagCompound data = new NBTTagCompound();
             data.setBoolean("plus", true);
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, loader.getPos()));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, loader.getPos()));
         }
     }
 

@@ -1,6 +1,5 @@
 package com.hbm.core;
 
-import net.minecraft.launchwrapper.IClassTransformer;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.*;
@@ -9,15 +8,12 @@ import static com.hbm.core.HbmCorePlugin.coreLogger;
 import static com.hbm.core.HbmCorePlugin.fail;
 import static org.objectweb.asm.Opcodes.*;
 
-public class InventoryPlayerTransformer implements IClassTransformer {
+final class InventoryPlayerTransformer {
+    static final String TARGET = "net.minecraft.entity.player.InventoryPlayer";
 
     private static final ObfSafeName SET_SLOT_CONTENT = new ObfSafeName("setInventorySlotContents", "func_70299_a");
 
-    @Override
-    public byte[] transform(String name, String transformedName, byte[] basicClass) {
-        if (!transformedName.equals("net.minecraft.entity.player.InventoryPlayer")) {
-            return basicClass;
-        }
+    static byte[] transform(String name, String transformedName, byte[] basicClass) {
         coreLogger.info("Patching class {} / {}", transformedName, name);
 
         try {
@@ -36,12 +32,12 @@ public class InventoryPlayerTransformer implements IClassTransformer {
             classNode.accept(writer);
             return writer.toByteArray();
         } catch (Throwable t) {
-            fail("net.minecraft.entity.player.InventoryPlayer", t);
+            fail(TARGET, t);
             return basicClass;
         }
     }
 
-    private InsnList createFastPathHook() {
+    private static InsnList createFastPathHook() {
         InsnList toInject = new InsnList();
         toInject.add(new VarInsnNode(ALOAD, 0)); // this (InventoryPlayer)
         toInject.add(new VarInsnNode(ILOAD, 1)); // int (slot)

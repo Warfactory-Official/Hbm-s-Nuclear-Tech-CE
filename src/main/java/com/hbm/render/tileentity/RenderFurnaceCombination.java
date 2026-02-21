@@ -1,5 +1,6 @@
 package com.hbm.render.tileentity;
 
+import com.hbm.Tags;
 import com.hbm.interfaces.AutoRegister;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -8,7 +9,6 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import org.lwjgl.opengl.GL11;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.tileentity.machine.TileEntityFurnaceCombination;
@@ -23,7 +23,7 @@ import net.minecraft.util.ResourceLocation;
 @AutoRegister
 public class RenderFurnaceCombination extends TileEntitySpecialRenderer<TileEntityFurnaceCombination> implements IItemRendererProvider {
 
-    public static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/particle/rbmk_fire.png");
+    public static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/particle/rbmk_fire.png");
 
     @Override
     public void render(TileEntityFurnaceCombination furnace, double x, double y, double z,

@@ -7,16 +7,17 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.IFluidCopiable;
+import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.uninos.UniNodespace;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
+import net.minecraft.world.WorldServer;
 
 @AutoRegister
-public class TileEntityPipeBaseNT extends TileEntity implements IFluidPipeMK2, IFluidCopiable, ITickable {
+public class TileEntityPipeBaseNT extends TileEntityLoadedBase implements IFluidPipeMK2, IFluidCopiable, ITickable {
 
     protected FluidNode node;
     protected FluidType type = Fluids.NONE;
@@ -52,15 +53,14 @@ public class TileEntityPipeBaseNT extends TileEntity implements IFluidPipeMK2, I
         this.type = type;
         this.markDirty();
 
-        if (!world.isRemote) {
+        if (world instanceof WorldServer) {
             IBlockState state = world.getBlockState(pos);
             world.notifyBlockUpdate(pos, state, state, 3);
             world.markBlockRangeForRenderUpdate(pos, pos);
         }
 
-        UniNodespace.destroyNode(world, pos, prev.getNetworkProvider());
-
         if(this.node != null) {
+            UniNodespace.destroyNode(world, node);
             this.node = null;
         }
     }
@@ -76,7 +76,7 @@ public class TileEntityPipeBaseNT extends TileEntity implements IFluidPipeMK2, I
 
         if(!world.isRemote) {
             if(this.node != null) {
-                UniNodespace.destroyNode(world, pos, type.getNetworkProvider());
+                UniNodespace.destroyNode(world, node);
             }
         }
     }

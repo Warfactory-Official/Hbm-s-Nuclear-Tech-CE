@@ -12,7 +12,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
-
+@Deprecated
 @AutoRegister
 public class TileEntityMachineFENSU extends TileEntityMachineBattery {
 

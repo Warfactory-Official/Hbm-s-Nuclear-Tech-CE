@@ -1,11 +1,11 @@
 package com.hbm.render.model;
 
-import net.minecraft.client.Minecraft;
-
 import com.hbm.main.ResourceManager;
 import com.hbm.render.loader.ModelRendererObj;
-
 import net.minecraft.entity.Entity;
+import org.lwjgl.opengl.GL11;
+
+import static com.hbm.render.NTMRenderHelper.bindTexture;
 
 public class ModelArmorBismuth extends ModelArmorBase {
 
@@ -22,27 +22,53 @@ public class ModelArmorBismuth extends ModelArmorBase {
 		this.rightFoot = new ModelRendererObj(ResourceManager.armor_bismuth, "RightFoot").setRotationPoint(-1.9F, 12.0F, 0.0F);
 	}
 
+    @Override
+    public void render(Entity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor) {
+        super.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entity);
+
+        GL11.glPushMatrix();
+        GL11.glShadeModel(GL11.GL_SMOOTH);
+
+        bindTexture(ResourceManager.armor_bismuth_tex);
+
+        switch(type) {
+            case 0 -> this.head.render(scaleFactor);
+            case 1 -> {
+                this.body.render(scaleFactor);
+
+                this.leftArm.render(scaleFactor);
+                this.rightArm.render(scaleFactor);
+            }
+            case 2 -> {
+                this.leftLeg.render(scaleFactor);
+                this.rightLeg.render(scaleFactor);
+            }
+            case 3 -> {
+                this.leftFoot.render(scaleFactor);
+                this.rightFoot.render(scaleFactor);
+            }
+        }
+
+        GL11.glShadeModel(GL11.GL_FLAT);
+        GL11.glPopMatrix();
+    }
+
 	@Override
 	public void renderArmor(Entity par1Entity, float par7) {
+        bindTexture(ResourceManager.armor_bismuth_tex);
+
 		switch (type) {
-			case 0 -> {
-				Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.bismuth_helmet);
-				head.render(par7 * 1.001F);
-			}
+			case 0 -> head.render(par7 * 1.001F);
 			case 1 -> {
-				Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.bismuth_chest);
 				body.render(par7);
-				Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.bismuth_arm);
 				leftArm.render(par7);
 				rightArm.render(par7);
 			}
 			case 2 -> {
-				Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.bismuth_leg);
 				leftLeg.render(par7);
 				rightLeg.render(par7);
 			}
 			case 3 -> {
-				Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.bismuth_leg);
 				leftFoot.render(par7);
 				rightFoot.render(par7);
 			}

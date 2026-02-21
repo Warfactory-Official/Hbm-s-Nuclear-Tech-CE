@@ -12,25 +12,23 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Locale;
 
 
 //DUDE a third implementation of fucking metablocks?? Yea no, we're extending BlockMeta
 // Th3_Sl1ze: name me one, ONE fucking reason it should've been abstract this whole time
-public class BlockEnumMeta extends BlockMeta {
-
+public class BlockEnumMeta<E extends Enum<E>> extends BlockMeta {
 
     final public boolean multiName;
     final private boolean multiTexture;
-    public Class<? extends Enum> blockEnum;
+    public E[] blockEnum;
 
-    public static final <E extends Enum<E>> IBlockState stateFromEnum(Block block, E anEnum) {
+    public static <E extends Enum<E>> IBlockState stateFromEnum(Block block, E anEnum) {
         return block.getDefaultState().withProperty(META, anEnum.ordinal());
     }
 
-    public BlockEnumMeta(Material mat, SoundType type, String registryName, Class<? extends Enum> blockEnum, boolean multiName, boolean multiTexture) {
-        super(mat, type, registryName, (short) blockEnum.getEnumConstants().length);
+    public BlockEnumMeta(Material mat, SoundType type, String registryName, E[] blockEnum, boolean multiName, boolean multiTexture) {
+        super(mat, type, registryName, (short) blockEnum.length);
         this.blockEnum = blockEnum;
         this.multiName = multiName;
         this.multiTexture = multiTexture;
@@ -38,8 +36,7 @@ public class BlockEnumMeta extends BlockMeta {
     }
 
     protected BlockBakeFrame[] generateBlockFrames(String registryName) {
-        return Arrays.stream(blockEnum.getEnumConstants())
-                .sorted(Comparator.comparing(Enum::ordinal))
+        return Arrays.stream(blockEnum)
                 .map(Enum::name)
                 .map(name -> registryName + "." + name.toLowerCase(Locale.US))
                 .map(BlockBakeFrame::new)
@@ -55,13 +52,12 @@ public class BlockEnumMeta extends BlockMeta {
         ForgeRegistries.ITEMS.register(itemBlock);
     }
 
-    public String enumToTranslationKey(Enum value) {
+    public String enumToTranslationKey(E value) {
         return this.getTranslationKey() + "." + value.name().toLowerCase(Locale.US);
     }
 
-    public Enum getEnumFromState(IBlockState state)
-    {
-        return this.blockEnum.getEnumConstants()[getMetaFromState(state)];
+    public E getEnumFromState(IBlockState state) {
+        return this.blockEnum[getMetaFromState(state)];
     }
 
     public class EnumMetaBlockItem extends MetaBlockItem {
@@ -72,7 +68,7 @@ public class BlockEnumMeta extends BlockMeta {
 
         public String getTranslationKey(ItemStack stack) {
             if (multiName) {
-                Enum num = EnumUtil.grabEnumSafely(blockEnum, stack.getMetadata());
+                E num = EnumUtil.grabEnumSafely(blockEnum, stack.getMetadata());
                 return enumToTranslationKey(num);
             } else
                 return this.block.getTranslationKey();

@@ -1,8 +1,9 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.machine.ItemBreedingRod;
 import com.hbm.tileentity.machine.TileEntityMachineReactorBreeding;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -19,7 +20,7 @@ public class ContainerMachineReactorBreeding extends Container {
 		reactor = tedf;
 
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 35, 35));
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 1, 125, 35));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 1, 125, 35));
 
 		for(int i = 0; i < 3; i++) {
 			for(int j = 0; j < 9; j++) {
@@ -34,37 +35,8 @@ public class ContainerMachineReactorBreeding extends Container {
 
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot slot = (Slot) this.inventorySlots.get(index);
-
-		if(slot != null && slot.getHasStack()) {
-
-			ItemStack stack = slot.getStack();
-			var3 = stack.copy();
-
-			if(index <= 1) {
-				if(!this.mergeItemStack(stack, 1, this.inventorySlots.size(), true)) {
-					return ItemStack.EMPTY;
-				}
-
-			} else if(stack.getItem() instanceof ItemBreedingRod) {
-				if(!this.mergeItemStack(stack, 0, 1, false)) {
-					return ItemStack.EMPTY;
-				}
-			} else {
-				return ItemStack.EMPTY;
-			}
-
-			if(stack.getCount() == 0) {
-				slot.putStack(ItemStack.EMPTY);
-
-			} else {
-				slot.onSlotChanged();
-			}
-		}
-
-		return var3;
+        return InventoryUtil.transferStack(this.inventorySlots, index, 2,
+                s -> s.getItem() instanceof ItemBreedingRod, 1);
 	}
 
 	@Override

@@ -11,7 +11,7 @@ public class RBMKDials {
         GameRules rules = world.getGameRules();
 
         if (!rules.getBoolean(RBMKKeys.KEY_SAVE_DIALS.keyString)) {
-            for (RBMKKeys key : RBMKKeys.values()) {
+            for (RBMKKeys key : RBMKKeys.VALUES) {
                 rules.setOrCreateGameRule(key.keyString, String.valueOf(key.defValue));
             }
         }
@@ -321,8 +321,10 @@ public class RBMKDials {
         KEY_DISABLE_DEPLETION("dialDisableDepletion", false),
         KEY_DISABLE_XENON("dialDisableXenon", false);
 
-        final String keyString;
-        final Object defValue;
+        public static final RBMKKeys[] VALUES = values();
+
+        public final String keyString;
+        public final Object defValue;
 
         RBMKKeys(String key, Object def) {
             keyString = key;

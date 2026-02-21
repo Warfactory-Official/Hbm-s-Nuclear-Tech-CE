@@ -370,7 +370,7 @@ public class CrucibleRecipes extends SerializableRecipe {
 
       for (ItemMold.Mold mold : ItemMold.molds) {
         ItemStack out = mold.getOutput(material);
-        if (out != null && !out.isEmpty()) {
+        if (!out.isEmpty()) {
           ItemStack scrap =
               ItemScraps.create(new Mats.MaterialStack(material, mold.getCost()), true);
           ItemStack shape = new ItemStack(ModItems.mold, 1, mold.id);

@@ -1,12 +1,11 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.capability.NTMEnergyCapabilityWrapper;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.Untested;
-import com.hbm.inventory.recipes.ShredderRecipes;
 import com.hbm.inventory.container.ContainerMachineShredder;
 import com.hbm.inventory.gui.GUIMachineShredder;
+import com.hbm.inventory.recipes.ShredderRecipes;
 import com.hbm.items.machine.ItemBlades;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
@@ -23,8 +22,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.world.World;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +39,7 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
 	private static final int[] slots_bottom = new int[] {9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26};
 
 	public TileEntityMachineShredder() {
-		super(30);
+		super(30, false, true);
 	}
 
 	@Override
@@ -58,6 +55,8 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
 
 	@Override
 	public boolean canInsertItem(int slot, ItemStack itemStack){
+        if (slot != 27 && slot != 28 && itemStack.getItem() instanceof ItemBlades) return false;
+        if (slot != 29 && Library.isDischargeableBattery(itemStack)) return false;
 		return this.isItemValidForSlot(slot, itemStack);
 	}
 
@@ -65,7 +64,7 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
 	public boolean isItemValidForSlot(int i, ItemStack stack){
 		if (i < 9) {
 			return true;
-		} else if (i == 29 && Library.isItemBattery(stack)) {
+		} else if (i == 29 && Library.isBattery(stack)) {
 			return true;
 		} else {
 			return (i == 27 || i == 28) && stack.getItem() instanceof ItemBlades;
@@ -232,7 +231,7 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
 
 		ItemStack result = ShredderRecipes.getShredderResult(stack);
 
-		if (result == ItemStack.EMPTY) {
+		if (result.isEmpty()) {
 			return false;
 		}
 
@@ -326,23 +325,5 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
 	@SideOnly(Side.CLIENT)
 	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
     	return new GUIMachineShredder(player.inventory, this);
-	}
-
-	@Override
-	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
-		if (capability == CapabilityEnergy.ENERGY) {
-			return true;
-		}
-		return super.hasCapability(capability, facing);
-	}
-
-	@Override
-	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
-		if (capability == CapabilityEnergy.ENERGY) {
-			return CapabilityEnergy.ENERGY.cast(
-					new NTMEnergyCapabilityWrapper(this)
-			);
-		}
-		return super.getCapability(capability, facing);
 	}
 }

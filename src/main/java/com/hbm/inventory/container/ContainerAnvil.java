@@ -2,7 +2,7 @@ package com.hbm.inventory.container;
 
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.inventory.recipes.anvil.AnvilSmithingRecipe;
-import com.hbm.inventory.SlotMachineOutputVanilla;
+import com.hbm.inventory.slot.SlotMachineOutputVanilla;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.*;
@@ -67,43 +67,40 @@ public class ContainerAnvil extends Container {
 	}
 	
 	@Override
-	public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2) {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = this.inventorySlots.get(par2);
+	public ItemStack transferStackInSlot(EntityPlayer player, int par2) {
+		ItemStack result = ItemStack.EMPTY;
+		Slot slot = this.inventorySlots.get(par2);
 		
-		if(var4 != null && var4.getHasStack()) {
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
+		if (slot != null && slot.getHasStack()) {
+			ItemStack stack = slot.getStack();
+			result = stack.copy();
 			
-			if(par2 == 2) {
-				
-				if(!this.mergeItemStack(var5, 3, this.inventorySlots.size(), true)) {
+			if (par2 == 2) {
+				if (!this.mergeItemStack(stack, 3, this.inventorySlots.size(), true)) {
 					return ItemStack.EMPTY;
 				}
-				var4.onSlotChange(var5, var3);
-				
-			} else if(par2 <= 1) {
-				if(!this.mergeItemStack(var5, 3, this.inventorySlots.size(), true)) {
+				slot.onSlotChange(stack, result);
+			} else if (par2 <= 1) {
+				if (!this.mergeItemStack(stack, 3, this.inventorySlots.size(), true)) {
 					return ItemStack.EMPTY;
 				} else {
-					var4.onTake(p_82846_1_, var5);
+					slot.onTake(player, stack);
 				}
 			} else {
-				
-				if(!this.mergeItemStack(var5, 0, 2, false))
+				if (!this.mergeItemStack(stack, 0, 2, false))
 					return ItemStack.EMPTY;
 			}
 			
-			if(var5.isEmpty()) {
-				var4.putStack(ItemStack.EMPTY);
+			if (stack.isEmpty()) {
+				slot.putStack(ItemStack.EMPTY);
 			} else {
-				var4.onSlotChanged();
+				slot.onSlotChanged();
 			}
 			
-			var4.onTake(p_82846_1_, var5);
+			slot.onTake(player, stack);
 		}
 		
-		return var3;
+		return result;
 	}
 	
 	@Override

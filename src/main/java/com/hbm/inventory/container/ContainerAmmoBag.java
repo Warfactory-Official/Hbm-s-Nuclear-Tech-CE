@@ -1,6 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.items.tool.ItemAmmoBag;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -35,35 +36,7 @@ public class ContainerAmmoBag extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        ItemStack ret = ItemStack.EMPTY;
-        Slot slot = this.inventorySlots.get(index);
-
-        if (slot != null && slot.getHasStack()) {
-            ItemStack stackInSlot = slot.getStack();
-            ret = stackInSlot.copy();
-
-            int bagSlots = bag.getSlots();
-
-            if (index < bagSlots) {
-                if (!this.mergeItemStack(stackInSlot, bagSlots, this.inventorySlots.size(), true)) {
-                    return ItemStack.EMPTY;
-                }
-            } else {
-                if (!this.mergeItemStack(stackInSlot, 0, bagSlots, false)) {
-                    return ItemStack.EMPTY;
-                }
-            }
-
-            if (stackInSlot.getCount() == 0) {
-                slot.putStack(ItemStack.EMPTY);
-            } else {
-                slot.onSlotChanged();
-            }
-
-            slot.onTake(player, stackInSlot);
-        }
-
-        return ret;
+        return InventoryUtil.transferStack(this.inventorySlots, index, bag.getSlots(), true, player);
     }
 
     @Override

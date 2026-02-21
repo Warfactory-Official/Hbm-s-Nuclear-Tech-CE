@@ -3,17 +3,20 @@ package com.hbm.handler;
 import com.hbm.animloader.AnimationWrapper;
 import com.hbm.animloader.AnimationWrapper.EndResult;
 import com.hbm.animloader.AnimationWrapper.EndType;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.ModItems;
 import com.hbm.items.gear.JetpackGlider;
 import com.hbm.lib.HBMSoundHandler;
+import com.hbm.lib.internal.MethodHandleHelper;
 import com.hbm.main.ClientProxy;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
 import com.hbm.packet.JetpackSyncPacket;
 import com.hbm.packet.PacketDispatcher;
+import com.hbm.packet.threading.ThreadedPacket;
 import com.hbm.particle.ParticleFakeBrightness;
 import com.hbm.particle.ParticleHeatDistortion;
 import com.hbm.particle.ParticleJetpackTrail;
@@ -23,6 +26,9 @@ import com.hbm.render.misc.ColorGradient;
 import com.hbm.sound.MovingSoundJetpack;
 import com.hbm.util.BobMathUtil;
 import io.netty.buffer.ByteBuf;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.particle.Particle;
@@ -50,30 +56,31 @@ import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector4f;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.*;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 
 public class JetpackHandler {
 
 	public static final String JETPACK_NBT = "hbmJetpackAdvanced";
 	
-	public static Method r_setSize;
+	private static final MethodHandle r_setSize = MethodHandleHelper.findVirtual(Entity.class, "setSize", "func_70105_a", MethodType.methodType(void.class, float.class, float.class));
 	
 	private static boolean jet_key_down = false;
 	private static boolean hover_key_down = false;
 	private static boolean hud_key_down = false;
 	
 	//I should be able to use this cheesily for both server and client, since they're technically different entities.
-	private static final Map<PlayerKey, JetpackInfo> perPlayerInfo = new HashMap<>();
+	private static final Object2ObjectOpenHashMap<PlayerKey, JetpackInfo> perPlayerInfo = new Object2ObjectOpenHashMap<>();
 	
 	public static JetpackInfo get(EntityPlayer p){
 		return perPlayerInfo.get(new PlayerKey(p));
@@ -104,8 +111,10 @@ public class JetpackHandler {
 	public static float getSpeed(FluidType type){
 		if(type == null)
 			return 0;
-		if(type == Fluids.KEROSENE){
+		if(type == Fluids.KEROSENE) {
 			return 0.3F;
+		} else if(type == Fluids.KEROSENE_REFORM){ //side-note, the scaling for getSpeed is so bullshit. What the fuck Drillgon - Yeti
+			return 0.4F;
 		} else if(type == Fluids.NITAN){
 			return 0.5F;
 		} else if(type == Fluids.BALEFIRE){
@@ -114,23 +123,34 @@ public class JetpackHandler {
 		return 0;
 	}
 	
-	public static int getDrain(FluidType type){
-		if(type == null)
+	public static int getDrain(FluidType type) {
+		if (type == null)
 			return 0;
 		//Drain is already scaled by thrust, which is greater with the higher tier fuels
-		if(type == Fluids.KEROSENE){
+		if (type == Fluids.KEROSENE) {
 			return 1;
-		} else if(type == Fluids.NITAN){
+		} else if (type == Fluids.NITAN) {
 			return 1;
-		} else if(type == Fluids.BALEFIRE){
+		} else if (type == Fluids.BALEFIRE) {
 			return 1;
+		} else if (type == Fluids.KEROSENE_REFORM) {
+		    return 1;
 		}
 		return 0;
 	}
-	
+
+	/*
+	 * Each fuel defines:
+	 *  - A brightness color {R, G, B} for base emissive tint (0–1 range).
+	 *  - A ColorGradient made of keys {R, G, B, A, pos}, interpolated over 0–1.
+	 * The gradient controls color transitions, center → edge,
+	 * the brightness color applies a global emissive multiplier.
+	 */
+
 	private static final float[] keroseneColor = new float[]{1, 0.6F, 0.5F};
 	private static final float[] nitanColor = new float[]{1F, 0.5F, 1F};
 	private static final float[] bfColor = new float[]{0.4F, 1, 0.7F};
+	private static final float[] keroseneReformColor = new float[]{0.55F, 0.75F, 0.95F};
 	private static final ColorGradient keroseneGradient = new ColorGradient(
 			new float[]{1, 0.918F, 0.882F, 1, 0},
 			new float[]{0.887F, 1, 0, 1, 0.177F},
@@ -149,21 +169,32 @@ public class JetpackHandler {
 			new float[]{0.013F, 1F, 0.068F, 1, 0.389F},
 			new float[]{0.2F, 1F, 0.3F, 1, 0.891F},
 			new float[]{0, 1F, 0.4F, 0, 1});
+	private static final ColorGradient keroseneReformGradient = new ColorGradient(
+			new float[]{1F, 0.95F, 0.85F, 1, 0},
+			new float[]{0.55F, 0.75F, 1F, 1, 0.15F},
+			new float[]{0.25F, 0.55F, 0.9F, 1, 0.4F},
+			new float[]{0.15F, 0.3F, 0.7F, 1, 0.8F},
+			new float[]{0.1F, 0.05F, 0.2F, 0, 1}
+	);
 	
 	public static ColorGradient getGradientFromFuel(FluidType fuel){
 		if(fuel == Fluids.BALEFIRE){
 			return bfGradient;
 		} else if(fuel == Fluids.NITAN){
 			return nitanGradient;
+		} else if (fuel == Fluids.KEROSENE_REFORM){
+			return keroseneReformGradient;
 		}
 		return keroseneGradient;
 	}
-	
+
 	public static float[] getBrightnessColorFromFuel(FluidType fuel){
 		if(fuel == Fluids.BALEFIRE){
 			return bfColor;
 		} else if(fuel == Fluids.NITAN){
 			return nitanColor;
+		} else if(fuel == Fluids.KEROSENE_REFORM){
+			return keroseneReformColor;
 		}
 		return keroseneColor;
 	}
@@ -267,7 +298,7 @@ public class JetpackHandler {
 	}
 	
 	public static void serverTick(){
-		Iterator<Entry<PlayerKey, JetpackInfo>> itr = perPlayerInfo.entrySet().iterator();
+		ObjectIterator<Object2ObjectMap.Entry<PlayerKey, JetpackInfo>> itr = perPlayerInfo.object2ObjectEntrySet().fastIterator();
 		while(itr.hasNext()){
 			Entry<PlayerKey, JetpackInfo> e = itr.next();
 			EntityPlayer player = e.getKey().player;
@@ -287,7 +318,7 @@ public class JetpackHandler {
 					setTank(player, tank);
 				}
 				if(player.motionY > -0.5) player.fallDistance = 0;
-				PacketDispatcher.wrapper.sendToAllTracking(new JetpackSyncPacket(player), player);
+				PacketThreading.createSendToAllTrackingThreadedPacket(new JetpackSyncPacket(player), player);
 			}
 		}
 	}
@@ -311,8 +342,9 @@ public class JetpackHandler {
 			JetpackInfo j = new JetpackInfo(player.world.isRemote);
 			j.readFromNBT(tag);
 			put(player, j);
-			PacketDispatcher.wrapper.sendToAllTracking(new JetpackSyncPacket(player), (EntityPlayerMP) player);
-		}
+            ThreadedPacket message = new JetpackSyncPacket(player);
+            PacketThreading.createSendToAllTrackingThreadedPacket(message, (EntityPlayerMP) player);
+        }
 	}
 	
 	public static void worldLoad(WorldEvent.Load e){
@@ -348,8 +380,9 @@ public class JetpackHandler {
 				EntityPlayer player = (EntityPlayer)e.getTarget();
 				JetpackInfo j = get(player);
 				if(j != null){
-					PacketDispatcher.wrapper.sendTo(new JetpackSyncPacket(player), (EntityPlayerMP) e.getEntityPlayer());
-				}
+                    ThreadedPacket message = new JetpackSyncPacket(player);
+                    PacketThreading.createSendToThreadedPacket(message, (EntityPlayerMP) e.getEntityPlayer());
+                }
 			}
 		}
 	}
@@ -359,37 +392,34 @@ public class JetpackHandler {
 		JetpackInfo j = get(player);
 		if(j == null)
 			return;
-		if(r_setSize == null){
-			r_setSize = ReflectionHelper.findMethod(Entity.class, "setSize", "func_70105_a", float.class, float.class);
-		}
 		if(jetpackActive(player) && !player.onGround && j.failureTicks <= 0 && getTank(player).getFluidAmount() > 0){
 			if(isHovering(player)){
 				try {
-					r_setSize.invoke(player, player.width, 1.8F);
-				} catch(IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-					e.printStackTrace();
+					r_setSize.invokeExact((Entity) player, player.width, 1.8F);
+				} catch(Throwable e) {
+					throw new RuntimeException(e);
 				}
-				if(j != null && j.jetpackFlyTime >= 0 && player.world.isRemote){
+				if(j.jetpackFlyTime >= 0 && player.world.isRemote){
 					j.jetpackFlyTime = -1;
 				}
 			} else {
 				try {
 					//The magic number 0.6 seems to also make sure the eye height is set correctly automatically in getEyeHeight.
-					r_setSize.invoke(player, player.width, 0.6F);
-				} catch(IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-					e.printStackTrace();
+                    r_setSize.invokeExact((Entity) player, player.width, 0.6F);
+				} catch(Throwable e) {
+					throw new RuntimeException(e);
 				}
-				if(j != null && player.world.isRemote){
+				if(j.jetpackFlyTime >= 0 && player.world.isRemote){
 					j.jetpackFlyTime ++;
 				}
 			}
 		} else {
-			if(j != null && j.jetpackFlyTime >= 0 && player.world.isRemote){
+			if(j.jetpackFlyTime >= 0 && player.world.isRemote){
 				j.jetpackFlyTime = -1;
 				try {
-					r_setSize.invoke(player, player.width, 1.8F);
-				} catch(IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-					e.printStackTrace();
+                    r_setSize.invokeExact((Entity) player, player.width, 1.8F);
+				} catch(Throwable e) {
+					throw new RuntimeException(e);
 				}
 			}
 		}
@@ -742,8 +772,8 @@ public class JetpackHandler {
 				
 				//SYNC
 				if(player == Minecraft.getMinecraft().player && j.dirty){
-					PacketDispatcher.wrapper.sendToServer(new JetpackSyncPacket(player));
-					j.dirty = false;
+                    PacketThreading.createSendToServerThreadedPacket(new JetpackSyncPacket(player));
+                    j.dirty = false;
 				}
 			}
 		}

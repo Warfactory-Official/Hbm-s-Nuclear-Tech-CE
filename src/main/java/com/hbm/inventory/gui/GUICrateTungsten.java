@@ -1,8 +1,8 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerCrateTungsten;
 import com.hbm.lib.Library;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityCrateTungsten;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -12,8 +12,8 @@ import net.minecraft.util.ResourceLocation;
 
 public class GUICrateTungsten extends GUICrateBase<TileEntityCrateTungsten, ContainerCrateTungsten> {
 
-    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/storage/gui_crate_tungsten.png");
-    private static final ResourceLocation texture_hot = new ResourceLocation(RefStrings.MODID + ":textures/gui/storage/gui_crate_tungsten_hot.png");
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/storage/gui_crate_tungsten.png");
+    private static final ResourceLocation texture_hot = new ResourceLocation(Tags.MODID + ":textures/gui/storage/gui_crate_tungsten_hot.png");
 
     public GUICrateTungsten(InventoryPlayer invPlayer, TileEntityCrateTungsten tedf) {
         super(tedf, new ContainerCrateTungsten(invPlayer, tedf), 176, 168, texture);

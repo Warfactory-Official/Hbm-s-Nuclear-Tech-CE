@@ -19,7 +19,7 @@ public class EntityAIMaskmanLasergun extends EntityAIBase {
     public EntityAIMaskmanLasergun(EntityCreature owner, boolean checkSight, boolean nearbyOnly) {
     	this.owner = owner;
 
-		attack = EnumLaserAttack.values()[owner.getRNG().nextInt(3)];
+		attack = EnumLaserAttack.VALUES[owner.getRNG().nextInt(3)];
 	}
     
 	@Override
@@ -86,8 +86,8 @@ public class EntityAIMaskmanLasergun extends EntityAIBase {
 
 				attackCount = 0;
 
-				int newAtk = attack.ordinal() + owner.getRNG().nextInt(EnumLaserAttack.values().length - 1);
-				attack = EnumLaserAttack.values()[newAtk % EnumLaserAttack.values().length];
+				int newAtk = attack.ordinal() + owner.getRNG().nextInt(EnumLaserAttack.VALUES.length - 1);
+				attack = EnumLaserAttack.VALUES[newAtk % EnumLaserAttack.VALUES.length];
 			}
 		}
 
@@ -99,6 +99,8 @@ public class EntityAIMaskmanLasergun extends EntityAIBase {
 		ORB(60, 5),
 		MISSILE(10, 10),
 		SPLASH(40, 3);
+
+		public static final EnumLaserAttack[] VALUES = values();
 
 		public int delay;
 		public int amount;

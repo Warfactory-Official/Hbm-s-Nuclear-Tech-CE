@@ -2,7 +2,6 @@ package com.hbm.particle;
 
 import com.hbm.main.ClientProxy;
 import com.hbm.main.MainRegistry;
-import com.hbm.main.ResourceManager;
 import com.hbm.particle.gluon.ParticleGluonDisintegration;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.render.util.ModelRendererUtil;
@@ -19,10 +18,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
-
-import java.lang.reflect.InvocationTargetException;
+import org.lwjgl.opengl.GL11;
 
 public class DisintegrationParticleHandler {
 
@@ -98,18 +94,8 @@ public class DisintegrationParticleHandler {
 		model.setLivingAnimations(e, f6, f5, partialTicks);
 		model.setRotationAngles(f6, f5, f8, f2, f7, f4, e);
 
-		if(ModelRendererUtil.rGetEntityTexture == null){
-			ModelRendererUtil.rGetEntityTexture = ReflectionHelper.findMethod(Render.class, "getEntityTexture", "func_110775_a", Entity.class);
-		}
-		ResourceLocation r = ResourceManager.turbofan_blades_tex;
-		try {
-			r = (ResourceLocation) ModelRendererUtil.rGetEntityTexture.invoke(render, e);
-			if(r == null)
-				r = ResourceManager.turbofan_blades_tex;
-		} catch(IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
-			e1.printStackTrace();
-		}
-		for(ModelRenderer renderer : model.boxList) {
+        ResourceLocation r = ModelRendererUtil.getEntityTexture(e, render);
+        for(ModelRenderer renderer : model.boxList) {
 			spawnParticles(e.world, e, e.posX, e.posY, e.posZ, f4, renderer, r);
 		}
 
@@ -190,17 +176,7 @@ public class DisintegrationParticleHandler {
 		model.setLivingAnimations(e, f6, f5, partialTicks);
 		model.setRotationAngles(f6, f5, f8, f2, f7, f4, e);
 
-		if(ModelRendererUtil.rGetEntityTexture == null){
-			ModelRendererUtil.rGetEntityTexture = ReflectionHelper.findMethod(Render.class, "getEntityTexture", "func_110775_a", Entity.class);
-		}
-		ResourceLocation r = ResourceManager.turbofan_blades_tex;
-		try {
-			r = (ResourceLocation) ModelRendererUtil.rGetEntityTexture.invoke(render, e);
-			if(r == null)
-				r = ResourceManager.turbofan_blades_tex;
-		} catch(IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
-			e1.printStackTrace();
-		}
+        ResourceLocation r = ModelRendererUtil.getEntityTexture(e, render);
 		int trailCount = 10;
 		for(ModelRenderer renderer : model.boxList) {
 			trailCount = spawnLightningParticles(e.world, e, e.posX, e.posY, e.posZ, f4, renderer, r, hitPos, trailCount);

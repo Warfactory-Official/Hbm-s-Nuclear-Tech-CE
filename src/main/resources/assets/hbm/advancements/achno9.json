@@ -1,0 +1,28 @@
+{
+  "parent": "hbm:root",
+  "display": {
+    "icon": {
+      "item": "hbm:no9"
+    },
+    "title": {
+      "translate": "achievement.no9"
+    },
+    "description": {
+      "translate": "achievement.no9.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "impossible": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "impossible"
+    ]
+  ]
+}

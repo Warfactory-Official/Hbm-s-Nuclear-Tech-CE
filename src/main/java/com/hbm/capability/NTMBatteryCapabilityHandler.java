@@ -63,7 +63,7 @@ public class NTMBatteryCapabilityHandler {
             long heBudget = (long) Math.floor(maxReceive / GeneralConfig.conversionRateHeToRF);
             if (heBudget <= 0) return simulate ? 1 : 0;
             long spaceHE = batteryItem.getMaxCharge(container) - batteryItem.getCharge(container);
-            long heCanAccept = Math.min(spaceHE, batteryItem.getChargeRate());
+            long heCanAccept = Math.min(spaceHE, batteryItem.getChargeRate(container));
             long heAccepted = Math.min(heBudget, heCanAccept);
             if (heAccepted > 0 && !simulate) batteryItem.chargeBattery(container, heAccepted);
             long feAccepted = Math.round(heAccepted * GeneralConfig.conversionRateHeToRF);
@@ -75,7 +75,7 @@ public class NTMBatteryCapabilityHandler {
             if (!canExtract() || maxExtract <= 0 || GeneralConfig.conversionRateHeToRF <= 0) return 0;
             long heBudget = (long) Math.floor(maxExtract / GeneralConfig.conversionRateHeToRF);
             if (heBudget <= 0) return simulate ? 1 : 0;
-            long heAvailable = Math.min(batteryItem.getCharge(container), batteryItem.getDischargeRate());
+            long heAvailable = Math.min(batteryItem.getCharge(container), batteryItem.getDischargeRate(container));
             long heExtracted = Math.min(heBudget, heAvailable);
             if (heExtracted > 0 && !simulate) batteryItem.dischargeBattery(container, heExtracted);
             long feExtracted = Math.round(heExtracted * GeneralConfig.conversionRateHeToRF);
@@ -96,12 +96,12 @@ public class NTMBatteryCapabilityHandler {
 
         @Override
         public boolean canExtract() {
-            return batteryItem.getDischargeRate() > 0 && batteryItem.getCharge(container) > 0;
+            return batteryItem.getDischargeRate(container) > 0 && batteryItem.getCharge(container) > 0;
         }
 
         @Override
         public boolean canReceive() {
-            return batteryItem.getChargeRate() > 0 && batteryItem.getCharge(container) < batteryItem.getMaxCharge(container);
+            return batteryItem.getChargeRate(container) > 0 && batteryItem.getCharge(container) < batteryItem.getMaxCharge(container);
         }
     }
 }

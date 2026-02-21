@@ -4,13 +4,7 @@ import com.hbm.api.tile.IWorldRenameable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.capability.NTMEnergyCapabilityWrapper;
 import com.hbm.capability.NTMFluidHandlerWrapper;
-import com.hbm.dim.CelestialBody;
-import com.hbm.dim.orbit.WorldProviderOrbit;
-import com.hbm.dim.trait.CBT_Atmosphere;
-import com.hbm.handler.atmosphere.AtmosphereBlob;
-import com.hbm.handler.atmosphere.ChunkAtmosphereManager;
 import com.hbm.interfaces.Spaghetti;
-import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.CapabilityContextProvider;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ItemStackHandlerWrapper;
@@ -31,8 +25,6 @@ import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 @Spaghetti("Not spaghetti in itself, but for the love of god please use this base class for all machines")
 public abstract class TileEntityMachineBase extends TileEntityLoadedBase implements IWorldRenameable {
     /**
@@ -41,6 +33,7 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
      * Consider making this protected in the future.
      */
     public ItemStackHandler inventory;
+    private IItemHandlerModifiable checkedInventory;
     private boolean enablefluidWrapper = false;
     private boolean enableEnergyWrapper = false;
     private String customName;
@@ -84,7 +77,6 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
         };
     }
 
-    // This is for cases like barrels - in 2.0.3 there are 6 slots instead of 4
     protected void resizeInventory(int newSlotCount) {
         ItemStackHandler newInventory = getNewInventory(newSlotCount, inventory.getSlotLimit(0));
         for (int i = 0; i < Math.min(inventory.getSlots(), newSlotCount); i++) {
@@ -92,11 +84,6 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
         }
         this.inventory = newInventory;
         markDirty();
-    }
-
-    /** The "chunks is modified, pls don't forget to save me" effect of markDirty, minus the block updates */
-    public void markChanged() {
-        this.world.markChunkDirty(this.pos, this);
     }
 
     @Override
@@ -129,12 +116,15 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
      *
      * @param side The side of the block being accessed.
      * @param accessorPos The position of the block DOING the accessing (the proxy).
-     * @return An array of slots accessible from this proxy at this side.
+     * @return An array of slots accessible from this proxy at this side. null -> full access. Empty array -> no access.
      */
     public int[] getAccessibleSlotsFromSide(EnumFacing side, BlockPos accessorPos) {
         return getAccessibleSlotsFromSide(side);
     }
 
+    /**
+     * @return An array of slots accessible at this side. null -> full access. Empty array -> no access.
+     */
     public int[] getAccessibleSlotsFromSide(EnumFacing e) {
         return new int[]{};
     }
@@ -169,6 +159,12 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
         super.readFromNBT(compound);
     }
 
+    /**
+     * Checks if an item can be inserted into a slot.
+     * <p>
+     * Only affects the {@link IItemHandlerModifiable} obtained via {@link #getCheckedInventory()}
+     * and the capability exposed externally.
+     */
     public boolean isItemValidForSlot(int i, ItemStack stack) {
         return true;
     }
@@ -176,11 +172,16 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
     /**
      * Checks if an item can be inserted into a slot from a specific side and accessor position.
      * Mimics the 1.7 IConditionalInvAccess behavior.
+     * <p>
+     * Only affects the capability exposed externally.
      */
     public boolean canInsertItem(int slot, ItemStack stack, EnumFacing side, BlockPos accessorPos) {
         return canInsertItem(slot, stack);
     }
 
+    /**
+     * Only affects the capability exposed externally.
+     */
     public boolean canInsertItem(int slot, ItemStack itemStack) {
         return this.isItemValidForSlot(slot, itemStack);
     }
@@ -188,11 +189,16 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
     /**
      * Checks if an item can be extracted from a slot from a specific side and accessor position.
      * Mimics the 1.7 IConditionalInvAccess behavior.
+     * <p>
+     * Only affects the capability exposed externally.
      */
     public boolean canExtractItem(int slot, ItemStack stack, int amount, EnumFacing side, BlockPos accessorPos) {
         return canExtractItem(slot, stack, amount);
     }
 
+    /**
+     * Only affects the capability exposed externally.
+     */
     public boolean canExtractItem(int slot, ItemStack itemStack, int amount) {
         return true;
     }
@@ -215,22 +221,23 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
         return Math.max(volume, 0);
     }
 
+    /**
+     * @return a checked wrapper around the inventory. Intended for Container and GUI class.
+     */
     public IItemHandlerModifiable getCheckedInventory() {
-        return new ItemStackHandlerWrapper(inventory) {
-            @Override
-            public boolean isItemValid(int slot, ItemStack stack) {
-                return isItemValidForSlot(slot, stack);
-            }
-        };
+        if (checkedInventory == null)
+            checkedInventory = new CheckedInventory();
+        return checkedInventory;
     }
 
     @Override
     public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+        // Contract: facing == null -> internal
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY && enablefluidWrapper) {
-            BlockPos accessorPos = CapabilityContextProvider.getAccessor(this.pos);
+            BlockPos accessorPos = facing == null ? null : CapabilityContextProvider.getAccessor(this.pos);
             return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(new NTMFluidHandlerWrapper(this, accessorPos));
         } else if (capability == CapabilityEnergy.ENERGY && enableEnergyWrapper) {
-            BlockPos accessorPos = CapabilityContextProvider.getAccessor(this.pos);
+            BlockPos accessorPos = facing == null ? null : CapabilityContextProvider.getAccessor(this.pos);
             return CapabilityEnergy.ENERGY.cast(new NTMEnergyCapabilityWrapper(this, accessorPos));
         } else if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY && inventory != null) {
             if (facing == null)
@@ -239,6 +246,11 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
             final EnumFacing side = facing;
             int[] accessibleSlots = getAccessibleSlotsFromSide(side, accessorPos);
             return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(new ItemStackHandlerWrapper(inventory, accessibleSlots) {
+                @Override
+                public boolean isItemValid(int slot, ItemStack stack) {
+                    return isItemValidForSlot(slot, stack);
+                }
+
                 @Override
                 public ItemStack extractItem(int slot, int amount, boolean simulate) {
                     if (canExtractItem(slot, inventory.getStackInSlot(slot), amount, side, accessorPos)) {
@@ -266,7 +278,8 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY && inventory != null) {
             if (facing == null) return true;
             BlockPos accessorPos = CapabilityContextProvider.getAccessor(this.pos);
-            return getAccessibleSlotsFromSide(facing, accessorPos).length > 0;
+            int[] accessible = getAccessibleSlotsFromSide(facing, accessorPos);
+            return accessible == null || accessible.length > 0;
         }
         return super.hasCapability(capability, facing);
     }
@@ -299,23 +312,43 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
         return destroyedByCreativePlayer;
     }
 
-    // TODO: Consume air from connected tanks if available
-    protected boolean breatheAir(int amount) {
-        CBT_Atmosphere atmosphere = world.provider instanceof WorldProviderOrbit ? null : CelestialBody.getTrait(world, CBT_Atmosphere.class);
-        if (atmosphere != null) {
-            if (atmosphere.hasFluid(Fluids.AIR, 0.19) || atmosphere.hasFluid(Fluids.OXYGEN, 0.09)) {
-                return true;
-            }
+    private final class CheckedInventory implements IItemHandlerModifiable {
+        @Override
+        public int getSlots() {
+            return inventory.getSlots();
         }
 
-        List<AtmosphereBlob> blobs = ChunkAtmosphereManager.proxy.getBlobs(world, pos.getX(), pos.getY(), pos.getZ());
-        for (AtmosphereBlob blob : blobs) {
-            if (blob.hasFluid(Fluids.AIR, 0.19) || blob.hasFluid(Fluids.OXYGEN, 0.09)) {
-                blob.consume(amount);
-                return true;
-            }
+        @Override
+        public @NotNull ItemStack getStackInSlot(int slot) {
+            return inventory.getStackInSlot(slot);
         }
 
-        return false;
+        @Override
+        public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
+            if (stack.isEmpty()) return ItemStack.EMPTY;
+            if (!isItemValidForSlot(slot, stack)) return stack;
+            return inventory.insertItem(slot, stack, simulate);
+        }
+
+        @Override
+        public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
+            if (amount <= 0) return ItemStack.EMPTY;
+            return inventory.extractItem(slot, amount, simulate);
+        }
+
+        @Override
+        public int getSlotLimit(int slot) {
+            return inventory.getSlotLimit(slot);
+        }
+
+        @Override
+        public void setStackInSlot(int slot, @NotNull ItemStack stack) {
+            inventory.setStackInSlot(slot, stack);
+        }
+
+        @Override
+        public boolean isItemValid(int slot, @NotNull ItemStack stack) {
+            return isItemValidForSlot(slot, stack);
+        }
     }
 }

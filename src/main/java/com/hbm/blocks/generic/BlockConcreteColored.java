@@ -11,10 +11,9 @@ import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 
-public class BlockConcreteColored extends BlockEnumMeta {
-
+public class BlockConcreteColored extends BlockEnumMeta<EnumDyeColor> {
     public BlockConcreteColored() {
-        super(Material.ROCK, SoundType.STONE, "concrete_colored", EnumDyeColor.class, true, true);
+        super(Material.ROCK, SoundType.STONE, "concrete_colored", EnumDyeColor.META_LOOKUP, true, true);
         this.setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
     }
 

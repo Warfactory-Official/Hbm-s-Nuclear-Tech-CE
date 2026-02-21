@@ -1,13 +1,12 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerReactorControl;
-import com.hbm.lib.RefStrings;
 import com.hbm.modules.NumberDisplay;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toserver.NBTControlPacket;
 import com.hbm.tileentity.machine.TileEntityReactorControl;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -15,7 +14,6 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
@@ -24,9 +22,11 @@ import org.lwjgl.input.Keyboard;
 
 import java.io.IOException;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUIReactorControl extends GuiInfoContainer {
 
-    private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/gui_reactor_control.png");
+    private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/gui_reactor_control.png");
     private TileEntityReactorControl control;
 
     private final NumberDisplay[] displays = new NumberDisplay[3];
@@ -90,7 +90,7 @@ public class GUIReactorControl extends GuiInfoContainer {
 
         if(guiLeft + 33 <= x && guiLeft + 33 + 58 > x && guiTop + 59 < y && guiTop + 59 + 10 >= y) {
 
-            mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            playClickSound();
             NBTTagCompound data = new NBTTagCompound();
 
             double[] vals = new double[] { 0D, 0D, 0D, 0D };
@@ -114,16 +114,18 @@ public class GUIReactorControl extends GuiInfoContainer {
             data.setDouble("heatUpper", vals[2]);
             data.setDouble("heatLower", vals[3]);
 
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, control.getPos().getX(), control.getPos().getY(), control.getPos().getZ()));
+            PacketThreading.createSendToServerThreadedPacket(
+                    new NBTControlPacket(data, control.getPos().getX(), control.getPos().getY(), control.getPos().getZ()));
         }
 
         for(int k = 0; k < 3; k++) {
             if(guiLeft + 7 <= x && guiLeft + 7 + 22 > x && guiTop + 37 + k * 11 < y && guiTop + 37 + 10 + k * 11 >= y) {
 
-                mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                playClickSound();
                 NBTTagCompound data = new NBTTagCompound();
                 data.setInteger("function", k);
-                PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, control.getPos().getX(), control.getPos().getY(), control.getPos().getZ()));
+                PacketThreading.createSendToServerThreadedPacket(
+                        new NBTControlPacket(data, control.getPos().getX(), control.getPos().getY(), control.getPos().getZ()));
             }
         }
     }

@@ -3,12 +3,12 @@ package com.hbm.items.tool;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
+import com.hbm.Tags;
 import com.hbm.handler.ability.AvailableAbilities;
 import com.hbm.handler.ability.IWeaponAbility;
 import com.hbm.items.IDynamicModels;
 import com.hbm.items.ModItems;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.lib.RefStrings;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureMap;
@@ -81,9 +81,9 @@ public class ItemSwordAbility extends ItemSword implements IDynamicModels {
 	@Override
 	public void bakeModel(ModelBakeEvent event) {
 		try {
-			ResourceLocation templateModel = new ResourceLocation(RefStrings.MODID, "item/sword_template");
+			ResourceLocation templateModel = new ResourceLocation(Tags.MODID, "item/sword_template");
 			IModel baseModel = ModelLoaderRegistry.getModel(templateModel);
-			ResourceLocation spriteLoc = new ResourceLocation(RefStrings.MODID, ROOT_PATH + texturePath);
+			ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath);
 
 			IModel retexturedModel = baseModel.retexture(
 					ImmutableMap.of("layer0", spriteLoc.toString())
@@ -106,12 +106,12 @@ public class ItemSwordAbility extends ItemSword implements IDynamicModels {
 
 	@Override
 	public void registerModel() {
-		ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(new ResourceLocation(RefStrings.MODID, ROOT_PATH + texturePath), "inventory"));
+		ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath), "inventory"));
 	}
 
 	@Override
 	public void registerSprite(TextureMap map) {
-		map.registerSprite(new ResourceLocation(RefStrings.MODID, ROOT_PATH + texturePath));
+		map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath));
 	}
 
 	public ItemSwordAbility addAbility(IWeaponAbility weaponAbility, int level) {

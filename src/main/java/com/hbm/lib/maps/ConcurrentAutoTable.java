@@ -12,11 +12,13 @@
  * limitations under the License.
  */
 package com.hbm.lib.maps;
-import static com.hbm.lib.UnsafeHolder.U;
+
+import com.hbm.lib.Library;
+import com.hbm.lib.internal.UnsafeHolder;
 
 import java.io.Serializable;
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
+import static com.hbm.lib.internal.UnsafeHolder.U;
 
 /**
  * An auto-resizing table of {@code longs}, supporting low-contention CAS
@@ -52,7 +54,7 @@ public class ConcurrentAutoTable implements Serializable {
     public void set( long x ) {
         CAT newcat = new CAT(null,4,x);
         // Spin until CAS works
-        while( !CAS_cat(_cat,newcat) ) {/*empty*/}
+        while( !CAS_cat(_cat,newcat) ) { Library.onSpinWait(); }
     }
 
     /**
@@ -96,9 +98,8 @@ public class ConcurrentAutoTable implements Serializable {
 
     // The underlying array of concurrently updated long counters
     private volatile CAT _cat = new CAT(null,16/*Start Small, Think Big!*/,0L);
-    private static AtomicReferenceFieldUpdater<ConcurrentAutoTable,CAT> _catUpdater =
-            AtomicReferenceFieldUpdater.newUpdater(ConcurrentAutoTable.class,CAT.class, "_cat");
-    private boolean CAS_cat( CAT oldcat, CAT newcat ) { return _catUpdater.compareAndSet(this,oldcat,newcat); }
+    private static final long CAT_OFF = UnsafeHolder.fieldOffset(ConcurrentAutoTable.class, "_cat");
+    private boolean CAS_cat( CAT oldcat, CAT newcat ) { return U.compareAndSetReference(this,CAT_OFF,oldcat,newcat); }
 
     // Hash spreader
     private static int hash() {
@@ -111,7 +112,7 @@ public class ConcurrentAutoTable implements Serializable {
     private static class CAT implements Serializable {
 
         // Unsafe crud: get a function which will CAS arrays
-        private static final int _Lbase  = U.arrayBaseOffset(long[].class);
+        private static final long _Lbase  = U.arrayBaseOffset(long[].class);
         private static final int _Lscale = U.arrayIndexScale(long[].class);
         private static long rawIndex(long[] ary, int i) {
             assert i >= 0 && i < ary.length;
@@ -153,6 +154,7 @@ public class ConcurrentAutoTable implements Serializable {
                 old = t[idx];
                 if( CAS( t, idx, old, old+x ) ) break; // Got it!
                 cnt++;
+                Library.onSpinWait();
             }
             if( cnt < MAX_SPIN ) return old; // Allowable spin loop count
             if( t.length >= 1024*1024 ) return old; // too big already
@@ -177,7 +179,7 @@ public class ConcurrentAutoTable implements Serializable {
             // Take 1 stab at updating the CAT with the new larger size.  If this
             // fails, we assume some other thread already expanded the CAT - so we
             // do not need to retry until it succeeds.
-            while( master._cat == this && !master.CAS_cat(this,newcat) ) {/*empty*/}
+            while( master._cat == this && !master.CAS_cat(this,newcat) ) { Library.onSpinWait(); }
             return old;
         }
 

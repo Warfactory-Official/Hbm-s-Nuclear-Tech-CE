@@ -1,0 +1,109 @@
+name: Bug report
+description: Report a reproducible bug.
+type: Bug
+body:
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Describe the bug
+      description: |
+        A clear and concise description of what the bug is.
+        If it's a compatibility issue, specify the other mod(s) involved.
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ### Build tested
+        Please confirm that the problem can be reproduced on the **latest successful GitHub Actions build** (not Releases/Tags).
+
+        **Quick how-to:**
+        1) Open the repo's **Actions** tab and pick the most recent green run labeled **CI Build**.  
+        2) On the run page, download the artifact (Summary → Artifacts), extract it, and put the `.jar` (no `-dev` / `-sources`) in your mods folder.  
+        3) Reproduce the issue and paste the run URL below. If updating fixes it, please close the report.
+
+        ### Mod conflict check
+        If you're not sure whether this is a mod conflict, **remove all other mods** (keep only NTM:CE) and retry.  
+        If it stops happening, add mods back until you find the offending mod.
+
+        ### Platform notes
+        If the issue only happens on a specific platform (singleplayer vs dedicated server vs hybrid server vs Cleanroom), please say so.  
+        If this affects **dedicated server**, make sure the **server and client are on the same NTM:CE version/build**.
+
+  - type: input
+    id: actions-run-url
+    attributes:
+      label: Run URL
+      description: Paste the URL of the Actions run you tested with, e.g., `https://github.com/<owner>/<repo>/actions/runs/##########`
+      placeholder: "https://github.com/Warfactory-Offical/Hbm-s-Nuclear-Tech-CE/actions/runs/##########"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: conflict-check
+    attributes:
+      label: Mod conflict check
+      description: Did you try reproducing with only NTM:CE + required dependencies?
+      options:
+        - Yes — reproduces with only NTM:CE
+        - No — only reproduces with other mods (compatibility issue)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Where does it happen?
+      options:
+        - Singleplayer (Forge)
+        - Dedicated server (Forge)
+        - Both singleplayer and dedicated server (Forge)
+        - Hybrid server (Mohist/CatServer/...)
+        - Singleplayer (Cleanroom / modern Java)
+        - Dedicated server (Cleanroom / modern Java)
+        - Both singleplayer and dedicated server (Cleanroom / modern Java)
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: To Reproduce
+      description: Steps to reproduce the behavior. A minimal, reliable repro helps a lot.
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What you expected to happen.
+
+  - type: textarea
+    id: media-logs
+    attributes:
+      label: Screenshots, videos, crash report, logs
+      description: If applicable, add screenshots/videos and crash reports. For logs, please use https://mclo.gs/ and paste the link here.
+
+  - type: textarea
+    id: modlist
+    attributes:
+      label: Modlist
+      description: Copy and paste the mod list from your game log here (can be skipped if the log already contains it).
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Any other context—OS, Java version, Forge/Cleanroom version, server type, config changes, etc.
+      value: |
+        - OS:
+        - Java:
+        - Forge/Cleanroom:
+        - Server software (if any):
+        - Notes:

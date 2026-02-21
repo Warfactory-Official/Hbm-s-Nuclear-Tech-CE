@@ -24,7 +24,7 @@ import static com.hbm.inventory.fluid.Fluids.*;
 
 public class CokerRecipes extends SerializableRecipe {
 
-    private static HashMap<FluidType, Tuple.Triplet<Integer, ItemStack, FluidStack>> recipes = new HashMap();
+    public static HashMap<FluidType, Tuple.Triplet<Integer, ItemStack, FluidStack>> recipes = new HashMap<>();
 
     @Override
     public void registerDefaults() {
@@ -67,10 +67,10 @@ public class CokerRecipes extends SerializableRecipe {
         registerRecipe(VITRIOL, 4000, new ItemStack(ModItems.powder_iron), new FluidStack(SULFURIC_ACID, 500));
     }
 
-    private static void registerAuto(FluidType fluid, FluidType type) {
+    public static void registerAuto(FluidType fluid, FluidType type) {
         registerSFAuto(fluid, 820_000L, OreDictManager.DictFrame.fromOne(ModItems.coke, ItemEnums.EnumCokeType.PETROLEUM), type); //3200 burntime * 1.25 burntime bonus * 200 TU/t + 20000TU per operation
     }
-    private static void registerSFAuto(FluidType fluid, long tuPerSF, ItemStack fuel, FluidType type) {
+    public static void registerSFAuto(FluidType fluid, long tuPerSF, ItemStack fuel, FluidType type) {
         long tuFlammable = fluid.hasTrait(FT_Flammable.class) ? fluid.getTrait(FT_Flammable.class).getHeatEnergy() : 0;
         long tuCombustible = fluid.hasTrait(FT_Combustible.class) ? fluid.getTrait(FT_Combustible.class).getCombustionEnergy() : 0;
 
@@ -88,8 +88,8 @@ public class CokerRecipes extends SerializableRecipe {
 
         registerRecipe(fluid, mB, fuel, byproduct);
     }
-    private static void registerRecipe(FluidType type, int quantity, ItemStack output, FluidStack byproduct) {
-        recipes.put(type, new Tuple.Triplet(quantity, output, byproduct));
+    public static void registerRecipe(FluidType type, int quantity, ItemStack output, FluidStack byproduct) {
+        recipes.put(type, new Tuple.Triplet<>(quantity, output, byproduct));
     }
 
     public static Tuple.Triplet<Integer, ItemStack, FluidStack> getOutput(FluidType type) {
@@ -98,7 +98,7 @@ public class CokerRecipes extends SerializableRecipe {
 
     public static HashMap<ItemStack, ItemStack[]> getRecipes() {
 
-        HashMap<ItemStack, ItemStack[]> recipes = new HashMap<ItemStack, ItemStack[]>();
+        HashMap<ItemStack, ItemStack[]> recipes = new HashMap<>();
 
         for(Map.Entry<FluidType, Tuple.Triplet<Integer, ItemStack, FluidStack>> entry : CokerRecipes.recipes.entrySet()) {
 
@@ -108,9 +108,9 @@ public class CokerRecipes extends SerializableRecipe {
             FluidStack byproduct = entry.getValue().getZ();
 
 
-            if(out != null && byproduct != null) recipes.put(ItemFluidIcon.make(type, amount), new ItemStack[] {out, ItemFluidIcon.make(byproduct)});
-            if(out != null && byproduct == null) recipes.put(ItemFluidIcon.make(type, amount), new ItemStack[] {out});
-            if(out == null && byproduct != null) recipes.put(ItemFluidIcon.make(type, amount), new ItemStack[] {ItemFluidIcon.make(byproduct)});
+            if(!out.isEmpty() && byproduct != null) recipes.put(ItemFluidIcon.make(type, amount), new ItemStack[] {out, ItemFluidIcon.make(byproduct)});
+            if(!out.isEmpty() && byproduct == null) recipes.put(ItemFluidIcon.make(type, amount), new ItemStack[] {out});
+            if(out.isEmpty() && byproduct != null) recipes.put(ItemFluidIcon.make(type, amount), new ItemStack[] {ItemFluidIcon.make(byproduct)});
         }
 
         return recipes;
@@ -134,10 +134,10 @@ public class CokerRecipes extends SerializableRecipe {
     @Override
     public void readRecipe(JsonElement recipe) {
         JsonObject obj = (JsonObject) recipe;
-        FluidStack in = this.readFluidStack(obj.get("input").getAsJsonArray());
-        ItemStack out = obj.has("output") ? this.readItemStack(obj.get("output").getAsJsonArray()) : null;
-        FluidStack byproduct = obj.has("byproduct") ? this.readFluidStack(obj.get("byproduct").getAsJsonArray()) : null;
-        recipes.put(in.type, new Tuple.Triplet(in.fill, out, byproduct));
+        FluidStack in = readFluidStack(obj.get("input").getAsJsonArray());
+        ItemStack out = obj.has("output") ? readItemStack(obj.get("output").getAsJsonArray()) : null;
+        FluidStack byproduct = obj.has("byproduct") ? readFluidStack(obj.get("byproduct").getAsJsonArray()) : null;
+        recipes.put(in.type, new Tuple.Triplet<>(in.fill, out, byproduct));
     }
 
     @Override
@@ -145,14 +145,14 @@ public class CokerRecipes extends SerializableRecipe {
         Map.Entry<FluidType, Tuple.Triplet<Integer, ItemStack, FluidStack>> rec = (Map.Entry<FluidType, Tuple.Triplet<Integer, ItemStack, FluidStack>>) recipe;
         FluidStack in = new FluidStack(rec.getKey(), rec.getValue().getX());
         writer.name("input");
-        this.writeFluidStack(in, writer);
+        writeFluidStack(in, writer);
         if(rec.getValue().getY() != null) {
             writer.name("output");
-            this.writeItemStack(rec.getValue().getY(), writer);
+            writeItemStack(rec.getValue().getY(), writer);
         }
         if(rec.getValue().getZ() != null) {
             writer.name("byproduct");
-            this.writeFluidStack(rec.getValue().getZ(), writer);
+            writeFluidStack(rec.getValue().getZ(), writer);
         }
     }
 }

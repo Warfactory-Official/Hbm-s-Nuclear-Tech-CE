@@ -47,51 +47,25 @@ public class ItemGeigerCounter extends Item implements IBauble {
 	}
 
 	public static void playGeiger(World world, EntityPlayer player){
+        if (world.isRemote) return;
 		double x = ContaminationUtil.getActualPlayerRads(player);
 		
 		if(world.getTotalWorldTime() % 5 == 0) {
 
-			if(x > 0.001) {
-				List<Integer> list = new ArrayList<Integer>();
+			if(x > 1e-5) {
+				List<Integer> list = new ArrayList<>();
+                if(x < 1) list.add(0);
+                if(x < 5) list.add(0);
+                if(x < 10) list.add(1);
+                if(x > 5 && x < 15) list.add(2);
+                if(x > 10 && x < 20) list.add(3);
+                if(x > 15 && x < 25) list.add(4);
+                if(x > 20 && x < 30) list.add(5);
+                if(x > 25) list.add(6);
+                int r = list.get(world.rand.nextInt(list.size()));
 
-				if(x < 1){
-					list.add(0);
-				}
-				if(x < 5){
-					list.add(0);
-				}
-				if(2 < x && x < 10){
-					list.add(1);
-				}
-				if(5 < x && x < 20){
-					list.add(2);
-				}
-				if(15 < x && x < 40){
-					list.add(3);
-				}
-				if(30 < x && x < 80){
-					list.add(4);
-				}
-				if(60 < x && x < 160){
-					list.add(5);
-				}
-				if(120 < x && x < 320){
-					list.add(6);
-				}
-				if(240 < x && x < 640){
-					list.add(7);
-				}
-				if(480 < x){
-					list.add(8);
-				}
-				if(list.size() > 0){
-					int r = list.get(world.rand.nextInt(list.size()));
-					
-					if(r > 0){
-						world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.geigerSounds[r-1], SoundCategory.PLAYERS, 1.0F, 1.0F);
-					}
-				}
-			} else if(world.rand.nextInt(100) == 0) {
+                if(r > 0) world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.geigerSounds[r - 1], SoundCategory.PLAYERS, 1.0F, 1.0F);
+            } else if(world.rand.nextInt(100) == 0) {
 				world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.geigerSounds[(world.rand.nextInt(1))], SoundCategory.PLAYERS, 1.0F, 1.0F);
 			}
 		}

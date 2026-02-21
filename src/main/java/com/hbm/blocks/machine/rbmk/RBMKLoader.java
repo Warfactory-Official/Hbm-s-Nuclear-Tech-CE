@@ -22,7 +22,7 @@ public class RBMKLoader extends BlockBase implements IFluidConnectorBlock, ITool
         super(material, s);
     }
 
-    @Override
+    @Override // this method is purely visual, actual logic at TileEntityRBMKBoiler
     public boolean canConnect(FluidType type, IBlockAccess world, int x, int y, int z, ForgeDirection dir) {
         if (dir == ForgeDirection.UP) return type.hasTrait(FT_Heatable.class);
         return type.hasTrait(FT_Coolable.class);

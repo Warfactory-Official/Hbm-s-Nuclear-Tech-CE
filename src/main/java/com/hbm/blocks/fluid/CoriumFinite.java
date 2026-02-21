@@ -23,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
 
-public class CoriumFinite extends BlockFluidFinite {
+public class CoriumFinite extends BlockFluidFinite implements IFluidFog {
 
     private final Random rand = new Random();
 
@@ -93,5 +93,15 @@ public class CoriumFinite extends BlockFluidFinite {
     @Override
     public boolean isReplaceable(@NotNull IBlockAccess world, @NotNull BlockPos pos) {
         return false;
+    }
+
+    @Override
+    public float getFogDensity() {
+        return 2.0F;
+    }
+
+    @Override
+    public int getFogColor() {
+        return 0x343435;
     }
 }

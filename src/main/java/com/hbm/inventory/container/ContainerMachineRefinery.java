@@ -1,47 +1,49 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotBattery;
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotFiltered;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.oil.TileEntityMachineRefinery;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
+import org.jetbrains.annotations.NotNull;
 
 public class ContainerMachineRefinery extends Container {
 
-private TileEntityMachineRefinery testNuke;
+    private TileEntityMachineRefinery refinery;
 	
 	public ContainerMachineRefinery(InventoryPlayer invPlayer, TileEntityMachineRefinery tedf) {
-		
-		testNuke = tedf;
+		refinery = tedf;
 
 		//Battery
 		this.addSlotToContainer(new SlotBattery(tedf.inventory, 0, 186, 72));
 		//Canister Input
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 1, 8, 99));
 		//Canister Output
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 2, 8, 119));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 2, 8, 119));
 		//Heavy Oil Input
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 86, 99));
 		//Heavy Oil Output
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 4, 86, 119));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 4, 86, 119));
 		//Naphtha Input
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 5, 106, 99));
 		//Naphtha Output
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 6, 106, 119));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 6, 106, 119));
 		//Light Oil Input
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 7, 126, 99));
 		//Light Oil Output
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 8, 126, 119));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 8, 126, 119));
 		//Petroleum Input
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 9, 146, 99));
 		//Petroleum Output
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 10, 146, 119));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 10, 146, 119));
 		//Sulfur Output
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 11, 58, 119));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 11, 58, 119));
 		//Fluid ID
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 12, 186, 106));
 
@@ -57,46 +59,18 @@ private TileEntityMachineRefinery testNuke;
 	}
 	
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2)
-    {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-		
-		if (var4 != null && var4.getHasStack())
-		{
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-			
-            if (par2 <= 11) {
-				if (!this.mergeItemStack(var5, 12, this.inventorySlots.size(), true))
-				{
-					return ItemStack.EMPTY;
-				}
-			}
-			else if (!this.mergeItemStack(var5, 0, 1, false))
-				if (!this.mergeItemStack(var5, 1, 2, false))
-					if (!this.mergeItemStack(var5, 3, 4, false))
-						if (!this.mergeItemStack(var5, 5, 6, false))
-							if (!this.mergeItemStack(var5, 7, 8, false))
-								if (!this.mergeItemStack(var5, 9, 10, false)) {
-					return ItemStack.EMPTY;
-			}
-			
-			if (var5.isEmpty())
-			{
-				var4.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
-				var4.onSlotChanged();
-			}
-		}
-		
-		return var3;
+    public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
+		return InventoryUtil.transferStack(this.inventorySlots, index, 13,
+                Library::isBattery, 1,
+                s -> Library.isStackDrainableForTank(s, refinery.tanks[0]), 3,
+                s -> Library.isStackFillableForTank(s, refinery.tanks[1]), 5,
+                s -> Library.isStackFillableForTank(s, refinery.tanks[2]), 7,
+                s -> Library.isStackFillableForTank(s, refinery.tanks[3]), 9,
+                s -> Library.isStackFillableForTank(s, refinery.tanks[4]), 11);
     }
 
 	@Override
-	public boolean canInteractWith(EntityPlayer player) {
-		return testNuke.isUseableByPlayer(player);
+	public boolean canInteractWith(@NotNull EntityPlayer player) {
+		return refinery.isUseableByPlayer(player);
 	}
 }

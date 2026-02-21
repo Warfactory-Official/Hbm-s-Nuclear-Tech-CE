@@ -2,11 +2,13 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.blocks.BlockDummyable;
+import com.hbm.handler.pollution.PollutionHandler;
+import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.ItemEnums;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.modules.ModuleBurnTime;
 import com.hbm.tileentity.IGUIProvider;
-import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.ItemStackUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.init.SoundEvents;
@@ -25,7 +27,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public abstract class TileEntityFireboxBase extends TileEntityMachineBase implements ITickable, IGUIProvider, IHeatSource {
+public abstract class TileEntityFireboxBase extends TileEntityMachinePolluting implements ITickable, IGUIProvider, IHeatSource {
 
 	public int maxBurnTime;
 	public int burnTime;
@@ -39,15 +41,21 @@ public abstract class TileEntityFireboxBase extends TileEntityMachineBase implem
 	public int heatEnergy;
    
 	public TileEntityFireboxBase() {
-		super(2);
-	    
+		super(2, 50, true, false);
 	}
 	 
 	@Override
 	public void update() {
 		
 		if(!world.isRemote) {
-			
+            for(int i = 2; i < 6; i++) {
+                ForgeDirection dir = ForgeDirection.getOrientation(i);
+                ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+
+                for(int j = -1; j <= 1; j++) {
+                    this.sendSmoke(pos.getX() + dir.offsetX * 2 + rot.offsetX * j, pos.getY(), pos.getZ() + dir.offsetZ * 2 + rot.offsetZ * j, dir);
+                }
+            }
 			wasOn = false;
 			
 			if(burnTime <= 0) {
@@ -87,7 +95,8 @@ public abstract class TileEntityFireboxBase extends TileEntityMachineBase implem
 				
 				if(this.heatEnergy < getMaxHeat()) {
 					burnTime--;
-				}
+                    if(world.getTotalWorldTime() % 20 == 0) this.pollute(PollutionHandler.PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND * 3);
+                }
 				this.wasOn = true;
 				
 				if(world.rand.nextInt(15) == 0 && !this.muffled) {
@@ -159,6 +168,7 @@ public abstract class TileEntityFireboxBase extends TileEntityMachineBase implem
 
 	@Override
 	public void serialize(ByteBuf buf) {
+        super.serialize(buf);
 		buf.writeInt(this.maxBurnTime);
 		buf.writeInt(this.burnTime);
 		buf.writeInt(this.burnHeat);
@@ -169,6 +179,7 @@ public abstract class TileEntityFireboxBase extends TileEntityMachineBase implem
 
 	@Override
 	public void deserialize(ByteBuf buf) {
+        super.deserialize(buf);
 		this.maxBurnTime = buf.readInt();
 		this.burnTime = buf.readInt();
 		this.burnHeat = buf.readInt();
@@ -197,12 +208,12 @@ public abstract class TileEntityFireboxBase extends TileEntityMachineBase implem
 		return super.writeToNBT(nbt);
 	}
 
-
+    @Override
 	public int getHeatStored() {
 		return heatEnergy;
 	}
 
-
+    @Override
 	public void useUpHeat(int heat) {
 		this.heatEnergy = Math.max(0, this.heatEnergy - heat);
 	}
@@ -231,4 +242,19 @@ public abstract class TileEntityFireboxBase extends TileEntityMachineBase implem
 	public double getMaxRenderDistanceSquared() {
 		return 65536.0D;
 	}
+
+    @Override
+    public FluidTankNTM[] getAllTanks() {
+        return new FluidTankNTM[0];
+    }
+
+    @Override
+    public FluidTankNTM[] getSendingTanks() {
+        return this.getSmokeTanks();
+    }
+
+    @Override
+    public boolean canConnect(FluidType type, ForgeDirection dir) {
+        return dir != ForgeDirection.UNKNOWN && dir != ForgeDirection.DOWN;
+    }
 }

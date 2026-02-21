@@ -7,8 +7,11 @@ import com.hbm.handler.radiation.RadiationSystemNT;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IAnimatedDoor;
 import com.hbm.lib.HBMSoundHandler;
+import com.hbm.lib.Library;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.TEVaultPacket;
+import it.unimi.dsi.fastutil.longs.LongIterable;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -30,6 +33,7 @@ public class TileEntityVaultDoor extends TileEntityLockableBase implements ITick
     public int type;
     private int timer = 0;
     private boolean wasPowered = false;
+    private boolean redstoneOnly = false;
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
@@ -136,7 +140,7 @@ public class TileEntityVaultDoor extends TileEntityLockableBase implements ITick
 
                         // With door finally closed, mark chunk for rad update since door is now rad resistant
                         // No need to update when open as well, as opening door should update
-                        RadiationSystemNT.markChunkForRebuild(world, pos);
+                        RadiationSystemNT.markSectionsForRebuild(world, getOccupiedSections());
                     }
                 }
             }
@@ -306,6 +310,7 @@ public class TileEntityVaultDoor extends TileEntityLockableBase implements ITick
         sysTime = compound.getLong("sysTime");
         timer = compound.getInteger("timer");
         wasPowered = compound.getBoolean("wasPowered");
+        redstoneOnly = compound.getBoolean("redstoneOnly");
         type = compound.getInteger("type");
         super.readFromNBT(compound);
     }
@@ -316,6 +321,7 @@ public class TileEntityVaultDoor extends TileEntityLockableBase implements ITick
         compound.setLong("sysTime", sysTime);
         compound.setInteger("timer", timer);
         compound.setBoolean("wasPowered", wasPowered);
+        compound.setBoolean("redstoneOnly", redstoneOnly);
         compound.setInteger("type", type);
         return super.writeToNBT(compound);
     }
@@ -347,7 +353,7 @@ public class TileEntityVaultDoor extends TileEntityLockableBase implements ITick
 					new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 300));
 
             // With door opening, mark chunk for rad update
-            RadiationSystemNT.markChunkForRebuild(world, pos);
+            RadiationSystemNT.markSectionsForRebuild(world, getOccupiedSections());
         } else if (state == DoorState.OPEN) {
             state = DoorState.CLOSING;
             timer = 0;
@@ -356,7 +362,7 @@ public class TileEntityVaultDoor extends TileEntityLockableBase implements ITick
 					new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 300));
 
             // With door closing, mark chunk for rad update
-            RadiationSystemNT.markChunkForRebuild(world, pos);
+            RadiationSystemNT.markSectionsForRebuild(world, getOccupiedSections());
         }
     }
 
@@ -364,5 +370,38 @@ public class TileEntityVaultDoor extends TileEntityLockableBase implements ITick
     @SideOnly(Side.CLIENT)
     public void handleNewState(DoorState state) {
         // TODO: Move audio into this method from update method to match sliding blast door
+    }
+
+    public boolean getRedstoneOnly() {
+        return redstoneOnly;
+    }
+
+    public void setRedstoneOnly(boolean redstoneOnly) {
+        this.redstoneOnly = redstoneOnly;
+    }
+
+    public LongIterable getOccupiedSections() {
+        LongOpenHashSet sections = new LongOpenHashSet();
+        sections.add(Library.blockPosToSectionLong(pos));
+
+        Axis axis = world.getBlockState(pos).getValue(VaultDoor.FACING).getAxis();
+        int ox = pos.getX();
+        int oy = pos.getY();
+        int oz = pos.getZ();
+
+        if (axis == Axis.Z) {
+            for (int x = -1; x <= 1; x++) {
+                for (int y = 1; y <= 3; y++) {
+                    sections.add(Library.blockPosToSectionLong(ox + x, oy + y, oz));
+                }
+            }
+        } else if (axis == Axis.X) {
+            for (int z = -1; z <= 1; z++) {
+                for (int y = 1; y <= 3; y++) {
+                    sections.add(Library.blockPosToSectionLong(ox, oy + y, oz + z));
+                }
+            }
+        }
+        return sections;
     }
 }

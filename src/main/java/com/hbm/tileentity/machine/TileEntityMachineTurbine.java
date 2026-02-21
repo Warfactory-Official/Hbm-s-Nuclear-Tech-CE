@@ -13,7 +13,6 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FT_Coolable;
 import com.hbm.inventory.gui.GUIMachineTurbine;
-import com.hbm.items.ModItems;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
@@ -77,7 +76,7 @@ public class TileEntityMachineTurbine extends TileEntityLoadedBase implements IT
 					return stack.getItem() instanceof IItemFluidIdentifier;
 
 				if(slot == 4)
-					return Library.isItemBattery(stack);
+					return Library.isBattery(stack);
 
 				return true;
 			}

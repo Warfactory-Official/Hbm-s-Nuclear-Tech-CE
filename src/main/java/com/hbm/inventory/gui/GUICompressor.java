@@ -1,18 +1,16 @@
 package com.hbm.inventory.gui;
 
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.init.SoundEvents;
-
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerCompressor;
-import com.hbm.lib.RefStrings;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toserver.NBTControlPacket;
 import com.hbm.tileentity.machine.TileEntityMachineCompressorBase;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
@@ -20,7 +18,7 @@ import java.io.IOException;
 
 public class GUICompressor extends GuiInfoContainer {
 
-    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_compressor.png");
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_compressor.png");
     private final TileEntityMachineCompressorBase compressor;
 
     public GUICompressor(InventoryPlayer invPlayer, TileEntityMachineCompressorBase tedf) {
@@ -53,7 +51,7 @@ public class GUICompressor extends GuiInfoContainer {
                 mc.getSoundHandler().playSound(PositionedSoundRecord.getRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F, 1.0F));
                 NBTTagCompound data = new NBTTagCompound();
                 data.setInteger("compression", j);
-                PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, compressor.getPos()));
+                PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, compressor.getPos()));
             }
         }
     }

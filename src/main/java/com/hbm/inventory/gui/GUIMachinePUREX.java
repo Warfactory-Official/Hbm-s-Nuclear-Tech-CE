@@ -1,10 +1,10 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerMachinePUREX;
 import com.hbm.inventory.recipes.PUREXRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.machine.ItemBlueprints;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityMachinePUREX;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
@@ -19,7 +19,7 @@ import java.io.IOException;
 
 public class GUIMachinePUREX extends GuiInfoContainer {
 
-    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_purex.png");
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_purex.png");
     private final TileEntityMachinePUREX purex;
 
     public GUIMachinePUREX(InventoryPlayer invPlayer, TileEntityMachinePUREX tedf) {

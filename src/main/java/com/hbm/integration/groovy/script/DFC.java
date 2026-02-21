@@ -1,17 +1,15 @@
 package com.hbm.integration.groovy.script;
 
-import com.cleanroommc.groovyscript.api.GroovyLog;
 import com.cleanroommc.groovyscript.api.IIngredient;
-import com.cleanroommc.groovyscript.helper.recipe.AbstractRecipeBuilder;
+import com.cleanroommc.groovyscript.api.documentation.annotations.RegistryDescription;
 import com.cleanroommc.groovyscript.registry.VirtualizedRegistry;
-import com.hbm.inventory.recipes.DFCRecipes;
 import com.hbm.inventory.RecipesCommon;
-import com.hbm.inventory.recipes.SILEXRecipes;
 import com.hbm.util.Tuple;
 import net.minecraft.item.ItemStack;
 
 import static com.hbm.inventory.recipes.DFCRecipes.dfcRecipes;
 
+@RegistryDescription(linkGenerator = "hbm", isFullyDocumented = false)
 public class DFC extends VirtualizedRegistry<Tuple.Pair<RecipesCommon.ComparableStack, Object[]>> {
     @Override
     public void onReload() {

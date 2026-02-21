@@ -36,7 +36,7 @@ import java.util.List;
 public class TileEntityMachinePlasmaHeater extends TileEntityMachineBase implements ITickable, IFluidStandardReceiver, IEnergyReceiverMK2, IGUIProvider {
 
 	public long power;
-	public static final long maxPower = 10000000000L;
+	public static final long maxPower = 100000000;
 
 	public FluidTankNTM[] tanks;
 	public FluidTankNTM plasma;
@@ -67,7 +67,7 @@ public class TileEntityMachinePlasmaHeater extends TileEntityMachineBase impleme
 			updateType();
 
 			int maxConv = 50;
-			int powerReq = 100000;
+			int powerReq = 10000;
 
 			int convert = Math.min(tanks[0].getFill(), tanks[1].getFill());
 			convert = Math.min(convert, (plasma.getMaxFill() - plasma.getFill()) * 2);

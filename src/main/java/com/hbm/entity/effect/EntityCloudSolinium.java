@@ -14,7 +14,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @AutoRegister(name = "entity_clound_solinium", trackingRange = 1000)
 public class EntityCloudSolinium extends Entity {
 
-	public static final DataParameter<Integer> MAXAGE = EntityDataManager.createKey(EntityCloudFleijaRainbow.class, DataSerializers.VARINT);
+	public static final DataParameter<Integer> MAXAGE = EntityDataManager.createKey(EntityCloudSolinium.class, DataSerializers.VARINT);
 	
 	public int maxAge = 100;
 	public int age;

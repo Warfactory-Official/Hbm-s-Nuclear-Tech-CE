@@ -7,12 +7,15 @@ import com.hbm.hazard.modifier.HazardModifierFuelRadiation;
 import com.hbm.hazard.modifier.HazardModifierRBMKHot;
 import com.hbm.hazard.modifier.HazardModifierRBMKRadiation;
 import com.hbm.hazard.modifier.HazardModifierRTGRadiation;
+import com.hbm.hazard.transformer.HazardTransformerForgeFluid;
+import com.hbm.hazard.transformer.HazardTransformerPostCustom;
 import com.hbm.hazard.transformer.HazardTransformerRadiationContainer;
 import com.hbm.hazard.transformer.HazardTransformerRadiationME;
 import com.hbm.hazard.transformer.HazardTransformerRadiationNBT;
 import com.hbm.hazard.type.*;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.MaterialShapes;
+import com.hbm.items.ItemEnums.EnumDepletedRTGMaterial;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBreedingRod;
 import com.hbm.items.machine.ItemWatzPellet;
@@ -22,12 +25,11 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import com.hbm.items.ItemEnums.EnumDepletedRTGMaterial;
 
 import static com.hbm.blocks.ModBlocks.*;
 import static com.hbm.inventory.OreDictManager.*;
 import static com.hbm.items.ModItems.*;
-import static com.hbm.items.machine.ItemPWRFuel.*;
+import static com.hbm.items.machine.ItemPWRFuel.EnumPWRFuel;
 import static com.hbm.items.machine.ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted;
 
 @SuppressWarnings("unused") //shut the fuck up
@@ -150,17 +152,17 @@ public class HazardRegistry {
 	public static final float rod_quad = rod * 4;
 	public static final float rod_rbmk = rod * 8;
 
-	public static final HazardTypeBase RADIATION = new HazardTypeRadiation();
-	public static final HazardTypeBase CONTAMINATING = new HazardTypeContaminating();
-	public static final HazardTypeBase DIGAMMA = new HazardTypeDigamma();
-	public static final HazardTypeBase HOT = new HazardTypeHot();
-	public static final HazardTypeBase BLINDING = new HazardTypeBlinding();
-	public static final HazardTypeBase ASBESTOS = new HazardTypeAsbestos();
-	public static final HazardTypeBase COAL = new HazardTypeCoal();
-	public static final HazardTypeBase HYDROACTIVE = new HazardTypeHydroactive();
-	public static final HazardTypeBase EXPLOSIVE = new HazardTypeExplosive();
-	public static final HazardTypeBase TOXIC = new HazardTypeToxic();
-	public static final HazardTypeBase COLD = new HazardTypeCold();
+	public static final IHazardType RADIATION = new HazardTypeRadiation();
+	public static final IHazardType CONTAMINATING = new HazardTypeContaminating();
+	public static final IHazardType DIGAMMA = new HazardTypeDigamma();
+	public static final IHazardType HOT = new HazardTypeHot();
+	public static final IHazardType BLINDING = new HazardTypeBlinding();
+	public static final IHazardType ASBESTOS = new HazardTypeAsbestos();
+	public static final IHazardType COAL = new HazardTypeCoal();
+	public static final IHazardType HYDROACTIVE = new HazardTypeHydroactive();
+	public static final IHazardType EXPLOSIVE = new HazardTypeExplosive();
+	public static final IHazardType TOXIC = new HazardTypeToxic();
+	public static final IHazardType COLD = new HazardTypeCold();
 
 	public static void registerItems() {
 
@@ -184,7 +186,12 @@ public class HazardRegistry {
 
 		HazardSystem.register(insert_polonium, makeData(RADIATION, 100F));
 
-		HazardSystem.register(demon_core_open, makeData(RADIATION, 5F));
+		HazardSystem.register(demon_core_open, makeData(RADIATION, 5F).addEntry(new HazardTypeDangerousDrop((entityItem, level) ->{
+            if(!entityItem.world.isRemote && entityItem.onGround) {
+                entityItem.setItem(new ItemStack(ModItems.demon_core_closed));
+                entityItem.world.spawnEntity(new EntityItem(entityItem.world, entityItem.posX, entityItem.posY, entityItem.posZ, new ItemStack(ModItems.screwdriver)));
+            }
+        })));
 		HazardSystem.register(demon_core_closed, makeData(RADIATION, 100_000F));
 		HazardSystem.register(lamp_demon, makeData(RADIATION, 100_000F));
 
@@ -500,10 +507,6 @@ public class HazardRegistry {
 		HazardSystem.register(nuke_fstbmb, makeData(DIGAMMA, 0.01F));
 		//HazardSystem.register(DictFrame.fromOne(ModItems.holotape_image, EnumHoloImage.HOLO_RESTORED), makeData(DIGAMMA, 1F));
 		//HazardSystem.register(holotape_damaged, makeData(DIGAMMA, 1_000F));
-        if(RadiationConfig.enableContaminationOnGround)
-		    registerContaminatingDrops();
-        HazardRegistry.registerDangerousDrops();
-
 
 		/*
 		 * Blacklist
@@ -512,26 +515,20 @@ public class HazardRegistry {
 		for(String ore : U.all(MaterialShapes.ORE)) HazardSystem.blacklist(ore);
 	}
 
-    private static void registerDangerousDrops(){
-        HazardSystem.register(demon_core_open, makeData().addEntry(new HazardTypeDangerousDrop((item, level) ->{
-            if(item.onGround) {
-                item.setItem(new ItemStack(ModItems.demon_core_closed));
-                item.world.spawnEntity(new EntityItem(item.world, item.posX, item.posY, item.posZ, new ItemStack(ModItems.screwdriver)));
-            }
-        } )));
-    };
-
 	public static void registerTrafos() {
 		HazardSystem.trafos.add(new HazardTransformerRadiationNBT());
+		HazardSystem.trafos.add(new HazardTransformerForgeFluid());
 
 		if(!(GeneralConfig.enableLBSM && GeneralConfig.enableLBSMSafeCrates))	HazardSystem.trafos.add(new HazardTransformerRadiationContainer());
 		if(!(GeneralConfig.enableLBSM && GeneralConfig.enableLBSMSafeMEDrives))	HazardSystem.trafos.add(new HazardTransformerRadiationME());
+		// Keep custom post transformer at the end
+		HazardSystem.trafos.add(new HazardTransformerPostCustom());
 	}
 
 	private static HazardData makeData() { return new HazardData(); }
-	private static HazardData makeData(HazardTypeBase hazard) { return new HazardData().addEntry(hazard); }
-	private static HazardData makeData(HazardTypeBase hazard, float level) { return new HazardData().addEntry(hazard, level); }
-	private static HazardData makeData(HazardTypeBase hazard, float level, boolean override) { return new HazardData().addEntry(hazard, level, override); }
+	private static HazardData makeData(IHazardType hazard) { return new HazardData().addEntry(hazard); }
+	private static HazardData makeData(IHazardType hazard, float level) { return new HazardData().addEntry(hazard, level); }
+	private static HazardData makeData(IHazardType hazard, float level, boolean override) { return new HazardData().addEntry(hazard, level, override); }
 
 	private static void registerPWRFuel(EnumPWRFuel fuel, float baseRad) {
 		HazardSystem.register(DictFrame.fromOne(ModItems.pwr_fuel, fuel), makeData(RADIATION, baseRad));
@@ -627,31 +624,43 @@ public class HazardRegistry {
 		HazardSystem.register(new ItemStack(waste, 1, 1), data);
 	}
 
-	private static void registerContaminatingDrops(){
-		HazardSystem.register(powder_tcalloy, makeData(CONTAMINATING, 0.07F * powder));
-		HazardSystem.register(powder_thorium, makeData(CONTAMINATING, th232 * powder));
-		HazardSystem.register(powder_uranium, makeData(CONTAMINATING, u * powder));
-		HazardSystem.register(powder_plutonium, makeData(CONTAMINATING, pu * powder));
-		HazardSystem.register(powder_neptunium, makeData(CONTAMINATING, np237 * powder));
-		HazardSystem.register(powder_polonium, makeData(CONTAMINATING, po210 * powder));
-		HazardSystem.register(powder_schrabidium, makeData(CONTAMINATING, sa326 * powder));
-		HazardSystem.register(powder_schrabidate, makeData(CONTAMINATING, sb * powder));
-		HazardSystem.register(powder_tennessine, makeData(CONTAMINATING, 120F * powder));
-		HazardSystem.register(powder_balefire, makeData(CONTAMINATING, bf * powder));
-		HazardSystem.register(powder_co60, makeData(CONTAMINATING, co60 * powder));
-		HazardSystem.register(powder_co60_tiny, makeData(CONTAMINATING, co60 * powder_tiny));
-		HazardSystem.register(powder_sr90, makeData(CONTAMINATING, sr90 * powder));
-		HazardSystem.register(powder_sr90_tiny, makeData(CONTAMINATING, sr90 * powder_tiny));
-		HazardSystem.register(powder_at209, makeData(CONTAMINATING, at209 * powder));
-		HazardSystem.register(powder_pb209, makeData(CONTAMINATING, pb209 * powder));
-		HazardSystem.register(powder_i131, makeData(CONTAMINATING, i131 * powder));
-		HazardSystem.register(powder_i131_tiny, makeData(CONTAMINATING, i131 * powder_tiny));
-		HazardSystem.register(powder_cs137, makeData(CONTAMINATING, cs137 * powder));
-		HazardSystem.register(powder_cs137_tiny, makeData(CONTAMINATING, cs137 * powder_tiny));
-		HazardSystem.register(powder_xe135, makeData(CONTAMINATING, xe135 * powder));
-		HazardSystem.register(powder_xe135_tiny, makeData(CONTAMINATING, xe135 * powder_tiny));
-		HazardSystem.register(powder_au198, makeData(CONTAMINATING, au198 * powder));
-		HazardSystem.register(powder_ra226, makeData(CONTAMINATING, ra226 * powder));
-		HazardSystem.register(powder_ac227, makeData(CONTAMINATING, ac227 * powder));
-	}
+    //mlbv: must run after OreDictManager.registerOres();
+    public static void registerContaminatingDrops() {
+        addContaminatingDrop(TCALLOY.dust(), 0.07F * powder);
+        addContaminatingDrop(TH232.dust(), th232 * powder);
+        addContaminatingDrop(U.dust(), u * powder);
+        addContaminatingDrop(PU.dust(), pu * powder);
+        addContaminatingDrop(NP237.dust(), np237 * powder);
+        addContaminatingDrop(PO210.dust(), po210 * powder);
+        addContaminatingDrop(SA326.dust(), sa326 * powder);
+        addContaminatingDrop(SBD.dust(), sb * powder);
+        addContaminatingDrop(TS.dust(), 120F * powder);
+        addContaminatingDrop(CO60.dust(), co60 * powder);
+        addContaminatingDrop(CO60.dustTiny(), co60 * powder_tiny);
+        addContaminatingDrop(AU198.dust(), au198 * powder);
+        addContaminatingDrop(RA226.dust(), ra226 * powder);
+        addContaminatingDrop(AC227.dust(), ac227 * powder);
+        addContaminatingDrop(AC227.dustTiny(), ac227 * powder_tiny);
+        addContaminatingDrop(SR90.dust(), sr90 * powder);
+        addContaminatingDrop(SR90.dustTiny(), sr90 * powder_tiny);
+        addContaminatingDrop(AT209.dust(), at209 * powder);
+        addContaminatingDrop(AT209.dustTiny(), at209 * powder_tiny);
+        addContaminatingDrop(PB209.dust(), pb209 * powder);
+        addContaminatingDrop(PB209.dustTiny(), pb209 * powder);
+        addContaminatingDrop(I131.dust(), i131 * powder);
+        addContaminatingDrop(I131.dustTiny(), i131 * powder_tiny);
+        addContaminatingDrop(XE135.dust(), xe135 * powder);
+        addContaminatingDrop(XE135.dustTiny(), xe135 * powder_tiny);
+        addContaminatingDrop(CS137.dust(), cs137 * powder);
+        addContaminatingDrop(CS137.dustTiny(), cs137 * powder_tiny);
+        addContaminatingDrop(powder_balefire, bf * powder);
+    }
+
+    private static void addContaminatingDrop(final String ore, final double contaminating) {
+        HazardSystem.oreMap.computeIfPresent(ore, (k, v) -> v.addEntry(CONTAMINATING, contaminating));
+    }
+
+    private static void addContaminatingDrop(final Item item, final double contaminating) {
+        HazardSystem.itemMap.computeIfPresent(item, (k, v) -> v.addEntry(CONTAMINATING, contaminating));
+    }
 }

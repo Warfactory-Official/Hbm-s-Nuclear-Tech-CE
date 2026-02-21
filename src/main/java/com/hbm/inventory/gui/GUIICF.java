@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerICF;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.util.GaugeUtil;
 import com.hbm.tileentity.machine.TileEntityICF;
 import com.hbm.util.BobMathUtil;
@@ -14,7 +14,7 @@ import java.util.Collections;
 
 public class GUIICF extends GuiInfoContainer {
 
-    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/reactors/gui_icf.png");
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/reactors/gui_icf.png");
     private final TileEntityICF icf;
 
     public GUIICF(InventoryPlayer invPlayer, TileEntityICF icf) {
@@ -58,8 +58,7 @@ public class GUIICF extends GuiInfoContainer {
             int p = (int) (icf.laser * 70 / icf.maxLaser);
             drawTexturedModalRect(guiLeft + 8, guiTop + 88 - p, 212, 192 - p, 16, p);
         }
-        // idk why this is inverted
-        GaugeUtil.drawSmoothGauge(guiLeft + 196, guiTop + 98, this.zLevel, 1 - (double) icf.heat / (double) TileEntityICF.maxHeat, 5, 2, 1, 0xFF00AF);
+        GaugeUtil.drawSmoothGauge(guiLeft + 196, guiTop + 98, this.zLevel, (double) icf.heat / (double) TileEntityICF.maxHeat, 5, 2, 1, 0xFF00AF);
 
         icf.tanks[0].renderTank(guiLeft + 44, guiTop + 88, this.zLevel, 16, 70);
         icf.tanks[1].renderTank(guiLeft + 188, guiTop + 88, this.zLevel, 16, 70);

@@ -1,6 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.tileentity.machine.TileEntityWasteDrum;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -10,10 +11,10 @@ import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerWasteDrum extends Container {
 	
-	private TileEntityWasteDrum diFurnace;
+	private TileEntityWasteDrum drum;
 	
 	public ContainerWasteDrum(InventoryPlayer invPlayer, TileEntityWasteDrum tedf) {
-		diFurnace = tedf;
+		drum = tedf;
 
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 71, 21));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 1, 89, 21));
@@ -43,42 +44,13 @@ public class ContainerWasteDrum extends Container {
 	}
 	
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2)
+    public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-		
-		if (var4 != null && var4.getHasStack())
-		{
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-			
-            if (par2 <= diFurnace.inventory.getSlots() - 1) {
-				if (!this.mergeItemStack(var5, diFurnace.inventory.getSlots(), this.inventorySlots.size(), true))
-				{
-					return ItemStack.EMPTY;
-				}
-			}
-			else if (!this.mergeItemStack(var5, 0, 0, false))
-			{
-					return ItemStack.EMPTY;
-			}
-			
-			if (var5.isEmpty())
-			{
-				var4.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
-				var4.onSlotChanged();
-			}
-		}
-		
-		return var3;
+		return InventoryUtil.transferStack(this.inventorySlots, index, drum.inventory.getSlots());
     }
 
 	@Override
 	public boolean canInteractWith(EntityPlayer player) {
-		return diFurnace.isUseableByPlayer(player);
+		return drum.isUseableByPlayer(player);
 	}
 }

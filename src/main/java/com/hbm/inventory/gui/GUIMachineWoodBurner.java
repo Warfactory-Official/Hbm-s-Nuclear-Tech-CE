@@ -1,30 +1,29 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerMachineWoodBurner;
-import com.hbm.lib.RefStrings;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toserver.NBTControlPacket;
 import com.hbm.tileentity.machine.TileEntityMachineWoodBurner;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.Slot;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.client.renderer.GlStateManager;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUIMachineWoodBurner extends GuiInfoContainer {
 	
 	private TileEntityMachineWoodBurner burner;
-	private final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/generators/gui_wood_burner_alt.png");
+	private final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/generators/gui_wood_burner_alt.png");
 
 	public GUIMachineWoodBurner(InventoryPlayer invPlayer, TileEntityMachineWoodBurner tedf) {
 		super(new ContainerMachineWoodBurner(invPlayer, tedf));
@@ -40,7 +39,7 @@ public class GUIMachineWoodBurner extends GuiInfoContainer {
 		super.renderHoveredToolTip(mouseX, mouseY);
 		this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 143, guiTop + 18, 16, 34, burner.power, burner.maxPower);
 
-		if(this.mc.player.inventory.getItemStack() == ItemStack.EMPTY) {
+		if(this.mc.player.inventory.getItemStack().isEmpty()) {
 			
 			Slot slot = (Slot) this.inventorySlots.inventorySlots.get(0);
 			if(this.isMouseOverSlot(slot, mouseX, mouseY) && !slot.getHasStack()) {
@@ -67,18 +66,18 @@ public class GUIMachineWoodBurner extends GuiInfoContainer {
 		super.mouseClicked(mouseX, mouseY, mouseButton);
 
 		if(guiLeft + 53 <= mouseX && guiLeft + 53 + 16 > mouseX && guiTop + 17 < mouseY && guiTop + 17 + 15 >= mouseY) {
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
 			NBTTagCompound data = new NBTTagCompound();
 			data.setBoolean("toggle", false);
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, burner.getPos()));
-		}
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, burner.getPos()));
+        }
 
 		if(guiLeft + 46 <= mouseX && guiLeft + 46 + 30 > mouseX && guiTop + 37 < mouseY && guiTop + 37 + 14 >= mouseY) {
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
 			NBTTagCompound data = new NBTTagCompound();
 			data.setBoolean("switch", false);
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, burner.getPos()));
-		}
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, burner.getPos()));
+        }
 	}
 	
 	@Override

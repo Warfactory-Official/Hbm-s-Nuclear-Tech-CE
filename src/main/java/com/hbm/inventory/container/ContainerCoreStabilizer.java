@@ -72,35 +72,35 @@ public class ContainerCoreStabilizer extends Container {
 	}
 	
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2)
+    public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = this.inventorySlots.get(par2);
+		ItemStack result = ItemStack.EMPTY;
+		Slot slot = this.inventorySlots.get(index);
 		
-		if (var4 != null && var4.getHasStack())
+		if (slot != null && slot.getHasStack())
 		{
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
+			ItemStack stack = slot.getStack();
+			result = stack.copy();
 			
-            if (par2 == 0) {
-				if (!this.mergeItemStack(var5, 1, this.inventorySlots.size(), true)) {
+            if (index == 0) {
+				if (!this.mergeItemStack(stack, 1, this.inventorySlots.size(), true)) {
 					return ItemStack.EMPTY;
 				}
-			} else if (!this.mergeItemStack(var5, 0, 1, true)) {
+			} else if (!this.mergeItemStack(stack, 0, 1, true)) {
 				return ItemStack.EMPTY;
 			}
 			
-			if (var5.isEmpty())
+			if (stack.isEmpty())
 			{
-				var4.putStack(ItemStack.EMPTY);
+				slot.putStack(ItemStack.EMPTY);
 			}
 			else
 			{
-				var4.onSlotChanged();
+				slot.onSlotChanged();
 			}
 		}
 		
-		return var3;
+		return result;
     }
 
 	@Override

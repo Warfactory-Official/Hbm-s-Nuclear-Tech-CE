@@ -1,18 +1,16 @@
 package com.hbm.inventory.control_panel.controls;
 
+import com.hbm.render.loader.WaveFrontObjectVAO;
 import com.hbm.inventory.control_panel.*;
 import com.hbm.inventory.control_panel.nodes.*;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.IModelCustom;
+import com.hbm.render.loader.IModelCustom;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 import java.util.Collections;
 import java.util.List;
@@ -31,7 +29,7 @@ public class ButtonEmergencyPush extends Control {
 
     @Override
     public float[] getSize() {
-        return new float[] {1.5F, 1.5F, 1.13F};
+        return new float[]{1.5F, 1.5F, 1.13F};
     }
 
     @Override
@@ -40,24 +38,23 @@ public class ButtonEmergencyPush extends Control {
 
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
         Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.ctrl_button_emergency_push_tex);
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuffer();
 
-        IModelCustom model = getModel();
+        WaveFrontObjectVAO model = (WaveFrontObjectVAO) getModel();
 
-        buffer.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-        buffer.setTranslation(posX, 0, posY);
-        buffer.color(1, 1, 1, 1);
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(posX, 0.0F, posY);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         model.renderPart("base");
-        tessellator.draw();
+        GlStateManager.popMatrix();
 
-        buffer.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-        buffer.setTranslation(posX, (isPushed)?-0.125F:0, posY);
-        buffer.color(1, 1, 1, 1);
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(posX, isPushed ? -0.125F : 0.0F, posY);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         model.renderPart("top");
-        tessellator.draw();
+        GlStateManager.popMatrix();
 
         GlStateManager.shadeModel(GL11.GL_FLAT);
+        GlStateManager.color(1F, 1F, 1F, 1F);
     }
 
     @Override

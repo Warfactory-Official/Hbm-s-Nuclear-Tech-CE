@@ -40,7 +40,7 @@ public class CraneInserter extends BlockCraneBase implements IEnterableBlock {
 
     @Override
     public void onItemEnter(World world, int x, int y, int z, EnumFacing dir, IConveyorItem entity) {
-        if (entity == null || entity.getItemStack() == ItemStack.EMPTY || entity.getItemStack().getCount() <= 0) {
+        if (entity == null || entity.getItemStack().isEmpty() || entity.getItemStack().getCount() <= 0) {
             return;
         }
 

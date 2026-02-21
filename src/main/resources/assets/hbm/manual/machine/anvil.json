@@ -1,0 +1,13 @@
+{
+	"name": "Anvil",
+	"icon": ["hbm:anvil_iron", 1, 0],
+	"trigger": [["hbm:anvil_iron"], ["hbm:anvil_lead"], ["hbm:anvil_steel"], ["hbm:anvil_desh"], ["hbm:anvil_ferrouranium"], ["hbm:anvil_saturnite"], ["hbm:anvil_bismuth_bronze"], ["hbm:anvil_arsenic_bronze"], ["hbm:anvil_schrabidate"], ["hbm:anvil_dnt"], ["hbm:anvil_osmiridium"], ["hbm:anvil_murky"]],
+	"title": {
+		"en_us": "Anvil",
+		"zh_cn": "砧"
+	},
+	"content": {
+		"en_us": "One of the first tools used in progression. The anvil GUI has two relevant sections:<br><br>The top slots are used for smithing type recipes, like forging meteorite ingots or making [[foundry molds|Foundry Molds]].<br><br>The bottom section is for construction, once a recipe is selected, clicking the blue button will perform the recipe. The anvil will use items directly from the inventory.",
+		"zh_cn": "游戏流程中最早用到的工具之一。砧的GUI分为两个相关的部分：<br><br>上方的槽位用于锻造类型的配方，如锻造陨石锭和制作[[铸造模具|Foundry Molds]]；<br><br>下方的部分用于制造物品，如果选中了某个配方，那么点击蓝色按钮即可执行 该配方。砧会直接使用玩家物品栏中的物品。"
+	}
+}

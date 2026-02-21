@@ -26,19 +26,12 @@ public class ContainerRBMKBoiler extends Container {
 	}
 
 	@Override
-	public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2) {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-
-		if(var4 != null && var4.getHasStack()) {
-			return ItemStack.EMPTY;
-		}
-
-		return var3;
+	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+		return ItemStack.EMPTY;
 	}
 
 	@Override
 	public boolean canInteractWith(EntityPlayer player) {
-		return true;
+		return rbmk.isUseableByPlayer(player);
 	}
 }

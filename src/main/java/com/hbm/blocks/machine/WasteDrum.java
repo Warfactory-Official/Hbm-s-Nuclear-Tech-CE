@@ -60,7 +60,7 @@ public class WasteDrum extends BlockContainer implements ITooltipProvider {
 	public void randomDisplayTick(IBlockState state, World world, BlockPos pos, Random rand) { //TODO: Make this only happen when drum is actually cooling stuff
 		super.randomDisplayTick(state, world, pos, rand);
 
-		for (EnumFacing dir : EnumFacing.values()) {
+		for (EnumFacing dir : EnumFacing.VALUES) {
 			if (dir == EnumFacing.DOWN)
 				continue;
 

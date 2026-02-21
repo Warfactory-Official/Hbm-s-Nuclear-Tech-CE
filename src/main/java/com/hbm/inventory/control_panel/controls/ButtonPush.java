@@ -1,19 +1,18 @@
 package com.hbm.inventory.control_panel.controls;
 
+import com.hbm.render.loader.WaveFrontObjectVAO;
 import com.hbm.inventory.control_panel.*;
 import com.hbm.inventory.control_panel.nodes.*;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.IModelCustom;
-import com.hbm.render.amlfrom1710.Tessellator;
+import com.hbm.render.loader.IModelCustom;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 import java.util.Collections;
 import java.util.List;
@@ -42,48 +41,42 @@ public class ButtonPush extends Control {
     public void render() {
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
         Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.ctrl_button_push_tex);
-        Tessellator tes = Tessellator.instance;
-        IModelCustom model = getModel();
-
+        WaveFrontObjectVAO model = (WaveFrontObjectVAO) getModel();
         boolean isPushed = getVar("isPushed").getBoolean();
         boolean isLit = getVar("isLit").getBoolean();
         float[] color = getVar("color").getEnum(EnumDyeColor.class).getColorComponentValues();
-
         float lX = OpenGlHelper.lastBrightnessX;
         float lY = OpenGlHelper.lastBrightnessY;
 
-        tes.startDrawing(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-        tes.setTranslation(posX, 0, posY);
-        tes.setColorRGBA_F(1, 1, 1, 1);
-        model.tessellatePart(tes, "base");
-        tes.draw();
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(posX, 0.0, posY);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        model.renderPart("base");
+        GlStateManager.popMatrix();
 
-        tes.startDrawing(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-        tes.setTranslation(posX, 0, posY);
-        tes.setColorRGBA_F(1, 1, 1, 1);
-        model.tessellatePart(tes, "btn_base");
-        tes.draw();
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(posX, 0.0, posY);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        model.renderPart("btn_base");
+        GlStateManager.popMatrix();
 
         if (isLit) {
             OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240, 240);
         }
 
-        float cMul = 0.6F;
-        if (isLit) {
-            cMul = 1;
-        }
+        float cMul = isLit ? 1.0F : 0.6F;
 
-        tes.startDrawing(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-        tes.setTranslation(posX, (isPushed)?-.1F:0, posY);
-        tes.setColorRGBA_F(color[0]*cMul, color[1]*cMul, color[2]*cMul, 1F);
-        model.tessellatePart(tes, "btn_top");
-        tes.draw();
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(posX, isPushed ? -0.1F : 0.0F, posY);
+        GlStateManager.color(color[0] * cMul, color[1] * cMul, color[2] * cMul, 1.0F);
+        model.renderPart("btn_top");
+        GlStateManager.popMatrix();
 
-        tes.startDrawing(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-        tes.setTranslation(posX, (isPushed)?-.1F:0, posY);
-        tes.setColorRGBA_F(color[0]*cMul, color[1]*cMul, color[2]*cMul, 1F);
-        model.tessellatePart(tes, "btn_top_top");
-        tes.draw();
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(posX, isPushed ? -0.1F : 0.0F, posY);
+        GlStateManager.color(color[0] * cMul, color[1] * cMul, color[2] * cMul, 1.0F);
+        model.renderPart("btn_top_top");
+        GlStateManager.popMatrix();
 
         if (isLit) {
             OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lX, lY);

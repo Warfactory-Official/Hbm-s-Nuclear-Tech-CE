@@ -2,7 +2,6 @@ package com.hbm.render.entity;
 
 import com.hbm.entity.logic.EntityEMP;
 import com.hbm.entity.logic.EntityNukeExplosionMK3;
-import com.hbm.entity.logic.EntityNukeExplosionPlus;
 import com.hbm.entity.logic.EntityTomBlast;
 import com.hbm.entity.projectile.EntityWaterSplash;
 import com.hbm.interfaces.AutoRegister;
@@ -11,14 +10,14 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
+
 @AutoRegister(entity = EntityEMP.class, factory = "FACTORY")
 @AutoRegister(entity = EntityNukeExplosionMK3.class, factory = "FACTORY")
-@AutoRegister(entity = EntityNukeExplosionPlus.class, factory = "FACTORY")
 @AutoRegister(entity = EntityWaterSplash.class, factory = "FACTORY")
 @AutoRegister(entity = EntityTomBlast.class, factory = "FACTORY")
 public class RenderEmpty extends Render<Entity> {
 
-	public static final IRenderFactory<Entity> FACTORY = (RenderManager man) -> {return new RenderEmpty(man);};
+	public static final IRenderFactory<Entity> FACTORY = RenderEmpty::new;
 	
 	protected RenderEmpty(RenderManager renderManager) {
 		super(renderManager);

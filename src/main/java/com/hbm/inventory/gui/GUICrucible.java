@@ -1,27 +1,28 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerCrucible;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityCrucible;
 import com.hbm.util.I18nUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 public class GUICrucible extends GuiInfoContainer {
 
-    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_crucible.png");
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_crucible.png");
     private final TileEntityCrucible crucible;
 
     public GUICrucible(InventoryPlayer invPlayer, TileEntityCrucible tile) {
@@ -69,10 +70,10 @@ public class GUICrucible extends GuiInfoContainer {
         List<String> tempList = new ArrayList<>();
 
         if (stack.isEmpty())
-            tempList.add(ChatFormatting.RED + "Empty");
+            tempList.add(TextFormatting.RED + "Empty");
 
         for (Mats.MaterialStack sta : stack) {
-            tempList.add(ChatFormatting.YELLOW + I18nUtil.resolveKey(sta.material.getTranslationKey()) + ": " + Mats.formatAmount(sta.amount, Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)));
+            tempList.add(TextFormatting.YELLOW + I18nUtil.resolveKey(sta.material.getTranslationKey()) + ": " + Mats.formatAmount(sta.amount, Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)));
         }
 
         String[] list = tempList.toArray(new String[0]);

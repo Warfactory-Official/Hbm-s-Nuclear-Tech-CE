@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.container.ContainerMachinePress;
 import com.hbm.inventory.gui.GUIMachinePress;
@@ -56,13 +57,13 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements ITi
 	public void update() {
 		if (!world.isRemote) {
 			boolean preheated = false;
-			// TODO: Port preheater
-//			for (EnumFacing dir : EnumFacing.VALUES) {
-//				if (world.getBlockState(pos.offset(dir)).getBlock() == ModBlocks.press_preheater) {
-//					preheated = true;
-//					break;
-//				}
-//			}
+
+			for (EnumFacing dir : EnumFacing.VALUES) {
+				if (world.getBlockState(pos.offset(dir)).getBlock() == ModBlocks.press_preheater) {
+					preheated = true;
+					break;
+				}
+			}
 
 			boolean canProcess = this.canProcess();
 			if ((canProcess || this.isRetracting) && this.burnTime >= 200) {
@@ -198,7 +199,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements ITi
 	}
 
 	@Override
-	public AxisAlignedBB getRenderBoundingBox() {
+	public @NotNull AxisAlignedBB getRenderBoundingBox() {
 		return new AxisAlignedBB(pos, pos.add(1, 3, 1));
 	}
 

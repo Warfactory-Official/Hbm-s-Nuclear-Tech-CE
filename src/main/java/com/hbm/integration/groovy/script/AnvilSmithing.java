@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
-@RegistryDescription(linkGenerator = "hbm")
+@RegistryDescription(linkGenerator = "hbm", isFullyDocumented = false)
 public class AnvilSmithing extends StandardListRegistry<AnvilSmithingRecipe> {
 
     @Override

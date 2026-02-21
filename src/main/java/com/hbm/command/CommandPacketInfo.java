@@ -18,8 +18,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.hbm.handler.threading.PacketThreading.totalCnt;
-
 public class CommandPacketInfo extends CommandBase {
 
     @Override
@@ -29,7 +27,7 @@ public class CommandPacketInfo extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return TextFormatting.RED + "/ntmpackets [info/resetState/toggleThreadingStatus/forceLock/forceUnlock]";
+        return TextFormatting.RED + "/ntmpackets [info/toggleThreadingStatus/forceLock/forceUnlock]";
     }
 
     @Override
@@ -40,7 +38,7 @@ public class CommandPacketInfo extends CommandBase {
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
         if (args.length == 1) {
-            return getListOfStringsMatchingLastWord(args, "info", "resetState", "toggleThreadingStatus", "forceLock", "forceUnlock");
+            return getListOfStringsMatchingLastWord(args, "info", "toggleThreadingStatus", "forceLock", "forceUnlock");
         }
         return Collections.emptyList();
     }
@@ -49,44 +47,50 @@ public class CommandPacketInfo extends CommandBase {
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
         if (args.length > 0) {
             switch (args[0]) {
-                case "resetState":
-                    PacketThreading.hasTriggered = false;
-                    PacketThreading.clearCnt = 0;
-                    sender.sendMessage(new TextComponentString(TextFormatting.GREEN + "Packet threading state has been reset."));
-                    return;
                 case "toggleThreadingStatus":
                     GeneralConfig.enablePacketThreading = !GeneralConfig.enablePacketThreading; // Force toggle.
                     PacketThreading.init(); // Reinit threads.
                     sender.sendMessage(new TextComponentString(TextFormatting.GREEN + "Packet sending status toggled to " + GeneralConfig.enablePacketThreading + "."));
                     return;
                 case "forceLock":
-                    PacketThreading.lock.lock(); // oh my fucking god never do this please unless you really have to
+                    PacketThreading.LOCK.lock(); // oh my fucking god never do this please unless you really have to
                     sender.sendMessage(new TextComponentString(TextFormatting.RED + "Packet thread lock acquired, this may freeze the main thread!"));
                     MainRegistry.logger.error("Packet thread lock acquired by {}, this may freeze the main thread!", sender.getName());
                     return;
                 case "forceUnlock":
-                    PacketThreading.lock.unlock();
-                    sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "Packet thread lock released."));
-                    MainRegistry.logger.warn("Packet thread lock released by {}.", sender.getName());
+                    if(PacketThreading.LOCK.isHeldByCurrentThread()) {
+                        PacketThreading.LOCK.unlock();
+                        sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "Packet thread lock released."));
+                        MainRegistry.logger.warn("Packet thread lock released by {}.", sender.getName());
+                    } else {
+                        sender.sendMessage(new TextComponentString(TextFormatting.RED + "This thread does not hold the lock."));
+                    }
                     return;
                 case "info":
-                    sender.sendMessage(new TextComponentString(TextFormatting.GOLD + "NTM Packet Debugger v1.2"));
+                    sender.sendMessage(new TextComponentString(TextFormatting.GOLD + "NTM Packet Debugger v2.0"));
 
-                    if (PacketThreading.isTriggered() && GeneralConfig.enablePacketThreading)
-                        sender.sendMessage(new TextComponentString(TextFormatting.RED + "Packet Threading Errored, check log."));
-                    else if (GeneralConfig.enablePacketThreading)
-                        sender.sendMessage(new TextComponentString(TextFormatting.GREEN + "Packet Threading Active"));
+                    if (GeneralConfig.enablePacketThreading)
+                        sender.sendMessage(new TextComponentString(TextFormatting.GREEN + "Packet Threading Active: " + (PacketThreading.isMultiThreaded() ? "Multi-Threaded" : "Single-Threaded")));
                     else
                         sender.sendMessage(new TextComponentString(TextFormatting.RED + "Packet Threading Inactive"));
 
-                    sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "Thread Pool Info"));
-                    sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "# Threads (total): " + PacketThreading.threadPool.getPoolSize()));
-                    sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "# Threads (core): " + PacketThreading.threadPool.getCorePoolSize()));
-                    sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "# Threads (idle): " + (PacketThreading.threadPool.getPoolSize() - PacketThreading.threadPool.getActiveCount())));
-                    sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "# Threads (maximum): " + PacketThreading.threadPool.getMaximumPoolSize()));
+                    int queueSize;
+
+                    if (PacketThreading.isMultiThreaded()) {
+                        sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "Thread Pool Info"));
+                        sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "# Threads (total): " + PacketThreading.getPoolSize()));
+                        sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "# Threads (core): " + PacketThreading.getCorePoolSize()));
+                        sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "# Threads (active): " + PacketThreading.getActiveCount()));
+                        sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "# Threads (maximum): " + PacketThreading.getMaximumPoolSize()));
+                        queueSize = PacketThreading.getThreadPoolQueueSize();
+                    } else {
+                        sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "Single Thread Queue Info"));
+                        queueSize = PacketThreading.getQueueSize();
+                        sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "Queue Size: " + queueSize));
+                    }
 
                     for (ThreadInfo thread : ManagementFactory.getThreadMXBean().dumpAllThreads(false, false))
-                        if (thread.getThreadName().startsWith(PacketThreading.threadPrefix)) {
+                        if (thread.getThreadName().startsWith(PacketThreading.THREAD_PREFIX)) {
                             sender.sendMessage(new TextComponentString(TextFormatting.GOLD + "Thread Name: " + thread.getThreadName()));
                             sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "Thread ID: " + thread.getThreadId()));
                             sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "Thread state: " + thread.getThreadState()));
@@ -94,13 +98,14 @@ public class CommandPacketInfo extends CommandBase {
                         }
 
                     sender.sendMessage(new TextComponentString(TextFormatting.GOLD + "Packet Info: "));
-                    sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "Amount total: " + totalCnt));
-                    sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "Amount remaining: " + PacketThreading.threadPool.getQueue().size()));
+                    long total = PacketThreading.getTotalCount();
+                    sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "Amount submitted (Total): " + total));
+                    sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "Amount queued (Current): " + queueSize));
 
-                    if (totalCnt.get() != 0)
-                        sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "% Remaining to process: " + BobMathUtil.roundDecimal(((double) PacketThreading.threadPool.getQueue().size() / totalCnt.get()) * 100, 2) + "%"));
+                    if (total != 0)
+                        sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "% Backlog vs Total: " + BobMathUtil.roundDecimal(((double) queueSize / total) * 100, 2) + "%"));
 
-                    sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "Time spent waiting on thread(s) last tick: " + BobMathUtil.roundDecimal(TimeUnit.MILLISECONDS.convert(PacketThreading.nanoTimeWaited, TimeUnit.NANOSECONDS), 4) + "ms"));
+                    sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "Time spent waiting (Sync Fallback) last tick: " + BobMathUtil.roundDecimal(TimeUnit.MILLISECONDS.convert(PacketThreading.getNanosWaited(), TimeUnit.NANOSECONDS), 4) + "ms"));
                     return;
             }
         }

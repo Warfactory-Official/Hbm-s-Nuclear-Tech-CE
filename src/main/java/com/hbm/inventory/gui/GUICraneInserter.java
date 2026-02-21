@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerCraneInserter;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.network.TileEntityCraneInserter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
@@ -10,7 +10,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.client.renderer.GlStateManager;
 
 public class GUICraneInserter extends GuiInfoContainer {
-    private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/storage/gui_crane_inserter.png");
+    private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/storage/gui_crane_inserter.png");
     private TileEntityCraneInserter inserter;
 
     public GUICraneInserter(InventoryPlayer invPlayer, TileEntityCraneInserter tedf) {

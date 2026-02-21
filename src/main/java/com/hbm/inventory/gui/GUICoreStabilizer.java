@@ -1,17 +1,15 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerCoreStabilizer;
-import com.hbm.lib.RefStrings;
 import com.hbm.packet.toserver.AuxButtonPacket;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.machine.TileEntityCoreStabilizer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -19,9 +17,11 @@ import org.lwjgl.input.Keyboard;
 
 import java.io.IOException;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUICoreStabilizer extends GuiInfoContainer {
 
-	private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/dfc/gui_stabilizer.png");
+	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/dfc/gui_stabilizer.png");
 	private TileEntityCoreStabilizer stabilizer;
     private GuiTextField field;
 
@@ -69,7 +69,7 @@ public class GUICoreStabilizer extends GuiInfoContainer {
     		if(saveButtonCoolDown == 0 && NumberUtils.isCreatable(field.getText())) {
     			int j = MathHelper.clamp(Integer.parseInt(field.getText()), 1, 100);
     			field.setText(j + "");
-				mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+				playClickSound();
 	    		PacketDispatcher.wrapper.sendToServer(new AuxButtonPacket(stabilizer.getPos(), j, 0));
 	    		saveButtonCoolDown = 20;
     		}

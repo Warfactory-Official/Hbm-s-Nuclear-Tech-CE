@@ -33,13 +33,11 @@ public class ControlTab extends CreativeTabs {
 		super.displayAllRelevantItems(list);
 		List<ItemStack> batteries = new ArrayList<>();
 
-		for(Object o : list) {
+		for(ItemStack stack : list) {
 
-			if(o instanceof ItemStack) {
+			if(stack instanceof ItemStack) {
 
-				ItemStack stack = (ItemStack) o;
-
-				if(stack.getItem() instanceof IBatteryItem) {
+                if(stack.getItem() instanceof IBatteryItem) {
 					batteries.add(stack);
 				}
 			}
@@ -47,12 +45,10 @@ public class ControlTab extends CreativeTabs {
 
 		for(ItemStack stack : batteries) {
 
-			if(!(stack.getItem() instanceof IBatteryItem)) //shouldn't happen but just to make sure
+			if(!(stack.getItem() instanceof IBatteryItem battery)) //shouldn't happen but just to make sure
 				continue;
 
-			IBatteryItem battery = (IBatteryItem) stack.getItem();
-
-			ItemStack empty = stack.copy();
+            ItemStack empty = stack.copy();
 			ItemStack full = stack.copy();
 
 			battery.setCharge(empty, 0);
@@ -63,7 +59,7 @@ public class ControlTab extends CreativeTabs {
 			list.remove(index);
 			list.add(index, full);
 			//do not list empty versions of SU batteries
-			if(battery.getChargeRate() > 0)
+			if(battery.getChargeRate(stack) > 0)
 				list.add(index, empty);
 		}
 	}

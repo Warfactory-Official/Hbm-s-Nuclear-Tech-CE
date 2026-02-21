@@ -51,8 +51,8 @@ public class TileEntityStorageDrum extends TileEntityMachineBase implements ITic
 	public void update() {
 		
 		if(!world.isRemote) {
-			
-			float rad = 0;
+
+            double rad = 0D;
 			
 			int liquid = 0;
 			int gas = 0;
@@ -64,7 +64,7 @@ public class TileEntityStorageDrum extends TileEntityMachineBase implements ITic
 					ItemStack itemStack = inventory.getStackInSlot(i);
 
 					if(world.getTotalWorldTime() % 20 == 0) {
-						rad += HazardSystem.getRawRadsFromStack(itemStack);
+                        rad += HazardSystem.getRawRadsFromStack(itemStack);
 					}
 
 					int[] wasteData = StorageDrumRecipes.getWaste(inventory.getStackInSlot(i));
@@ -107,9 +107,9 @@ public class TileEntityStorageDrum extends TileEntityMachineBase implements ITic
 				fillFluidInit(tanks[1]);
 			}
 			networkPackNT(10);
-			if(rad > 0) {
-				ContaminationUtil.radiate(world, pos.getZ(), pos.getY(), pos.getX(), 32, rad);
-			}
+            if (rad > 0) {
+                ContaminationUtil.radiate(world, pos.getZ(), pos.getY(), pos.getX(), 32, (float) rad);
+            }
 		}
 	}
 

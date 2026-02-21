@@ -1,6 +1,6 @@
 package com.hbm.entity.mob.botprime;
 
-import com.hbm.entity.mob.EntityAINearestAttackableTargetNT;
+import com.hbm.entity.mob.ai.EntityAINearestAttackableTargetNT;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.ModItems;
 import com.hbm.main.AdvancementManager;

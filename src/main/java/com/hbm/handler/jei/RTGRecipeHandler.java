@@ -10,7 +10,7 @@ import java.util.HashMap;
 public class RTGRecipeHandler extends JEIUniversalHandler {
 
     public RTGRecipeHandler(IGuiHelper helper) {
-        super(helper, JEIConfig.RTG, "RTG",
+        super(helper, JEIConfig.RTG, "jei.rtg",
                 new ItemStack[]{new ItemStack(ModBlocks.machine_rtg_grey), new ItemStack(ModBlocks.machine_difurnace_rtg_off)}, wrap(ItemRTGPellet.getRecipeMap()));
     }
 

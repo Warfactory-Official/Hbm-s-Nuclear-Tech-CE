@@ -69,16 +69,17 @@ public class MachineChemicalFactory extends BlockDummyable implements ITooltipPr
     }
 
     @Override
-    public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
-        int[] pos = this.findCore(world, x, y, z);
-        if(pos == null) return;
+    public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
+        BlockPos corePos = this.findCore(world, pos);
+        if(corePos == null) return;
 
-        TileEntity te = world.getTileEntity(new BlockPos(pos[0], pos[1], pos[2]));
+        TileEntity te = world.getTileEntity(corePos);
         if(!(te instanceof TileEntityMachineChemicalFactory chemfac)) return;
 
         DirPos[] cool = chemfac.getCoolPos();
+        DirPos[] io = chemfac.getIOPos();
 
-        for(DirPos dirPos : cool) if(dirPos.compare(x + dirPos.getDir().offsetX, y, z + dirPos.getDir().offsetZ)) {
+        for(DirPos dirPos : cool) if(dirPos.compare(pos.getX() + dirPos.getDir().offsetX, pos.getY(), pos.getZ() + dirPos.getDir().offsetZ)) {
             List<String> text = new ArrayList<>();
 
             text.add(TextFormatting.GREEN + "-> " + TextFormatting.RESET + chemfac.water.getTankType().getLocalizedName());
@@ -86,6 +87,17 @@ public class MachineChemicalFactory extends BlockDummyable implements ITooltipPr
 
             ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getTranslationKey() + ".name"), 0xffff00, 0x404000, text);
             break;
+        }
+
+
+        for(int i = 0; i < io.length; i++) {
+            DirPos port = io[i];
+            if(port.compare(pos.getX() + port.getDir().offsetX, pos.getY(), pos.getZ() + port.getDir().offsetZ)) {
+                List<String> text = new ArrayList();
+                text.add(TextFormatting.YELLOW + "-> " + TextFormatting.RESET + "Recipe field [" + (i + 1) + "]");
+                ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getTranslationKey() + ".name"), 0xffff00, 0x404000, text);
+                break;
+            }
         }
     }
 }

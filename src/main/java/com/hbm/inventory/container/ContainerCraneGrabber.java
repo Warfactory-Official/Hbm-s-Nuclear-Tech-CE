@@ -1,21 +1,21 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotPattern;
-import com.hbm.inventory.SlotUpgrade;
+import com.hbm.inventory.slot.SlotPattern;
+import com.hbm.inventory.slot.SlotUpgrade;
+import com.hbm.items.ModItems;
 import com.hbm.tileentity.network.TileEntityCraneGrabber;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ClickType;
-import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 
-public class ContainerCraneGrabber extends Container {
+public class ContainerCraneGrabber extends ContainerBase {
     protected TileEntityCraneGrabber grabber;
 
     public ContainerCraneGrabber(InventoryPlayer invPlayer, TileEntityCraneGrabber grabber) {
+        super(invPlayer, grabber.inventory);
         this.grabber = grabber;
-
         //filter
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
@@ -26,15 +26,58 @@ public class ContainerCraneGrabber extends Container {
         this.addSlotToContainer(new SlotUpgrade(grabber.inventory, 9, 121, 23));
         this.addSlotToContainer(new SlotUpgrade(grabber.inventory, 10, 121, 47));
 
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 9; j++) {
-                this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 103 + i * 18));
+        playerInv(invPlayer, 8, 103, 161);
+    }
+
+    @Override
+    public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+        ItemStack result = ItemStack.EMPTY;
+        Slot slot = this.inventorySlots.get(index);
+
+        if(slot != null && slot.getHasStack()) {
+            ItemStack stack = slot.getStack();
+            result = stack.copy();
+
+            if(index < 9) { //filters
+                return ItemStack.EMPTY;
             }
+
+            int size = grabber.inventory.getSlots();
+            if(index <= size - 1) {
+                if(!this.mergeItemStack(stack, size, this.inventorySlots.size(), true)) {
+                    return ItemStack.EMPTY;
+                }
+            } else {
+
+                if(isUpgradeStack(result)) {
+                    if(!this.mergeItemStack(stack, 9, 10, false))
+                        return ItemStack.EMPTY;
+                } else if(isUpgradeEjector(result)) {
+                    if(!this.mergeItemStack(stack, 10, 11, false))
+                        return ItemStack.EMPTY;
+                }
+
+                return ItemStack.EMPTY;
+            }
+
+            if(stack.getCount() == 0) {
+                slot.putStack(ItemStack.EMPTY);
+            } else {
+                slot.onSlotChanged();
+            }
+
+            slot.onTake(player, stack);
         }
 
-        for (int i = 0; i < 9; i++) {
-            this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 161));
-        }
+        return result;
+    }
+
+    private static boolean isUpgradeStack(ItemStack item) {
+        return item.getItem() == ModItems.upgrade_stack_1 || item.getItem() == ModItems.upgrade_stack_2 || item.getItem() == ModItems.upgrade_stack_3;
+    }
+
+    private static boolean isUpgradeEjector(ItemStack item) {
+        return item.getItem() == ModItems.upgrade_ejector_1 ||  item.getItem() == ModItems.upgrade_ejector_2 ||  item.getItem() == ModItems.upgrade_ejector_3;
     }
 
     @Override
@@ -63,8 +106,8 @@ public class ContainerCraneGrabber extends Container {
             }
 
             slot.onSlotChanged();
-            grabber.initPattern(slot.getStack(), slotId);
 
+            grabber.matcher.initPatternStandard(grabber.getWorld(), slot.getStack(), slotId);
             return ret;
         }
     }

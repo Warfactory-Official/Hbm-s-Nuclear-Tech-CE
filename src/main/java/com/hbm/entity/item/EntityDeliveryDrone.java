@@ -42,7 +42,7 @@ public class EntityDeliveryDrone extends EntityDroneBase implements IInventory, 
         if(attacker instanceof EntityPlayer && !world.isRemote) {
             this.setDead();
             for (int i = 0; i < inventory.getSlots(); i++) {
-                if(inventory.getStackInSlot(i) != ItemStack.EMPTY)
+                if(!inventory.getStackInSlot(i).isEmpty())
                     this.entityDropItem(inventory.getStackInSlot(i), 1F);
             }
             int meta = 0;
@@ -83,7 +83,7 @@ public class EntityDeliveryDrone extends EntityDroneBase implements IInventory, 
         NBTTagList list = new NBTTagList();
 
         for(int i = 0; i < this.inventory.getSlots(); ++i) {
-            if(this.inventory.getStackInSlot(i) != ItemStack.EMPTY) {
+            if(!this.inventory.getStackInSlot(i).isEmpty()) {
                 NBTTagCompound stackCompund = new NBTTagCompound();
                 stackCompund.setByte("Slot", (byte) i);
                 this.inventory.getStackInSlot(i).writeToNBT(stackCompund);
@@ -139,7 +139,7 @@ public class EntityDeliveryDrone extends EntityDroneBase implements IInventory, 
 
     @Override
     public ItemStack decrStackSize(int slot, int amount) {
-        if(this.inventory.getStackInSlot(slot) != ItemStack.EMPTY) {
+        if(!this.inventory.getStackInSlot(slot).isEmpty()) {
             ItemStack itemstack;
 
             if (this.inventory.getStackInSlot(slot).getCount() <= amount) {
@@ -176,7 +176,7 @@ public class EntityDeliveryDrone extends EntityDroneBase implements IInventory, 
 
     @Override
     public void setInventorySlotContents(int slot, ItemStack stack) {
-        if (stack != ItemStack.EMPTY && stack.getCount() > this.getInventoryStackLimit()) {
+        if (!stack.isEmpty() && stack.getCount() > this.getInventoryStackLimit()) {
             stack.setCount(this.getInventoryStackLimit());
         }
 

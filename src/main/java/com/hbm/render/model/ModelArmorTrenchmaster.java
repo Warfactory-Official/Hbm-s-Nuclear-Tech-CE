@@ -1,12 +1,11 @@
 package com.hbm.render.model;
 
+import com.hbm.main.ResourceManager;
+import com.hbm.render.loader.ModelRendererObj;
+import com.hbm.util.RenderUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
-
-import com.hbm.main.ResourceManager;
-import com.hbm.render.loader.ModelRendererObj;
-
 import net.minecraft.entity.Entity;
 import org.lwjgl.opengl.GL11;
 
@@ -43,12 +42,11 @@ public class ModelArmorTrenchmaster extends ModelArmorBase {
 				/// START GLOW ///
 				float lastX = OpenGlHelper.lastBrightnessX;
 				float lastY = OpenGlHelper.lastBrightnessY;
-				GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
 				OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
-				GL11.glDisable(GL11.GL_LIGHTING);
+                boolean prevLighting = RenderUtil.isLightingEnabled();
+				GlStateManager.disableLighting();
 				this.light.render(par7);
-				GL11.glEnable(GL11.GL_LIGHTING);
-				GL11.glPopAttrib();
+				if (prevLighting) GlStateManager.enableLighting();
 				OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lastX, lastY);
 				/// END GLOW ///
 			}

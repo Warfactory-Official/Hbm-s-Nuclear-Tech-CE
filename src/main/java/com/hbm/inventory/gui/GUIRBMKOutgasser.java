@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerRBMKOutgasser;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKOutgasser;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.GlStateManager;
 public class GUIRBMKOutgasser extends GuiInfoContainer {
 
 	// DO NOT update the texture. Our texture is superior to the 1.7 one as of writing this.
-	private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/reactors/gui_rbmk_outgasser.png");
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/reactors/gui_rbmk_outgasser.png");
 	private final TileEntityRBMKOutgasser rod;
 
 	public GUIRBMKOutgasser(InventoryPlayer invPlayer, TileEntityRBMKOutgasser tedf) {

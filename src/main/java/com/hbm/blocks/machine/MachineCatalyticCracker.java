@@ -20,7 +20,10 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.Pre;
 
@@ -82,9 +85,8 @@ public class MachineCatalyticCracker extends BlockDummyable implements ILookOver
 				FluidType type = ((IItemFluidIdentifier) player.getHeldItem(hand).getItem()).getType(world, pos[0], pos[1], pos[2], player.getHeldItem(hand));
 				cracker.tanks[0].setTankType(type);
 				cracker.markDirty();
-				player.sendMessage(new TextComponentString("§eRecipe changed to §a"+type.getConditionalName()));
-				
-				return true;
+                player.sendMessage(new TextComponentString("Changed type to ").setStyle(new Style().setColor(TextFormatting.YELLOW)).appendSibling(new TextComponentTranslation(type.getConditionalName())).appendSibling(new TextComponentString("!")));
+                return true;
 			}
 			return false;
 			
@@ -125,20 +127,18 @@ public class MachineCatalyticCracker extends BlockDummyable implements ILookOver
 	}
 
 	@Override
-	public void printHook(Pre event, World world, int x, int y, int z) {
-		int[] pos = this.findCore(world, x, y, z);
+	public void printHook(Pre event, World world, BlockPos pos) {
+		BlockPos corePos = this.findCore(world, pos);
 		
-		if(pos == null)
+		if(corePos == null)
 			return;
 		
-		TileEntity te = world.getTileEntity(new BlockPos(pos[0], pos[1], pos[2]));
+		TileEntity te = world.getTileEntity(corePos);
 		
-		if(!(te instanceof TileEntityMachineCatalyticCracker))
+		if(!(te instanceof TileEntityMachineCatalyticCracker cracker))
 			return;
-		
-		TileEntityMachineCatalyticCracker cracker = (TileEntityMachineCatalyticCracker) te;
-		
-		List<String> text = new ArrayList();
+
+        List<String> text = new ArrayList();
 
 		for(int i = 0; i < cracker.tanks.length; i++)
 			text.add((i < 2 ? ("§a-> ") : ("§c<- ")) + "§r" + cracker.tanks[i].getTankType().getLocalizedName() + ": " + cracker.tanks[i].getFill() + "/" + cracker.tanks[i].getMaxFill() + "mB");

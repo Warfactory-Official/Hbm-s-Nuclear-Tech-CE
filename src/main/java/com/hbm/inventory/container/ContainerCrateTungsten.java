@@ -1,6 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.tileentity.machine.TileEntityCrateTungsten;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -10,6 +11,7 @@ import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerCrateTungsten extends Container {
 
+	// mlbv: do not rename this field, it's shadowed in one of bogosorter's mixin
 	private TileEntityCrateTungsten crate;
 
 	public ContainerCrateTungsten(InventoryPlayer invPlayer, TileEntityCrateTungsten te) {
@@ -33,33 +35,9 @@ public class ContainerCrateTungsten extends Container {
 	}
 
 	@Override
-	public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2) {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-
-		if(var4 != null && var4.getHasStack()) {
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-
-			if(par2 <= crate.inventory.getSlots() - 1) {
-				if(!this.mergeItemStack(var5, crate.inventory.getSlots(), this.inventorySlots.size(), true)) {
-					return ItemStack.EMPTY;
-				}
-			} else if(!this.mergeItemStack(var5, 0, crate.inventory.getSlots(), false)) {
-				return ItemStack.EMPTY;
-			}
-
-			if(var5.isEmpty()) {
-				var4.putStack(ItemStack.EMPTY);
-			} else {
-				var4.onSlotChanged();
-			}
-
-			var4.onTake(p_82846_1_, var5);
-		}
-
-		return var3;
-	}
+    public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.crate.inventory.getSlots());
+    }
 
 	@Override
 	public boolean canInteractWith(EntityPlayer player) {

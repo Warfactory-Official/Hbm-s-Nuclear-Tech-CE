@@ -33,35 +33,35 @@ public class ContainerCraneBoxer extends Container {
     }
 
     @Override
-    public ItemStack transferStackInSlot(EntityPlayer player, int slot) {
-        ItemStack var3 = ItemStack.EMPTY;
-        Slot var4 = (Slot) this.inventorySlots.get(slot);
+    public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+        ItemStack result = ItemStack.EMPTY;
+        Slot slot =  this.inventorySlots.get(index);
 
-        if(var4 != null && var4.getHasStack()) {
-            ItemStack var5 = var4.getStack();
-            var3 = var5.copy();
+        if(slot != null && slot.getHasStack()) {
+            ItemStack stack = slot.getStack();
+            result = stack.copy();
 
-            if(slot <= 21) {
-                if(!this.mergeItemStack(var5, 21, this.inventorySlots.size(), true)) {
+            if(index <= 21) {
+                if(!this.mergeItemStack(stack, 21, this.inventorySlots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
             } else {
-                if(!this.mergeItemStack(var5, 0, 21, false)) {
+                if(!this.mergeItemStack(stack, 0, 21, false)) {
                     return ItemStack.EMPTY;
                 }
 
                 return ItemStack.EMPTY;
             }
 
-            if(var5.getCount() == 0) {
-                var4.putStack(ItemStack.EMPTY);
+            if(stack.getCount() == 0) {
+                slot.putStack(ItemStack.EMPTY);
             } else {
-                var4.onSlotChanged();
+                slot.onSlotChanged();
             }
 
         }
 
-        return var3;
+        return result;
     }
 
     @Override

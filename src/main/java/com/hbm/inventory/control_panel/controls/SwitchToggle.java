@@ -4,20 +4,15 @@ import com.hbm.inventory.control_panel.*;
 import com.hbm.inventory.control_panel.nodes.NodeBoolean;
 import com.hbm.inventory.control_panel.nodes.NodeGetVar;
 import com.hbm.inventory.control_panel.nodes.NodeSetVar;
-import com.hbm.main.ClientProxy;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.IModelCustom;
-import com.hbm.render.amlfrom1710.Tessellator;
+import com.hbm.render.loader.IModelCustom;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
-import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.opengl.GL11;
 
 import java.util.Collections;
 import java.util.List;
@@ -43,18 +38,16 @@ public class SwitchToggle extends Control {
     @Override
     public void render() {
         boolean isOn = getVar("isOn").getBoolean();
+        IModelCustom model = getModel();
 
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
         Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.ctrl_switch_toggle_tex);
-        Tessellator tes = Tessellator.instance;
 
-        IModelCustom model = getModel();
-
-        tes.startDrawing(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-        tes.setTranslation(posX, 0, posY);
-        tes.setColorRGBA_F(1, 1, 1, 1);
-        model.tessellatePart(tes, "base");
-        tes.draw();
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(posX, 0, posY);
+        GlStateManager.color(1F, 1F, 1F, 1F);
+        model.renderPart("base");
+        GlStateManager.popMatrix();
 
         GlStateManager.disableTexture2D();
         float lX = OpenGlHelper.lastBrightnessX;
@@ -62,32 +55,29 @@ public class SwitchToggle extends Control {
         float onCMul = (isOn) ? 3F : .4F;
         float offCMul = (isOn) ? .4F : 3F;
 
-        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (isOn)?240:lX, (isOn)?240:lY);
-        tes.startDrawing(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-        tes.setTranslation(posX, 0, posY);
-        tes.setColorRGBA_F(.031F * onCMul, .17F * onCMul, .024F * onCMul, 1);
-        model.tessellatePart(tes, "lamp_on");
-        tes.draw();
+        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (isOn) ? 240 : lX, (isOn) ? 240 : lY);
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(posX, 0, posY);
+        GlStateManager.color(0.031F * onCMul, 0.17F * onCMul, 0.024F * onCMul, 1F);
+        model.renderPart("lamp_on");
+        GlStateManager.popMatrix();
 
-        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (!isOn)?240:lX, (!isOn)?240:lY);
-        tes.startDrawing(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-        tes.setTranslation(posX, 0, posY);
-        tes.setColorRGBA_F(.25F * offCMul, 0.04F * offCMul, 0.04F * offCMul, 1);
-        model.tessellatePart(tes, "lamp_off");
-        tes.draw();
+        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (!isOn) ? 240 : lX, (!isOn) ? 240 : lY);
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(posX, 0, posY);
+        GlStateManager.color(0.25F * offCMul, 0.04F * offCMul, 0.04F * offCMul, 1F);
+        model.renderPart("lamp_off");
+        GlStateManager.popMatrix();
 
         OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lX, lY);
         GlStateManager.enableTexture2D();
 
-        Matrix4f rot_mat = new Matrix4f().rotate((float) ((isOn) ? Math.toRadians(-60) : 0), new Vector3f(1, 0, 0));
-        Matrix4f.mul(new Matrix4f().translate(new Vector3f(posX, 0, posY)), rot_mat, new Matrix4f()).store(ClientProxy.AUX_GL_BUFFER);
-        ClientProxy.AUX_GL_BUFFER.rewind();
-        GlStateManager.multMatrix(ClientProxy.AUX_GL_BUFFER);
-
-        tes.startDrawing(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-        tes.setColorRGBA_F(1, 1, 1, 1);
-        model.tessellatePart(tes, "lever");
-        tes.draw();
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(posX, 0, posY);
+        GlStateManager.rotate((float) ((isOn) ? -60F : 0F), 1F, 0F, 0F);
+        GlStateManager.color(1F, 1F, 1F, 1F);
+        model.renderPart("lever");
+        GlStateManager.popMatrix();
 
         GlStateManager.shadeModel(GL11.GL_FLAT);
     }

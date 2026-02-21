@@ -1,3 +1,6 @@
 {
-	"parent": "hbm:block/radio_torch_receiver"
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "hbm:blocks/rtty_rec_on"
+  }
 }

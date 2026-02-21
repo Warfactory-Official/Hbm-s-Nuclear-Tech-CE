@@ -49,8 +49,7 @@ public class ItemPoolsPile {
                     weighted(ModItems.bottle_nuka, 0, 1, 2, 20),
                     weighted(ModItems.bottle_quantum, 0, 1, 2, 1),
                     weighted(ModItems.definitelyfood, 0, 5, 12, 20),
-                    // TODO
-                    //weighted(ModItems.egg_glyphid, 0, 1, 3, 30),
+                    weighted(ModItems.egg_glyphid, 0, 1, 3, 30),
                     weighted(ModItems.syringe_metal_stimpak, 0, 1, 1, 5),
                     weighted(ModItems.iv_blood, 0, 1, 1, 10),
                     weighted(Items.EXPERIENCE_BOTTLE, 0, 1, 3, 5),
@@ -116,7 +115,7 @@ public class ItemPoolsPile {
                     weighted(ModItems.dust_tiny, 0, 1, 7, 40),
                     weighted(ModItems.powder_cement, 0, 1, 6, 40),
                     weighted(ModItems.nugget_lead, 0, 0, 3, 20),
-                    weighted(ModItems.wire_fine, 0, 0, 3, 20),
+                    weighted(ModItems.wire_fine, 30, 0, 3, 20),
                     weighted(ModItems.powder_ash, 0, 0, 1, 15),
                     weighted(ModItems.plate_lead, 0, 0, 1, 15),
                     weighted(Items.STRING, 0, 0, 1, 15),

@@ -1,8 +1,27 @@
 {
-	"variants": {
-		"facing=north": { "model": "hbm:control_panel_custom" },
-		"facing=south": { "model": "hbm:control_panel_custom" },
-		"facing=east": { "model": "hbm:control_panel_custom" },
-		"facing=west": { "model": "hbm:control_panel_custom" }
-	}
+  "forge_marker": 1,
+  "defaults": {
+    "model": "hbm:control_panel_custom"
+  },
+  "variants": {
+    "inventory": [ {} ],
+
+    "down=false,facing=north,up=false": [ {} ],
+    "down=false,facing=north,up=true":  [ {} ],
+    "down=false,facing=south,up=false": [ {} ],
+    "down=false,facing=south,up=true":  [ {} ],
+    "down=false,facing=east,up=false":  [ {} ],
+    "down=false,facing=east,up=true":   [ {} ],
+    "down=false,facing=west,up=false":  [ {} ],
+    "down=false,facing=west,up=true":   [ {} ],
+
+    "down=true,facing=north,up=false":  [ {} ],
+    "down=true,facing=north,up=true":   [ {} ],
+    "down=true,facing=south,up=false":  [ {} ],
+    "down=true,facing=south,up=true":   [ {} ],
+    "down=true,facing=east,up=false":   [ {} ],
+    "down=true,facing=east,up=true":    [ {} ],
+    "down=true,facing=west,up=false":   [ {} ],
+    "down=true,facing=west,up=true":    [ {} ]
+  }
 }

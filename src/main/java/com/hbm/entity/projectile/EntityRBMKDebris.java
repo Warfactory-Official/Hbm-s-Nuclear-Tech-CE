@@ -206,7 +206,7 @@ public class EntityRBMKDebris extends Entity {
 	}
 
 	public DebrisType getType(){
-		return DebrisType.values()[Math.abs(this.getDataManager().get(TYPE_ID)) % DebrisType.values().length];
+		return DebrisType.VALUES[Math.abs(this.getDataManager().get(TYPE_ID)) % DebrisType.VALUES.length];
 	}
 
 	@Override
@@ -367,5 +367,7 @@ public class EntityRBMKDebris extends Entity {
 		ROD, //solid boron rod
 		GRAPHITE, //spicy rock
 		LID; //the all destroying harbinger of annihilation
+
+        public static final DebrisType[] VALUES = values();
 	}
 }

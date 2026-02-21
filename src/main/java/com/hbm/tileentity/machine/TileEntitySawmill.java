@@ -13,7 +13,6 @@ import com.hbm.lib.ModDamageSource;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.ItemStackUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;
@@ -29,6 +28,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.relauncher.Side;
@@ -283,10 +283,10 @@ public class TileEntitySawmill extends TileEntityMachineBase implements ITickabl
 
         HashMap<Object, Object[]> recipes = new HashMap<>();
 
-        recipes.put(new RecipesCommon.OreDictStack("logWood"), new ItemStack[] { new ItemStack(Blocks.PLANKS, 6), ItemStackUtil.addTooltipToStack(new ItemStack(ModItems.powder_sawdust), ChatFormatting.RED + "50%") });
-        recipes.put(new RecipesCommon.OreDictStack("plankWood"), new ItemStack[] { new ItemStack(Items.STICK, 6), ItemStackUtil.addTooltipToStack(new ItemStack(ModItems.powder_sawdust), ChatFormatting.RED + "10%") });
+        recipes.put(new RecipesCommon.OreDictStack("logWood"), new ItemStack[] { new ItemStack(Blocks.PLANKS, 6), ItemStackUtil.addTooltipToStack(new ItemStack(ModItems.powder_sawdust), TextFormatting.RED + "50%") });
+        recipes.put(new RecipesCommon.OreDictStack("plankWood"), new ItemStack[] { new ItemStack(Items.STICK, 6), ItemStackUtil.addTooltipToStack(new ItemStack(ModItems.powder_sawdust), TextFormatting.RED + "10%") });
         recipes.put(new RecipesCommon.OreDictStack("stickWood"), new ItemStack[] { new ItemStack(ModItems.powder_sawdust) });
-        recipes.put(new RecipesCommon.OreDictStack("treeSapling"), new ItemStack[] { new ItemStack(Items.STICK, 1), ItemStackUtil.addTooltipToStack(new ItemStack(ModItems.powder_sawdust), ChatFormatting.RED + "10%") });
+        recipes.put(new RecipesCommon.OreDictStack("treeSapling"), new ItemStack[] { new ItemStack(Items.STICK, 1), ItemStackUtil.addTooltipToStack(new ItemStack(ModItems.powder_sawdust), TextFormatting.RED + "10%") });
 
         return recipes;
     }

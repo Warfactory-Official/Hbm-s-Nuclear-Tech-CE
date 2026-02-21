@@ -12,7 +12,7 @@ import net.minecraft.world.World;
 @AutoRegister(name = "entity_cloud_fleija", trackingRange = 1000)
 public class EntityCloudFleija extends Entity {
 
-	public static final DataParameter<Integer> MAXAGE = EntityDataManager.createKey(EntityCloudFleijaRainbow.class, DataSerializers.VARINT);
+	public static final DataParameter<Integer> MAXAGE = EntityDataManager.createKey(EntityCloudFleija.class, DataSerializers.VARINT);
 	
 	public int maxAge = 100;
 	public int age;

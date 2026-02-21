@@ -1,7 +1,7 @@
 package com.hbm.render.tileentity;
 
+import com.hbm.Tags;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.model.ModelBroadcaster;
 import com.hbm.tileentity.machine.TileEntityBroadcaster;
 import net.minecraft.client.renderer.GlStateManager;
@@ -11,7 +11,7 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister
 public class RenderBroadcaster extends TileEntitySpecialRenderer<TileEntityBroadcaster> {
 
-	private static final ResourceLocation texture6 = new ResourceLocation(RefStrings.MODID + ":" + "textures/models/deco/ModelBroadcaster.png");
+	private static final ResourceLocation texture6 = new ResourceLocation(Tags.MODID + ":" + "textures/models/deco/ModelBroadcaster.png");
 	private ModelBroadcaster model6;
 	
 	public RenderBroadcaster() {

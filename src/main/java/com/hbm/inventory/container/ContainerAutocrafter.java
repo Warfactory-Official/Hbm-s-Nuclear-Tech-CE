@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotBattery;
-import com.hbm.inventory.SlotPattern;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotPattern;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineAutocrafter;
 import net.minecraft.entity.player.EntityPlayer;
@@ -15,10 +15,10 @@ import org.jetbrains.annotations.NotNull;
 
 public class ContainerAutocrafter extends Container {
 
-    private final TileEntityMachineAutocrafter autocrafter;
+    private final TileEntityMachineAutocrafter autoCrafter;
 
     public ContainerAutocrafter(InventoryPlayer invPlayer, TileEntityMachineAutocrafter tedf) {
-        autocrafter = tedf;
+        autoCrafter = tedf;
 
         /* TEMPLATE */
         for(int i = 0; i < 3; i++) {
@@ -68,7 +68,7 @@ public class ContainerAutocrafter extends Container {
         if(index == 9) {
 
             if(button == 1 && clickTypeIn == ClickType.PICKUP && slot.getHasStack()) {
-                autocrafter.nextTemplate();
+                autoCrafter.nextTemplate();
                 this.detectAndSendChanges();
             }
 
@@ -76,18 +76,18 @@ public class ContainerAutocrafter extends Container {
         }
 
         if(button == 1 && clickTypeIn == ClickType.PICKUP && slot.getHasStack()) {
-            autocrafter.nextMode(index);
+            autoCrafter.nextMode(index);
 
         } else {
-            slot.putStack(held != ItemStack.EMPTY ? held.copy() : ItemStack.EMPTY);
+            slot.putStack(!held.isEmpty() ? held.copy() : ItemStack.EMPTY);
 
             if(slot.getHasStack()) {
                 slot.getStack().setCount(1);
             }
 
             slot.onSlotChanged();
-            autocrafter.initPattern(slot.getStack(), index);
-            autocrafter.updateTemplateGrid();
+            autoCrafter.initPattern(slot.getStack(), index);
+            autoCrafter.updateTemplateGrid();
         }
         return ret;
     }
@@ -106,7 +106,7 @@ public class ContainerAutocrafter extends Container {
                     return ItemStack.EMPTY;
                 }
             } else if(index > 20){
-                if(Library.isItemDischargeableBattery(rStack)) {
+                if(Library.isDischargeableBattery(rStack)) {
                     if(!this.mergeItemStack(stack, 20, 21, false)) return ItemStack.EMPTY;
                 } else return ItemStack.EMPTY;
             }
@@ -123,6 +123,6 @@ public class ContainerAutocrafter extends Container {
 
     @Override
     public boolean canInteractWith(@NotNull EntityPlayer player) {
-        return autocrafter.isUseableByPlayer(player);
+        return autoCrafter.isUseableByPlayer(player);
     }
 }

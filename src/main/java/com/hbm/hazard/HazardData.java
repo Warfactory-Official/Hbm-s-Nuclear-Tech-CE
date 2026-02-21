@@ -1,6 +1,7 @@
 package com.hbm.hazard;
 
-import com.hbm.hazard.type.HazardTypeBase;
+import com.hbm.config.RadiationConfig;
+import com.hbm.hazard.type.IHazardType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,18 +20,20 @@ public class HazardData {
 	 * -1: oredict ("ingotX")
 	 */
 	int mutexBits = 0b0000_0000_0000_0000_0000_0000_0000_0000;
+
+    //mlbv: made public so that modders can modify the hazards in the map after registration
+	public List<HazardEntry> entries = new ArrayList<>();
 	
-	List<HazardEntry> entries = new ArrayList();
-	
-	public HazardData addEntry(final HazardTypeBase hazard) {
-		return this.addEntry(hazard, 1F, false);
+	public HazardData addEntry(final IHazardType hazard) {
+        return this.addEntry(hazard, 1D, false);
 	}
-	
-	public HazardData addEntry(final HazardTypeBase hazard, final float level) {
+
+    public HazardData addEntry(final IHazardType hazard, final double level) {
+		if(hazard == HazardRegistry.CONTAMINATING && !RadiationConfig.enableContaminationOnGround) return this;
 		return this.addEntry(hazard, level, false);
 	}
-	
-	public HazardData addEntry(final HazardTypeBase hazard, final float level, final boolean override) {
+
+    public HazardData addEntry(final IHazardType hazard, final double level, final boolean override) {
 		this.entries.add(new HazardEntry(hazard, level));
 		this.doesOverride = override;
 		return this;

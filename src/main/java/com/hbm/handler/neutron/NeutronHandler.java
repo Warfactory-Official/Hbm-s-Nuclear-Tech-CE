@@ -2,19 +2,21 @@ package com.hbm.handler.neutron;
 
 import com.hbm.tileentity.machine.rbmk.RBMKDials;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.util.Map;
+
 public class NeutronHandler {
 
     private static int ticks = 0;
 
-    @SubscribeEvent
-    public void onServerTick(TickEvent.ServerTickEvent event) {
-        if(event.phase != TickEvent.Phase.START)
-            return;
-
+    // mlbv: it can be safely parallelized per world provided that no implementations of IRBMKFluxReceiver/IPileNeutronReceiver
+    // would carry side effects that interact with UniNodeSpace or HazardSystem, and does not change world state (like markDirty())
+    // TileEntityRBMKOutgasser violated some of them, but has been modified to be safe. The stack NBT modification there is risky,
+    // but HazardSystem only affects irradiated items in PLAYER INVENTORY, so it should still be safe.
+    // TODO: per-world parallelism
+    public static void onServerTick() {
+//        if(event.phase != TickEvent.Phase.START)
+//            return;
         // Freshen the node cache every `cacheTime` ticks to prevent huge RAM usage from idle nodes.
         int cacheTime = 20;
         boolean cacheClear = ticks >= cacheTime;

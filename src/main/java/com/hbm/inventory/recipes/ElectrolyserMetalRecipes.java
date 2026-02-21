@@ -129,7 +129,7 @@ public class ElectrolyserMetalRecipes extends SerializableRecipe {
                 new ItemStack(ModItems.powder_copper, 4),
                 new ItemStack(ModItems.powder_lithium_tiny, 3)));
 
-        for(ItemBedrockOreNew.BedrockOreType type : ItemBedrockOreNew.BedrockOreType.values()) {
+        for(ItemBedrockOreNew.BedrockOreType type : ItemBedrockOreNew.BedrockOreType.VALUES) {
             ArrayList<Tuple.Pair<Object, Integer>> productsF = new ArrayList<>();
             productsF.add(new Tuple.Pair<>(type.primary1, 8));
             productsF.add(new Tuple.Pair<>(type.primary2, 4));

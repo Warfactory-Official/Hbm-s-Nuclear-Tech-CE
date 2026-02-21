@@ -1,81 +1,53 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
+import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
+import org.jetbrains.annotations.NotNull;
 
 public class ContainerMachineFluidTank extends Container {
 
-	private TileEntityMachineFluidTank diFurnace;
-	
-	public ContainerMachineFluidTank(InventoryPlayer invPlayer, TileEntityMachineFluidTank tedf) {
-		//What the heck is a diFurnace
-		diFurnace = tedf;
+  private final TileEntityMachineFluidTank fluidTank;
 
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 8, 17));
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 1, 8, 53));
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 2, 53 - 18, 17));
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 3, 53 - 18, 53));
-		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 4, 125, 17));
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 5, 125, 53));
-		
-		for(int i = 0; i < 3; i++)
-		{
-			for(int j = 0; j < 9; j++)
-			{
-				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
-			}
-		}
-		
-		for(int i = 0; i < 9; i++)
-		{
-			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 142));
-		}
-	}
-	
-	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2)
-    {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-		
-		if (var4 != null && var4.getHasStack())
-		{
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-			
-            if (par2 <= 5) {
-				if (!this.mergeItemStack(var5, 6, this.inventorySlots.size(), true))
-				{
-					return ItemStack.EMPTY;
-				}
-			}
-			else if (!this.mergeItemStack(var5, 0, 5, false))
-			{
-				return ItemStack.EMPTY;
-			}
-			
-			if (var5.isEmpty())
-			{
-				var4.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
+  public ContainerMachineFluidTank(InventoryPlayer invPlayer, TileEntityMachineFluidTank tedf) {
+    fluidTank = tedf;
 
-				var4.onSlotChanged();
-			}
-		}
-		
-		return var3;
+    this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 8, 17));
+    this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 1, 8, 53));
+    this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 2, 53 - 18, 17));
+    this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 3, 53 - 18, 53));
+    this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 4, 125, 17));
+    this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 5, 125, 53));
+
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 9; j++) {
+        this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
+      }
     }
 
-	@Override
-	public boolean canInteractWith(EntityPlayer player) {
-		return diFurnace.isUseableByPlayer(player);
-	}
+    for (int i = 0; i < 9; i++) {
+      this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 142));
+    }
+  }
+
+  @Override
+  public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
+      return InventoryUtil.transferStack(this.inventorySlots, index, 6,
+              s -> s.getItem() instanceof IItemFluidIdentifier, 2,
+              s -> Library.isStackDrainableForTank(s, fluidTank.tank), 4,
+              s -> Library.isStackFillableForTank(s, fluidTank.tank), 6);
+  }
+
+  @Override
+  public boolean canInteractWith(@NotNull EntityPlayer player) {
+    return fluidTank.isUseableByPlayer(player);
+  }
 }

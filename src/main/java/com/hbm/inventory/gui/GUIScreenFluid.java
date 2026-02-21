@@ -1,31 +1,31 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemFluidIDMulti;
-import com.hbm.lib.RefStrings;
 import com.hbm.packet.toserver.NBTItemControlPacket;
-import com.hbm.packet.PacketDispatcher;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 import java.util.Arrays;
 import java.util.Locale;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUIScreenFluid extends GuiScreen {
 
-    protected static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/machine/gui_fluid.png");
+    protected static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/machine/gui_fluid.png");
     protected int xSize = 176;
     protected int ySize = 54;
     protected int guiLeft;
@@ -86,17 +86,17 @@ public class GUIScreenFluid extends GuiScreen {
 
             if(guiLeft + 7 + k * 18 <= i && guiLeft + 7 + k * 18 + 18 > i && guiTop + 29 < j && guiTop + 29 + 18 >= j) {
                 if(button == 0) {
-                    mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                    playClickSound();
                     this.primary = this.searchArray[k];
                     NBTTagCompound data = new NBTTagCompound();
                     data.setInteger("primary", this.primary.getID());
-                    PacketDispatcher.wrapper.sendToServer(new NBTItemControlPacket(data));
+                    PacketThreading.createSendToServerThreadedPacket(new NBTItemControlPacket(data));
                 } else if(button == 1) {
-                    mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                    playClickSound();
                     this.secondary = this.searchArray[k];
                     NBTTagCompound data = new NBTTagCompound();
                     data.setInteger("secondary", this.secondary.getID());
-                    PacketDispatcher.wrapper.sendToServer(new NBTItemControlPacket(data));
+                    PacketThreading.createSendToServerThreadedPacket(new NBTItemControlPacket(data));
                 }
             }
         }

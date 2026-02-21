@@ -1,8 +1,8 @@
 package com.hbm.handler.jei;
 
+import com.hbm.Tags;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.inventory.recipes.anvil.AnvilSmithingRecipe;
-import com.hbm.lib.RefStrings;
 import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.gui.IDrawable;
 import mezz.jei.api.gui.IGuiItemStackGroup;
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AnvilSmithingRecipeHandler implements IRecipeCategory<AnvilSmithingRecipeHandler.SmithingRecipe> {
-    private static final ResourceLocation GUI_TEXTURE = new ResourceLocation(RefStrings.MODID, "textures/gui/jei/gui_nei_smithing.png");
+    private static final ResourceLocation GUI_TEXTURE = new ResourceLocation(Tags.MODID, "textures/gui/jei/gui_nei_smithing.png");
 
     private final IDrawable background;
     private final IDrawable slotDrawable;
@@ -47,7 +47,7 @@ public class AnvilSmithingRecipeHandler implements IRecipeCategory<AnvilSmithing
     @NotNull
     @Override
     public String getModName() {
-        return RefStrings.MODID;
+        return Tags.MODID;
     }
 
     @NotNull

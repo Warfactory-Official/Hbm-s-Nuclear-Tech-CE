@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerCrateTemplate;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityCrateTemplate;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -9,7 +9,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GUICrateTemplate extends GUICrateBase<TileEntityCrateTemplate, ContainerCrateTemplate> {
 
-    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/storage/gui_crate_template.png");
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/storage/gui_crate_template.png");
 
     public GUICrateTemplate(InventoryPlayer invPlayer, TileEntityCrateTemplate tedf) {
         super(tedf, new ContainerCrateTemplate(invPlayer, tedf), 176, 168, texture);

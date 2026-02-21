@@ -1,19 +1,21 @@
 package com.hbm.uninos;
 
 import com.hbm.api.tile.ILoadedTile;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import net.minecraft.tileentity.TileEntity;
 
-import java.util.*;
+import java.util.Random;
 
 public abstract class NodeNet<R, P, L extends GenNode<N>, N extends NodeNet<R, P, L, N>> {
     /** Global random for figuring things out like random leftover distribution */
     public static Random rand = new Random();
 
     public boolean valid = true;
-    public Set<L> links = new LinkedHashSet<>();
+    public ObjectLinkedOpenHashSet<L> links = new ObjectLinkedOpenHashSet<>();
 
-    public HashMap<R, Long> receiverEntries = new HashMap<>();
-    public HashMap<P, Long> providerEntries = new HashMap<>();
+    public Object2LongOpenHashMap<R> receiverEntries = new Object2LongOpenHashMap<>();
+    public Object2LongOpenHashMap<P> providerEntries = new Object2LongOpenHashMap<>();
 
     public NodeNet() {
     }
@@ -21,12 +23,12 @@ public abstract class NodeNet<R, P, L extends GenNode<N>, N extends NodeNet<R, P
     /// SUBSCRIBER HANDLING ///
     public boolean isSubscribed(R receiver) { return this.receiverEntries.containsKey(receiver); }
     public void addReceiver(R receiver) { this.receiverEntries.put(receiver, System.currentTimeMillis()); }
-    public void removeReceiver(R receiver) { this.receiverEntries.remove(receiver); }
+    public void removeReceiver(R receiver) { this.receiverEntries.removeLong(receiver); }
 
     /// PROVIDER HANDLING ///
     public boolean isProvider(P provider) { return this.providerEntries.containsKey(provider); }
     public void addProvider(P provider) { this.providerEntries.put(provider, System.currentTimeMillis()); }
-    public void removeProvider(P provider) { this.providerEntries.remove(provider); }
+    public void removeProvider(P provider) { this.providerEntries.removeLong(provider); }
 
     /** Combines two networks into one */
     public void joinNetworks(NodeNet<R, P, L, N> network) {

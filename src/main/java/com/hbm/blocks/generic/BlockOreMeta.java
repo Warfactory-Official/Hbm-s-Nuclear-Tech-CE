@@ -1,10 +1,10 @@
 package com.hbm.blocks.generic;
 
 import com.google.common.collect.ImmutableMap;
+import com.hbm.Tags;
 import com.hbm.blocks.ICustomBlockItem;
 import com.hbm.items.IDynamicModels;
 import com.hbm.items.IModelRegister;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
 import com.hbm.render.icon.TextureAtlasSpriteMultipass;
 import net.minecraft.block.Block;
@@ -81,7 +81,7 @@ public class BlockOreMeta extends BlockMeta implements IDynamicModels, ICustomBl
     @SideOnly(Side.CLIENT)
     public void registerSprite(TextureMap map) {
         for (OreType overlay : this.overlays) {
-            ResourceLocation spriteLoc = new ResourceLocation(RefStrings.MODID, "blocks/" + this.getRegistryName().getPath() + "-" + "ore_overlay_" + overlay.getName());
+            ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, "blocks/" + this.getRegistryName().getPath() + "-" + "ore_overlay_" + overlay.getName());
             TextureAtlasSpriteMultipass layeredSprite = new TextureAtlasSpriteMultipass(spriteLoc.toString(), "blocks/" + baseTextureName, "blocks/" + "ore_overlay_" + overlay);
             map.setTextureEntry(layeredSprite);
         }
@@ -151,7 +151,7 @@ public class BlockOreMeta extends BlockMeta implements IDynamicModels, ICustomBl
             for (int meta = 0; meta <= META_COUNT - 1; meta++) {
                 ImmutableMap.Builder<String, String> textureMap = ImmutableMap.builder();
                 String overlay = overlays[meta % overlays.length].getName();
-                ResourceLocation spriteLoc = new ResourceLocation(RefStrings.MODID, "blocks/" + this.getRegistryName().getPath() + "-" + "ore_overlay_" + overlay);
+                ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, "blocks/" + this.getRegistryName().getPath() + "-" + "ore_overlay_" + overlay);
 
                 // Base texture
                 textureMap.put("all", spriteLoc.toString());

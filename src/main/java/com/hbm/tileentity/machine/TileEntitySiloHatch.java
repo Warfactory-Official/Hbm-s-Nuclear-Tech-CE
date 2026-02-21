@@ -7,8 +7,11 @@ import com.hbm.handler.radiation.RadiationSystemNT;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IAnimatedDoor;
 import com.hbm.lib.HBMSoundHandler;
+import com.hbm.lib.Library;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.TEDoorAnimationPacket;
+import it.unimi.dsi.fastutil.longs.LongIterable;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -30,6 +33,7 @@ public class TileEntitySiloHatch extends TileEntityLockableBase implements ITick
     public EnumFacing facing = null;
     public AxisAlignedBB renderBox = null;
     private boolean wasPowered = false;
+    private boolean redstoneOnly = false;
 
     @Override
     public void update() {
@@ -74,7 +78,7 @@ public class TileEntitySiloHatch extends TileEntityLockableBase implements ITick
                         if (state != oldState) {
                             // With door finally closed, mark chunk for rad update since door is now rad resistant
                             // No need to update when open as well, as opening door should update
-                            RadiationSystemNT.markChunkForRebuild(world, pos);
+                            RadiationSystemNT.markSectionsForRebuild(world, getOccupiedSections());
                         }
                     }
                 } else if (state == DoorState.OPENING) {
@@ -156,6 +160,7 @@ public class TileEntitySiloHatch extends TileEntityLockableBase implements ITick
     public void readFromNBT(NBTTagCompound compound) {
         state = DoorState.values()[compound.getByte("state")];
         wasPowered = compound.getBoolean("wasPowered");
+        redstoneOnly = compound.getBoolean("redstoneOnly");
         super.readFromNBT(compound);
     }
 
@@ -163,6 +168,7 @@ public class TileEntitySiloHatch extends TileEntityLockableBase implements ITick
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         compound.setByte("state", (byte) state.ordinal());
         compound.setBoolean("wasPowered", wasPowered);
+        compound.setBoolean("redstoneOnly", redstoneOnly);
         return super.writeToNBT(compound);
     }
 
@@ -203,11 +209,11 @@ public class TileEntitySiloHatch extends TileEntityLockableBase implements ITick
         if (state == DoorState.CLOSED) {
             state = DoorState.OPENING;
             // With door opening, mark chunk for rad update
-            RadiationSystemNT.markChunkForRebuild(world, pos);
+            RadiationSystemNT.markSectionsForRebuild(world, getOccupiedSections());
         } else if (state == DoorState.OPEN) {
             state = DoorState.CLOSING;
             // With door closing, mark chunk for rad update
-            RadiationSystemNT.markChunkForRebuild(world, pos);
+            RadiationSystemNT.markSectionsForRebuild(world, getOccupiedSections());
         }
     }
 
@@ -221,4 +227,33 @@ public class TileEntitySiloHatch extends TileEntityLockableBase implements ITick
         }
     }
 
+    public boolean getRedstoneOnly() {
+        return redstoneOnly;
+    }
+
+    public void setRedstoneOnly(boolean redstoneOnly) {
+        this.redstoneOnly = redstoneOnly;
+    }
+
+    public LongIterable getOccupiedSections() {
+        LongOpenHashSet sections = new LongOpenHashSet();
+        sections.add(Library.blockPosToSectionLong(pos));
+        EnumFacing face = facing;
+        if (face == null) {
+            if (world != null) {
+                face = world.getBlockState(pos).getValue(BlockSiloHatch.FACING).getOpposite();
+            } else {
+                return sections;
+            }
+        }
+        int midX = pos.getX() + face.getXOffset() * 3;
+        int midY = pos.getY() + face.getYOffset() * 3;
+        int midZ = pos.getZ() + face.getZOffset() * 3;
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                sections.add(Library.blockPosToSectionLong(midX + i, midY, midZ + j));
+            }
+        }
+        return sections;
+    }
 }

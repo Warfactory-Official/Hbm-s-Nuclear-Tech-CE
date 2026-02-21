@@ -75,16 +75,14 @@ public class BreederRecipes extends SerializableRecipe {
 		
 		public ItemStack output;
 		public int flux;
-		
-		public BreederRecipe() { }
-		
-		public BreederRecipe(Item output, int heat) {
-			this(new ItemStack(output), heat);
+
+        public BreederRecipe(Item output, int flux) {
+			this(new ItemStack(output), flux);
 		}
 		
-		public BreederRecipe(ItemStack output, int heat) {
+		public BreederRecipe(ItemStack output, int flux) {
 			this.output = output;
-			this.flux = heat;
+			this.flux = flux;
 		}
 	}
 

@@ -30,7 +30,7 @@ import java.util.List;
 @AutoRegister(name = "entity_rocket", trackingRange = 1000)
 public class EntityRocket extends Entity implements IProjectile {
 
-	private static final DataParameter<Boolean> CRITICAL = EntityDataManager.createKey(EntityBullet.class, DataSerializers.BOOLEAN);
+	private static final DataParameter<Boolean> CRITICAL = EntityDataManager.createKey(EntityRocket.class, DataSerializers.BOOLEAN);
 	
 	private int field_145791_d = -1;
     private int field_145792_e = -1;

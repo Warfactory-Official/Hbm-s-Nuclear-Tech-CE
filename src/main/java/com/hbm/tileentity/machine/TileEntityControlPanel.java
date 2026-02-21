@@ -1,11 +1,11 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.blocks.BlockControlPanelType;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.control_panel.*;
 import com.hbm.packet.toclient.ControlPanelUpdatePacket;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.IGUIProvider;
 import li.cil.oc.api.machine.Arguments;
 import li.cil.oc.api.machine.Callback;
@@ -127,7 +127,7 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 		panel.update();
 		if(!panel.changedVars.isEmpty()) {
 			markDirty();
-			PacketDispatcher.wrapper.sendToAllTracking(new ControlPanelUpdatePacket(pos, panel.changedVars), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 1));
+			PacketThreading.createSendToAllTrackingThreadedPacket(new ControlPanelUpdatePacket(pos, panel.changedVars), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 1));
 		}
 	}
 
@@ -198,7 +198,7 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 					ControlEventSystem.get(world).subscribeTo(this, b);
 				}
 			}
-			PacketDispatcher.wrapper.sendToAllTracking(new ControlPanelUpdatePacket(pos, data), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 1));
+            PacketThreading.createSendToAllTrackingThreadedPacket(new ControlPanelUpdatePacket(pos, data), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 1));
 		} else if(data.hasKey("click_control")) {
 			ControlEvent evt = ControlEvent.readFromNBT(data);
 			panel.controls.get(data.getInteger("click_control")).receiveEvent(evt);

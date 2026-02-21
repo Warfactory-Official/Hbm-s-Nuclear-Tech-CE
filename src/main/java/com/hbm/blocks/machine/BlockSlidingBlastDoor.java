@@ -1,11 +1,13 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.api.block.IToolable.ToolType;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.handler.radiation.RadiationSystemNT;
 import com.hbm.interfaces.IDoor;
 import com.hbm.interfaces.IKeypadHandler;
 import com.hbm.interfaces.IRadResistantBlock;
+import com.hbm.items.tool.ItemTooling;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntitySlidingBlastDoorKeypad;
 import com.hbm.tileentity.machine.TileEntitySlidingBlastDoor;
@@ -28,6 +30,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -35,7 +38,7 @@ import java.util.List;
 public class BlockSlidingBlastDoor extends BlockDummyable implements IRadResistantBlock, IPartialSealableBlock {
 
 	public BlockSlidingBlastDoor(Material materialIn, String s) {
-		super(materialIn, s);
+		super(materialIn, s, true);
 	}
 
 	public boolean isSealed(World world, BlockPos blockPos, EnumFacing direction){
@@ -92,7 +95,19 @@ public class BlockSlidingBlastDoor extends BlockDummyable implements IRadResista
 			TileEntitySlidingBlastDoor door = (TileEntitySlidingBlastDoor) world.getTileEntity(new BlockPos(pos1[0], pos1[1], pos1[2]));
 
 			if(door != null) {
-				return door.tryToggle(playerIn);
+                if (playerIn.getHeldItem(hand).getItem() instanceof ItemTooling tool && tool.getType() == ToolType.SCREWDRIVER) {
+                    if (door.getConfiguredMode() == IDoor.Mode.TOOLABLE) {
+                        if (!door.canToggleRedstone(playerIn)) {
+                            return false;
+                        }
+                        door.toggleRedstoneMode();
+                        return true;
+                    }
+                }
+
+                if (door.isRedstoneOnly()) return false;
+
+                return door.tryToggle(playerIn);
 			}
 		}
 		return super.onBlockActivated(world, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
@@ -124,7 +139,7 @@ public class BlockSlidingBlastDoor extends BlockDummyable implements IRadResista
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public void addCollisionBoxToList(IBlockState state, World worldIn, BlockPos pos, AxisAlignedBB entityBox, List<AxisAlignedBB> collidingBoxes, Entity entityIn, boolean isActualState) {
+	public void addCollisionBoxToList(@NotNull IBlockState state, @NotNull World worldIn, @NotNull BlockPos pos, @NotNull AxisAlignedBB entityBox, @NotNull List<AxisAlignedBB> collidingBoxes, Entity entityIn, boolean isActualState) {
 		AxisAlignedBB box = state.getCollisionBoundingBox(worldIn, pos);
 		if(box.minY == 0 && box.maxY == 0)
 			return;
@@ -132,7 +147,7 @@ public class BlockSlidingBlastDoor extends BlockDummyable implements IRadResista
 	}
 
 	@Override
-	public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+	public @NotNull AxisAlignedBB getBoundingBox(@NotNull IBlockState state, @NotNull IBlockAccess source, @NotNull BlockPos pos) {
 		int meta = state.getValue(META);
 		if(this == ModBlocks.sliding_blast_door_keypad)
 			return FULL_BLOCK_AABB;
@@ -165,7 +180,7 @@ public class BlockSlidingBlastDoor extends BlockDummyable implements IRadResista
 	}
 
 	@Override
-	public boolean isOpaqueCube(IBlockState state) {
+	public boolean isOpaqueCube(@NotNull IBlockState state) {
 		return false;
 	}
 
@@ -186,13 +201,13 @@ public class BlockSlidingBlastDoor extends BlockDummyable implements IRadResista
 
 	@Override
 	public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
-		RadiationSystemNT.markChunkForRebuild(worldIn, pos);
+		RadiationSystemNT.markSectionForRebuild(worldIn, pos);
 		super.onBlockAdded(worldIn, pos, state);
 	}
 	
 	@Override
-	public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
-		RadiationSystemNT.markChunkForRebuild(worldIn, pos);
+	public void breakBlock(@NotNull World worldIn, @NotNull BlockPos pos, IBlockState state) {
+		RadiationSystemNT.markSectionForRebuild(worldIn, pos);
 		super.breakBlock(worldIn, pos, state);
 	}
 

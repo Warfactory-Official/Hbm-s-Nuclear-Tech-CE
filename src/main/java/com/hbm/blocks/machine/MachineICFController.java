@@ -192,7 +192,7 @@ public class MachineICFController extends BlockBase implements ITileEntityProvid
 
         if (validCore) {
             assembly.put(pos, state);
-            for (EnumFacing facing : EnumFacing.values()) {
+            for (EnumFacing facing : EnumFacing.VALUES) {
                 floodFill(world, pos.offset(facing), player);
             }
             return;
@@ -215,8 +215,8 @@ public class MachineICFController extends BlockBase implements ITileEntityProvid
     }
 
     @Override
-    public void printHook(Pre event, World world, int x, int y, int z) {
-        TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
+    public void printHook(Pre event, World world, BlockPos pos) {
+        TileEntity te = world.getTileEntity(pos);
         if (!(te instanceof TileEntityICFController icf)) return;
         List<String> text = new ArrayList<>();
         text.add(BobMathUtil.getShortNumber(icf.getPower()) + "/" + BobMathUtil.getShortNumber(icf.getMaxPower()) + " HE");

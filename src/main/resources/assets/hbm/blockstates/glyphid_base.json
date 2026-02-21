@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "type=base": [
+      { "model": "hbm:glyphid_base", "weight": 2 },
+      { "model": "hbm:glyphid_base_alt", "weight": 1 }
+    ],
+    "type=infested": [
+      { "model": "hbm:glyphid_base_infested", "weight": 2 },
+      { "model": "hbm:glyphid_base_infested_alt", "weight": 1 }
+    ],
+    "type=rad": [
+      { "model": "hbm:glyphid_base_rad", "weight": 2 },
+      { "model": "hbm:glyphid_base_rad_alt", "weight": 1 }
+    ]
+  }
+}

@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerSafe;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntitySafe;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -9,7 +9,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GUISafe extends GUICrateBase<TileEntitySafe, ContainerSafe> {
 
-    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/storage/gui_safe.png");
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/storage/gui_safe.png");
 
     public GUISafe(InventoryPlayer invPlayer, TileEntitySafe tedf) {
         super(tedf, new ContainerSafe(invPlayer, tedf), 176, 168, texture);

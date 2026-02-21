@@ -1,7 +1,10 @@
 package com.hbm.world.gen.util;
 
+import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.generic.BlockPedestal;
 import com.hbm.blocks.generic.LogicBlock;
 import com.hbm.entity.mob.EntityUndeadSoldier;
+import com.hbm.items.ModItems;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -103,16 +106,16 @@ public class LogicBlockConditions {
 			if (player != null) {
 				player.sendMessage(new TextComponentString("Find a " + TextFormatting.GOLD + "great" + TextFormatting.RESET + " ancient weapon, of questionable use in the modern age"));
 			}
-			//world.setBlockState(new BlockPos(x, y + 1, z), ModBlocks.pedestal.getDefaultState());
+			world.setBlockState(new BlockPos(x, y + 1, z), ModBlocks.pedestal.getDefaultState());
 			return true;
 		}
 
 		TileEntity pedestal = world.getTileEntity(new BlockPos(x, y + 1, z));
 
-		return false; /*tile.phase == 1
+		return tile.phase == 1
             && pedestal instanceof BlockPedestal.TileEntityPedestal
             && ((BlockPedestal.TileEntityPedestal) pedestal).item != null
-            && ((BlockPedestal.TileEntityPedestal) pedestal).item.getItem() == ModItems.big_sword;*/ // TODO pedestals
+            && ((BlockPedestal.TileEntityPedestal) pedestal).item.getItem() == ModItems.big_sword;
 	};
 
 	public static List<String> getConditionNames() {

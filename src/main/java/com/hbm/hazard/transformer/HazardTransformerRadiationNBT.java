@@ -6,7 +6,7 @@ import net.minecraft.item.ItemStack;
 
 import java.util.List;
 
-public class HazardTransformerRadiationNBT extends HazardTransformerBase {
+public class HazardTransformerRadiationNBT implements IHazardTransformer {
 	
 	public static final String RAD_KEY = "hfrHazRadiation";
 
@@ -15,10 +15,10 @@ public class HazardTransformerRadiationNBT extends HazardTransformerBase {
 
 	@Override
 	public void transformPost(final ItemStack stack, final List<HazardEntry> entries) {
-		
-		if(stack.hasTagCompound() && stack.getTagCompound().hasKey(RAD_KEY)) {
-			entries.add(new HazardEntry(HazardRegistry.RADIATION, stack.getTagCompound().getFloat(RAD_KEY)));
-		}
+
+        if (stack.hasTagCompound() && stack.getTagCompound().hasKey(RAD_KEY)) {
+            entries.add(new HazardEntry(HazardRegistry.RADIATION, stack.getTagCompound().getFloat(RAD_KEY)));
+        }
 	}
 
 }

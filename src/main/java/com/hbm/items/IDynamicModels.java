@@ -1,5 +1,6 @@
 package com.hbm.items;
 
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.client.renderer.color.IBlockColor;
@@ -13,8 +14,7 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 /**
  * Used in items that require model baking;
@@ -25,7 +25,8 @@ public interface IDynamicModels {
     /**
      * Should be populated by implementors in constructors.
      */
-    List<IDynamicModels> INSTANCES = new ArrayList<>();
+    //mlbv: measured size = 1106, using ReferenceOpenHashSet for a faster contains()
+    Set<IDynamicModels> INSTANCES = new ReferenceOpenHashSet<>(2048);
 
     @SideOnly(Side.CLIENT)
     static void bakeModels(ModelBakeEvent event) {
@@ -43,7 +44,7 @@ public interface IDynamicModels {
     }
 
     @SideOnly(Side.CLIENT)
-    public static void registerCustomStateMappers() {
+    static void registerCustomStateMappers() {
         for (IDynamicModels model : INSTANCES) {
             if (model.getSelf() == null || !(model.getSelf() instanceof Block block)) continue;
             StateMapperBase mapper = model.getStateMapper(block.getRegistryName());

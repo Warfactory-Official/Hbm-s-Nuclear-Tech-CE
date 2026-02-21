@@ -29,10 +29,6 @@ public class EntityDisperserCanister extends EntityGrenadeBase implements Render
         super(world, living, hand);
     }
 
-    public EntityDisperserCanister(World world, double x, double y, double z) {
-        super(world, x, y, z);
-    }
-
     public FluidType getFluid() {
         return Fluids.fromID(this.dataManager.get(FLUID_ID));
     }

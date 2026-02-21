@@ -1,20 +1,16 @@
 package com.hbm.inventory.control_panel.controls;
 
+import com.hbm.render.loader.WaveFrontObjectVAO;
 import com.hbm.inventory.control_panel.*;
-import com.hbm.main.ClientProxy;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.IModelCustom;
-import com.hbm.render.amlfrom1710.Tessellator;
+import com.hbm.render.loader.IModelCustom;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
-import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.opengl.GL11;
 
 import java.util.List;
 import java.util.Map;
@@ -57,48 +53,54 @@ public class DialSquare extends Control {
     public void render() {
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
         Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.ctrl_dial_square_tex);
-        Tessellator tes = Tessellator.instance;
-        IModelCustom model = getModel();
+
+        var model = (WaveFrontObjectVAO) getModel();
+        FontRenderer font = Minecraft.getMinecraft().fontRenderer;
 
         int value = (int) getVar("value").getNumber();
 
-        tes.startDrawing(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-        tes.setTranslation(posX, 0, posY);
-        tes.setColorRGBA_F(1, 1, 1, 1);
-        model.tessellatePart(tes, "base");
-        tes.draw();
-
         GlStateManager.pushMatrix();
-            Matrix4f rot_mat = new Matrix4f().rotate((float) -MathHelper.clamp((value*((Math.PI/2)/100F)), 0, Math.PI/2), new Vector3f(0, 1, 0));
-            Matrix4f.mul(new Matrix4f().translate(new Vector3f(posX+.77F, 0, posY+.77F)), rot_mat, new Matrix4f()).store(ClientProxy.AUX_GL_BUFFER);
-            ClientProxy.AUX_GL_BUFFER.rewind();
-            GlStateManager.multMatrix(ClientProxy.AUX_GL_BUFFER);
-            tes.startDrawing(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-            tes.setColorRGBA_F(1, 1, 1, 1);
-            model.tessellatePart(tes, "dial");
-            tes.draw();
+        GlStateManager.translate(posX, 0.0, posY);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        model.renderPart("base");
         GlStateManager.popMatrix();
 
         GlStateManager.pushMatrix();
-            GlStateManager.translate(posX, .07F, posY);
-            GlStateManager.scale(.023F, .023F, .023F);
-            GL11.glNormal3f(0.0F, 0.0F, -1.0F);
-            GlStateManager.rotate(90, 1, 0, 0);
+        GlStateManager.translate(posX + 0.77F, 0.0F, posY + 0.77F);
+        GlStateManager.rotate(
+                (float) -MathHelper.clamp(value * ((90F) / 100F), 0F, 90F),
+                0F, 1F, 0F
+        );
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        model.renderPart("dial");
+        GlStateManager.popMatrix();
 
-            FontRenderer font = Minecraft.getMinecraft().fontRenderer;
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(posX, 0.07F, posY);
+        GlStateManager.scale(0.023F, 0.023F, 0.023F);
+        GlStateManager.rotate(90F, 1F, 0F, 0F);
+        GL11.glNormal3f(0F, 0F, -1F);
 
-            for (int i=0; i<11; i++) {
-                double angle = (Math.PI/1.8)/11F * i;
-                float r = 68;
-                double x = r * Math.cos(angle-Math.PI);
-                double y = r * Math.sin(angle-Math.PI);
-                font.drawString((i%2 != 0)? "·" : Integer.toString(i), (float) (28+x), (float) (29.5F+y), 0x303030, false);
-            }
+        for (int i = 0; i < 11; i++) {
+            double angle = (Math.PI / 1.8) / 11F * i;
+            float r = 68F;
 
-            font.drawSplitString(label, -8, -5, 50, 0x303030);
+            double x = r * Math.cos(angle - Math.PI);
+            double y = r * Math.sin(angle - Math.PI);
+
+            String txt = (i % 2 != 0) ? "·" : Integer.toString(i);
+            font.drawString(txt, (float) (28 + x), (float) (29.5F + y), 0x303030, false);
+        }
+
+        font.drawSplitString(label, -8, -5, 50, 0x303030);
 
         GlStateManager.popMatrix();
+
+        GlStateManager.shadeModel(GL11.GL_FLAT);
+        GlStateManager.color(1F, 1F, 1F, 1F);
     }
+
+
 
     @Override
     public IModelCustom getModel() {

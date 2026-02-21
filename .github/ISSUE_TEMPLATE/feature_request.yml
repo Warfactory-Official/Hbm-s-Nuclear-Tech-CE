@@ -1,0 +1,36 @@
+name: Feature request
+description: Suggest an idea
+type: Feature
+body:
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Is your feature request related to a problem?
+      description: Describe the problem and why it matters. If this is a compatibility request, name the other mod(s).
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Describe the solution you'd like
+      description: What should happen? Describe the desired behavior. For compatibility requests, also add the appropriate label.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+      description: List alternative solutions or features you've thought about and why they're not ideal.
+
+  - type: textarea
+    id: upstream
+    attributes:
+      label: Upstream status (original mod)
+      description: If applicable, link to the upstream issue/PR and note the outcome. If this is a compatibility request for another mod, you can skip this.
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Anything else you would like to add.

@@ -120,7 +120,7 @@ public class CrystallizerRecipes extends SerializableRecipe {
 
 		int bedrock = 200;
 		int washing = 100;
-		for(ItemBedrockOreNew.BedrockOreType type : ItemBedrockOreNew.BedrockOreType.values()) {
+		for(ItemBedrockOreNew.BedrockOreType type : ItemBedrockOreNew.BedrockOreType.VALUES) {
 			registerRecipe(new ComparableStack(ItemBedrockOreNew.make(ItemBedrockOreNew.BedrockOreGrade.BASE, type)), new CrystallizerRecipe(ItemBedrockOreNew.make(ItemBedrockOreNew.BedrockOreGrade.BASE_WASHED, type), washing), new FluidStack(Fluids.WATER, 250));
 			registerRecipe(new ComparableStack(ItemBedrockOreNew.make(ItemBedrockOreNew.BedrockOreGrade.BASE_ROASTED, type)), new CrystallizerRecipe(ItemBedrockOreNew.make(ItemBedrockOreNew.BedrockOreGrade.BASE_WASHED, type), washing), new FluidStack(Fluids.WATER, 250));
 

@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "hbm:block/sandbags" },
+    "facing=south": { "model": "hbm:block/sandbags" },
+    "facing=west":  { "model": "hbm:block/sandbags" },
+    "facing=east":  { "model": "hbm:block/sandbags" }
+  }
+}

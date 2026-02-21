@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerMicrowave;
-import com.hbm.lib.RefStrings;
 import com.hbm.packet.toserver.AuxButtonPacket;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.machine.TileEntityMicrowave;
@@ -15,7 +15,7 @@ import java.io.IOException;
 
 public class GUIMicrowave extends GuiInfoContainer {
 
-	public static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_microwave.png");
+	public static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_microwave.png");
 	private TileEntityMicrowave microwave;
 
 	public GUIMicrowave(InventoryPlayer invPlayer, TileEntityMicrowave microwave) {

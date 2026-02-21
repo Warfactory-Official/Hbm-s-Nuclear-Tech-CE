@@ -1,9 +1,9 @@
 package com.hbm.items.machine;
 
 import com.hbm.util.BobMathUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 
 import java.util.List;
@@ -27,9 +27,9 @@ public class ItemPlateFuel extends ItemFuelRod {
     @Override
     public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
         String lifetime = BobMathUtil.getShortNumber(lifeTime);
-        list.add(ChatFormatting.YELLOW + "[Research Reactor Plate Fuel]");
-        list.add(ChatFormatting.DARK_AQUA + "   " + getFunctionDesc());
-        list.add(ChatFormatting.DARK_AQUA + "   Yield of " + lifetime + " events");
+        list.add(TextFormatting.YELLOW + "[Research Reactor Plate Fuel]");
+        list.add(TextFormatting.DARK_AQUA + "   " + getFunctionDesc());
+        list.add(TextFormatting.DARK_AQUA + "   Yield of " + lifetime + " events");
 
         super.addInformation(stack, worldIn, list, flagIn);
     }

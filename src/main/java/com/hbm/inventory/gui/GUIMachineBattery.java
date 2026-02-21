@@ -1,19 +1,17 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.inventory.container.ContainerMachineBattery;
 import com.hbm.lib.Library;
-import com.hbm.lib.RefStrings;
 import com.hbm.packet.toserver.AuxButtonPacket;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.machine.TileEntityMachineBattery;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
 
@@ -22,9 +20,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUIMachineBattery extends GuiInfoContainer {
 
-	private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/storage/gui_battery.png");
+	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/storage/gui_battery.png");
 	private TileEntityMachineBattery battery;
 
 	private IEnergyReceiverMK2.ConnectionPriority lastPrio = IEnergyReceiverMK2.ConnectionPriority.LOW;
@@ -79,19 +79,19 @@ public class GUIMachineBattery extends GuiInfoContainer {
 		
     	if(guiLeft + 6 <= x && guiLeft + 6 + 18 > x && guiTop + 33 < y && guiTop + 33 + 18 >= y) {
     		
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
     		PacketDispatcher.wrapper.sendToServer(new AuxButtonPacket(battery.getPos(), 0, 0));
     	}
 		
     	if(guiLeft + 150 <= x && guiLeft + 150 + 18 > x && guiTop + 33 < y && guiTop + 33 + 18 >= y) {
     		
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
     		PacketDispatcher.wrapper.sendToServer(new AuxButtonPacket(battery.getPos(), 0, 1));
     	}
 
     	if(guiLeft + 151 <= x && guiLeft + 151 + 16 > x && guiTop + 16 < y && guiTop + 17 + 16 >= y) {
     		
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
     		PacketDispatcher.wrapper.sendToServer(new AuxButtonPacket(battery.getPos(), 0, 2));
     	}
 	}

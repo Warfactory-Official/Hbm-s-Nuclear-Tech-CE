@@ -7,7 +7,6 @@ import com.hbm.handler.ArmorUtil;
 import com.hbm.util.ArmorRegistry;
 import com.hbm.util.ArmorRegistry.HazardClass;
 import com.hbm.util.I18nUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.inventory.EntityEquipmentSlot;
@@ -16,6 +15,7 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StringUtils;
+import net.minecraft.util.text.TextFormatting;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,7 +33,7 @@ public class FT_Toxin extends FluidTrait {
 	
 	@Override
 	public void addInfoHidden(List<String> info) {
-		info.add(ChatFormatting.LIGHT_PURPLE + "[" + I18nUtil.resolveKey("trait.toxin") +"]");
+		info.add(TextFormatting.LIGHT_PURPLE + "[" + I18nUtil.resolveKey("trait.toxin") +"]");
 		
 		for(ToxinEntry entry : entries) {
 			entry.addInfo(info);
@@ -103,7 +103,7 @@ public class FT_Toxin extends FluidTrait {
 
 		@Override
 		public void addInfo(List<String> info) {
-			info.add(ChatFormatting.YELLOW + "- " + I18nUtil.resolveKey(clazz.lang) + (fullBody ? ChatFormatting.RED + " " + I18nUtil.resolveKey("trait.needhaz") : "") + ": " + ChatFormatting.YELLOW + String.format(Locale.US, "%,.1f", amount * 20 / delay) + " DPS");
+			info.add(TextFormatting.YELLOW + "- " + I18nUtil.resolveKey(clazz.lang) + (fullBody ? TextFormatting.RED + " " + I18nUtil.resolveKey("trait.needhaz") : "") + ": " + TextFormatting.YELLOW + String.format(Locale.US, "%,.1f", amount * 20 / delay) + " DPS");
 		}
 	}
 
@@ -132,10 +132,10 @@ public class FT_Toxin extends FluidTrait {
 
 		@Override
 		public void addInfo(List<String> info) {
-			info.add(ChatFormatting.YELLOW + "- " + I18nUtil.resolveKey(clazz.lang) + (fullBody ? ChatFormatting.RED + " " + I18nUtil.resolveKey("trait.needhaz") + ChatFormatting.YELLOW : "") + ":");
+			info.add(TextFormatting.YELLOW + "- " + I18nUtil.resolveKey(clazz.lang) + (fullBody ? TextFormatting.RED + " " + I18nUtil.resolveKey("trait.needhaz") + TextFormatting.YELLOW : "") + ":");
 			
 			for(PotionEffect eff : effects) {
-				info.add(ChatFormatting.YELLOW + "   - " + I18nUtil.resolveKey(eff.getEffectName()) + (eff.getAmplifier() > 0 ? " " + I18n.format("potion.potency." + eff.getAmplifier()).trim() : "") + " " + StringUtils.ticksToElapsedTime(eff.getDuration()));
+				info.add(TextFormatting.YELLOW + "   - " + I18nUtil.resolveKey(eff.getEffectName()) + (eff.getAmplifier() > 0 ? " " + I18n.format("potion.potency." + eff.getAmplifier()).trim() : "") + " " + StringUtils.ticksToElapsedTime(eff.getDuration()));
 			}
 		}
 	}

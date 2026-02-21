@@ -1,7 +1,8 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotBattery;
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotFiltered;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineBattery;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -12,72 +13,69 @@ import org.jetbrains.annotations.NotNull;
 
 public class ContainerMachineBattery extends Container {
 
-	public TileEntityMachineBattery diFurnace;
-	
-	public ContainerMachineBattery(InventoryPlayer invPlayer, TileEntityMachineBattery tile) {
-		
-		diFurnace = tile;
-		
-		this.addSlotToContainer(new SlotBattery(tile.inventory, 0, 53 - 18, 17));
-		this.addSlotToContainer(new SlotTakeOnly(tile.inventory, 1, 53 - 18, 53));
-		this.addSlotToContainer(new SlotBattery(tile.inventory, 2, 125, 17));
-		this.addSlotToContainer(new SlotTakeOnly(tile.inventory, 3, 125, 53));
-		
-		for(int i = 0; i < 3; i++)
-		{
-			for(int j = 0; j < 9; j++)
-			{
-				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
-			}
-		}
-		
-		for(int i = 0; i < 9; i++)
-		{
-			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 142));
-		}
-	}
+    public TileEntityMachineBattery machineBattery;
 
-	@Override
-	public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer playerIn, int par2) {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = this.inventorySlots.get(par2);
-		
-		if (var4 != null && var4.getHasStack())
-		{
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-			
-            if (par2 <= 1) {
-				if (!this.mergeItemStack(var5, 2, this.inventorySlots.size(), true))
-				{
-					return ItemStack.EMPTY;
-				}
-			}
-			else if (!this.mergeItemStack(var5, 0, 1, false))
-				if (!this.mergeItemStack(var5, 1, 2, false))
-					return ItemStack.EMPTY;
-			
-			if (var5.getCount() == 0)
-			{
-				var4.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
-				var4.onSlotChanged();
-			}
-		}
-		
-		return var3;
-	}
+    public ContainerMachineBattery(InventoryPlayer invPlayer, TileEntityMachineBattery tile) {
 
-	@Override
-	public void detectAndSendChanges() {
-		diFurnace.networkPackNT(10);
-		super.detectAndSendChanges();
-	}
-	
-	@Override
-	public boolean canInteractWith(EntityPlayer playerIn) {
-		return diFurnace.isUseableByPlayer(playerIn);
-	}
+        machineBattery = tile;
+
+        this.addSlotToContainer(new SlotBattery(tile.inventory, 0, 53 - 18, 17));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tile.inventory, 1, 53 - 18, 53));
+        this.addSlotToContainer(new SlotBattery(tile.inventory, 2, 125, 17));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tile.inventory, 3, 125, 53));
+
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 9; j++) {
+                this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
+            }
+        }
+
+        for (int i = 0; i < 9; i++) {
+            this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 142));
+        }
+    }
+
+    @Override
+    public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer playerIn, int index) {
+        ItemStack rStack = ItemStack.EMPTY;
+        Slot slot = this.inventorySlots.get(index);
+
+        if (slot != null && slot.getHasStack()) {
+            ItemStack stack = slot.getStack();
+            rStack = stack.copy();
+
+            if (index <= 3) {
+                if (!this.mergeItemStack(stack, 4, this.inventorySlots.size(), true)) {
+                    return ItemStack.EMPTY;
+                }
+            } else {
+                if (Library.isBattery(stack)) {
+                    if (!this.mergeItemStack(stack, 0, 1, false)) {
+                        if (!this.mergeItemStack(stack, 2, 3, false)) {
+                            return ItemStack.EMPTY;
+                        }
+                    }
+                } else return ItemStack.EMPTY;
+            }
+
+            if (stack.getCount() == 0) {
+                slot.putStack(ItemStack.EMPTY);
+            } else {
+                slot.onSlotChanged();
+            }
+        }
+
+        return rStack;
+    }
+
+    @Override
+    public void detectAndSendChanges() {
+        machineBattery.networkPackNT(10);
+        super.detectAndSendChanges();
+    }
+
+    @Override
+    public boolean canInteractWith(@NotNull EntityPlayer playerIn) {
+        return machineBattery.isUseableByPlayer(playerIn);
+    }
 }

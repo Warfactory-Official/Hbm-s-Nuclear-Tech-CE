@@ -1,7 +1,8 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKOutgasser;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -17,7 +18,7 @@ public class ContainerRBMKOutgasser extends Container {
 		rbmk = tedf;
 
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 48, 53));
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 1, 112, 53));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 1, 112, 53));
 
 		for(int i = 0; i < 3; i++) {
 			for(int j = 0; j < 9; j++) {
@@ -31,34 +32,12 @@ public class ContainerRBMKOutgasser extends Container {
 	}
 
 	@Override
-	public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2) {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-
-		if(var4 != null && var4.getHasStack()) {
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-
-			if(par2 == 0) {
-				if(!this.mergeItemStack(var5, rbmk.inventory.getSlots(), this.inventorySlots.size(), true)) {
-					return ItemStack.EMPTY;
-				}
-			} else if(!this.mergeItemStack(var5, 0, 1, false)) {
-				return ItemStack.EMPTY;
-			}
-
-			if(var5.isEmpty()) {
-				var4.putStack(ItemStack.EMPTY);
-			} else {
-				var4.onSlotChanged();
-			}
-		}
-
-		return var3;
+	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+		return InventoryUtil.transferStack(this.inventorySlots, index, 2);
 	}
 
 	@Override
 	public boolean canInteractWith(EntityPlayer player) {
-		return true;
+		return rbmk.isUseableByPlayer(player);
 	}
 }

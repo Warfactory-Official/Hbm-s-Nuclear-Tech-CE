@@ -1,10 +1,10 @@
 package com.hbm.blocks.generic;
 
 import com.google.common.collect.ImmutableMap;
+import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.items.IDynamicModels;
-import com.hbm.lib.RefStrings;
 import com.hbm.potion.HbmPotion;
 import com.hbm.render.block.BlockBakeFrame;
 import com.hbm.render.extended_blockstate.PropertyRandomVariant;
@@ -54,9 +54,9 @@ import static com.hbm.render.block.BlockBakeFrame.ROOT_PATH;
 public class BlockSellafield extends BlockMeta implements IDynamicModels {
 
     public static final IUnlistedProperty<Integer> VARIANT = new PropertyRandomVariant(sellafieldTextures.length);
-    public final static int LEVELS = 5;
-    public static final float rad = 2f;
-    public static final int[][] colors = new int[][]{
+    private static final short LEVELS = 6;
+    private static final float rad = 0.5f;
+    private static final int[][] colors = new int[][]{
             {0x4C7939, 0x41463F},
             {0x418223, 0x3E443B},
             {0x338C0E, 0x3B5431},
@@ -67,8 +67,9 @@ public class BlockSellafield extends BlockMeta implements IDynamicModels {
 
 
     public BlockSellafield(Material mat, SoundType type, String s) {
-        super(mat, type, s, (short) LEVELS);
+        super(mat, type, s, LEVELS);
         this.showMetaInCreative = true;
+        this.needsRandomTick = true;
     }
 
     @Override
@@ -80,9 +81,6 @@ public class BlockSellafield extends BlockMeta implements IDynamicModels {
     @Override
     public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
         super.onBlockAdded(worldIn, pos, state);
-        if (!worldIn.isRemote) {
-            worldIn.scheduleUpdate(pos, this, 5 + worldIn.rand.nextInt(20));
-        }
     }
 
     @Override
@@ -95,13 +93,14 @@ public class BlockSellafield extends BlockMeta implements IDynamicModels {
     @Override
     public void onEntityWalk(World worldIn, BlockPos pos, Entity entityIn) {
         int level = worldIn.getBlockState(pos).getValue(META);
-        if (entityIn instanceof EntityLivingBase) {
-            ((EntityLivingBase) entityIn).addPotionEffect(new PotionEffect(HbmPotion.radiation, 30 * 20, level < 5 ? level : level * 2));
+        if (entityIn instanceof EntityLivingBase livingBase) {
+            livingBase.addPotionEffect(new PotionEffect(HbmPotion.radiation, 30 * 20, level < 5 ? level : level * 2));
             if (level >= 3)
                 entityIn.setFire(level);
         }
     }
 
+    @Override
     public void updateTick(World world, BlockPos pos, IBlockState state, Random rand) {
         if (world.isRemote) return;
         IBlockState currentState = world.getBlockState(pos);
@@ -111,22 +110,20 @@ public class BlockSellafield extends BlockMeta implements IDynamicModels {
 
         if (rand.nextInt(level == 0 ? 25 : 15) == 0) {
             if (level > 0)
-                world.setBlockState(pos, ModBlocks.sellafield.getDefaultState().withProperty(META, level - 1));
+                world.setBlockState(pos, ModBlocks.sellafield.getDefaultState().withProperty(META, level - 1), 2);
             else
                 world.setBlockState(pos, ModBlocks.sellafield_slaked.getDefaultState(), 3);
-        } else {
-            world.scheduleUpdate(pos, this, 5 + world.rand.nextInt(20));
         }
     }
 
 
     @SideOnly(Side.CLIENT)
     public void registerSprite(TextureMap map) {
-        for (int level = 0; level <= LEVELS; level++) {
+        for (int level = 0; level < LEVELS; level++) {
             int[] tint = colors[level];
 
             for (BlockBakeFrame texture : sellafieldTextures) {
-                ResourceLocation spriteLoc = new ResourceLocation(RefStrings.MODID, ROOT_PATH + texture.textureArray[0] + "-" + level);
+                ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, ROOT_PATH + texture.textureArray[0] + "-" + level);
                 TextureAtlasSpriteMutatable mutatedTexture = new TextureAtlasSpriteMutatable(spriteLoc.toString(), new RGBMutatorInterpolatedComponentRemap(0x858384, 0x434343, tint[0], tint[1]));
                 map.setTextureEntry(mutatedTexture);
             }
@@ -136,12 +133,12 @@ public class BlockSellafield extends BlockMeta implements IDynamicModels {
 
     @SideOnly(Side.CLIENT)
     public void bakeModel(ModelBakeEvent event) {
-        for (int level = 0; level <= LEVELS; level++) {
+        for (int level = 0; level < LEVELS; level++) {
             var models = new IBakedModel[4];
             for (int variant = 0; variant < 4; variant++) {
                 IModel baseModel = ModelLoaderRegistry.getModelOrMissing(new ResourceLocation(sellafieldTextures[0].getBaseModel()));
                 ImmutableMap.Builder<String, String> textureMap = ImmutableMap.builder();
-                textureMap.put("all", new ResourceLocation(RefStrings.MODID, ROOT_PATH) + sellafieldTextures[variant].textureArray[0] + "-" + level);
+                textureMap.put("all", new ResourceLocation(Tags.MODID, ROOT_PATH) + sellafieldTextures[variant].textureArray[0] + "-" + level);
 
                 IModel retexturedModel = baseModel.retexture(textureMap.build());
                 IBakedModel bakedModel = retexturedModel.bake(

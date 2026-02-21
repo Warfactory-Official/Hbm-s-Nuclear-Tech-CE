@@ -17,6 +17,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 // Th3_Sl1ze: so, since ModEntityFX is non-existent and all related classes are either deleted or moved to inherit Particle,
 // which is a client-side class, I have to make this goofy packet.
 // Hopefully no one's going to kill me after this..
+// mlbv: this is a severe security risk...
 public class ModFXCollidePacket implements IMessage {
 
     public enum Action {
@@ -25,7 +26,9 @@ public class ModFXCollidePacket implements IMessage {
         CONVERT_RADIOREC,
         EXPLOSION_PC,
         EXPLOSION_POISON,
-        EXPLOSION_C
+        EXPLOSION_C;
+
+        public static final Action[] VALUES = values();
     }
 
     private Action action;
@@ -67,7 +70,7 @@ public class ModFXCollidePacket implements IMessage {
 
     @Override
     public void fromBytes(ByteBuf buf) {
-        this.action = Action.values()[buf.readByte()];
+        this.action = Action.VALUES[buf.readByte()];
         this.pos = BlockPos.fromLong(buf.readLong());
         if (buf.readBoolean()) {
             this.extra = BlockPos.fromLong(buf.readLong());

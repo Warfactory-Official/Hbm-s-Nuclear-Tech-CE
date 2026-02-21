@@ -1,11 +1,12 @@
 package com.hbm.inventory.container;
 
-import com.hbm.api.energymk2.IBatteryItem;
-import com.hbm.inventory.SlotBattery;
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineCombustionEngine;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -23,7 +24,7 @@ public class ContainerCombustionEngine extends Container {
     this.engine = tile;
 
     this.addSlotToContainer(new SlotItemHandler(tile.inventory, 0, 17, 17));
-    this.addSlotToContainer(new SlotTakeOnly(tile.inventory, 1, 17, 53));
+    this.addSlotToContainer(SlotFiltered.takeOnly(tile.inventory, 1, 17, 53));
     this.addSlotToContainer(new SlotItemHandler(tile.inventory, 2, 88, 71));
     this.addSlotToContainer(new SlotBattery(tile.inventory, 3, 143, 71));
     this.addSlotToContainer(new SlotItemHandler(tile.inventory, 4, 35, 71));
@@ -39,48 +40,17 @@ public class ContainerCombustionEngine extends Container {
     }
   }
 
+  private static boolean isNormal(ItemStack stack) {
+      return !Library.isChargeableBattery(stack) && !(stack.getItem() instanceof IItemFluidIdentifier) && stack.getItem() != ModItems.piston_set;
+  }
+
   @Override
   public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-    ItemStack rStack = ItemStack.EMPTY;
-    Slot slot = this.inventorySlots.get(index);
-
-    if (slot != null && slot.getHasStack()) {
-      ItemStack stack = slot.getStack();
-      rStack = stack.copy();
-
-      if (index <= 4) {
-        if (!this.mergeItemStack(stack, 5, this.inventorySlots.size(), true)) {
-          return ItemStack.EMPTY;
-        }
-      } else {
-
-        if (rStack.getItem() instanceof IBatteryItem) {
-          if (!this.mergeItemStack(stack, 3, 4, false)) {
-            return ItemStack.EMPTY;
-          }
-        } else if (rStack.getItem() instanceof IItemFluidIdentifier) {
-          if (!this.mergeItemStack(stack, 4, 5, false)) {
-            return ItemStack.EMPTY;
-          }
-        } else if (rStack.getItem() == ModItems.piston_set) {
-          if (!this.mergeItemStack(stack, 2, 3, false)) {
-            return ItemStack.EMPTY;
-          }
-        } else {
-          if (!this.mergeItemStack(stack, 0, 1, false)) {
-            return ItemStack.EMPTY;
-          }
-        }
-      }
-
-      if (stack.isEmpty()) {
-        slot.putStack(ItemStack.EMPTY);
-      } else {
-        slot.onSlotChanged();
-      }
-    }
-
-    return rStack;
+    return InventoryUtil.transferStack(this.inventorySlots, index, 5,
+            ContainerCombustionEngine::isNormal, 2,
+            s -> s.getItem() == ModItems.piston_set, 3,
+            Library::isChargeableBattery, 4,
+            s -> s.getItem() instanceof IItemFluidIdentifier, 5);
   }
 
   @Override

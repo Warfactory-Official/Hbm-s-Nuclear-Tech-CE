@@ -1,9 +1,9 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.config.BombConfig;
 import com.hbm.inventory.container.ContainerNukeMike;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.bomb.TileEntityNukeMike;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
@@ -14,7 +14,7 @@ import net.minecraft.client.renderer.GlStateManager;
 
 public class GUINukeMike extends GuiInfoContainer {
 	
-	private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/ivyMikeSchematic.png");
+	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/ivyMikeSchematic.png");
 	private TileEntityNukeMike testNuke;
 	
 	public GUINukeMike(InventoryPlayer invPlayer, TileEntityNukeMike tedf) {

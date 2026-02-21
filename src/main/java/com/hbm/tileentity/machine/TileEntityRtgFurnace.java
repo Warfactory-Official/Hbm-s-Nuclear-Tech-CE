@@ -6,6 +6,7 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.container.ContainerRtgFurnace;
 import com.hbm.inventory.gui.GUIRtgFurnace;
 import com.hbm.items.machine.ItemRTGPellet;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.RTGUtil;
@@ -53,8 +54,9 @@ public class TileEntityRtgFurnace extends TileEntityMachineBase implements ITick
 		}
 	}
 
+	@Override
 	public boolean isLoaded() {
-		return RTGUtil.hasHeat(this.inventory);
+		return super.isLoaded() && RTGUtil.hasHeat(this.inventory);
 	}
 	
 	@Override
@@ -227,9 +229,7 @@ public class TileEntityRtgFurnace extends TileEntityMachineBase implements ITick
 
 	@Override
 	public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
-		boolean isSwapBetweenVariants = (oldState.getBlock() == ModBlocks.machine_rtg_furnace_off && newState.getBlock() == ModBlocks.machine_rtg_furnace_on) ||
-				(oldState.getBlock() == ModBlocks.machine_rtg_furnace_on  && newState.getBlock() == ModBlocks.machine_rtg_furnace_off);
-		if (isSwapBetweenVariants) return false;
+		if (Library.isSwappingBetweenVariants(oldState, newState, ModBlocks.machine_rtg_furnace_off, ModBlocks.machine_rtg_furnace_on)) return false;
 		return super.shouldRefresh(world, pos, oldState, newState);
 	}
 }

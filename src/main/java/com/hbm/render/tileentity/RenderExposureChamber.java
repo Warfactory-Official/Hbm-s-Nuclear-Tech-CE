@@ -4,7 +4,6 @@ import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.util.BeamPronter;
 import com.hbm.render.util.BeamPronter.EnumBeamType;
@@ -14,6 +13,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.item.Item;
+import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11;
 
 import java.util.Random;
@@ -73,38 +73,38 @@ public class RenderExposureChamber extends TileEntitySpecialRenderer<TileEntityM
             if (rand.nextInt(chance) == 0) {
                 GlStateManager.pushMatrix();
                 GlStateManager.translate(0, 3.675, -7.5);
-                BeamPronter.prontBeam(Vec3.createVectorHelper(0, 0, 5), EnumWaveType.RANDOM, EnumBeamType.LINE, color, 0xffffff,
+                BeamPronter.prontBeam(new Vec3d(0, 0, 5), EnumWaveType.RANDOM, EnumBeamType.LINE, color, 0xffffff,
                         (int) (System.currentTimeMillis() % 1000) / 50, 15, 0.125F, 1, 0);
                 GlStateManager.popMatrix();
             }
             if (rand.nextInt(chance) == 0) {
                 GlStateManager.pushMatrix();
                 GlStateManager.translate(1.1875, 2.5, -7.5);
-                BeamPronter.prontBeam(Vec3.createVectorHelper(0, 0, 5), EnumWaveType.RANDOM, EnumBeamType.LINE, color, 0xffffff,
+                BeamPronter.prontBeam(new Vec3d(0, 0, 5), EnumWaveType.RANDOM, EnumBeamType.LINE, color, 0xffffff,
                         (int) (System.currentTimeMillis() % 1000) / 50, 15, 0.125F, 1, 0);
                 GlStateManager.popMatrix();
             }
             if (rand.nextInt(chance) == 0) {
                 GlStateManager.pushMatrix();
                 GlStateManager.translate(-1.1875, 2.5, -7.5);
-                BeamPronter.prontBeam(Vec3.createVectorHelper(0, 0, 5), EnumWaveType.RANDOM, EnumBeamType.LINE, color, 0xffffff,
+                BeamPronter.prontBeam(new Vec3d(0, 0, 5), EnumWaveType.RANDOM, EnumBeamType.LINE, color, 0xffffff,
                         (int) (System.currentTimeMillis() % 1000) / 50, 15, 0.125F, 1, 0);
                 GlStateManager.popMatrix();
             }
 
             GlStateManager.pushMatrix();
             GlStateManager.translate(0, 1.75, 0);
-            BeamPronter.prontBeam(Vec3.createVectorHelper(0, 1.5, 0), EnumWaveType.RANDOM, EnumBeamType.LINE, 0x80d0ff, 0xffffff,
+            BeamPronter.prontBeam(new Vec3d(0, 1.5, 0), EnumWaveType.RANDOM, EnumBeamType.LINE, 0x80d0ff, 0xffffff,
                     (int) (System.currentTimeMillis() % 1000) / 50, 10, 0.125F, 1, 0);
-            BeamPronter.prontBeam(Vec3.createVectorHelper(0, 1.5, 0), EnumWaveType.RANDOM, EnumBeamType.LINE, 0x8080ff, 0xffffff,
+            BeamPronter.prontBeam(new Vec3d(0, 1.5, 0), EnumWaveType.RANDOM, EnumBeamType.LINE, 0x8080ff, 0xffffff,
                     (int) (System.currentTimeMillis() + 5 % 1000) / 50, 10, 0.125F, 1, 0);
             GlStateManager.popMatrix();
 
             GlStateManager.pushMatrix();
             GlStateManager.translate(0, 2.5, 0);
-            BeamPronter.prontBeam(Vec3.createVectorHelper(0, 0, -1), EnumWaveType.SPIRAL, EnumBeamType.LINE, 0xffff80, 0xffffff,
+            BeamPronter.prontBeam(new Vec3d(0, 0, -1), EnumWaveType.SPIRAL, EnumBeamType.LINE, 0xffff80, 0xffffff,
                     (int) (System.currentTimeMillis() % 360), 15, 0.125F, 1, 0);
-            BeamPronter.prontBeam(Vec3.createVectorHelper(0, 0, -1), EnumWaveType.SPIRAL, EnumBeamType.LINE, 0xff8080, 0xffffff,
+            BeamPronter.prontBeam(new Vec3d(0, 0, -1), EnumWaveType.SPIRAL, EnumBeamType.LINE, 0xff8080, 0xffffff,
                     (int) (System.currentTimeMillis() % 360) + 180, 15, 0.125F, 1, 0);
             GlStateManager.popMatrix();
 

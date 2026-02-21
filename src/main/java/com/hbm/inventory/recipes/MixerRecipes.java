@@ -30,7 +30,7 @@ import static com.hbm.inventory.OreDictManager.*;
 
 public class MixerRecipes extends SerializableRecipe {
 
-	public static HashMap<FluidType, MixerRecipe[]> recipes = new HashMap();
+	public static HashMap<FluidType, MixerRecipe[]> recipes = new HashMap<>();
 
 	@Override
 	public void registerDefaults() {
@@ -143,9 +143,9 @@ public class MixerRecipes extends SerializableRecipe {
 			JsonObject sub = recipeArray.get(i).getAsJsonObject();
 			MixerRecipe mix = new MixerRecipe(sub.get("outputAmount").getAsInt(), sub.get("duration").getAsInt());
 
-			if(sub.has("input1")) mix.setStack1(this.readFluidStack(sub.get("input1").getAsJsonArray()));
-			if(sub.has("input2")) mix.setStack2(this.readFluidStack(sub.get("input2").getAsJsonArray()));
-			if(sub.has("solidInput")) mix.setSolid(this.readAStack(sub.get("solidInput").getAsJsonArray()));
+			if(sub.has("input1")) mix.setStack1(readFluidStack(sub.get("input1").getAsJsonArray()));
+			if(sub.has("input2")) mix.setStack2(readFluidStack(sub.get("input2").getAsJsonArray()));
+			if(sub.has("solidInput")) mix.setSolid(readAStack(sub.get("solidInput").getAsJsonArray()));
 
 			array[i] = mix;
 
@@ -167,9 +167,9 @@ public class MixerRecipes extends SerializableRecipe {
 			writer.name("duration").value(mix.processTime);
 			writer.name("outputAmount").value(mix.output);
 
-			if(mix.input1 != null) { writer.name("input1"); this.writeFluidStack(mix.input1, writer); }
-			if(mix.input2 != null) { writer.name("input2"); this.writeFluidStack(mix.input2, writer); }
-			if(mix.solidInput != null) { writer.name("solidInput"); this.writeAStack(mix.solidInput, writer); }
+			if(mix.input1 != null) { writer.name("input1"); writeFluidStack(mix.input1, writer); }
+			if(mix.input2 != null) { writer.name("input2"); writeFluidStack(mix.input2, writer); }
+			if(mix.solidInput != null) { writer.name("solidInput"); writeAStack(mix.solidInput, writer); }
 			writer.endObject();
 		}
 		writer.endArray();
@@ -187,7 +187,7 @@ public class MixerRecipes extends SerializableRecipe {
 			for(MixerRecipe recipe : recs) {
 				FluidStack output = new FluidStack(type, recipe.output);
 
-				List<Object> objects = new ArrayList();
+				List<Object> objects = new ArrayList<>();
 				if(recipe.input1 != null) objects.add(ItemFluidIcon.make(recipe.input1));
 				if(recipe.input2 != null) objects.add(ItemFluidIcon.make(recipe.input2));
 				if(recipe.solidInput != null) objects.add(recipe.solidInput);
@@ -206,13 +206,13 @@ public class MixerRecipes extends SerializableRecipe {
 		public int processTime;
 		public int output;
 
-		protected MixerRecipe(int output, int processTime) {
+		public MixerRecipe(int output, int processTime) {
 			this.output = output;
 			this.processTime = processTime;
 		}
 
-		protected MixerRecipe setStack1(FluidStack stack) { input1 = stack; return this; }
-		protected MixerRecipe setStack2(FluidStack stack) { input2 = stack; return this; }
-		protected MixerRecipe setSolid(AStack stack) { solidInput = stack; return this; }
+		public MixerRecipe setStack1(FluidStack stack) { input1 = stack; return this; }
+		public MixerRecipe setStack2(FluidStack stack) { input2 = stack; return this; }
+		public MixerRecipe setSolid(AStack stack) { solidInput = stack; return this; }
 	}
 }

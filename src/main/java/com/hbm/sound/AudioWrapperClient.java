@@ -75,6 +75,8 @@ public class AudioWrapperClient extends AudioWrapper {
 
 	@Override
 	public boolean isPlaying() {
-		return sound.isPlaying();
+		if(sound != null)
+			return sound.isPlaying();
+		return false;
 	}
 }

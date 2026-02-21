@@ -157,7 +157,7 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase 
 
   private int maxProcessable() {
     ItemMold.Mold mold = this.getInstalledMold();
-    if (type == null || mold == null || mold.getOutput(type) == null) {
+    if (type == null || mold == null || mold.getOutput(type).isEmpty()) {
       return 0;
     }
 
@@ -407,19 +407,6 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase 
               pos.getZ() + 7);
     }
     return bb;
-  }
-
-  public boolean isLoaded = true;
-
-  @Override
-  public boolean isLoaded() {
-    return isLoaded;
-  }
-
-  @Override
-  public void onChunkUnload() {
-    super.onChunkUnload();
-    this.isLoaded = false;
   }
 
   @Override

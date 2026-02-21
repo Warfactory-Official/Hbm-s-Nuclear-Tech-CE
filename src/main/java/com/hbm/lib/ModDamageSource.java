@@ -9,7 +9,7 @@ public class ModDamageSource extends DamageSource {
     public static DamageSource nuclearBlast = (new DamageSource("nuclearBlast")).setExplosion();
     public static DamageSource blast = (new DamageSource("blast")).setExplosion();
     public static DamageSource mudPoisoning = (new DamageSource("mudPoisoning")).setDamageBypassesArmor();
-    public static DamageSource acid = (new DamageSource("acid")).setDamageBypassesArmor();
+    public static DamageSource acid = (new DamageSource("acid"));//.setDamageBypassesArmor();
     public static DamageSource euthanizedSelf = (new DamageSource("euthanizedSelf")).setDamageBypassesArmor();
     public static DamageSource euthanizedSelf2 = (new DamageSource("euthanizedSelf2")).setDamageBypassesArmor();
     public static DamageSource tauBlast = (new DamageSource("tauBlast")).setDamageBypassesArmor().setDamageIsAbsolute();
@@ -52,7 +52,18 @@ public class ModDamageSource extends DamageSource {
     public static DamageSource nitan = (new DamageSource("nitan")).setDamageIsAbsolute().setDamageBypassesArmor().setDamageAllowedInCreativeMode();
 
     public static final String s_bullet = "revolverBullet";
+    public static final String s_emplacer = "chopperBullet";
+    public static final String s_tau = "tau";
+    public static final String s_combineball = "cmb";
     public static final String s_zomg_prefix = "subAtomic";
+    public static final String s_euthanized = "euthanized";
+    public static final String s_emp = "electrified";
+    public static final String s_flamethrower = "flamethrower";
+    public static final String s_immolator = "plasma";
+    public static final String s_cryolator = "ice";
+    public static final String s_laser = "laser";
+    public static final String s_boil = "boil";
+    public static final String s_acid = "acidPlayer";
 	
 	public ModDamageSource(String p_i1566_1_) {
 		super(p_i1566_1_);

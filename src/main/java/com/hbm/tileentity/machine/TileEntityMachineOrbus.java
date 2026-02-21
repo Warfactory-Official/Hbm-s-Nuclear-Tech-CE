@@ -4,6 +4,7 @@ import com.hbm.blocks.BlockDummyable;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -64,6 +65,11 @@ public class TileEntityMachineOrbus extends TileEntityBarrel {
 		}
 		return bb;
 	}
+
+    @Override
+    public int[] getAccessibleSlotsFromSide(EnumFacing e) {
+        return null;
+    }
 	
 	@Override
 	@SideOnly(Side.CLIENT)

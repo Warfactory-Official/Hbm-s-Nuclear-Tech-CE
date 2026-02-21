@@ -48,7 +48,7 @@ public class BlockHadronDiode extends BlockContainer implements IToolable {
 			TileEntityHadronDiode diode = (TileEntityHadronDiode) world.getTileEntity(new BlockPos(x, y, z));
 			int config = diode.getConfig(side.ordinal()).ordinal();
 			config += 1;
-			config %= DiodeConfig.values().length;
+			config %= DiodeConfig.VALUES.length;
 			diode.setConfig(side.ordinal(), config);
 			resetBlockState(world, new BlockPos(x, y, z));
 		}

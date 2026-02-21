@@ -15,9 +15,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.init.MobEffects;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundCategory;
@@ -192,7 +194,7 @@ public class BlockHazard extends BlockBase {
     public void onPlayerDestroy(World world, BlockPos pos, IBlockState state) {
         if (this == ModBlocks.block_meteor_molten) {
             if (!world.isRemote)
-                world.setBlockState(pos, Blocks.LAVA.getDefaultState());
+                world.setBlockState(pos, Blocks.FLOWING_LAVA.getDefaultState());
         }
     }
 
@@ -203,15 +205,33 @@ public class BlockHazard extends BlockBase {
         FLAMES,
         LAVAPOP
     }
-
+    // why alc, why and how do you manage to break or distort EVERYTHING you touch in this mod...
     @Override
     public void onEntityWalk(World worldIn, BlockPos pos, Entity entity) {
         if (!(entity instanceof EntityLivingBase)) return;
 
         HazardSystem.applyHazards(this, (EntityLivingBase)entity);
-        if (this == ModBlocks.brick_jungle_mystic) {
+        if(this == ModBlocks.frozen_dirt) {
+            ((EntityLivingBase) entity).addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 2 * 60 * 20, 2));
+        }
+        if(this == ModBlocks.block_trinitite) {
+            ((EntityLivingBase) entity).addPotionEffect(new PotionEffect(HbmPotion.radiation, 30 * 20, 2));
+        }
+        if(this == ModBlocks.block_waste) {
+            ((EntityLivingBase) entity).addPotionEffect(new PotionEffect(HbmPotion.radiation, 30 * 20, 2));
+        }
+        if((this == ModBlocks.waste_trinitite || this == ModBlocks.waste_trinitite_red)) {
+            ((EntityLivingBase) entity).addPotionEffect(new PotionEffect(HbmPotion.radiation, 30 * 20, 0));
+        }
+        if(this == ModBlocks.brick_jungle_ooze) {
+            ((EntityLivingBase) entity).addPotionEffect(new PotionEffect(HbmPotion.radiation, 15 * 20, 9));
+        }
+        if(this == ModBlocks.brick_jungle_mystic) {
             ((EntityLivingBase) entity).addPotionEffect(new PotionEffect(HbmPotion.taint, 15 * 20, 2));
         }
+
+        if(this == ModBlocks.block_meteor_molten)
+            entity.setFire(5);
     }
 
     @Override

@@ -72,7 +72,7 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
     protected DelegateAssemblyFactoy delegate = new DelegateAssemblyFactoy();
 
     public TileEntityMachineAssemblyFactory() {
-        super(60);
+        super(60, true, true);
 
         animations = new AssemfacArm[2];
         for(int i = 0; i < animations.length; i++) animations[i] = new AssemfacArm(i);
@@ -129,6 +129,18 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
     @Override
     public String getDefaultName() {
         return "container.machineAssemblyFactory";
+    }
+
+    public DirPos[] getIOPos() {
+        ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
+        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+
+        return new DirPos[] {
+                new DirPos(getPos().getX() + dir.offsetX + rot.offsetX * 3, getPos().getY(), getPos().getZ() + dir.offsetZ + rot.offsetZ * 3, rot),
+                new DirPos(getPos().getX() - dir.offsetX + rot.offsetX * 3, getPos().getY(), getPos().getZ() - dir.offsetZ + rot.offsetZ * 3, rot),
+                new DirPos(getPos().getX() + dir.offsetX - rot.offsetX * 3, getPos().getY(), getPos().getZ() + dir.offsetZ - rot.offsetZ * 3, rot.getOpposite()),
+                new DirPos(getPos().getX() - dir.offsetX - rot.offsetX * 3, getPos().getY(), getPos().getZ() - dir.offsetZ - rot.offsetZ * 3, rot.getOpposite()),
+        };
     }
 
     @Override
@@ -221,6 +233,7 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
     }
 
     @Override public void onChunkUnload() {
+        super.onChunkUnload();
         if(audio != null) { audio.stopSound(); audio = null; }
     }
 

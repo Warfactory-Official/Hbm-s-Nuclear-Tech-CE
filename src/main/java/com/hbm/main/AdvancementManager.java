@@ -1,12 +1,14 @@
 package com.hbm.main;
 
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
+
+import java.util.Objects;
 
 public class AdvancementManager {
 
@@ -75,92 +77,94 @@ public class AdvancementManager {
     public static Advancement achFusion;
     public static Advancement achMeltdown;
 
-    public static Advancement achDriveFail;
     public static Advancement progress_dfc;
-    public static Advancement progress_rbmk_boom;
     public static Advancement root;
+
+    private static Advancement load(net.minecraft.advancements.AdvancementManager adv, String path) {
+        ResourceLocation id = new ResourceLocation(Tags.MODID, path);
+        return Objects.requireNonNull(adv.getAdvancement(id), "Missing advancement: " + id);
+    }
 
     public static void init(MinecraftServer serv) {
         net.minecraft.advancements.AdvancementManager adv = serv.getAdvancementManager();
 
-        achSacrifice   = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achsacrifice"));
-        achImpossible  = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achimpossible"));
-        achTOB         = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achtob"));
-        achGoFish      = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achgofish"));
-        achPotato      = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achpotato"));
-        achC20_5       = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achc20_5"));
-        achFiend       = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achfiend"));
-        achFiend2      = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achfiend2"));
-        achStratum     = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achstratum"));
-        achOmega12     = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achomega12"));
+        achSacrifice  = load(adv, "achsacrifice");
+        achImpossible = load(adv, "achimpossible");
+        achTOB        = load(adv, "achtob");
+        achGoFish     = load(adv, "achgofish");
+        achPotato     = load(adv, "achpotato");
+        achC20_5      = load(adv, "achc20_5");
+        achFiend      = load(adv, "achfiend");
+        achFiend2     = load(adv, "achfiend2");
+        achStratum    = load(adv, "achstratum");
+        achOmega12    = load(adv, "achomega12");
 
-//        achNo9         = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achno9")); //TODO
-        achSlimeball   = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achslimeball"));
-        achSulfuric    = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achsulfuric"));
-        achInferno     = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achinferno"));
-        achRedRoom     = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achredroom")); //TODO: implement keyhole
+        achNo9        = load(adv, "achno9");
+        achSlimeball  = load(adv, "achslimeball");
+        achSulfuric   = load(adv, "achsulfuric");
+        achInferno    = load(adv, "achinferno");
+        achRedRoom    = load(adv, "achredroom");
 
-        bobHidden      = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "bobhidden"));
+        bobHidden     = load(adv, "bobhidden");
 
-        horizonsStart  = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "horizonsstart"));
-        horizonsEnd    = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "horizonsend"));
-        horizonsBonus  = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "horizonsbonus"));
+        horizonsStart = load(adv, "horizonsstart");
+        horizonsEnd   = load(adv, "horizonsend");
+        horizonsBonus = load(adv, "horizonsbonus");
 
-        bossCreeper    = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "bosscreeper"));
-        bossMeltdown   = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "bossmeltdown")); //TODO
-        bossMaskman    = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "bossmaskman"));
-        bossWorm       = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "bossworm"));
-        bossUFO        = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "bossufo"));
+        bossCreeper   = load(adv, "bosscreeper");
+        bossMeltdown  = load(adv, "bossmeltdown");
+        bossMaskman   = load(adv, "bossmaskman");
+        bossWorm      = load(adv, "bossworm");
+        bossUFO       = load(adv, "bossufo");
 
-        achRadPoison   = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achradpoison"));
-        achRadDeath    = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achraddeath"));
+        achRadPoison  = load(adv, "achradpoison");
+        achRadDeath   = load(adv, "achraddeath");
 
-        achSomeWounds  = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achsomewounds"));
+        achSomeWounds = load(adv, "achsomewounds");
 
-        digammaSee       = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "digammasee"));
-        digammaFeel      = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "digammafeel"));
-        digammaKnow      = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "digammaknow"));
-        digammaKauaiMoho = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "digammakauaimoho"));
-        digammaUpOnTop   = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "digammaupontop"));
+        digammaSee       = load(adv, "digammasee");
+        digammaFeel      = load(adv, "digammafeel");
+        digammaKnow      = load(adv, "digammaknow");
+        digammaKauaiMoho = load(adv, "digammakauaimoho");
+        digammaUpOnTop   = load(adv, "digammaupontop");
 
         // Progression
-        achBurnerPress  = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achburnerpress"));
-        achBlastFurnace = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achblastfurnace"));
-        achAssembly     = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achassembly"));
-        achSelenium     = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achselenium"));
-        achChemplant    = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achchemplant"));
-        achConcrete     = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achconcrete"));
-        achPolymer      = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achpolymer"));
-        achDesh         = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achdesh"));
-        achTantalum     = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achtantalum"));
-        achGasCent      = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achgascent"));
-        achCentrifuge   = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achcentrifuge"));
-        achFOEQ         = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achfoeq"));
-        achSoyuz        = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achsoyuz"));
-        achSpace        = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achspace"));
-        achSchrab       = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achschrab"));
-        achAcidizer     = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achacidizer"));
-        achRadium       = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achradium"));
-        achTechnetium   = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achtechnetium"));
-        achZIRNOXBoom   = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achzirnoxboom"));
-        achChicagoPile  = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achchicagopile"));
-        achSILEX        = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achsilex"));
-        achWatz         = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achwatz"));
-        achWatzBoom     = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achwatzboom"));
-        achRBMK         = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achrbmk"));
-        achRBMKBoom     = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achrbmkboom"));
-        achBismuth      = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achbismuth"));
-        achBreeding     = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achbreeding"));
-        achFusion       = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achfusion"));
-        achMeltdown     = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achmeltdown"));
-        achRedBalloons  = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achredballoons"));
-        achManhattan    = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achmanhattan"));
+        achBurnerPress  = load(adv, "achburnerpress");
+        achBlastFurnace = load(adv, "achblastfurnace");
+        achAssembly     = load(adv, "achassembly");
+        achSelenium     = load(adv, "achselenium");
+        achChemplant    = load(adv, "achchemplant");
+        achConcrete     = load(adv, "achconcrete");
+        achPolymer      = load(adv, "achpolymer");
+        achDesh         = load(adv, "achdesh");
+        achTantalum     = load(adv, "achtantalum");
+        achGasCent      = load(adv, "achgascent");
+        achCentrifuge   = load(adv, "achcentrifuge");
+        achFOEQ         = load(adv, "achfoeq");
+        achSoyuz        = load(adv, "achsoyuz");
+        achSpace        = load(adv, "achspace");
+        achSchrab       = load(adv, "achschrab");
+        achAcidizer     = load(adv, "achacidizer");
+        achRadium       = load(adv, "achradium");
+        achTechnetium   = load(adv, "achtechnetium");
+        achZIRNOXBoom   = load(adv, "achzirnoxboom");
+        achChicagoPile  = load(adv, "achchicagopile");
+        achSILEX        = load(adv, "achsilex");
+        achWatz         = load(adv, "achwatz");
+        achWatzBoom     = load(adv, "achwatzboom");
+        achRBMK         = load(adv, "achrbmk");
+        achRBMKBoom     = load(adv, "achrbmkboom");
+        achBismuth      = load(adv, "achbismuth");
+        achBreeding     = load(adv, "achbreeding");
+        achFusion       = load(adv, "achfusion");
+        achMeltdown     = load(adv, "achmeltdown");
+        achRedBalloons  = load(adv, "achredballoons");
+        achManhattan    = load(adv, "achmanhattan");
 
-        achDriveFail      = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "achdrivefail")); // NTM SPACE
-        progress_dfc      = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "progress_dfc")); // 1.12.2 exclusive, kept because why not?
+        progress_dfc = load(adv, "progress_dfc"); // 1.12.2 exclusive, kept because why not?
         // TODO: Maybe add an achievement for SAFE
         // not really, it got removed
-        root              = adv.getAdvancement(new ResourceLocation(RefStrings.MODID, "root")); // 1.12.2 Root advancement
+        root = load(adv, "root"); // 1.12.2 Root advancement
     }
 
     public static void grantAchievement(EntityPlayerMP player, Advancement a) {
@@ -178,14 +182,11 @@ public class AdvancementManager {
         if (player instanceof EntityPlayerMP) grantAchievement((EntityPlayerMP) player, a);
     }
 
-    public static boolean hasAdvancement(EntityPlayer player, Advancement a) {
+    public static boolean hasAdvancement(EntityPlayerMP playerMP, Advancement a) {
         if (a == null) {
             MainRegistry.logger.log(Level.ERROR, "Failed to test null advancement! This should never happen.");
             return false;
         }
-        if (player instanceof EntityPlayerMP) {
-            return ((EntityPlayerMP) player).getAdvancements().getProgress(a).isDone();
-        }
-        return false;
+        return playerMP.getAdvancements().getProgress(a).isDone();
     }
 }

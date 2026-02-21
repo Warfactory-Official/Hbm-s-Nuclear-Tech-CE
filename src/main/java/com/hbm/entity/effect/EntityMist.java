@@ -2,6 +2,7 @@ package com.hbm.entity.effect;
 
 
 import com.hbm.capability.HbmLivingProps;
+import com.hbm.entity.mob.glyphid.EntityGlyphid;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.interfaces.AutoRegister;
@@ -30,6 +31,7 @@ import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -164,17 +166,15 @@ public class EntityMist extends Entity {
         EntityLivingBase living = entity instanceof EntityLivingBase ? (EntityLivingBase) entity : null;
 
         if (type.temperature >= 100) {
-            //TODO
-//            EntityDamageUtil.attackEntityFromIgnoreIFrame(e, new DamageSource(ModDamageSource.s_boil), 0.2F + (type.temperature - 100) * 0.02F);
-//
-//            if(type.temperature >= 500) {
-//                e.setFire(10); //afterburn for 10 seconds
-//            }
+            EntityDamageUtil.attackEntityFromIgnoreIFrame(entity, new DamageSource(ModDamageSource.s_boil), 0.2F + (type.temperature - 100) * 0.02F);
+
+            if(type.temperature >= 500) {
+                entity.setFire(10); //afterburn for 10 seconds
+            }
         }
         if (type.temperature < -20) {
             if (living != null) { //only living things are affected
-                //TODO: propably add that and use hazard cold
-                //EntityDamageUtil.attackEntityFromIgnoreIFrame(e, new DamageSource(ModDamageSource.s_cryolator), 0.2F + (type.temperature + 20) * -0.05F); //5 damage at -20°C with one extra damage every -20°C
+                EntityDamageUtil.attackEntityFromIgnoreIFrame(entity, new DamageSource(ModDamageSource.s_cryolator), 0.2F + (type.temperature + 20) * -0.05F); //5 damage at -20°C with one extra damage every -20°C
                 living.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 100, 2));
                 living.addPotionEffect(new PotionEffect(MobEffects.MINING_FATIGUE, 100, 4));
             }
@@ -236,25 +236,23 @@ public class EntityMist extends Entity {
             teleportRandomly(living);
         }
 
-        //TODO: implement EntityGlyphid
-//        if(type.hasTrait(FT_Pheromone.class)){
-//
-//            FT_Pheromone pheromone = type.getTrait(FT_Pheromone.class);
-//
-//            if(living != null) {
-//                if ((living instanceof EntityGlyphid && pheromone.getType() == 1) || (living instanceof EntityPlayer && pheromone.getType() == 2)) {
-//                    int mult = pheromone.getType();
-//
-//                    living.addPotionEffect(new PotionEffect(Potion.moveSpeed.id,  mult * 60 * 20, 1));
-//                    living.addPotionEffect(new PotionEffect(Potion.digSpeed.id, mult * 60 * 20, 1));
-//                    living.addPotionEffect(new PotionEffect(Potion.regeneration.id,  mult * 2 * 20, 0));
-//                    living.addPotionEffect(new PotionEffect(Potion.resistance.id,  mult * 60 * 20, 0));
-//                    living.addPotionEffect(new PotionEffect(Potion.damageBoost.id,  mult * 60 * 20, 1));
-//                    living.addPotionEffect(new PotionEffect(Potion.fireResistance.id,  mult * 60 * 20, 0));
-//
-//                }
-//            }
-//        }
+        if(type.hasTrait(FT_Pheromone.class)){
+
+            FT_Pheromone pheromone = type.getTrait(FT_Pheromone.class);
+
+            if(living != null) {
+                if ((living instanceof EntityGlyphid && pheromone.getType() == 1) || (living instanceof EntityPlayer && pheromone.getType() == 2)) {
+                    int mult = pheromone.getType();
+
+                    living.addPotionEffect(new PotionEffect(MobEffects.SPEED,  mult * 60 * 20, 1));
+                    living.addPotionEffect(new PotionEffect(MobEffects.HASTE, mult * 60 * 20, 1));
+                    living.addPotionEffect(new PotionEffect(MobEffects.REGENERATION,  mult * 2 * 20, 0));
+                    living.addPotionEffect(new PotionEffect(MobEffects.RESISTANCE,  mult * 60 * 20, 0));
+                    living.addPotionEffect(new PotionEffect(MobEffects.STRENGTH,  mult * 60 * 20, 1));
+                    living.addPotionEffect(new PotionEffect(MobEffects.FIRE_RESISTANCE,  mult * 60 * 20, 0));
+                }
+            }
+        }
     }
 
     protected boolean isExtinguishing(FluidType type) {

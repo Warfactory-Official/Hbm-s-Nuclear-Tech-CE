@@ -44,6 +44,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -304,7 +305,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
     private boolean hasFuelRod(int id) {
         if (!inventory.getStackInSlot(id).isEmpty()) {
             if (inventory.getStackInSlot(id).getItem() instanceof ItemZirnoxRod) {
-                final EnumZirnoxType num = EnumUtil.grabEnumSafely(EnumZirnoxType.class, inventory.getStackInSlot(id).getItemDamage());
+                final EnumZirnoxType num = EnumUtil.grabEnumSafely(EnumZirnoxType.VALUES, inventory.getStackInSlot(id).getItemDamage());
                 return !num.breeding;
             }
         }
@@ -333,7 +334,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
     private void decay(int id) {
         int decay = getNeighbourCount(id);
         ItemStack zirnoxRodItemStack = inventory.getStackInSlot(id);
-        final EnumZirnoxType num = EnumUtil.grabEnumSafely(EnumZirnoxType.class, zirnoxRodItemStack.getItemDamage());
+        final EnumZirnoxType num = EnumUtil.grabEnumSafely(EnumZirnoxType.VALUES, zirnoxRodItemStack.getItemDamage());
 
         if (!num.breeding)
             decay++;
@@ -409,7 +410,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
         int meta = this.getBlockMetadata();
         for (int ox = -2; ox <= 2; ox++) {
             for (int oz = -2; oz <= 2; oz++) {
-                for (int oy = 2; ox <= 5; ox++) {
+                for (int oy = 2; oy <= 5; oy++) {
                     world.setBlockToAir(pos.add(ox, oy, oz));
                 }
             }
@@ -420,7 +421,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
         MultiblockHandlerXR.fillSpace(world, pos.getX(), pos.getY(), pos.getZ(), dimensions, ModBlocks.zirnox_destroyed, ForgeDirection.getOrientation(meta - BlockDummyable.offset));
 
         world.playSound(null, pos.getX(), pos.getY() + 2, pos.getZ(), HBMSoundHandler.rbmk_explosion, SoundCategory.BLOCKS, 10.0F, 1.0F);
-        world.createExplosion(null, pos.getX(), pos.getY() + 3, pos.getZ(), 6.0F, true);
+        world.createExplosion(null, pos.getX(), pos.getY() + 3, pos.getZ(), 12.0F, true);
         zirnoxDebris();
         ExplosionNukeGeneric.waste(world, pos.getX(), pos.getY(), pos.getZ(), 35);
 
@@ -519,13 +520,13 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
     @Callback(direct = true)
     @Optional.Method(modid = "opencomputers")
     public Object[] getTemp(Context context, Arguments args) {
-        return new Object[]{heat};
+        return new Object[] {Math.round(heat * 1.0E-5D * 780.0D + 20.0D)};
     }
 
     @Callback(direct = true)
     @Optional.Method(modid = "opencomputers")
     public Object[] getPressure(Context context, Arguments args) {
-        return new Object[]{pressure};
+        return new Object[] {Math.round(pressure * 1.0E-5D * 30.0D)};
     }
 
     @Callback(direct = true)
@@ -555,7 +556,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
     @Callback(direct = true)
     @Optional.Method(modid = "opencomputers")
     public Object[] getInfo(Context context, Arguments args) {
-        return new Object[]{heat, pressure, water.getFill(), steam.getFill(), carbonDioxide.getFill(), isOn};
+        return new Object[] {Math.round(heat * 1.0E-5D * 780.0D + 20.0D), Math.round(pressure * 1.0E-5D * 30.0D), water.getFill(), steam.getFill(), carbonDioxide.getFill(), isOn};
     }
 
     @Callback(direct = true, limit = 4)
@@ -565,10 +566,19 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
         return new Object[]{};
     }
 
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] ventCarbonDioxide(Context context, Arguments args) {
+        int ventAmount = MathHelper.clamp(args.optInteger(0, 1000), 0, carbonDioxide.getMaxFill()); // Get how much CO2 to vent in mB (1000mB default), clamp between 0 and carbonDioxide's max fill.
+        int fill = this.carbonDioxide.getFill();
+        this.carbonDioxide.setFill(Math.max(fill - ventAmount, 0)); // Make sure it isn't a negative number.
+        return new Object[] {};
+    }
+
     @Override
     @Optional.Method(modid = "opencomputers")
     public String[] methods() {
-        return new String[]{
+        return new String[] {
                 "getTemp",
                 "getPressure",
                 "getWater",
@@ -576,7 +586,8 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
                 "getCarbonDioxide",
                 "isActive",
                 "getInfo",
-                "setActive"
+                "setActive",
+                "ventCarbonDioxide"
         };
     }
 
@@ -600,6 +611,8 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
                 return getInfo(context, args);
             case ("setActive"):
                 return setActive(context, args);
+            case ("ventCarbonDioxide"):
+                return ventCarbonDioxide(context, args);
         }
         throw new NoSuchMethodException();
     }

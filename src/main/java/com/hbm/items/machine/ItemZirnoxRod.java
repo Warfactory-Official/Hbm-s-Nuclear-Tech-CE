@@ -4,19 +4,19 @@ import com.hbm.items.ItemEnumMulti;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.EnumUtil;
 import com.hbm.util.I18nUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 
 import java.util.Collections;
 import java.util.List;
 
-public class ItemZirnoxRod extends ItemEnumMulti {
+public class ItemZirnoxRod extends ItemEnumMulti<ItemZirnoxRod.EnumZirnoxType> {
 
     public ItemZirnoxRod(String registryName) {
-        super(registryName, EnumZirnoxType.class, true, true);
+        super(registryName, EnumZirnoxType.VALUES, true, true);
         this.setMaxStackSize(1);
         this.canRepair = false;
     }
@@ -64,7 +64,7 @@ public class ItemZirnoxRod extends ItemEnumMulti {
     public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
 
         EnumZirnoxType num = EnumUtil.grabEnumSafely(theEnum, stack.getItemDamage());
-        list.add(ChatFormatting.YELLOW + I18nUtil.resolveKey("trait.rbmk.depletion", ((int) ((((double) getLifeTime(stack)) / (double) num.maxLife) * 100000)) / 1000D + "%"));
+        list.add(TextFormatting.YELLOW + I18nUtil.resolveKey("trait.rbmk.depletion", ((int) ((((double) getLifeTime(stack)) / (double) num.maxLife) * 100000)) / 1000D + "%"));
         String[] loc;
 
         if (num.breeding)
@@ -108,6 +108,8 @@ public class ItemZirnoxRod extends ItemEnumMulti {
         LES_FUEL(150_000, 150),
         LITHIUM_FUEL(20_000, 0, true),
         ZFB_MOX_FUEL(50_000, 35);
+
+        public static final EnumZirnoxType[] VALUES = values();
 
         public final int maxLife;
         public final int heat;

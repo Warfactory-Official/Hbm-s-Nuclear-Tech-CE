@@ -7,5 +7,5 @@ import net.minecraft.nbt.NBTTagCompound;
 import java.util.List;
 
 public interface IPersistentInfoProvider {
-    public void addInformation(ItemStack stack, NBTTagCompound persistentTag, EntityPlayer player, List list, boolean ext);
+    void addInformation(ItemStack stack, NBTTagCompound persistentTag, EntityPlayer player, List<String> list, boolean ext);
 }

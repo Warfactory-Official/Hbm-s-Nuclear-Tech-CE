@@ -1,10 +1,11 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.FluidContainerRegistry;
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.machine.ItemZirnoxRod;
 import com.hbm.tileentity.machine.TileEntityReactorZirnox;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -47,9 +48,9 @@ public class ContainerReactorZirnox extends Container {
 
         // Fluid IO
         this.addSlotToContainer(new SlotItemHandler(te.inventory, 24, 143, 124));
-        this.addSlotToContainer(new SlotTakeOnly(te.inventory, 26, 143, 142));
+        this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 26, 143, 142));
         this.addSlotToContainer(new SlotItemHandler(te.inventory, 25, 179, 124));
-        this.addSlotToContainer(new SlotTakeOnly(te.inventory, 27, 179, 142));
+        this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 27, 179, 142));
 
         for(int i = 0; i < 3; i++) {
             for(int j = 0; j < 9; j++) {
@@ -64,48 +65,11 @@ public class ContainerReactorZirnox extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-
-        ItemStack var3 = ItemStack.EMPTY;
-        Slot slot = (Slot) this.inventorySlots.get(index);
-
-        if(slot != null && slot.getHasStack()) {
-            ItemStack stack = slot.getStack();
-            var3 = stack.copy();
-
-            if(index <= 27) {
-                if(!this.mergeItemStack(stack, 28, this.inventorySlots.size(), true)) {
-                    return ItemStack.EMPTY;
-                }
-            } else {
-
-                if(FluidContainerRegistry.getFluidContent(stack, Fluids.CARBONDIOXIDE) > 0) {
-                    if(!this.mergeItemStack(stack, 24, 26, false))
-                        return ItemStack.EMPTY;
-
-                } else if(FluidContainerRegistry.getFluidContent(stack, Fluids.WATER) > 0) {
-                    if(!this.mergeItemStack(stack, 26, 28, false))
-                        return ItemStack.EMPTY;
-
-                } else {
-
-                    if(stack.getItem() instanceof ItemZirnoxRod) {
-
-                        if(!this.mergeItemStack(stack, 0, 24, true))
-                            return ItemStack.EMPTY;
-                    } else {
-                        return ItemStack.EMPTY;
-                    }
-                }
-            }
-
-            if(stack.getCount() == 0) {
-                slot.putStack(ItemStack.EMPTY);
-            } else {
-                slot.onSlotChanged();
-            }
-        }
-
-        return var3;
+        return InventoryUtil.transferStack(this.inventorySlots, index, 28,
+                s -> s.getItem() instanceof ItemZirnoxRod, 24,
+                s -> FluidContainerRegistry.getFluidContent(s, Fluids.CARBONDIOXIDE) > 0, 26,
+                s -> FluidContainerRegistry.getFluidContent(s, Fluids.WATER) > 0, 28
+        );
     }
 
     @Override

@@ -31,6 +31,8 @@ public class ClientConfig {
     public static ConfigWrapper<Boolean> MAIN_MENU_WACKY_SPLASHES =			new ConfigWrapper(true);
     public static ConfigWrapper<Boolean> DODD_RBMK_DIAGNOSTIC =				new ConfigWrapper(true);
     public static ConfigWrapper<Boolean> RENDER_CABLE_HANG =				new ConfigWrapper(true);
+    public static ConfigWrapper<Boolean> RENDER_REBAR_SIMPLE =				new ConfigWrapper(false);
+    public static ConfigWrapper<Integer> RENDER_REBAR_LIMIT =				new ConfigWrapper(250);
     public static ConfigWrapper<Boolean> NUKE_HUD_FLASH =					new ConfigWrapper(true);
     public static ConfigWrapper<Boolean> NUKE_HUD_SHAKE =					new ConfigWrapper(true);
 
@@ -49,6 +51,8 @@ public class ClientConfig {
         configMap.put("MAIN_MENU_WACKY_SPLASHES", MAIN_MENU_WACKY_SPLASHES);
         configMap.put("DODD_RBMK_DIAGNOSTIC", DODD_RBMK_DIAGNOSTIC);
         configMap.put("RENDER_CABLE_HANG", RENDER_CABLE_HANG);
+        configMap.put("RENDER_REBAR_SIMPLE", RENDER_REBAR_SIMPLE);
+        configMap.put("RENDER_REBAR_LIMIT", RENDER_REBAR_LIMIT);
         configMap.put("NUKE_HUD_FLASH", NUKE_HUD_FLASH);
         configMap.put("NUKE_HUD_SHAKE", NUKE_HUD_SHAKE);
     }

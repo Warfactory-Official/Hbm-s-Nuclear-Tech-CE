@@ -1,6 +1,12 @@
 {
-    "variants": {
-        "normal": { "model": "hbm:burning_earth" },
-        "meta=0": { "model": "hbm:burning_earth" }
-    }
+  "variants": {
+    "normal": { "model": "hbm:burning_earth" },
+    "meta=0": { "model": "hbm:burning_earth" },
+    "meta=1": { "model": "hbm:burning_earth" },
+    "meta=2": { "model": "hbm:burning_earth" },
+    "meta=3": { "model": "hbm:burning_earth" },
+    "meta=4": { "model": "hbm:burning_earth" },
+    "meta=5": { "model": "hbm:burning_earth" },
+    "meta=6": { "model": "hbm:burning_earth" }
+  }
 }

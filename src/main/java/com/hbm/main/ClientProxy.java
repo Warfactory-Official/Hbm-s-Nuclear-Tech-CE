@@ -1,29 +1,32 @@
 package com.hbm.main;
 
+import com.hbm.Tags;
 import com.hbm.animloader.AnimationWrapper.EndResult;
 import com.hbm.animloader.AnimationWrapper.EndType;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.bomb.DigammaMatter;
+import com.hbm.blocks.fluid.FluidFogHandler;
 import com.hbm.blocks.generic.BMPowerBox;
 import com.hbm.blocks.generic.BlockModDoor;
 import com.hbm.blocks.generic.TrappedBrick;
 import com.hbm.blocks.machine.BlockSeal;
 import com.hbm.blocks.machine.rbmk.RBMKDebrisRadiating;
+import com.hbm.command.CommandRadVisClient;
 import com.hbm.config.GeneralConfig;
 import com.hbm.entity.grenade.*;
 import com.hbm.entity.particle.*;
+import com.hbm.entity.projectile.EntityAcidBomb;
 import com.hbm.entity.projectile.EntityDischarge;
 import com.hbm.handler.*;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.items.IAnimatedItem;
 import com.hbm.items.ModItems;
 import com.hbm.items.RBMKItemRenderers;
-import com.hbm.items.machine.ItemFluidIDMulti;
 import com.hbm.items.weapon.sedna.factory.GunFactoryClient;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.RecoilHandler;
-import com.hbm.lib.RefStrings;
+import com.hbm.main.client.NTMClientRegistry;
 import com.hbm.particle.*;
 import com.hbm.particle.bfg.*;
 import com.hbm.particle.bullet_hit.ParticleBloodParticle;
@@ -47,11 +50,13 @@ import com.hbm.render.anim.sedna.BusAnimationSedna;
 import com.hbm.render.anim.sedna.BusAnimationSequenceSedna;
 import com.hbm.render.anim.sedna.HbmAnimationsSedna;
 import com.hbm.render.entity.ElectricityRenderer;
+import com.hbm.render.entity.RenderBoat;
 import com.hbm.render.entity.RenderMetaSensitiveItem;
 import com.hbm.render.item.ItemRenderMissile;
 import com.hbm.render.item.ItemRenderMissileGeneric;
 import com.hbm.render.item.ItemRenderMissileGeneric.RenderMissileType;
 import com.hbm.render.item.ItemRenderMissilePart;
+import com.hbm.render.item.weapon.ItemRenderGunAnim;
 import com.hbm.render.item.weapon.sedna.*;
 import com.hbm.render.misc.MissilePart;
 import com.hbm.render.modelrenderer.EgonBackpackRenderer;
@@ -62,10 +67,7 @@ import com.hbm.sound.AudioWrapper;
 import com.hbm.sound.AudioWrapperClient;
 import com.hbm.sound.AudioWrapperClientStartStop;
 import com.hbm.sound.SoundLoopCrucible;
-import com.hbm.util.BobMathUtil;
-import com.hbm.util.ColorUtil;
-import com.hbm.util.I18nUtil;
-import com.hbm.util.Vec3dUtil;
+import com.hbm.util.*;
 import com.hbm.wiaj.cannery.Jars;
 import it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap;
 import net.minecraft.block.Block;
@@ -87,23 +89,28 @@ import net.minecraft.client.renderer.entity.RenderSnowball;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.IRegistry;
 import net.minecraft.world.World;
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.obj.OBJLoader;
 import net.minecraftforge.client.settings.KeyConflictContext;
@@ -111,15 +118,15 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fluids.BlockFluidClassic;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
-import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GLContext;
 import paulscode.sound.SoundSystemConfig;
 
@@ -149,13 +156,12 @@ public class ClientProxy extends ServerProxy {
     public static KeyBinding craneLoadKey;
     //Drillgon200: This is stupid, but I'm lazy
     public static boolean renderingConstant = false;
-    public static int boxcarCalllist;
     public RenderInfoSystemLegacy theInfoSystem = new RenderInfoSystemLegacy();
     private static final Int2LongOpenHashMap vanished = new Int2LongOpenHashMap();
 
     public static void registerItemRenderer(Item i, TileEntityItemStackRenderer render, IRegistry<ModelResourceLocation, IBakedModel> reg) {
         i.setTileEntityItemStackRenderer(render);
-        ModEventHandlerClient.swapModels(i, reg);
+        NTMClientRegistry.swapModels(i, reg);
     }
 
     @Override
@@ -165,6 +171,7 @@ public class ClientProxy extends ServerProxy {
 
     @Override
     public void init(FMLInitializationEvent evt) {
+        FluidFogHandler.init();
         // All previous color handler registrations here have been moved to ModEventHandlerClient#itemColorsEvent
         // and ModEventHandlerClient#blockColorsEvent
     }
@@ -175,10 +182,11 @@ public class ClientProxy extends ServerProxy {
             Minecraft.getMinecraft().getFramebuffer().enableStencil();
 
         MinecraftForge.EVENT_BUS.register(new ModEventHandlerClient());
+        MinecraftForge.EVENT_BUS.register(new NTMClientRegistry());
         MinecraftForge.EVENT_BUS.register(new ModEventHandlerRenderer());
         MinecraftForge.EVENT_BUS.register(new PlacementPreviewHandler());
         MinecraftForge.EVENT_BUS.register(theInfoSystem);
-        FMLCommonHandler.instance().bus().register(theInfoSystem);
+        ClientCommandHandler.instance.registerCommand(new CommandRadVisClient());
 
         HbmShaderManager.loadShaders();
 
@@ -243,6 +251,9 @@ public class ClientProxy extends ServerProxy {
         registerGrenadeRenderer(EntityGrenadeIFHopwire.class, ModItems.grenade_if_hopwire);
         registerGrenadeRenderer(EntityGrenadeIFNull.class, ModItems.grenade_if_null);
         registerGrenadeRenderer(EntityGrenadeDynamite.class, ModItems.stick_dynamite);
+        registerGrenadeRenderer(EntityAcidBomb.class, Items.SLIME_BALL);
+        registerGrenadeRenderer(EntityGrenadeBouncyGeneric.class, ModItems.stick_dynamite_fishing);
+        registerGrenadeRenderer(EntityGrenadeImpactGeneric.class, ModItems.grenade_kyiv);
         registerMetaSensitiveGrenade(EntityDisperserCanister.class, ModItems.disperser_canister);
         registerMetaSensitiveGrenade(EntityDisperserCanister.class, ModItems.glyphid_gland);
 
@@ -251,6 +262,7 @@ public class ClientProxy extends ServerProxy {
         ModelLoader.setCustomStateMapper(ModBlocks.door_bunker, new StateMap.Builder().ignore(BlockModDoor.POWERED).build());
         ModelLoader.setCustomStateMapper(ModBlocks.door_metal, new StateMap.Builder().ignore(BlockModDoor.POWERED).build());
         ModelLoader.setCustomStateMapper(ModBlocks.door_office, new StateMap.Builder().ignore(BlockModDoor.POWERED).build());
+        ModelLoader.setCustomStateMapper(ModBlocks.door_red, new StateMap.Builder().ignore(BlockModDoor.POWERED).build());
 
         ModelLoader.setCustomStateMapper(ModBlocks.toxic_block, new StateMap.Builder().ignore(BlockFluidClassic.LEVEL).build());
         ModelLoader.setCustomStateMapper(ModBlocks.mud_block, new StateMap.Builder().ignore(BlockFluidClassic.LEVEL).build());
@@ -288,7 +300,6 @@ public class ClientProxy extends ServerProxy {
     public void registerMissileItems(IRegistry<ModelResourceLocation, IBakedModel> reg) {
         MissilePart.registerAllParts();
 
-        //Iterator<Map.Entry<Integer, MissilePart>> it = MissilePart.parts.entrySet().iterator();
         MissilePart.parts.values().forEach(part -> {
             registerItemRenderer(part.part, new ItemRenderMissilePart(part), reg);
         });
@@ -354,8 +365,11 @@ public class ClientProxy extends ServerProxy {
         registerItemRenderer(ModItems.missile_n2, new ItemRenderMissileGeneric(RenderMissileType.TYPE_NUCLEAR), reg);
         registerItemRenderer(ModItems.missile_endo, new ItemRenderMissileGeneric(RenderMissileType.TYPE_THERMAL), reg);
         registerItemRenderer(ModItems.missile_exo, new ItemRenderMissileGeneric(RenderMissileType.TYPE_THERMAL), reg);
+        registerItemRenderer(ModItems.missile_shuttle, new ItemRenderMissileGeneric(RenderMissileType.TYPE_ROBIN), reg);
         registerItemRenderer(ModItems.missile_doomsday, new ItemRenderMissileGeneric(RenderMissileType.TYPE_DOOMSDAY), reg);
+        registerItemRenderer(ModItems.missile_doomsday_rusted, new ItemRenderMissileGeneric(RenderMissileType.TYPE_DOOMSDAY), reg);
         registerItemRenderer(ModItems.missile_carrier, new ItemRenderMissileGeneric(RenderMissileType.TYPE_CARRIER), reg);
+        registerItemRenderer(ModItems.gun_b92, ItemRenderGunAnim.INSTANCE, reg);
     }
 
     @Override
@@ -537,6 +551,7 @@ public class ClientProxy extends ServerProxy {
         World world = Minecraft.getMinecraft().world;
         if (world == null)
             return;
+        TextureManager man = Minecraft.getMinecraft().renderEngine;
         EntityPlayer player = Minecraft.getMinecraft().player;
         int particleSetting = Minecraft.getMinecraft().gameSettings.particleSetting;
         Random rand = world.rand;
@@ -551,6 +566,54 @@ public class ClientProxy extends ServerProxy {
             return;
         }
         switch (type) {
+            // Old MK1 system ported to MK3:
+            case "waterSplash" -> {
+                for (int i = 0; i < 10; i++) {
+                    EntityCloudFX smoke = new EntityCloudFX(world, x + world.rand.nextGaussian(), y + world.rand.nextGaussian(), z + world.rand.nextGaussian(), 0.0, 0.0, 0.0);
+                    Minecraft.getMinecraft().effectRenderer.addEffect(smoke);
+                }
+            }
+            case "cloudFX2" -> { // i have genuinely no idea what used this
+                EntityCloudFX smoke = new EntityCloudFX(world, x, y, z, 0.0, 0.1, 0.0);
+                Minecraft.getMinecraft().effectRenderer.addEffect(smoke);
+            }
+            case "ABMContrail" -> {
+                ParticleContrail contrail = new ParticleContrail(man, world, x, y, z);
+                Minecraft.getMinecraft().effectRenderer.addEffect(contrail);
+            }
+            // End MK1 porting.
+
+            // Old MK2 system ported to MK3:
+            case "launchSmoke" -> {
+                ParticleSmokePlume contrail = new ParticleSmokePlume(man, world, x, y, z);
+                contrail.motionX = data.getDouble("moX");
+                contrail.motionY = data.getDouble("moY");
+                contrail.motionZ = data.getDouble("moZ");
+                Minecraft.getMinecraft().effectRenderer.addEffect(contrail);
+            }
+            case "exKerosene" -> {
+                ParticleContrail contrail = new ParticleContrail(man, world, x, y, z, 0F, 0F, 0F, 1F);
+                Minecraft.getMinecraft().effectRenderer.addEffect(contrail);
+            }
+            case "exSolid" -> {
+                ParticleContrail contrail = new ParticleContrail(man, world, x, y, z, 0.3F, 0.2F, 0.05F, 1F);
+                Minecraft.getMinecraft().effectRenderer.addEffect(contrail);
+            }
+            case "exHydrogen" -> {
+                ParticleContrail contrail = new ParticleContrail(man, world, x, y, z, 0.7F, 0.7F, 0.7F, 1F);
+                Minecraft.getMinecraft().effectRenderer.addEffect(contrail);
+            }
+            case "exBalefire" -> {
+                ParticleContrail contrail = new ParticleContrail(man, world, x, y, z, 0.2F, 0.7F, 0.2F, 1F);
+                Minecraft.getMinecraft().effectRenderer.addEffect(contrail);
+            }
+            case "radFog", "radiationfog" -> {
+                ParticleRadiationFog contrail = new ParticleRadiationFog(world, x, y, z);
+                Minecraft.getMinecraft().effectRenderer.addEffect(contrail);
+            }
+
+            // End MK2 porting.
+
             case "missileContrail" -> {
                 if (new Vec3d(player.posX - x, player.posY - y, player.posZ - z).length() > 350) return;
 
@@ -612,22 +675,22 @@ public class ClientProxy extends ServerProxy {
                         }
                     }
                     case "radialDigamma" -> {
-                        Vec3d vec = new Vec3d(2, 0, 0);
-                        vec = vec.rotateYaw(rand.nextFloat() * (float) Math.PI * 2F);
+                        MutableVec3d vec = new MutableVec3d(2, 0, 0);
+                        vec.rotateYawSelf(rand.nextFloat() * (float) Math.PI * 2F);
 
                         for (int i = 0; i < count; i++) {
                             ParticleDigammaSmoke fx = new ParticleDigammaSmoke(world, x, y, z);
                             fx.motion((float) vec.x, 0, (float) vec.z);
                             Minecraft.getMinecraft().effectRenderer.addEffect(fx);
 
-                            vec = vec.rotateYaw((float) Math.PI * 2F / (float) count);
+                            vec.rotateYawSelf((float) Math.PI * 2F / (float) count);
                         }
                     }
                     case "shock" -> {
                         double strength = data.getDouble("strength");
 
-                        Vec3d vec = new Vec3d(strength, 0, 0);
-                        vec = vec.rotateYaw(rand.nextInt(360));
+                        MutableVec3d vec = new MutableVec3d(strength, 0, 0);
+                        vec.rotateYawSelf(rand.nextInt(360));
 
                         for (int i = 0; i < count; i++) {
                             if (GeneralConfig.instancedParticles) {
@@ -640,14 +703,14 @@ public class ClientProxy extends ServerProxy {
                                 Minecraft.getMinecraft().effectRenderer.addEffect(fx);
                             }
 
-                            vec = vec.rotateYaw(360F / count);
+                            vec.rotateYawSelf((float) Math.PI * 2F / count);
                         }
                     }
                     case "shockRand" -> {
                         double strength = data.getDouble("strength");
 
-                        Vec3d vec = new Vec3d(strength, 0, 0);
-                        vec = vec.rotateYaw(rand.nextInt(360));
+                        MutableVec3d vec = new MutableVec3d(strength, 0, 0);
+                        vec.rotateYawSelf(rand.nextInt(360));
                         double r;
 
                         for (int i = 0; i < count; i++) {
@@ -662,17 +725,17 @@ public class ClientProxy extends ServerProxy {
                                 Minecraft.getMinecraft().effectRenderer.addEffect(fx);
                             }
 
-                            vec = vec.rotateYaw(360F / count);
+                            vec.rotateYawSelf(360F / count);
                         }
                     }
                     case "wave" -> {
                         double strength = data.getDouble("range");
 
-                        Vec3d vec = new Vec3d(strength, 0, 0);
+                        MutableVec3d vec = new MutableVec3d(strength, 0, 0);
 
                         for (int i = 0; i < count; i++) {
 
-                            vec = vec.rotateYaw((float) Math.toRadians(rand.nextFloat() * 360F));
+                            vec.rotateYawSelf((float) Math.toRadians(rand.nextFloat() * 360F));
 
                             if (GeneralConfig.instancedParticles) {
                                 ParticleExSmokeInstanced fx = new ParticleExSmokeInstanced(world, x + vec.x, y,
@@ -687,16 +750,35 @@ public class ClientProxy extends ServerProxy {
                                 Minecraft.getMinecraft().effectRenderer.addEffect(fx);
                             }
 
-                            vec = vec.rotateYaw(360F / count);
+                            vec.rotateYawSelf(360F / count);
+                        }
+                    }
+                    case "foamSplash" -> {
+                        double strength = data.getDouble("range");
+
+                        MutableVec3d vec = new MutableVec3d(strength, 0, 0);
+
+                        for (int i = 0; i < count; i++) {
+
+                            vec.rotateYawSelf((float) Math.toRadians(rand.nextFloat() * 360F));
+                            // TODO
+                            /*ParticleFoam fx = new ParticleFoam(man, world, x + vec.xCoord, y, z + vec.zCoord);
+                            fx.maxAge = 50;
+                            fx.motionY = 0;
+                            fx.motionX = 0;
+                            fx.motionZ = 0;
+                            Minecraft.getMinecraft().effectRenderer.addEffect(fx);
+
+                            vec.rotateYawSelf(360 / count);*/
                         }
                     }
                     default -> throw new IllegalStateException("Unexpected value: " + mode);
                 }
             }
             case "debugdrone" -> {
-                Item held = player.getHeldItem(EnumHand.MAIN_HAND) == ItemStack.EMPTY ? null : player.getHeldItem(EnumHand.MAIN_HAND).getItem();
+                Item held = player.getHeldItem(EnumHand.MAIN_HAND).isEmpty() ? null : player.getHeldItem(EnumHand.MAIN_HAND).getItem();
 
-                if(held == ModItems.drone ||
+                if (held == ModItems.drone ||
                         held == Item.getItemFromBlock(ModBlocks.drone_crate_provider) ||
                         held == Item.getItemFromBlock(ModBlocks.drone_crate_requester) ||
                         held == Item.getItemFromBlock(ModBlocks.drone_dock) ||
@@ -776,6 +858,17 @@ public class ClientProxy extends ServerProxy {
                     default -> throw new IllegalStateException("Unexpected value: " + mode);
                 }
             }
+            case "muke" -> { // mini nuke, without sound
+                ParticleMukeWave wave = new ParticleMukeWave(world, x, y, z);
+                ParticleMukeFlash flash = new ParticleMukeFlash(world, x, y, z, data.getBoolean("balefire"));
+
+                Minecraft.getMinecraft().effectRenderer.addEffect(wave);
+                Minecraft.getMinecraft().effectRenderer.addEffect(flash);
+
+                player.hurtTime = 15;
+                player.maxHurtTime = 15;
+                player.attackedAtYaw = 0F;
+            }
             case "ufo" -> {
                 if (GeneralConfig.instancedParticles) {
                     ParticleRocketFlameInstanced fx = new ParticleRocketFlameInstanced(world, x, y, z);
@@ -829,7 +922,7 @@ public class ClientProxy extends ServerProxy {
                 if (casingConfig == null) return;
 
                 for (int i = 0; i < ejector.getAmount(); i++) {
-                    ejector.spawnCasing(Minecraft.getMinecraft().renderEngine, casingConfig, world, x, y, z,
+                    ejector.spawnCasing(casingConfig, world, x, y, z,
                             data.getFloat("pitch"), data.getFloat("yaw"), data.getBoolean("crouched"));
                 }
             }
@@ -932,10 +1025,10 @@ public class ClientProxy extends ServerProxy {
                 }
             }
             case "splash" -> {
-                if(particleSetting == 0 || (particleSetting == 1 && rand.nextBoolean())) {
+                if (particleSetting == 0 || (particleSetting == 1 && rand.nextBoolean())) {
                     ParticleLiquidSplash fx = new ParticleLiquidSplash(world, x, y, z);
 
-                    if(data.hasKey("color")) {
+                    if (data.hasKey("color")) {
                         Color color = new Color(data.getInteger("color"));
                         float f = 1F - rand.nextFloat() * 0.2F;
                         fx.setRBGColorF(color.getRed() / 255F * f, color.getGreen() / 255F * f, color.getBlue() / 255F * f);
@@ -943,6 +1036,21 @@ public class ClientProxy extends ServerProxy {
 
                     Minecraft.getMinecraft().effectRenderer.addEffect(fx);
                 }
+            }
+            case "fluidfill" -> {
+                double mX = data.getDouble("mX");
+                double mY = data.getDouble("mY");
+                double mZ = data.getDouble("mZ");
+
+                Particle fx = new ParticleCrit.Factory().createParticle(0, world, x, y, z, mX, mY, mZ);
+                fx.nextTextureIndexX();
+
+                if (data.hasKey("color")) {
+                    Color color = new Color(data.getInteger("color"));
+                    fx.setRBGColorF(color.getRed() / 255F, color.getGreen() / 255F, color.getBlue() / 255F);
+                }
+
+                Minecraft.getMinecraft().effectRenderer.addEffect(fx);
             }
             case "radiation" -> {
                 for (int i = 0; i < data.getInteger("count"); i++) {
@@ -960,10 +1068,6 @@ public class ClientProxy extends ServerProxy {
                     Minecraft.getMinecraft().effectRenderer.addEffect(flash);
                 }
             }
-            case "radiationfog" -> {
-                ParticleRadiationFog fog = new ParticleRadiationFog(world, x, y, z);
-                Minecraft.getMinecraft().effectRenderer.addEffect(fog);
-            }
             case "vanillaburst" -> {
                 double motion = data.getDouble("motion");
 
@@ -979,10 +1083,12 @@ public class ClientProxy extends ServerProxy {
                         case "cloud" -> new ParticleCloud.Factory().createParticle(-1, world, x, y, z, mX, mY, mZ);
                         case "reddust" -> new ParticleRedstone.Factory().createParticle(-1, world, x, y, z, 0.0F, 0.0F,
                                 0.0F);
-                        case "bluedust" -> new ParticleRedstone.Factory().createParticle(-1, world, x, y, z, 0.01F, 0.01F,
-                                1F);
-                        case "greendust" -> new ParticleRedstone.Factory().createParticle(-1, world, x, y, z, 0.01F, 0.5F,
-                                0.1F);
+                        case "bluedust" ->
+                                new ParticleRedstone.Factory().createParticle(-1, world, x, y, z, 0.01F, 0.01F,
+                                        1F);
+                        case "greendust" ->
+                                new ParticleRedstone.Factory().createParticle(-1, world, x, y, z, 0.01F, 0.5F,
+                                        0.1F);
                         case "blockdust" -> {
                             Block b = Block.getBlockById(data.getInteger("block"));
                             Particle particle = new ParticleBlockDust.Factory().createParticle(-1, world, x, y, z, mX, mY + 0.2, mZ,
@@ -1019,8 +1125,14 @@ public class ClientProxy extends ServerProxy {
                     case "cloud" -> new ParticleCloud.Factory().createParticle(-1, world, x, y, z, mX, mY, mZ);
                     case "reddust" -> new ParticleRedstone.Factory().createParticle(-1, world, x, y, z, (float) mX,
                             (float) mY, (float) mZ);
-                    case "bluedust" -> new ParticleRedstone.Factory().createParticle(-1, world, x, y, z, 0.01F, 0.01F, 1F);
-                    case "greendust" -> new ParticleRedstone.Factory().createParticle(-1, world, x, y, z, 0.01F, 0.5F, 0.1F);
+                    case "bluedust" ->
+                            new ParticleRedstone.Factory().createParticle(-1, world, x, y, z, 0.01F, 0.01F, 1F);
+                    case "greendust" ->
+                            new ParticleRedstone.Factory().createParticle(-1, world, x, y, z, 0.01F, 0.5F, 0.1F);
+                    case "fireworks" -> {
+                        world.spawnParticle(EnumParticleTypes.FIREWORKS_SPARK, x, y, z, 0, 0, 0);
+                        yield null;
+                    }
                     case "largeexplode" -> {
                         Particle particle = new ParticleExplosionLarge.Factory().createParticle(-1, world, x, y, z, data.getFloat(
                                 "size"), 0.0F, 0.0F);
@@ -1063,14 +1175,15 @@ public class ClientProxy extends ServerProxy {
                     }
                     default -> throw new IllegalStateException("Unexpected value: " + mode);
                 };
+                if (fx != null) {
+                    fx.canCollide = !data.getBoolean("noclip");
 
-                fx.canCollide = !data.getBoolean("noclip");
+                    if (data.getInteger("overrideAge") > 0) {
+                        fx.setMaxAge(data.getInteger("overrideAge"));
+                    }
 
-                if(data.getInteger("overrideAge") > 0) {
-                    fx.setMaxAge(data.getInteger("overrideAge"));
+                    Minecraft.getMinecraft().effectRenderer.addEffect(fx);
                 }
-
-                Minecraft.getMinecraft().effectRenderer.addEffect(fx);
             }
             case "spark" -> {
                 String mode = data.getString("mode");
@@ -1191,6 +1304,60 @@ public class ClientProxy extends ServerProxy {
                     Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleSmokeNormal.Factory().createParticle(-1, world, ix + ox, iy, iz + oz, p.motionX + moX * 3, p.motionY + moY * 3, p.motionZ + moZ * 3));
                     Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleSmokeNormal.Factory().createParticle(-1, world, ix - ox, iy,
                             iz - oz, p.motionX + moX * 3, p.motionY + moY * 3, p.motionZ + moZ * 3));
+                }
+            }
+
+            case "jetpack_dns" -> {
+
+                if(particleSetting == 2)
+                    return;
+
+                Entity ent = world.getEntityByID(data.getInteger("player"));
+
+                if(ent instanceof EntityPlayer p) {
+
+                    Vec3d offset = new Vec3d(0.125, 0, 0);
+                    float angle = (float) -Math.toRadians(p.rotationYawHead - (p.rotationYawHead - p.renderYawOffset));
+
+                    offset = offset.rotateYaw(angle);
+
+                    double ix = p.posX;
+                    double iy = p.posY - p.getYOffset() - 0.5D;
+                    double iz = p.posZ;
+                    double ox = offset.x;
+                    double oz = offset.z;
+
+                    if(particleSetting == 0) {
+                        Vec3d pos = new Vec3d(ix, iy, iz);
+                        Vec3d thrust = new Vec3d(0, -1, 0);
+                        Vec3d target = pos.add(thrust.x * 10, thrust.y * 10, thrust.z * 10);
+                        RayTraceResult ray = player.world.rayTraceBlocks(pos, target, false, false, true);
+
+                        if(ray != null && ray.typeOfHit == Type.BLOCK && ray.sideHit == EnumFacing.UP) {
+                            IBlockState state = world.getBlockState(ray.getBlockPos());
+
+                            Vec3d delta = new Vec3d(ix - ray.hitVec.x, iy - ray.hitVec.y, iz - ray.hitVec.z);
+                            Vec3d vel = new Vec3d(0.75 - delta.length() * 0.075, 0, 0);
+
+                            for(int i = 0; i < (10 - delta.length()); i++) {
+                                vel = vel.rotateYaw(world.rand.nextFloat() * (float)Math.PI * 2F);
+                                Particle particle = new ParticleBlockDust.Factory().createParticle(-1, world, ray.hitVec.x, ray.hitVec.y + 0.1, ray.hitVec.z, vel.x, 0.1, vel.z, Block.getStateId(state));
+                                if (particle == null) {
+                                    continue;
+                                }
+
+                                Minecraft.getMinecraft().effectRenderer.addEffect(particle);
+                            }
+                        }
+                    }
+
+                    Particle dust1 = new ParticleRedstone.Factory().createParticle(-1, world, ix + ox, iy, iz + oz, p.motionX, p.motionY, p.motionZ);
+                    Particle dust2 = new ParticleRedstone.Factory().createParticle(-1, world, ix - ox, iy, iz - oz, p.motionX, p.motionY, p.motionZ);
+                    dust1.setRBGColorF(0.01F, 1.0F, 1.0F);
+                    dust2.setRBGColorF(0.01F, 1.0F, 1.0F);
+
+                    Minecraft.getMinecraft().effectRenderer.addEffect(dust1);
+                    Minecraft.getMinecraft().effectRenderer.addEffect(dust2);
                 }
             }
 
@@ -1462,7 +1629,7 @@ public class ClientProxy extends ServerProxy {
                                 int sideways = 100;
                                 int retire = 200;
 
-                                if(HbmAnimationsSedna.getRelevantAnim() == null) {
+                                if (HbmAnimationsSedna.getRelevantAnim() == null) {
 
                                     BusAnimationSedna animation = new BusAnimationSedna()
                                             .addBus("SWING_ROT", new BusAnimationSequenceSedna()
@@ -1482,7 +1649,8 @@ public class ClientProxy extends ServerProxy {
                                     double[] rot = HbmAnimationsSedna.getRelevantTransformation("SWING_ROT");
                                     double[] trans = HbmAnimationsSedna.getRelevantTransformation("SWING_TRANS");
 
-                                    if(System.currentTimeMillis() - HbmAnimationsSedna.getRelevantAnim().startMillis < 50) return;
+                                    if (System.currentTimeMillis() - HbmAnimationsSedna.getRelevantAnim().startMillis < 50)
+                                        return;
 
                                     BusAnimationSedna animation = new BusAnimationSedna()
                                             .addBus("SWING_ROT", new BusAnimationSequenceSedna()
@@ -1644,6 +1812,7 @@ public class ClientProxy extends ServerProxy {
             case CRANE_LOAD -> HbmKeybinds.craneLoadKey.isKeyDown();
             case ABILITY_CYCLE -> HbmKeybinds.abilityCycle.isKeyDown();
             case ABILITY_ALT -> HbmKeybinds.abilityAlt.isKeyDown();
+            case TOOL_ALT -> HbmKeybinds.copyToolAlt.isKeyDown();
             case GUN_PRIMARY -> Mouse.isButtonDown(0);
             case GUN_SECONDARY -> HbmKeybinds.gunSecondaryKey.isKeyDown();
             case GUN_TERTIARY -> HbmKeybinds.gunTertiaryKey.isKeyDown();
@@ -1705,21 +1874,34 @@ public class ClientProxy extends ServerProxy {
         if (SoundSystemConfig.getNumberNormalChannels() < 128) {
             SoundSystemConfig.setNumberNormalChannels(128);
         }
-        OBJLoader.INSTANCE.addDomain(RefStrings.MODID);
+        OBJLoader.INSTANCE.addDomain(Tags.MODID);
 
         AutoRegistry.preInitClient();
         for (Map.Entry<Item, TileEntityItemStackRenderer> entry : RBMKItemRenderers.itemRenderers.entrySet()) {
             entry.getKey().setTileEntityItemStackRenderer(entry.getValue());
         }
 
-        for (Object renderer : TileEntityRendererDispatcher.instance.renderers.values()) {
+        for (TileEntitySpecialRenderer<? extends TileEntity> renderer : TileEntityRendererDispatcher.instance.renderers.values()) {
             if (renderer instanceof IItemRendererProvider prov) {
                 for (Item item : prov.getItemsForRenderer()) {
                     item.setTileEntityItemStackRenderer(prov.getRenderer(item));
                 }
             }
         }
+
+        // same crap but for items directly because why invent a new solution when this shit works just fine
+        for (Item renderer : Item.REGISTRY) {
+            if (renderer instanceof IItemRendererProvider provider) {
+                for (Item item : provider.getItemsForRenderer()) {
+                    item.setTileEntityItemStackRenderer(provider.getRenderer(item));
+                }
+            }
+        }
+
+        // IItemRendererProvider is not applicable to Render<T extends Entity>
+        Item.getItemFromBlock(ModBlocks.boat).setTileEntityItemStackRenderer(new RenderBoat.BoatItemRenderer());
     }
+
     @Deprecated
     @Override
     public AudioWrapper getLoopedSound(SoundEvent sound, SoundCategory cat, float x, float y, float z, float volume, float pitch) {
@@ -1737,6 +1919,7 @@ public class ClientProxy extends ServerProxy {
         audio.setKeepAlive(keepAlive);
         return audio;
     }
+
     @Override
     public AudioWrapper getLoopedSound(SoundEvent sound, SoundCategory cat, float x, float y, float z, float volume, float range, float pitch) {
         AudioWrapperClient audio = new AudioWrapperClient(sound, cat, true);
@@ -1768,11 +1951,6 @@ public class ClientProxy extends ServerProxy {
 
     @Override
     public void postInit(FMLPostInitializationEvent e) {
-
-        boxcarCalllist = GL11.glGenLists(1);
-        GL11.glNewList(boxcarCalllist, GL11.GL_COMPILE);
-        ResourceManager.boxcar.renderAll();
-        GL11.glEndList();
         ResourceManager.loadAnimatedModels();
         Minecraft.getMinecraft().getRenderManager().getSkinMap().forEach((p, r) -> {
             r.addLayer(new JetpackHandler.JetpackLayer());
@@ -1781,7 +1959,6 @@ public class ClientProxy extends ServerProxy {
 
         ParticleRenderLayer.register();
         BobmazonOfferFactory.init();
-        ItemFluidIDMulti.registerItemColors();
     }
 
     @Override
@@ -1798,13 +1975,39 @@ public class ClientProxy extends ServerProxy {
 
     @Override
     public float partialTicks() {
-            boolean paused = Minecraft.getMinecraft().isGamePaused();
-            return paused ?  Minecraft.getMinecraft().renderPartialTicksPaused : Minecraft.getMinecraft().getRenderPartialTicks();
+        boolean paused = Minecraft.getMinecraft().isGamePaused();
+        return paused ? Minecraft.getMinecraft().renderPartialTicksPaused : Minecraft.getMinecraft().getRenderPartialTicks();
+    }
+
+    @Override
+    public List<ItemStack> getSubItems(ItemStack stack) {
+
+        NonNullList<ItemStack> list = NonNullList.create();
+        stack.getItem().getSubItems(stack.getItem().getCreativeTab(), list);
+        for (ItemStack sta : list) {
+            sta.setCount(stack.getCount());
+        }
+        return list;
+    }
+
+    @Override
+    public float getImpactDust(World world) {
+        return ImpactWorldHandler.getDustForClient(world);
+    }
+
+    @Override
+    public float getImpactFire(World world) {
+        return ImpactWorldHandler.getFireForClient(world);
+    }
+
+    @Override
+    public boolean getImpact(World world) {
+        return ImpactWorldHandler.getImpactForClient(world);
     }
 
     @Override
     public int getStackColor(@NotNull ItemStack stack, boolean amplify) {
-        if(stack.isEmpty()) return 0x000000;
+        if (stack.isEmpty()) return 0x000000;
         int color;
         if (stack.getItem() instanceof ItemBlock) {
             try {
@@ -1815,7 +2018,12 @@ public class ClientProxy extends ServerProxy {
                 color = 0xCCCCCC;
             }
         } else color = ColorUtil.getAverageColorFromStack(stack);
-        if(amplify) color = ColorUtil.amplifyColor(color);
+        if (amplify) color = ColorUtil.amplifyColor(color);
         return color;
+    }
+
+
+    public void onLoadComplete(FMLLoadCompleteEvent event) {
+        if (!Loader.isModLoaded(Compat.ModIds.CTM)) NTMClientRegistry.ctmWarning = true;
     }
 }

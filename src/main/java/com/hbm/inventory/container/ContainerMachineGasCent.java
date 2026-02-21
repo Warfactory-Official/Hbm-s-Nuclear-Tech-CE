@@ -1,12 +1,12 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotBattery;
-import com.hbm.inventory.SlotTakeOnly;
-import com.hbm.inventory.SlotUpgrade;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotFiltered;
+import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.items.machine.IItemFluidIdentifier;
-import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineGasCent;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -27,7 +27,7 @@ public class ContainerMachineGasCent extends Container {
     for (int i = 0; i < 2; i++) {
       for (int j = 0; j < 2; j++) {
         this.addSlotToContainer(
-            new SlotTakeOnly(gasCent.inventory, j + i * 2, 71 + j * 18, 53 + i * 18));
+            SlotFiltered.takeOnly(gasCent.inventory, j + i * 2, 71 + j * 18, 53 + i * 18));
       }
     }
 
@@ -51,37 +51,17 @@ public class ContainerMachineGasCent extends Container {
     }
   }
 
+  private static boolean isNormal(ItemStack stack) {
+      return !Library.isBattery(stack) && !Library.isMachineUpgrade(stack) && !(stack.getItem() instanceof IItemFluidIdentifier);
+  }
+
   @Override
   public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-    ItemStack rStack = ItemStack.EMPTY;
-    Slot slot = this.inventorySlots.get(index);
-
-    if (slot != null && slot.getHasStack()) {
-      ItemStack stack = slot.getStack();
-      rStack = stack.copy();
-
-      if (index <= 6) {
-        if (!this.mergeItemStack(stack, 7, this.inventorySlots.size(), true)) {
-          return ItemStack.EMPTY;
-        }
-      } else {
-        if (Library.isItemBattery(rStack)) {
-          if (!this.mergeItemStack(stack, 4, 5, false)) return ItemStack.EMPTY;
-        } else if (rStack.getItem() instanceof IItemFluidIdentifier) {
-          if (!this.mergeItemStack(stack, 5, 6, false)) return ItemStack.EMPTY;
-        } else if (rStack.getItem() instanceof ItemMachineUpgrade) {
-          if (!this.mergeItemStack(stack, 6, 7, false)) return ItemStack.EMPTY;
-        } else return ItemStack.EMPTY;
-      }
-
-      if (stack.isEmpty()) {
-        slot.putStack(ItemStack.EMPTY);
-      } else {
-        slot.onSlotChanged();
-      }
-    }
-
-    return rStack;
+    return InventoryUtil.transferStack(this.inventorySlots, index, 7,
+            ContainerMachineGasCent::isNormal, 4,
+            Library::isBattery, 5,
+            s -> s.getItem() instanceof IItemFluidIdentifier, 6,
+            Library::isMachineUpgrade, 7);
   }
 
   @Override

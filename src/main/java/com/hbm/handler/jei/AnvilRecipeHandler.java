@@ -1,10 +1,10 @@
 package com.hbm.handler.jei;
 
+import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.NTMAnvil;
 import com.hbm.inventory.RecipesCommon;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
-import com.hbm.lib.RefStrings;
 import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.IModRegistry;
 import mezz.jei.api.gui.IDrawable;
@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AnvilRecipeHandler implements IRecipeCategory<AnvilRecipeHandler.AnvilRecipe> {
-	private static final ResourceLocation GUI_TEXTURE = new ResourceLocation(RefStrings.MODID, "textures/gui/jei/gui_nei_anvil.png");
+	private static final ResourceLocation GUI_TEXTURE = new ResourceLocation(Tags.MODID, "textures/gui/jei/gui_nei_anvil.png");
 
 	private final IDrawable background;
 	private final IDrawable slotDrawable;
@@ -51,7 +51,7 @@ public class AnvilRecipeHandler implements IRecipeCategory<AnvilRecipeHandler.An
 	@NotNull
 	@Override
 	public String getModName() {
-		return RefStrings.MODID;
+		return Tags.MODID;
 	}
 
 	@NotNull

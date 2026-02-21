@@ -1,6 +1,7 @@
 package com.hbm.entity.projectile;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.bomb.BlockDetonatable;
 import com.hbm.blocks.generic.RedBarrel;
 import com.hbm.config.CompatibilityConfig;
 import com.hbm.entity.grenade.EntityGrenadeTau;
@@ -302,16 +303,17 @@ public class EntityBullet extends Entity implements IProjectile {
 		if (blockstate.getMaterial() != Material.AIR) {
 			AxisAlignedBB axisalignedbb = blockstate.getCollisionBoundingBox(this.world, bulletTilePos);
 
-			if (axisalignedbb != null && axisalignedbb != Block.NULL_AABB && axisalignedbb.offset(bulletTilePos).contains(new Vec3d(this.posX, this.posY, this.posZ)) && !this.getIsCritical()) {
+			if (axisalignedbb != Block.NULL_AABB && axisalignedbb.offset(bulletTilePos).contains(new Vec3d(this.posX, this.posY, this.posZ)) && !this.getIsCritical()) {
 				this.inGround = true;
 			}
 
-			if (block == ModBlocks.red_barrel) {
-				((RedBarrel) block).explode(world, this.field_145791_d, this.field_145792_e, this.field_145789_f);
-			}
+            if (block == ModBlocks.red_barrel) {
+                ((RedBarrel) block).explode(world, this.field_145791_d, this.field_145792_e, this.field_145789_f);
+            }
+            if(block instanceof BlockDetonatable detonatable) detonatable.onShot(world, bulletTilePos);
 
-			if (block == Blocks.GLASS || block == Blocks.STAINED_GLASS || block == Blocks.GLASS_PANE || block == Blocks.STAINED_GLASS_PANE) {
-				this.world.setBlockToAir(new BlockPos(this.field_145791_d, this.field_145792_e, this.field_145789_f));
+            if (blockstate.getMaterial() == Material.GLASS && block.getExplosionResistance(null) < 0.6f) {
+				this.world.setBlockToAir(bulletTilePos);
 				//Drillgon200: add particle burst packet so the glass doesn't just disappear.
 				PacketDispatcher.wrapper.sendToAll(new ParticleBurstPacket(field_145791_d, field_145792_e, field_145789_f, Block.getIdFromBlock(block), block.getMetaFromState(blockstate)));
 				this.world.playSound(this.field_145791_d, this.field_145792_e, this.field_145789_f, SoundEvents.BLOCK_GLASS_BREAK, SoundCategory.BLOCKS, 1.0F, 1.0F, true);

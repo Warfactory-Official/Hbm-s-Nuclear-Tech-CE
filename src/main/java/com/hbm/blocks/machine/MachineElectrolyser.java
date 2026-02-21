@@ -39,7 +39,7 @@ public class MachineElectrolyser extends BlockDummyable {
 
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        return this.standardOpenBehavior(world, pos.getX(), pos.getY(), pos.getZ(), player, 0);
+        return this.standardOpenBehavior(world, pos.getX(), pos.getY(), pos.getZ(), player, -1);
     }
 
     @Override

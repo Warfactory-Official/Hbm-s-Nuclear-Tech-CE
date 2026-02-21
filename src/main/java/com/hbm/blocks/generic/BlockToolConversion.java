@@ -37,6 +37,7 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -71,11 +72,7 @@ public class BlockToolConversion extends BlockBase implements IToolable, ILookOv
 
         for (Map.Entry<Pair<ToolType, MetaBlock>, Pair<AStack[], MetaBlock>> entry : conversions.entrySet()) {
 
-            List<AStack> list = new ArrayList<>();
-
-            for (AStack stack : entry.getValue().getKey()) {
-                list.add(stack);
-            }
+            List<AStack> list = new ArrayList<>(Arrays.asList(entry.getValue().getKey()));
             list.add(new RecipesCommon.ComparableStack(entry.getKey().getValue().block, 1, entry.getKey().getValue().meta));
 
             Object[] inputInstance = list.toArray(new AStack[0]); // the instance has to match for the machine lookup to succeed
@@ -94,18 +91,18 @@ public class BlockToolConversion extends BlockBase implements IToolable, ILookOv
     }
 
     @Override
-    protected BlockStateContainer createBlockState() {
+    protected @NotNull BlockStateContainer createBlockState() {
         return new BlockStateContainer(this, TOOLED);
     }
 
     @Override
-    public List<ItemStack> getDrops(IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
+    public @NotNull List<ItemStack> getDrops(@NotNull IBlockAccess world, @NotNull BlockPos pos, IBlockState state, int fortune) {
         int meta = state.getValue(TOOLED) ? 1 : 0;
         return Collections.singletonList(new ItemStack(Item.getItemFromBlock(this), 1, meta));
     }
 
     @Override
-    public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
+    public void onBlockPlacedBy(World world, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull EntityLivingBase placer, ItemStack stack) {
         int meta = stack.getMetadata();
         world.setBlockState(pos, this.getStateFromMeta(meta), 3);
     }
@@ -120,7 +117,7 @@ public class BlockToolConversion extends BlockBase implements IToolable, ILookOv
     }
 
     @Override
-    public IBlockState getStateFromMeta(int meta) {
+    public @NotNull IBlockState getStateFromMeta(int meta) {
         return this.getDefaultState().withProperty(TOOLED, meta == 1);
     }
 
@@ -149,8 +146,7 @@ public class BlockToolConversion extends BlockBase implements IToolable, ILookOv
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void printHook(Pre event, World world, int x, int y, int z) {
-        BlockPos pos = new BlockPos(x, y, z);
+    public void printHook(Pre event, World world, BlockPos pos) {
         ItemStack held = Minecraft.getMinecraft().player.getHeldItemMainhand();
         ToolType tool = quickLookup(held);
         if (tool == null) return;
@@ -177,7 +173,7 @@ public class BlockToolConversion extends BlockBase implements IToolable, ILookOv
         ILookOverlay.printGeneric(event, I18nUtil.resolveKey(state.getBlock().getTranslationKey() + ".name"), 0xffff00, 0x404000, text);
     }
 
-    public class BlockToolConversionItem extends ItemBlock implements IModelRegister {
+    public static class BlockToolConversionItem extends ItemBlock implements IModelRegister {
 
         public BlockToolConversionItem(Block block) {
             super(block);
@@ -188,7 +184,7 @@ public class BlockToolConversion extends BlockBase implements IToolable, ILookOv
         //TODO: may as well make it work with blockmeta, oppose to using custom block states
         @Override
         @SideOnly(Side.CLIENT)
-        public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> list){
+        public void getSubItems(@NotNull CreativeTabs tab, @NotNull NonNullList<ItemStack> list){
             if (this.isInCreativeTab(tab)) {
                 for (int i = 0; i <= 1; i++) {
                     list.add(new ItemStack(this, 1, i));
@@ -204,7 +200,7 @@ public class BlockToolConversion extends BlockBase implements IToolable, ILookOv
         }
 
         @Override
-        public String getTranslationKey(ItemStack stack) {
+        public @NotNull String getTranslationKey(ItemStack stack) {
             return super.getTranslationKey() + (stack.getMetadata() == 1 ? "_tooled" : "");
         }
 

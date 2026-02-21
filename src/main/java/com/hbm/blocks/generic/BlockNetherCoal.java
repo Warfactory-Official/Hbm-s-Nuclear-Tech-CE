@@ -1,11 +1,10 @@
 package com.hbm.blocks.generic;
 
 import com.hbm.items.ModItems;
-import com.hbm.lib.ForgeDirection;
-import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -34,26 +33,26 @@ public class BlockNetherCoal extends BlockOutgas {
 	@SideOnly(Side.CLIENT)
 	public void randomDisplayTick(IBlockState stateIn, World worldIn, BlockPos pos, Random rand){
 		super.randomDisplayTick(stateIn, worldIn, pos, rand);
-		for(ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
+		for(EnumFacing dir : EnumFacing.VALUES) {
 
-			if(dir == ForgeDirection.DOWN)
-				continue;
+			if(dir == EnumFacing.DOWN) continue;
 			int x = pos.getX();
 			int y = pos.getY();
 			int z = pos.getZ();
+            BlockPos neighbour = pos.offset(dir);
+            IBlockState blockState = worldIn.getBlockState(neighbour);
+			if(blockState.getBlock().isAir(blockState, worldIn, neighbour)) {
 
-			if(worldIn.getBlockState(new BlockPos(x + dir.offsetX, y + dir.offsetY, z + dir.offsetZ)).getMaterial() == Material.AIR) {
+				double ix = x + 0.5F + dir.getXOffset() + rand.nextDouble() - 0.5D;
+				double iy = y + 0.5F + dir.getYOffset() + rand.nextDouble() - 0.5D;
+				double iz = z + 0.5F + dir.getZOffset() + rand.nextDouble() - 0.5D;
 
-				double ix = x + 0.5F + dir.offsetX + rand.nextDouble() - 0.5D;
-				double iy = y + 0.5F + dir.offsetY + rand.nextDouble() - 0.5D;
-				double iz = z + 0.5F + dir.offsetZ + rand.nextDouble() - 0.5D;
-
-				if(dir.offsetX != 0)
-					ix = x + 0.5F + dir.offsetX * 0.5 + rand.nextDouble() * 0.125 * dir.offsetX;
-				if(dir.offsetY != 0)
-					iy = y + 0.5F + dir.offsetY * 0.5 + rand.nextDouble() * 0.125 * dir.offsetY;
-				if(dir.offsetZ != 0)
-					iz = z + 0.5F + dir.offsetZ * 0.5 + rand.nextDouble() * 0.125 * dir.offsetZ;
+				if(dir.getAxis() == EnumFacing.Axis.X)
+					ix = x + 0.5F + dir.getXOffset() * 0.5 + rand.nextDouble() * 0.125 * dir.getXOffset();
+				if(dir.getAxis() == EnumFacing.Axis.Y)
+					iy = y + 0.5F + dir.getYOffset() * 0.5 + rand.nextDouble() * 0.125 * dir.getYOffset();
+				if(dir.getAxis() == EnumFacing.Axis.Z)
+					iz = z + 0.5F + dir.getZOffset() * 0.5 + rand.nextDouble() * 0.125 * dir.getZOffset();
 
 				worldIn.spawnParticle(EnumParticleTypes.FLAME, ix, iy, iz, 0.0, 0.0, 0.0);
 				worldIn.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, ix, iy, iz, 0.0, 0.0, 0.0);

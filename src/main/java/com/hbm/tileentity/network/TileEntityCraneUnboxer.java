@@ -8,6 +8,7 @@ import com.hbm.inventory.gui.GUICraneUnboxer;
 import com.hbm.items.ModItems;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IGUIProvider;
+import com.hbm.util.SoundUtil;
 import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
@@ -22,13 +23,29 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 
 @AutoRegister
 public class TileEntityCraneUnboxer extends TileEntityCraneBase implements IGUIProvider {
     private int tickCounter = 0;
     public static int[] allowed_slots = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
     public TileEntityCraneUnboxer() {
-        super(23);
+        super(0);
+
+        inventory = new ItemStackHandler(23) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                super.onContentsChanged(slot);
+                markDirty();
+            }
+
+            @Override
+            public void setStackInSlot(int slot, ItemStack stack) {
+                super.setStackInSlot(slot, stack);
+                if (Library.isMachineUpgrade(stack) && slot >= 21 && slot <= 22)
+                    SoundUtil.playUpgradePlugSound(world, pos);
+            }
+        };
     }
 
     @Override
@@ -51,7 +68,7 @@ public class TileEntityCraneUnboxer extends TileEntityCraneBase implements IGUIP
             int yCoord = pos.getY();
             int zCoord = pos.getZ();
             int delay = 20;
-            if (inventory.getStackInSlot(22) != null && inventory.getStackInSlot(22) != ItemStack.EMPTY) {
+            if (inventory.getStackInSlot(22) != null && !inventory.getStackInSlot(22).isEmpty()) {
                 if (inventory.getStackInSlot(22).getItem() == ModItems.upgrade_ejector_1) {
                     delay = 10;
                 } else if (inventory.getStackInSlot(22).getItem() == ModItems.upgrade_ejector_2) {
@@ -65,7 +82,7 @@ public class TileEntityCraneUnboxer extends TileEntityCraneBase implements IGUIP
                 tickCounter = 0;
                 int amount = 1;
 
-                if (inventory.getStackInSlot(21) != null && inventory.getStackInSlot(21) != ItemStack.EMPTY) {
+                if (inventory.getStackInSlot(21) != null && !inventory.getStackInSlot(21).isEmpty()) {
                     if (inventory.getStackInSlot(21).getItem() == ModItems.upgrade_stack_1) {
                         amount = 4;
                     } else if (inventory.getStackInSlot(21).getItem() == ModItems.upgrade_stack_2) {
@@ -85,7 +102,7 @@ public class TileEntityCraneUnboxer extends TileEntityCraneBase implements IGUIP
                     for (int index : allowed_slots) {
                         ItemStack stack = inventory.getStackInSlot(index);
 
-                        if (stack != ItemStack.EMPTY) {
+                        if (!stack.isEmpty()) {
 
                             int toSend = Math.min(amount, stack.getCount());
                             ItemStack cStack = stack.copy();

@@ -1,7 +1,6 @@
 package com.hbm.handler;
 
 import com.hbm.handler.guncfg.*;
-import com.hbm.items.ModItems;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -15,6 +14,9 @@ private static HashMap<Integer, BulletConfiguration> configSet = new HashMap<Int
 	
 	/// duplicate ids will cause wrong configs to be loaded ///
 	public static int TEST_CONFIG = i++;
+
+	public static int TURBINE = i++;
+
 	public static int IRON_REVOLVER = i++;
 	public static int STEEL_REVOLVER = i++;
 	public static int LEAD_REVOLVER = i++;

@@ -1,9 +1,9 @@
 package com.hbm.handler.jei;
 
+import com.hbm.Tags;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.recipes.CrucibleRecipes;
 import com.hbm.items.machine.ItemMold;
-import com.hbm.lib.RefStrings;
 import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.gui.IDrawable;
 import mezz.jei.api.gui.IGuiItemStackGroup;
@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class CrucibleCastingHandler implements IRecipeCategory<CrucibleCastingHandler.Wrapper> {
-    private static final ResourceLocation GUI_TEXTURE = new ResourceLocation(RefStrings.MODID, "textures/gui/jei/gui_nei_foundry.png");
+    private static final ResourceLocation GUI_TEXTURE = new ResourceLocation(Tags.MODID, "textures/gui/jei/gui_nei_foundry.png");
 
     private final IDrawable background;
 
@@ -44,7 +44,7 @@ public class CrucibleCastingHandler implements IRecipeCategory<CrucibleCastingHa
 
     @Override
     public @NotNull String getModName() {
-        return RefStrings.MODID;
+        return Tags.MODID;
     }
 
     @Override

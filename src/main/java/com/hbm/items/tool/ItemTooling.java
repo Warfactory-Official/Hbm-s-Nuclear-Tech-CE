@@ -2,13 +2,12 @@ package com.hbm.items.tool;
 
 import com.hbm.api.block.IToolable;
 import com.hbm.api.block.IToolable.ToolType;
-import com.hbm.items.ModItems;
+import com.hbm.items.ItemBakedBase;
 import com.hbm.main.MainRegistry;
 import com.hbm.util.I18nUtil;
 import net.minecraft.block.Block;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
@@ -18,20 +17,18 @@ import net.minecraft.world.World;
 
 import java.util.List;
 
-public class ItemTooling extends Item { //TODO: change parent class to Degradable
+public class ItemTooling extends ItemBakedBase {
 
 	protected ToolType type;
 	
 	public ItemTooling(ToolType type, int dura, String s) {
-		this.setTranslationKey(s);
-		this.setRegistryName(s);
+		super(s);
 		this.setMaxStackSize(1);
 		this.setFull3D();
 		this.setCreativeTab(MainRegistry.consumableTab);
 		this.setMaxDamage(dura);
 		this.type = type;
 		
-		ModItems.ALL_ITEMS.add(this);
 		type.register(new ItemStack(this));
 	}
 	
@@ -55,7 +52,6 @@ public class ItemTooling extends Item { //TODO: change parent class to Degradabl
 	public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
 		if(type == ToolType.SCREWDRIVER){
 			tooltip.add(I18nUtil.resolveKey("desc.screwdriver1"));
-			tooltip.add(I18nUtil.resolveKey("desc.screwdriver2"));
 		}
 	}
 

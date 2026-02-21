@@ -21,7 +21,6 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.opengl.GL11;
 // Th3_Sl1ze: basically, this thing renders the shaded item model of the dummy mechanism you're holding in hand if you look on a block.
@@ -119,12 +118,10 @@ public class PlacementPreviewHandler {
     private void tryRenderModelViaItemRenderer(World world, BlockDummyable block, ForgeDirection dir) {
         // Th3_Sl1ze: strangely you need to set BOTH meta in constructor and blockMetadata itself by hand.
         // Tried to remove one of these, it didn't work. You're free to try though..
-        TileEntity te = block.createNewTileEntity(world, dir.ordinal() + BlockDummyable.offset);
-        if (te == null) return;
         int meta = dir.ordinal() + BlockDummyable.offset;
-        try {
-            ObfuscationReflectionHelper.setPrivateValue(TileEntity.class, te, meta, "blockMetadata");
-        } catch (Throwable ignored) {}
+        TileEntity te = block.createNewTileEntity(world, meta);
+        if (te == null) return;
+        te.blockMetadata = meta;
 
         TileEntitySpecialRenderer<TileEntity> renderer = TileEntityRendererDispatcher.instance.getRenderer(te);
         if (renderer == null) return;

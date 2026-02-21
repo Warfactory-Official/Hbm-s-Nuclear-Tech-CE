@@ -21,8 +21,8 @@ public class StorageDrumRecipes {
 
 		//input, output
 
-		for(int i = 0; i < ItemWasteLong.WasteClass.values().length; i++){
-			ItemWasteLong.WasteClass waste = ItemWasteLong.WasteClass.values()[i];
+		for(int i = 0; i < ItemWasteLong.WasteClass.VALUES.length; i++){
+			ItemWasteLong.WasteClass waste = ItemWasteLong.WasteClass.VALUES[i];
 			addRecipe(new ComparableStack(ModItems.nuclear_waste_long, 1, i), 
 				new ItemStack(ModItems.nuclear_waste_long_depleted, 1, i), 
 				VersatileConfig.getLongDecayChance(), 
@@ -37,8 +37,8 @@ public class StorageDrumRecipes {
 			);
 		}
 
-		for(int i = 0; i < ItemWasteShort.WasteClass.values().length; i++){
-			ItemWasteShort.WasteClass waste = ItemWasteShort.WasteClass.values()[i];
+		for(int i = 0; i < ItemWasteShort.WasteClass.VALUES.length; i++){
+			ItemWasteShort.WasteClass waste = ItemWasteShort.WasteClass.VALUES[i];
 			addRecipe(new ComparableStack(ModItems.nuclear_waste_short, 1, i), 
 				new ItemStack(ModItems.nuclear_waste_short_depleted, 1, i), 
 				VersatileConfig.getShortDecayChance(), 
@@ -75,7 +75,4 @@ public class StorageDrumRecipes {
 		return recipeWastes.get(new ComparableStack(stack));
 	}
 
-	public static boolean isOutputItem(ItemStack stack){
-		return outputs.contains(new ComparableStack(stack));
-	}
 }

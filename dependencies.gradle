@@ -40,32 +40,38 @@
 dependencies {
     annotationProcessor project(':processor')
     compileOnly project(':processor')
+    testImplementation project(':processor')
+    testAnnotationProcessor project(':processor')
     //compileOnly rfg.deobf("dev.galacticraft:galacticraft-legacy:${version_gc}")
     compileOnly rfg.deobf("curse.maven:galacticraft-legacy-564236:6364107")
     compileOnly rfg.deobf("com.azanor.baubles:Baubles:${version_baubles}")
     compileOnly rfg.deobf("cofh:RedstoneFlux:1.12-${version_redstoneflux}:universal")
     compileOnly rfg.deobf("cofh:CoFHCore:1.12.2-${version_cofhcore}:universal")
+    compileOnly('appeng:ae2-uel:v0.56.7') { transitive false } // use devOnlyNonPublishable/implementation if need to test in dev env
     shadowImplementation 'org.jctools:jctools-core:4.0.5'
 
     implementation rfg.deobf("curse.maven:opencomputers-223008:6608365")
-    implementation 'mezz:jei:4.29.1'
+    implementation 'mezz:jei:4.29.14'
     implementation 'com.google.guava:guava:31.0.1-jre'
-    implementation rfg.deobf("curse.maven:inventory-bogosorter-632327:6717232") // use compileOnly for runObfClient/runObfServer
-    implementation("com.cleanroommc:modularui:2.5.0-rc5") { transitive false } // comment out for runObfClient/runObfServer
-    implementation rfg.deobf("curse.maven:groovyscript-687577:6695118") // use compileOnly for runObfClient/runObfServer. If you saw "GroovyScript classes definition in runConfig is deprecated!", delete folder "groovy" in the working directory
+    devOnlyNonPublishable rfg.deobf("curse.maven:inventory-bogosorter-632327:7102721")
+    devOnlyNonPublishable rfg.deobf("curse.maven:key-binding-patch-928895:5951859")//required for bogosorter to launch
+    devOnlyNonPublishable("com.cleanroommc:modularui:3.0.6") { transitive false }
+    devOnlyNonPublishable("com.cleanroommc:groovyscript:1.3.3") { transitive false }
 
     // Don't forget to restore these if you tweaked the runtime mods for testing!
-    runtimeOnlyNonPublishable rfg.deobf("curse.maven:mixin-booter-419286:6344449")
+    runtimeOnlyNonPublishable "zone.rong:mixinbooter:10.7"
+    runtimeOnlyNonPublishable "com.cleanroommc:configanytime:3.0"
     runtimeOnlyNonPublishable rfg.deobf("curse.maven:flare-692142:6598523")
     runtimeOnlyNonPublishable rfg.deobf("curse.maven:ctm-267602:2915363")
-    runtimeOnlyNonPublishable rfg.deobf("curse.maven:gregtech-ce-unofficial-557242:5519022")
-    runtimeOnlyNonPublishable rfg.deobf("curse.maven:the-one-probe-245211:2667280")
-    runtimeOnlyNonPublishable rfg.deobf("curse.maven:gregic-probe-ceu-1109784:6393352")
-    runtimeOnlyNonPublishable rfg.deobf("curse.maven:codechicken-lib-1-8-242818:2779848")
-    runtimeOnlyNonPublishable rfg.deobf("curse.maven:mekanism-ce-unofficial-840735:6839240")//DO NOT COMMENT! Needed for FE compatibility testing
+//    devOnlyNonPublishable rfg.deobf("curse.maven:quark-243121:2924091")
+//    devOnlyNonPublishable rfg.deobf("curse.maven:autoreglib-250363:2746011")
+//    runtimeOnlyNonPublishable rfg.deobf("curse.maven:gregtech-ce-unofficial-557242:5519022")
+//    runtimeOnlyNonPublishable rfg.deobf("curse.maven:the-one-probe-245211:2667280")
+//    runtimeOnlyNonPublishable rfg.deobf("curse.maven:gregic-probe-ceu-1109784:6393352")
+//    runtimeOnlyNonPublishable rfg.deobf("curse.maven:codechicken-lib-1-8-242818:2779848")
+//    runtimeOnlyNonPublishable rfg.deobf("curse.maven:mekanism-ce-unofficial-840735:6958488")//DO NOT COMMENT! Needed for FE compatibility testing
     //And I don't want game to take 5 min to start
 //    runtimeOnlyNonPublishable rfg.deobf("curse.maven:universal-tweaks-705000:6675988")
-    runtimeOnlyNonPublishable rfg.deobf("curse.maven:configanytime-870276:5212709")
 //    runtimeOnlyNonPublishable rfg.deobf("curse.maven:fluidlogged-api-485654:3845703")
     runtimeOnlyNonPublishable rfg.deobf(files("libs/legacy_completion-0.1.5.jar"))
 }

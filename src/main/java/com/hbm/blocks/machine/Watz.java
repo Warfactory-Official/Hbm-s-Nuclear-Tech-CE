@@ -19,6 +19,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
 
@@ -91,7 +92,7 @@ public class Watz extends BlockDummyable {
 	public static boolean drop = true;
 	
 	@Override
-	public void breakBlock(World world, BlockPos pos, IBlockState state) {
+	public void breakBlock(@NotNull World world, @NotNull BlockPos pos, IBlockState state) {
 
 		if(this.getMetaFromState(state) >= 12 && drop) {
 

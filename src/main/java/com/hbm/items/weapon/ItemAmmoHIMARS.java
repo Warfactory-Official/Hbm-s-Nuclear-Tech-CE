@@ -1,5 +1,6 @@
 package com.hbm.items.weapon;
 
+import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
@@ -11,7 +12,6 @@ import com.hbm.explosion.vanillant.standard.*;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.items.ModItems;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.particle.helper.ExplosionCreator;
@@ -51,10 +51,12 @@ public class ItemAmmoHIMARS extends Item implements IMetaItemTesr {
     SMALL_LAVA,
     SMALL_MINI_NUKE,
     LARGE,
-    LARGE_TB
+    LARGE_TB;
+
+    public static final RocketType[] VALUES = values();
   }
 
-  public static HIMARSRocket[] itemTypes = new HIMARSRocket[RocketType.values().length];
+  public static HIMARSRocket[] itemTypes = new HIMARSRocket[RocketType.VALUES.length];
 
   public ItemAmmoHIMARS(String s) {
     this.setTranslationKey(s);
@@ -87,7 +89,7 @@ public class ItemAmmoHIMARS extends Item implements IMetaItemTesr {
   public void addInformation(
       ItemStack stack, World worldIn, @NotNull List<String> list, @NotNull ITooltipFlag flagIn) {
 
-    RocketType type = RocketType.values()[stack.getItemDamage()];
+    RocketType type = RocketType.VALUES[stack.getItemDamage()];
     switch (type) {
       case SMALL:
         list.add(TextFormatting.YELLOW + "Strength: 20");
@@ -165,7 +167,7 @@ public class ItemAmmoHIMARS extends Item implements IMetaItemTesr {
       this.name = name;
       this.texture =
           new ResourceLocation(
-              RefStrings.MODID, "textures/models/projectiles/himars_" + name + ".png");
+                  Tags.MODID, "textures/models/projectiles/himars_" + name + ".png");
       this.amount = type == Type.Standard ? 6 : 1;
       this.modelType = type;
     }

@@ -1,6 +1,7 @@
 package com.hbm.render.model;
 
 import com.hbm.lib.ForgeDirection;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.*;
@@ -15,12 +16,16 @@ import org.lwjgl.util.vector.Vector3f;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.locks.StampedLock;
 
 import static com.hbm.blocks.network.PneumoTube.*;
 
 @MethodsReturnNonnullByDefault
 @SideOnly(Side.CLIENT)
 public class PneumoTubeBakedModel extends AbstractBakedModel {
+
+    private final StampedLock lock = new StampedLock();
+    private final Int2ObjectOpenHashMap<List<BakedQuad>> cache = new Int2ObjectOpenHashMap<>();
 
     public PneumoTubeBakedModel() {
         super(BakedModelTransforms.standardBlock());
@@ -50,8 +55,6 @@ public class PneumoTubeBakedModel extends AbstractBakedModel {
     public List<BakedQuad> getQuads(@Nullable IBlockState state, @Nullable EnumFacing side, long rand) {
         if (side != null) return Collections.emptyList();
 
-        List<BakedQuad> quads = new ArrayList<>();
-
         boolean pX, nX, pY, nY, pZ, nZ;
         ForgeDirection outDir, inDir, connectorDir;
 
@@ -59,22 +62,62 @@ public class PneumoTubeBakedModel extends AbstractBakedModel {
             pX = true; nX = true; pY = false; nY = false; pZ = false; nZ = false;
             outDir = ForgeDirection.UNKNOWN; inDir = ForgeDirection.UNKNOWN; connectorDir = ForgeDirection.UNKNOWN;
         } else {
-            IExtendedBlockState ext = (IExtendedBlockState) state;
-            outDir = ext.getValue(OUT_DIR);
-            inDir = ext.getValue(IN_DIR);
-            connectorDir = ext.getValue(CONNECTOR_DIR);
-            nZ = Boolean.TRUE.equals(ext.getValue(CONN_NORTH));
-            pZ = Boolean.TRUE.equals(ext.getValue(CONN_SOUTH));
-            nX = Boolean.TRUE.equals(ext.getValue(CONN_WEST));
-            pX = Boolean.TRUE.equals(ext.getValue(CONN_EAST));
-            nY = Boolean.TRUE.equals(ext.getValue(CONN_DOWN));
-            pY = Boolean.TRUE.equals(ext.getValue(CONN_UP));
+            try {
+                IExtendedBlockState ext = (IExtendedBlockState) state;
+                outDir = ext.getValue(OUT_DIR);
+                inDir = ext.getValue(IN_DIR);
+                connectorDir = ext.getValue(CONNECTOR_DIR);
+                nZ = ext.getValue(CONN_NORTH);
+                pZ = ext.getValue(CONN_SOUTH);
+                nX = ext.getValue(CONN_WEST);
+                pX = ext.getValue(CONN_EAST);
+                nY = ext.getValue(CONN_DOWN);
+                pY = ext.getValue(CONN_UP);
+            } catch (Exception _) {
+                pX = true; nX = true; pY = false; nY = false; pZ = false; nZ = false;
+                outDir = ForgeDirection.UNKNOWN; inDir = ForgeDirection.UNKNOWN; connectorDir = ForgeDirection.UNKNOWN;
+            }
         }
 
+        int mask = (pX ? 32 : 0) | (nX ? 16 : 0) | (pY ? 8 : 0) | (nY ? 4 : 0) | (pZ ? 2 : 0) | (nZ ? 1 : 0);
+        int key = mask | (outDir.ordinal() << 6) | (inDir.ordinal() << 9) | (connectorDir.ordinal() << 12);
+
+        List<BakedQuad> quads;
+        long stamp = lock.tryOptimisticRead();
+        quads = cache.get(key);
+
+        if (!lock.validate(stamp)) {
+            stamp = lock.readLock();
+            try {
+                quads = cache.get(key);
+            } finally {
+                lock.unlockRead(stamp);
+            }
+        }
+
+        if (quads != null) return quads;
+
+        stamp = lock.writeLock();
+        try {
+            quads = cache.get(key);
+            if (quads == null) {
+                quads = generateQuads(pX, nX, pY, nY, pZ, nZ, mask, outDir, inDir, connectorDir);
+                cache.put(key, quads);
+            }
+        } finally {
+            lock.unlockWrite(stamp);
+        }
+
+        return quads;
+    }
+
+    private List<BakedQuad> generateQuads(boolean pX, boolean nX, boolean pY, boolean nY, boolean pZ, boolean nZ, int mask,
+                                          ForgeDirection outDir, ForgeDirection inDir, ForgeDirection connectorDir) {
+
+        List<BakedQuad> quads = new ArrayList<>();
         float lower = 5f / 16f;
         float upper = 11f / 16f;
 
-        int mask = (pX ? 32 : 0) + (nX ? 16 : 0) + (pY ? 8 : 0) + (nY ? 4 : 0) + (pZ ? 2 : 0) + (nZ ? 1 : 0);
         boolean straightX = (mask & 0b001111) == 0 && mask > 0;
         boolean straightY = (mask & 0b110011) == 0 && mask > 0;
         boolean straightZ = (mask & 0b111100) == 0 && mask > 0;
@@ -100,8 +143,8 @@ public class PneumoTubeBakedModel extends AbstractBakedModel {
             if (pZ) boundsList.add(new float[]{lower, lower, upper, upper, upper, 1, 0});
         }
 
-        if (outDir != ForgeDirection.UNKNOWN) addConnectorBounds(boundsList, outDir, 1);
-        if (inDir != ForgeDirection.UNKNOWN) addConnectorBounds(boundsList, inDir, 2);
+        if (outDir != ForgeDirection.UNKNOWN) addConnectorBounds(boundsList, outDir, 2);
+        if (inDir != ForgeDirection.UNKNOWN) addConnectorBounds(boundsList, inDir, 1);
         if (connectorDir != ForgeDirection.UNKNOWN) addConnectorBounds(boundsList, connectorDir, 3);
 
         FaceBakery faceBakery = new FaceBakery();
@@ -171,8 +214,7 @@ public class PneumoTubeBakedModel extends AbstractBakedModel {
                 quads.add(quad);
             }
         }
-
-        return quads;
+        return Collections.unmodifiableList(quads);
     }
 
     private static void addConnectorBounds(List<float[]> boundsList, ForgeDirection dir, float type) {

@@ -34,6 +34,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
@@ -222,7 +223,7 @@ public class TileEntityPWRController extends TileEntityMachineBase implements IT
                     int newFlux = this.sourceCount * 20;
 
                     if (typeLoaded != -1 && amountLoaded > 0) {
-                        EnumPWRFuel fuel = EnumUtil.grabEnumSafely(EnumPWRFuel.class, typeLoaded);
+                        EnumPWRFuel fuel = EnumUtil.grabEnumSafely(EnumPWRFuel.VALUES, typeLoaded);
                         double usedRods = getTotalProcessMultiplier();
                         double fluxPerRod = (this.rodCount > 0) ? this.flux / this.rodCount : 0;
                         double outputPerRod = fuel.function.effonix(fluxPerRod);
@@ -333,6 +334,7 @@ public class TileEntityPWRController extends TileEntityMachineBase implements IT
 
     @Override
     public void onChunkUnload() {
+        super.onChunkUnload();
         if (audio != null) {
             audio.stopSound();
             audio = null;
@@ -447,6 +449,11 @@ public class TileEntityPWRController extends TileEntityMachineBase implements IT
     @Override
     public boolean canConnect(FluidType type, ForgeDirection dir){
         return type == tanks[0].getTankType() || type == tanks[1].getTankType();
+    }
+
+    @Override
+    public int[] getAccessibleSlotsFromSide(EnumFacing e) {
+        return new int[]{0, 1};
     }
 
     @Override

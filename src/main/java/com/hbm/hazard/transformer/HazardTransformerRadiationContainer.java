@@ -9,11 +9,10 @@ import com.hbm.util.BobMathUtil;
 import com.hbm.util.ItemStackUtil;
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.List;
 
-public class HazardTransformerRadiationContainer extends HazardTransformerBase {
+public class HazardTransformerRadiationContainer implements IHazardTransformer {
 
 	@Override
 	public void transformPre(final ItemStack stack, final List<HazardEntry> entries) { }
@@ -29,19 +28,10 @@ public class HazardTransformerRadiationContainer extends HazardTransformerBase {
 		if(!isCrate && !isBox) return;
 		if(!stack.hasTagCompound()) return;
 
-		float radiation = 0;
+        double radiation = 0D;
 		
 		if(isCrate) {
-
-			for(int i = 0; i < 104; i++) {
-				final NBTTagCompound slotTag = stack.getTagCompound().getCompoundTag("slot"+i);
-				final ItemStack held = ItemStackUtil.itemStackFrom(slotTag);
-
-
-				if(held != null) {
-					radiation += HazardSystem.getHazardLevelFromStack(held, HazardRegistry.RADIATION) * held.getCount();
-				}
-			}
+            radiation = stack.getTagCompound().getDouble(BlockStorageCrate.CRATE_RAD_KEY);
 		}
 		
 		if(isBox) {
@@ -49,32 +39,32 @@ public class HazardTransformerRadiationContainer extends HazardTransformerBase {
 			//ItemStack[] fromNBT = ItemStackUtil.readStacksFromNBT(stack, 20);
 			final ItemStack[] fromNBT = ItemStackUtil.readStacksFromNBT(stack);
 			if(fromNBT == null) return;
-			
-			for(final ItemStack held : fromNBT) {
-				if(held != null) {
-					radiation += HazardSystem.getHazardLevelFromStack(held, HazardRegistry.RADIATION) * held.getCount();
-				}
-			}
-			
-			radiation = (float) BobMathUtil.sqrt(radiation);
-		}
+
+            for (final ItemStack held : fromNBT) {
+                if (held != null) {
+                    radiation += HazardSystem.getHazardLevelFromStack(held, HazardRegistry.RADIATION) * held.getCount();
+                }
+            }
+
+            radiation = BobMathUtil.sqrt(radiation);
+        }
 		
 		if(isBag) {
 
 			final ItemStack[] fromNBT = ItemStackUtil.readStacksFromNBT(stack);
 			if(fromNBT == null) return;
 
-			for(ItemStack held : fromNBT) {
-				if(held != null) {
-					radiation += HazardSystem.getHazardLevelFromStack(held, HazardRegistry.RADIATION) * held.getCount();
-				}
-			}
+            for (ItemStack held : fromNBT) {
+                if (held != null) {
+                    radiation += HazardSystem.getHazardLevelFromStack(held, HazardRegistry.RADIATION) * held.getCount();
+                }
+            }
 
-			radiation *= 2F;
-		}
-		
-		if(radiation > 0) {
-			entries.add(new HazardEntry(HazardRegistry.RADIATION, radiation));
-		}
-	}
+            radiation *= 2D;
+        }
+
+        if (radiation > 0) {
+            entries.add(new HazardEntry(HazardRegistry.RADIATION, radiation));
+        }
+    }
 }

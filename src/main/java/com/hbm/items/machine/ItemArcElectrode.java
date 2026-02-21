@@ -5,10 +5,10 @@ import com.hbm.util.EnumUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
-public class ItemArcElectrode extends ItemEnumMulti {
+public class ItemArcElectrode extends ItemEnumMulti<ItemArcElectrode.EnumElectrodeType> {
 
     public ItemArcElectrode(String s) {
-        super(s, EnumElectrodeType.class, true, true);
+        super(s, EnumElectrodeType.VALUES, true, true);
         this.setFull3D();
         this.setMaxStackSize(1);
     }
@@ -30,7 +30,7 @@ public class ItemArcElectrode extends ItemEnumMulti {
     }
 
     public static int getMaxDurability(ItemStack stack) {
-        EnumElectrodeType num = EnumUtil.grabEnumSafely(EnumElectrodeType.class, stack.getItemDamage());
+        EnumElectrodeType num = EnumUtil.grabEnumSafely(EnumElectrodeType.VALUES, stack.getItemDamage());
         return num.durability;
     }
 
@@ -49,6 +49,8 @@ public class ItemArcElectrode extends ItemEnumMulti {
         LANTHANIUM(	100),
         DESH(		500),
         SATURNITE(	1500);
+
+        public static final EnumElectrodeType[] VALUES = values();
 
         public int durability;
 

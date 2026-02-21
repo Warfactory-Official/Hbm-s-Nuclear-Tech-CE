@@ -30,42 +30,49 @@ public class BobMathUtil {
 
     public static int min(int... nums) {
         int smallest = Integer.MAX_VALUE;
-        for(int num : nums) if(num < smallest) smallest = num;
+        for (int num : nums) if (num < smallest) smallest = num;
         return smallest;
     }
+
     public static int max(int... nums) {
         int largest = Integer.MIN_VALUE;
-        for(int num : nums) if(num > largest) largest = num;
+        for (int num : nums) if (num > largest) largest = num;
         return largest;
     }
+
     public static long min(long... nums) {
         long smallest = Long.MAX_VALUE;
-        for(long num : nums) if(num < smallest) smallest = num;
+        for (long num : nums) if (num < smallest) smallest = num;
         return smallest;
     }
+
     public static long max(long... nums) {
         long largest = Long.MIN_VALUE;
-        for(long num : nums) if(num > largest) largest = num;
+        for (long num : nums) if (num > largest) largest = num;
         return largest;
     }
+
     public static float min(float... nums) {
         float smallest = Float.MAX_VALUE;
-        for(float num : nums) if(num < smallest) smallest = num;
+        for (float num : nums) if (num < smallest) smallest = num;
         return smallest;
     }
+
     public static float max(float... nums) {
         float largest = Float.MIN_VALUE;
-        for(float num : nums) if(num > largest) largest = num;
+        for (float num : nums) if (num > largest) largest = num;
         return largest;
     }
+
     public static double min(double... nums) {
         double smallest = Double.MAX_VALUE;
-        for(double num : nums) if(num < smallest) smallest = num;
+        for (double num : nums) if (num < smallest) smallest = num;
         return smallest;
     }
+
     public static double max(double... nums) {
         double largest = Double.MIN_VALUE;
-        for(double num : nums) if(num > largest) largest = num;
+        for (double num : nums) if (num > largest) largest = num;
         return largest;
     }
 
@@ -114,6 +121,22 @@ public class BobMathUtil {
             throw new IllegalArgumentException("Attempted negative number in non-negative field! Attempted value: " + digits);
 
         return new BigDecimal(num).setScale(digits, RoundingMode.HALF_UP).doubleValue();
+    }
+
+    /**
+     * @param amount
+     * @return the number as a string with thousand group commas
+     */
+    public static String format(int amount) {
+        return String.format(Locale.US, "%,d", amount);
+    }
+
+    public static String format(long amount) {
+        return String.format(Locale.US, "%,d", amount);
+    }
+
+    public static String format(Number amount) {
+        return String.format(Locale.US, "%,d", amount);
     }
 
     public static boolean getBlink() {
@@ -473,7 +496,9 @@ public class BobMathUtil {
         return x + (y - x) * interp;
     }
 
-    public static double interp(double x, double y, double interp) { return x + (y - x) * interp; }
+    public static double interp(double x, double y, double interp) {
+        return x + (y - x) * interp;
+    }
 
     // I am sick of trying to remember the ridiculous quirks of Java 8
     // so I wrote this thing that can shit any int-ish list-ish into a regular fucking int[]
@@ -492,7 +517,7 @@ public class BobMathUtil {
 
     public static void shuffleIntArray(int[] array) {
         Random rand = ThreadLocalRandom.current();
-        for(int i = array.length - 1; i > 0; i--) {
+        for (int i = array.length - 1; i > 0; i--) {
             int r = rand.nextInt(i + 1);
             int temp = array[r];
             array[r] = array[i];
@@ -502,7 +527,7 @@ public class BobMathUtil {
 
     public static void reverseIntArray(int[] array) {
         int len = array.length;
-        for(int i = 0; i < len / 2; i++) {
+        for (int i = 0; i < len / 2; i++) {
             int temp = array[i];
             array[i] = array[len - 1 - i];
             array[len - 1 - i] = temp;
@@ -514,5 +539,24 @@ public class BobMathUtil {
      */
     public static double sps(double x) {
         return Math.sin(Math.PI / 2D * Math.cos(x));
+    }
+
+    public static double safeClamp(double val, double min, double max) {
+        val = MathHelper.clamp(val, min, max);
+
+        if (val == Double.NaN) {
+            val = (min + max) / 2D;
+        }
+
+        return val;
+    }
+    public static float safeClamp(float val, float min, float max) {
+        val = MathHelper.clamp(val, min, max);
+
+        if (Double.isNaN(val)) {
+            val = (float) ((min + max) / 2D);
+        }
+
+        return val;
     }
 }

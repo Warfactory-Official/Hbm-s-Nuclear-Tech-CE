@@ -15,8 +15,8 @@ public class RenderUndeadSoldier extends RenderBiped<EntityUndeadSoldier> {
 
     public static final IRenderFactory<EntityUndeadSoldier> FACTORY = man -> new RenderUndeadSoldier(man);
 
-    public static final ResourceLocation TEXTURE_ZOMBIE = new ResourceLocation("textures/entity/zombie/zombie.png");
-    public static final ResourceLocation TEXTURE_SKELETON = new ResourceLocation("textures/entity/skeleton/skeleton.png");
+    public static final ResourceLocation TEXTURE_ZOMBIE = new ResourceLocation("minecraft", "textures/entity/zombie/zombie.png");
+    public static final ResourceLocation TEXTURE_SKELETON = new ResourceLocation("minecraft", "textures/entity/skeleton/skeleton.png");
 
     public static final ModelBiped MODEL_ZOMBIE = new ModelZombie();
     public static final ModelBiped MODEL_SKELETON = new ModelSkeleton();
@@ -34,6 +34,13 @@ public class RenderUndeadSoldier extends RenderBiped<EntityUndeadSoldier> {
         if (type == EntityUndeadSoldier.TYPE_SKELETON) {
             this.mainModel = MODEL_SKELETON;
         }
+    }
+
+    @Override
+    public void doRender(EntityUndeadSoldier entity, double x, double y, double z, float entityYaw, float partialTicks) {
+        byte type = entity.getDataManager().get(EntityUndeadSoldier.DW_TYPE);
+        this.mainModel = (type == EntityUndeadSoldier.TYPE_SKELETON) ? MODEL_SKELETON : MODEL_ZOMBIE;
+        super.doRender(entity, x, y, z, entityYaw, partialTicks);
     }
 
     @Override

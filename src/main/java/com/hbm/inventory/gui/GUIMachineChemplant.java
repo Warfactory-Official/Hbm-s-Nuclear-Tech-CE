@@ -1,9 +1,9 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerMachineChemplant;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityMachineChemplant;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
@@ -13,12 +13,12 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.items.ItemStackHandler;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 public class GUIMachineChemplant extends GuiInfoContainer {
 
 	
-	private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/gui_chemplant.png");
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/gui_chemplant.png");
 	private final TileEntityMachineChemplant chemplant;
 	
 	public GUIMachineChemplant(InventoryPlayer invPlayer, TileEntityMachineChemplant tile) {
@@ -59,7 +59,6 @@ public class GUIMachineChemplant extends GuiInfoContainer {
 	@Override
 	protected void drawGuiContainerBackgroundLayer(float p_146976_1_, int p_146976_2_, int p_146976_3_) {
 		this.drawDefaultBackground();
-		GL11.glPushAttrib(GL11.GL_ENABLE_BIT);
 		GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
@@ -88,7 +87,6 @@ public class GUIMachineChemplant extends GuiInfoContainer {
 		chemplant.tanksNew[1].renderTank(guiLeft + 26, guiTop + 52, this.zLevel, 16, 34);
 		chemplant.tanksNew[2].renderTank(guiLeft + 134, guiTop + 52, this.zLevel, 16, 34);
 		chemplant.tanksNew[3].renderTank(guiLeft + 152, guiTop + 52, this.zLevel, 16, 34);
-		GL11.glPopAttrib();
 	}
 
 	public ItemStackHandler getInventory() {

@@ -1,6 +1,8 @@
 package com.hbm.inventory.container;
 
+import com.hbm.items.ModItems;
 import com.hbm.tileentity.bomb.TileEntityNukeFleija;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -15,12 +17,15 @@ public class ContainerNukeFleija extends Container {
 	public ContainerNukeFleija(InventoryPlayer invPlayer, TileEntityNukeFleija tedf) {
 		
 		nukeTsar = tedf;
-		
+
+        //igniters
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 8, 36));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 1, 152, 36));
+        //propellant
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 2, 44, 18));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 44, 36));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 4, 44, 54));
+        //cores
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 5, 80, 18));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 6, 98, 18));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 7, 80, 36));
@@ -43,36 +48,12 @@ public class ContainerNukeFleija extends Container {
 	}
 	
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2)
+    public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-		
-		if (var4 != null && var4.getHasStack())
-		{
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-			
-            if (par2 <= 10) {
-				if (!this.mergeItemStack(var5, 11, this.inventorySlots.size(), true))
-				{
-					return ItemStack.EMPTY;
-				}
-			} else {
-				return ItemStack.EMPTY;
-			}
-            
-			if (var5.getCount() == 0)
-			{
-				var4.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
-				var4.onSlotChanged();
-			}
-		}
-		
-		return var3;
+		return InventoryUtil.transferStack(this.inventorySlots, index, 11,
+                s -> s.getItem() == ModItems.fleija_igniter, 2,
+                s -> s.getItem() == ModItems.fleija_propellant, 5,
+                s -> s.getItem() == ModItems.fleija_core, 11);
     }
 	
 	@Override

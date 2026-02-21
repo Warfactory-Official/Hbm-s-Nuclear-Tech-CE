@@ -7,7 +7,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.world.World;
+import net.minecraft.world.storage.WorldInfo;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,13 +21,12 @@ public class MKUCraftingHandler extends net.minecraftforge.registries.IForgeRegi
     public static ItemStack[] MKURecipe;
     private static long lastSeed;
 
-    public static void generateRecipe(World world) {
-        Random rand = new Random(world.getSeed());
+    private static void generateRecipe(long seed) {
+        if (MKURecipe != null && lastSeed == seed) return;
 
-        if (lastSeed == world.getSeed() && MKURecipe != null || world.provider == null)
-            return;
+        lastSeed = seed;
 
-        lastSeed = world.getSeed();
+        Random rand = new Random(seed);
 
         List<ItemStack> list = Arrays.asList(
                 new ItemStack(ModItems.powder_iodine),
@@ -34,7 +35,8 @@ public class MKUCraftingHandler extends net.minecraftforge.registries.IForgeRegi
                 new ItemStack(ModItems.ingot_mercury),
                 new ItemStack(ModItems.morning_glory),
                 new ItemStack(ModItems.syringe_metal_empty),
-                null, null, null);
+                null, null, null
+        );
 
         Collections.shuffle(list, rand);
 
@@ -43,16 +45,9 @@ public class MKUCraftingHandler extends net.minecraftforge.registries.IForgeRegi
 
     @Override
     public boolean matches(@NotNull InventoryCrafting inventory, @NotNull World world) {
-        // Do not change the try-catch here, it's a workaround for mod compatibility
-        // where some mods attempt to read the recipe before the world is initialized
-        try {
-            if (!world.getWorldInfo().isInitialized() || lastSeed == world.getSeed() && MKURecipe != null) return false;
-        } catch (NullPointerException ignored) {
-            return false;
-        }
-
-        if (MKURecipe == null || world.getSeed() != lastSeed)
-            generateRecipe(world);
+        Long seed = getSeed(world);
+        if (seed == null) return false;
+        generateRecipe(seed);
 
         for (int i = 0; i < 9; i++) {
             ItemStack stack = inventory.getStackInRowAndColumn(i % 3, i / 3);
@@ -70,6 +65,14 @@ public class MKUCraftingHandler extends net.minecraftforge.registries.IForgeRegi
         return true;
     }
 
+    private static @Nullable Long getSeed(World world) {
+        if (world == null) return null;
+        WorldInfo info = world.getWorldInfo();
+        //noinspection ConstantValue
+        if (info == null) return null; //mlbv: this is defensive, I checked mc source it can't be null
+        return info.getSeed();
+    }
+
     // Th3_Sl1ze: idk why it is in the crafting handler, honestly
     public static Item getMKUItem(World world) {
         switch(world.rand.nextInt(6)) {
@@ -84,7 +87,7 @@ public class MKUCraftingHandler extends net.minecraftforge.registries.IForgeRegi
     }
 
     public static ItemStack generateBook(World world, Item mkuItem) {
-        MKUCraftingHandler.generateRecipe(world);
+        generateRecipe(getSeed(world));
         ItemStack[] recipe = MKUCraftingHandler.MKURecipe;
 
         if(recipe == null) return new ItemStack(ModItems.flame_pony);

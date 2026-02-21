@@ -1,10 +1,9 @@
 package com.hbm.render.entity.layers;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.ModelCreeper;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderCreeper;
-import net.minecraft.client.renderer.entity.layers.LayerRenderer;
+import net.minecraft.client.renderer.entity.layers.LayerCreeperCharge;
 import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
@@ -14,13 +13,11 @@ import net.minecraftforge.fml.relauncher.SideOnly;
  * Copy-paste of vanilla LayerCreeperCharge because their LIGHTNING_TEXTURE is static final.
  */
 @SideOnly(Side.CLIENT)
-public class LayerCreeperChargeUniversal implements LayerRenderer<EntityCreeper> {
+public class LayerCreeperChargeUniversal extends LayerCreeperCharge {
     private final ResourceLocation LIGHTNING_TEXTURE;
-    private final RenderCreeper creeperRenderer;
-    private final ModelCreeper creeperModel = new ModelCreeper(2.0F);
 
     public LayerCreeperChargeUniversal(RenderCreeper creeperRendererIn, ResourceLocation lightningTexture) {
-        this.creeperRenderer = creeperRendererIn;
+        super(creeperRendererIn);
         this.LIGHTNING_TEXTURE = lightningTexture;
     }
 
@@ -36,7 +33,6 @@ public class LayerCreeperChargeUniversal implements LayerRenderer<EntityCreeper>
             GlStateManager.translate(f * 0.01F, f * 0.01F, 0.0F);
             GlStateManager.matrixMode(5888);
             GlStateManager.enableBlend();
-            float f1 = 0.5F;
             GlStateManager.color(0.5F, 0.5F, 0.5F, 1.0F);
             GlStateManager.disableLighting();
             GlStateManager.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE);
@@ -51,9 +47,5 @@ public class LayerCreeperChargeUniversal implements LayerRenderer<EntityCreeper>
             GlStateManager.disableBlend();
             GlStateManager.depthMask(flag);
         }
-    }
-
-    public boolean shouldCombineTextures() {
-        return false;
     }
 }

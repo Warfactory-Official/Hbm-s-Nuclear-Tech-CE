@@ -2,6 +2,7 @@ package com.hbm.inventory.control_panel.nodes;
 
 import com.hbm.inventory.control_panel.*;
 import com.hbm.inventory.control_panel.DataValue.DataType;
+import com.hbm.inventory.control_panel.modular.StockNodesRegister;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.MathHelper;
 
@@ -19,7 +20,7 @@ public class NodeMath extends Node {
 			}
 			return null;
 		}, () -> op.name);
-		for(Operation op : Operation.values()){
+		for(Operation op : Operation.VALUES){
 			opSelector.list.addItems(op.name);
 		}
 		this.otherElements.add(opSelector);
@@ -36,7 +37,7 @@ public class NodeMath extends Node {
 	
 	@Override
 	public void readFromNBT(NBTTagCompound tag, NodeSystem sys){
-		op = Operation.values()[tag.getInteger("op")%Operation.values().length];
+		op = Operation.VALUES[tag.getInteger("op")%Operation.VALUES.length];
 		super.readFromNBT(tag, sys);
 	}
 	
@@ -84,6 +85,16 @@ public class NodeMath extends Node {
 				return evalCache[0] = new DataValueFloat(evals[0].getNumber() <= evals[1].getNumber() ? 1 : 0);
 			case CLAMP:
 				return evalCache[0] = new DataValueFloat(MathHelper.clamp(evals[0].getNumber(), evals[1].getNumber(), evals[2].getNumber()));
+			case MAX:
+				return evalCache[0] = new DataValueFloat(Math.max(evals[0].getNumber(),evals[1].getNumber()));
+			case MIN:
+				return evalCache[0] = new DataValueFloat(Math.min(evals[0].getNumber(),evals[1].getNumber()));
+			case FLOOR:
+				return evalCache[0] = new DataValueFloat((float)Math.floor(evals[0].getNumber()));
+			case CEIL:
+				return evalCache[0] = new DataValueFloat((float)Math.ceil(evals[0].getNumber()));
+			case ROUND:
+				return evalCache[0] = new DataValueFloat((float)Math.round(evals[0].getNumber()));
 		}
 		return evalCache[0] = null;
 	}
@@ -113,6 +124,8 @@ public class NodeMath extends Node {
 			case DIV:
 			case MOD:
 			case POW:
+			case MIN:
+			case MAX:
 			case LOG:
 				if(op == Operation.POW){
 					s1 = "Base";
@@ -129,6 +142,11 @@ public class NodeMath extends Node {
 			case ABS:
 				inputs.add(new NodeConnection("Input", this, inputs.size(), true, DataType.NUMBER, new DataValueFloat(0)));
 				break;
+			case FLOOR:
+			case CEIL:
+			case ROUND:
+				inputs.add(new NodeConnection("Input", this, inputs.size(), true, DataType.NUMBER, new DataValueFloat(0)));
+				break;
 			case CLAMP:
 				inputs.add(new NodeConnection("Value", this, inputs.size(), true, DataType.NUMBER, new DataValueFloat(0)));
 				inputs.add(new NodeConnection("Min", this, inputs.size(), true, DataType.NUMBER, new DataValueFloat(0)));
@@ -137,10 +155,10 @@ public class NodeMath extends Node {
 		}
 		recalcSize();
 	}
-	
+
 	@Override
-	public NodeType getType(){
-		return NodeType.MATH;
+	public float[] getColor() {
+		return StockNodesRegister.colorMath;
 	}
 	
 	@Override
@@ -164,7 +182,14 @@ public class NodeMath extends Node {
 		LESS("Less"),
 		GEQUAL("Greater/equal"),
 		LEQUAL("Less/equal"),
-		CLAMP("Clamp");
+		CLAMP("Clamp"),
+		MAX("Max"),
+		MIN("Min"),
+		FLOOR("Floor"),
+		CEIL("Ceil"),
+		ROUND("Round");
+
+        public static final Operation[] VALUES = values();
 
 		public String name;
 		private Operation(String name){
@@ -172,7 +197,7 @@ public class NodeMath extends Node {
 		}
 		
 		public static Operation getByName(String name){
-			for(Operation o : values()){
+			for(Operation o : Operation.VALUES){
 				if(o.name.equals(name)){
 					return o;
 				}

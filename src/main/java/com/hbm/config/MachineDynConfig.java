@@ -12,12 +12,16 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Dynamically generated JSON config using the IConfigurableMachine interface.
  * How it works: simply implement the interface, the system will read all relevant
  * tile entities from the registry automatically and generate config options.
+ * <p>
+ * mlbv: added a dedup check to the config name, this bug is still present on 1.7
  *
  * @author hbm
  */
@@ -39,12 +43,20 @@ public class MachineDynConfig {
         List<IConfigurableMachine> dummies = new ArrayList<>();
         AutoRegistry.configurableMachineClasses.forEach(x -> {
             try {
-                dummies.add(x.newInstance());
+                dummies.add(x.getDeclaredConstructor().newInstance());
             } catch (Exception ignored) {
             }
         }); // <- lambda comes with a hidden little try/catch block hidden inside, like a kinder surprise egg that is filled with shit
         File file = new File(dir.getAbsolutePath() + File.separatorChar + "hbmMachines.json");
 
+        // group by config name so multiple subclasses sharing the same name collapse into a single JSON entry
+        // one entry should control all machines with that name
+        final LinkedHashMap<String, List<IConfigurableMachine>> groups = new LinkedHashMap<>();
+        for (IConfigurableMachine m : dummies) {
+            String name = m.getConfigName();
+            if (name == null || name.isEmpty()) throw new IllegalArgumentException("Config name cannot be null or empty");
+            groups.computeIfAbsent(name, k -> new ArrayList<>()).add(m);
+        }
 
         //and now for the good part
         try { // <- useless overarching try/catch to make the reader shut up
@@ -52,16 +64,19 @@ public class MachineDynConfig {
             if (file.exists()) {
                 JsonObject json = gson.fromJson(new FileReader(file), JsonObject.class);
 
-                for (IConfigurableMachine dummy : dummies) {
-
+                for (Map.Entry<String, List<IConfigurableMachine>> e : groups.entrySet()) {
                     try {
-                        JsonElement element = json.get(dummy.getConfigName());
+                        JsonElement element = json.get(e.getKey());
                         JsonObject obj = element != null ? element.getAsJsonObject() : new JsonObject();
-
-                        //defaults usually already exist at this point, if not we can declare them before the actual reading part
-                        dummy.readIfPresent(obj);
-
-                    } catch (Exception ex) {
+                        // read same section into all machines that share this config name
+                        for (IConfigurableMachine machine : e.getValue()) {
+                            try {
+                                //defaults usually already exist at this point, if not we can declare them before the actual reading part
+                                machine.readIfPresent(obj);
+                            } catch (Exception ignored) {
+                            }
+                        }
+                    } catch (Exception ignored) {
                     } // <- individual try/catch blocks so a single config breaking doesn't affect other machines. we only got a few dozen of these and it only happens once on startup so who the hell cares
                 }
             }
@@ -74,14 +89,16 @@ public class MachineDynConfig {
             for (String line : getComment()) writer.value(line);
             writer.endArray();
 
-            for (IConfigurableMachine dummy : dummies) {
-
+            // write exactly one JSON object per config name using the first machine in each group
+            for (Map.Entry<String, List<IConfigurableMachine>> e : groups.entrySet()) {
                 try {
-                    writer.name(dummy.getConfigName()).beginObject();
-                    dummy.writeConfig(writer);
+                    writer.name(e.getKey()).beginObject();
+                    List<IConfigurableMachine> list = e.getValue();
+                    if (!list.isEmpty()) {
+                        list.get(0).writeConfig(writer);
+                    }
                     writer.endObject();
-
-                } catch (Exception ex) {
+                } catch (Exception ignored) {
                 } // <- more looped try/catch goodness because i hate myself
             }
 

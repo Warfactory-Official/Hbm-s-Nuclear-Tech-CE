@@ -1,22 +1,18 @@
 package com.hbm.inventory.control_panel.controls;
 
+import com.hbm.render.loader.WaveFrontObjectVAO;
 import com.hbm.inventory.control_panel.*;
 import com.hbm.inventory.control_panel.nodes.NodeBoolean;
 import com.hbm.inventory.control_panel.nodes.NodeGetVar;
 import com.hbm.inventory.control_panel.nodes.NodeSetVar;
-import com.hbm.main.ClientProxy;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.IModelCustom;
-import com.hbm.render.amlfrom1710.Tessellator;
+import com.hbm.render.loader.IModelCustom;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
-import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.opengl.GL11;
 
 import java.util.Collections;
 import java.util.List;
@@ -44,31 +40,25 @@ public class SwitchRotaryToggle extends Control {
 
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
         Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.ctrl_switch_rotary_toggle_tex);
-        Tessellator tes = Tessellator.instance;
 
-        IModelCustom model = getModel();
+        WaveFrontObjectVAO model = (WaveFrontObjectVAO) getModel(); // VAO model
 
-        tes.startDrawing(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-        tes.setTranslation(posX, 0, posY);
-        tes.setColorRGBA_F(1, 1, 1, 1);
-        model.tessellatePart(tes, "base");
-        tes.draw();
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(posX, 0F, posY);
+        GlStateManager.color(1F, 1F, 1F, 1F);
+        model.renderPart("base");
+        GlStateManager.popMatrix();
 
-        tes.startDrawing(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-        tes.setColorRGBA_F(1, 1, 1, 1);
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(posX, 0F, posY);
+
         if (isFlipped) {
-            Matrix4f rot_mat = new Matrix4f().rotate((float) Math.toRadians(-90), new Vector3f(0, 1, 0));
-            Matrix4f trans_mat = new Matrix4f().translate(new Vector3f(posX, 0, posY));
-            Matrix4f transform_mat = new Matrix4f();
-            Matrix4f.mul(trans_mat, rot_mat, transform_mat);
-            transform_mat.store(ClientProxy.AUX_GL_BUFFER);
-            ClientProxy.AUX_GL_BUFFER.rewind();
-            GlStateManager.multMatrix(ClientProxy.AUX_GL_BUFFER);
-        } else {
-            tes.setTranslation(posX, 0, posY);
+            GlStateManager.rotate(-90F, 0F, 1F, 0F);
         }
-        model.tessellatePart(tes, "lever");
-        tes.draw();
+
+        GlStateManager.color(1F, 1F, 1F, 1F);
+        model.renderPart("lever");
+        GlStateManager.popMatrix();
 
         GlStateManager.shadeModel(GL11.GL_FLAT);
     }

@@ -1,5 +1,6 @@
 package com.hbm.render.util;
 
+import com.hbm.lib.internal.MethodHandleHelper;
 import com.hbm.main.ClientProxy;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
@@ -28,17 +29,16 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import org.apache.commons.lang3.tuple.Pair;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.jetbrains.annotations.NotNull;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Matrix4f;
 
 import javax.annotation.Nullable;
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Vector3f;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -48,27 +48,26 @@ import java.util.function.Consumer;
 public class ModelRendererUtil {
 
 	//Need to call this because things like bats do extra scaling
-	public static Method rGetEntityTexture;
-	public static Method rHandleRotationFloat;
-	public static Method rApplyRotations;
-	public static Field rQuadList;
-	public static Field rCompiled;
-	
-	public static ResourceLocation getEntityTexture(Entity e){
-		Render<Entity> eRenderer = Minecraft.getMinecraft().getRenderManager().getEntityRenderObject(e);
-		if(rGetEntityTexture == null){
-			rGetEntityTexture = ReflectionHelper.findMethod(Render.class, "getEntityTexture", "func_110775_a", Entity.class);
-		}
-		ResourceLocation r = null;
-		try {
-			r = (ResourceLocation) rGetEntityTexture.invoke(eRenderer, e);
-		} catch(IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
-			e1.printStackTrace();
-		}
-		return r == null ? ResourceManager.turbofan_blades_tex : r;
-	}
-	
-	public static <T extends EntityLivingBase> List<Pair<Matrix4f, ModelRenderer>> getBoxesFromMob(T e){
+	public static final MethodHandle rGetEntityTexture = MethodHandleHelper.findVirtual(Render.class, "getEntityTexture", "func_110775_a", MethodType.methodType(ResourceLocation.class, Entity.class));
+	public static final MethodHandle rHandleRotationFloat = MethodHandleHelper.findVirtual(RenderLivingBase.class, "handleRotationFloat", "func_77044_a", MethodType.methodType(float.class, EntityLivingBase.class, float.class));
+	public static final MethodHandle rApplyRotations = MethodHandleHelper.findVirtual(RenderLivingBase.class, "applyRotations", "func_77043_a", MethodType.methodType(void.class, EntityLivingBase.class, float.class, float.class, float.class));
+
+    public static @NotNull <T extends Entity> ResourceLocation getEntityTexture(T e) {
+        Render<T> eRenderer = Minecraft.getMinecraft().getRenderManager().getEntityRenderObject(e);
+        return getEntityTexture(e, eRenderer);
+    }
+
+    public static @NotNull <T extends Entity> ResourceLocation getEntityTexture(T e, Render<T> eRenderer) {
+        ResourceLocation r = null;
+        try {
+            r = (ResourceLocation) rGetEntityTexture.invokeExact(eRenderer, e);
+        } catch(Throwable e1) {
+            MainRegistry.logger.catching(e1);
+        }
+        return r == null ? ResourceManager.turbofan_blades_tex : r;
+    }
+
+    public static <T extends EntityLivingBase> List<Pair<Matrix4f, ModelRenderer>> getBoxesFromMob(T e){
 		Render<T> eRenderer = Minecraft.getMinecraft().getRenderManager().getEntityRenderObject(e);
 		if(eRenderer instanceof RenderLivingBase && e instanceof EntityLivingBase) {
 			return getBoxesFromMob(e, ((RenderLivingBase<T>) eRenderer), MainRegistry.proxy.partialTicks());
@@ -122,16 +121,13 @@ public class ModelRendererUtil {
 		//	rPreRenderCallback = ReflectionHelper.findMethod(RenderLivingBase.class, "preRenderCallback", "func_77041_b", EntityLivingBase.class, float.class);
 		//}
 		//float f4 = prepareScale(e, partialTicks, render);
-		if(rHandleRotationFloat == null){
-			rHandleRotationFloat = ReflectionHelper.findMethod(RenderLivingBase.class, "handleRotationFloat", "func_77044_a", EntityLivingBase.class, float.class);
-			rApplyRotations = ReflectionHelper.findMethod(RenderLivingBase.class, "applyRotations", "func_77043_a", EntityLivingBase.class, float.class, float.class, float.class);
-		}
 		
 		float f8 = 0;
 		try {
-			f8 = (Float)rHandleRotationFloat.invoke(render, e, partialTicks);
-			rApplyRotations.invoke(render, e, f8, f, partialTicks);
-		} catch(Exception x){
+			f8 = (float)rHandleRotationFloat.invokeExact(render, e, partialTicks);
+			rApplyRotations.invokeExact(render, e, f8, f, partialTicks);
+		} catch(Throwable x){
+            MainRegistry.logger.catching(x);
 		}
 		
         //this.applyRotations(entity, f8, f, partialTicks);
@@ -153,21 +149,7 @@ public class ModelRendererUtil {
 		}
 		model.setLivingAnimations(e, f6, f5, partialTicks);
 		model.setRotationAngles(f6, f5, f8, f2, f7, f4, e);
-
-		if(rGetEntityTexture == null){
-			rGetEntityTexture = ReflectionHelper.findMethod(Render.class, "getEntityTexture", "func_110775_a", Entity.class);
-		}
-		ResourceLocation r = ResourceManager.turbofan_blades_tex;
-		try {
-			r = (ResourceLocation) rGetEntityTexture.invoke(render, e);
-			if(r == null)
-				r = ResourceManager.turbofan_blades_tex;
-		} catch(IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
-			e1.printStackTrace();
-		}
-		if(rCompiled == null){
-			rCompiled = ReflectionHelper.findField(ModelRenderer.class, "compiled", "field_78812_q");
-		}
+		ResourceLocation r = getEntityTexture(e, render);
 		List<Pair<Matrix4f, ModelRenderer>> list = new ArrayList<>();
 		for(ModelRenderer renderer : model.boxList) {
 			if(!isChild(renderer, model.boxList))
@@ -189,15 +171,11 @@ public class ModelRendererUtil {
 	}
 	
 	protected static void generateList(World world, EntityLivingBase ent, float scale, List<Pair<Matrix4f, ModelRenderer>> list, ModelRenderer render, ResourceLocation tex){
-		boolean compiled = false;
-		try {
-			//A lot of mobs weirdly replace model renderers and end up with extra ones in the list that aren't ever rendered.
-			//Since they're not rendered, they should never be compiled, so this hack tries to detect that.
-			//Not the greatest method ever, but it appears to work.
-			compiled = rCompiled.getBoolean(render);
-		} catch(Exception x){
-		}
-		if(render.isHidden || !render.showModel || !compiled)
+        //note for !render.compiled:
+        //A lot of mobs weirdly replace model renderers and end up with extra ones in the list that aren't ever rendered.
+        //Since they're not rendered, they should never be compiled, so this hack tries to detect that.
+        //Not the greatest method ever, but it appears to work.
+		if(render.isHidden || !render.showModel || !render.compiled)
 			return;
 		GlStateManager.pushMatrix();
 		doTransforms(render, scale);
@@ -461,40 +439,31 @@ public class ModelRendererUtil {
 	}
 
 	public static Triangle[] triangulate(ModelBox b, @Nullable Matrix4f transform){
-		if(rQuadList == null){
-			rQuadList = ReflectionHelper.findField(ModelBox.class, "quadList", "field_78254_i");
-		}
-		TexturedQuad[] quadList;
 		Triangle[] tris = new Triangle[12];
-		try {
-			quadList = (TexturedQuad[]) rQuadList.get(b);
-			int i = 0;
-			for(TexturedQuad t : quadList){
-				Vec3d v0 = BobMathUtil.mat4Transform(t.vertexPositions[0].vector3D, transform);
-				Vec3d v1 = BobMathUtil.mat4Transform(t.vertexPositions[1].vector3D, transform);
-				Vec3d v2 = BobMathUtil.mat4Transform(t.vertexPositions[2].vector3D, transform);
-				Vec3d v3 = BobMathUtil.mat4Transform(t.vertexPositions[3].vector3D, transform);
-				float[] tex = new float[6];
-				tex[0] = t.vertexPositions[0].texturePositionX;
-				tex[1] = t.vertexPositions[0].texturePositionY;
-				tex[2] = t.vertexPositions[1].texturePositionX;
-				tex[3] = t.vertexPositions[1].texturePositionY;
-				tex[4] = t.vertexPositions[2].texturePositionX;
-				tex[5] = t.vertexPositions[2].texturePositionY;
-				tris[i++] = new Triangle(v0, v1, v2, tex);
-				tex = new float[6];
-				tex[0] = t.vertexPositions[2].texturePositionX;
-				tex[1] = t.vertexPositions[2].texturePositionY;
-				tex[2] = t.vertexPositions[3].texturePositionX;
-				tex[3] = t.vertexPositions[3].texturePositionY;
-				tex[4] = t.vertexPositions[0].texturePositionX;
-				tex[5] = t.vertexPositions[0].texturePositionY;
-				tris[i++] = new Triangle(v2, v3, v0, tex);
-			}
-			return tris;
-		} catch(IllegalArgumentException | IllegalAccessException e) {
-		}
-		throw new RuntimeException("Failed to get quads!");
+        int i = 0;
+        for(TexturedQuad t : b.quadList){
+            Vec3d v0 = BobMathUtil.mat4Transform(t.vertexPositions[0].vector3D, transform);
+            Vec3d v1 = BobMathUtil.mat4Transform(t.vertexPositions[1].vector3D, transform);
+            Vec3d v2 = BobMathUtil.mat4Transform(t.vertexPositions[2].vector3D, transform);
+            Vec3d v3 = BobMathUtil.mat4Transform(t.vertexPositions[3].vector3D, transform);
+            float[] tex = new float[6];
+            tex[0] = t.vertexPositions[0].texturePositionX;
+            tex[1] = t.vertexPositions[0].texturePositionY;
+            tex[2] = t.vertexPositions[1].texturePositionX;
+            tex[3] = t.vertexPositions[1].texturePositionY;
+            tex[4] = t.vertexPositions[2].texturePositionX;
+            tex[5] = t.vertexPositions[2].texturePositionY;
+            tris[i++] = new Triangle(v0, v1, v2, tex);
+            tex = new float[6];
+            tex[0] = t.vertexPositions[2].texturePositionX;
+            tex[1] = t.vertexPositions[2].texturePositionY;
+            tex[2] = t.vertexPositions[3].texturePositionX;
+            tex[3] = t.vertexPositions[3].texturePositionY;
+            tex[4] = t.vertexPositions[0].texturePositionX;
+            tex[5] = t.vertexPositions[0].texturePositionY;
+            tris[i++] = new Triangle(v2, v3, v0, tex);
+        }
+        return tris;
 	}
 	
 	public static ParticleSlicedMob[] generateCutParticles(Entity ent, float[] plane, ResourceLocation capTex, float capBloom){

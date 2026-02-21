@@ -38,7 +38,7 @@ public class TileEntityCoreInjector extends TileEntityMachineBase implements ITi
     public int beam;
 
     public TileEntityCoreInjector() {
-        super(4, true, true);
+        super(4, true, false);
         tanks = new FluidTankNTM[2];
         tanks[0] = new FluidTankNTM(Fluids.DEUTERIUM, 128000);
         tanks[1] = new FluidTankNTM(Fluids.TRITIUM, 128000);

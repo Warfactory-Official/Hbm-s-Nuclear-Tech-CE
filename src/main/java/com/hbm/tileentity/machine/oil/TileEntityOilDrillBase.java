@@ -5,7 +5,7 @@ import com.hbm.api.fluid.IFluidStandardTransceiver;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.interfaces.IFFtoNTMF;
-import com.hbm.inventory.UpgradeManager;
+import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.ItemMachineUpgrade;
@@ -14,9 +14,11 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.*;
 import com.hbm.util.BobMathUtil;
+import com.hbm.util.SoundUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
@@ -26,15 +28,17 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayDeque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Queue;
 
-public abstract class TileEntityOilDrillBase extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiver, IConfigurableMachine, IPersistentNBT, IGUIProvider, IFluidCopiable, IFFtoNTMF {
+public abstract class TileEntityOilDrillBase extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiver, IConfigurableMachine, IPersistentNBT, IGUIProvider, IFluidCopiable, IFFtoNTMF, IUpgradeInfoProvider {
     private static boolean converted = false;
-    private final UpgradeManager upgradeManager;
+    private final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
     public long power;
     public int indicator = 0;
     public FluidTank[] tanksOld;
@@ -46,22 +50,36 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase imple
     HashSet<BlockPos> processed = new HashSet<>();
 
     public TileEntityOilDrillBase() {
-        super(8, true, true);
+        super(0, true, true);
+
+        inventory = new ItemStackHandler(8) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                super.onContentsChanged(slot);
+                markDirty();
+            }
+
+            @Override
+            public void setStackInSlot(int slot, ItemStack stack) {
+                super.setStackInSlot(slot, stack);
+                if (Library.isMachineUpgrade(stack) && slot >= 5 && slot <= 7)
+                    SoundUtil.playUpgradePlugSound(world, pos);
+            }
+        };
+
         tanksOld = new FluidTank[3];
         tankTypes = new Fluid[3];
 
         tanksOld[0] = new FluidTank(128000);
         tankTypes[0] = Fluids.OIL.getFF();
-        ;
+
         tanksOld[1] = new FluidTank(128000);
         tankTypes[1] = Fluids.GAS.getFF();
-        ;
+
 
         tanks = new FluidTankNTM[2];
         tanks[0] = new FluidTankNTM(Fluids.OIL, 64_000);
         tanks[1] = new FluidTankNTM(Fluids.GAS, 64_000);
-
-        upgradeManager = new UpgradeManager();
 
         converted = true;
     }
@@ -139,7 +157,7 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase imple
             this.tanks[0].unloadTank(1, 2, inventory);
             this.tanks[1].unloadTank(3, 4, inventory);
 
-            upgradeManager.eval(inventory, 5, 7);
+            upgradeManager.checkSlots(inventory, 5, 7);
             this.speedLevel = Math.min(upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.SPEED), 3);
             this.energyLevel = Math.min(upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.POWER), 3);
             this.overLevel = Math.min(upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.OVERDRIVE), 3) + 1;
@@ -272,11 +290,11 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase imple
             BlockPos currentPos = queue.poll();
             nodesVisited++;
             Block currentBlock = world.getBlockState(currentPos).getBlock();
-            if (currentBlock == ModBlocks.ore_oil || currentBlock == ModBlocks.ore_bedrock_oil || currentBlock == ModBlocks.ore_gas) {
+            if (currentBlock == ModBlocks.ore_oil || currentBlock == ModBlocks.ore_bedrock_oil) {
                 doSuck(currentPos);
                 return true;
             }
-            if (currentBlock != ModBlocks.ore_oil_empty && currentBlock != ModBlocks.ore_gas_empty) continue;
+            if (currentBlock != ModBlocks.ore_oil_empty) continue;
             for (ForgeDirection dir : BobMathUtil.getShuffledDirs()) {
                 BlockPos neighborPos = currentPos.add(dir.offsetX, dir.offsetY, dir.offsetZ);
                 if (!processed.contains(neighborPos) && canSuckBlock(world.getBlockState(neighborPos).getBlock())) {
@@ -289,13 +307,13 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase imple
     }
 
     public boolean canSuckBlock(Block b) {
-        return b == ModBlocks.ore_oil || b == ModBlocks.ore_oil_empty || b == ModBlocks.ore_gas || b == ModBlocks.ore_gas_empty;
+        return b == ModBlocks.ore_oil || b == ModBlocks.ore_oil_empty;
     }
 
     public void doSuck(BlockPos pos) {
         Block b = world.getBlockState(pos).getBlock();
 
-        if (b == ModBlocks.ore_oil || b == ModBlocks.ore_gas) {
+        if (b == ModBlocks.ore_oil) {
             onSuck(pos);
         }
     }
@@ -351,4 +369,20 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase imple
     public FluidTankNTM getTankToPaste() {
         return null;
     }
+
+    @Override
+    public boolean canProvideInfo(ItemMachineUpgrade.UpgradeType type, int level, boolean extendedInfo) {
+        return type == ItemMachineUpgrade.UpgradeType.SPEED || type == ItemMachineUpgrade.UpgradeType.POWER || type == ItemMachineUpgrade.UpgradeType.OVERDRIVE || type == ItemMachineUpgrade.UpgradeType.AFTERBURN;
+    }
+
+    @Override
+    public HashMap<ItemMachineUpgrade.UpgradeType, Integer> getValidUpgrades() {
+        HashMap<ItemMachineUpgrade.UpgradeType, Integer> upgrades = new HashMap<>();
+        upgrades.put(ItemMachineUpgrade.UpgradeType.SPEED, 3);
+        upgrades.put(ItemMachineUpgrade.UpgradeType.POWER, 3);
+        upgrades.put(ItemMachineUpgrade.UpgradeType.AFTERBURN, 3);
+        upgrades.put(ItemMachineUpgrade.UpgradeType.OVERDRIVE, 3);
+        return upgrades;
+    }
+
 }

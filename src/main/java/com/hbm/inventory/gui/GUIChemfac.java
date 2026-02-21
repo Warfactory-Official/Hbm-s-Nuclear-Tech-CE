@@ -1,8 +1,8 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerChemfac;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityMachineChemfac;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -13,7 +13,7 @@ import net.minecraftforge.items.ItemStackHandler;
 import org.lwjgl.input.Keyboard;
 
 public class GUIChemfac extends GuiInfoContainer {
-	private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_chemfac.png");
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_chemfac.png");
 
 	private final TileEntityMachineChemfac chemfac;
 

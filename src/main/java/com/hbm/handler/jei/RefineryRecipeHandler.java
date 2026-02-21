@@ -1,7 +1,7 @@
 package com.hbm.handler.jei;
 
+import com.hbm.Tags;
 import com.hbm.handler.jei.JeiRecipes.RefineryRecipe;
-import com.hbm.lib.RefStrings;
 import com.hbm.util.I18nUtil;
 import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.gui.*;
@@ -13,7 +13,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class RefineryRecipeHandler implements IRecipeCategory<RefineryRecipe> {
 
-	public static final ResourceLocation gui_rl = new ResourceLocation(RefStrings.MODID, "textures/gui/jei/gui_nei_refinery.png");
+	public static final ResourceLocation gui_rl = new ResourceLocation(Tags.MODID, "textures/gui/jei/gui_nei_refinery.png");
 	
 	protected final IDrawable background;
 	protected final IDrawableStatic progressStatic;
@@ -43,7 +43,7 @@ public class RefineryRecipeHandler implements IRecipeCategory<RefineryRecipe> {
 
 	@Override
 	public String getModName() {
-		return RefStrings.MODID;
+		return Tags.MODID;
 	}
 
 	@Override

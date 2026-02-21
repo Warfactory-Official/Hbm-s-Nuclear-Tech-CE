@@ -1,11 +1,11 @@
 package com.hbm.items.tool;
 
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.gui.GUIScreenSatCoord;
 import com.hbm.inventory.gui.GUIScreenSatInterface;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemSatellite;
 import com.hbm.main.MainRegistry;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.SatPanelPacket;
 import com.hbm.saveddata.satellites.Satellite;
 import com.hbm.saveddata.satellites.SatelliteSavedData;
@@ -65,7 +65,7 @@ public class ItemSatInterface extends ItemSatellite implements IGUIProvider {
     	Satellite sat = SatelliteSavedData.getData(world).getSatFromFreq(getFreq(stack));
     	
     	if(sat != null && entity.ticksExisted % 2 == 0) {
-    		PacketDispatcher.sendTo(new SatPanelPacket(sat), (EntityPlayerMP) entity);
+    		PacketThreading.createSendToThreadedPacket(new SatPanelPacket(sat), (EntityPlayerMP) entity);
     	}
 	}
 

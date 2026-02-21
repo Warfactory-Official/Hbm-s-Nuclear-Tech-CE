@@ -1,8 +1,8 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerDroneCrate;
-import com.hbm.lib.RefStrings;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toserver.NBTControlPacket;
 import com.hbm.tileentity.network.TileEntityDroneCrate;
 import net.minecraft.client.Minecraft;
@@ -17,7 +17,7 @@ import net.minecraft.util.ResourceLocation;
 import java.io.IOException;
 
 public class GUIDroneCrate extends GuiInfoContainer {
-    private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID, "textures/gui/storage/gui_crate_drone.png");
+    private static ResourceLocation texture = new ResourceLocation(Tags.MODID, "textures/gui/storage/gui_crate_drone.png");
     private TileEntityDroneCrate crate;
 
     public GUIDroneCrate(InventoryPlayer invPlayer, TileEntityDroneCrate crate) {
@@ -52,7 +52,7 @@ public class GUIDroneCrate extends GuiInfoContainer {
             mc.getSoundHandler().playSound(PositionedSoundRecord.getRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F, 1.0F));
             NBTTagCompound data = new NBTTagCompound();
             data.setBoolean(op, true);
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, crate.getPos()));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, crate.getPos()));
         }
     }
 

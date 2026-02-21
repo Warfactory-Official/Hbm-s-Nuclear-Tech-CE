@@ -66,7 +66,7 @@ public class TileEntityICFController extends TileEntityTickingBase implements IE
 
         // Check for emitters adjacent to valid cells
         for (BlockPos emitterPos : emitters) {
-            for (EnumFacing facing : EnumFacing.values()) {
+            for (EnumFacing facing : EnumFacing.VALUES) {
                 if (validCells.contains(emitterPos.offset(facing))) {
                     this.emitterCount++;
                     validEmitters.add(emitterPos);
@@ -75,7 +75,7 @@ public class TileEntityICFController extends TileEntityTickingBase implements IE
             }
         }
         for (BlockPos capacitorPos : capacitors) {
-            for (EnumFacing facing : EnumFacing.values()) {
+            for (EnumFacing facing : EnumFacing.VALUES) {
                 if (validEmitters.contains(capacitorPos.offset(facing))) {
                     this.capacitorCount++;
                     validCapacitors.add(capacitorPos);
@@ -84,7 +84,7 @@ public class TileEntityICFController extends TileEntityTickingBase implements IE
             }
         }
         for (BlockPos turboPos : turbochargers) {
-            for (EnumFacing facing : EnumFacing.values()) {
+            for (EnumFacing facing : EnumFacing.VALUES) {
                 if (validCapacitors.contains(turboPos.offset(facing))) {
                     this.turbochargerCount++;
                     break;

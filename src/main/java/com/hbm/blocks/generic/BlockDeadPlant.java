@@ -6,15 +6,14 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class BlockDeadPlant extends BlockPlantEnumMeta {
+public class BlockDeadPlant extends BlockPlantEnumMeta<PlantEnums.EnumDeadPlantType> {
 
     public BlockDeadPlant(String registryName) {
-        super(registryName, PlantEnums.EnumDeadPlantType.class);
+        super(registryName, PlantEnums.EnumDeadPlantType.VALUES);
 
     }
 
     public static void initPlacables() {
-        PLANTABLE_BLOCKS.add(ModBlocks.waste_dirt);
         PLANTABLE_BLOCKS.add(ModBlocks.waste_earth);
         PLANTABLE_BLOCKS.add(ModBlocks.dirt_oily);
         PLANTABLE_BLOCKS.add(ModBlocks.dirt_dead);

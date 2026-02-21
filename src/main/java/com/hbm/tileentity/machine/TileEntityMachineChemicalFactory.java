@@ -18,12 +18,10 @@ import com.hbm.lib.*;
 import com.hbm.main.MainRegistry;
 import com.hbm.modules.machine.ModuleMachineChemplant;
 import com.hbm.sound.AudioWrapper;
-import com.hbm.tileentity.IGUIProvider;
-import com.hbm.tileentity.IUpgradeInfoProvider;
-import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.tileentity.TileEntityProxyDyn;
+import com.hbm.tileentity.*;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.I18nUtil;
+import com.hbm.util.SoundUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
@@ -40,6 +38,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.ItemStackHandler;
 
 import java.util.HashMap;
 import java.util.List;
@@ -70,7 +69,22 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase impl
     protected DelegateChemicalFactoy delegate = new DelegateChemicalFactoy();
 
     public TileEntityMachineChemicalFactory() {
-        super(32, true, true);
+        super(0, true, true);
+
+        inventory = new ItemStackHandler(32) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                super.onContentsChanged(slot);
+                markDirty();
+            }
+
+            @Override
+            public void setStackInSlot(int slot, ItemStack stack) {
+                super.setStackInSlot(slot, stack);
+                if (Library.isMachineUpgrade(stack) && slot >= 1 && slot <= 3)
+                    SoundUtil.playUpgradePlugSound(world, pos);
+            }
+        };
 
         this.inputTanks = new FluidTankNTM[12];
         this.outputTanks = new FluidTankNTM[12];
@@ -239,6 +253,7 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase impl
     }
 
     @Override public void onChunkUnload() {
+        super.onChunkUnload();
         if(audio != null) { audio.stopSound(); audio = null; }
     }
 
@@ -480,6 +495,17 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase impl
         return null;
     }
 
+    public DirPos[] getIOPos() {
+        ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
+        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+
+        return new DirPos[] {
+                new DirPos(getPos().getX() + dir.offsetX + rot.offsetX * 3, getPos().getY(), getPos().getZ() + dir.offsetZ + rot.offsetZ * 3, rot),
+                new DirPos(getPos().getX() - dir.offsetX + rot.offsetX * 3, getPos().getY(), getPos().getZ() - dir.offsetZ + rot.offsetZ * 3, rot),
+                new DirPos(getPos().getX() + dir.offsetX - rot.offsetX * 3, getPos().getY(), getPos().getZ() + dir.offsetZ - rot.offsetZ * 3, rot.getOpposite()),
+                new DirPos(getPos().getX() - dir.offsetX - rot.offsetX * 3, getPos().getY(), getPos().getZ() - dir.offsetZ - rot.offsetZ * 3, rot.getOpposite()),
+        };
+    }
     public class DelegateChemicalFactoy implements IEnergyReceiverMK2, IFluidStandardTransceiverMK2 {
 
         @Override public long getPower() { return TileEntityMachineChemicalFactory.this.getPower(); }

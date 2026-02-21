@@ -1,8 +1,10 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotBattery;
-import com.hbm.inventory.SlotUpgrade;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotUpgrade;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineMiningLaser;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -12,10 +14,10 @@ import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerMachineMiningLaser extends Container {
 
-	private TileEntityMachineMiningLaser diFurnace;
+	private TileEntityMachineMiningLaser laser;
 
 	public ContainerMachineMiningLaser(InventoryPlayer invPlayer, TileEntityMachineMiningLaser tedf) {
-		diFurnace = tedf;
+		laser = tedf;
 
 		//Battery
 		this.addSlotToContainer(new SlotBattery(tedf.inventory, 0, 8, 108));
@@ -37,42 +39,15 @@ public class ContainerMachineMiningLaser extends Container {
 	}
 
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2)
+    public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-
-		if (var4 != null && var4.getHasStack())
-		{
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-
-            if (par2 <= diFurnace.inventory.getSlots() - 1) {
-				if (!this.mergeItemStack(var5, diFurnace.inventory.getSlots(), this.inventorySlots.size(), true))
-				{
-					return ItemStack.EMPTY;
-				}
-			} else {
-
-				if (!this.mergeItemStack(var5, 0, 9, false))
-					return ItemStack.EMPTY;
-			}
-
-			if (var5.isEmpty())
-			{
-				var4.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
-				var4.onSlotChanged();
-			}
-		}
-
-		return var3;
+		return InventoryUtil.transferStack(this.inventorySlots, index, laser.inventory.getSlots(),
+                Library::isBattery, 1,
+                Library::isMachineUpgrade, 9);
     }
 
 	@Override
 	public boolean canInteractWith(EntityPlayer player) {
-		return diFurnace.isUseableByPlayer(player);
+		return laser.isUseableByPlayer(player);
 	}
 }

@@ -5,6 +5,7 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.entity.effect.EntityVortex;
 import com.hbm.entity.missile.EntityMIRV;
 import com.hbm.entity.projectile.EntityBoxcar;
+import com.hbm.entity.projectile.EntityMeteor;
 import com.hbm.explosion.ExplosionChaos;
 import com.hbm.explosion.ExplosionLarge;
 import com.hbm.interfaces.Spaghetti;
@@ -160,7 +161,7 @@ public class ItemGlitch extends Item implements IBatteryItem {
 				world.spawnEntity(vortex);
 				break;
 			case 28:
-				EntityMIRV mirv = new EntityMIRV(world);
+                EntityMeteor mirv = new EntityMeteor(world);
 				mirv.posX = player.posX;
 				mirv.posY = player.posY + 100;
 				mirv.posZ = player.posZ;
@@ -212,13 +213,6 @@ public class ItemGlitch extends Item implements IBatteryItem {
 		return 200;
 	}
 
-	@Override
-	public long getChargeRate() {
-		return 0;
-	}
-
-	@Override
-	public long getDischargeRate() {
-		return 200;
-	}
+	@Override public long getChargeRate(ItemStack stack) { return 0; }
+	@Override public long getDischargeRate(ItemStack stack) { return 200; }
 }

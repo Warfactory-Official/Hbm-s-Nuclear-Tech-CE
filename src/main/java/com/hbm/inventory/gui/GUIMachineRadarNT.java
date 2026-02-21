@@ -1,31 +1,31 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.api.entity.RadarEntry;
-import com.hbm.lib.RefStrings;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.packet.toserver.NBTControlPacket;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.tileentity.machine.TileEntityMachineRadarNT;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 import java.util.Arrays;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUIMachineRadarNT extends GuiScreen {
 
-    public static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/machine/gui_radar_nt.png");
+    public static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/machine/gui_radar_nt.png");
 
     protected TileEntityMachineRadarNT radar;
     protected int xSize = 216;
@@ -63,10 +63,11 @@ public class GUIMachineRadarNT extends GuiScreen {
         if(checkClick(x, y, -10, 178, 8, 8)) cmd = "clear";
 
         if(cmd != null) {
-            mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            playClickSound();
             NBTTagCompound data = new NBTTagCompound();
             data.setBoolean(cmd, true);
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, radar.getPos().getX(), radar.getPos().getY(), radar.getPos().getZ()));
+            PacketThreading.createSendToServerThreadedPacket(
+                    new NBTControlPacket(data, radar.getPos().getX(), radar.getPos().getY(), radar.getPos().getZ()));
         }
     }
 
@@ -239,7 +240,8 @@ public class GUIMachineRadarNT extends GuiScreen {
                         NBTTagCompound data = new NBTTagCompound();
                         data.setInteger("launchEntity", m.entityID);
                         data.setInteger("link", id);
-                        PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, radar.getPos().getX(), radar.getPos().getY(), radar.getPos().getZ()));
+                        PacketThreading.createSendToServerThreadedPacket(
+                                new NBTControlPacket(data, radar.getPos().getX(), radar.getPos().getY(), radar.getPos().getZ()));
                         return;
                     }
                 }
@@ -251,7 +253,8 @@ public class GUIMachineRadarNT extends GuiScreen {
             data.setInteger("launchPosX", tX);
             data.setInteger("launchPosZ", tZ);
             data.setInteger("link", id);
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, radar.getPos().getX(), radar.getPos().getY(), radar.getPos().getZ()));
+            PacketThreading.createSendToServerThreadedPacket(
+                    new NBTControlPacket(data, radar.getPos().getX(), radar.getPos().getY(), radar.getPos().getZ()));
         }
     }
 

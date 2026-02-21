@@ -1,5 +1,6 @@
 package com.hbm.blocks.network;
 
+import com.hbm.api.block.IToolable;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.items.tool.ItemTooling;
 import com.hbm.main.MainRegistry;
@@ -25,7 +26,9 @@ import net.minecraft.world.World;
 
 import java.util.Random;
 
-public abstract class BlockCraneBase extends BlockContainer implements ITooltipProvider {
+//mlbv: i have zero fucking idea how the direction ids are mapped to EnumFacing..
+//TODO: implement IBlockSideRotation
+public abstract class BlockCraneBase extends BlockContainer implements IToolable, ITooltipProvider {
     public static final PropertyDirection FACING = BlockHorizontal.FACING;
     public BlockCraneBase(Material mat) {
         super(mat);
@@ -51,6 +54,18 @@ public abstract class BlockCraneBase extends BlockContainer implements ITooltipP
     @Override
     public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
         worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
+    }
+
+    @Override
+    public boolean onScrew(World world, EntityPlayer player, int x, int y, int z, EnumFacing side, float fX, float fY, float fZ, EnumHand hand, ToolType tool) {
+        if (tool != ToolType.SCREWDRIVER) return false;
+        if (!(world.getTileEntity(new BlockPos(x, y, z)) instanceof TileEntityCraneBase craneTileEntity)) return false;
+        if (player.isSneaking()) {
+            craneTileEntity.setOutputOverride(player.getHorizontalFacing().getOpposite());
+        } else {
+            craneTileEntity.setInput(player.getHorizontalFacing().getOpposite());
+        }
+        return true;
     }
 
     @Override

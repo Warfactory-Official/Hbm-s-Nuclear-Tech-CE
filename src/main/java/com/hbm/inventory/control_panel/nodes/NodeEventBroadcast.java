@@ -2,6 +2,7 @@ package com.hbm.inventory.control_panel.nodes;
 
 import com.hbm.inventory.control_panel.*;
 import com.hbm.inventory.control_panel.DataValue.DataType;
+import com.hbm.inventory.control_panel.modular.StockNodesRegister;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -95,10 +96,10 @@ public class NodeEventBroadcast extends NodeOutput {
 		inputs.add(new NodeConnection("Cancel", this, inputs.size(), true, DataType.GENERIC, new DataValueFloat(0)));
 		recalcSize();
 	}
-	
+
 	@Override
-	public NodeType getType(){
-		return NodeType.OUTPUT;
+	public float[] getColor() {
+		return StockNodesRegister.colorOutput;
 	}
 
 	@Override

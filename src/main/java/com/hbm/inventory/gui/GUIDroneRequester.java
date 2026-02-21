@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerDroneRequester;
-import com.hbm.lib.RefStrings;
 import com.hbm.modules.ModulePatternMatcher;
 import com.hbm.tileentity.network.TileEntityDroneRequester;
 import net.minecraft.client.Minecraft;
@@ -16,7 +16,7 @@ import java.util.Arrays;
 
 public class GUIDroneRequester extends GuiInfoContainer {
 
-    private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID, "textures/gui/storage/gui_drone_requester.png");
+    private static ResourceLocation texture = new ResourceLocation(Tags.MODID, "textures/gui/storage/gui_drone_requester.png");
     private TileEntityDroneRequester requester;
 
     public GUIDroneRequester(InventoryPlayer invPlayer, TileEntityDroneRequester tedf) {

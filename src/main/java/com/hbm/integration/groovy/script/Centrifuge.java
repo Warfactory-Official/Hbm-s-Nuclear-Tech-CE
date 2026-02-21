@@ -1,12 +1,14 @@
 package com.hbm.integration.groovy.script;
 
 import com.cleanroommc.groovyscript.api.IIngredient;
+import com.cleanroommc.groovyscript.api.documentation.annotations.RegistryDescription;
 import com.cleanroommc.groovyscript.registry.VirtualizedRegistry;
-import com.hbm.inventory.recipes.CentrifugeRecipes;
 import com.hbm.inventory.RecipesCommon;
+import com.hbm.inventory.recipes.CentrifugeRecipes;
 import com.hbm.util.Tuple;
 import net.minecraft.item.ItemStack;
 
+@RegistryDescription(linkGenerator = "hbm", isFullyDocumented = false)
 public class Centrifuge extends VirtualizedRegistry<Tuple.Pair<RecipesCommon.AStack, ItemStack[]>> {
     @Override
     public void onReload() {

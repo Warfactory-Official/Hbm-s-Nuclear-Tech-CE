@@ -1,7 +1,7 @@
 package com.hbm.render.util;
 
-import com.hbm.lib.RefStrings;
-import com.hbm.render.amlfrom1710.IModelCustom;
+import com.hbm.Tags;
+import com.hbm.render.loader.IModelCustom;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.DestFactor;
@@ -12,8 +12,8 @@ import org.lwjgl.opengl.GL11;
 
 public class RenderMiscEffects {
 
-	public static ResourceLocation glint = new ResourceLocation(RefStrings.MODID + ":textures/misc/glint.png");
-    public static ResourceLocation glintBF = new ResourceLocation(RefStrings.MODID + ":textures/misc/glintBF.png");
+	public static ResourceLocation glint = new ResourceLocation(Tags.MODID + ":textures/misc/glint.png");
+    public static ResourceLocation glintBF = new ResourceLocation(Tags.MODID + ":textures/misc/glintBF.png");
 
 	public static void renderClassicGlint(World world, float interpol, IModelCustom model, String part, float colorMod, float r, float g, float b, float speed, float scale) {
 

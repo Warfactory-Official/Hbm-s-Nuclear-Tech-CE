@@ -1,7 +1,6 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.blocks.BlockDummyable;
-import com.hbm.blocks.IStructTE;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.MachineICF;
 import com.hbm.interfaces.AutoRegister;
@@ -16,7 +15,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @AutoRegister
-public class TileEntityICFStruct extends TileEntity implements ITickable, IStructTE<TileEntityICFStruct> {
+public class TileEntityICFStruct extends TileEntity implements ITickable {
 
     @Override
     public void update() {
@@ -68,10 +67,5 @@ public class TileEntityICFStruct extends TileEntity implements ITickable, IStruc
     @SideOnly(Side.CLIENT)
     public double getMaxRenderDistanceSquared() {
         return 65536.0D;
-    }
-
-    @Override
-    public TileEntityICFStruct newInstance() {
-        return this;
     }
 }

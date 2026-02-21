@@ -19,7 +19,7 @@ public class CrucibleUtil {
      * The method directly modifies the original stack, so be careful and make a copy beforehand if you don't want that.
      * Pass an empty Vec3 instance in order to get the impact position of the stream.
      */
-    public static Mats.MaterialStack pourSingleStack(World world, double x, double y, double z, double range, boolean safe, Mats.MaterialStack stack, int quanta, Vec3d impactPosHolder) {
+    public static Mats.MaterialStack pourSingleStack(World world, double x, double y, double z, double range, boolean safe, Mats.MaterialStack stack, int quanta, MutableVec3d impactPosHolder) {
 
 
         Vec3d start = new Vec3d(x, y, z);
@@ -49,7 +49,7 @@ public class CrucibleUtil {
      * The method doesn't make copies of the MaterialStacks in the list, so the materials being subtracted or outright removed will apply to the original list.
      * Pass an empty Vec3 instance in order to get the impact position of the stream.
      */
-    public static Mats.MaterialStack pourFullStack(World world, double x, double y, double z, double range, boolean safe, List<Mats.MaterialStack> stacks, int quanta, Vec3d impactPosHolder) {
+    public static Mats.MaterialStack pourFullStack(World world, double x, double y, double z, double range, boolean safe, List<Mats.MaterialStack> stacks, int quanta, MutableVec3d impactPosHolder) {
 
         if(stacks.isEmpty()) return null;
 
@@ -84,7 +84,7 @@ public class CrucibleUtil {
      * Tries to pour the stack onto the supplied crucible acceptor instance. Also features our friend the Vec3 dummy, which will be filled with the stream's impact position.
      * Returns whatever is left of the stack when successful or null when unsuccessful (potential spillage).
      */
-    public static Mats.MaterialStack tryPourStack(World world, ICrucibleAcceptor acc, RayTraceResult mop, Mats.MaterialStack stack, Vec3d impactPosHolder) {
+    public static Mats.MaterialStack tryPourStack(World world, ICrucibleAcceptor acc, RayTraceResult mop, Mats.MaterialStack stack, MutableVec3d impactPosHolder) {
         Vec3d hit = mop.hitVec;
 
         if(stack.material.smeltable != NTMMaterial.SmeltingBehavior.SMELTABLE) {
@@ -97,7 +97,7 @@ public class CrucibleUtil {
                 left = new Mats.MaterialStack(stack.material, 0);
             }
 
-            impactPosHolder.subtract(impactPosHolder).add(hit);
+            if(impactPosHolder != null) impactPosHolder.set(hit);
 
             return left;
         }
@@ -133,7 +133,7 @@ public class CrucibleUtil {
     /**
      * Regular spillage routine but accepts a stack list instead of a stack. simply uses the first available stack from the list. Assumes list is not empty.
      */
-    public static Mats.MaterialStack spill(RayTraceResult mop, boolean safe, List<Mats.MaterialStack> stacks, int quanta, Vec3d impactPos) {
+    public static Mats.MaterialStack spill(RayTraceResult mop, boolean safe, List<Mats.MaterialStack> stacks, int quanta, MutableVec3d impactPos) {
         //simply use the first available material
         Mats.MaterialStack top = stacks.get(0);
         Mats.MaterialStack ret = spill(mop, safe, top, quanta, impactPos);
@@ -145,8 +145,9 @@ public class CrucibleUtil {
 
     /**
      * The routine used for then there is no valid crucible acceptor found. Will NOP with safe mode on. Returns the MaterialStack that was lost.
+     * mutates impactPos
      */
-    public static Mats.MaterialStack spill(RayTraceResult mop, boolean safe, Mats.MaterialStack stack, int quanta, Vec3d impactPos) {
+    public static Mats.MaterialStack spill(RayTraceResult mop, boolean safe, Mats.MaterialStack stack, int quanta, MutableVec3d impactPos) {
 
         //do nothing if safe mode is on
         if(safe) {
@@ -158,7 +159,7 @@ public class CrucibleUtil {
 
         //if there is a vec3 reference, set the impact coordinates
         if(impactPos != null && mop != null) {
-            impactPos.subtract(impactPos).add(mop.hitVec);
+            impactPos.set(mop.hitVec);
         }
 
         return toWaste;

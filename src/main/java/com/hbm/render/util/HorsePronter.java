@@ -1,38 +1,36 @@
 package com.hbm.render.util;
 
-import com.hbm.hfr.render.loader.HFRWavefrontObject;
-import com.hbm.lib.RefStrings;
-import com.hbm.render.amlfrom1710.IModelCustom;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.Tags;
+import com.hbm.main.ResourceManager;
+import com.hbm.util.Vec3NT;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.GlStateManager;
 
 public class HorsePronter {
 
-    public static final IModelCustom horse = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/mobs/horse.obj")).asVBO();
 
-    public static final ResourceLocation tex_demohorse = new ResourceLocation(RefStrings.MODID, "textures/models/horse/horse_demo.png");
+    public static final ResourceLocation tex_demohorse = new ResourceLocation(Tags.MODID, "textures/models/horse/horse_demo.png");
 
-    private static Vec3[] pose = new Vec3[] {
-            Vec3.createVectorHelper(0, 0, 0), //head
-            Vec3.createVectorHelper(0, 0, 0), //left front leg
-            Vec3.createVectorHelper(0, 0, 0), //right front leg
-            Vec3.createVectorHelper(0, 0, 0), //left back leg
-            Vec3.createVectorHelper(0, 0, 0), //right back leg
-            Vec3.createVectorHelper(0, 0, 0), //tail
-            Vec3.createVectorHelper(0, 0, 0), //body
-            Vec3.createVectorHelper(0, 0, 0) //body offset
+    private static final Vec3NT[] pose = new Vec3NT[] {
+            new Vec3NT(0, 0, 0), //head
+            new Vec3NT(0, 0, 0), //left front leg
+            new Vec3NT(0, 0, 0), //right front leg
+            new Vec3NT(0, 0, 0), //left back leg
+            new Vec3NT(0, 0, 0), //right back leg
+            new Vec3NT(0, 0, 0), //tail
+            new Vec3NT(0, 0, 0), //body
+            new Vec3NT(0, 0, 0) //body offset
     };
 
-    private static Vec3[] offsets = new Vec3[] {
-            Vec3.createVectorHelper(0, 1.125, 0.375), //head
-            Vec3.createVectorHelper(0.125, 0.75, 0.3125), //left front leg
-            Vec3.createVectorHelper(-0.125, 0.75, 0.3125), //right front leg
-            Vec3.createVectorHelper(0.125, 0.75, -0.25), //left back leg
-            Vec3.createVectorHelper(-0.125, 0.75, -0.25), //right back leg
-            Vec3.createVectorHelper(0, 1.125, -0.4375), //tail
-            Vec3.createVectorHelper(0, 0, 0), //body
-            Vec3.createVectorHelper(0, 0, 0) //body offset
+    private static final Vec3NT[] offsets = new Vec3NT[] {
+            new Vec3NT(0, 1.125, 0.375), //head
+            new Vec3NT(0.125, 0.75, 0.3125), //left front leg
+            new Vec3NT(-0.125, 0.75, 0.3125), //right front leg
+            new Vec3NT(0.125, 0.75, -0.25), //left back leg
+            new Vec3NT(-0.125, 0.75, -0.25), //right back leg
+            new Vec3NT(0, 1.125, -0.4375), //tail
+            new Vec3NT(0, 0, 0), //body
+            new Vec3NT(0, 0, 0) //body offset
     };
 
     public static final int id_head = 0;
@@ -53,10 +51,8 @@ public class HorsePronter {
         wings = false;
         horn = false;
 
-        for(Vec3 angles : pose) {
-            angles.xCoord = 0;
-            angles.yCoord = 0;
-            angles.zCoord = 0;
+        for(Vec3NT angles : pose) {
+            angles.set(0, 0, 0);
         }
     }
 
@@ -81,9 +77,7 @@ public class HorsePronter {
     }
 
     public static void pose(int id, double yaw, double pitch, double roll) {
-        pose[id].xCoord = yaw;
-        pose[id].yCoord = pitch;
-        pose[id].zCoord = roll;
+        pose[id].set(yaw, pitch, roll);
     }
 
     public static void pront() {
@@ -92,7 +86,7 @@ public class HorsePronter {
         GlStateManager.disableCull();
         doTransforms(id_body);
 
-        horse.renderPart("Body");
+        ResourceManager.horse.renderPart("Body");
 
         if(horn) {
             renderWithTransform(id_head, "Head", "Mane", maleSnoot ? "NoseMale" : "NoseFemale", "HornPointy");
@@ -107,8 +101,8 @@ public class HorsePronter {
         renderWithTransform(id_tail, "Tail");
 
         if(wings) {
-            horse.renderPart("LeftWing");
-            horse.renderPart("RightWing");
+            ResourceManager.horse.renderPart("LeftWing");
+            ResourceManager.horse.renderPart("RightWing");
         }
 
         GlStateManager.enableCull();
@@ -116,19 +110,19 @@ public class HorsePronter {
     }
 
     private static void doTransforms(int id) {
-        Vec3 rotation = pose[id];
-        Vec3 offset = offsets[id];
-        GlStateManager.translate(offset.xCoord, offset.yCoord, offset.zCoord);
-        GL11.glRotated(rotation.xCoord, 0, 1, 0);
-        GL11.glRotated(rotation.yCoord, 1, 0, 0);
-        GL11.glRotated(rotation.zCoord, 0, 0, 1); //TODO: check pitch and roll axis
-        GlStateManager.translate(-offset.xCoord, -offset.yCoord, -offset.zCoord);
+        Vec3NT rotation = pose[id];
+        Vec3NT offset = offsets[id];
+        GlStateManager.translate(offset.x, offset.y, offset.z);
+        GlStateManager.rotate(rotation.x, 0, 1, 0);
+        GlStateManager.rotate(rotation.y, 1, 0, 0);
+        GlStateManager.rotate(rotation.z, 0, 0, 1); //TODO: check pitch and roll axis
+        GlStateManager.translate(-offset.x, -offset.y, -offset.z);
     }
 
     private static void renderWithTransform(int id, String... parts) {
         GlStateManager.pushMatrix();
         doTransforms(id);
-        for(String part : parts) horse.renderPart(part);
+        for(String part : parts) ResourceManager.horse.renderPart(part);
         GlStateManager.popMatrix();
     }
 }

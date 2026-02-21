@@ -92,7 +92,7 @@ public class TileEntityHeaterElectric extends TileEntityLoadedBase implements IH
 
 	@Override
 	public void onChunkUnload() {
-
+		super.onChunkUnload();
 		if(audio != null) {
 			audio.stopSound();
 			audio = null;

@@ -1,18 +1,18 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerRBMKStorage;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKStorage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.GlStateManager;
 
 public class GUIRBMKStorage extends GuiContainer {
 	
-	private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/reactors/gui_rbmk_storage.png");
+	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/reactors/gui_rbmk_storage.png");
 	private TileEntityRBMKStorage rod;
 
 	public GUIRBMKStorage(InventoryPlayer invPlayer, TileEntityRBMKStorage tedf) {

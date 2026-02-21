@@ -129,6 +129,7 @@ public class BlockModDoor extends BlockDoor implements INBTBlockTransformable {
     private Item getItem() {
         if (this == ModBlocks.door_metal) return ModItems.door_metal;
         if (this == ModBlocks.door_office) return ModItems.door_office;
+        if (this == ModBlocks.door_red) return ModItems.door_red;
         return ModItems.door_bunker;
     }
 

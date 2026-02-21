@@ -4,6 +4,8 @@ import com.hbm.config.GeneralConfig;
 import com.hbm.config.StructureConfig;
 import com.hbm.world.gen.component.BunkerComponents;
 import com.hbm.world.gen.component.CivilianFeatures;
+import com.hbm.world.gen.component.OfficeFeatures;
+import com.hbm.world.gen.component.SiloComponent;
 import net.minecraft.init.Biomes;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -96,10 +98,10 @@ public class MapGenNTMFeatures extends MapGenStructure {
 			int j = (chunkZ << 4) + 8;
 
 			Biome biome = world.getBiome(new BlockPos(i, 0, j));
-
+			// Th3_Sl1ze: I'm a degenerate forgetting to add things when I port them, don't mind me!
 			if (biome.getHeightVariation() <= 0.25F && rand.nextInt(10) == 0) {
-				/*SiloComponent silo = new SiloComponent(rand, i, j);
-				this.components.add(silo);*/
+				SiloComponent silo = new SiloComponent(rand, i, j);
+				this.components.add(silo);
 			} else if (biome.getDefaultTemperature() >= 1.0F && biome.getRainfall() == 0.0F && !(biome instanceof BiomeMesa)) {
 				if (rand.nextBoolean()) {
 					CivilianFeatures.NTMHouse1 house1 = new CivilianFeatures.NTMHouse1(rand, i, j);
@@ -119,12 +121,12 @@ public class MapGenNTMFeatures extends MapGenStructure {
 						this.components.add(lab1);
 					}
 					case 2 -> {
-						/*LargeOffice office = new LargeOffice(rand, i, j);
-						this.components.add(office);*/
+						OfficeFeatures.LargeOffice office = new OfficeFeatures.LargeOffice(rand, i, j);
+						this.components.add(office);
 					}
 					case 3 -> {
-						/*LargeOfficeCorner officeCorner = new LargeOfficeCorner(rand, i, j);
-						this.components.add(officeCorner);*/
+						OfficeFeatures.LargeOfficeCorner officeCorner = new OfficeFeatures.LargeOfficeCorner(rand, i, j);
+						this.components.add(officeCorner);
 					}
 					case 4, 5 -> {
 						CivilianFeatures.RuralHouse1 ruralHouse = new CivilianFeatures.RuralHouse1(rand, i, j);

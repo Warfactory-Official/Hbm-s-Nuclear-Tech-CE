@@ -1,8 +1,8 @@
 package com.hbm.render.entity;
 
+import com.hbm.Tags;
 import com.hbm.entity.effect.EntityFalloutRain;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.NTMRenderHelper;
 import com.hbm.render.amlfrom1710.Vec3;
 import net.minecraft.client.Minecraft;
@@ -35,7 +35,7 @@ public class RenderFallout extends Render<EntityFalloutRain> {
 	float[] rainYCoords;
 	private int rendererUpdateCount;
 	long lastTime = System.nanoTime();
-	private static final ResourceLocation falloutTexture = new ResourceLocation(RefStrings.MODID, "textures/entity/fallout.png");
+	private static final ResourceLocation falloutTexture = new ResourceLocation(Tags.MODID, "textures/entity/fallout.png");
 
     public static final IRenderFactory<EntityFalloutRain> FACTORY = RenderFallout::new;
 	

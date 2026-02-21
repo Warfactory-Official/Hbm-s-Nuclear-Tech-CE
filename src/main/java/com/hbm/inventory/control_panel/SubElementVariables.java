@@ -1,6 +1,6 @@
 package com.hbm.inventory.control_panel;
 
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
 import com.hbm.render.NTMRenderHelper;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiTextField;
@@ -17,7 +17,7 @@ import static com.hbm.inventory.control_panel.DataValue.DataType.NUMBER;
 
 // sorry.
 public class SubElementVariables extends SubElement {
-    public static ResourceLocation list_bg = new ResourceLocation(RefStrings.MODID + ":textures/gui/control_panel/gui_variable_list_front.png");
+    public static ResourceLocation list_bg = new ResourceLocation(Tags.MODID + ":textures/gui/control_panel/gui_variable_list_front.png");
 
     GuiButton btn_clearAll;
     GuiButton btn_back;

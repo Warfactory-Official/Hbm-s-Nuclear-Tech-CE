@@ -2,14 +2,11 @@ package com.hbm.world;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.world.phased.AbstractPhasedStructure;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Random;
 
 @SuppressWarnings({"PointlessArithmeticExpression"})
@@ -18,8 +15,10 @@ public class Geyser extends AbstractPhasedStructure {
 	private Geyser() {}
 
 	@Override
-	public List<@NotNull BlockPos> getValidationPoints(@NotNull BlockPos origin) {
-		return Collections.singletonList(origin);
+	public @NotNull LongArrayList getHeightPoints(long origin) {
+		LongArrayList points = new LongArrayList(1);
+		points.add(origin);
+		return points;
 	}
 
 	@Override
@@ -29,7 +28,7 @@ public class Geyser extends AbstractPhasedStructure {
 
 	public boolean generate_r0(LegacyBuilder world, Random rand, int x, int y, int z) {
 
-		MutableBlockPos pos = new BlockPos.MutableBlockPos();
+		MutableBlockPos pos = this.mutablePos;
 		x -= 2;
 		y -= 11;
 		z -= 2;

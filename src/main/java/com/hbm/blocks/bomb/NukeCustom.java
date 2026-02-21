@@ -104,7 +104,7 @@ public class NukeCustom extends BlockContainer implements IBomb {
 
 		// SOLINIUM ///
 		} else if(sol > 0) {
-			
+
 			sol += schrab / 2 + bale / 4 + hydro / 8 + nuke / 16 + tnt / 32;
 			sol = Math.min(sol, BombConfig.maxCustomSolRadius);
 
@@ -117,11 +117,11 @@ public class NukeCustom extends BlockContainer implements IBomb {
     		entity.extType = 1;
 			entity.setDetonator(detonator);
     		world.spawnEntity(entity);
-    	
+
     		EntityCloudSolinium cloud = new EntityCloudSolinium(world, (int)sol);
     		cloud.setPosition(xCoord + 0.5, yCoord + 0.5, zCoord + 0.5);
     		world.spawnEntity(cloud);
-			
+
 		// SCHRABIDIUM ///
 		} else if(schrab > 0) {
 			

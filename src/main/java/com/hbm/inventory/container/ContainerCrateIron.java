@@ -1,6 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.tileentity.machine.TileEntityCrateIron;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -10,16 +11,17 @@ import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerCrateIron extends Container {
 
-private TileEntityCrateIron diFurnace;
+	// mlbv: do not rename this field, it's used in bogosorter's mixin
+	private TileEntityCrateIron diFurnace;
 	
-	public ContainerCrateIron(InventoryPlayer invPlayer, TileEntityCrateIron tedf) {
-		diFurnace = tedf;
+	public ContainerCrateIron(InventoryPlayer invPlayer, TileEntityCrateIron te) {
+		diFurnace = te;
 		
 		for(int i = 0; i < 4; i++)
 		{
 			for(int j = 0; j < 9; j++)
 			{
-				this.addSlotToContainer(new SlotItemHandler(tedf.inventory, j + i * 9, 8 + j * 18, 18 + i * 18));
+				this.addSlotToContainer(new SlotItemHandler(te.inventory, j + i * 9, 8 + j * 18, 18 + i * 18));
 			}
 		}
 		
@@ -38,38 +40,8 @@ private TileEntityCrateIron diFurnace;
 	}
 	
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2)
-    {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-		
-		if (var4 != null && var4.getHasStack())
-		{
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-			
-            if (par2 <= diFurnace.inventory.getSlots() - 1) {
-				if (!this.mergeItemStack(var5, diFurnace.inventory.getSlots(), this.inventorySlots.size(), true))
-				{
-					return ItemStack.EMPTY;
-				}
-			}
-			else if (!this.mergeItemStack(var5, 0, diFurnace.inventory.getSlots(), false))
-			{
-					return ItemStack.EMPTY;
-			}
-			
-			if (var5.isEmpty())
-			{
-				var4.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
-				var4.onSlotChanged();
-			}
-		}
-		
-		return var3;
+    public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.diFurnace.inventory.getSlots());
     }
 
 	@Override

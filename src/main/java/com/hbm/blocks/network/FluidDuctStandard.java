@@ -1,20 +1,23 @@
 package com.hbm.blocks.network;
 
+import com.hbm.Tags;
+import com.hbm.blocks.ICustomBlockItem;
 import com.hbm.blocks.ILookOverlay;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModSoundTypes;
+import com.hbm.interfaces.IBlockSpecialPlacementAABB;
 import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.IDynamicModels;
 import com.hbm.items.ModItems;
+import com.hbm.items.block.ItemBlockSpecialAABB;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
-import com.hbm.render.amlfrom1710.WavefrontObject;
+import com.hbm.render.loader.HFRWavefrontObject;
 import com.hbm.render.model.DuctNeoBakedModel;
 import com.hbm.tileentity.network.TileEntityPipeBaseNT;
 import com.hbm.util.I18nUtil;
-import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.properties.PropertyInteger;
@@ -33,6 +36,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
@@ -45,18 +49,16 @@ import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.model.ModelLoader;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidTankProperties;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
-public class FluidDuctStandard extends BlockContainer implements IDynamicModels, ILookOverlay {
+public class FluidDuctStandard extends FluidDuctBase implements IDynamicModels, ILookOverlay, ICustomBlockItem, IBlockSpecialPlacementAABB {
 
 	public static final PropertyInteger META = PropertyInteger.create("meta", 0, 2);
 	public static final PropertyBool POS_X = PropertyBool.create("posx");
@@ -73,7 +75,7 @@ public class FluidDuctStandard extends BlockContainer implements IDynamicModels,
 	@SideOnly(Side.CLIENT)
 	public static TextureAtlasSprite[] overlaySprites; // overlay[]
 
-	private final ResourceLocation objModelLocation = new ResourceLocation(RefStrings.MODID, "models/blocks/pipe_neo.obj");
+	private final ResourceLocation objModelLocation = new ResourceLocation(Tags.MODID, "models/blocks/pipe_neo.obj");
 
 	public FluidDuctStandard(Material materialIn, String reg) {
 		super(materialIn);
@@ -121,33 +123,7 @@ public class FluidDuctStandard extends BlockContainer implements IDynamicModels,
 	 * Checks if it can connect to a fluid-capable neighbor.
 	 */
 	private boolean canConnectTo(IBlockAccess world, int x, int y, int z, ForgeDirection dir, FluidType type) {
-		BlockPos pos = new BlockPos(x, y, z);
-		BlockPos neighborPos = pos.offset(Objects.requireNonNull(dir.toEnumFacing()));
-		if (Library.canConnectFluid(world, x + dir.offsetX, y + dir.offsetY, z + dir.offsetZ, dir, type)) {
-			return true;
-		}
-
-		TileEntity neighbor = world.getTileEntity(neighborPos);
-		if (neighbor != null && !neighbor.isInvalid()) {
-			EnumFacing facing = dir.getOpposite().toEnumFacing();
-			if (neighbor.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, facing)) {
-				IFluidHandler handler = neighbor.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, facing);
-				if (handler != null) {
-					IFluidTankProperties[] props = handler.getTankProperties();
-					if (props != null && props.length > 0) {
-						for (IFluidTankProperties p : props) {
-							if (p != null && (p.canFill() || p.canDrain())) {
-								return true;
-							}
-						}
-						return false;
-					}
-					return true;
-				}
-			}
-		}
-
-		return false;
+		return Library.canConnectFluid(world, x + dir.offsetX, y + dir.offsetY, z + dir.offsetZ, dir, type);
 	}
 
 	private boolean canConnectAt(IBlockAccess world, BlockPos pos, EnumFacing dir, FluidType type) {
@@ -187,37 +163,49 @@ public class FluidDuctStandard extends BlockContainer implements IDynamicModels,
 		TileEntity te = source.getTileEntity(pos);
 		if (te instanceof TileEntityPipeBaseNT pipe) {
 			FluidType type = pipe.getType();
-
-			boolean nX = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), Library.NEG_X, type);
-			boolean pX = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), Library.POS_X, type);
-			boolean nY = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), Library.NEG_Y, type);
-			boolean pY = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), Library.POS_Y, type);
-			boolean nZ = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), Library.NEG_Z, type);
-			boolean pZ = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), Library.POS_Z, type);
-			int mask = (pX ? 32 : 0) + (nX ? 16 : 0) + (pY ? 8 : 0) + (nY ? 4 : 0) + (pZ ? 2 : 0) + (nZ ? 1 : 0);
-
-			if (mask == 0) {
-				return new AxisAlignedBB(0F, 0F, 0F, 1F, 1F, 1F);
-			} else if (mask == 0b100000 || mask == 0b010000 || mask == 0b110000) {
-				return new AxisAlignedBB(0F, 0.3125F, 0.3125F, 1F, 0.6875F, 0.6875F);
-			} else if (mask == 0b001000 || mask == 0b000100 || mask == 0b001100) {
-				return new AxisAlignedBB(0.3125F, 0F, 0.3125F, 0.6875F, 1F, 0.6875F);
-			} else if (mask == 0b000010 || mask == 0b000001 || mask == 0b000011) {
-				return new AxisAlignedBB(0.3125F, 0.3125F, 0F, 0.6875F, 0.6875F, 1F);
-			} else {
-				return new AxisAlignedBB(
-						nX ? 0F : 0.3125F,
-						nY ? 0F : 0.3125F,
-						nZ ? 0F : 0.3125F,
-						pX ? 1F : 0.6875F,
-						pY ? 1F : 0.6875F,
-						pZ ? 1F : 0.6875F);
-			}
-		}
+            return getCollisionAABB(source, pos, type);
+        }
 		return DUCT_BB;
 	}
 
-	@Override
+    @Override
+    public void registerItem() {
+        ItemBlock itemBlock = new ItemBlockSpecialAABB<>(this);
+        itemBlock.setRegistryName(this.getRegistryName());
+        ForgeRegistries.ITEMS.register(itemBlock);
+    }
+
+    @Override
+    public AxisAlignedBB getCollisionBoundingBoxForPlacement(World worldIn, BlockPos pos, ItemStack stack) {
+        return getCollisionAABB(worldIn, pos, Fluids.NONE);
+    }
+
+    @NotNull
+    private AxisAlignedBB getCollisionAABB(IBlockAccess source, BlockPos pos, FluidType type) {
+        boolean nX = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), Library.NEG_X, type);
+        boolean pX = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), Library.POS_X, type);
+        boolean nY = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), Library.NEG_Y, type);
+        boolean pY = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), Library.POS_Y, type);
+        boolean nZ = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), Library.NEG_Z, type);
+        boolean pZ = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), Library.POS_Z, type);
+        int mask = (pX ? 32 : 0) + (nX ? 16 : 0) + (pY ? 8 : 0) + (nY ? 4 : 0) + (pZ ? 2 : 0) + (nZ ? 1 : 0);
+
+        return switch (mask) {
+            case 0 -> new AxisAlignedBB(0F, 0F, 0F, 1F, 1F, 1F);
+            case 0b100000, 0b010000, 0b110000 -> new AxisAlignedBB(0F, 0.3125F, 0.3125F, 1F, 0.6875F, 0.6875F);
+            case 0b001000, 0b000100, 0b001100 -> new AxisAlignedBB(0.3125F, 0F, 0.3125F, 0.6875F, 1F, 0.6875F);
+            case 0b000010, 0b000001, 0b000011 -> new AxisAlignedBB(0.3125F, 0.3125F, 0F, 0.6875F, 0.6875F, 1F);
+            default -> new AxisAlignedBB(
+                    nX ? 0F : 0.3125F,
+                    nY ? 0F : 0.3125F,
+                    nZ ? 0F : 0.3125F,
+                    pX ? 1F : 0.6875F,
+                    pY ? 1F : 0.6875F,
+                    pZ ? 1F : 0.6875F);
+        };
+    }
+
+    @Override
 	public void addCollisionBoxToList(IBlockState state, World world, BlockPos pos,
 									  AxisAlignedBB entityBox, List<AxisAlignedBB> collidingBoxes,
 									  @Nullable Entity entity, boolean isActualState) {
@@ -351,8 +339,8 @@ public class FluidDuctStandard extends BlockContainer implements IDynamicModels,
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
-		TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
+	public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
+		TileEntity te = world.getTileEntity(pos);
 		if (!(te instanceof TileEntityPipeBaseNT duct))
 			return;
 
@@ -372,16 +360,16 @@ public class FluidDuctStandard extends BlockContainer implements IDynamicModels,
 		// meta 0: use block name as base
 		String base0 = "blocks/" + this.getRegistryName().getPath();
 		String overlay0 = base0 + "_overlay";
-		baseSprites[0] = map.registerSprite(new ResourceLocation(RefStrings.MODID, base0));
-		overlaySprites[0] = map.registerSprite(new ResourceLocation(RefStrings.MODID, overlay0));
+		baseSprites[0] = map.registerSprite(new ResourceLocation(Tags.MODID, base0));
+		overlaySprites[0] = map.registerSprite(new ResourceLocation(Tags.MODID, overlay0));
 
 		// meta 1: silver
-		baseSprites[1] = map.registerSprite(new ResourceLocation(RefStrings.MODID, "blocks/pipe_silver"));
-		overlaySprites[1] = map.registerSprite(new ResourceLocation(RefStrings.MODID, "blocks/pipe_silver_overlay"));
+		baseSprites[1] = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/pipe_silver"));
+		overlaySprites[1] = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/pipe_silver_overlay"));
 
 		// meta 2: colored
-		baseSprites[2] = map.registerSprite(new ResourceLocation(RefStrings.MODID, "blocks/pipe_colored"));
-		overlaySprites[2] = map.registerSprite(new ResourceLocation(RefStrings.MODID, "blocks/pipe_colored_overlay"));
+		baseSprites[2] = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/pipe_colored"));
+		overlaySprites[2] = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/pipe_colored_overlay"));
 	}
 
 	// do we need to separate inv meta models from block meta models? maybe not.
@@ -391,9 +379,9 @@ public class FluidDuctStandard extends BlockContainer implements IDynamicModels,
 	@SideOnly(Side.CLIENT)
 	@Override
 	public void bakeModel(ModelBakeEvent event) {
-		WavefrontObject wavefront = null;
+		HFRWavefrontObject wavefront = null;
 		try {
-			wavefront = new WavefrontObject(objModelLocation);
+			wavefront = new HFRWavefrontObject(objModelLocation);
 		} catch (Exception ignored) {}
 
 		TextureAtlasSprite missing = Minecraft.getMinecraft().getTextureMapBlocks().getMissingSprite();
@@ -410,7 +398,7 @@ public class FluidDuctStandard extends BlockContainer implements IDynamicModels,
 				itemModel = DuctNeoBakedModel.empty(missing);
 			} else {
 				blockModel = DuctNeoBakedModel.forBlock(wavefront, base, overlay);
-				itemModel = DuctNeoBakedModel.forItem(wavefront, base, overlay, 1.0F, 0.0F, 0.0F, 0.0F, (float)Math.PI);
+				itemModel = DuctNeoBakedModel.forItem(wavefront, base, overlay, 1.0F, 0.5F, 0.0F, 0.5F, (float)Math.PI);
 			}
 
 			ModelResourceLocation mrlBlock = new ModelResourceLocation(getRegistryName(), "meta=" + meta);

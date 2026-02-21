@@ -1,6 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.tileentity.machine.TileEntityMachinePress;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -30,7 +30,7 @@ public class ContainerMachinePress extends Container {
         // Slot 2: Input
         this.addSlotToContainer(new SlotItemHandler(te.inventory, 2, 80, 53));
         // Slot 3: Output
-        this.addSlotToContainer(new SlotTakeOnly(te.inventory, 3, 140, 35));
+        this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 3, 140, 35));
 
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; ++j) {

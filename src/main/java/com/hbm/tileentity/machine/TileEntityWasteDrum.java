@@ -87,6 +87,7 @@ public class TileEntityWasteDrum extends TileEntityMachineBase implements ITicka
 	
 	@Override
 	public void onLoad(){
+		super.onLoad();
 		updateWater();
 	}
 	

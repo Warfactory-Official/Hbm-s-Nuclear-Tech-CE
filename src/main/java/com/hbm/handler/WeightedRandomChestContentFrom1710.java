@@ -40,11 +40,11 @@ public class WeightedRandomChestContentFrom1710 extends WeightedRandom.Item {
         this.theMaximumChanceToGenerateItem = maxChance;
     }
 
-    public static void generateChestContents(Random p_76293_0_, WeightedRandomChestContentFrom1710[] p_76293_1_, ICapabilityProvider p_76293_2_, int p_76293_3_) {
-        if (p_76293_2_ != null && p_76293_2_.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)) {
-            IItemHandler inventory = p_76293_2_.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+    public static void generateChestContents(Random random, WeightedRandomChestContentFrom1710[] pool, ICapabilityProvider capabilityProvider, int roll) {
+        if (capabilityProvider != null && capabilityProvider.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)) {
+            IItemHandler inventory = capabilityProvider.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
             if (inventory instanceof IItemHandlerModifiable) {
-                generateChestContents(p_76293_0_, p_76293_1_, (IItemHandlerModifiable) inventory, p_76293_3_);
+                generateChestContents(random, pool, (IItemHandlerModifiable) inventory, roll);
             }
         }
     }
@@ -52,13 +52,13 @@ public class WeightedRandomChestContentFrom1710 extends WeightedRandom.Item {
     /**
      * Generates the Chest contents.
      */
-    public static void generateChestContents(Random p_76293_0_, WeightedRandomChestContentFrom1710[] p_76293_1_, IItemHandlerModifiable p_76293_2_, int p_76293_3_) {
-        for (int j = 0; j < p_76293_3_; ++j) {
-            WeightedRandomChestContentFrom1710 weightedrandomchestcontent = WeightedRandom.getRandomItem(p_76293_0_, Arrays.asList(p_76293_1_));
-            ItemStack[] stacks = weightedrandomchestcontent.generateChestContent(p_76293_0_, p_76293_2_);
+    public static void generateChestContents(Random random, WeightedRandomChestContentFrom1710[] pool, IItemHandlerModifiable modifiable, int roll) {
+        for (int j = 0; j < roll; ++j) {
+            WeightedRandomChestContentFrom1710 weightedrandomchestcontent = WeightedRandom.getRandomItem(random, Arrays.asList(pool));
+            ItemStack[] stacks = weightedrandomchestcontent.generateChestContent(random, modifiable);
 
             for (ItemStack item : stacks) {
-                p_76293_2_.setStackInSlot(p_76293_0_.nextInt(p_76293_2_.getSlots()), item);
+                modifiable.setStackInSlot(random.nextInt(modifiable.getSlots()), item);
             }
         }
     }

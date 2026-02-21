@@ -1,26 +1,26 @@
 package com.hbm.inventory.gui;
 
-import com.hbm.inventory.recipes.FluidCombustionRecipes;
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerMachineGasFlare;
-import com.hbm.lib.RefStrings;
+import com.hbm.inventory.recipes.FluidCombustionRecipes;
 import com.hbm.packet.toserver.NBTControlPacket;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.machine.oil.TileEntityMachineGasFlare;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
 
 import java.io.IOException;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUIMachineGasFlare extends GuiInfoContainer {
 
-	private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/generators/gui_flare_stack.png");
+	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/generators/gui_flare_stack.png");
 	private TileEntityMachineGasFlare flare;
 	
 	public GUIMachineGasFlare(InventoryPlayer invPlayer, TileEntityMachineGasFlare tedf) {
@@ -48,17 +48,17 @@ public class GUIMachineGasFlare extends GuiInfoContainer {
 		super.mouseClicked(x, y, mouseButton);
 
 		if(guiLeft + 89 <= x && guiLeft + 89 + 16 > x && guiTop + 16 < y && guiTop + 16 + 10 >= y) {
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
 			NBTTagCompound data = new NBTTagCompound();
 			data.setBoolean("valve", true);
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, flare.getPos()));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, flare.getPos()));
 
-		} else if(guiLeft + 89 <= x && guiLeft + 89 + 16 > x && guiTop + 50 < y && guiTop + 50 + 14 >= y) {
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+        } else if(guiLeft + 89 <= x && guiLeft + 89 + 16 > x && guiTop + 50 < y && guiTop + 50 + 14 >= y) {
+			playClickSound();
 			NBTTagCompound data = new NBTTagCompound();
 			data.setBoolean("dial", true);
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, flare.getPos()));
-		}
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, flare.getPos()));
+        }
 	}
 
 	@Override

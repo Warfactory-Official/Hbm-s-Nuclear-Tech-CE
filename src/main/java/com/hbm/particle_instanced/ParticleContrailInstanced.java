@@ -1,6 +1,6 @@
 package com.hbm.particle_instanced;
 
-import com.hbm.main.ModEventHandlerClient;
+import com.hbm.main.client.NTMClientRegistry;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
@@ -24,7 +24,7 @@ public class ParticleContrailInstanced extends ParticleInstanced {
 	
 	public ParticleContrailInstanced(World worldIn, double posXIn, double posYIn, double posZIn) {
 		super(worldIn, posXIn, posYIn, posZIn);
-		this.particleTexture = ModEventHandlerClient.contrail;
+		this.particleTexture = NTMClientRegistry.contrail;
 		maxAge = 100 + rand.nextInt(20);
 
 		this.particleRed = this.particleGreen = this.particleBlue = 0;
@@ -34,7 +34,7 @@ public class ParticleContrailInstanced extends ParticleInstanced {
 	
 	public ParticleContrailInstanced(World worldIn, double posXIn, double posYIn, double posZIn, float red, float green, float blue, float scale) {
 		super(worldIn, posXIn, posYIn, posZIn);
-		this.particleTexture = ModEventHandlerClient.contrail;
+		this.particleTexture = NTMClientRegistry.contrail;
 		maxAge = 100 + rand.nextInt(20);
 
 		this.lowRed = red;

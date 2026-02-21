@@ -1,20 +1,15 @@
 package com.hbm.world.generator;
 
 import com.hbm.world.phased.AbstractPhasedStructure;
-import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 
 public class JungleDungeonStructure extends AbstractPhasedStructure{
-    private final CellularDungeon dungeon;
-    private final int y;
+    public static final JungleDungeonStructure INSTANCE = new JungleDungeonStructure();
 
-    public JungleDungeonStructure(CellularDungeon dungeon, int y) {
-        this.dungeon = dungeon;
-        this.y = y;
+    private JungleDungeonStructure() {
+        super();
     }
 
     @Override
@@ -25,17 +20,5 @@ public class JungleDungeonStructure extends AbstractPhasedStructure{
     @Override
     protected void buildStructure(@NotNull AbstractPhasedStructure.LegacyBuilder builder, @NotNull Random rand) {
         CellularDungeonFactory.jungle.generate(builder, 0, 0, 0, rand);
-    }
-
-    @Override
-    public List<@NotNull BlockPos> getValidationPoints(@NotNull BlockPos origin) {
-        int halfX = (dungeon.dimX * dungeon.width) / 2;
-        int halfZ = (dungeon.dimZ * dungeon.width) / 2;
-        return Arrays.asList(
-                new BlockPos(origin.getX() - halfX, y, origin.getZ() - halfZ),
-                new BlockPos(origin.getX() + halfX, y, origin.getZ() - halfZ),
-                new BlockPos(origin.getX() - halfX, y, origin.getZ() + halfZ),
-                new BlockPos(origin.getX() + halfX, y, origin.getZ() + halfZ)
-        );
     }
 }

@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.api.block.IToolable.ToolType;
 import com.hbm.handler.radiation.RadiationSystemNT;
 import com.hbm.interfaces.IBomb;
 import com.hbm.interfaces.IDoor;
@@ -8,6 +9,7 @@ import com.hbm.interfaces.IDummy;
 import com.hbm.interfaces.IRadResistantBlock;
 import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemLock;
+import com.hbm.items.tool.ItemTooling;
 import com.hbm.tileentity.machine.TileEntityBlastDoor;
 import com.hbm.tileentity.machine.TileEntityDummy;
 import micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock;
@@ -78,7 +80,7 @@ public class DummyBlockBlast extends BlockContainer implements IDummy, IBomb, IR
     		}
     	}
     	world.removeTileEntity(pos);
-		RadiationSystemNT.markChunkForRebuild(world, pos);
+        RadiationSystemNT.markSectionForRebuild(world, pos);
 	}
 	
 	@Override
@@ -96,6 +98,20 @@ public class DummyBlockBlast extends BlockContainer implements IDummy, IBomb, IR
 						
 				TileEntityBlastDoor entity = (TileEntityBlastDoor) world.getTileEntity(((TileEntityDummy)til).target);
 				if(entity != null) {
+					if (player.getHeldItem(hand).getItem() instanceof ItemTooling tool && tool.getType() == ToolType.SCREWDRIVER) {
+						if (entity.getConfiguredMode() == IDoor.Mode.TOOLABLE) {
+							if (!entity.canToggleRedstone(player)) {
+								return false;
+							}
+							entity.toggleRedstoneMode();
+							return true;
+						}
+					}
+
+					if (entity.isRedstoneOnly()) {
+						return false;
+					}
+
 					if(entity.canAccess(player)){
 						entity.tryToggle();
 						return true;
@@ -167,7 +183,7 @@ public class DummyBlockBlast extends BlockContainer implements IDummy, IBomb, IR
 
 	@Override
 	public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
-		RadiationSystemNT.markChunkForRebuild(worldIn, pos);
+		RadiationSystemNT.markSectionForRebuild(worldIn, pos);
 		super.onBlockAdded(worldIn, pos, state);
 	}
 

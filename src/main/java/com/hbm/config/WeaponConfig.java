@@ -19,28 +19,26 @@ public class WeaponConfig {
 	public static boolean dropDead = true;
 	
 	public static void loadFromConfig(Configuration config) {
-		final String CATEGORY_MISSILE = "07_missile_machines";
-		Property propRadarRange = config.get(CATEGORY_MISSILE, "7.00_radarRange", 1000);
+		Property propRadarRange = config.get(CommonConfig.CATEGORY_MISSILE, "7.00_radarRange", 1000);
 		propRadarRange.setComment("Range of the radar, 50 will result in 100x100 block area covered");
 		radarRange = propRadarRange.getInt();
-		Property propRadarBuffer = config.get(CATEGORY_MISSILE, "7.01_radarBuffer", 30);
+		Property propRadarBuffer = config.get(CommonConfig.CATEGORY_MISSILE, "7.01_radarBuffer", 30);
 		propRadarBuffer.setComment("How high entities have to be above the radar to be detected");
 		radarBuffer = propRadarBuffer.getInt();
-		Property propRadarAltitude = config.get(CATEGORY_MISSILE, "7.02_radarAltitude", 55);
+		Property propRadarAltitude = config.get(CommonConfig.CATEGORY_MISSILE, "7.02_radarAltitude", 55);
 		propRadarAltitude.setComment("Y height required for the radar to work");
 		radarAltitude = propRadarAltitude.getInt();
-		Property propCiwsHitrate = config.get(CATEGORY_MISSILE, "7.03_ciwsAccuracy", 50);
+		Property propCiwsHitrate = config.get(CommonConfig.CATEGORY_MISSILE, "7.03_ciwsAccuracy", 50);
 		propCiwsHitrate.setComment("Additional modifier for CIWS accuracy");
 		ciwsHitrate = propCiwsHitrate.getInt();
 
-		dropMissileParts = CommonConfig.createConfigBool(config, CATEGORY_MISSILE, "7.03_dropMissileParts", "Whether shot-down missiles drop items", true);
-		
-		final String CATEGORY_DROPS = "10_dangerous_drops";
-        dropCell = CommonConfig.createConfigBool(config, CATEGORY_DROPS, "10.00_dropCell", "Whether antimatter cells should explode when dropped", true);
-        dropSing = CommonConfig.createConfigBool(config, CATEGORY_DROPS, "10.01_dropBHole", "Whether singularities and blaack holes should spawn when dropped", true);
-        dropStar = CommonConfig.createConfigBool(config, CATEGORY_DROPS, "10.02_dropStar", "Whether rigged star blaster cells should explode when dropped", true);
-        dropCrys = CommonConfig.createConfigBool(config, CATEGORY_DROPS, "10.04_dropCrys", "Whether xen crystals should move blocks when dropped", true);
-        dropDead = CommonConfig.createConfigBool(config, CATEGORY_DROPS, "10.05_dropDead", "Whether dead man's explosives should explode when dropped", true);
+		dropMissileParts = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_MISSILE, "7.03_dropMissileParts", "Whether shot-down missiles drop items", true);
+
+        dropCell = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_DROPS, "10.00_dropCell", "Whether antimatter cells should explode when dropped", true);
+        dropSing = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_DROPS, "10.01_dropBHole", "Whether singularities and blaack holes should spawn when dropped", true);
+        dropStar = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_DROPS, "10.02_dropStar", "Whether rigged star blaster cells should explode when dropped", true);
+        dropCrys = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_DROPS, "10.04_dropCrys", "Whether xen crystals should move blocks when dropped", true);
+        dropDead = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_DROPS, "10.05_dropDead", "Whether dead man's explosives should explode when dropped", true);
 	}
 
 }

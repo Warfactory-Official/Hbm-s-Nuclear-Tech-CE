@@ -1,0 +1,7 @@
+{
+	"parent": "block/cube_column",
+	"textures": {
+		"end": "blocks/stone",
+		"side": "hbm:blocks/stone_keyhole"
+	}
+}

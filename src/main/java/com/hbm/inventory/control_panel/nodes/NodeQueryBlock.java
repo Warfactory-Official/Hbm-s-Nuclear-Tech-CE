@@ -1,6 +1,7 @@
 package com.hbm.inventory.control_panel.nodes;
 
 import com.hbm.inventory.control_panel.*;
+import com.hbm.inventory.control_panel.modular.StockNodesRegister;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -102,8 +103,8 @@ public class NodeQueryBlock extends Node {
     }
 
     @Override
-    public NodeType getType() {
-        return NodeType.INPUT;
+    public float[] getColor() {
+        return StockNodesRegister.colorInput;
     }
 
     @Override

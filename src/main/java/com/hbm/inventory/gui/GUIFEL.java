@@ -1,29 +1,29 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerFEL;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
-import com.hbm.lib.RefStrings;
 import com.hbm.packet.toserver.AuxButtonPacket;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.machine.TileEntityFEL;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 import java.io.IOException;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUIFEL extends GuiInfoContainer {
 
-	public static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/machine/gui_fel.png");
+	public static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/machine/gui_fel.png");
 	private TileEntityFEL fel;
 
 	public GUIFEL(InventoryPlayer invPlayer, TileEntityFEL laser) {
@@ -46,7 +46,7 @@ public class GUIFEL extends GuiInfoContainer {
 		super.mouseClicked(mouseX, mouseY, i);
 
 		if(guiLeft + 142 <= mouseX && guiLeft + 142 + 29 > mouseX && guiTop + 41 < mouseY && guiTop + 41 + 17 >= mouseY) {
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
 			PacketDispatcher.wrapper.sendToServer(new AuxButtonPacket(fel.getPos(), 0, 2));
 		}
 	}

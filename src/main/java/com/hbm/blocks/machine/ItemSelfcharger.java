@@ -11,7 +11,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 
 import java.util.List;
-
+@Deprecated
 public class ItemSelfcharger extends Item implements IBatteryItem {
 	
 	long charge;
@@ -52,12 +52,12 @@ public class ItemSelfcharger extends Item implements IBatteryItem {
 	}
 
 	@Override
-	public long getChargeRate() {
+	public long getChargeRate(ItemStack stack) {
 		return 0;
 	}
 
 	@Override
-	public long getDischargeRate() {
+	public long getDischargeRate(ItemStack stack) {
 		return charge;
 	}
 

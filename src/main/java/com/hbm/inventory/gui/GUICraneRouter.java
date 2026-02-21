@@ -1,28 +1,28 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerCraneRouter;
-import com.hbm.lib.RefStrings;
 import com.hbm.modules.ModulePatternMatcher;
 import com.hbm.packet.toserver.NBTControlPacket;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.network.TileEntityCraneRouter;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.Slot;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.input.Keyboard;
-import net.minecraft.client.renderer.GlStateManager;
 
 import java.io.IOException;
 import java.util.Arrays;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUICraneRouter extends GuiInfoContainer {
-    private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/storage/gui_crane_router.png");
+    private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/storage/gui_crane_router.png");
     private TileEntityCraneRouter router;
 
     public GUICraneRouter(InventoryPlayer invPlayer, TileEntityCraneRouter tedf) {
@@ -43,10 +43,10 @@ public class GUICraneRouter extends GuiInfoContainer {
                 int buttonY = guiTop + 16 + k * 26;
 
                 if (buttonX <= mouseX && mouseX < buttonX + 18 && buttonY < mouseY && mouseY <= buttonY + 18) {
-                    mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                    playClickSound();
                     NBTTagCompound data = new NBTTagCompound();
                     data.setInteger("toggle", j * 3 + k);
-                    PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, router.getPos()));
+                    PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, router.getPos()));
                 }
             }
         }

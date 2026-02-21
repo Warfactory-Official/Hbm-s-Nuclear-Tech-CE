@@ -1,10 +1,17 @@
 package com.hbm.world;
 
+import com.google.common.base.Predicate;
+import com.hbm.lib.internal.MethodHandleHelper;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.BiomeSyncPacket;
 import com.hbm.util.Compat;
+import net.minecraft.block.BlockStone;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.init.Blocks;
+import net.minecraft.util.EntitySelectors;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -17,20 +24,33 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.chunkio.ChunkIOExecutor;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
+import java.util.ArrayList;
+import java.util.List;
 
 public class WorldUtil {
-    private static final Method getIntBiomeArray;
+    private static final MethodHandle getIntBiomeArray;
+    public static final Predicate<IBlockState> STONE_PREDICATE = state -> {
+        if (state != null && state.getBlock() == Blocks.STONE) {
+            BlockStone.EnumType type = state.getValue(BlockStone.VARIANT);
+            return type.isNatural();
+        } else {
+            return false;
+        }
+    };
 
     static {
-        Method method = null;
+        MethodHandle method = null;
         if (Compat.isIDExtensionModLoaded()) {
+            //see https://github.com/TerraFirmaCraft-The-Final-Frontier/RoughlyEnoughIDs/blob/master/src/main/java/org/dimdev/jeid/mixin/core/world/MixinChunk.java
             try {
-                method = Chunk.class.getMethod("getIntBiomeArray");
-            } catch (NoSuchMethodException ignored) {
+                method = MethodHandleHelper.findVirtual(Chunk.class, "getIntBiomeArray", MethodType.methodType(int[].class));
+            } catch (RuntimeException ex) {
+                MainRegistry.logger.error("JEID/REID/NEID is loaded but failed to find getIntBiomeArray method", ex);
             }
         }
         getIntBiomeArray = method;
@@ -94,8 +114,9 @@ public class WorldUtil {
         int[] arr = null;
         if (getIntBiomeArray != null) {
             try {
-                arr = (int[]) getIntBiomeArray.invoke(chunk);
-            } catch (IllegalAccessException | InvocationTargetException ignored) {
+                arr = (int[]) getIntBiomeArray.invokeExact(chunk);
+            } catch (Throwable ex) {
+                MainRegistry.logger.catching(ex);
             }
         }
         if (arr != null && arr.length == 256) {
@@ -142,4 +163,54 @@ public class WorldUtil {
             }
         }
     }
+
+    // must be called server-side
+    public static @NotNull List<Entity> getEntitiesInRadius(World world, double x, double y, double z, double radius) {
+        AxisAlignedBB aabb = new AxisAlignedBB(x, y, z, x, y, z).grow(radius);
+        return getEntitiesWithinAABBExcludingEntity((WorldServer) world, null, aabb);
+    }
+
+    /// --------------- WORLD COPY-PASTE START ---------------
+    /// [Issue](https://github.com/Warfactory-Offical/Hbm-s-Nuclear-Tech-CE/issues/906)
+    /// Some servers inject a check in getEntitiesWithinAABB that throws an exception if the AABB is too large
+    /// It has to be bypassed, so I copied the methods here
+
+    public static <T extends Entity> List<T> getEntitiesWithinAABB(WorldServer world, Class<? extends T> classEntity, AxisAlignedBB bb) {
+        return getEntitiesWithinAABB(world, classEntity, bb, EntitySelectors.NOT_SPECTATING);
+    }
+
+    public static <T extends Entity> List<T> getEntitiesWithinAABB(WorldServer world, Class<? extends T> clazz, AxisAlignedBB aabb, @Nullable Predicate<? super T> filter) {
+        int j2 = MathHelper.floor((aabb.minX - World.MAX_ENTITY_RADIUS) / 16.0D);
+        int k2 = MathHelper.ceil((aabb.maxX + World.MAX_ENTITY_RADIUS) / 16.0D);
+        int l2 = MathHelper.floor((aabb.minZ - World.MAX_ENTITY_RADIUS) / 16.0D);
+        int i3 = MathHelper.ceil((aabb.maxZ + World.MAX_ENTITY_RADIUS) / 16.0D);
+        List<T> list = new ArrayList<>();
+        for (int j3 = j2; j3 < k2; ++j3) {
+            for (int k3 = l2; k3 < i3; ++k3) {
+                if (world.getChunkProvider().chunkExists(j3, k3)) {
+                    world.getChunk(j3, k3).getEntitiesOfTypeWithinAABB(clazz, aabb, list, filter);
+                }
+            }
+        }
+        return list;
+    }
+
+    public static List<Entity> getEntitiesWithinAABBExcludingEntity(WorldServer world, @Nullable Entity entityIn, AxisAlignedBB bb) {
+        return getEntitiesInAABBexcluding(world, entityIn, bb, EntitySelectors.NOT_SPECTATING);
+    }
+
+    public static List<Entity> getEntitiesInAABBexcluding(WorldServer world, @Nullable Entity entityIn, AxisAlignedBB boundingBox, @Nullable Predicate<? super Entity> predicate) {
+        List<Entity> list = new ArrayList<>();
+        int j2 = MathHelper.floor((boundingBox.minX - World.MAX_ENTITY_RADIUS) / 16.0D);
+        int k2 = MathHelper.floor((boundingBox.maxX + World.MAX_ENTITY_RADIUS) / 16.0D);
+        int l2 = MathHelper.floor((boundingBox.minZ - World.MAX_ENTITY_RADIUS) / 16.0D);
+        int i3 = MathHelper.floor((boundingBox.maxZ + World.MAX_ENTITY_RADIUS) / 16.0D);
+        for (int j3 = j2; j3 <= k2; ++j3) for (int k3 = l2; k3 <= i3; ++k3) {
+            if (world.getChunkProvider().chunkExists(j3, k3)) {
+                world.getChunk(j3, k3).getEntitiesWithinAABBForEntity(entityIn, boundingBox, list, predicate);
+            }
+        }
+        return list;
+    }
+    /// --------------- WORLD COPY-PASTE END ---------------
 }

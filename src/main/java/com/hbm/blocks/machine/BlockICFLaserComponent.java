@@ -5,15 +5,15 @@ import com.hbm.render.block.BlockBakeFrame;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 
-public class BlockICFLaserComponent extends BlockEnumMeta {
+public class BlockICFLaserComponent extends BlockEnumMeta<BlockICFLaserComponent.EnumICFPart> {
 
     public BlockICFLaserComponent() {
-        super(Material.IRON, SoundType.METAL, "icf_laser_component", EnumICFPart.class, true, true);
+        super(Material.IRON, SoundType.METAL, "icf_laser_component", EnumICFPart.VALUES, true, true);
     }
 
     @Override
     protected BlockBakeFrame[] generateBlockFrames(String registryName) {
-        EnumICFPart[] parts = EnumICFPart.values();
+        EnumICFPart[] parts = EnumICFPart.VALUES;
         BlockBakeFrame[] frames = new BlockBakeFrame[parts.length];
 
         for (EnumICFPart part : parts) {
@@ -35,6 +35,8 @@ public class BlockICFLaserComponent extends BlockEnumMeta {
         CELL,
         EMITTER,
         CAPACITOR,
-        TURBO
+        TURBO;
+
+        public static final EnumICFPart[] VALUES = values();
     }
 }

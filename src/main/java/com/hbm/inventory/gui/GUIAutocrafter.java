@@ -1,23 +1,22 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerAutocrafter;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityMachineAutocrafter;
 import com.hbm.util.I18nUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.util.text.TextFormatting;
 
 import java.util.Arrays;
 
 public class GUIAutocrafter extends GuiInfoContainer {
 
-    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_autocrafter.png");
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_autocrafter.png");
     private final TileEntityMachineAutocrafter diFurnace;
 
     public GUIAutocrafter(InventoryPlayer invPlayer, TileEntityMachineAutocrafter tedf) {
@@ -41,7 +40,7 @@ public class GUIAutocrafter extends GuiInfoContainer {
 
                 if(this.isMouseOverSlot(slot, x, y) && diFurnace.modes[i] != null) {
 
-                    String label = ChatFormatting.YELLOW + "";
+                    String label = TextFormatting.YELLOW + "";
 
                     switch(diFurnace.modes[i]) {
                         case "exact": label += I18nUtil.resolveKey("desc.exact"); break;
@@ -49,14 +48,14 @@ public class GUIAutocrafter extends GuiInfoContainer {
                         default: label += I18nUtil.resolveKey("desc.oredictmatch")+" "+ diFurnace.modes[i]; break;
                     }
 
-                    this.drawHoveringText(Arrays.asList(new String[] { ChatFormatting.RED + I18nUtil.resolveKey("desc.rcchange"), label }), x, y - 30);
+                    this.drawHoveringText(Arrays.asList(new String[] { TextFormatting.RED + I18nUtil.resolveKey("desc.rcchange"), label }), x, y - 30);
                 }
             }
 
             Slot slot = (Slot) this.inventorySlots.inventorySlots.get(9);
 
-            if(this.isMouseOverSlot(slot, x, y) && diFurnace.inventory.getStackInSlot(9) != ItemStack.EMPTY) {
-                this.drawHoveringText(Arrays.asList(new String[] { ChatFormatting.RED + I18nUtil.resolveKey("desc.rcchange"), ChatFormatting.YELLOW + "" + (diFurnace.recipeIndex + 1) + " / " + diFurnace.recipeCount }), x, y - 30);
+            if(this.isMouseOverSlot(slot, x, y) && !diFurnace.inventory.getStackInSlot(9).isEmpty()) {
+                this.drawHoveringText(Arrays.asList(new String[] { TextFormatting.RED + I18nUtil.resolveKey("desc.rcchange"), TextFormatting.YELLOW + "" + (diFurnace.recipeIndex + 1) + " / " + diFurnace.recipeCount }), x, y - 30);
             }
         }
     }

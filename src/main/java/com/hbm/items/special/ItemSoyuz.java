@@ -2,7 +2,6 @@ package com.hbm.items.special;
 
 import com.hbm.items.ItemEnumMulti;
 import com.hbm.items.ItemEnums;
-import com.hbm.items.ModItems;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.ItemStack;
@@ -11,10 +10,10 @@ import net.minecraft.world.World;
 
 import java.util.List;
 
-public class ItemSoyuz extends ItemEnumMulti {
+public class ItemSoyuz extends ItemEnumMulti<ItemEnums.SoyuzSkinType> {
 
     public ItemSoyuz(String s) {
-        super(s, ItemEnums.SoyuzSkinType.class, false, true);
+        super(s, ItemEnums.SoyuzSkinType.VALUES, false, true);
     }
 
     @Override

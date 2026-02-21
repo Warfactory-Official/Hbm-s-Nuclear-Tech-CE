@@ -2,6 +2,7 @@ package com.hbm.inventory.container;
 
 import com.hbm.items.machine.ItemPlateFuel;
 import com.hbm.tileentity.machine.TileEntityReactorResearch;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -47,33 +48,9 @@ public class ContainerReactorResearch extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        ItemStack var3 = ItemStack.EMPTY;
-        Slot slot = (Slot) this.inventorySlots.get(index);
-
-        if (slot != null && slot.getHasStack()) {
-            ItemStack stack = slot.getStack();
-            var3 = stack.copy();
-
-            if (index <= 12) {
-                if (!this.mergeItemStack(stack, 13, this.inventorySlots.size(), true)){
-                    return ItemStack.EMPTY;
-                }
-            } else {
-                if(stack.getItem() instanceof ItemPlateFuel) {
-                    if (!this.mergeItemStack(stack, 0, 12, true))
-                        return ItemStack.EMPTY;
-                } else {
-                    return ItemStack.EMPTY;
-                }
-            }
-            if (stack.getCount() == 0) {
-                slot.putStack(ItemStack.EMPTY);
-            } else {
-                slot.onSlotChanged();
-            }
-        }
-
-        return var3;
+        return InventoryUtil.transferStack(this.inventorySlots, index, 12,
+                s -> s.getItem() instanceof ItemPlateFuel, 12
+        );
     }
 
     @Override

@@ -1,8 +1,8 @@
 package com.hbm.render.entity.projectile;
 
+import com.hbm.Tags;
 import com.hbm.entity.projectile.EntityChemical;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
@@ -16,7 +16,7 @@ import org.lwjgl.opengl.GL11;
 import java.awt.*;
 @AutoRegister(factory = "FACTORY")
 public class RenderChemical extends Render<EntityChemical> {
-    private static ResourceLocation gas = new ResourceLocation(RefStrings.MODID + ":textures/particle/particle_base.png");
+    private static ResourceLocation gas = new ResourceLocation(Tags.MODID + ":textures/particle/particle_base.png");
 
     public static final IRenderFactory<EntityChemical> FACTORY =
             man -> new RenderChemical(man);

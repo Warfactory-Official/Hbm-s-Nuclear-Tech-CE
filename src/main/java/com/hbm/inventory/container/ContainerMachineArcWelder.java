@@ -1,12 +1,12 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotBattery;
-import com.hbm.inventory.SlotTakeOnly;
-import com.hbm.inventory.SlotUpgrade;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotFiltered;
+import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.items.machine.IItemFluidIdentifier;
-import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineArcWelder;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -26,7 +26,7 @@ public class ContainerMachineArcWelder extends Container {
         this.addSlotToContainer(new SlotItemHandler(welder.inventory, 1, 35, 36));
         this.addSlotToContainer(new SlotItemHandler(welder.inventory, 2, 53, 36));
         // Output
-        this.addSlotToContainer(new SlotTakeOnly(welder.inventory, 3, 107, 36));
+        this.addSlotToContainer(SlotFiltered.takeOnly(welder.inventory, 3, 107, 36));
         //Battery
         this.addSlotToContainer(new SlotBattery(welder.inventory, 4, 152, 72));
         //Fluid ID
@@ -51,39 +51,16 @@ public class ContainerMachineArcWelder extends Container {
         return welder.isUseableByPlayer(player);
     }
 
+    private static boolean isNormal(ItemStack stack) {
+        return !Library.isBattery(stack) && !Library.isMachineUpgrade(stack) && !(stack.getItem() instanceof IItemFluidIdentifier);
+    }
+
     @Override
     public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-        ItemStack rStack = ItemStack.EMPTY;
-        Slot slot = this.inventorySlots.get(index);
-
-        if(slot != null && slot.getHasStack()) {
-            ItemStack stack = slot.getStack();
-            rStack = stack.copy();
-
-            if(index <= 7) {
-                if(!this.mergeItemStack(stack, 8, this.inventorySlots.size(), true)) {
-                    return ItemStack.EMPTY;
-                }
-            } else {
-
-                if(Library.isItemBattery(rStack)) {
-                    if(!this.mergeItemStack(stack, 4, 5, false)) return ItemStack.EMPTY;
-                } else if(rStack.getItem() instanceof IItemFluidIdentifier) {
-                    if(!this.mergeItemStack(stack, 5, 6, false)) return ItemStack.EMPTY;
-                } else if(rStack.getItem() instanceof ItemMachineUpgrade) {
-                    if(!this.mergeItemStack(stack, 6, 8, false)) return ItemStack.EMPTY;
-                } else {
-                    if(!this.mergeItemStack(stack, 0, 3, false)) return ItemStack.EMPTY;
-                }
-            }
-
-            if(stack.isEmpty()) {
-                slot.putStack(ItemStack.EMPTY);
-            } else {
-                slot.onSlotChanged();
-            }
-        }
-
-        return rStack;
+        return InventoryUtil.transferStack(this.inventorySlots, index, 8,
+                ContainerMachineArcWelder::isNormal, 4,
+                Library::isBattery, 5,
+                s -> s.getItem() instanceof IItemFluidIdentifier, 6,
+                Library::isMachineUpgrade, 8);
     }
 }

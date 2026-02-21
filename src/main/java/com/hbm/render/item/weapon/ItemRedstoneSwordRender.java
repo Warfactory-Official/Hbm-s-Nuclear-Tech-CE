@@ -1,7 +1,7 @@
 package com.hbm.render.item.weapon;
 
+import com.hbm.Tags;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.model.ModelSword;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -42,7 +42,7 @@ public class ItemRedstoneSwordRender extends TileEntityItemStackRenderer {
 						GlStateManager.translate(0.25F, 0.0F, 0.0F);
 					}
 				}
-				Minecraft.getMinecraft().renderEngine.bindTexture(new ResourceLocation(RefStrings.MODID +":textures/models/weapons/model_sword_redstone.png"));
+				Minecraft.getMinecraft().renderEngine.bindTexture(new ResourceLocation(Tags.MODID +":textures/models/weapons/model_sword_redstone.png"));
 				GlStateManager.rotate(180.0F, 0.0F, 0.0F, 0.0F);
 				GlStateManager.rotate(90.0F, 0.0F, 1.0F, 0.0F);
 				GlStateManager.translate(0.5F, -0.2F, -0.5F);

@@ -90,7 +90,7 @@ public class TileEntityNukeTsar extends TileEntity implements IGUIProvider {
 	public boolean isBottomLeftLenseFilled(){
 		return inventory.getStackInSlot(3).getItem() == ModItems.explosive_lenses;
 	}
-	public boolean isBottomRightLenseFilled(){
+	public boolean isBottomRightLenseFilled() {
 		return inventory.getStackInSlot(4).getItem() == ModItems.explosive_lenses;
 	}
 

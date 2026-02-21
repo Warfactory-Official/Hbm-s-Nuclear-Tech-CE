@@ -17,42 +17,42 @@ import java.util.Map;
 
 public class HydrotreatingRecipes extends SerializableRecipe {
 
-    private static HashMap<FluidType, Tuple.Triplet<FluidStack, FluidStack, FluidStack>> recipes = new HashMap();
+    public static HashMap<FluidType, Tuple.Triplet<FluidStack, FluidStack, FluidStack>> recipes = new HashMap<>();
 
     @Override
     public void registerDefaults() {
 
-        recipes.put(Fluids.OIL, new Tuple.Triplet(
+        recipes.put(Fluids.OIL, new Tuple.Triplet<>(
                 new FluidStack(Fluids.HYDROGEN, 5, 1),
                 new FluidStack(Fluids.OIL_DS, 90),
                 new FluidStack(Fluids.SOURGAS, 15)
         ));
 
-        recipes.put(Fluids.CRACKOIL, new Tuple.Triplet(
+        recipes.put(Fluids.CRACKOIL, new Tuple.Triplet<>(
                 new FluidStack(Fluids.HYDROGEN, 5, 1),
                 new FluidStack(Fluids.CRACKOIL_DS, 90),
                 new FluidStack(Fluids.SOURGAS, 15)
         ));
 
-        recipes.put(Fluids.GAS, new Tuple.Triplet(
+        recipes.put(Fluids.GAS, new Tuple.Triplet<>(
                 new FluidStack(Fluids.HYDROGEN, 5, 1),
                 new FluidStack(Fluids.PETROLEUM, 80),
                 new FluidStack(Fluids.SOURGAS, 15)
         ));
 
-        recipes.put(Fluids.DIESEL_CRACK, new Tuple.Triplet(
+        recipes.put(Fluids.DIESEL_CRACK, new Tuple.Triplet<>(
                 new FluidStack(Fluids.HYDROGEN, 10, 1),
                 new FluidStack(Fluids.DIESEL, 80),
                 new FluidStack(Fluids.SOURGAS, 30)
         ));
 
-        recipes.put(Fluids.DIESEL_CRACK_REFORM, new Tuple.Triplet(
+        recipes.put(Fluids.DIESEL_CRACK_REFORM, new Tuple.Triplet<>(
                 new FluidStack(Fluids.HYDROGEN, 10, 1),
                 new FluidStack(Fluids.DIESEL_REFORM, 80),
                 new FluidStack(Fluids.SOURGAS, 30)
         ));
 
-        recipes.put(Fluids.COALOIL, new Tuple.Triplet(
+        recipes.put(Fluids.COALOIL, new Tuple.Triplet<>(
                 new FluidStack(Fluids.HYDROGEN, 10, 1),
                 new FluidStack(Fluids.COALGAS, 80),
                 new FluidStack(Fluids.SOURGAS, 15)
@@ -65,7 +65,7 @@ public class HydrotreatingRecipes extends SerializableRecipe {
 
     public static HashMap<Object, Object[]> getRecipes() {
 
-        HashMap<Object, Object[]> map = new HashMap<Object, Object[]>();
+        HashMap<Object, Object[]> map = new HashMap<>();
 
         for(Map.Entry<FluidType, Tuple.Triplet<FluidStack, FluidStack, FluidStack>> recipe : recipes.entrySet()) {
             map.put(new ItemStack[] {
@@ -94,11 +94,11 @@ public class HydrotreatingRecipes extends SerializableRecipe {
         JsonObject obj = (JsonObject) recipe;
 
         FluidType input = Fluids.fromName(obj.get("input").getAsString());
-        FluidStack hydrogen = this.readFluidStack(obj.get("hydrogen").getAsJsonArray());
-        FluidStack output1 = this.readFluidStack(obj.get("output1").getAsJsonArray());
-        FluidStack output2 = this.readFluidStack(obj.get("output2").getAsJsonArray());
+        FluidStack hydrogen = readFluidStack(obj.get("hydrogen").getAsJsonArray());
+        FluidStack output1 = readFluidStack(obj.get("output1").getAsJsonArray());
+        FluidStack output2 = readFluidStack(obj.get("output2").getAsJsonArray());
 
-        recipes.put(input, new Tuple.Triplet(hydrogen, output1, output2));
+        recipes.put(input, new Tuple.Triplet<>(hydrogen, output1, output2));
     }
 
     @Override
@@ -106,9 +106,9 @@ public class HydrotreatingRecipes extends SerializableRecipe {
         Map.Entry<FluidType, Tuple.Triplet<FluidStack, FluidStack, FluidStack>> rec = (Map.Entry<FluidType, Tuple.Triplet<FluidStack, FluidStack, FluidStack>>) recipe;
 
         writer.name("input").value(rec.getKey().getName());
-        writer.name("hydrogen"); this.writeFluidStack(rec.getValue().getX(), writer);
-        writer.name("output1"); this.writeFluidStack(rec.getValue().getY(), writer);
-        writer.name("output2"); this.writeFluidStack(rec.getValue().getZ(), writer);
+        writer.name("hydrogen"); writeFluidStack(rec.getValue().getX(), writer);
+        writer.name("output1"); writeFluidStack(rec.getValue().getY(), writer);
+        writer.name("output2"); writeFluidStack(rec.getValue().getZ(), writer);
     }
 
     @Override

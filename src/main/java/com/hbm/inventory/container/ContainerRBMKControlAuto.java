@@ -26,12 +26,12 @@ public class ContainerRBMKControlAuto extends Container {
 	}
 	
 	@Override
-	public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int p_82846_2_) {
+	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
 		return ItemStack.EMPTY;
 	}
 
 	@Override
 	public boolean canInteractWith(EntityPlayer player) {
-		return true;
+		return rbmk.isUseableByPlayer(player);
 	}
 }

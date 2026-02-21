@@ -1,7 +1,9 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
+import com.hbm.items.machine.ItemRTGPellet;
 import com.hbm.tileentity.machine.TileEntityDiFurnaceRTG;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -19,7 +21,7 @@ public class ContainerDiFurnaceRTG extends Container {
 		this.addSlotToContainer(new SlotItemHandler(teIn.inventory, 0, 80, 18));
 		this.addSlotToContainer(new SlotItemHandler(teIn.inventory, 1, 80, 54));
 		// Output
-		this.addSlotToContainer(new SlotTakeOnly(teIn.inventory, 2, 134, 36));
+		this.addSlotToContainer(SlotFiltered.takeOnly(teIn.inventory, 2, 134, 36));
 		// RTG pellets
 		this.addSlotToContainer(new SlotItemHandler(teIn.inventory, 3, 22, 18));
 		this.addSlotToContainer(new SlotItemHandler(teIn.inventory, 4, 40, 18));
@@ -45,37 +47,9 @@ public class ContainerDiFurnaceRTG extends Container {
 	}
 
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2)
-    {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-		
-		if (var4 != null && var4.getHasStack())
-		{
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-			
-            if (par2 <= 3) {
-				if (!this.mergeItemStack(var5, 4, this.inventorySlots.size(), true))
-				{
-					return ItemStack.EMPTY;
-				}
-			}
-			else if (!this.mergeItemStack(var5, 0, 3, false))
-			{
-				return ItemStack.EMPTY;
-			}
-			
-			if (var5.getCount() == 0)
-			{
-				var4.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
-				var4.onSlotChanged();
-			}
-		}
-		
-		return var3;
+    public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+		return InventoryUtil.transferStack(this.inventorySlots, index, 9,
+                s -> !(s.getItem() instanceof ItemRTGPellet), 3,
+                s -> s.getItem() instanceof ItemRTGPellet, 9);
     }
 }

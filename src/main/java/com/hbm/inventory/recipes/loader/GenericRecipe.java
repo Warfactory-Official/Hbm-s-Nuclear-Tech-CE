@@ -58,7 +58,17 @@ public class GenericRecipe {
     public GenericRecipe setIcon(Item item) { return this.setIcon(new ItemStack(item)); }
     public GenericRecipe setIcon(Block block) { return this.setIcon(new ItemStack(block)); }
     public GenericRecipe setNamed() { this.customLocalization = true; return this; }
-    public GenericRecipe setPools(String... pools) { this.blueprintPools = pools; for(String pool : pools) GenericRecipes.addToPool(pool, this); return this; }
+    public GenericRecipe setPools(String... pools) {
+        this.blueprintPools = pools;
+        for(String pool : pools) {
+            if(!GeneralConfig.enable528 && pool.startsWith(GenericRecipes.POOL_PREFIX_528)) throw new IllegalArgumentException("Tried initializing a recipe's default blueprint pool with a 528 blueprint - this is not allowed.");
+            GenericRecipes.addToPool(pool, this);
+        }
+        return this;
+    }
+    /** Only for recipe configs - same as regular except the anti 528 check doesn't exist */
+    public GenericRecipe setPoolsAllow528(String... pools) { this.blueprintPools = pools; for(String pool : pools) GenericRecipes.addToPool(pool, this); return this; }
+    public GenericRecipe setPools528(String... pools) { if(GeneralConfig.enable528) { this.blueprintPools = pools; for(String pool : pools) GenericRecipes.addToPool(pool, this); } return this; }
     public GenericRecipe setGroup(String autoSwitch, GenericRecipes set) { this.autoSwitchGroup = autoSwitch; set.addToGroup(autoSwitch, this); return this; }
 
     public GenericRecipe inputItems(RecipesCommon.AStack... input) { this.inputItem = input; for(RecipesCommon.AStack stack : this.inputItem) if(stack.stacksize > 64) throw new IllegalArgumentException("AStack in " + this.name + " exceeds stack limit!"); return this; }
@@ -67,6 +77,11 @@ public class GenericRecipe {
     public GenericRecipe inputFluidsEx(FluidStack... input) { if(!GeneralConfig.enableExpensiveMode) return this; this.inputFluid = input; return this; }
     public GenericRecipe outputItems(IOutput... output) { this.outputItem = output; return this; }
     public GenericRecipe outputFluids(FluidStack... output) { this.outputFluid = output; return this; }
+
+    private boolean exceedsStackLimit(RecipesCommon.AStack stack) {
+        if(stack instanceof RecipesCommon.ComparableStack && stack.stacksize > ((RecipesCommon.ComparableStack) stack).item.getItemStackLimit(((RecipesCommon.ComparableStack) stack).toStack())) return true;
+        return stack.stacksize > 64;
+    }
 
     public GenericRecipe outputItems(ItemStack... output) {
         this.outputItem = new IOutput[output.length];
@@ -77,7 +92,7 @@ public class GenericRecipe {
     public GenericRecipe setIconToFirstIngredient() {
         if(this.inputItem != null) {
             List<ItemStack> stacks = this.inputItem[0].extractForJEI();
-            if(!stacks.isEmpty()) this.icon = stacks.get(0);
+            if(!stacks.isEmpty()) this.icon = stacks.getFirst();
         }
         return this;
     }
@@ -87,7 +102,7 @@ public class GenericRecipe {
         if(icon == null) {
             if(outputItem != null) {
                 if(outputItem[0] instanceof ChanceOutput) icon = ((ChanceOutput) outputItem[0]).stack.copy();
-                if(outputItem[0] instanceof ChanceOutputMulti) icon = ((ChanceOutputMulti) outputItem[0]).pool.get(0).stack.copy();
+                if(outputItem[0] instanceof ChanceOutputMulti) icon = ((ChanceOutputMulti) outputItem[0]).pool.getFirst().stack.copy();
                 return icon;
             }
             if(outputFluid != null) {
@@ -112,23 +127,48 @@ public class GenericRecipe {
     }
 
     public List<String> print() {
-        List<String> list = new ArrayList();
+        List<String> list = new ArrayList<>();
         list.add(TextFormatting.YELLOW + this.getLocalizedName());
+
+        autoSwitch(list);
+        duration(list);
+        power(list);
+        input(list);
+        output(list);
+
+        return list;
+    }
+
+    protected void autoSwitch(List<String> list) {
         if(this.autoSwitchGroup != null) {
             String[] lines = I18nUtil.resolveKeyArray("autoswitch", I18nUtil.resolveKey(this.autoSwitchGroup));
             for(String line : lines) list.add(TextFormatting.GOLD + line);
         }
+    }
+
+    protected void duration(List<String> list) {
         if(duration > 0) {
             double seconds = this.duration / 20D;
             list.add(TextFormatting.RED + I18nUtil.resolveKey("gui.recipe.duration") + ": " + seconds + "s");
         }
-        if(power > 0) list.add(TextFormatting.RED + I18nUtil.resolveKey("gui.recipe.consumption") + ": " + BobMathUtil.getShortNumber(power) + "HE/t");
+    }
+
+    protected void power(List<String> list) {
+        if(power > 0) {
+            list.add(TextFormatting.RED + I18nUtil.resolveKey("gui.recipe.consumption") + ": " + BobMathUtil.getShortNumber(power) + "HE/t");
+        }
+    }
+
+    protected void input(List<String> list) {
         list.add(TextFormatting.BOLD + I18nUtil.resolveKey("gui.recipe.input") + ":");
         if(inputItem != null) for(RecipesCommon.AStack stack : inputItem) {
             ItemStack display = stack.extractForCyclingDisplay(20);
             list.add("  " + TextFormatting.GRAY + display.getCount() + "x " + display.getDisplayName());
         }
-        if(inputFluid != null) for(FluidStack fluid : inputFluid) list.add("  " + TextFormatting.BLUE + fluid.fill + "mB " + fluid.type.getLocalizedName() + (fluid.pressure == 0 ? "" : " at " + TextFormatting.RED + fluid.pressure + " PU"));
+        if (inputFluid != null) for (FluidStack fluid : inputFluid) list.add("  " + TextFormatting.BLUE + fluid.fill + "mB " + fluid.type.getLocalizedName() + (fluid.pressure == 0 ? "" : " " + I18nUtil.resolveKey("gui.recipe.atPressure") + " " + TextFormatting.RED + fluid.pressure + " PU"));
+    }
+
+    protected void output(List<String> list) {
         list.add(TextFormatting.BOLD + I18nUtil.resolveKey("gui.recipe.output") + ":");
         if(outputItem != null) for(IOutput output : outputItem)
             for(String line : output.getLabel()) list.add("  " + line);
@@ -137,7 +177,6 @@ public class GenericRecipe {
                     " " + I18nUtil.resolveKey("gui.recipe.atPressure") + " " + TextFormatting.RED + fluid.pressure + " PU";
             list.add("  " + TextFormatting.BLUE + fluid.fill + "mB " + fluid.type.getLocalizedName() + pressurePart);
         }
-        return list;
     }
 
     /** Default impl only matches localized name substring, can be extended to include ingredients as well */

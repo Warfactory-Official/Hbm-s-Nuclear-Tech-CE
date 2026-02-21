@@ -6,13 +6,13 @@ import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
 import com.hbm.util.ContaminationUtil.HazardType;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockStone;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityFallingBlock;
-import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
@@ -21,18 +21,15 @@ import net.minecraftforge.fluids.Fluid;
 
 import java.util.Random;
 
-public class ToxicBlock extends BlockFluidClassic {
+public class ToxicBlock extends BlockFluidClassic implements IFluidFog {
 
-	private DamageSource damageSource;
-	
-	public ToxicBlock(Fluid fluid, Material material, DamageSource source, String s) {
+    public ToxicBlock(Fluid fluid, Material material, String s) {
 		super(fluid, material);
 		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		this.setCreativeTab(null);
 		this.setQuantaPerBlock(4);
-		this.damageSource = source;
-		this.displacements.put(this, false);
+        this.displacements.put(this, false);
 		
 		ModBlocks.ALL_BLOCKS.add(this);
 	}
@@ -55,14 +52,13 @@ public class ToxicBlock extends BlockFluidClassic {
 	public void onEntityCollision(World worldIn, BlockPos pos, IBlockState state, Entity entityIn) {
 		entityIn.setInWeb();
 		
-		if(entityIn instanceof EntityLivingBase)
-			ContaminationUtil.contaminate((EntityLivingBase)entityIn, HazardType.RADIATION, ContaminationType.CREATIVE, 50.0F);
-		else if(entityIn instanceof EntityFallingBlock)
-			entityIn.setDead();
+		if(entityIn instanceof EntityLivingBase livingBase)
+			ContaminationUtil.contaminate(livingBase, HazardType.RADIATION, ContaminationType.CREATIVE, 1.0F);
 	}
 
-	@Override
-	public void updateTick(World world, BlockPos pos, IBlockState state, Random rand) {
+    @Override
+    public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
+        super.neighborChanged(state, world, pos, blockIn, fromPos);
 		if(reactToBlocks(world, pos.east()))
 			world.setBlockState(pos.east(), getRandomSellafite(world));
 		if(reactToBlocks(world, pos.west()))
@@ -75,11 +71,7 @@ public class ToxicBlock extends BlockFluidClassic {
 			world.setBlockState(pos.south(), getRandomSellafite(world));
 		if(reactToBlocks(world, pos.north()))
 			world.setBlockState(pos.north(), getRandomSellafite(world));
-
-		if(world.rand.nextInt(15) == 0) ChunkRadiationManager.proxy.incrementRad(world, pos, 300F, 3000F);
-
-		super.updateTick(world, pos, state, rand);
-	}
+    }
 
 	private IBlockState getRandomSellafite(World world){
 		int n = world.rand.nextInt(100);
@@ -92,9 +84,7 @@ public class ToxicBlock extends BlockFluidClassic {
 	public boolean reactToBlocks(World world, BlockPos pos) {
 		if(!world.isBlockLoaded(pos)) return false;
 		if(world.getBlockState(pos).getMaterial() != ModBlocks.fluidtoxic) {
-			IBlockState state = world.getBlockState(pos);
-			if(state.getMaterial().isLiquid()) return true;
-			if(state.getBlock() instanceof BlockStone) return true;
+            return world.getBlockState(pos).getMaterial().isLiquid();
 		}
 		return false;
 	}
@@ -103,4 +93,14 @@ public class ToxicBlock extends BlockFluidClassic {
 	public int tickRate(World world) {
 		return 15;
 	}
+
+    @Override
+    public float getFogDensity() {
+        return 2.0F;
+    }
+
+    @Override
+    public int getFogColor() {
+        return 0x503920;
+    }
 }

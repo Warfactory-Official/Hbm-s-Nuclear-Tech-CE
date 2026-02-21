@@ -1,37 +1,35 @@
 package com.hbm.inventory.gui;
 
-import java.io.IOException;
-import java.util.Locale;
-
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.TextFormatting;
-import org.apache.commons.lang3.math.NumberUtils;
-import org.lwjgl.input.Keyboard;
-
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerPWR;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toserver.NBTControlPacket;
 import com.hbm.render.util.GaugeUtil;
 import com.hbm.tileentity.machine.TileEntityPWRController;
-
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.TextFormatting;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.lwjgl.input.Keyboard;
+
+import java.io.IOException;
+import java.util.Locale;
+
+import static com.hbm.util.SoundUtil.playClickSound;
 
 public class GUIPWR extends GuiInfoContainer {
 
     protected TileEntityPWRController controller;
-    private final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/reactors/gui_pwr.png");
+    private final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/reactors/gui_pwr.png");
 
     private GuiTextField field;
 
@@ -110,8 +108,8 @@ public class GUIPWR extends GuiInfoContainer {
         int c = (int) (controller.rodLevel * 52 / 100);
         drawTexturedModalRect(guiLeft + 53, guiTop + 54, 176, 40, c, 2);
 
-        GaugeUtil.drawSmoothGauge(guiLeft + 124, guiTop + 40, this.zLevel, 1 - (double) controller.coreHeat / (double) controller.coreHeatCapacity, 5, 2, 1, 0x7F0000);
-        GaugeUtil.drawSmoothGauge(guiLeft + 160, guiTop + 40, this.zLevel, 1 - (double) controller.hullHeat / (double) TileEntityPWRController.hullHeatCapacityBase, 5, 2, 1, 0x7F0000);
+        GaugeUtil.drawSmoothGauge(guiLeft + 124, guiTop + 40, this.zLevel, (double) controller.coreHeat / (double) controller.coreHeatCapacity, 5, 2, 1, 0x7F0000);
+        GaugeUtil.drawSmoothGauge(guiLeft + 160, guiTop + 40, this.zLevel, (double) controller.hullHeat / (double) TileEntityPWRController.hullHeatCapacityBase, 5, 2, 1, 0x7F0000);
 
         if(controller.typeLoaded != -1 && controller.amountLoaded > 0) {
             RenderHelper.enableGUIStandardItemLighting();
@@ -144,8 +142,8 @@ public class GUIPWR extends GuiInfoContainer {
 
                 NBTTagCompound control = new NBTTagCompound();
                 control.setInteger("control", 100 - level);
-                PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(control, controller.getPos()));
-                mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(control, controller.getPos()));
+                playClickSound();
             }
         }
     }

@@ -17,51 +17,51 @@ import java.util.Map;
 
 public class ReformingRecipes extends SerializableRecipe {
 
-    private static HashMap<FluidType, Tuple.Triplet<FluidStack, FluidStack, FluidStack>> recipes = new HashMap();
+    public static HashMap<FluidType, Tuple.Triplet<FluidStack, FluidStack, FluidStack>> recipes = new HashMap<>();
 
     @Override
     public void registerDefaults() {
-        recipes.put(Fluids.HEATINGOIL, new Tuple.Triplet(
+        recipes.put(Fluids.HEATINGOIL, new Tuple.Triplet<>(
                 new FluidStack(Fluids.NAPHTHA, 50),
                 new FluidStack(Fluids.PETROLEUM, 15),
                 new FluidStack(Fluids.HYDROGEN, 10)
         ));
-        recipes.put(Fluids.NAPHTHA, new Tuple.Triplet(
+        recipes.put(Fluids.NAPHTHA, new Tuple.Triplet<>(
                 new FluidStack(Fluids.REFORMATE, 50),
                 new FluidStack(Fluids.PETROLEUM, 15),
                 new FluidStack(Fluids.HYDROGEN, 10)
         ));
-        recipes.put(Fluids.NAPHTHA_CRACK, new Tuple.Triplet(
+        recipes.put(Fluids.NAPHTHA_CRACK, new Tuple.Triplet<>(
                 new FluidStack(Fluids.REFORMATE, 50),
                 new FluidStack(Fluids.AROMATICS, 10),
                 new FluidStack(Fluids.HYDROGEN, 5)
         ));
-        recipes.put(Fluids.NAPHTHA_COKER, new Tuple.Triplet(
+        recipes.put(Fluids.NAPHTHA_COKER, new Tuple.Triplet<>(
                 new FluidStack(Fluids.REFORMATE, 50),
                 new FluidStack(Fluids.REFORMGAS, 10),
                 new FluidStack(Fluids.HYDROGEN, 5)
         ));
-        recipes.put(Fluids.LIGHTOIL, new Tuple.Triplet(
+        recipes.put(Fluids.LIGHTOIL, new Tuple.Triplet<>(
                 new FluidStack(Fluids.AROMATICS, 50),
                 new FluidStack(Fluids.REFORMGAS, 10),
                 new FluidStack(Fluids.HYDROGEN, 15)
         ));
-        recipes.put(Fluids.LIGHTOIL_CRACK, new Tuple.Triplet(
+        recipes.put(Fluids.LIGHTOIL_CRACK, new Tuple.Triplet<>(
                 new FluidStack(Fluids.AROMATICS, 50),
                 new FluidStack(Fluids.REFORMGAS, 5),
                 new FluidStack(Fluids.HYDROGEN, 20)
         ));
-        recipes.put(Fluids.PETROLEUM, new Tuple.Triplet(
+        recipes.put(Fluids.PETROLEUM, new Tuple.Triplet<>(
                 new FluidStack(Fluids.UNSATURATEDS, 85),
                 new FluidStack(Fluids.REFORMGAS, 10),
                 new FluidStack(Fluids.HYDROGEN, 5)
         ));
-        recipes.put(Fluids.SOURGAS, new Tuple.Triplet(
+        recipes.put(Fluids.SOURGAS, new Tuple.Triplet<>(
                 new FluidStack(Fluids.SULFURIC_ACID, 75),
                 new FluidStack(Fluids.PETROLEUM, 10),
                 new FluidStack(Fluids.HYDROGEN, 15)
         ));
-        recipes.put(Fluids.CHOLESTEROL, new Tuple.Triplet(
+        recipes.put(Fluids.CHOLESTEROL, new Tuple.Triplet<>(
                 new FluidStack(Fluids.ESTRADIOL, 50),
                 new FluidStack(Fluids.REFORMGAS, 35),
                 new FluidStack(Fluids.HYDROGEN, 15)
@@ -74,7 +74,7 @@ public class ReformingRecipes extends SerializableRecipe {
 
     public static HashMap<Object, Object[]> getRecipes() {
 
-        HashMap<Object, Object[]> map = new HashMap<Object, Object[]>();
+        HashMap<Object, Object[]> map = new HashMap<>();
 
         for(Map.Entry<FluidType, Tuple.Triplet<FluidStack, FluidStack, FluidStack>> recipe : recipes.entrySet()) {
             map.put(ItemFluidIcon.make(recipe.getKey(), 1000),
@@ -102,11 +102,11 @@ public class ReformingRecipes extends SerializableRecipe {
         JsonObject obj = (JsonObject) recipe;
 
         FluidType input = Fluids.fromName(obj.get("input").getAsString());
-        FluidStack output1 = this.readFluidStack(obj.get("output1").getAsJsonArray());
-        FluidStack output2 = this.readFluidStack(obj.get("output2").getAsJsonArray());
-        FluidStack output3 = this.readFluidStack(obj.get("output3").getAsJsonArray());
+        FluidStack output1 = readFluidStack(obj.get("output1").getAsJsonArray());
+        FluidStack output2 = readFluidStack(obj.get("output2").getAsJsonArray());
+        FluidStack output3 = readFluidStack(obj.get("output3").getAsJsonArray());
 
-        recipes.put(input, new Tuple.Triplet(output1, output2, output3));
+        recipes.put(input, new Tuple.Triplet<>(output1, output2, output3));
     }
 
     @Override
@@ -114,9 +114,9 @@ public class ReformingRecipes extends SerializableRecipe {
         Map.Entry<FluidType, Tuple.Triplet<FluidStack, FluidStack, FluidStack>> rec = (Map.Entry<FluidType, Tuple.Triplet<FluidStack, FluidStack, FluidStack>>) recipe;
 
         writer.name("input").value(rec.getKey().getName());
-        writer.name("output1"); this.writeFluidStack(rec.getValue().getX(), writer);
-        writer.name("output2"); this.writeFluidStack(rec.getValue().getY(), writer);
-        writer.name("output3"); this.writeFluidStack(rec.getValue().getZ(), writer);
+        writer.name("output1"); writeFluidStack(rec.getValue().getX(), writer);
+        writer.name("output2"); writeFluidStack(rec.getValue().getY(), writer);
+        writer.name("output3"); writeFluidStack(rec.getValue().getZ(), writer);
     }
 
     @Override

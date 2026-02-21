@@ -5,6 +5,8 @@ import com.hbm.interfaces.IRadiationImmune;
 import com.hbm.items.ModItems;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.util.ContaminationUtil;
+import com.hbm.util.MutableVec3d;
+import com.hbm.world.WorldUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.monster.EntityZombie;
@@ -12,6 +14,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 
 import java.util.List;
 @AutoRegister(name = "entity_glowing_one", trackingRange = 1000)
@@ -50,14 +53,14 @@ public class EntityGlowingOne extends EntityZombie implements IRadiationImmune {
         super.onLivingUpdate();
     }
 
-    public static void convertInRadiusToGlow(World world, double x, double y, double z, double radius){
-    	List<EntityZombie> entities = world.getEntitiesWithinAABB(EntityZombie.class, new AxisAlignedBB(x, y, z, x, y, z).grow(radius, radius, radius));
-		
+    public static void convertInRadiusToGlow(WorldServer world, double x, double y, double z, double radius){
+    	List<EntityZombie> entities = WorldUtil.getEntitiesWithinAABB(world, EntityZombie.class, new AxisAlignedBB(x, y, z, x, y, z).grow(radius, radius, radius));
+		MutableVec3d vec3d = new MutableVec3d();
 		for(EntityZombie e : entities) {
 			if(e instanceof EntityGlowingOne)
     			continue;
-			Vec3 vec = Vec3.createVectorHelper(e.posX - x, (e.posY + e.getEyeHeight()) - y, e.posZ - z);
-			double len = vec.length();
+			vec3d.set(e.posX - x, (e.posY + e.getEyeHeight()) - y, e.posZ - z);
+			double len = vec3d.length();
 			if(len < radius){
 				convertToGlow(world, e);
 			}

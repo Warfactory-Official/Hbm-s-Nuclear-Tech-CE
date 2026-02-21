@@ -16,11 +16,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 import static com.hbm.capability.NTMFluidCapabilityHandler.getFluidType;
 
 public class NTMFluidHandlerWrapper implements IFluidHandler {
+    private static final IFluidTankProperties[] NO_TANK_PROPS = new IFluidTankProperties[0];
     @Nullable
     private final IFluidReceiverMK2 receiver;
     @Nullable
@@ -30,6 +30,9 @@ public class NTMFluidHandlerWrapper implements IFluidHandler {
     @Nullable
     private final BlockPos accessor;
 
+    /**
+     * @param pos The position of the accessor. Null -> Internal access.
+     */
     public NTMFluidHandlerWrapper(@NotNull TileEntity handler, @Nullable BlockPos pos) {
         if (handler instanceof IFluidProviderMK2 providerMK2) this.provider = providerMK2;
         else provider = null;
@@ -55,20 +58,20 @@ public class NTMFluidHandlerWrapper implements IFluidHandler {
         if (accessor != null) {
             var prev = CapabilityContextProvider.pushPos(accessor);
             try {
-                List<IFluidTankProperties> properties = new ArrayList<>();
+                ArrayList<IFluidTankProperties> properties = new ArrayList<>();
                 for (FluidTankNTM tank : user.getAllTanks()) {
                     Collections.addAll(properties, tank.getTankProperties());
                 }
-                return properties.toArray(new IFluidTankProperties[0]);
+                return properties.toArray(NO_TANK_PROPS);
             } finally {
                 CapabilityContextProvider.popPos(prev);
             }
         }
-        List<IFluidTankProperties> properties = new ArrayList<>();
+        ArrayList<IFluidTankProperties> properties = new ArrayList<>();
         for (FluidTankNTM tank : user.getAllTanks()) {
             Collections.addAll(properties, tank.getTankProperties());
         }
-        return properties.toArray(new IFluidTankProperties[0]);
+        return properties.toArray(NO_TANK_PROPS);
     }
 
     @Override

@@ -1,6 +1,8 @@
 package com.hbm.blocks.machine;
 
+import com.google.common.collect.ImmutableMap;
 import com.hbm.inventory.fluid.FluidType;
+import com.hbm.items.IDynamicModels;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.render.block.BlockBakeFrame;
 import com.hbm.tileentity.machine.TileEntityRefueler;
@@ -8,19 +10,34 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.model.ModelRotation;
+import net.minecraft.client.renderer.block.statemap.StateMapperBase;
+import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.*;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.IModel;
+import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.client.model.ModelLoaderRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 public class BlockRefueler extends BlockContainerBakeable {
 
@@ -86,11 +103,12 @@ public class BlockRefueler extends BlockContainerBakeable {
     }
 
     @Override
-    public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase player, ItemStack stack) {
-        int i = MathHelper.floor((double)(player.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
-        EnumFacing facing = EnumFacing.byHorizontalIndex(i);
-        world.setBlockState(pos, state.withProperty(FACING, facing), 2);
+    public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing,
+                                            float hitX, float hitY, float hitZ,
+                                            int meta, EntityLivingBase placer) {
+        return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
     }
+
 
     @Override
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos) {
@@ -124,5 +142,58 @@ public class BlockRefueler extends BlockContainerBakeable {
     @Override
     protected BlockStateContainer createBlockState() {
         return new BlockStateContainer(this, FACING);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void bakeModel(ModelBakeEvent event) {
+        try {
+            IModel blockBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("block/cube_all"));
+            ImmutableMap<String, String> blockTextures = ImmutableMap.of("all", "hbm:blocks/block_steel");
+            IModel blockRetextured = blockBaseModel.retexture(blockTextures);
+            IBakedModel blockBaked = blockRetextured.bake(
+                    ModelRotation.X0_Y0,
+                    DefaultVertexFormats.BLOCK,
+                    ModelLoader.defaultTextureGetter()
+            );
+            ModelResourceLocation worldLocation = new ModelResourceLocation(getRegistryName(), "normal");
+            event.getModelRegistry().putObject(worldLocation, blockBaked);
+            IModel itemBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
+            ImmutableMap<String, String> itemTextures = ImmutableMap.of("layer0", "hbm:blocks/" + getRegistryName().getPath());
+            IModel itemRetextured = itemBaseModel.retexture(itemTextures);
+            IBakedModel itemBaked = itemRetextured.bake(
+                    ModelRotation.X0_Y0,
+                    DefaultVertexFormats.ITEM,
+                    ModelLoader.defaultTextureGetter()
+            );
+            ModelResourceLocation inventoryLocation = new ModelResourceLocation(getRegistryName(), "inventory");
+            event.getModelRegistry().putObject(inventoryLocation, itemBaked);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void registerModel() {
+        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0, new ModelResourceLocation(this.getRegistryName(), "inventory"));
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void registerSprite(TextureMap map) {
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public StateMapperBase getStateMapper(ResourceLocation loc) {
+        return new StateMapperBase() {
+            @Override
+            protected @NotNull ModelResourceLocation getModelResourceLocation(@NotNull IBlockState state) {
+                return new ModelResourceLocation(loc, "normal");
+            }
+        };
     }
 }

@@ -10,6 +10,7 @@ import com.hbm.util.ArmorRegistry.HazardClass;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelBiped;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
@@ -23,9 +24,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderPlayerEvent.Pre;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -105,17 +105,18 @@ public class ItemModGasmask extends ItemArmorMod implements IGasMask {
 	}
 
 	@Override
-	public ArrayList<HazardClass> getBlacklist(ItemStack stack) {
+	public List<HazardClass> getBlacklist(ItemStack stack) {
 		
 		if(this == ModItems.attachment_mask_mono) {
-			return new ArrayList<HazardClass>(Arrays.asList(new HazardClass[] {HazardClass.GAS_CHLORINE, HazardClass.GAS_CORROSIVE, HazardClass.NERVE_AGENT, HazardClass.BACTERIA}));
+			return Arrays.asList(HazardClass.GAS_LUNG, HazardClass.GAS_BLISTERING, HazardClass.BACTERIA,
+                    HazardClass.BACTERIA);
 		} else {
-			return new ArrayList<HazardClass>(Arrays.asList(new HazardClass[] {HazardClass.GAS_CORROSIVE, HazardClass.NERVE_AGENT}));
+			return Arrays.asList(HazardClass.GAS_BLISTERING);
 		}
 	}
 
 	@Override
-	public ItemStack getFilter(ItemStack stack) {
+	public @NotNull ItemStack getFilter(ItemStack stack) {
 		return ArmorUtil.getGasMaskFilter(stack);
 	}
 

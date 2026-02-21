@@ -17,6 +17,7 @@ public class ItemPoolsSingle {
     public static final String POOL_VAULT_REINFORCED = "POOL_VAULT_REINFORCED";
     public static final String POOL_VAULT_UNBREAKABLE = "POOL_VAULT_UNBREAKABLE";
     public static final String POOL_METEORITE_TREASURE = "POOL_METEORITE_TREASURE";
+    public static final String POOL_BLUEPRINTS = "POOL_BLUEPRINTS";
 
     public static void init() {
 
@@ -59,7 +60,6 @@ public class ItemPoolsSingle {
         new ItemPool(POOL_VAULT_STANDARD) {{
             this.pool = new WeightedRandomChestContentFrom1710[] {
                     weighted(ModItems.ingot_desh, 0, 2, 6, 1),
-                    weighted(ModItems.battery_advanced_cell_4, 0, 1, 1, 1),
                     weighted(ModItems.powder_desh_mix, 0, 1, 5, 1),
                     weighted(Items.DIAMOND, 0, 3, 6, 1),
                     weighted(ModItems.ammo_standard, GunFactory.EnumAmmo.NUKE_STANDARD.ordinal(), 1, 1, 1),
@@ -76,7 +76,6 @@ public class ItemPoolsSingle {
         new ItemPool(POOL_VAULT_REINFORCED) {{
             this.pool = new WeightedRandomChestContentFrom1710[] {
                     weighted(ModItems.ingot_desh, 0, 6, 16, 1),
-                    weighted(ModItems.battery_lithium, 0, 1, 1, 1),
                     weighted(ModItems.powder_power, 0, 1, 5, 1),
                     weighted(ModItems.sat_chip, 0, 1, 1, 1),
                     weighted(Items.DIAMOND, 0, 5, 9, 1),
@@ -98,7 +97,6 @@ public class ItemPoolsSingle {
                     weighted(ModItems.gun_carbine, 0, 1, 1, 1),
                     weighted(ModItems.ammo_standard, GunFactory.EnumAmmo.R762_DU.ordinal(), 16, 32, 1),
                     weighted(ModItems.gun_congolake, 0, 1, 1, 1),
-                    weighted(ModItems.battery_schrabidium_cell, 0, 1, 1, 1),
                     weighted(ModItems.circuit, ItemEnums.EnumCircuitType.ADVANCED.ordinal(), 6, 12, 1)
             };
         }};
@@ -120,10 +118,17 @@ public class ItemPoolsSingle {
                     weighted(ModItems.serum, 0, 1, 1, 5),
                     weighted(ModItems.heart_piece, 0, 1, 1, 5),
                     weighted(ModItems.scrumpy, 0, 1, 1, 5),
-                    // TODO
-                    //weighted(ModItems.launch_code_piece, 0, 1, 1, 5),
-                    //weighted(ModItems.egg_glyphid, 0, 1, 1, 5),
+                    weighted(ModItems.launch_code_piece, 0, 1, 1, 5),
+                    weighted(ModItems.egg_glyphid, 0, 1, 1, 5),
                     weighted(ModItems.gem_alexandrite, 0, 1, 1, 1),
+            };
+        }};
+
+        new ItemPool(POOL_BLUEPRINTS) {{
+            this.pool = new WeightedRandomChestContentFrom1710[] {
+                    weighted(ModItems.blueprint_folder, 0, 1, 1, 10),
+                    weighted(ModItems.blueprint_folder, 1, 1, 1, 5),
+                    weighted(ModItems.blueprint_folder, 0, 1, 1, 1),
             };
         }};
     }

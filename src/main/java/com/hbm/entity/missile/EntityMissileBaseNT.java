@@ -4,6 +4,8 @@ import com.hbm.api.entity.IRadarDetectableNT;
 import com.hbm.entity.logic.IChunkLoader;
 import com.hbm.entity.projectile.EntityThrowableInterp;
 import com.hbm.explosion.ExplosionLarge;
+import com.hbm.explosion.vanillant.ExplosionVNT;
+import com.hbm.explosion.vanillant.standard.*;
 import com.hbm.items.weapon.ItemMissileStandard;
 import com.hbm.main.MainRegistry;
 import com.hbm.render.amlfrom1710.Vec3;
@@ -40,7 +42,7 @@ public abstract class EntityMissileBaseNT extends EntityThrowableInterp implemen
     public double accelXZ;
     public boolean isCluster = false;
     public int health = 50;
-    List<ChunkPos> loadedChunks = new ArrayList<ChunkPos>();
+    List<ChunkPos> loadedChunks = new ArrayList<>();
     private Ticket loaderTicket;
 
     public EntityMissileBaseNT(World world) {
@@ -278,14 +280,14 @@ public abstract class EntityMissileBaseNT extends EntityThrowableInterp implemen
     }
 
     @Override
-    protected void onImpact(RayTraceResult p_70184_1_) {
-        if (p_70184_1_ != null && p_70184_1_.typeOfHit == RayTraceResult.Type.BLOCK) {
-            this.onImpact();
+    protected void onImpact(RayTraceResult result) {
+        if (result != null && result.typeOfHit == RayTraceResult.Type.BLOCK) {
+            this.onMissileImpact(result);
             this.setDead();
         }
     }
 
-    public abstract void onImpact();
+    public abstract void onMissileImpact(RayTraceResult mop);
 
     public abstract List<ItemStack> getDebris();
 
@@ -295,8 +297,8 @@ public abstract class EntityMissileBaseNT extends EntityThrowableInterp implemen
     }
 
     @Override
-    public double getGravityVelocity() {
-        return 0.0D;
+    public float getGravityVelocity() {
+        return 0.0F;
     }
 
     @Override
@@ -358,7 +360,14 @@ public abstract class EntityMissileBaseNT extends EntityThrowableInterp implemen
         this.clearChunkLoader();
     }
 
-
+    public void explodeStandard(float strength, int resolution, boolean fire) {
+        ExplosionVNT xnt = new ExplosionVNT(world, posX, posY, posZ, strength);
+        xnt.setBlockAllocator(new BlockAllocatorStandard(resolution));
+        xnt.setBlockProcessor(new BlockProcessorStandard().setNoDrop().withBlockEffect(fire ? new BlockMutatorFire() : null));
+        xnt.setEntityProcessor(new EntityProcessorCross(7.5D).withRangeMod(2));
+        xnt.setPlayerProcessor(new PlayerProcessorStandard());
+        xnt.explode();
+    }
 
     @Override
     public String getTranslationKey() {

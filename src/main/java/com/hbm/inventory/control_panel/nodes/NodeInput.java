@@ -3,7 +3,7 @@ package com.hbm.inventory.control_panel.nodes;
 import com.hbm.inventory.control_panel.DataValue;
 import com.hbm.inventory.control_panel.NodeConnection;
 import com.hbm.inventory.control_panel.NodeSystem;
-import com.hbm.inventory.control_panel.NodeType;
+import com.hbm.inventory.control_panel.modular.StockNodesRegister;
 import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.Map;
@@ -36,10 +36,10 @@ public class NodeInput extends Node {
 		this.name = tag.getString(name);
 		super.readFromNBT(tag, sys);
 	}
-	
+
 	@Override
-	public NodeType getType(){
-		return NodeType.INPUT;
+	public float[] getColor() {
+		return StockNodesRegister.colorInput;
 	}
 	
 	@Override

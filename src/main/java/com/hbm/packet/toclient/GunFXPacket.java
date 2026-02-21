@@ -35,7 +35,7 @@ public class GunFXPacket implements IMessage {
 		byte[] bytes = new byte[buf.readInt()];
 		buf.readBytes(bytes);
 		playerUUID = new String(bytes);
-		type = FXType.values()[buf.readInt()];
+		type = FXType.VALUES[buf.readInt()];
 	}
 
 	@Override
@@ -65,8 +65,11 @@ public class GunFXPacket implements IMessage {
 		}
 		
 	}
-	
+
+    //mlbv: why does it only have one enum constant?
 	public static enum FXType {
 		FIRE;
+
+        public static final FXType[] VALUES = values();
 	}
 }

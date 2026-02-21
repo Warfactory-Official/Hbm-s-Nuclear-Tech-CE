@@ -3,17 +3,15 @@ package com.hbm.render.tileentity;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.misc.BeamPronter;
-import com.hbm.render.misc.BeamPronter.EnumBeamType;
-import com.hbm.render.misc.BeamPronter.EnumWaveType;
 import com.hbm.tileentity.turret.TileEntityTurretMaxwell;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11;
+
 @AutoRegister(tileentity = TileEntityTurretMaxwell.class)
 public class RenderTurretMaxwell extends RenderTurretBase<TileEntityTurretMaxwell>
     implements IItemRendererProvider {
@@ -65,45 +63,27 @@ public class RenderTurretMaxwell extends RenderTurretBase<TileEntityTurretMaxwel
     ResourceManager.turret_maxwell.renderPart("Microwave");
 
     if (turret.beam > 0) {
-
-      double offset = 1;
-      double length = turret.lastDist - turret.getBarrelLength() + offset + 0.2;
+      double length = turret.lastDist - turret.getBarrelLength();
 
       GlStateManager.pushMatrix();
       GlStateManager.color(1, 1, 1, 1);
       OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
-      GlStateManager.translate(turret.getBarrelLength() - offset, 2D, 0);
+      GlStateManager.translate(turret.getBarrelLength(), 2D, 0);
 
-      long worldTime = turret.getWorld().getTotalWorldTime();
-      // for(int i = 0; i < 8; i++)
-      // 	BeamPronter.prontBeam(Vec3.createVectorHelper(length, 0, 0), EnumWaveType.SPIRAL,
-      // EnumBeamType.SOLID, 0x2020ff, 0xFFFFFF, (int)((worldTime + partialTicks) * -50 + i * 45) %
-      // 360, (int)((turret.lastDist + 1)), 0.375F, 2, 0.05F);
-      // // int color = 0xff0000;
+      for (int i = 0; i < 8; i++) {
+        BeamPronter.prontBeam(
+            new Vec3d(length, 0, 0),
+            BeamPronter.EnumWaveType.SPIRAL,
+            BeamPronter.EnumBeamType.SOLID,
+            0x2020FF,
+            0x2020FF,
+            (int) ((turret.getWorld().getTotalWorldTime() + partialTicks * -50 + i * 45) % 360),
+            (int) (turret.lastDist + 1),
+            0.375F,
+            2,
+            0.05F);
+      }
 
-      BeamPronter.prontBeam(
-          Vec3.createVectorHelper(length, 0, 0).toVec3d(),
-          EnumWaveType.RANDOM,
-          EnumBeamType.SOLID,
-          0x00487F,
-          0xFFFFFF,
-          (int) (worldTime) % 1000,
-          (int) length,
-          0.125F,
-          2,
-          0.0625F);
-      GlStateManager.translate(offset, 0, 0);
-      BeamPronter.prontBeam(
-          Vec3.createVectorHelper(length - offset, 0, 0).toVec3d(),
-          EnumWaveType.STRAIGHT,
-          EnumBeamType.SOLID,
-          0x002038,
-          0x002038,
-          0,
-          1,
-          0,
-          3,
-          0.0625F * 5F);
       GlStateManager.popMatrix();
     }
 

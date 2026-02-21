@@ -1,27 +1,23 @@
 package com.hbm.wiaj;
 
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
 import com.hbm.main.MainRegistry;
 import com.hbm.util.I18nUtil;
 import com.hbm.wiaj.actors.ActorFancyPanel;
 import com.hbm.wiaj.actors.ActorFancyPanel.Orientation;
 import com.hbm.wiaj.actors.ISpecialActor;
 import com.hbm.wiaj.cannery.CanneryBase;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
@@ -32,10 +28,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 //krass
 public class GuiWorldInAJar extends GuiScreen {
 
-    private static final ResourceLocation guiUtil = new ResourceLocation(RefStrings.MODID + ":textures/gui/gui_utility.png");
+    private static final ResourceLocation guiUtil = new ResourceLocation(Tags.MODID + ":textures/gui/gui_utility.png");
 
     BlockRendererDispatcher renderer;
     BlockFluidRenderer fluidRenderer;
@@ -87,7 +85,7 @@ public class GuiWorldInAJar extends GuiScreen {
     protected void mouseClicked(int mouseX, int mouseY, int button) {
 
         if (width / 2 - 12 <= mouseX && width / 2 - 12 + 24 > mouseX && height - 36 < mouseY && height - 36 + 24 >= mouseY) {
-            mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            playClickSound();
 
             if (this.jarScript.isPaused()) {
                 this.jarScript.unpause();
@@ -100,7 +98,7 @@ public class GuiWorldInAJar extends GuiScreen {
 
             if (this.jarScript.sceneNumber > 0) {
                 this.jarScript.rewindOne();
-                mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                playClickSound();
             }
         }
 
@@ -108,7 +106,7 @@ public class GuiWorldInAJar extends GuiScreen {
 
             if (this.jarScript.sceneNumber < this.jarScript.scenes.size()) {
                 this.jarScript.forwardOne();
-                mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                playClickSound();
             }
         }
 
@@ -116,7 +114,7 @@ public class GuiWorldInAJar extends GuiScreen {
 
             if (15 <= mouseX && 39 > mouseX && 15 + 36 * (i + 1) < mouseY && 39 + 36 * (i + 1) >= mouseY) {
                 CanneryBase cannery = seeAlso[i];
-                mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                playClickSound();
                 FMLCommonHandler.instance().showGuiScreen(new GuiWorldInAJar(cannery.createScript(), cannery.getName(), cannery.getIcon(), cannery.seeAlso()));
                 return;
             }

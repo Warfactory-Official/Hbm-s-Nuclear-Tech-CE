@@ -60,7 +60,7 @@ public class TileEntityDroneProvider extends TileEntityRequestNetworkContainer i
         List<ItemStack> offer = new ArrayList<>();
         for (int i = 0; i < inventory.getSlots(); i++) {
             ItemStack stack = inventory.getStackInSlot(i);
-            if (stack != ItemStack.EMPTY) offer.add(stack.copy());
+            if (!stack.isEmpty()) offer.add(stack.copy());
         }
         return new RequestNetwork.OfferNode(pos, this.reachableNodes, offer);
     }

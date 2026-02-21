@@ -242,12 +242,8 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 			}
 			
 		} else {
-			
-			Vec3d vec = new Vec3d(this.getBarrelLength(), 0, 0);
-			vec = vec.rotatePitch((float) -this.rotationPitch);
-			vec = vec.rotateYaw((float) -(this.rotationYaw + Math.PI * 0.5));
-			
-			//this will fix the interpolation error when the turret crosses the 360° point
+
+            //this will fix the interpolation error when the turret crosses the 360° point
 			if(Math.abs(this.lastRotationYaw - this.rotationYaw) > Math.PI) {
 				
 				if(this.lastRotationYaw < this.rotationYaw)

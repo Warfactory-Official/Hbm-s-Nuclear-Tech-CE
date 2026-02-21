@@ -1,5 +1,6 @@
 package com.hbm.blocks.gas;
 
+import com.hbm.config.GeneralConfig;
 import com.hbm.lib.ForgeDirection;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -38,6 +39,12 @@ public class BlockGasFlammable extends BlockGasBase {
     public void updateTick(World world, BlockPos pos, IBlockState state, Random rand) {
         if (world.isRemote) return;
         if (!world.isChunkGeneratedAt(pos.getX() >> 4, pos.getZ() >> 4)) return;
+
+        if(!GeneralConfig.enableFlammableGas){
+            world.setBlockToAir(pos);
+            return;
+        }
+
         MutableBlockPos posN = new BlockPos.MutableBlockPos();
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
             posN.setPos(pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ);
@@ -69,6 +76,10 @@ public class BlockGasFlammable extends BlockGasBase {
 
     @Override
     public void onEntityCollision(World worldIn, BlockPos pos, IBlockState state, Entity entityIn) {
+        if(!GeneralConfig.enableFlammableGas){
+            return;
+        }
+
         if (!worldIn.isRemote && entityIn.isBurning()) this.combust(worldIn, pos);
     }
 

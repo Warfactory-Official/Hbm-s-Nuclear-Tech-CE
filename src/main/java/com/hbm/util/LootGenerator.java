@@ -64,7 +64,7 @@ public class LootGenerator {
     }
 
     public static void setBlock(World world, int x, int y, int z) {
-        world.setBlockState(new BlockPos(x, y, z), ModBlocks.deco_loot.getDefaultState());
+        world.setBlockState(new BlockPos(x, y, z), ModBlocks.deco_loot.getDefaultState(), 2 | 16);
     }
 
     public static void addItemWithDeviation(BlockLoot.TileEntityLoot loot, Random rand, ItemStack stack, double  x, double y, double z) {

@@ -17,6 +17,7 @@ import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.model.ModelRotation;
 import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.client.renderer.color.IBlockColor;
+import net.minecraft.client.renderer.color.IItemColor;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.EntityLivingBase;
@@ -54,11 +55,6 @@ public class BlockSellafieldSlaked extends BlockBase implements IDynamicModels {
     public static final PropertyInteger SHADE = PropertyInteger.create("shade", 0, 15);
     public static final IUnlistedProperty<Integer> VARIANT = new PropertyRandomVariant(sellafieldTextures.length);
 
-    /**
-     * If false, the block is placed by players.
-     */
-
-
     public BlockSellafieldSlaked(Material mat, SoundType type, String s) {
         super(mat, type, s);
         INSTANCES.add(this);
@@ -72,8 +68,13 @@ public class BlockSellafieldSlaked extends BlockBase implements IDynamicModels {
         return Math.abs(i) % TEXTURE_VARIANTS;
     }
 
+    @Override
     @SideOnly(Side.CLIENT)
     public void registerModel() {
+        Item item = Item.getItemFromBlock(this);
+        for (int meta = 0; meta < META_COUNT; meta++) {
+            ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation(this.getRegistryName(), "inventory"));
+        }
     }
 
     @Override
@@ -138,14 +139,12 @@ public class BlockSellafieldSlaked extends BlockBase implements IDynamicModels {
         return this.getDefaultState().withProperty(SHADE, meta);
     }
 
-
     @SideOnly(Side.CLIENT)
     public void registerSprite(TextureMap map) {
         for (BlockBakeFrame frame : sellafieldTextures) {
             frame.registerBlockTextures(map);
         }
     }
-
 
     @SideOnly(Side.CLIENT)
     public StateMapperBase getStateMapper(ResourceLocation loc) {
@@ -158,14 +157,21 @@ public class BlockSellafieldSlaked extends BlockBase implements IDynamicModels {
 
     }
 
-
     @Override
+    @SideOnly(Side.CLIENT)
     public IBlockColor getBlockColorHandler() {
-        return (state, worldIn, pos, tintIndex) -> {
+        return (state, _, _, _) -> {
             int meta = state.getValue(SHADE);
             return Color.HSBtoRGB(0F, 0F, 1F - meta / 15F);
         };
     }
 
-
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IItemColor getItemColorHandler() {
+        return (stack, _) -> {
+            int meta = stack.getMetadata() & 15;
+            return Color.HSBtoRGB(0F, 0F, 1F - meta / 15F);
+        };
+    }
 }

@@ -11,7 +11,6 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityProxyCombo;
 import com.hbm.tileentity.machine.TileEntityHeaterOilburner;
 import com.hbm.util.I18nUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
@@ -21,6 +20,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.Pre;
 import net.minecraftforge.fml.relauncher.Side;
@@ -92,13 +92,13 @@ public class HeaterOilburner extends BlockDummyable implements ITooltipProvider,
     }
 
     @Override
-    public void printHook(Pre event, World world, int x, int y, int z) {
-        int[] pos = this.findCore(world, x, y, z);
-
-        if (pos == null)
+    public void printHook(Pre event, World world, BlockPos pos) {
+        BlockPos corePos = this.findCore(world, pos);
+        if(corePos == null) {
             return;
+        }
 
-        TileEntity te = world.getTileEntity(new BlockPos(pos[0], pos[1], pos[2]));
+        TileEntity te = world.getTileEntity(corePos);
 
         if (!(te instanceof TileEntityHeaterOilburner))
             return;
@@ -106,11 +106,11 @@ public class HeaterOilburner extends BlockDummyable implements ITooltipProvider,
         TileEntityHeaterOilburner heater = (TileEntityHeaterOilburner) te;
 
         List<String> text = new ArrayList();
-        text.add(ChatFormatting.GREEN + "-> " + ChatFormatting.RESET + heater.setting + " mB/t");
+        text.add(TextFormatting.GREEN + "-> " + TextFormatting.RESET + heater.setting + " mB/t");
         FluidType type = heater.tank.getTankType();
         if(type.hasTrait(FT_Flammable.class)) {
             int heat = (int)(type.getTrait(FT_Flammable.class).getHeatEnergy() * heater.setting / 1000);
-            text.add(ChatFormatting.RED + "<- " + ChatFormatting.RESET + String.format(Locale.US, "%,d", heat) + " TU/t");
+            text.add(TextFormatting.RED + "<- " + TextFormatting.RESET + String.format(Locale.US, "%,d", heat) + " TU/t");
         }
 
         ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getTranslationKey() + ".name"), 0xffff00, 0x404000, text);

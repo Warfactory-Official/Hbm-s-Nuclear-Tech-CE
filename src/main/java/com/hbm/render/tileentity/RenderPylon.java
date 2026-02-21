@@ -1,7 +1,7 @@
 package com.hbm.render.tileentity;
 
+import com.hbm.Tags;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.model.ModelPylon;
 import com.hbm.tileentity.network.energy.TileEntityPylon;
 import com.hbm.tileentity.network.energy.TileEntityPylonBase;
@@ -10,7 +10,7 @@ import net.minecraft.util.ResourceLocation;
 @AutoRegister(tileentity = TileEntityPylon.class)
 public class RenderPylon extends RenderPylonBase {
 
-	private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":" + "textures/models/network/ModelPylon.png");
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":" + "textures/models/network/ModelPylon.png");
 
 	private ModelPylon pylon;
 

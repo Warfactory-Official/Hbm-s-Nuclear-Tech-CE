@@ -2,7 +2,6 @@ package com.hbm.render.tileentity;
 
 import com.hbm.blocks.machine.MachineICFController;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.render.util.BeamPronter;
 import com.hbm.render.util.BeamPronter.EnumBeamType;
 import com.hbm.render.util.BeamPronter.EnumWaveType;
@@ -12,6 +11,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.Vec3d;
 
 @AutoRegister
 public class RenderICFController extends TileEntitySpecialRenderer<TileEntityICFController> {
@@ -35,7 +35,7 @@ public class RenderICFController extends TileEntitySpecialRenderer<TileEntityICF
             }
             OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
             GlStateManager.disableTexture2D();
-            BeamPronter.prontBeam(Vec3.createVectorHelper(controller.laserLength, 0, 0), EnumWaveType.SPIRAL, EnumBeamType.SOLID, 0x202020,
+            BeamPronter.prontBeam(new Vec3d(controller.laserLength, 0, 0), EnumWaveType.SPIRAL, EnumBeamType.SOLID, 0x202020,
                     0x100000, 0, 1, 0F, 10, 0.125F);
             GlStateManager.enableTexture2D();
             OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lastLightmapX, lastLightmapY);

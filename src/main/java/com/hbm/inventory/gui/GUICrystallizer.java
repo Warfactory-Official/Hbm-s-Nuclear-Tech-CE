@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerCrystallizer;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityMachineCrystallizer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -12,7 +12,7 @@ import org.lwjgl.opengl.GL11;
 
 public class GUICrystallizer extends GuiInfoContainer {
 
-	public static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_crystallizer_alt.png");
+	public static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_crystallizer_alt.png");
 	private TileEntityMachineCrystallizer acidomatic;
 
 	public GUICrystallizer(InventoryPlayer invPlayer, TileEntityMachineCrystallizer acidomatic) {
@@ -47,7 +47,6 @@ public class GUICrystallizer extends GuiInfoContainer {
 	@Override
 	protected void drawGuiContainerBackgroundLayer(float p_146976_1_, int p_146976_2_, int p_146976_3_) {
 		super.drawDefaultBackground();
-		GL11.glPushAttrib(GL11.GL_ENABLE_BIT);
 		GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
@@ -62,7 +61,5 @@ public class GUICrystallizer extends GuiInfoContainer {
 		this.drawInfoPanel(guiLeft + 117, guiTop + 22, 8, 8, 8);
 
 		acidomatic.tankNew.renderTank(guiLeft + 35, guiTop + 70, this.zLevel, 16, 52);
-
-		GL11.glPopAttrib();
 	}
 }

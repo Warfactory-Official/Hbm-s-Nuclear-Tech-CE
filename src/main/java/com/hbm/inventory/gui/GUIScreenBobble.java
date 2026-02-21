@@ -31,7 +31,7 @@ public class GUIScreenBobble extends GuiScreen {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        this.drawDefaultBackground();
+        super.drawDefaultBackground();
 
         GlStateManager.disableLighting();
         GlStateManager.enableBlend();
@@ -98,7 +98,6 @@ public class GUIScreenBobble extends GuiScreen {
                         0x009900);
                 nextY += 10;
             }
-            nextY += 10;
         }
 
         GlStateManager.enableLighting();

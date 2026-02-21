@@ -1,12 +1,11 @@
 package com.hbm.inventory.gui;
 
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
 import com.hbm.main.AdvancementManager;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toserver.ItemBobmazonPacket;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -14,7 +13,6 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -25,9 +23,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUIScreenBobmazon extends GuiScreen {
 	
-    protected static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/gui_bobmazon.png");
+    protected static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/gui_bobmazon.png");
     protected int xSize = 176;
     protected int ySize = 229;
     protected int guiLeft;
@@ -185,7 +185,7 @@ public class GUIScreenBobmazon extends GuiScreen {
 		}
 		
 		public void executeAction() {
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
 			if(type == 0) {
 				PacketDispatcher.wrapper.sendToServer(new ItemBobmazonPacket(player, offer));
 			} else if(type == 1) {
@@ -296,7 +296,7 @@ public class GUIScreenBobmazon extends GuiScreen {
 		private Requirement(Advancement achievement, String advName) {
 			this.setAchievement(achievement);
 			this.advName = advName;
-			this.advId = new ResourceLocation(RefStrings.MODID, advName);
+			this.advId = new ResourceLocation(Tags.MODID, advName);
 		}
 
 		public boolean fullfills(EntityPlayerMP player) {
@@ -323,7 +323,7 @@ public class GUIScreenBobmazon extends GuiScreen {
 				return null;
 			}
 			if (advId == null && advName != null) {
-				advId = new ResourceLocation(RefStrings.MODID, advName);
+				advId = new ResourceLocation(Tags.MODID, advName);
 			}
 			return Minecraft.getMinecraft()
 					.player.connection.getAdvancementManager()

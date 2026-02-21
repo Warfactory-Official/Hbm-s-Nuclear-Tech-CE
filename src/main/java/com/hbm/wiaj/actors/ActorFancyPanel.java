@@ -1,6 +1,6 @@
 package com.hbm.wiaj.actors;
 
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
 import com.hbm.util.I18nUtil;
 import com.hbm.wiaj.JarScene;
 import com.hbm.wiaj.WorldInAJar;
@@ -20,7 +20,7 @@ import java.util.List;
 
 public class ActorFancyPanel implements ISpecialActor {
 	
-	static final ResourceLocation guiUtil =  new ResourceLocation(RefStrings.MODID + ":textures/gui/gui_utility.png");
+	static final ResourceLocation guiUtil =  new ResourceLocation(Tags.MODID + ":textures/gui/gui_utility.png");
 
 	List<Object[]> lines = new ArrayList();
 	RenderItem itemRender = new RenderItem(Minecraft.getMinecraft().getTextureManager(), Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes().getModelManager(), Minecraft.getMinecraft().getItemColors());

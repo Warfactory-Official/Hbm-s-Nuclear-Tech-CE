@@ -85,7 +85,7 @@ public class DroneDock extends BlockContainer implements ITooltipProvider {
             for(int i = start; i < end; ++i) {
                 ItemStack stack = sidedInventory.getStackInSlot(i);
 
-                if(stack != ItemStack.EMPTY) {
+                if(!stack.isEmpty()) {
                     float f = this.rand.nextFloat() * 0.8F + 0.1F;
                     float f1 = this.rand.nextFloat() * 0.8F + 0.1F;
                     float f2 = this.rand.nextFloat() * 0.8F + 0.1F;

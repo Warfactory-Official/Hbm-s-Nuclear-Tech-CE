@@ -1,30 +1,30 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerElectrolyserMetal;
 import com.hbm.inventory.material.Mats;
-import com.hbm.lib.RefStrings;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toserver.NBTControlPacket;
 import com.hbm.tileentity.machine.TileEntityElectrolyser;
 import com.hbm.util.I18nUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 import java.io.IOException;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUIElectrolyserMetal extends GuiInfoContainer {
 
-    public static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_electrolyser_metal.png");
+    public static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_electrolyser_metal.png");
     private TileEntityElectrolyser electrolyser;
 
     public GUIElectrolyserMetal(InventoryPlayer invPlayer, TileEntityElectrolyser electrolyser) {
@@ -43,15 +43,15 @@ public class GUIElectrolyserMetal extends GuiInfoContainer {
         electrolyser.tanks[3].renderTankInfo(this, mouseX, mouseY, guiLeft + 36, guiTop + 18, 16, 52);
 
         if(electrolyser.leftStack != null) {
-            this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 58, guiTop + 18, 34, 42, mouseX, mouseY, new String[]{ChatFormatting.YELLOW + I18nUtil.resolveKey(electrolyser.leftStack.material.getTranslationKey()) + ": " + Mats.formatAmount(electrolyser.leftStack.amount, Keyboard.isKeyDown(Keyboard.KEY_LSHIFT))});
+            this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 58, guiTop + 18, 34, 42, mouseX, mouseY, new String[]{TextFormatting.YELLOW + I18nUtil.resolveKey(electrolyser.leftStack.material.getTranslationKey()) + ": " + Mats.formatAmount(electrolyser.leftStack.amount, Keyboard.isKeyDown(Keyboard.KEY_LSHIFT))});
         } else {
-            this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 58, guiTop + 18, 34, 42, mouseX, mouseY, new String[]{ChatFormatting.RED + "Empty"});
+            this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 58, guiTop + 18, 34, 42, mouseX, mouseY, new String[]{TextFormatting.RED + "Empty"});
         }
 
         if(electrolyser.rightStack != null) {
-            this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 96, guiTop + 18, 34, 42, mouseX, mouseY, new String[]{ChatFormatting.YELLOW + I18nUtil.resolveKey(electrolyser.rightStack.material.getTranslationKey()) + ": " + Mats.formatAmount(electrolyser.rightStack.amount, Keyboard.isKeyDown(Keyboard.KEY_LSHIFT))});
+            this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 96, guiTop + 18, 34, 42, mouseX, mouseY, new String[]{TextFormatting.YELLOW + I18nUtil.resolveKey(electrolyser.rightStack.material.getTranslationKey()) + ": " + Mats.formatAmount(electrolyser.rightStack.amount, Keyboard.isKeyDown(Keyboard.KEY_LSHIFT))});
         } else {
-            this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 96, guiTop + 18, 34, 42, mouseX, mouseY, new String[]{ChatFormatting.RED + "Empty"});
+            this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 96, guiTop + 18, 34, 42, mouseX, mouseY, new String[]{TextFormatting.RED + "Empty"});
         }
 
         this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 186, guiTop + 18, 16, 89, electrolyser.power, electrolyser.maxPower);
@@ -61,10 +61,11 @@ public class GUIElectrolyserMetal extends GuiInfoContainer {
         super.mouseClicked(x, y, i);
 
         if(guiLeft + 8 <= x && guiLeft + 8 + 54 > x && guiTop + 82 < y && guiTop + 82 + 12 >= y) {
-            mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            playClickSound();
             NBTTagCompound data = new NBTTagCompound();
             data.setBoolean("sgf", true);
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, electrolyser.getPos().getX(), electrolyser.getPos().getY(), electrolyser.getPos().getZ()));
+            PacketThreading.createSendToServerThreadedPacket(
+                    new NBTControlPacket(data, electrolyser.getPos().getX(), electrolyser.getPos().getY(), electrolyser.getPos().getZ()));
         }
     }
 
@@ -79,7 +80,6 @@ public class GUIElectrolyserMetal extends GuiInfoContainer {
     @Override
     protected void drawGuiContainerBackgroundLayer(float p_146976_1_, int p_146976_2_, int p_146976_3_) {
         super.drawDefaultBackground();
-        GL11.glPushAttrib(GL11.GL_ENABLE_BIT);
         GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
@@ -88,14 +88,14 @@ public class GUIElectrolyserMetal extends GuiInfoContainer {
         if(electrolyser.leftStack != null) {
             int p = electrolyser.leftStack.amount * 42 / electrolyser.maxMaterial;
             Color color = new Color(electrolyser.leftStack.material.moltenColor);
-            GL11.glColor3f(color.getRed() / 255F, color.getGreen() / 255F, color.getBlue() / 255F);
+            GlStateManager.color(color.getRed() / 255F, color.getGreen() / 255F, color.getBlue() / 255F);
             drawTexturedModalRect(guiLeft + 58, guiTop + 60 - p, 210, 131 - p, 34, p);
         }
 
         if(electrolyser.rightStack != null) {
             int p = electrolyser.rightStack.amount * 42 / electrolyser.maxMaterial;
             Color color = new Color(electrolyser.rightStack.material.moltenColor);
-            GL11.glColor3f(color.getRed() / 255F, color.getGreen() / 255F, color.getBlue() / 255F);
+            GlStateManager.color(color.getRed() / 255F, color.getGreen() / 255F, color.getBlue() / 255F);
             drawTexturedModalRect(guiLeft + 96, guiTop + 60 - p, 210, 131 - p, 34, p);
         }
 
@@ -111,6 +111,5 @@ public class GUIElectrolyserMetal extends GuiInfoContainer {
         drawTexturedModalRect(guiLeft + 7, guiTop + 71 - o, 226, 25 - o, 22, o);
 
         electrolyser.tanks[3].renderTank(guiLeft + 36, guiTop + 70, this.zLevel, 16, 52);
-        GL11.glPopAttrib();
     }
 }

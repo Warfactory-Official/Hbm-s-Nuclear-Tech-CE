@@ -1,8 +1,11 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotBattery;
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotFiltered;
+import com.hbm.items.machine.ItemBlades;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineShredder;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -30,24 +33,24 @@ public class ContainerMachineShredder extends Container {
 		this.addSlotToContainer(new SlotItemHandler(shredder.inventory, 6, 44, 54));
 		this.addSlotToContainer(new SlotItemHandler(shredder.inventory, 7, 62, 54));
 		this.addSlotToContainer(new SlotItemHandler(shredder.inventory, 8, 80, 54));
-		this.addSlotToContainer(new SlotTakeOnly(shredder.inventory, 9, 116, 18));
-		this.addSlotToContainer(new SlotTakeOnly(shredder.inventory, 10, 134, 18));
-		this.addSlotToContainer(new SlotTakeOnly(shredder.inventory, 11, 152, 18));
-		this.addSlotToContainer(new SlotTakeOnly(shredder.inventory, 12, 116, 36));
-		this.addSlotToContainer(new SlotTakeOnly(shredder.inventory, 13, 134, 36));
-		this.addSlotToContainer(new SlotTakeOnly(shredder.inventory, 14, 152, 36));
-		this.addSlotToContainer(new SlotTakeOnly(shredder.inventory, 15, 116, 54));
-		this.addSlotToContainer(new SlotTakeOnly(shredder.inventory, 16, 134, 54));
-		this.addSlotToContainer(new SlotTakeOnly(shredder.inventory, 17, 152, 54));
-		this.addSlotToContainer(new SlotTakeOnly(shredder.inventory, 18, 116, 72));
-		this.addSlotToContainer(new SlotTakeOnly(shredder.inventory, 19, 134, 72));
-		this.addSlotToContainer(new SlotTakeOnly(shredder.inventory, 20, 152, 72));
-		this.addSlotToContainer(new SlotTakeOnly(shredder.inventory, 21, 116, 90));
-		this.addSlotToContainer(new SlotTakeOnly(shredder.inventory, 22, 134, 90));
-		this.addSlotToContainer(new SlotTakeOnly(shredder.inventory, 23, 152, 90));
-		this.addSlotToContainer(new SlotTakeOnly(shredder.inventory, 24, 116, 108));
-		this.addSlotToContainer(new SlotTakeOnly(shredder.inventory, 25, 134, 108));
-		this.addSlotToContainer(new SlotTakeOnly(shredder.inventory, 26, 152, 108));
+		this.addSlotToContainer(SlotFiltered.takeOnly(shredder.inventory, 9, 116, 18));
+		this.addSlotToContainer(SlotFiltered.takeOnly(shredder.inventory, 10, 134, 18));
+		this.addSlotToContainer(SlotFiltered.takeOnly(shredder.inventory, 11, 152, 18));
+		this.addSlotToContainer(SlotFiltered.takeOnly(shredder.inventory, 12, 116, 36));
+		this.addSlotToContainer(SlotFiltered.takeOnly(shredder.inventory, 13, 134, 36));
+		this.addSlotToContainer(SlotFiltered.takeOnly(shredder.inventory, 14, 152, 36));
+		this.addSlotToContainer(SlotFiltered.takeOnly(shredder.inventory, 15, 116, 54));
+		this.addSlotToContainer(SlotFiltered.takeOnly(shredder.inventory, 16, 134, 54));
+		this.addSlotToContainer(SlotFiltered.takeOnly(shredder.inventory, 17, 152, 54));
+		this.addSlotToContainer(SlotFiltered.takeOnly(shredder.inventory, 18, 116, 72));
+		this.addSlotToContainer(SlotFiltered.takeOnly(shredder.inventory, 19, 134, 72));
+		this.addSlotToContainer(SlotFiltered.takeOnly(shredder.inventory, 20, 152, 72));
+		this.addSlotToContainer(SlotFiltered.takeOnly(shredder.inventory, 21, 116, 90));
+		this.addSlotToContainer(SlotFiltered.takeOnly(shredder.inventory, 22, 134, 90));
+		this.addSlotToContainer(SlotFiltered.takeOnly(shredder.inventory, 23, 152, 90));
+		this.addSlotToContainer(SlotFiltered.takeOnly(shredder.inventory, 24, 116, 108));
+		this.addSlotToContainer(SlotFiltered.takeOnly(shredder.inventory, 25, 134, 108));
+		this.addSlotToContainer(SlotFiltered.takeOnly(shredder.inventory, 26, 152, 108));
 		this.addSlotToContainer(new SlotItemHandler(shredder.inventory, 27, 44, 108));
 		this.addSlotToContainer(new SlotItemHandler(shredder.inventory, 28, 80, 108));
 		this.addSlotToContainer(new SlotBattery(shredder.inventory, 29, 8, 108));
@@ -71,42 +74,17 @@ public class ContainerMachineShredder extends Container {
 		super.addListener(listener);
 		listener.sendWindowProperty(this, 1, shredder.progress);
 	}
-	
+
+    private static boolean isNormal(ItemStack stack) {
+        return !(stack.getItem() instanceof ItemBlades) && !Library.isBattery(stack);
+    }
+
 	@Override
     public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index)
     {
-		ItemStack rStack = ItemStack.EMPTY;
-		Slot slot = this.inventorySlots.get(index);
-		
-		if (slot != null && slot.getHasStack())
-		{
-			ItemStack stack = slot.getStack();
-			rStack = stack.copy();
-			
-            if (index <= 29) {
-				if (!this.mergeItemStack(stack, 30, this.inventorySlots.size(), true))
-				{
-					return ItemStack.EMPTY;
-				}
-			}
-			else
-			{
-				if (!this.mergeItemStack(stack, 0, 9, false))
-					if (!this.mergeItemStack(stack, 27, 30, false))
-						return ItemStack.EMPTY;
-			}
-			
-			if (stack.isEmpty())
-			{
-				slot.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
-				slot.onSlotChanged();
-			}
-		}
-		
-		return rStack;
+		return InventoryUtil.transferStack(this.inventorySlots, index, 30,
+                ContainerMachineShredder::isNormal, 27,
+                s -> s.getItem() instanceof ItemBlades, 29);
     }
 
 	@Override

@@ -1,8 +1,8 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerNukeBoy;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.bomb.TileEntityNukeBoy;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
@@ -13,7 +13,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GUINukeBoy extends GuiContainer {
 	
-	private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/lilBoySchematic.png");
+	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/lilBoySchematic.png");
 	private TileEntityNukeBoy testNuke;
 
 	public GUINukeBoy(InventoryPlayer invPlayer, TileEntityNukeBoy tedf) {

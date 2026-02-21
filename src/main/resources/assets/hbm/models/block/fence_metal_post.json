@@ -1,6 +1,7 @@
 {
-	"parent": "block/fence_post",
-	"textures": {
-		"texture": "hbm:blocks/fence_metal"
-	}
+    "parent": "block/fence_post",
+    "textures": {
+        "texture": "hbm:blocks/fence_metal_post",
+        "particle": "hbm:blocks/fence_metal_post"
+    }
 }

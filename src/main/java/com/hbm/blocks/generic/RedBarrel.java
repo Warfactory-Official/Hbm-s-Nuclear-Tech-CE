@@ -8,7 +8,6 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
@@ -22,6 +21,8 @@ import net.minecraft.world.WorldServer;
 import java.util.List;
 import java.util.Random;
 
+// FIXME: extend BlockDetonatable
+// don't forget to delete == ModBlocks.red_barrel manual detonation checks when this got fixed, that's a temporary solution
 public class RedBarrel extends BaseBarrel {
 
     //MrNorwood: This is pretty much required to prevent infinite recursion issues
@@ -77,33 +78,34 @@ public class RedBarrel extends BaseBarrel {
         }
     }
 
-    public void explode(World p_149695_1_, int x, int y, int z) {
+    public void explode(World world, int x, int y, int z) {
 
         if (this == ModBlocks.red_barrel || this == ModBlocks.pink_barrel)
-            p_149695_1_.newExplosion((Entity) null, x + 0.5F, y + 0.5F, z + 0.5F, 2.5F, true, true);
+            world.newExplosion(null, x + 0.5F, y + 0.5F, z + 0.5F, 2.5F, true, true);
 
         if (this == ModBlocks.lox_barrel) {
 
-            p_149695_1_.newExplosion(null, x + 0.5F, y + 0.5F, z + 0.5F, 1F, false, false);
+            world.newExplosion(null, x + 0.5F, y + 0.5F, z + 0.5F, 1F, false, false);
 
-            ExplosionThermo.freeze(p_149695_1_, null, x, y, z, 7);
+            ExplosionThermo.freeze(world, null, x, y, z, 7);
         }
 
         if (this == ModBlocks.taint_barrel) {
 
-            p_149695_1_.newExplosion(null, x + 0.5F, y + 0.5F, z + 0.5F, 1F, false, false);
+            world.newExplosion(null, x + 0.5F, y + 0.5F, z + 0.5F, 1F, false, false);
 
-            Random rand = p_149695_1_.rand;
+            Random rand = world.rand;
             MutableBlockPos pos = new BlockPos.MutableBlockPos();
             for (int i = 0; i < 100; i++) {
                 int a = rand.nextInt(9) - 4 + x;
                 int b = rand.nextInt(9) - 4 + y;
                 int c = rand.nextInt(9) - 4 + z;
-                if (p_149695_1_.getBlockState(pos.setPos(a, b, c)).getBlock().isReplaceable(p_149695_1_, pos.setPos(a, b, c)) && BlockTaint.hasPosNeightbour(p_149695_1_, pos.setPos(a, b, c))) {
-                    p_149695_1_.setBlockState(pos.setPos(a, b, c), ModBlocks.taint.getDefaultState().withProperty(BlockTaint.TEXTURE, rand.nextInt(3) + 4), 2);
+                pos.setPos(a, b, c);
+                IBlockState state = world.getBlockState(pos);
+                if (state.isNormalCube() && !state.getBlock().isAir(state, world, pos)) {
+                    world.setBlockState(pos, ModBlocks.taint.getDefaultState().withProperty(BlockTaint.TAINTAGE, rand.nextInt(3) + 4), 2);
                 }
             }
         }
     }
-
 }

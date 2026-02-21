@@ -4,7 +4,7 @@ import com.cleanroommc.groovyscript.api.GroovyPlugin;
 import com.cleanroommc.groovyscript.compat.mods.GroovyContainer;
 import com.cleanroommc.groovyscript.compat.mods.GroovyPropertyContainer;
 import com.cleanroommc.groovyscript.documentation.linkgenerator.LinkGeneratorHooks;
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
 import com.hbm.util.Compat;
 import net.minecraftforge.fml.common.Optional;
 import org.jetbrains.annotations.NotNull;
@@ -14,12 +14,12 @@ public class GroovyScriptModule implements GroovyPlugin {
 
     @Override
     public @NotNull String getModId() {
-        return RefStrings.MODID;
+        return Tags.MODID;
     }
 
     @Override
     public @NotNull String getContainerName() {
-        return RefStrings.NAME;
+        return Tags.MODNAME;
     }
 
     @Override

@@ -5,6 +5,8 @@ import com.hbm.blocks.generic.BlockMeta;
 import com.hbm.blocks.generic.BlockSellafieldSlaked;
 import com.hbm.inventory.RecipesCommon;
 import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
@@ -46,7 +48,8 @@ public class ExplosionBalefire {
 		nbt.setInteger(name + "shell", shell);
 		nbt.setInteger(name + "leg", leg);
 		nbt.setInteger(name + "element", element);
-		nbt.setUniqueId(name + "detonator", detonator);
+        if (detonator != null)
+		    nbt.setUniqueId(name + "detonator", detonator);
 	}
 	
 	public void readFromNbt(NBTTagCompound nbt, String name) {
@@ -62,7 +65,8 @@ public class ExplosionBalefire {
 		shell = nbt.getInteger(name + "shell");
 		leg = nbt.getInteger(name + "leg");
 		element = nbt.getInteger(name + "element");
-		detonator = nbt.getUniqueId(name + "detonator");
+        if (nbt.hasKey(name + "detonator"))
+		    detonator = nbt.getUniqueId(name + "detonator");
 	}
 	
 	public ExplosionBalefire(int x, int y, int z, World world, int rad)
@@ -94,73 +98,47 @@ public class ExplosionBalefire {
 		return this.n > this.nlimit;
 	}
 
-	@SuppressWarnings("deprecation")
-	private void breakColumn(int x, int z)
-	{
-		int dist = (int) (radius - Math.sqrt(x * x + z * z));
-		
-		if (dist > 0) {
-			int pX = posX + x;
-			int pZ = posZ + z;
-			
-			int y  = worldObj.getHeight(pX, pZ);
-			int maxdepth = (int) (10 + radius * 0.25);
-			int voidDepth = (int) ((maxdepth * dist / radius) + (Math.sin(dist * 0.15 + 2) * 2));//
-			
-			int depth = Math.max(y - voidDepth, 0);
-			
-			while(y > depth) {
+    private void breakColumn(int x, int z) {
+        int dist = (int) (radius - Math.sqrt(x * x + z * z));
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        if (dist > 0) {
+            int pX = posX + x;
+            int pZ = posZ + z;
 
-				Block b = worldObj.getBlockState(new BlockPos(pX, y, pZ)).getBlock();
-				
-				if(b == ModBlocks.block_schrabidium_cluster) {
-					
-					if(worldObj.rand.nextInt(10) == 0) {
-						worldObj.setBlockState(new BlockPos(pX, y + 1, pZ), ModBlocks.balefire.getDefaultState());
-						worldObj.setBlockState(new BlockPos(pX, y, pZ), ModBlocks.block_euphemium_cluster.getStateFromMeta(b.getMetaFromState(worldObj.getBlockState(new BlockPos(pX, y, pZ)))), 3);
-					}
-					return;
-				} else if(b == ModBlocks.cmb_brick_reinforced){
-					if(worldObj.rand.nextInt(10) == 0) {
-						worldObj.setBlockState(new BlockPos(pX, y + 1, pZ), ModBlocks.balefire.getDefaultState());
-					}
-					return;
-				}
-				
-				worldObj.setBlockToAir(new BlockPos(pX, y, pZ));
-				
-				y--;
-			}
-			
-			if(worldObj.rand.nextInt(10) == 0) {
-				worldObj.setBlockState(new BlockPos(pX, depth + 1, pZ), ModBlocks.balefire.getDefaultState());
-				
-				Block b = worldObj.getBlockState(new BlockPos(pX, y, pZ)).getBlock();
-				
-				if(b == ModBlocks.block_schrabidium_cluster)
-					worldObj.setBlockState(new BlockPos(pX, y, pZ), ModBlocks.block_euphemium_cluster.getStateFromMeta(b.getMetaFromState(worldObj.getBlockState(new BlockPos(pX, y, pZ)))), 3);
-			}
-			int startDepth = (int)(6 * dist / radius);
-			for(int i = 0; i <= startDepth; i++) {
-				if(worldObj.getBlockState(new BlockPos(pX, depth-i, pZ)).getBlock() == Blocks.STONE){
-                    switch (startDepth - i) {
-                        case 6 ->
-                                worldObj.setBlockState(new BlockPos(pX, depth - i, pZ), ModBlocks.sellafield.getDefaultState().withProperty(META,5));
-                        case 5 ->
-                                worldObj.setBlockState(new BlockPos(pX, depth - i, pZ), ModBlocks.sellafield.getDefaultState().withProperty(META, 4));
-                        case 4 ->
-                                worldObj.setBlockState(new BlockPos(pX, depth - i, pZ), ModBlocks.sellafield.getDefaultState().withProperty(META, 3));
-                        case 3 ->
-                                worldObj.setBlockState(new BlockPos(pX, depth - i, pZ), ModBlocks.sellafield.getDefaultState().withProperty(META, 2));
-                        case 2 ->
-                                worldObj.setBlockState(new BlockPos(pX, depth - i, pZ), ModBlocks.sellafield.getDefaultState().withProperty(META, 1));
-                        case 1 ->
-                                worldObj.setBlockState(new BlockPos(pX, depth - i, pZ), ModBlocks.sellafield.getDefaultState().withProperty(META,0));
-                        case 0 ->
-                                worldObj.setBlockState(new BlockPos(pX, depth - i, pZ), ModBlocks.sellafield_slaked.getDefaultState());
+            int y  = worldObj.getHeight(pX, pZ);
+
+            int maxdepth = (int) (10 + radius * 0.25);
+            int depth = (int) ((maxdepth * dist / (double) radius) + (Math.sin(dist * 0.15 + 2) * 2));//
+
+            depth = Math.max(y - depth, 0);
+
+            while(y > depth) {
+                IBlockState currentState = worldObj.getBlockState(pos.setPos(pX, y, pZ));
+                if(currentState.getBlock() == ModBlocks.block_schrabidium_cluster) {
+
+                    if(worldObj.rand.nextInt(10) == 0) {
+                        worldObj.setBlockState(pos.setPos(pX, y + 1, pZ), ModBlocks.balefire.getDefaultState());
+                        worldObj.setBlockState(pos.setPos(pX, y, pZ), ModBlocks.block_euphemium_cluster.getStateFromMeta(currentState.getBlock().getMetaFromState(currentState)));
                     }
-				}
-			}
-		}
-	}
+                    return;
+                }
+
+                worldObj.setBlockToAir(pos.setPos(pX, y, pZ));
+
+                y--;
+            }
+
+            if(worldObj.rand.nextInt(10) == 0) {
+                worldObj.setBlockState(pos.setPos(pX, depth + 1, pZ), ModBlocks.balefire.getDefaultState());
+                IBlockState currentState = worldObj.getBlockState(pos.setPos(pX, y, pZ));
+                if(currentState.getBlock() == ModBlocks.block_schrabidium_cluster)
+                    worldObj.setBlockState(pos.setPos(pX, y, pZ), ModBlocks.block_euphemium_cluster.getStateFromMeta(currentState.getBlock().getMetaFromState(currentState)), 3);
+            }
+
+            for(int i = depth; i > depth - 5; i--) {
+                if(worldObj.getBlockState(pos.setPos(pX, i, pZ)).getMaterial() == Material.ROCK) //mlbv: was == Blocks.stone; loosened for compatibility.
+                    worldObj.setBlockState(pos.setPos(pX, i, pZ), ModBlocks.sellafield_slaked.getDefaultState());
+            }
+        }
+    }
 }

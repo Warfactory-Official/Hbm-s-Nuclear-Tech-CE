@@ -1,8 +1,8 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerWeaponTable;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.item.weapon.sedna.ItemRenderWeaponBase;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -17,7 +17,7 @@ import java.io.IOException;
 
 public class GUIWeaponTable extends GuiInfoContainer {
 
-    public static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/machine/gui_weapon_modifier.png");
+    public static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/machine/gui_weapon_modifier.png");
 
     public double yaw = 20;
     public double pitch = -10;

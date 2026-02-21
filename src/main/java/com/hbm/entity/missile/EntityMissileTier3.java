@@ -8,13 +8,13 @@ import com.hbm.explosion.ExplosionNT.ExAttrib;
 import com.hbm.explosion.ExplosionThermo;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.ModItems;
+import com.hbm.particle.helper.ExplosionCreator;
+import com.hbm.util.MutableVec3d;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public abstract class EntityMissileTier3 extends EntityMissileBaseNT {
@@ -46,10 +46,10 @@ public abstract class EntityMissileTier3 extends EntityMissileBaseNT {
 	@Override
 	protected void spawnContrail() {
 		
-		Vec3d thrust = new Vec3d(0, 0, 0.5);
-		thrust.rotateYaw((this.rotationYaw + 90) * (float) Math.PI / 180F);
-		thrust.rotatePitch(this.rotationPitch * (float) Math.PI / 180F);
-		thrust.rotateYaw(-(this.rotationYaw + 90) * (float) Math.PI / 180F);
+		MutableVec3d thrust = new MutableVec3d(0, 0, 0.5);
+		thrust.rotateYawSelf((this.rotationYaw + 90) * (float) Math.PI / 180F);
+		thrust.rotatePitchSelf(this.rotationPitch * (float) Math.PI / 180F);
+		thrust.rotateYawSelf(-(this.rotationYaw + 90) * (float) Math.PI / 180F);
 
 		this.spawnControlWithOffset(thrust.x, thrust.y, thrust.z);
 		this.spawnControlWithOffset(-thrust.z, thrust.y, thrust.x);
@@ -60,8 +60,9 @@ public abstract class EntityMissileTier3 extends EntityMissileBaseNT {
 	public static class EntityMissileBurst extends EntityMissileTier3 {
 		public EntityMissileBurst(World world) { super(world); }
 		public EntityMissileBurst(World world, float x, float y, float z, int a, int b) { super(world, x, y, z, a, b); }
-		@Override public void onImpact()  {
-			ExplosionLarge.explode(world, thrower, posX, posY, posZ, 50.0F, true, true, true);
+		@Override public void onMissileImpact(RayTraceResult mop)  {
+			this.explodeStandard(50F, 48, false);
+			ExplosionCreator.composeEffectLarge(world, posX, posY, posZ);
 		}
 		@Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_generic_large); }
 		@Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModItems.missile_burst); }
@@ -70,10 +71,11 @@ public abstract class EntityMissileTier3 extends EntityMissileBaseNT {
 	public static class EntityMissileInferno extends EntityMissileTier3 {
 		public EntityMissileInferno(World world) { super(world); }
 		public EntityMissileInferno(World world, float x, float y, float z, int a, int b) { super(world, x, y, z, a, b); }
-		@Override public void onImpact() {
-			ExplosionLarge.explodeFire(world, thrower, this.posX + 0.5F, this.posY + 0.5F, this.posZ + 0.5F, 50.0F, true, true, true);
-			ExplosionChaos.burn(this.world, thrower, new BlockPos((int)this.posX, (int)this.posY, (int)this.posZ), 10);
-			ExplosionChaos.flameDeath(this.world, thrower, new BlockPos((int)this.posX, (int)this.posY, (int)this.posZ), 25);
+		@Override public void onMissileImpact(RayTraceResult mop) {
+			this.explodeStandard(50F, 48, true);
+			ExplosionCreator.composeEffectLarge(world, posX, posY, posZ);
+			ExplosionChaos.burn(this.world, thrower, getPosition(), 10);
+			ExplosionChaos.flameDeath(this.world, thrower, getPosition(), 25);
 		}
 		@Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_incendiary_large); }
 		@Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModItems.missile_inferno); }
@@ -82,11 +84,11 @@ public abstract class EntityMissileTier3 extends EntityMissileBaseNT {
 	public static class EntityMissileRain extends EntityMissileTier3 {
 		public EntityMissileRain(World world) { super(world); }
 		public EntityMissileRain(World world, float x, float y, float z, int a, int b) { super(world, x, y, z, a, b); this.isCluster = true; }
-		@Override public void onImpact() {
+		@Override public void onMissileImpact(RayTraceResult mop) {
 			this.world.createExplosion(this, this.posX, this.posY, this.posZ, 25F, true);
 			ExplosionChaos.cluster(this.world, (int)this.posX, (int)this.posY, (int)this.posZ, 100, 100);
 		}
-		@Override public void cluster() { this.onImpact(); }
+		@Override public void cluster() { this.onMissileImpact(null); }
 		@Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_cluster_large); }
 		@Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModItems.missile_rain); }
 	}
@@ -94,11 +96,10 @@ public abstract class EntityMissileTier3 extends EntityMissileBaseNT {
 	public static class EntityMissileDrill extends EntityMissileTier3 {
 		public EntityMissileDrill(World world) { super(world); }
 		public EntityMissileDrill(World world, float x, float y, float z, int a, int b) { super(world, x, y, z, a, b); }
-		@Override public void onImpact() {
+		@Override public void onMissileImpact(RayTraceResult mop) {
 			for(int i = 0; i < 30; i++) {
 				ExplosionNT explosion = new ExplosionNT(world, this, this.posX, this.posY - i, this.posZ, 10F);
-				List<ExAttrib> attribs = Arrays.asList(new ExAttrib[] {ExAttrib.ERRODE});
-				explosion.addAllAttrib(attribs);
+				explosion.addAttrib(ExAttrib.ERRODE);
 				explosion.explode(); //an explosion exploded!
 			}
 			ExplosionLarge.spawnParticles(world, this.posX, this.posY, this.posZ, 25);
@@ -108,12 +109,15 @@ public abstract class EntityMissileTier3 extends EntityMissileBaseNT {
 		@Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_buster_large); }
 		@Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModItems.missile_drill); }
 	}
+
+	//mlbv: missiles below this comment does not exist in upstream.
+
 	@AutoRegister(name = "entity_missile_endo", trackingRange = 1000)
 	public static class EntityMissileEndo extends EntityMissileTier3{
 		public EntityMissileEndo(World world) { super(world); }
 		public EntityMissileEndo(World world, float x, float y, float z, int a, int b) { super(world, x, y, z, a, b); }
 		@Override
-		public void onImpact() {
+		public void onMissileImpact(RayTraceResult mop) {
 			ExplosionThermo.freeze(this.world, null, (int)this.posX, (int)this.posY, (int)this.posZ, 30);
 			ExplosionThermo.freezer(this.world, (int)this.posX, (int)this.posY, (int)this.posZ, 40);
 		}
@@ -129,7 +133,7 @@ public abstract class EntityMissileTier3 extends EntityMissileBaseNT {
 		public EntityMissileExo(World world) { super(world); }
 		public EntityMissileExo(World world, float x, float y, float z, int a, int b) { super(world, x, y, z, a, b); }
 		@Override
-		public void onImpact() {
+		public void onMissileImpact(RayTraceResult mop) {
 			ExplosionThermo.scorch(this.world, null, (int)this.posX, (int)this.posY, (int)this.posZ, 30);
 			ExplosionThermo.setEntitiesOnFire(this.world, (int)this.posX, (int)this.posY, (int)this.posZ, 40);
 		}

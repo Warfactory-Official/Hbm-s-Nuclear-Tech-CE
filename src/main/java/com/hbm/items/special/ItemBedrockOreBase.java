@@ -37,7 +37,7 @@ public class ItemBedrockOreBase extends Item {
         if(!stack.hasTagCompound()) stack.setTagCompound(new NBTTagCompound());
         NBTTagCompound data = stack.getTagCompound();
 
-        for(ItemBedrockOreNew.BedrockOreType type : ItemBedrockOreNew.BedrockOreType.values()) {
+        for(ItemBedrockOreNew.BedrockOreType type : ItemBedrockOreNew.BedrockOreType.VALUES) {
             data.setDouble(type.suffix, getOreLevel(x, z, type));
         }
     }
@@ -45,14 +45,14 @@ public class ItemBedrockOreBase extends Item {
     @Override
     public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
 
-        for(ItemBedrockOreNew.BedrockOreType type : ItemBedrockOreNew.BedrockOreType.values()) {
+        for(ItemBedrockOreNew.BedrockOreType type : ItemBedrockOreNew.BedrockOreType.VALUES) {
             double amount = this.getOreAmount(stack, type);
             String typeName = I18n.format("item.bedrock_ore.type." + type.suffix + ".name");
             list.add(typeName + ": " + ((int) (amount * 100)) / 100D + " (" + ItemOreDensityScanner.getColor(amount) + I18nUtil.resolveKey(ItemOreDensityScanner.translateDensity(amount)) + TextFormatting.RESET + ")");
         }
     }
 
-    private static NoiseGeneratorPerlin[] ores = new NoiseGeneratorPerlin[ItemBedrockOreNew.BedrockOreType.values().length];
+    private static NoiseGeneratorPerlin[] ores = new NoiseGeneratorPerlin[ItemBedrockOreNew.BedrockOreType.VALUES.length];
     private static NoiseGeneratorPerlin level;
 
     public static double getOreLevel(int x, int z, ItemBedrockOreNew.BedrockOreType type) {

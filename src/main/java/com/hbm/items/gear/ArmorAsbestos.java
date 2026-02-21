@@ -1,12 +1,11 @@
 package com.hbm.items.gear;
 
+import com.hbm.Tags;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.NTMRenderHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -21,11 +20,10 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.ISpecialArmor;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
 
 public class ArmorAsbestos extends ItemArmor implements ISpecialArmor {
 
-	private ResourceLocation asbestosBlur = new ResourceLocation(RefStrings.MODID + ":textures/misc/overlay_asbestos.png");
+	private ResourceLocation asbestosBlur = new ResourceLocation(Tags.MODID + ":textures/misc/overlay_asbestos.png");
 	
 	public ArmorAsbestos(ArmorMaterial materialIn, int renderIndexIn, EntityEquipmentSlot equipmentSlotIn, String s) {
 		super(materialIn, renderIndexIn, equipmentSlotIn);
@@ -39,10 +37,10 @@ public class ArmorAsbestos extends ItemArmor implements ISpecialArmor {
 	@Override
 	public String getArmorTexture(ItemStack stack, Entity entity, EntityEquipmentSlot slot, String type) {
 		if(stack.getItem().equals(ModItems.asbestos_helmet) || stack.getItem().equals(ModItems.asbestos_plate) || stack.getItem().equals(ModItems.asbestos_boots)) {
-			return (RefStrings.MODID + ":textures/armor/asbestos_1.png");
+			return (Tags.MODID + ":textures/armor/asbestos_1.png");
 		}
 		if(stack.getItem().equals(ModItems.asbestos_legs)) {
-			return (RefStrings.MODID + ":textures/armor/asbestos_2.png");
+			return (Tags.MODID + ":textures/armor/asbestos_2.png");
 		}
 		return null;
 	}

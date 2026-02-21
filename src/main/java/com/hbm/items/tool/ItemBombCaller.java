@@ -1,11 +1,11 @@
 package com.hbm.items.tool;
 
+import com.hbm.Tags;
 import com.hbm.entity.logic.EntityBomber;
 import com.hbm.items.IDynamicModels;
 import com.hbm.items.ItemBakedBase;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
-import com.hbm.lib.RefStrings;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.util.ITooltipFlag;
@@ -49,7 +49,9 @@ public class ItemBombCaller extends ItemBakedBase implements IDynamicModels {
     STINGER,
     PIP,
     CLOUD,
-    NONE
+    NONE;
+
+      public static final EnumCallerType[] VALUES = values();
   }
 
   @Override
@@ -170,7 +172,7 @@ public class ItemBombCaller extends ItemBakedBase implements IDynamicModels {
   }
 
   private static EnumCallerType getTypeByIndex(int index) {
-    EnumCallerType[] values = EnumCallerType.values();
+    EnumCallerType[] values = EnumCallerType.VALUES;
     if (index < 0 || index >= values.length) {
       return EnumCallerType.NONE;
     }
@@ -180,7 +182,7 @@ public class ItemBombCaller extends ItemBakedBase implements IDynamicModels {
   @Override
   public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
     if (tab == this.getCreativeTab() || tab == CreativeTabs.SEARCH)
-      for (int i = 0; i < EnumCallerType.values().length - 4; i++) {
+      for (int i = 0; i < EnumCallerType.VALUES.length - 4; i++) {
         ItemStack stack = new ItemStack(this, 1, i);
         items.add(stack);
       }
@@ -194,12 +196,12 @@ public class ItemBombCaller extends ItemBakedBase implements IDynamicModels {
   @Override
   @SideOnly(Side.CLIENT)
   public void registerModel() {
-    for (int i = 0; i < EnumCallerType.values().length - 1; i++) {
+    for (int i = 0; i < EnumCallerType.VALUES.length - 1; i++) {
       ModelLoader.setCustomModelResourceLocation(
           this,
           i,
           new ModelResourceLocation(
-              new ResourceLocation(RefStrings.MODID, ROOT_PATH + texturePath), "inventory"));
+              new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath), "inventory"));
     }
   }
 }

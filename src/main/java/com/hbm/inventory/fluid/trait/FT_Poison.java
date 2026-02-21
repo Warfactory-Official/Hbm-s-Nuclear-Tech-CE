@@ -3,7 +3,7 @@ package com.hbm.inventory.fluid.trait;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import com.hbm.util.I18nUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
+import net.minecraft.util.text.TextFormatting;
 
 import java.io.IOException;
 import java.util.List;
@@ -31,7 +31,7 @@ public class FT_Poison extends FluidTrait {
 	
 	@Override
 	public void addInfoHidden(List<String> info) {
-		info.add(ChatFormatting.GREEN + "[" + I18nUtil.resolveKey("trait.toxicfumes") + "]");
+		info.add(TextFormatting.GREEN + "[" + I18nUtil.resolveKey("trait.toxicfumes") + "]");
 	}
 	
 	@Override public void serializeJSON(JsonWriter writer) throws IOException {

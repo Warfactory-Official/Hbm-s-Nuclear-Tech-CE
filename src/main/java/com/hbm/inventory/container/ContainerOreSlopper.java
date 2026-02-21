@@ -1,17 +1,20 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotBattery;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.IItemFluidIdentifier;
-import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineOreSlopper;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
+
+import java.util.function.Predicate;
 
 public class ContainerOreSlopper extends Container {
 
@@ -34,8 +37,8 @@ public class ContainerOreSlopper extends Container {
         this.addSlotToContainer(new SlotItemHandler(slopper.inventory, 7, 134, 54));
         this.addSlotToContainer(new SlotItemHandler(slopper.inventory, 8, 152, 54));
         //Upgrades
-        this.addSlotToContainer(new SlotItemHandler(slopper.inventory, 9, 62, 72));
-        this.addSlotToContainer(new SlotItemHandler(slopper.inventory, 10, 80, 72));
+        this.addSlotToContainer(new SlotUpgrade(slopper.inventory, 9, 62, 72));
+        this.addSlotToContainer(new SlotUpgrade(slopper.inventory, 10, 80, 72));
 
         for(int i = 0; i < 3; i++) {
             for(int j = 0; j < 9; j++) {
@@ -49,49 +52,14 @@ public class ContainerOreSlopper extends Container {
     }
 
     @Override
-    public ItemStack transferStackInSlot(EntityPlayer player, int par2) {
-        ItemStack var3 = ItemStack.EMPTY;
-        Slot var4 = (Slot) this.inventorySlots.get(par2);
-
-        if(var4 != null && var4.getHasStack()) {
-            ItemStack var5 = var4.getStack();
-            var3 = var5.copy();
-
-            if(par2 <= 10) {
-                if(!this.mergeItemStack(var5, 11, this.inventorySlots.size(), true)) {
-                    return ItemStack.EMPTY;
-                }
-            } else {
-
-                if(var3.getItem() == ModItems.bedrock_ore_base) {
-                    if(!this.mergeItemStack(var5, 2, 3, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                } else if(var3.getItem() instanceof ItemMachineUpgrade) {
-                    if(!this.mergeItemStack(var5, 9, 11, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                } else if(var3.getItem() instanceof IItemFluidIdentifier) {
-                    if(!this.mergeItemStack(var5, 1, 2, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                } else if(Library.isItemBattery(var3)) {
-                    if(!this.mergeItemStack(var5, 0, 1, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                } else {
-                    return ItemStack.EMPTY;
-                }
-            }
-
-            if(var5.getCount() == 0) {
-                var4.putStack(ItemStack.EMPTY);
-            } else {
-                var4.onSlotChanged();
-            }
-        }
-
-        return var3;
+    public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+        return InventoryUtil.transferStack(this.inventorySlots, index, 11,
+                Library::isBattery, 1,
+                s -> s.getItem() instanceof IItemFluidIdentifier, 2,
+                s -> s.getItem() == ModItems.bedrock_ore_base, 3,
+                Predicate.not(Library::isMachineUpgrade), 9,
+                Library::isMachineUpgrade, 11
+        );
     }
 
     @Override

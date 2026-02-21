@@ -1,6 +1,6 @@
 package com.hbm.particle;
 
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -18,9 +18,8 @@ import org.lwjgl.opengl.GL11;
 @SideOnly(Side.CLIENT)
 public class ParticleMukeCloud extends Particle {
 
-    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/particle/explosion.png");
-
-    private float friction;
+    private static final ResourceLocation TEXTURE = new ResourceLocation(Tags.MODID, "textures/particle/explosion.png");
+    private final float friction;
 
     public ParticleMukeCloud(World world, double x, double y, double z, double mx, double my, double mz) {
         super(world, x, y, z, mx, my, mz);
@@ -30,23 +29,23 @@ public class ParticleMukeCloud extends Particle {
 
         if (motionY > 0) {
             this.friction = 0.9F;
-
-            if (motionY > 0.1)
-                this.particleMaxAge = 92 + this.rand.nextInt(11) + (int) (motionY * 20);
-            else
-                this.particleMaxAge = 72 + this.rand.nextInt(11);
-
-        } else if (motionY == 0) {
-
+            if (motionY > 0.1D) {
+                this.particleMaxAge = 92 + rand.nextInt(11) + (int) (motionY * 20);
+            } else {
+                this.particleMaxAge = 72 + rand.nextInt(11);
+            }
+        } else if (motionY == 0D) {
             this.friction = 0.95F;
-            this.particleMaxAge = 52 + this.rand.nextInt(11);
-
+            this.particleMaxAge = 52 + rand.nextInt(11);
         } else {
-
             this.friction = 0.85F;
-            this.particleMaxAge = 122 + this.rand.nextInt(31);
+            this.particleMaxAge = 122 + rand.nextInt(31);
             this.particleAge = 80;
         }
+
+        this.particleGravity = 0.0F;
+        this.canCollide = false;
+        this.setSize(0.2F, 0.2F);
     }
 
     @Override
@@ -56,7 +55,6 @@ public class ParticleMukeCloud extends Particle {
 
     @Override
     public void onUpdate() {
-
         this.canCollide = this.particleAge > 2;
 
         this.prevPosX = this.posX;
@@ -80,8 +78,7 @@ public class ParticleMukeCloud extends Particle {
     }
 
     @Override
-    public void renderParticle(BufferBuilder buffer, Entity entityIn, float interp, float rotationX, float rotationZ, float rotationYZ, float rotationXY, float rotationXZ) {
-
+    public void renderParticle(BufferBuilder unusedBuffer, Entity entityIn, float partialTicks, float rotationX, float rotationZ, float rotationYZ, float rotationXY, float rotationXZ) {
         Minecraft.getMinecraft().renderEngine.bindTexture(getTexture());
 
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
@@ -92,9 +89,7 @@ public class ParticleMukeCloud extends Particle {
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         RenderHelper.disableStandardItemLighting();
 
-        if (this.particleAge > this.particleMaxAge)
-            this.particleAge = this.particleMaxAge;
-
+        if (this.particleAge > this.particleMaxAge) this.particleAge = this.particleMaxAge;
         int texIndex = this.particleAge * 25 / this.particleMaxAge;
         float f0 = 1F / 5F;
 
@@ -102,35 +97,46 @@ public class ParticleMukeCloud extends Particle {
         float uMax = uMin + f0;
         float vMin = (texIndex / 5) * f0;
         float vMax = vMin + f0;
-
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buf = tessellator.getBuffer();
-        buf.begin(7, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
+        float pX = (float) (this.prevPosX + (this.posX - this.prevPosX) * partialTicks - Particle.interpPosX);
+        float pY = (float) (this.prevPosY + (this.posY - this.prevPosY) * partialTicks - Particle.interpPosY);
+        float pZ = (float) (this.prevPosZ + (this.posZ - this.prevPosZ) * partialTicks - Particle.interpPosZ);
 
         this.particleAlpha = 1F;
-        this.particleScale = 3;
+        this.particleScale = 3F;
+        final int j = 240, k = 240;
+        Tessellator tess = Tessellator.getInstance();
+        BufferBuilder buf = tess.getBuffer();
+        buf.begin(GL11.GL_QUADS, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
+        float r = 1F, g = 1F, b = 1F, a = this.particleAlpha;
+        double x0 = pX - rotationX * particleScale - rotationXY * particleScale;
+        double y0 = pY - 1 * particleScale;
+        double z0 = pZ - rotationYZ * particleScale - rotationXZ * particleScale;
 
-        float pX = (float) (this.prevPosX + (this.posX - this.prevPosX) * (double) interp - interpPosX);
-        float pY = (float) (this.prevPosY + (this.posY - this.prevPosY) * (double) interp - interpPosY);
-        float pZ = (float) (this.prevPosZ + (this.posZ - this.prevPosZ) * (double) interp - interpPosZ);
+        double x1 = pX - rotationX * particleScale + rotationXY * particleScale;
+        double y1 = pY + 1 * particleScale;
+        double z1 = pZ - rotationYZ * particleScale + rotationXZ * particleScale;
 
-        int brightness = this.getBrightnessForRender(interp);
-        int j = (brightness >> 16) & 65535;
-        int k = brightness & 65535;
+        double x2 = pX + rotationX * particleScale + rotationXY * particleScale;
+        double y2 = pY + 1 * particleScale;
+        double z2 = pZ + rotationYZ * particleScale + rotationXZ * particleScale;
 
-        buf.pos((double) (pX - rotationX * this.particleScale - rotationXY * this.particleScale), (double) (pY - 1 * this.particleScale), (double) (pZ - rotationZ * this.particleScale - rotationXZ * this.particleScale)).tex(uMax, vMax).color(1.0F, 1.0F, 1.0F, this.particleAlpha).lightmap(j, k).endVertex();
-        buf.pos((double) (pX - rotationX * this.particleScale + rotationXY * this.particleScale), (double) (pY + 1 * this.particleScale), (double) (pZ - rotationZ * this.particleScale + rotationXZ * this.particleScale)).tex(uMax, vMin).color(1.0F, 1.0F, 1.0F, this.particleAlpha).lightmap(j, k).endVertex();
-        buf.pos((double) (pX + rotationX * this.particleScale + rotationXY * this.particleScale), (double) (pY + 1 * this.particleScale), (double) (pZ + rotationZ * this.particleScale + rotationXZ * this.particleScale)).tex(uMin, vMin).color(1.0F, 1.0F, 1.0F, this.particleAlpha).lightmap(j, k).endVertex();
-        buf.pos((double) (pX + rotationX * this.particleScale - rotationXY * this.particleScale), (double) (pY - 1 * this.particleScale), (double) (pZ + rotationZ * this.particleScale - rotationXZ * this.particleScale)).tex(uMin, vMax).color(1.0F, 1.0F, 1.0F, this.particleAlpha).lightmap(j, k).endVertex();
+        double x3 = pX + rotationX * particleScale - rotationXY * particleScale;
+        double y3 = pY - 1 * particleScale;
+        double z3 = pZ + rotationYZ * particleScale - rotationXZ * particleScale;
 
-        tessellator.draw();
+        buf.pos(x0, y0, z0).tex(uMax, vMax).color(r, g, b, a).lightmap(j, k).endVertex();
+        buf.pos(x1, y1, z1).tex(uMax, vMin).color(r, g, b, a).lightmap(j, k).endVertex();
+        buf.pos(x2, y2, z2).tex(uMin, vMin).color(r, g, b, a).lightmap(j, k).endVertex();
+        buf.pos(x3, y3, z3).tex(uMin, vMax).color(r, g, b, a).lightmap(j, k).endVertex();
 
-        GlStateManager.doPolygonOffset(0.0F, 0.0F);
+        tess.draw();
+
         GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
         GlStateManager.enableLighting();
+        GlStateManager.depthMask(true);
     }
 
     protected ResourceLocation getTexture() {
-        return texture;
+        return TEXTURE;
     }
 }

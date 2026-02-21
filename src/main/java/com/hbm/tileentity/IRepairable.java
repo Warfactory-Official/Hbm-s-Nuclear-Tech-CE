@@ -67,7 +67,7 @@ public interface IRepairable {
 		
 		if(materials == null) return;
 		
-		List<String> text = new ArrayList();
+		List<String> text = new ArrayList<>();
 		text.add(TextFormatting.GOLD + "Repair with:");
 		
 		for(AStack stack : materials) {

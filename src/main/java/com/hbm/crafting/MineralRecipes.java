@@ -86,12 +86,12 @@ public class MineralRecipes {
 
         add1To9Pair(ModItems.ingot_gh336, ModItems.nugget_gh336);
 
-        for(int i = 0; i < ItemWasteLong.WasteClass.values().length; i++) {
+        for(int i = 0; i < ItemWasteLong.WasteClass.VALUES.length; i++) {
             add1To9PairSameMeta(ModItems.nuclear_waste_long, ModItems.nuclear_waste_long_tiny, i);
             add1To9PairSameMeta(ModItems.nuclear_waste_long_depleted, ModItems.nuclear_waste_long_depleted_tiny, i);
         }
 
-        for(int i = 0; i < ItemWasteShort.WasteClass.values().length; i++) {
+        for(int i = 0; i < ItemWasteShort.WasteClass.VALUES.length; i++) {
             add1To9PairSameMeta(ModItems.nuclear_waste_short, ModItems.nuclear_waste_short_tiny, i);
             add1To9PairSameMeta(ModItems.nuclear_waste_short_depleted, ModItems.nuclear_waste_short_depleted_tiny, i);
         }

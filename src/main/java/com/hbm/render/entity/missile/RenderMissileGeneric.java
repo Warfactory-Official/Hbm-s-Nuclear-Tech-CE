@@ -4,6 +4,7 @@ import com.hbm.entity.missile.EntityMissileTier1;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.NTMRenderHelper;
+import com.hbm.util.RenderUtil;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -23,8 +24,9 @@ public class RenderMissileGeneric extends Render<EntityMissileTier1.EntityMissil
 	@Override
 	public void doRender(EntityMissileTier1.EntityMissileGeneric missile, double x, double y, double z, float entityYaw, float partialTicks) {
 		GlStateManager.pushMatrix();
-		GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
-		GlStateManager.enableLighting();
+        boolean prevLighting = RenderUtil.isLightingEnabled();
+        int prevShade = RenderUtil.getShadeModel();
+        if (!prevLighting) GlStateManager.enableLighting();
 		double[] pos = NTMRenderHelper.getRenderPosFromMissile(missile, partialTicks);
 		x = pos[0];
 		y = pos[1];
@@ -36,8 +38,8 @@ public class RenderMissileGeneric extends Render<EntityMissileTier1.EntityMissil
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
         bindTexture(ResourceManager.missileV2_HE_tex);
         ResourceManager.missileV2.renderAll();
-        GlStateManager.shadeModel(GL11.GL_FLAT);
-        GL11.glPopAttrib();
+        GlStateManager.shadeModel(prevShade);
+        if (!prevLighting) GlStateManager.disableLighting();
 		GlStateManager.popMatrix();
 	}
 

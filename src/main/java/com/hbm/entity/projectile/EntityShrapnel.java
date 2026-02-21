@@ -19,6 +19,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.world.World;
+
 @AutoRegister(name = "entity_shrapnel", trackingRange = 1000)
 public class EntityShrapnel extends EntityThrowable {
 
@@ -128,6 +129,7 @@ public class EntityShrapnel extends EntityThrowable {
 	}
 
 	private void placeMudBlock(RayTraceResult mop) {
+        if (world.isRemote || mop.typeOfHit != Type.BLOCK || mop.getBlockPos() == null) return;
 		BlockPos targetPos = mop.getBlockPos().up();
 		if (world.getBlockState(targetPos).getBlock().isReplaceable(world, targetPos)) {
 			world.setBlockState(targetPos, ModBlocks.mud_block.getDefaultState());

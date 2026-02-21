@@ -1,5 +1,6 @@
 package com.hbm.blocks.gas;
 
+import com.hbm.config.GeneralConfig;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -19,7 +20,7 @@ public class BlockGasExplosive extends BlockGasFlammable {
 
     @Override
     protected void combust(World world, BlockPos startPos) {
-        if (isCombusting.get()) return;
+        if (isCombusting.get() || !GeneralConfig.enableExplosiveGas) return;
         isCombusting.set(true);
         try {
             Queue<BlockPos> processQueue = new ArrayDeque<>();
@@ -36,7 +37,7 @@ public class BlockGasExplosive extends BlockGasFlammable {
                 processedCount++;
                 world.setBlockState(currentPos, Blocks.FIRE.getDefaultState(), 2);
                 world.newExplosion(null, currentPos.getX() + 0.5, currentPos.getY() + 0.5, currentPos.getZ() + 0.5, 3F, true, false);
-                for (EnumFacing facing : EnumFacing.values()) {
+                for (EnumFacing facing : EnumFacing.VALUES) {
                     BlockPos neighborPos = currentPos.offset(facing);
                     if (!visited.contains(neighborPos)) {
                         if (world.getBlockState(neighborPos).getBlock() == this) {

@@ -124,7 +124,7 @@ public class TileEntityMachineVacuumDistill extends TileEntityMachineBase implem
 
     @Override
     public void onChunkUnload() {
-
+        super.onChunkUnload();
         if(audio != null) {
             audio.stopSound();
             audio = null;

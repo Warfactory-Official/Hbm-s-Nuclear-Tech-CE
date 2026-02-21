@@ -1,6 +1,7 @@
 {
 	"variants": {
-		"activated=true": { "model": "hbm:fusion_heater" },
-     	   	"activated=false": { "model": "hbm:fusion_heater" }
+      "normal": {
+        "model": "hbm:fusion_heater"
+      }
 	}
 }

@@ -1,6 +1,6 @@
 package com.hbm.particle;
 
-import com.hbm.main.ModEventHandlerClient;
+import com.hbm.main.client.NTMClientRegistry;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.entity.Entity;
@@ -28,7 +28,7 @@ public class ParticleRocketFlame extends Particle {
 	public ParticleRocketFlame(World worldIn, double posXIn, double posYIn, double posZIn) {
 		super(worldIn, posXIn, posYIn, posZIn);
 		maxAge = 300 + rand.nextInt(50);
-		this.particleTexture = ModEventHandlerClient.particle_base;
+		this.particleTexture = NTMClientRegistry.particle_base;
 		this.randSeed = worldIn.rand.nextInt();
 	}
 

@@ -62,9 +62,7 @@ public class ItemFolderPacket implements IMessage {
 
 				Item item = stack.getItem();
 
-				if (item instanceof ItemForgeFluidIdentifier) {
-					tryMakeItem(p, stack, "plateIron", "dye");
-				} else if (item instanceof ItemAssemblyTemplate || item instanceof ItemChemistryTemplate || item instanceof ItemCrucibleTemplate) {
+				if (item instanceof ItemCrucibleTemplate) {
 					tryMakeItem(p, stack, Items.PAPER, "dye");
 				} else if (item instanceof ItemCassette) {
 					tryMakeItem(p, stack, ModItems.plate_polymer, "plateSteel");

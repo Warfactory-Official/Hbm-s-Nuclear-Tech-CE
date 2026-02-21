@@ -16,12 +16,12 @@
     "hidden": false
   },
   "criteria": {
-    "crafting_hbm_struct_iter_core": {
+    "crafting_hbm_struct_torus_core": {
       "trigger": "minecraft:inventory_changed",
       "conditions": {
         "items": [
           {
-            "item": "hbm:struct_iter_core"
+            "item": "hbm:struct_torus_core"
           }
         ]
       }
@@ -29,7 +29,7 @@
   },
   "requirements": [
     [
-      "crafting_hbm_struct_iter_core"
+      "crafting_hbm_struct_torus_core"
     ]
   ]
 }

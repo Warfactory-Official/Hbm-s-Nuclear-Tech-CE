@@ -61,8 +61,8 @@ public class RenderSiloHatch extends TileEntitySpecialRenderer<TileEntitySiloHat
     }
     w.onEnd(new EndResult(EndType.STAY, null));
     bindTexture(ResourceManager.hatch_tex);
-    ResourceManager.silo_hatch.controller.setAnim(w);
-    ResourceManager.silo_hatch.renderAnimated(time);
+    ResourceManager.silo_hatch_drillgon.controller.setAnim(w);
+    ResourceManager.silo_hatch_drillgon.renderAnimated(time);
 
     GlStateManager.shadeModel(GL11.GL_FLAT);
     GlStateManager.popMatrix();
@@ -70,7 +70,7 @@ public class RenderSiloHatch extends TileEntitySpecialRenderer<TileEntitySiloHat
 
   @Override
   public Item getItemForRenderer() {
-    return Item.getItemFromBlock(ModBlocks.silo_hatch);
+    return Item.getItemFromBlock(ModBlocks.silo_hatch_drillgon);
   }
 
   @Override
@@ -88,7 +88,7 @@ public class RenderSiloHatch extends TileEntitySpecialRenderer<TileEntitySiloHat
         GlStateManager.rotate(-120, 0, 1, 0);
         bindTexture(ResourceManager.hatch_tex);
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
-        ResourceManager.silo_hatch.render();
+        ResourceManager.silo_hatch_drillgon.render();
         GlStateManager.shadeModel(GL11.GL_FLAT);
       }
     };

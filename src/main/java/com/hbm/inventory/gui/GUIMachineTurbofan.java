@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerMachineTurbofan;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.util.GaugeUtil;
 import com.hbm.tileentity.machine.TileEntityMachineTurbofan;
 import net.minecraft.client.Minecraft;
@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.GlStateManager;
 
 public class GUIMachineTurbofan extends GuiInfoContainer {
 	
-	private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/generators/gui_turbofan.png");
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/generators/gui_turbofan.png");
 	private final TileEntityMachineTurbofan turbofan;
 
 	public GUIMachineTurbofan(InventoryPlayer invPlayer, TileEntityMachineTurbofan tedf) {

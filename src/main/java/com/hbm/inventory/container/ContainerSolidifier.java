@@ -1,9 +1,12 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotBattery;
-import com.hbm.inventory.SlotTakeOnly;
-import com.hbm.inventory.SlotUpgrade;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotFiltered;
+import com.hbm.inventory.slot.SlotUpgrade;
+import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.oil.TileEntityMachineSolidifier;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -19,7 +22,7 @@ public class ContainerSolidifier extends Container {
         solidifier = tile;
 
         // Output
-        this.addSlotToContainer(new SlotTakeOnly(tile.inventory, 0, 71, 45));
+        this.addSlotToContainer(SlotFiltered.takeOnly(tile.inventory, 0, 71, 45));
         // Battery
         this.addSlotToContainer(new SlotBattery(tile.inventory, 1, 134, 72));
         // Upgrades
@@ -46,28 +49,10 @@ public class ContainerSolidifier extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        ItemStack var3 = ItemStack.EMPTY;
-        Slot var4 = (Slot) this.inventorySlots.get(index);
-
-        if(var4 != null && var4.getHasStack()) {
-            ItemStack var5 = var4.getStack();
-            var3 = var5.copy();
-
-            if(index <= 4) {
-                if(!this.mergeItemStack(var5, 5, this.inventorySlots.size(), true)) {
-                    return ItemStack.EMPTY;
-                }
-            } else if(!this.mergeItemStack(var5, 0, 4, false)) {
-                return ItemStack.EMPTY;
-            }
-
-            if(var5.getCount() == 0) {
-                var4.putStack(ItemStack.EMPTY);
-            } else {
-                var4.onSlotChanged();
-            }
-        }
-
-        return var3;
+        return InventoryUtil.transferStack(this.inventorySlots, index, 5,
+                Library::isBattery, 2,
+                Library::isMachineUpgrade, 4,
+                s -> s.getItem() instanceof IItemFluidIdentifier, 5
+        );
     }
 }

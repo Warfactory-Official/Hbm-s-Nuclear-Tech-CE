@@ -2,7 +2,6 @@ package com.hbm.items.armor;
 
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.items.ModItems;
-import com.hbm.potion.HbmPotion;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -33,10 +32,6 @@ public class ItemModBathwater extends ItemArmorMod {
 			color = "" + (System.currentTimeMillis() % 1000 < 500 ? TextFormatting.GREEN : TextFormatting.YELLOW);
 			list.add(color + "Inflicts Wither IV on the attacker");
 		}
-		if(this == ModItems.bathwater_mk3){
-			color = "" + (System.currentTimeMillis() % 1000 < 500 ? TextFormatting.RED : TextFormatting.DARK_RED);
-			list.add(color + "Inflicts Radiation 100 RAD/s on the attacker");
-		}
 		list.add("");
 		super.addInformation(stack, worldIn, list, flagIn);
 	}
@@ -51,10 +46,6 @@ public class ItemModBathwater extends ItemArmorMod {
 		if(this == ModItems.bathwater_mk2){
 			color = "" + (System.currentTimeMillis() % 1000 < 500 ? TextFormatting.GREEN : TextFormatting.YELLOW);
 			list.add(color + "  " + stack.getDisplayName() + " (Withers attackers)");
-		}
-		if(this == ModItems.bathwater_mk3){
-			color = "" + (System.currentTimeMillis() % 1000 < 500 ? TextFormatting.RED : TextFormatting.DARK_RED);
-			list.add(color + "  " + stack.getDisplayName() + " (Contaminates attackers)");
 		}
 	}
 	
@@ -74,9 +65,6 @@ public class ItemModBathwater extends ItemArmorMod {
 					
 					else if(this == ModItems.bathwater_mk2)
 						((EntityLivingBase)attacker).addPotionEffect(new PotionEffect(MobEffects.WITHER, 200, 4));
-
-					else if(this == ModItems.bathwater_mk3)
-						((EntityLivingBase)attacker).addPotionEffect(new PotionEffect(HbmPotion.radiation, 300, 99));
 				}
 			}
 		}

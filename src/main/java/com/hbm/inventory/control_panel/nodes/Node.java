@@ -1,6 +1,8 @@
 package com.hbm.inventory.control_panel.nodes;
 
 import com.hbm.inventory.control_panel.*;
+import com.hbm.inventory.control_panel.modular.INodeLoader;
+import com.hbm.inventory.control_panel.modular.NTMControlPanelRegistry;
 import com.hbm.render.NTMRenderHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -26,7 +28,7 @@ public abstract class Node {
 	public DataValue[] evalCache = null;
 	
 	public abstract DataValue evaluate(int idx);
-	public abstract NodeType getType();
+	public abstract float[] getColor();
 	public abstract String getDisplayName();
 	
 	public Node(float x, float y){
@@ -45,8 +47,7 @@ public abstract class Node {
 			outputs.setTag("con"+i, this.outputs.get(i).writeToNBT(new NBTTagCompound(), sys));
 		}
 		tag.setTag("out", outputs);
-		
-		tag.setInteger("T", getType().ordinal());
+
 		tag.setFloat("X", posX);
 		tag.setFloat("Y", posY);
 		tag.setFloat("S", size);
@@ -77,51 +78,12 @@ public abstract class Node {
 	}
 	
 	public static Node nodeFromNBT(NBTTagCompound tag, NodeSystem sys){
-		Node node = null;
-		switch(tag.getString("nodeType")){
-		case "cancelEvent":
-			node = new NodeCancelEvent(0, 0);
-			break;
-		case "eventBroadcast":
-			NBTTagCompound list = tag.getCompoundTag("itemList");
-			List<ControlEvent> l = new ArrayList<>();
-			for(int i = 0; i < list.getKeySet().size(); i ++){
-				l.add(ControlEvent.getRegisteredEvent(list.getString("item"+i)));
-			}
-			node = new NodeEventBroadcast(0, 0, l);
-			break;
-		case "getVar":
-			int ctrlIdx = tag.getInteger("controlIdx");
-			node = new NodeGetVar(0, 0, sys.parent.panel.controls.get(ctrlIdx));
-			break;
-		case "queryBlock":
-			ctrlIdx = tag.getInteger("controlIdx");
-			node = new NodeQueryBlock(0, 0, sys.parent.panel.controls.get(ctrlIdx));
-			break;
-			case "math":
-			node = new NodeMath(0, 0);
-			break;
-		case "boolean":
-			node = new NodeBoolean(0, 0);
-			break;
-		case "function":
-			node = new NodeFunction(0, 0);
-			break;
-		case "buffer":
-			node = new NodeBuffer(0, 0);
-			break;
-		case "conditional":
-			node = new NodeConditional(0, 0);
-			break;
-		case "setVar":
-			int ctrlIdx2 = tag.getInteger("controlIdx");
-			node = new NodeSetVar(0, 0, sys.parent.panel.controls.get(ctrlIdx2));
-			break;
-		case "input":
-			node = new NodeInput(0, 0, null);
-			break;
+		for (INodeLoader loader : NTMControlPanelRegistry.nbtNodeLoaders) {
+			Node node = loader.nodeFromNBT(tag,sys);
+			if (node != null)
+				return node;
 		}
-		return node;
+		return null;
 	}
 	
 	public void setPosition(float x, float y){
@@ -147,7 +109,7 @@ public abstract class Node {
 			NTMRenderHelper.drawGuiRectBatchedColor(posX-edge, posY+6+size, 0, 0.984375F, 40+edge*2, 1+edge, 0.625F, 1, color[0], color[1], color[2], 1);
 			Tessellator.getInstance().draw();
 		}
-		color = getType().getColor();
+		color = getColor();
 		Tessellator.getInstance().getBuffer().begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
 		NTMRenderHelper.drawGuiRectBatchedColor(posX, posY, 0, 0, 40, 6, 0.625F, 0.09375F, 1, 1, 1, 1);
 		NTMRenderHelper.drawGuiRectBatchedColor(posX, posY+6, 0, 0.09375F, 40, size, 0.625F, 0.109375F, 1, 1, 1, 1);

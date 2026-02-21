@@ -1,5 +1,6 @@
 package com.hbm.blocks.gas;
 
+import com.hbm.config.GeneralConfig;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.util.ArmorRegistry;
@@ -24,12 +25,10 @@ public class BlockGasRadon extends BlockGasBase {
 
     @Override
     public void onEntityCollision(World worldIn, BlockPos pos, IBlockState state, Entity entity) {
-        if (!(entity instanceof EntityLivingBase))
+        if (!(entity instanceof EntityLivingBase entityLiving) || !GeneralConfig.enableRadon)
             return;
 
-        EntityLivingBase entityLiving = (EntityLivingBase) entity;
-
-        if (ArmorRegistry.hasProtection(entityLiving, EntityEquipmentSlot.HEAD, HazardClass.RAD_GAS)) {
+        if (ArmorRegistry.hasProtection(entityLiving, EntityEquipmentSlot.HEAD, HazardClass.PARTICLE_FINE)) {
             ArmorUtil.damageGasMaskFilter(entityLiving, 1);
             ContaminationUtil.contaminate(entityLiving, HazardType.RADIATION, ContaminationType.CREATIVE, 0.05F);
         } else {
@@ -52,7 +51,11 @@ public class BlockGasRadon extends BlockGasBase {
 
     @Override
     public void updateTick(World world, BlockPos pos, IBlockState state, Random rand) {
-        if (!world.isRemote && rand.nextInt(20) == 0) {
+        if(world.isRemote){
+            return;
+        }
+
+        if (rand.nextInt(20) == 0 || !GeneralConfig.enableRadon) {
             world.setBlockToAir(pos);
             return;
         }

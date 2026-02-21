@@ -9,107 +9,65 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.items.IItemHandler;
+import org.jetbrains.annotations.Nullable;
 
 public class FluidLoaderForge implements IFluidLoadingHandler {
 
+    private static @Nullable IFluidHandlerItem getIFluidHandler(IItemHandler slots, int in) {
+        ItemStack extracted = slots.extractItem(in, 1, true);
+        if (extracted.isEmpty()) return null;
+        if (NTMFluidCapabilityHandler.isNtmFluidContainer(extracted.getItem())) return null;
+        if (!extracted.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) return null;
+        return extracted.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
+    }
+
     @Override
     public boolean fillItem(IItemHandler slots, int in, int out, FluidTankNTM tank) {
-        if (tank.pressure != 0) {
-            return false;
-        }
-        ItemStack inputStack = slots.getStackInSlot(in);
-        FluidType tankFluidType = tank.getTankType();
-        if (inputStack.isEmpty() || NTMFluidCapabilityHandler.isHbmFluidContainer(inputStack.getItem()) || tank.getFill() <= 0 || tankFluidType == Fluids.NONE) {
-            return false;
-        }
-        Fluid forgeFluid = tankFluidType.getFF();
-        if (forgeFluid == null) {
-            return false;
-        }
-        ItemStack singleItemCopy = inputStack.copy();
-        singleItemCopy.setCount(1);
-        if (!singleItemCopy.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
-            return false;
-        }
-        IFluidHandlerItem handler = singleItemCopy.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
-        if (handler == null) {
-            return false;
-        }
-
-        int amountToTransfer = handler.fill(new FluidStack(forgeFluid, tank.getFill()), false);
-
-        if (amountToTransfer <= 0) {
-            return false;
-        }
-
-        handler.fill(new FluidStack(forgeFluid, amountToTransfer), true);
-        ItemStack filledContainer = handler.getContainer();
-
-        ItemStack outputStack = slots.getStackInSlot(out);
-        if (!outputStack.isEmpty() && (!ItemStack.areItemsEqual(outputStack, filledContainer) || !ItemStack.areItemStackTagsEqual(outputStack, filledContainer) || outputStack.getCount() >= outputStack.getMaxStackSize())) {
-            return false;
-        }
-        tank.setFill(tank.getFill() - amountToTransfer);
-        slots.getStackInSlot(in).shrink(1);
-        if (outputStack.isEmpty()) {
-            slots.insertItem(out, filledContainer, false);
-        } else {
-            slots.getStackInSlot(out).grow(1);
-        }
+        if (tank.pressure != 0 || tank.getFill() <= 0) return false;
+        FluidType tankType = tank.getTankType();
+        if (tankType == Fluids.NONE) return false;
+        Fluid forgeFluid = tankType.getFF();
+        if (forgeFluid == null) return true;
+        IFluidHandlerItem handler = getIFluidHandler(slots, in);
+        if (handler == null) return false;
+        int offer = tank.getFill();
+        int canFill = handler.fill(new FluidStack(forgeFluid, offer), false);
+        if (canFill <= 0) return false;
+        int actualFill = handler.fill(new FluidStack(forgeFluid, canFill), true);
+        if (actualFill <= 0) return false;
+        ItemStack container = handler.getContainer();
+        if (!slots.insertItem(out, container, true).isEmpty()) return false;
+        slots.extractItem(in, 1, false);
+        tank.setFill(tank.getFill() - actualFill);
+        slots.insertItem(out, container, false);
         return true;
     }
 
     @Override
     public boolean emptyItem(IItemHandler slots, int in, int out, FluidTankNTM tank) {
-        ItemStack inputStack = slots.getStackInSlot(in);
-        if (inputStack.isEmpty() || NTMFluidCapabilityHandler.isHbmFluidContainer(inputStack.getItem())) return false;
-
-        ItemStack singleItemCopy = inputStack.copy();
-        singleItemCopy.setCount(1);
-
-        if (!singleItemCopy.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
-            return false;
+        IFluidHandlerItem handler = getIFluidHandler(slots, in);
+        if (handler == null) return true;
+        FluidStack contained = handler.drain(Integer.MAX_VALUE, false);
+        if (contained == null || contained.amount <= 0) return false;
+        FluidType itemType = NTMFluidCapabilityHandler.getFluidType(contained.getFluid());
+        if (itemType == null || itemType == Fluids.NONE) return false;
+        FluidType tankType = tank.getTankType();
+        if (tankType != Fluids.NONE && tankType != itemType) return false;
+        int space = tank.getMaxFill() - tank.getFill();
+        if (space <= 0) return false;
+        int toDrain = Math.min(space, contained.amount);
+        if (toDrain <= 0) return false;
+        FluidStack drained = handler.drain(toDrain, true);
+        if (drained == null || drained.amount <= 0) return false;
+        ItemStack container = handler.getContainer();
+        if (!slots.insertItem(out, container, true).isEmpty()) {
+            tank.setFill(tank.getFill() + drained.amount);
+            return true;
         }
-
-        IFluidHandlerItem handler = singleItemCopy.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
-        if (handler == null) {
-            return false;
-        }
-        FluidStack fluidInContainer = handler.drain(Integer.MAX_VALUE, false);
-
-        if (fluidInContainer == null || fluidInContainer.amount <= 0) {
-            return false;
-        }
-        FluidType ntmType = NTMFluidCapabilityHandler.getFluidType(fluidInContainer.getFluid());
-
-        if (ntmType == null || ntmType == Fluids.NONE) {
-            return false;
-        }
-        if (tank.getTankType() != Fluids.NONE && tank.getTankType() != ntmType) {
-            return false;
-        }
-        int spaceInTank = tank.getMaxFill() - tank.getFill();
-        int amountToDrain = Math.min(spaceInTank, fluidInContainer.amount);
-
-        if (amountToDrain <= 0) {
-            return false;
-        }
-        handler.drain(amountToDrain, true);
-        ItemStack emptyContainer = handler.getContainer();
-        ItemStack outputStack = slots.getStackInSlot(out);
-        if (!outputStack.isEmpty() && (!ItemStack.areItemsEqual(outputStack, emptyContainer) || !ItemStack.areItemStackTagsEqual(outputStack, emptyContainer) || outputStack.getCount() >= outputStack.getMaxStackSize())) {
-            return false;
-        }
-        if (tank.getTankType() == Fluids.NONE) {
-            tank.setTankType(ntmType);
-        }
-        tank.setFill(tank.getFill() + amountToDrain);
-        slots.getStackInSlot(in).shrink(1);
-        if (outputStack.isEmpty()) {
-            slots.insertItem(out, emptyContainer, false);
-        } else {
-            slots.getStackInSlot(out).grow(1);
-        }
+        if (tankType == Fluids.NONE) tank.setTankType(itemType);
+        slots.extractItem(in, 1, false);
+        tank.setFill(tank.getFill() + drained.amount);
+        slots.insertItem(out, container, false);
         return true;
     }
 }

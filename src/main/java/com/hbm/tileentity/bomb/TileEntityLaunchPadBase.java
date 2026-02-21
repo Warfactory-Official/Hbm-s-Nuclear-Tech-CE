@@ -1,6 +1,7 @@
 package com.hbm.tileentity.bomb;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.api.entity.IThrowable;
 import com.hbm.api.fluid.IFluidStandardReceiver;
 import com.hbm.api.item.IDesignatorItem;
 import com.hbm.config.GeneralConfig;
@@ -10,7 +11,6 @@ import com.hbm.entity.missile.EntityMissileTier1.*;
 import com.hbm.entity.missile.EntityMissileTier2.*;
 import com.hbm.entity.missile.EntityMissileTier3.*;
 import com.hbm.entity.missile.EntityMissileTier4.*;
-import com.hbm.entity.projectile.EntityThrowableInterp;
 import com.hbm.handler.CompatHandler;
 import com.hbm.interfaces.IBomb.BombReturnCode;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
@@ -33,6 +33,7 @@ import com.hbm.tileentity.IRadarCommandReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.TrackerUtil;
 import io.netty.buffer.ByteBuf;
+import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap;
 import li.cil.oc.api.machine.Arguments;
 import li.cil.oc.api.machine.Callback;
 import li.cil.oc.api.machine.Context;
@@ -66,44 +67,49 @@ import java.util.Set;
 public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardReceiver, IGUIProvider, IRadarCommandReceiver, SimpleComponent, CompatHandler.OCComponent, IFluidCopiable {
 	
 	/** Automatic instantiation of generic missiles, i.e. everything that both extends EntityMissileBaseNT and needs a designator */
-	public static final HashMap<ComparableStack, Class<? extends EntityMissileBaseNT>> missiles = new HashMap<>();
-	
+	public static final Object2ReferenceOpenHashMap<ComparableStack, MissileFactory> missiles = new Object2ReferenceOpenHashMap<>(28);
+
+    @FunctionalInterface
+    public interface MissileFactory {
+        EntityMissileBaseNT create(World world, float x, float y, float z, int targetX, int targetZ);
+    }
+
 	public static void registerLaunchables() {
 
 		//Tier 0
-		missiles.put(new ComparableStack(ModItems.missile_micro), EntityMissileMicro.class);
-		missiles.put(new ComparableStack(ModItems.missile_schrabidium), EntityMissileSchrabidium.class);
-		missiles.put(new ComparableStack(ModItems.missile_bhole), EntityMissileBHole.class);
-		missiles.put(new ComparableStack(ModItems.missile_taint), EntityMissileTaint.class);
-		missiles.put(new ComparableStack(ModItems.missile_emp), EntityMissileEMP.class);
+		missiles.put(new ComparableStack(ModItems.missile_micro), EntityMissileMicro::new);
+		missiles.put(new ComparableStack(ModItems.missile_schrabidium), EntityMissileSchrabidium::new);
+		missiles.put(new ComparableStack(ModItems.missile_bhole), EntityMissileBHole::new);
+		missiles.put(new ComparableStack(ModItems.missile_taint), EntityMissileTaint::new);
+		missiles.put(new ComparableStack(ModItems.missile_emp), EntityMissileEMP::new);
 		//Tier 1
-		missiles.put(new ComparableStack(ModItems.missile_generic), EntityMissileGeneric.class);
-		missiles.put(new ComparableStack(ModItems.missile_decoy), EntityMissileDecoy.class);
-		missiles.put(new ComparableStack(ModItems.missile_incendiary), EntityMissileIncendiary.class);
-		missiles.put(new ComparableStack(ModItems.missile_cluster), EntityMissileCluster.class);
-		missiles.put(new ComparableStack(ModItems.missile_buster), EntityMissileBunkerBuster.class);
+		missiles.put(new ComparableStack(ModItems.missile_generic), EntityMissileGeneric::new);
+		missiles.put(new ComparableStack(ModItems.missile_decoy), EntityMissileDecoy::new);
+		missiles.put(new ComparableStack(ModItems.missile_incendiary), EntityMissileIncendiary::new);
+		missiles.put(new ComparableStack(ModItems.missile_cluster), EntityMissileCluster::new);
+		missiles.put(new ComparableStack(ModItems.missile_buster), EntityMissileBunkerBuster::new);
 		//Tier 2
-		missiles.put(new ComparableStack(ModItems.missile_strong), EntityMissileStrong.class);
-		missiles.put(new ComparableStack(ModItems.missile_incendiary_strong), EntityMissileIncendiaryStrong.class);
-		missiles.put(new ComparableStack(ModItems.missile_cluster_strong), EntityMissileClusterStrong.class);
-		missiles.put(new ComparableStack(ModItems.missile_buster_strong), EntityMissileBusterStrong.class);
-		missiles.put(new ComparableStack(ModItems.missile_emp_strong), EntityMissileEMPStrong.class);
+		missiles.put(new ComparableStack(ModItems.missile_strong), EntityMissileStrong::new);
+		missiles.put(new ComparableStack(ModItems.missile_incendiary_strong), EntityMissileIncendiaryStrong::new);
+		missiles.put(new ComparableStack(ModItems.missile_cluster_strong), EntityMissileClusterStrong::new);
+		missiles.put(new ComparableStack(ModItems.missile_buster_strong), EntityMissileBusterStrong::new);
+		missiles.put(new ComparableStack(ModItems.missile_emp_strong), EntityMissileEMPStrong::new);
 		//Tier 3
-		missiles.put(new ComparableStack(ModItems.missile_burst), EntityMissileBurst.class);
-		missiles.put(new ComparableStack(ModItems.missile_inferno), EntityMissileInferno.class);
-		missiles.put(new ComparableStack(ModItems.missile_rain), EntityMissileRain.class);
-		missiles.put(new ComparableStack(ModItems.missile_drill), EntityMissileDrill.class);
-		missiles.put(new ComparableStack(ModItems.missile_endo), EntityMissileEndo.class);
-		missiles.put(new ComparableStack(ModItems.missile_exo), EntityMissileExo.class);
-		//missiles.put(new ComparableStack(ModItems.missile_shuttle), EntityMissileShuttle.class);
+		missiles.put(new ComparableStack(ModItems.missile_burst), EntityMissileBurst::new);
+		missiles.put(new ComparableStack(ModItems.missile_inferno), EntityMissileInferno::new);
+		missiles.put(new ComparableStack(ModItems.missile_rain), EntityMissileRain::new);
+		missiles.put(new ComparableStack(ModItems.missile_drill), EntityMissileDrill::new);
+		missiles.put(new ComparableStack(ModItems.missile_endo), EntityMissileEndo::new);
+		missiles.put(new ComparableStack(ModItems.missile_exo), EntityMissileExo::new);
+		missiles.put(new ComparableStack(ModItems.missile_shuttle), EntityMissileShuttle::new);
 		//Tier 4
-		missiles.put(new ComparableStack(ModItems.missile_nuclear), EntityMissileNuclear.class);
-		missiles.put(new ComparableStack(ModItems.missile_nuclear_cluster), EntityMissileMirv.class);
-		missiles.put(new ComparableStack(ModItems.missile_volcano), EntityMissileVolcano.class);
-		missiles.put(new ComparableStack(ModItems.missile_doomsday), EntityMissileDoomsday.class);
-		missiles.put(new ComparableStack(ModItems.missile_n2), EntityMissileN2.class);
+		missiles.put(new ComparableStack(ModItems.missile_nuclear), EntityMissileNuclear::new);
+		missiles.put(new ComparableStack(ModItems.missile_nuclear_cluster), EntityMissileMirv::new);
+		missiles.put(new ComparableStack(ModItems.missile_volcano), EntityMissileVolcano::new);
+		missiles.put(new ComparableStack(ModItems.missile_doomsday), EntityMissileDoomsday::new);
+		missiles.put(new ComparableStack(ModItems.missile_n2), EntityMissileN2::new);
 		
-		missiles.put(new ComparableStack(ModItems.missile_stealth), EntityMissileStealth.class);
+		missiles.put(new ComparableStack(ModItems.missile_stealth), EntityMissileStealth::new);
 	}
 
 	public ItemStack toRender;
@@ -337,43 +343,36 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase impl
 		
 		return false;
 	}
-	
-	public Entity instantiateMissile(int targetX, int targetZ) {
-		
-		if(inventory.getStackInSlot(0).isEmpty()) return null;
-		
-		Class<? extends EntityMissileBaseNT> clazz = TileEntityLaunchPadBase.missiles.get(new ComparableStack(inventory.getStackInSlot(0)).makeSingular());
-		
-		if(clazz != null) {
-			try {
-				EntityMissileBaseNT missile = clazz.getConstructor(World.class, float.class, float.class, float.class, int.class, int.class).newInstance(world, pos.getX() + 0.5F, pos.getY() + (float) getLaunchOffset() /* Position arguments need to be floats, jackass */, pos.getZ() + 0.5F, targetX, targetZ);
-				if(GeneralConfig.enableExtendedLogging) MainRegistry.logger.log(Level.INFO, "[MISSILE] Tried to launch missile at " + pos.getX() + " / " + pos.getY() + " / " + pos.getZ() + " to " + pos.getX() + " / " + pos.getZ() + "!");
-				byte rot = (byte) MathHelper.clamp(this.getBlockMetadata() - 10, 2, 5);
-				if (missile instanceof EntityMissileTier4) {
-					missile.getDataManager().set(EntityMissileTier4.ROT_IDX, rot);
-				}
-				return missile;
-			} catch(Exception ignored) { }
-		}
 
-		if(inventory.getStackInSlot(0).getItem() == ModItems.missile_anti_ballistic) {
-			EntityMissileAntiBallistic missile = new EntityMissileAntiBallistic(world);
-			missile.posX = pos.getX() + 0.5D;
-			missile.posY = pos.getY() + getLaunchOffset();
-			missile.posZ = pos.getZ() + 0.5D;
-			return missile;
-		}
-		
-		return null;
-	}
+    public Entity instantiateMissile(int targetX, int targetZ) {
+        ItemStack stack = inventory.getStackInSlot(0);
+        if (stack.isEmpty()) return null;
+        if (stack.getItem() == ModItems.missile_anti_ballistic) {
+            EntityMissileAntiBallistic missile = new EntityMissileAntiBallistic(world);
+            missile.posX = pos.getX() + 0.5D;
+            missile.posY = pos.getY() + getLaunchOffset();
+            missile.posZ = pos.getZ() + 0.5D;
+            return missile;
+        }
+        MissileFactory factory = missiles.get(new ComparableStack(stack).makeSingular());
+        if (factory == null) return null;
+        EntityMissileBaseNT missile = factory.create(world, pos.getX() + 0.5F, pos.getY() + (float) getLaunchOffset(), pos.getZ() + 0.5F, targetX, targetZ);
+        if (GeneralConfig.enableExtendedLogging) {
+            MainRegistry.logger.info("[MISSILE] Tried to launch missile at {} / {} / {} to {} / {}!", pos.getX(), pos.getY(), pos.getZ(), targetX,
+                    targetZ);
+        }
+        byte rot = (byte) MathHelper.clamp(this.getBlockMetadata() - 10, 2, 5);
+        if (missile instanceof EntityMissileTier4) {
+            missile.getDataManager().set(EntityMissileTier4.ROT_IDX, rot);
+        }
+        return missile;
+    }
 	
 	public void finalizeLaunch(Entity missile) {
 		Entity detonatorEntity = ModContext.DETONATOR_CONTEXT.get();
 		if (detonatorEntity instanceof EntityLivingBase entityLivingBase){
-			if (missile instanceof EntityThrowableInterp throwableInterp)
-				throwableInterp.setThrower(entityLivingBase);
-			else if (missile instanceof EntityMissileBaseAdvanced missileBaseAdvanced)
-				missileBaseAdvanced.setThrower(entityLivingBase);
+			if (missile instanceof IThrowable throwable)
+				throwable.setThrower(entityLivingBase);
 		}
 		world.spawnEntity(missile);
 		TrackerUtil.setTrackingRange(world, missile, 500);

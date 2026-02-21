@@ -1,11 +1,11 @@
 package com.hbm.items.machine;
 
+import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModSoundTypes;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.network.TileEntityPipeBaseNT;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.color.IItemColor;
@@ -28,7 +28,7 @@ import java.util.List;
 
 public class ItemFFFluidDuct extends Item {
 	public static final ModelResourceLocation ductLoc = new ModelResourceLocation(
-			RefStrings.MODID + ":ff_fluid_duct", "inventory");
+			Tags.MODID + ":ff_fluid_duct", "inventory");
 	private static final List<ItemFFFluidDuct> INSTANCES = new ArrayList<>();
 
 	public ItemFFFluidDuct(String s) {

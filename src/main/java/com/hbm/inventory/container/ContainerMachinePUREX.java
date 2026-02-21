@@ -1,7 +1,9 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotCraftingOutput;
-import com.hbm.inventory.SlotNonRetarded;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotCraftingOutput;
+import com.hbm.inventory.slot.SlotNonRetarded;
+import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.Library;
@@ -18,11 +20,12 @@ public class ContainerMachinePUREX extends ContainerBase {
         super(invPlayer, chemicalPlant);
 
         // Battery
-        this.addSlotToContainer(new SlotNonRetarded(chemicalPlant, 0, 152, 81));
+        this.addSlotToContainer(new SlotBattery(chemicalPlant, 0, 152, 81));
         // Schematic
         this.addSlotToContainer(new SlotNonRetarded(chemicalPlant, 1, 35, 126));
         // Upgrades
-        this.addSlots(chemicalPlant, 2, 152, 108, 2, 1);
+        this.addSlotToContainer(new SlotUpgrade(chemicalPlant, 2, 152, 108));
+        this.addSlotToContainer(new SlotUpgrade(chemicalPlant, 3, 152, 126));
         // Solid Input
         this.addSlots(chemicalPlant, 4, 8, 90, 1, 3);
         // Solid Output
@@ -47,7 +50,7 @@ public class ContainerMachinePUREX extends ContainerBase {
                 }
             } else {
 
-                if (Library.isItemBattery(slotOriginal)) {
+                if (Library.isBattery(slotOriginal)) {
                     if (!this.mergeItemStack(slotStack, 0, 1, false)) return ItemStack.EMPTY;
                 } else if (slotOriginal.getItem() instanceof ItemBlueprints) {
                     if (!this.mergeItemStack(slotStack, 1, 2, false)) return ItemStack.EMPTY;

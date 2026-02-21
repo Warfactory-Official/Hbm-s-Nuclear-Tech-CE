@@ -1,11 +1,12 @@
 package com.hbm.inventory.gui;
 
-import com.hbm.inventory.recipes.RefineryRecipes;
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerMachineRefinery;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.lib.RefStrings;
+import com.hbm.inventory.recipes.RefineryRecipes;
 import com.hbm.tileentity.machine.oil.TileEntityMachineRefinery;
+import com.hbm.util.RenderUtil;
 import com.hbm.util.Tuple;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -19,7 +20,7 @@ import java.awt.*;
 
 public class GUIMachineRefinery extends GuiInfoContainer {
 
-	private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/gui_refinery.png");
+	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/gui_refinery.png");
 	private TileEntityMachineRefinery refinery;
 
 	public GUIMachineRefinery(InventoryPlayer invPlayer, TileEntityMachineRefinery tedf) {
@@ -56,13 +57,15 @@ public class GUIMachineRefinery extends GuiInfoContainer {
 
 	@Override
 	protected void drawGuiContainerBackgroundLayer(float p_146976_1_, int p_146976_2_, int p_146976_3_) {
+        boolean wasBlendEnabled = RenderUtil.isBlendEnabled();
+        boolean wasLightingEnabled = RenderUtil.isLightingEnabled();
+        boolean wasDepthTestEnabled = RenderUtil.isDepthEnabled();
 		GlStateManager.pushMatrix();
 		GlStateManager.enableBlend();
 		GlStateManager.disableLighting();
 		GlStateManager.disableDepth();
 		GlStateManager.colorMask(true, true, true, false);
 		super.drawDefaultBackground();
-		GL11.glPushAttrib(GL11.GL_ENABLE_BIT);
 		GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
@@ -135,10 +138,9 @@ public class GUIMachineRefinery extends GuiInfoContainer {
 		refinery.tanks[4].renderTank(guiLeft + 146, guiTop + 95, this.zLevel, 16, 52);
 
 		GlStateManager.colorMask(true, true, true, true);
-		GlStateManager.enableLighting();
-		GlStateManager.enableDepth();
-		GlStateManager.disableBlend();
+		if (wasLightingEnabled) GlStateManager.enableLighting(); else GlStateManager.disableLighting();
+		if (wasDepthTestEnabled) GlStateManager.enableDepth(); else GlStateManager.disableDepth();
+		if (wasBlendEnabled) GlStateManager.enableBlend(); else GlStateManager.disableBlend();
 		GlStateManager.popMatrix();
-		GL11.glPopAttrib();
 	}
 }

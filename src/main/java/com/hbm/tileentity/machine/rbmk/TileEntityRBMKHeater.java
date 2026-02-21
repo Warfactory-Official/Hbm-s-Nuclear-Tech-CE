@@ -4,6 +4,7 @@ import com.hbm.api.fluid.IFluidStandardTransceiver;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.capability.NTMFluidHandlerWrapper;
 import com.hbm.entity.projectile.EntityRBMKDebris.DebrisType;
+import com.hbm.handler.CompatHandler;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.container.ContainerRBMKHeater;
 import com.hbm.inventory.control_panel.DataValue;
@@ -16,8 +17,12 @@ import com.hbm.inventory.gui.GUIRBMKHeater;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IGUIProvider;
-import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole.ColumnType;
+import com.hbm.tileentity.machine.rbmk.RBMKColumn.ColumnType;
 import io.netty.buffer.ByteBuf;
+import li.cil.oc.api.machine.Arguments;
+import li.cil.oc.api.machine.Callback;
+import li.cil.oc.api.machine.Context;
+import li.cil.oc.api.network.SimpleComponent;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -26,15 +31,16 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.Map;
-
+@Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 @AutoRegister
-public class TileEntityRBMKHeater extends TileEntityRBMKSlottedBase implements IFluidStandardTransceiver, IGUIProvider {
+public class TileEntityRBMKHeater extends TileEntityRBMKSlottedBase implements IFluidStandardTransceiver, IGUIProvider, SimpleComponent, CompatHandler.OCComponent {
 
 	public FluidTankNTM feed;
 	public FluidTankNTM steam;
@@ -170,14 +176,14 @@ public class TileEntityRBMKHeater extends TileEntityRBMKSlottedBase implements I
 	}
 
 	@Override
-	public NBTTagCompound getNBTForConsole() {
-		NBTTagCompound data = new NBTTagCompound();
-		data.setInteger("water", this.feed.getFill());
-		data.setInteger("maxWater", this.feed.getMaxFill());
-		data.setInteger("steam", this.steam.getFill());
-		data.setInteger("maxSteam", this.steam.getMaxFill());
-		data.setShort("type", (short)this.feed.getTankType().getID());
-		data.setShort("hottype", (short)this.steam.getTankType().getID());
+	public RBMKColumn getConsoleData() {
+		RBMKColumn.HeaterColumn data = (RBMKColumn.HeaterColumn) super.getConsoleData();
+		data.water = this.feed.getFill();
+		data.maxWater = this.feed.getMaxFill();
+		data.steam = this.steam.getFill();
+		data.maxSteam = this.steam.getMaxFill();
+		data.coldType = (short)this.feed.getTankType().getID();
+		data.hotType = (short)this.steam.getTankType().getID();
 		return data;
 	}
 
@@ -225,6 +231,65 @@ public class TileEntityRBMKHeater extends TileEntityRBMKSlottedBase implements I
 			);
 		}
 		return super.getCapability(capability, facing);
+	}
+
+	@Override
+	@Optional.Method(modid = "opencomputers")
+	public String getComponentName() {
+		return "rbmk_heater";
+	}
+
+	@Callback(direct = true)
+	@Optional.Method(modid = "opencomputers")
+	public Object[] getHeat(Context context, Arguments args) {
+		return new Object[] {heat};
+	}
+
+	@Callback(direct = true)
+	@Optional.Method(modid = "opencomputers")
+	public Object[] getFill(Context context, Arguments args) {
+		return new Object[] {feed.getFill()};
+	}
+
+	@Callback(direct = true)
+	@Optional.Method(modid = "opencomputers")
+	public Object[] getFillMax(Context context, Arguments args) {
+		return new Object[] {feed.getMaxFill()};
+	}
+	@Callback(direct = true)
+	@Optional.Method(modid = "opencomputers")
+	public Object[] getExport(Context context, Arguments args) {
+		return new Object[] {steam.getFill()};
+	}
+
+	@Callback(direct = true)
+	@Optional.Method(modid = "opencomputers")
+	public Object[] getExportMax(Context context, Arguments args) {
+		return new Object[] {steam.getMaxFill()};
+	}
+
+	@Callback(direct = true)
+	@Optional.Method(modid = "opencomputers")
+	public Object[] getFillType(Context context, Arguments args) {
+		return new Object[] {feed.getTankType().getName()};
+	}
+
+	@Callback(direct = true)
+	@Optional.Method(modid = "opencomputers")
+	public Object[] getExportType(Context context, Arguments args) {
+		return new Object[] {steam.getTankType().getName()};
+	}
+
+	@Callback(direct = true)
+	@Optional.Method(modid = "opencomputers")
+	public Object[] getInfo(Context context, Arguments args) {
+		return new Object[] {heat, feed.getFill(), feed.getMaxFill(), steam.getFill(), steam.getMaxFill(), feed.getTankType().getName(), steam.getTankType().getName(), pos.getX(), pos.getY(), pos.getZ()};
+	}
+
+	@Callback(direct = true)
+	@Optional.Method(modid = "opencomputers")
+	public Object[] getCoordinates(Context context, Arguments args) {
+		return new Object[] {pos.getX(), pos.getY(), pos.getZ()};
 	}
 
 	@Override

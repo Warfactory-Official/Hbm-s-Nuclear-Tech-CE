@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.hbm.Tags;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.init.SoundEvents;
@@ -12,7 +13,6 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
-import com.hbm.lib.RefStrings;
 import com.hbm.qmaw.components.*;
 
 import net.minecraft.client.Minecraft;
@@ -24,7 +24,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GuiQMAW extends GuiScreen {
 
-    protected static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID, "textures/gui/gui_wiki.png");
+    protected static final ResourceLocation texture = new ResourceLocation(Tags.MODID, "textures/gui/gui_wiki.png");
 
     public String title;
     public String qmawID;

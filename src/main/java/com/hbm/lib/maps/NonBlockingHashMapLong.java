@@ -13,27 +13,21 @@
  */
 package com.hbm.lib.maps;
 
-import it.unimi.dsi.fastutil.longs.AbstractLong2ObjectMap;
-import it.unimi.dsi.fastutil.longs.AbstractLongSet;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.HashCommon;
+import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.*;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicLongFieldUpdater;
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.LongFunction;
 
-import static com.hbm.lib.maps.NonBlockingHashMap.DUMMY_VOLATILE;
-import static com.hbm.lib.UnsafeHolder.U;
-import static com.hbm.lib.UnsafeHolder.fieldOffset;
+import static com.hbm.lib.internal.UnsafeHolder.U;
+import static com.hbm.lib.internal.UnsafeHolder.fieldOffset;
 
 
 /**
@@ -107,7 +101,7 @@ public class NonBlockingHashMapLong<TypeV>
     private static final int REPROBE_LIMIT=10; // Too many reprobes then force a table-resize
 
     // --- Bits to allow Unsafe access to arrays
-    private static final int _Obase  = U.arrayBaseOffset(Object[].class);
+    private static final long _Obase  = U.arrayBaseOffset(Object[].class);
     private static final int _Oscale = U.arrayIndexScale(Object[].class);
     private static long rawIndex(final Object[] ary, final int idx) {
         assert idx >= 0 && idx < ary.length;
@@ -115,7 +109,7 @@ public class NonBlockingHashMapLong<TypeV>
         // - or 2^28 - or about 268M - 8-byte pointer elements.
         return _Obase + ((long)idx * _Oscale);
     }
-    private static final int _Lbase  = U.arrayBaseOffset(long[].class);
+    private static final long _Lbase  = U.arrayBaseOffset(long[].class);
     private static final int _Lscale = U.arrayIndexScale(long[].class);
     private static long rawIndex(final long[] ary, final int idx) {
         assert idx >= 0 && idx < ary.length;
@@ -129,7 +123,7 @@ public class NonBlockingHashMapLong<TypeV>
     private static final long _val_1_offset = fieldOffset(NonBlockingHashMapLong.class, "_val_1");
 
     private final boolean CAS( final long offset, final Object old, final Object nnn ) {
-        return U.compareAndSwapObject(this, offset, old, nnn );
+        return U.compareAndSetReference(this, offset, old, nnn);
     }
 
     // --- Adding a 'prime' bit onto Values via wrapping with a junk wrapper class
@@ -435,17 +429,6 @@ public class NonBlockingHashMapLong<TypeV>
         topchm.help_copy_impl(false);
     }
 
-    // --- hash ----------------------------------------------------------------
-    // Helper function to spread lousy hashCodes Throws NPE for null Key, on
-    // purpose - as the first place to conveniently toss the required NPE for a
-    // null Key.
-    private static final int hash(long h) {
-        h ^= (h>>>20) ^ (h>>>12);
-        h ^= (h>>> 7) ^ (h>>> 4);
-        h += h<<7; // smear low bits up high, for hashcodes that only differ by 1
-        return (int)h;
-    }
-
 
     // --- CHM -----------------------------------------------------------------
     // The control structure for the NonBlockingHashMapLong
@@ -478,11 +461,11 @@ public class NonBlockingHashMapLong<TypeV>
         // the required memory orderings.  It monotonically transits from null to
         // set (once).
         volatile CHM _newchm;
-        private static final AtomicReferenceFieldUpdater<CHM,CHM> _newchmUpdater =
-                AtomicReferenceFieldUpdater.newUpdater(CHM.class,CHM.class, "_newchm");
+        private static final long _newchmOffset =
+                fieldOffset(CHM.class, "_newchm");
         // Set the _newchm field if we can.  AtomicUpdaters do not fail spuriously.
         boolean CAS_newchm( CHM newchm ) {
-            return _newchmUpdater.compareAndSet(this,null,newchm);
+            return U.compareAndSetReference(this, _newchmOffset,null,newchm);
         }
         // Sometimes many threads race to create a new very large table.  Only 1
         // wins the race, but the losers all allocate a junk large table with
@@ -497,16 +480,16 @@ public class NonBlockingHashMapLong<TypeV>
         // could in parallel initialize the array.  Java does not allow
         // un-initialized array creation (especially of ref arrays!).
         volatile long _resizers;    // count of threads attempting an initial resize
-        private static final AtomicLongFieldUpdater<CHM> _resizerUpdater =
-                AtomicLongFieldUpdater.newUpdater(CHM.class, "_resizers");
+        private static final long _resizersOffset =
+                fieldOffset(CHM.class, "_resizers");
 
         // --- key,val -------------------------------------------------------------
         // Access K,V for a given idx
         private boolean CAS_key( int idx, long   old, long   key ) {
-            return U.compareAndSwapLong  ( _keys, rawIndex(_keys, idx), old, key );
+            return U.compareAndSetLong(_keys, rawIndex(_keys, idx), old, key);
         }
         private boolean CAS_val( int idx, Object old, Object val ) {
-            return U.compareAndSwapObject( _vals, rawIndex(_vals, idx), old, val );
+            return U.compareAndSetReference(_vals, rawIndex(_vals, idx), old, val);
         }
 
         final long   [] _keys;
@@ -559,7 +542,7 @@ public class NonBlockingHashMapLong<TypeV>
         // --- get_impl ----------------------------------------------------------
         // Never returns a Prime nor a Tombstone.
         private Object get_impl ( final long key ) {
-            final int hash = hash(key);
+            final int hash = (int) HashCommon.mix(key);
             final int len     = _keys.length;
             int idx = (hash & (len-1)); // First key hash
 
@@ -604,7 +587,7 @@ public class NonBlockingHashMapLong<TypeV>
         // Only the path through copy_slot passes in an expected value of null,
         // and putIfMatch only returns a null if passed in an expected null.
         private Object putIfMatch( final long key, final Object putval, final Object expVal ) {
-            final int hash = hash(key);
+            final int hash = (int) HashCommon.mix(key);
             assert putval != null;
             assert !(putval instanceof Prime);
             assert !(expVal instanceof Prime);
@@ -723,7 +706,7 @@ public class NonBlockingHashMapLong<TypeV>
                 // Simply retry from the start.
                 // NOTE: need the fence, since otherwise '_vals[idx]' load could be hoisted
                 // out of loop.
-                int dummy = DUMMY_VOLATILE;
+                U.loadFence();
             }
 
             // CAS succeeded - we did the update!
@@ -818,9 +801,7 @@ public class NonBlockingHashMapLong<TypeV>
             // Now limit the number of threads actually allocating memory to a
             // handful - lest we have 750 threads all trying to allocate a giant
             // resized array.
-            long r = _resizers;
-            while( !_resizerUpdater.compareAndSet(this,r,r+1) )
-                r = _resizers;
+            long r = U.getAndAddLong(this, _resizersOffset, 1);
             // Size calculation: 2 words (K+V) per table entry, plus a handful.  We
             // guess at 64-bit pointers; 32-bit pointers screws up the size calc by
             // 2x but does not screw up the heuristic very much.
@@ -869,15 +850,15 @@ public class NonBlockingHashMapLong<TypeV>
         // the counter simply wraps and work is copied duplicately until somebody
         // somewhere completes the count.
         volatile long _copyIdx = 0;
-        static private final AtomicLongFieldUpdater<CHM> _copyIdxUpdater =
-                AtomicLongFieldUpdater.newUpdater(CHM.class, "_copyIdx");
+        static private final long _copyIdxOffset =
+                fieldOffset(CHM.class, "_copyIdx");
 
         // Work-done reporting.  Used to efficiently signal when we can move to
         // the new table.  From 0 to len(oldkvs) refers to copying from the old
         // table to the new.
         volatile long _copyDone= 0;
-        static private final AtomicLongFieldUpdater<CHM> _copyDoneUpdater =
-                AtomicLongFieldUpdater.newUpdater(CHM.class, "_copyDone");
+        static private final long _copyDoneOffset =
+                fieldOffset(CHM.class, "_copyDone");
 
         // --- help_copy_impl ----------------------------------------------------
         // Help along an existing resize operation.  We hope its the top-level
@@ -904,10 +885,7 @@ public class NonBlockingHashMapLong<TypeV>
                 // algorithm) or do the copy work ourselves.  Tiny tables with huge
                 // thread counts trying to copy the table often 'panic'.
                 if( panic_start == -1 ) { // No panic?
-                    copyidx = (int)_copyIdx;
-                    while( copyidx < (oldlen<<1) && // 'panic' check
-                           !_copyIdxUpdater.compareAndSet(this,copyidx,copyidx+MIN_COPY_WORK) )
-                        copyidx = (int)_copyIdx;     // Re-read
+                    copyidx = (int) U.getAndAddLong(this, _copyIdxOffset, MIN_COPY_WORK);
                     if( !(copyidx < (oldlen<<1)) ) // Panic!
                         panic_start = copyidx;       // Record where we started to panic-copy
                 }
@@ -961,16 +939,7 @@ public class NonBlockingHashMapLong<TypeV>
         private void copy_check_and_promote( int workdone ) {
             int oldlen = _keys.length;
             // We made a slot unusable and so did some of the needed copy work
-            long copyDone = _copyDone;
-            long nowDone = copyDone+workdone;
-            assert nowDone <= oldlen;
-            if( workdone > 0 ) {
-                while( !_copyDoneUpdater.compareAndSet(this,copyDone,nowDone) ) {
-                    copyDone = _copyDone;   // Reload, retry
-                    nowDone = copyDone+workdone;
-                    assert nowDone <= oldlen;
-                }
-            }
+            long nowDone = U.getAndAddLong(this, _copyDoneOffset, workdone) + workdone;
 
             // Check for copy being ALL done, and promote.  Note that we might have
             // nested in-progress copies and manage to finish a nested copy before
@@ -1136,6 +1105,8 @@ public class NonBlockingHashMapLong<TypeV>
     public Enumeration<TypeV> elements() { return new SnapshotV(); }
 
     // --- values --------------------------------------------------------------
+    private transient ObjectCollection<TypeV> _values = null;
+
     /** Returns a {@link Collection} view of the values contained in this map.
      *  The collection is backed by the map, so changes to the map are reflected
      *  in the collection, and vice-versa.  The collection supports element
@@ -1150,12 +1121,13 @@ public class NonBlockingHashMapLong<TypeV>
      *  and may (but is not guaranteed to) reflect any modifications subsequent
      *  to construction. */
     public ObjectCollection<TypeV> values() {
-        return new AbstractObjectCollection<TypeV>() {
+        if( _values == null ) _values = new AbstractObjectCollection<TypeV>() {
             public void    clear   (          ) {        NonBlockingHashMapLong.this.clear   ( ); }
             public int     size    (          ) { return NonBlockingHashMapLong.this.size    ( ); }
             public boolean contains( Object v ) { return NonBlockingHashMapLong.this.containsValue(v); }
             public ObjectIterator<TypeV> iterator()   { return new SnapshotV(); }
         };
+        return _values;
     }
 
     // --- keySet --------------------------------------------------------------
@@ -1203,6 +1175,8 @@ public class NonBlockingHashMapLong<TypeV>
         public void clear() { NonBlockingHashMapLong.this.clear(); }
     }
 
+    private transient LongSet _keySet = null;
+
     /** Returns a {@link Set} view of the keys contained in this map; with care
      *  the keys may be iterated over <strong>without auto-boxing</strong>.  The
      *  set is backed by the map, so changes to the map are reflected in the
@@ -1218,7 +1192,9 @@ public class NonBlockingHashMapLong<TypeV>
      *  and may (but is not guaranteed to) reflect any modifications subsequent
      *  to construction.  */
     public LongSet keySet() {
-        return new KeySet();
+        if( _keySet == null )
+            _keySet = new KeySet();
+        return _keySet;
     }
 
     /** Keys as a long array.  Array may be zero-padded if keys are concurrently deleted. */
@@ -1235,18 +1211,31 @@ public class NonBlockingHashMapLong<TypeV>
     // --- entrySet ------------------------------------------------------------
     // Warning: Each call to 'next' in this iterator constructs a new Long and a
     // new NBHMLEntry.
-    private class NBHMLEntry extends AbstractEntry<Long,TypeV> implements Long2ObjectMap.Entry<TypeV> {
-        NBHMLEntry( final Long k, final TypeV v ) { super(k,v); }
-        public TypeV setValue(final TypeV val) {
+    private final class NBHMLEntry implements Long2ObjectMap.Entry<TypeV> {
+        long _k;
+        TypeV _v;
+        NBHMLEntry() {}
+        NBHMLEntry(long k, TypeV v) { _k = k; _v = v; }
+        @Override public long getLongKey() { return _k; }
+        @Override @Deprecated public Long getKey() { return _k; }
+        @Override public TypeV getValue() { return _v; }
+        @Override public TypeV setValue(TypeV val) {
             if (val == null) throw new NullPointerException();
-            _val = val;
-            return put(_key, val);
+            _v = val;
+            return put(_k, val);
         }
-        @Override
-        public long getLongKey() {
-            return getKey();
+        @Override public boolean equals(Object o) {
+            if (!(o instanceof Map.Entry<?, ?> e)) return false;
+            final long k;
+            if (e instanceof Long2ObjectMap.Entry<?> le) k = le.getLongKey();
+            else if (e.getKey() instanceof Long l) k = l;
+            else return false;
+            return k == _k && Objects.equals(_v, e.getValue());
         }
+        @Override public int hashCode() { return Long.hashCode(_k) ^ Objects.hashCode(_v); }
+        @Override public String toString() { return _k + "=" + _v; }
     }
+
     private class SnapshotE implements ObjectIterator<Long2ObjectMap.Entry<TypeV>> {
         final SnapshotV _ss;
         public SnapshotE() { _ss = new SnapshotV(); }
@@ -1264,7 +1253,27 @@ public class NonBlockingHashMapLong<TypeV>
         }
     }
 
-    private final class EntrySet extends AbstractObjectSet<Long2ObjectMap.Entry<TypeV>> implements Long2ObjectMap.FastEntrySet<TypeV> {
+    private class FastSnapshotE implements ObjectIterator<Long2ObjectMap.Entry<TypeV>> {
+        final SnapshotV _ss;
+        final NBHMLEntry _entry;
+        public FastSnapshotE() {
+            _ss = new SnapshotV();
+            _entry = new NBHMLEntry();
+        }
+        public void remove() { _ss.removeKey(); }
+        public Long2ObjectMap.Entry<TypeV> next() {
+            _ss.next();
+            _entry._k = _ss._prevK;
+            _entry._v = _ss._prevV;
+            return _entry;
+        }
+        public boolean hasNext() { return _ss.hasNext(); }
+        @Override public int skip(int n) { return _ss.skip(n); }
+    }
+
+    private final class EntrySet extends AbstractObjectSet<Long2ObjectMap.Entry<TypeV>>
+            implements Long2ObjectMap.FastEntrySet<TypeV> {
+
         @Override
         public ObjectIterator<Long2ObjectMap.Entry<TypeV>> iterator() {
             return new SnapshotE();
@@ -1272,7 +1281,7 @@ public class NonBlockingHashMapLong<TypeV>
 
         @Override
         public ObjectIterator<Long2ObjectMap.Entry<TypeV>> fastIterator() {
-            return new SnapshotE();
+            return new FastSnapshotE();
         }
 
         @Override
@@ -1287,19 +1296,31 @@ public class NonBlockingHashMapLong<TypeV>
 
         @Override
         public boolean contains(final Object o) {
-            if (!(o instanceof Map.Entry)) return false;
-            final Map.Entry<?,?> e = (Map.Entry<?,?>)o;
-            TypeV v = get(e.getKey());
+            if (!(o instanceof Map.Entry<?, ?> e)) return false;
+            final long k;
+            if (e instanceof Long2ObjectMap.Entry<?> le) {
+                k = le.getLongKey();
+            } else if (e.getKey() instanceof Long l) {
+                k = l;
+            } else return false;
+
+            final TypeV v = get(k);
             return v != null && v.equals(e.getValue());
         }
-
         @Override
         public boolean remove(final Object o) {
-            if (!(o instanceof Map.Entry)) return false;
-            final Map.Entry<?,?> e = (Map.Entry<?,?>)o;
-            return NonBlockingHashMapLong.this.remove(e.getKey(), e.getValue());
+            if (!(o instanceof Map.Entry<?, ?> e)) return false;
+            final long k;
+            if (e instanceof Long2ObjectMap.Entry<?> le) {
+                k = le.getLongKey();
+            } else if (e.getKey() instanceof Long l) {
+                k = l;
+            } else return false;
+            return NonBlockingHashMapLong.this.remove(k, e.getValue());
         }
     }
+
+    private transient Long2ObjectMap.FastEntrySet<TypeV> _entrySet = null;
 
     /** Returns a {@link Set} view of the mappings contained in this map.  The
      *  set is backed by the map, so changes to the map are reflected in the
@@ -1324,7 +1345,8 @@ public class NonBlockingHashMapLong<TypeV>
      *  this version requires <strong>auto-boxing</strong> the keys.
      */
     public Long2ObjectMap.FastEntrySet<TypeV> long2ObjectEntrySet() {
-        return new EntrySet();
+        if( _entrySet == null ) _entrySet = new EntrySet();
+        return _entrySet;
     }
 
     public void forEach(LongObjectConsumer<? super TypeV> action) {
@@ -1374,7 +1396,7 @@ public class NonBlockingHashMapLong<TypeV>
             long k = keys[i];
             if (k == NO_KEY) continue;
 
-            Object v = U.getObjectVolatile(vals, rawIndex(vals, i));
+            Object v = U.getReferenceVolatile(vals, rawIndex(vals, i));
             if (v == null || v == TOMBSTONE) continue;
 
             if (v instanceof Prime) {
@@ -1411,7 +1433,7 @@ public class NonBlockingHashMapLong<TypeV>
             long k = keys[i];
             if (k == NO_KEY) continue;
 
-            Object v = U.getObjectVolatile(vals, rawIndex(vals, i));
+            Object v = U.getReferenceVolatile(vals, rawIndex(vals, i));
             if (v == null || v == TOMBSTONE) continue;
 
             if (v instanceof Prime) {

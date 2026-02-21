@@ -1,15 +1,14 @@
 package com.hbm.items.special;
 
 import com.google.common.collect.ImmutableMap;
+import com.hbm.Tags;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
+import com.hbm.items.IModelRegister;
 import com.hbm.items.ModItems;
-import com.hbm.items.machine.ItemScraps;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.icon.RGBMutatorInterpolatedComponentRemap;
 import com.hbm.render.icon.TextureAtlasSpriteMutatable;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.model.ModelRotation;
@@ -38,12 +37,12 @@ import java.util.List;
 import java.util.Objects;
 
 //TODO: fix IDynamicModels
-public class ItemAutogen extends Item {
+public class ItemAutogen extends Item implements IModelRegister {
 
     public static List<ItemAutogen> INSTANCES = new ArrayList<>();
     MaterialShapes shape;
     private HashMap<NTMMaterial, String> textureOverrides = new HashMap<>();
-    private static HashMap<NTMMaterial, TextureAtlasSprite> iconMap = new HashMap<>();
+    public static HashMap<NTMMaterial, TextureAtlasSprite> iconMap = new HashMap<>();
     private String overrideUnlocalizedName = null;
 
     public ItemAutogen(MaterialShapes shape, String s) {
@@ -70,13 +69,14 @@ public class ItemAutogen extends Item {
         return this;
     }
 
+    @Override
     @SideOnly(Side.CLIENT)
     public void registerModels() {
         for (NTMMaterial mat : Mats.orderedList) {
             if (mat.autogen.contains(this.shape)) {
                 String texturePath = getTexturePath(mat);
                 ModelResourceLocation location = new ModelResourceLocation(
-                        RefStrings.MODID + ":" + texturePath, "inventory"
+                        Tags.MODID + ":" + texturePath, "inventory"
                 );
                 ModelLoader.setCustomModelResourceLocation(this, mat.id, location);
             }
@@ -92,7 +92,7 @@ public class ItemAutogen extends Item {
             for (NTMMaterial mat : Mats.orderedList) {
                 if (mat.autogen.contains(this.shape)) {
                     String pathIn = getTexturePath(mat);
-                    ResourceLocation spriteLoc = new ResourceLocation(RefStrings.MODID, pathIn);
+                    ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, pathIn);
                     IModel retexturedModel = baseModel.retexture(
                             ImmutableMap.of(
                                     "layer0", spriteLoc.toString()
@@ -100,7 +100,7 @@ public class ItemAutogen extends Item {
 
                     );
                     IBakedModel bakedModel = retexturedModel.bake(ModelRotation.X0_Y0, DefaultVertexFormats.ITEM, ModelLoader.defaultTextureGetter());
-                    ModelResourceLocation bakedModelLocation = new ModelResourceLocation(new ResourceLocation(RefStrings.MODID, pathIn), "inventory");
+                    ModelResourceLocation bakedModelLocation = new ModelResourceLocation(new ResourceLocation(Tags.MODID, pathIn), "inventory");
                     event.getModelRegistry().putObject(bakedModelLocation, bakedModel);
 
                 }
@@ -117,7 +117,7 @@ public class ItemAutogen extends Item {
     public void registerSprite(TextureMap map) {
         for (NTMMaterial mat : Mats.orderedList) {
             if(!textureOverrides.containsKey(mat) && (shape == null || mat.autogen.contains(shape))) {
-                ResourceLocation spriteLoc = new ResourceLocation(RefStrings.MODID, "items/"+ Objects.requireNonNull(this.getRegistryName()).getPath() + "-" + mat.names[0]);
+                ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, "items/"+ Objects.requireNonNull(this.getRegistryName()).getPath() + "-" + mat.names[0]);
                 TextureAtlasSprite sprite;
                 if(mat.solidColorLight != mat.solidColorDark) {
                     sprite = new TextureAtlasSpriteMutatable(spriteLoc.toString(), new RGBMutatorInterpolatedComponentRemap(0xFFFFFF, 0x505050, mat.solidColorLight, mat.solidColorDark));
@@ -126,13 +126,13 @@ public class ItemAutogen extends Item {
                 map.setTextureEntry(sprite);
             }
             if(textureOverrides.containsKey(mat) && (shape == null || mat.autogen.contains(shape))) {
-                ResourceLocation spriteLoc = new ResourceLocation(RefStrings.MODID, "items/" + textureOverrides.get(mat));
+                ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, "items/" + textureOverrides.get(mat));
                 iconMap.put(mat, map.registerSprite(spriteLoc));
             }
         }
     }
 
-    protected String getTexturePath(NTMMaterial mat) {
+    public String getTexturePath(NTMMaterial mat) {
         if (textureOverrides.containsKey(mat)) {
             return "items/" + textureOverrides.get(mat);
         } else {

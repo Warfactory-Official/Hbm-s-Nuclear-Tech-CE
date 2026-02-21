@@ -3,35 +3,26 @@ package com.hbm.entity.logic;
 import com.hbm.config.CompatibilityConfig;
 import com.hbm.config.GeneralConfig;
 import com.hbm.explosion.ExplosionBalefire;
+import com.hbm.explosion.ExplosionNukeGeneric;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.MainRegistry;
-import com.hbm.util.ContaminationUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
-import net.minecraftforge.common.ForgeChunkManager;
-import net.minecraftforge.common.ForgeChunkManager.Ticket;
-import net.minecraftforge.common.ForgeChunkManager.Type;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @AutoRegister(name = "entity_balefire", trackingRange = 1000)
-public class EntityBalefire extends Entity implements IChunkLoader {
+public class EntityBalefire extends EntityExplosionChunkloading {
 
 	public int age = 0;
 	public int destructionRange = 0;
 	public ExplosionBalefire exp;
 	public int speed = 1;
 	public boolean did = false;
-	private Ticket loaderTicket;
 	@Nullable
 	public UUID detonator = null;
 
@@ -71,8 +62,10 @@ public class EntityBalefire extends Entity implements IChunkLoader {
 			this.setDead();
 			return;
 		}
-        if(!this.did)
-        {
+        if (!world.isRemote)
+            loadChunk(chunkCoordX, chunkCoordZ);
+
+        if(!this.did) {
     		if(GeneralConfig.enableExtendedLogging && !world.isRemote)
     			MainRegistry.logger.log(Level.INFO, "[NUKE] Initialized BF explosion at " + posX + " / " + posY + " / " + posZ + " with strength " + destructionRange + "!");
     		
@@ -84,9 +77,7 @@ public class EntityBalefire extends Entity implements IChunkLoader {
         speed += 1;	//increase speed to keep up with expansion
         
         boolean flag = false;
-        
-        for(int i = 0; i < this.speed; i++)
-        {
+        for(int i = 0; i < this.speed; i++) {
         	flag = exp.update();
         	
         	if(flag) {
@@ -94,73 +85,21 @@ public class EntityBalefire extends Entity implements IChunkLoader {
         	}
         }
         
-        if(!flag)
-        {
-        	if(this.destructionRange > 15){
-				this.world.playSound(null, this.posX, this.posY, this.posZ, SoundEvents.ENTITY_LIGHTNING_THUNDER, SoundCategory.AMBIENT, this.destructionRange * 0.05F, 0.8F + this.rand.nextFloat() * 0.2F);
-			}else{
-				if(rand.nextInt(5) == 0)
-					this.world.playSound(null, this.posX, this.posY, this.posZ, SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.AMBIENT, this.destructionRange * 0.05F, 0.8F + this.rand.nextFloat() * 0.2F);
-			}
-        	ContaminationUtil.radiate(this.world, this.posX, this.posY, this.posZ, this.destructionRange*2D, this.destructionRange*2000F, 0F, this.destructionRange*100F, this.destructionRange*500F);
+        if(!flag) {
+            ExplosionNukeGeneric.dealDamage(this.world, this.posX, this.posY, this.posZ, this.destructionRange * 2);
         }
         
         age++;
     }
-
-	@Override
-	protected void entityInit() {
-		init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, Type.ENTITY));
-	}
-
-	@Override
-	public void init(Ticket ticket) {
-		if(!world.isRemote) {
-			
-            if(ticket != null) {
-            	
-                if(loaderTicket == null) {
-                	
-                	loaderTicket = ticket;
-                	loaderTicket.bindEntity(this);
-                	loaderTicket.getModData();
-                }
-
-                ForgeChunkManager.forceChunk(loaderTicket, new ChunkPos(chunkCoordX, chunkCoordZ));
-            }
-        }
-	}
 
 	public void setDetonator(Entity detonator){
 		if (detonator instanceof EntityPlayerMP)
 			this.detonator = detonator.getUniqueID();
 	}
 
-	List<ChunkPos> loadedChunks = new ArrayList<ChunkPos>();
-	@Override
-	public void loadNeighboringChunks(int newChunkX, int newChunkZ) {
-		if(!world.isRemote && loaderTicket != null)
-        {
-            for(ChunkPos chunk : loadedChunks)
-            {
-                ForgeChunkManager.unforceChunk(loaderTicket, chunk);
-            }
-
-            loadedChunks.clear();
-            loadedChunks.add(new ChunkPos(newChunkX, newChunkZ));
-            loadedChunks.add(new ChunkPos(newChunkX + 1, newChunkZ + 1));
-            loadedChunks.add(new ChunkPos(newChunkX - 1, newChunkZ - 1));
-            loadedChunks.add(new ChunkPos(newChunkX + 1, newChunkZ - 1));
-            loadedChunks.add(new ChunkPos(newChunkX - 1, newChunkZ + 1));
-            loadedChunks.add(new ChunkPos(newChunkX + 1, newChunkZ));
-            loadedChunks.add(new ChunkPos(newChunkX, newChunkZ + 1));
-            loadedChunks.add(new ChunkPos(newChunkX - 1, newChunkZ));
-            loadedChunks.add(new ChunkPos(newChunkX, newChunkZ - 1));
-
-            for(ChunkPos chunk : loadedChunks)
-            {
-                ForgeChunkManager.forceChunk(loaderTicket, chunk);
-            }
-        }
-	}
+    @Override
+    public void setDead() {
+        clearChunkLoader(); //mlbv: upstream did this before setDead() but it's brittle; I moved it here
+        super.setDead();
+    }
 }

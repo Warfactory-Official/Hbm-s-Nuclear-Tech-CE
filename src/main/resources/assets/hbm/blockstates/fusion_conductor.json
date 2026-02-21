@@ -1,6 +1,0 @@
-{
-	"variants": {
-		"activated=true": { "model": "hbm:fusion_conductor" },
-     	   	"activated=false": { "model": "hbm:fusion_conductor" }
-	}
-}

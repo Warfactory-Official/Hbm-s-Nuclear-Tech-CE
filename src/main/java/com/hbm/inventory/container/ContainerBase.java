@@ -1,9 +1,10 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotCraftingOutput;
-import com.hbm.inventory.SlotNonRetarded;
-import com.hbm.inventory.SlotSmelting;
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotCraftingOutput;
+import com.hbm.inventory.slot.SlotNonRetarded;
+import com.hbm.inventory.slot.SlotSmelting;
+import com.hbm.inventory.slot.SlotFiltered;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -40,33 +41,7 @@ public class ContainerBase extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        ItemStack slotOriginal = ItemStack.EMPTY;
-        Slot slot = this.inventorySlots.get(index);
-
-        if (slot != null && slot.getHasStack()) {
-            ItemStack slotStack = slot.getStack();
-            slotOriginal = slotStack.copy();
-
-            int tileSize = tile.getSlots();
-
-            if (index < tileSize) {
-                if (!this.mergeItemStack(slotStack, tileSize, this.inventorySlots.size(), true)) {
-                    return ItemStack.EMPTY;
-                }
-            } else if (!this.mergeItemStack(slotStack, 0, tileSize, false)) {
-                return ItemStack.EMPTY;
-            }
-
-            if (slotStack.getCount() == 0) {
-                slot.putStack(ItemStack.EMPTY);
-            } else {
-                slot.onSlotChanged();
-            }
-
-            slot.onTake(player, slotStack);
-        }
-
-        return slotOriginal;
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.tile.getSlots());
     }
 
     /** Standard player inventory with default hotbar offset */
@@ -121,7 +96,7 @@ public class ContainerBase extends Container {
 
     public void addTakeOnlySlots(IItemHandler inv, int from, int x, int y, int rows, int cols, int slotSize) {
         for (int row = 0; row < rows; row++) for (int col = 0; col < cols; col++) {
-            this.addSlotToContainer(new SlotTakeOnly(inv, col + row * cols + from, x + col * slotSize, y + row * slotSize));
+            this.addSlotToContainer(SlotFiltered.takeOnly(inv, col + row * cols + from, x + col * slotSize, y + row * slotSize));
         }
     }
 

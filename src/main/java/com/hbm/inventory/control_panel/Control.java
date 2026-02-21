@@ -1,7 +1,7 @@
 package com.hbm.inventory.control_panel;
 
 import com.hbm.inventory.control_panel.controls.ControlType;
-import com.hbm.render.amlfrom1710.IModelCustom;
+import com.hbm.render.loader.IModelCustom;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;

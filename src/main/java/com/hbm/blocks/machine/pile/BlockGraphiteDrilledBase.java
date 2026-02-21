@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine.pile;
 
+import com.hbm.Tags;
 import com.hbm.api.block.IInsertable;
 import com.hbm.api.block.IToolable;
 import com.hbm.blocks.ModBlocks;
@@ -11,7 +12,6 @@ import com.hbm.inventory.material.Mats;
 import com.hbm.items.ModItems;
 import com.hbm.items.special.ItemCell;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.block.BlockBakeFrame;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
@@ -63,8 +63,8 @@ public class BlockGraphiteDrilledBase extends BlockFlammable implements IToolabl
 	@SideOnly(Side.CLIENT)
 	@Override
 	public void registerSprite(TextureMap map) {
-		map.registerSprite(new ResourceLocation(RefStrings.MODID, "blocks/" + sideTexture));
-		map.registerSprite(new ResourceLocation(RefStrings.MODID, "blocks/" + aluminumTexture));
+		map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/" + sideTexture));
+		map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/" + aluminumTexture));
 	}
 
 	@Override

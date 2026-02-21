@@ -4,6 +4,7 @@ import com.hbm.entity.missile.EntityMissileAntiBallistic;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.NTMRenderHelper;
+import com.hbm.util.RenderUtil;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -23,8 +24,9 @@ public class RenderMissileAB extends Render<EntityMissileAntiBallistic> {
 	@Override
 	public void doRender(EntityMissileAntiBallistic missile, double x, double y, double z, float entityYaw, float partialTicks) {
 		GlStateManager.pushMatrix();
-		GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
-		GlStateManager.enableLighting();
+        boolean prevLighting = RenderUtil.isLightingEnabled();
+        int prevShade = RenderUtil.getShadeModel();
+		if (!prevLighting) GlStateManager.enableLighting();
 		double[] pos = NTMRenderHelper.getRenderPosFromMissile(missile, partialTicks);
 		x = pos[0];
 		y = pos[1];
@@ -32,12 +34,11 @@ public class RenderMissileAB extends Render<EntityMissileAntiBallistic> {
         GlStateManager.translate(x, y, z);
         GlStateManager.rotate(missile.prevRotationYaw + (missile.rotationYaw - missile.prevRotationYaw) * partialTicks - 90.0F, 0.0F, 1.0F, 0.0F);
         GlStateManager.rotate(missile.prevRotationPitch + (missile.rotationPitch - missile.prevRotationPitch) * partialTicks, 0.0F, 0.0F, 1.0F);
-        
-        GlStateManager.shadeModel(GL11.GL_SMOOTH);
+        if (prevShade != GL11.GL_SMOOTH) GlStateManager.shadeModel(GL11.GL_SMOOTH);
         bindTexture(ResourceManager.missileAA_tex);
         ResourceManager.missileABM.renderAll();
-        GlStateManager.shadeModel(GL11.GL_FLAT);
-        GL11.glPopAttrib();
+        if (prevShade != GL11.GL_SMOOTH) GlStateManager.shadeModel(prevShade);
+        if (!prevLighting) GlStateManager.disableLighting();
 		GlStateManager.popMatrix();
 	}
 

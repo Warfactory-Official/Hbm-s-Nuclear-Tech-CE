@@ -6,15 +6,14 @@ import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import com.hbm.inventory.RecipesCommon;
 import com.hbm.inventory.fluid.FluidStack;
+import com.hbm.util.ItemStackUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.WeightedRandom;
 import net.minecraft.util.text.TextFormatting;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+
 /**
  * Fully genericized recipes.
  * Features:
@@ -36,6 +35,8 @@ public abstract class GenericRecipes <T extends GenericRecipe> extends Serializa
     public static final String POOL_PREFIX_DISCOVER = "discover.";
     /** Secret recipes, self-explantory. Why even have this comment? */
     public static final String POOL_PREFIX_SECRET = "secret.";
+    /** 528 greyprints */
+    public static final String POOL_PREFIX_528 = "528.";
 
     public List<T> recipeOrderedList = new ArrayList<>();
     public HashMap<String, T> recipeNameMap = new HashMap<>();
@@ -80,6 +81,29 @@ public abstract class GenericRecipes <T extends GenericRecipe> extends Serializa
         return this.recipeOrderedList;
     }
 
+    public void removeRecipeByName(String name) {
+        if(name == null) return;
+
+        T removed = this.recipeNameMap.remove(name);
+        if(removed == null) return;
+
+        for(int i = 0; i < this.recipeOrderedList.size(); i++) {
+            T r = this.recipeOrderedList.get(i);
+            if(r != null && name.equals(r.name)) {
+                this.recipeOrderedList.remove(i);
+                break;
+            }
+        }
+
+        for(List<GenericRecipe> list : this.autoSwitchGroups.values()) {
+            if(list == null) continue;
+            for(int i = list.size() - 1; i >= 0; i--) {
+                GenericRecipe r = list.get(i);
+                if(r != null && name.equals(r.name)) list.remove(i);
+            }
+        }
+    }
+
     @Override
     public void deleteRecipes() {
         this.recipeOrderedList.clear();
@@ -109,7 +133,7 @@ public abstract class GenericRecipes <T extends GenericRecipe> extends Serializa
 
         if(obj.has("icon")) recipe.setIcon(this.readItemStack(obj.get("icon").getAsJsonArray()));
         if(obj.has("named") && obj.get("named").getAsBoolean()) recipe.setNamed();
-        if(obj.has("blueprintpool")) recipe.setPools(obj.get("blueprintpool").getAsString().split(":"));
+        if(obj.has("blueprintpool")) recipe.setPoolsAllow528(obj.get("blueprintpool").getAsString().split(":"));
         if(obj.has("nameWrapper")) recipe.setNameWrapper(obj.get("nameWrapper").getAsString());
         if(obj.has("autoSwitchGroup")) recipe.setGroup(obj.get("autoSwitchGroup").getAsString(), this);
 
@@ -167,7 +191,7 @@ public abstract class GenericRecipes <T extends GenericRecipe> extends Serializa
         writeExtraData(recipe, writer);
     }
 
-    public void writeExtraData(T recipe, JsonWriter writer) { }
+    public void writeExtraData(T recipe, JsonWriter writer) throws IOException { }
 
     public IOutput[] readOutputArray(JsonArray array) {
         IOutput[] output = new IOutput[array.size()];
@@ -229,13 +253,18 @@ public abstract class GenericRecipes <T extends GenericRecipe> extends Serializa
 
         @Override
         public ItemStack collapse() {
-            if(this.chance >= 1F) return getSingle().copy();
-            return RNG.nextFloat() <= chance ? getSingle().copy() : null;
+            if(this.chance >= 1F) return getSingle();
+            int finalSize = 0;
+            for(int i = 0; i < this.stack.getCount(); i++) if(RNG.nextFloat() <= chance) finalSize++;
+            if(finalSize <= 0) return null;
+            ItemStack finalStack = getSingle();
+            finalStack.setCount(finalSize);
+            return finalStack;
         }
 
-        @Override public ItemStack getSingle() { return this.stack; }
+        @Override public ItemStack getSingle() { return this.stack.copy(); }
         @Override public boolean possibleMultiOutput() { return false; }
-        @Override public ItemStack[] getAllPossibilities() { return new ItemStack[] {getSingle()}; }
+        @Override public ItemStack[] getAllPossibilities() { return new ItemStack[] {this.chance >= 1F ? getSingle() : ItemStackUtil.addTooltipToStack(getSingle(), TextFormatting.RED + "" + (int)(this.chance * 1000) / 10F + "%")}; }
 
         @Override
         public void serialize(JsonWriter writer) throws IOException {
@@ -281,13 +310,23 @@ public abstract class GenericRecipes <T extends GenericRecipe> extends Serializa
 
         public List<ChanceOutput> pool = new ArrayList<>();
 
+        public ChanceOutputMulti(ChanceOutput... out) {
+            Collections.addAll(pool, out);
+        }
+
         @Override public ItemStack collapse() { return WeightedRandom.getRandomItem(RNG, pool).collapse(); }
         @Override public boolean possibleMultiOutput() { return pool.size() > 1; }
-        @Override public ItemStack getSingle() { return possibleMultiOutput() ? null : pool.get(0).getSingle(); }
+        @Override public ItemStack getSingle() { return possibleMultiOutput() ? null : pool.getFirst().getSingle(); }
 
         @Override public ItemStack[] getAllPossibilities() {
             ItemStack[] outputs = new ItemStack[pool.size()];
-            for(int i = 0; i < outputs.length; i++) outputs[i] = pool.get(i).getAllPossibilities()[0];
+            int totalWeight = WeightedRandom.getTotalWeight(pool);
+            for(int i = 0; i < outputs.length; i++) {
+                ChanceOutput out = pool.get(i);
+                float chance = (float) out.itemWeight / (float) totalWeight;
+                outputs[i] = chance >= 1 ? out.getAllPossibilities()[0] :
+                        ItemStackUtil.addTooltipToStack(out.getAllPossibilities()[0], TextFormatting.RED + "" + (int)(chance * 1000) / 10F + "%");
+            }
             return outputs;
         }
 
@@ -302,6 +341,7 @@ public abstract class GenericRecipes <T extends GenericRecipe> extends Serializa
         @Override
         public void deserialize(JsonArray array) {
             for(JsonElement element : array) {
+                if(element.isJsonPrimitive()) continue; // the array we get includes the "multi" tag, which is also the only primitive
                 ChanceOutput output = new ChanceOutput();
                 output.deserialize(element.getAsJsonArray());
                 pool.add(output);

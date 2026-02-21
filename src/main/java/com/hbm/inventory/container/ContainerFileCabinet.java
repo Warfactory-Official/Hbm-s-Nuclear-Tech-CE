@@ -1,6 +1,8 @@
 package com.hbm.inventory.container;
 
+import com.hbm.interfaces.IContainerOpenEventListener;
 import com.hbm.tileentity.machine.storage.TileEntityFileCabinet;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -8,7 +10,7 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
 
-public class ContainerFileCabinet extends Container {
+public class ContainerFileCabinet extends Container implements IContainerOpenEventListener {
 
     protected TileEntityFileCabinet cabinet;
 
@@ -34,36 +36,22 @@ public class ContainerFileCabinet extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        ItemStack returnStack = ItemStack.EMPTY;
-        Slot slot = (Slot) this.inventorySlots.get(index);
-
-        if(slot != null && slot.getHasStack()) {
-            ItemStack originalStack = slot.getStack();
-            returnStack = originalStack.copy();
-
-            if(index <= 7) {
-                if(!this.mergeItemStack(originalStack, 8, this.inventorySlots.size(), true)) {
-                    return ItemStack.EMPTY;
-                }
-
-                slot.onSlotChange(originalStack, returnStack);
-
-            } else if(!this.mergeItemStack(originalStack, 0, 8, false)) {
-                return ItemStack.EMPTY;
-            }
-
-            if(originalStack.getCount() == 0) {
-                slot.putStack((ItemStack) ItemStack.EMPTY);
-            } else {
-                slot.onSlotChanged();
-            }
-        }
-
-        return returnStack;
+        return InventoryUtil.transferStack(this.inventorySlots, index, 8);
     }
 
     @Override
     public boolean canInteractWith(EntityPlayer player) {
         return cabinet.isUseableByPlayer(player);
+    }
+
+    @Override
+    public void onContainerOpened(EntityPlayer player) {
+        cabinet.openInventory(player);
+    }
+
+    @Override
+    public void onContainerClosed(EntityPlayer player) {
+        super.onContainerClosed(player);
+        cabinet.closeInventory(player);
     }
 }

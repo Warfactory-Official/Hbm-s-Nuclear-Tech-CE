@@ -1,10 +1,10 @@
 package com.hbm.particle;
 
-import com.hbm.hfr.render.loader.HFRWavefrontObject;
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
+import com.hbm.render.loader.HFRWavefrontObject;
 import com.hbm.main.MainRegistry;
 import com.hbm.particle.helper.SkeletonCreator;
-import com.hbm.render.amlfrom1710.IModelCustom;
+import com.hbm.render.loader.IModelCustom;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -23,9 +23,9 @@ import org.lwjgl.opengl.GL11;
 
 @SideOnly(Side.CLIENT)
 public class ParticleSkeleton extends Particle {
-    public static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/particle/skeleton.png");
-    public static final ResourceLocation texture_ext = new ResourceLocation(RefStrings.MODID + ":textures/particle/skoilet.png");
-    public static final IModelCustom skeleton = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/effect/skeleton.obj")).asVBO();
+    public static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/particle/skeleton.png");
+    public static final ResourceLocation texture_ext = new ResourceLocation(Tags.MODID + ":textures/particle/skoilet.png");
+    public static final IModelCustom skeleton = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/effect/skeleton.obj")).asVBO();
     protected SkeletonCreator.EnumSkeletonType type;
 
     private float momentumYaw;

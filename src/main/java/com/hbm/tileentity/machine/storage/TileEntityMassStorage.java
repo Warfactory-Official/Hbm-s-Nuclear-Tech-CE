@@ -104,13 +104,10 @@ public class TileEntityMassStorage extends TileEntityCrateBase implements IBufPa
 
 	@Override
 	public void serialize(ByteBuf buf) {
-		buf.writeInt(getStockpile());
-		buf.writeBoolean(output);
-
-    	if (!inventory.getStackInSlot(1).isEmpty()) {
-      		ByteBufUtils.writeItemStack(buf, inventory.getStackInSlot(1));
-		}
-	}
+        buf.writeInt(getStockpile());
+        buf.writeBoolean(output);
+        ByteBufUtils.writeItemStack(buf, inventory.getStackInSlot(1));
+    }
 
 	@Override
 	public void deserialize(ByteBuf buf) {

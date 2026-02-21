@@ -4,14 +4,12 @@ import org.jctools.queues.MpmcArrayQueue;
 
 import java.util.ArrayDeque;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public final class TLPool<T> {
     private final ThreadLocal<ArrayDeque<T>> local;
     private final MpmcArrayQueue<T> shared;
-    private final AtomicInteger sharedApproxSize = new AtomicInteger();
 
     private final Supplier<T> factory;
     private final Consumer<T> reset;
@@ -32,12 +30,13 @@ public final class TLPool<T> {
         if (t != null) return t;
 
         int moved = 0;
-        T s;
-        while (moved < localCap && (s = shared.poll()) != null) {
-            sharedApproxSize.decrementAndGet();
+        while (moved < localCap) {
+            T s = shared.relaxedPoll();
+            if (s == null) break;
             q.addLast(s);
             moved++;
         }
+
         t = q.pollLast();
         if (t != null) return t;
 
@@ -50,19 +49,15 @@ public final class TLPool<T> {
         if (t == null) throw new NullPointerException();
         try {
             reset.accept(t);
-        } catch (RuntimeException e) {
+        } catch (RuntimeException _) {
             return;
         }
-
         ArrayDeque<T> q = local.get();
         if (q.size() < localCap) {
             q.addLast(t);
             return;
         }
-
-        if (shared.offer(t)) {
-            sharedApproxSize.incrementAndGet();
-        }
+        shared.relaxedOffer(t);
     }
 
     public void clearLocal() {
@@ -71,11 +66,10 @@ public final class TLPool<T> {
 
     public int trimSharedTo(int max) {
         if (max < 0) throw new IllegalArgumentException("max < 0");
-        int toRemove = Math.max(0, sharedApproxSize.get() - max);
+        int toRemove = Math.max(0, shared.size() - max);
         int removed = 0;
         while (removed < toRemove) {
             if (shared.poll() == null) break;
-            sharedApproxSize.decrementAndGet();
             removed++;
         }
         return removed;

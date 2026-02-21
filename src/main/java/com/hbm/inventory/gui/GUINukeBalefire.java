@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerNukeBalefire;
-import com.hbm.lib.RefStrings;
 import com.hbm.packet.toserver.AuxButtonPacket;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.bomb.TileEntityNukeBalefire;
@@ -19,7 +19,7 @@ import java.io.IOException;
 
 public class GUINukeBalefire extends GuiInfoContainer {
 
-	public static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/weapon/fstbmbSchematic.png");
+	public static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/weapon/fstbmbSchematic.png");
 	private TileEntityNukeBalefire bomb;
 	private GuiTextField timer;
 

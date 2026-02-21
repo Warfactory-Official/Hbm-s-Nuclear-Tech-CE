@@ -2,6 +2,7 @@ package com.hbm.integration.groovy.script;
 
 import com.cleanroommc.groovyscript.api.GroovyLog;
 import com.cleanroommc.groovyscript.api.IIngredient;
+import com.cleanroommc.groovyscript.api.documentation.annotations.RegistryDescription;
 import com.cleanroommc.groovyscript.helper.recipe.AbstractRecipeBuilder;
 import com.cleanroommc.groovyscript.registry.VirtualizedRegistry;
 import com.hbm.integration.groovy.HbmGroovyPropertyContainer;
@@ -15,6 +16,7 @@ import java.util.List;
 
 import static com.hbm.inventory.recipes.AssemblerRecipes.*;
 
+@RegistryDescription(linkGenerator = "hbm", isFullyDocumented = false)
 public class Assembler extends VirtualizedRegistry<Tuple.Triplet<RecipesCommon.ComparableStack, RecipesCommon.AStack[], Integer>>  {
     @Override
     public void onReload() {

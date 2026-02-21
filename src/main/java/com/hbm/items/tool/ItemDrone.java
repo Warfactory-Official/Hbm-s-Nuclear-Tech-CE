@@ -19,9 +19,9 @@ import org.lwjgl.input.Keyboard;
 
 import java.util.List;
 
-public class ItemDrone extends ItemEnumMulti {
+public class ItemDrone extends ItemEnumMulti<ItemDrone.EnumDroneType> {
     public ItemDrone(String s) {
-        super(s, EnumDroneType.class, true, true);
+        super(s, EnumDroneType.VALUES, true, true);
         this.setCreativeTab(MainRegistry.machineTab);
     }
 
@@ -30,7 +30,9 @@ public class ItemDrone extends ItemEnumMulti {
         PATROL_CHUNKLOADING,
         PATROL_EXPRESS,
         PATROL_EXPRESS_CHUNKLOADING,
-        REQUEST
+        REQUEST;
+
+        public static final EnumDroneType[] VALUES = values();
     }
 
     @Override

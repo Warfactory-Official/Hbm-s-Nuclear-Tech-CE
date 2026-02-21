@@ -1,6 +1,8 @@
 package com.hbm.tileentity.machine.rbmk;
 
 import com.hbm.api.fluidmk2.FluidNetMK2;
+import com.hbm.api.fluidmk2.FluidNode;
+import com.hbm.api.fluidmk2.IFluidReceiverMK2;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.rbmk.RBMKBase;
 import com.hbm.config.MachineConfig;
@@ -22,9 +24,12 @@ import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.saveddata.TomSaveData;
 import com.hbm.tileentity.IOverpressurable;
 import com.hbm.tileentity.TileEntityLoadedBase;
-import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole.ColumnType;
+import com.hbm.tileentity.machine.rbmk.RBMKColumn.ColumnType;
 import com.hbm.util.I18nUtil;
 import io.netty.buffer.ByteBuf;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -32,6 +37,7 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -44,6 +50,7 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -53,9 +60,20 @@ import java.util.*;
 
 public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements ITickable, IControllable {
 
-	@Deprecated
-	public static int rbmkHeight = 4;
-	
+    private static final String title = "Dump of Ordered Data Diagnostic (DODD)";
+    private static final List<String> exceptions;
+
+    static {
+        exceptions = new ArrayList<>();
+        exceptions.add("x");
+        exceptions.add("y");
+        exceptions.add("z");
+        exceptions.add("items");
+        exceptions.add("id");
+        exceptions.add("muffled");
+        exceptions.add("ForgeCaps");
+    }
+
 	public double heat = 20.0D;
 	public double jumpheight = 0.0D;
 	public float downwardSpeed = 0.0F;
@@ -66,6 +84,19 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 	public static final int maxWater = 16000;
 	public int reasimSteam;
 	public static final int maxSteam = 16000;
+
+    @SideOnly(Side.CLIENT)
+    private static long lastDODDUpdate;
+    @SideOnly(Side.CLIENT)
+    private static List<String> cachedDODDLines;
+    @SideOnly(Side.CLIENT)
+    private static BlockPos lastDODDPos;
+
+    static {
+        if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+            cachedDODDLines = new ArrayList<>();
+        }
+    }
 
 	public boolean hasLid() {
 
@@ -100,23 +131,32 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 	public boolean shouldUpdate() {
 		return true;
 	}
-	
+
 	public int trackingRange() {
 		return 15;
 	}
-	
-	@Override
-	public void update() {
 
-		if(!world.isRemote) {
-			moveHeat();
-			if(RBMKDials.getReasimBoilers(world))
-				boilWater();
-			coolPassively();
-			jump();
-			networkPackNT(trackingRange());
-		}
-	}
+    @Override
+    public void update() {
+
+        if(!world.isRemote) {
+            moveHeat();
+            if(RBMKDials.getReasimBoilers(world))
+                boilWater();
+            coolPassively();
+            jump();
+
+            networkPackNT(trackingRange());
+        }
+    }
+
+    // mlbv: the side effect of TileEntity#markDirty() is to update the block metadata and update comparator outputs,
+    // which we don't really need for rbmk columns
+    @Override
+    public void markDirty() {
+        if (world == null) return;
+        markChanged();
+    }
 
 	private void jump(){
 		if(this.heat <= MachineConfig.rbmkJumpTemp && !falling)
@@ -129,7 +169,7 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 					double heightLimit = (this.heat-MachineConfig.rbmkJumpTemp)*0.002D;
 
 					this.jumpheight = this.jumpheight + change;
-					
+
 					if(this.jumpheight > heightLimit){
 						this.jumpheight = heightLimit;
 						this.falling = true;
@@ -151,7 +191,7 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 		}
 	}
 
-	
+
 	/**
 	 * The ReaSim boiler dial causes all RBMK parts to behave like boilers
 	 */
@@ -173,91 +213,113 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 		this.reasimSteam += processedWater;
 		this.heat -= processedWater * heatConsumption;
 	}
-	
+
 	public static final ForgeDirection[] heatDirs = new ForgeDirection[] {
 			ForgeDirection.NORTH,
 			ForgeDirection.EAST,
 			ForgeDirection.SOUTH,
 			ForgeDirection.WEST
 	};
-	
+
 	protected TileEntityRBMKBase[] neighbourCache = new TileEntityRBMKBase[4];
-	
+
 	/**
 	 * Moves heat to neighboring parts, if possible, in a relatively fair manner
 	 */
-	private void moveHeat() {
+    private void moveHeat() {
 
-		boolean reasim = RBMKDials.getReasimBoilers(world);
+        boolean reasim = RBMKDials.getReasimBoilers(world);
 
-		List<TileEntityRBMKBase> rec = new ArrayList<>();
-		rec.add(this);
-		double heatTot = this.heat;
-		int waterTot = this.reasimWater;
-		int steamTot = this.reasimSteam;
+        // 1. Start totals with "this" block data (no ArrayList needed)
+        double heatTot = this.heat;
+        int waterTot = this.reasimWater;
+        int steamTot = this.reasimSteam;
+        int members = 1; // "1" includes self
 
-		int index = 0;
-		for(ForgeDirection dir : heatDirs) {
+        // 2. Update Cache & Summation
+        int index = 0;
+        for(ForgeDirection dir : heatDirs) {
 
-			if(neighbourCache[index] != null && neighbourCache[index].isInvalid())
-				neighbourCache[index] = null;
+            // Validation
+            if(neighbourCache[index] != null && neighbourCache[index].isInvalid())
+                neighbourCache[index] = null;
 
-			if(neighbourCache[index] == null) {
-				TileEntity te = world.getTileEntity(getPos().add(dir.offsetX, 0, dir.offsetZ));
+            // Loading (Lazy)
+            if(neighbourCache[index] == null) {
+                TileEntity te = world.getTileEntity(getPos().add(dir.offsetX, 0, dir.offsetZ));
 
-				if(te instanceof TileEntityRBMKBase base) {
+                if(te instanceof TileEntityRBMKBase base) {
                     neighbourCache[index] = base;
-				}
-			}
+                }
+            }
 
-			index++;
-		}
+            // Summation directly from array
+            TileEntityRBMKBase neighbor = neighbourCache[index];
+            if (neighbor != null) {
+                members++;
+                heatTot += neighbor.heat;
+                if (reasim) {
+                    waterTot += neighbor.reasimWater;
+                    steamTot += neighbor.reasimSteam;
+                }
+            }
+            index++;
+        }
 
-		for(TileEntityRBMKBase base : neighbourCache) {
+        // 3. Distribution
+        double stepSize = RBMKDials.getColumnHeatFlow(world);
 
-			if(base != null) {
-				rec.add(base);
-				heatTot += base.heat;
-				if(reasim) {
-					waterTot += base.reasimWater;
-					steamTot += base.reasimSteam;
-				}
-			}
-		}
+        if(members > 1) {
 
-		int members = rec.size();
-		double stepSize = RBMKDials.getColumnHeatFlow(world);
+            double targetHeat = heatTot / (double)members;
 
-		if(members > 1) {
+            int tWater = 0;
+            int rWater = 0;
+            int tSteam = 0;
+            int rSteam = 0;
 
-			double targetHeat = heatTot / (double)members;
+            if(reasim) {
+                tWater = waterTot / members;
+                rWater = waterTot % members;
+                tSteam = steamTot / members;
+                rSteam = steamTot % members;
+            }
 
-			int tWater = waterTot / members;
-			int rWater = waterTot % members;
-			int tSteam = steamTot / members;
-			int rSteam = steamTot % members;
+            // Apply changes to neighbors
+            for(TileEntityRBMKBase neighbor : neighbourCache) {
+                if(neighbor != null) {
+                    double delta = targetHeat - neighbor.heat;
+                    neighbor.heat += delta * stepSize;
 
-			for(TileEntityRBMKBase rbmk : rec) {
-				double delta = targetHeat - rbmk.heat;
-				rbmk.heat += delta * stepSize;
+                    if(reasim) {
+                        neighbor.reasimWater = tWater;
+                        neighbor.reasimSteam = tSteam;
 
-				//set to the averages, rounded down
-				if(reasim) {
-					rbmk.reasimWater = tWater;
-					rbmk.reasimSteam = tSteam;
-				}
-			}
+                        // Distribute remainder slightly to avoid voiding fluids
+                        if (rWater > 0) { neighbor.reasimWater++; rWater--; }
+                        if (rSteam > 0) { neighbor.reasimSteam++; rSteam--; }
+                    }
+                    neighbor.markDirty();
+                }
+            }
 
-			//add the modulo to make up for the losses coming from rounding
-			if(reasim) {
-				this.reasimWater += rWater;
-				this.reasimSteam += rSteam;
-			}
+            // Apply changes to self
+            double delta = targetHeat - this.heat;
+            this.heat += delta * stepSize;
 
-			this.markDirty();
-		}
-	}
-	
+            if(reasim) {
+                this.reasimWater = tWater;
+                this.reasimSteam = tSteam;
+
+                // Self gets the last of the remainder
+                if (rWater > 0) { this.reasimWater += rWater; }
+                if (rSteam > 0) { this.reasimSteam += rSteam; }
+            }
+
+            this.markDirty();
+        }
+    }
+
 	private void coolPassively() {
 
 		if(TomSaveData.forWorld(world).fire > 1e-5) {
@@ -276,9 +338,9 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 	public RBMKType getRBMKType() {
 		return RBMKType.OTHER;
 	}
-	
+
 	protected static boolean diag = false;
-	
+
 	@Override
 	public void readFromNBT(NBTTagCompound nbt) {
 
@@ -290,7 +352,7 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 		this.reasimWater = nbt.getInteger("realSimWater");
 		this.reasimSteam = nbt.getInteger("realSimSteam");
 	}
-	
+
 	@Override
 	public @NotNull NBTTagCompound writeToNBT(NBTTagCompound nbt) {
 
@@ -317,72 +379,70 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 		this.reasimWater = buf.readInt();
 		this.reasimSteam = buf.readInt();
 	}
-	
+
 	public void getDiagData(NBTTagCompound nbt) {
 		diag = true;
 		this.writeToNBT(nbt);
 		diag = false;
 	}
 
-	@SideOnly(Side.CLIENT)
-	public static void diagnosticPrintHook(RenderGameOverlayEvent.Pre event) {
+    @SideOnly(Side.CLIENT)
+    public static void diagnosticPrintHook(RenderGameOverlayEvent.Pre event) {
 
-		Minecraft mc = Minecraft.getMinecraft();
-		World world = mc.world;
-		RayTraceResult mop = mc.objectMouseOver;
-		ScaledResolution resolution = event.getResolution();
+        Minecraft mc = Minecraft.getMinecraft();
+        World world = mc.world;
+        RayTraceResult mop = mc.objectMouseOver;
+        ScaledResolution resolution = event.getResolution();
 
-		if (mop != null && mop.typeOfHit == RayTraceResult.Type.BLOCK && world.getBlockState(mop.getBlockPos()).getBlock() instanceof RBMKBase rbmk) {
-			int[] pos = rbmk.findCore(world, mop.getBlockPos().getX(), mop.getBlockPos().getY(), mop.getBlockPos().getZ());
+        if (mop != null && mop.typeOfHit == RayTraceResult.Type.BLOCK && world.getBlockState(mop.getBlockPos()).getBlock() instanceof RBMKBase rbmk) {
+            BlockPos currentPos = rbmk.findCore(world, mop.getBlockPos());
+            if (currentPos == null) return;
+            long currentTime = System.currentTimeMillis();
 
-			if (pos == null)
-				return;
+            if (currentTime - lastDODDUpdate > 50 || !currentPos.equals(lastDODDPos)) {
+                lastDODDUpdate = currentTime;
+                lastDODDPos = currentPos;
 
-			TileEntityRBMKBase te = (TileEntityRBMKBase) world.getTileEntity(new BlockPos(pos[0], pos[1], pos[2]));
-			if (te == null) return;
-			NBTTagCompound flush = new NBTTagCompound();
-			te.getDiagData(flush);
-			Set<String> keys = flush.getKeySet();
+                TileEntityRBMKBase te = (TileEntityRBMKBase) world.getTileEntity(currentPos);
+                if (te == null) return;
 
-			GlStateManager.pushMatrix();
-			float scale = 1f; //Was there a reason this was 0.5 mov?
-			GlStateManager.scale(scale, scale, 1.0f);
-			int pX = resolution.getScaledWidth() / 2 + 8;
-			int pZ = resolution.getScaledHeight() / 2;
+                NBTTagCompound flush = new NBTTagCompound();
+                te.getDiagData(flush);
+                Set<String> keys = flush.getKeySet();
 
-			List<String> exceptions = new ArrayList<>();
-			exceptions.add("x");
-			exceptions.add("y");
-			exceptions.add("z");
-			exceptions.add("items");
-			exceptions.add("id");
-			exceptions.add("muffled");
+                String[] ents = keys.toArray(new String[0]);
+                Arrays.sort(ents);
 
-			String title = "Dump of Ordered Data Diagnostic (DODD)";
-			mc.fontRenderer.drawString(title, (int)(pX / scale) + 1, (int)((pZ - 19) / scale), 0x006000);
-			mc.fontRenderer.drawString(title, (int)(pX / scale), (int)((pZ - 20) / scale), 0x00FF00);
+                cachedDODDLines.clear();
+                for (String key : ents) {
+                    if (!exceptions.contains(key)) {
+                        cachedDODDLines.add(key + ": " + flush.getTag(key));
+                    }
+                }
+            }
 
-			mc.fontRenderer.drawString(I18nUtil.resolveKey(rbmk.getTranslationKey() + ".name"), (int)(pX / scale) + 1, (int)((pZ - 9) / scale), 0x606000);
-			mc.fontRenderer.drawString(I18nUtil.resolveKey(rbmk.getTranslationKey() + ".name"), (int)(pX / scale), (int)((pZ - 10) / scale), 0xffff00);
+            GlStateManager.pushMatrix();
+            float scale = 1f;
+            GlStateManager.scale(scale, scale, 1.0f);
+            int pX = resolution.getScaledWidth() / 2 + 8;
+            int pZ = resolution.getScaledHeight() / 2;
 
-			String[] ents = new String[keys.size()];
-			keys.toArray(ents);
-			Arrays.sort(ents);
-			int listPz = pZ;
-			for (String key : ents) {
+            mc.fontRenderer.drawString(title, (int)(pX / scale) + 1, (int)((pZ - 19) / scale), 0x006000);
+            mc.fontRenderer.drawString(title, (int)(pX / scale), (int)((pZ - 20) / scale), 0x00FF00);
+            mc.fontRenderer.drawString(I18nUtil.resolveKey(rbmk.getTranslationKey() + ".name"), (int)(pX / scale) + 1, (int)((pZ - 9) / scale), 0x606000);
+            mc.fontRenderer.drawString(I18nUtil.resolveKey(rbmk.getTranslationKey() + ".name"), (int)(pX / scale), (int)((pZ - 10) / scale), 0xffff00);
 
-				if (exceptions.contains(key))
-					continue;
-				mc.fontRenderer.drawString(key + ": " + flush.getTag(key), (int)(pX / scale), (int)(listPz / scale), 0xFFFFFF);
-				listPz += (int) (10 * scale);
-			}
+            int listPz = pZ;
+            for (String line : cachedDODDLines) {
+                mc.fontRenderer.drawString(line, (int)(pX / scale), (int)(listPz / scale), 0xFFFFFF);
+                listPz += 10;
+            }
 
-			GlStateManager.disableBlend();
-
-			GlStateManager.popMatrix();
-			Minecraft.getMinecraft().renderEngine.bindTexture(Gui.ICONS);
-		}
-	}
+            GlStateManager.disableBlend();
+            GlStateManager.popMatrix();
+            mc.renderEngine.bindTexture(Gui.ICONS);
+        }
+    }
 
 	public void onOverheat() {
 
@@ -390,7 +450,7 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 			world.setBlockState(pos.up(i), Blocks.LAVA.getDefaultState());
 		}
 	}
-	
+
 	public void onMelt(int reduce) {
 
 		standardMelt(reduce);
@@ -398,7 +458,7 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 		if(this.getBlockMetadata() == RBMKBase.DIR_NORMAL_LID.ordinal() + RBMKBase.offset)
 			spawnDebris(DebrisType.LID);
 	}
-	
+
 	protected void standardMelt(int reduce) {
 
 		int h = RBMKDials.getColumnHeight(world);
@@ -424,7 +484,7 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 			world.notifyBlockUpdate(pos.up(i), state, state, 3);
 		}
 	}
-	
+
 	protected void spawnDebris(DebrisType type) {
 
 		EntityRBMKDebris debris = new EntityRBMKDebris(world, pos.getX() + 0.5D, pos.getY() + 4D, pos.getZ() + 0.5D, type);
@@ -440,10 +500,10 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 
 		world.spawnEntity(debris);
 	}
-	
-	public static HashSet<TileEntityRBMKBase> columns = new HashSet<>();
-	public static HashSet<FluidNetMK2> pipes = new HashSet<>();
-	
+
+	public static ReferenceOpenHashSet<TileEntityRBMKBase> columns = new ReferenceOpenHashSet<>();
+	public static ReferenceOpenHashSet<FluidNetMK2> pipes = new ReferenceOpenHashSet<>();
+
 	//assumes that !world.isRemote
 	public void meltdown() {
 		RBMKBase.dropLids = false;
@@ -509,30 +569,34 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 
 		/* Hanlde overpressure event */
 		if(RBMKDials.getOverpressure(world) && !pipes.isEmpty()) {
-			HashSet<Object> pipeBlocks = new HashSet<>();
-			HashSet<Object> pipeReceivers = new HashSet<>();
+			//mlbv: the types here on upstream is a complete mess thanks to raw types
+            var pipeBlocks = new ReferenceOpenHashSet<FluidNode>();
+            var pipeReceivers = new ReferenceOpenHashSet<IFluidReceiverMK2>();
 
 			//unify all parts into single sets to prevent redundancy
-			pipes.forEach(x -> {
-				pipeBlocks.addAll(x.links);
-				pipeReceivers.addAll(x.receiverEntries.entrySet());
-			});
+            for (FluidNetMK2 x : pipes) {
+                pipeBlocks.addAll(x.links);
+                pipeReceivers.addAll(x.receiverEntries.keySet());
+            }
 
-			int count = 0;
+            int count = 0;
 			int max = Math.min(pipeBlocks.size() / 5, 100);
-			Iterator<Object> itPipes = pipeBlocks.iterator();
-			Iterator<Object> itReceivers = pipeReceivers.iterator();
+			var itPipes = pipeBlocks.iterator();
+			var itReceivers = pipeReceivers.iterator();
 
 			while(itPipes.hasNext() && count < max) {
-				Object pipe = itPipes.next();
-				if(pipe instanceof TileEntity tile) {
-                    world.setBlockToAir(tile.getPos());
+				var node = itPipes.next();
+				for (BlockPos pos : node.positions) {
+					if (world.getTileEntity(pos) != null) {
+						//mlbv: so the pipes just simply vanish?
+						world.setBlockToAir(pos);
+					}
 				}
 				count++;
 			}
 
 			while(itReceivers.hasNext()) {
-				Object con = itReceivers.next();
+                IFluidReceiverMK2 con = itReceivers.next();
 				if(con instanceof TileEntity tile) {
                     if(con instanceof IOverpressurable) {
 						((IOverpressurable) con).explode(world, tile.getPos().getX(), tile.getPos().getY(), tile.getPos().getZ());
@@ -556,9 +620,9 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 
 		world.playSound(null, avgX + 0.5, pos.getY() + 1, avgZ + 0.5, HBMSoundHandler.rbmk_explosion, SoundCategory.BLOCKS, 50.0F, 1.0F);
 
-		List<EntityPlayer> list = world.getEntitiesWithinAABB(EntityPlayer.class, new AxisAlignedBB(pos.getX() - 50 + 0.5, pos.getY() - 50 + 0.5, pos.getZ() - 50 + 0.5, pos.getX() + 50 + 0.5, pos.getY() + 50 + 0.5, pos.getZ() + 50 + 0.5));
+		List<EntityPlayerMP> list = world.getEntitiesWithinAABB(EntityPlayerMP.class, new AxisAlignedBB(pos.getX() - 50 + 0.5, pos.getY() - 50 + 0.5, pos.getZ() - 50 + 0.5, pos.getX() + 50 + 0.5, pos.getY() + 50 + 0.5, pos.getZ() + 50 + 0.5));
 
-		for(EntityPlayer e : list) {
+		for(EntityPlayerMP e : list) {
 			AdvancementManager.grantAchievement(e, AdvancementManager.achRBMKBoom);
 		}
 
@@ -572,42 +636,74 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 
 		RBMKBase.dropLids = true;
 		RBMKBase.digamma = false;
+
+		//mlbv: add cleanups to avoid reference leaks
+		columns.clear();
+		pipes.clear();
 	}
-	
+
 	//Family and Friends
-	private void getFF(int x, int y, int z) {
+    // iterative BFS version to prevent stack overflow
+    private void getFF(int x, int y, int z) {
 
-		TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
+        Queue<BlockPos> queue = new ArrayDeque<>();
+        queue.add(new BlockPos(x, y, z));
 
-		if(te instanceof TileEntityRBMKBase rbmk) {
+        // Safety limit to prevent server freeze on world-edited mega structures
+        int safetyLimit = 50000;
 
-            if(!columns.contains(rbmk)) {
-				columns.add(rbmk);
-				getFF(x + 1, y, z);
-				getFF(x - 1, y, z);
-				getFF(x, y, z + 1);
-				getFF(x, y, z - 1);
-			}
-		}
-	}
-	
+        while(!queue.isEmpty() && safetyLimit > 0) {
+            safetyLimit--;
+            BlockPos current = queue.poll();
+
+            // prevent loading unloaded chunks during meltdown
+            if (!world.isBlockLoaded(current)) continue;
+
+            TileEntity te = world.getTileEntity(current);
+
+            if(te instanceof TileEntityRBMKBase rbmk) {
+
+                if(!columns.contains(rbmk)) {
+                    columns.add(rbmk);
+
+                    // Add neighbors to queue
+                    queue.add(current.add(1, 0, 0));
+                    queue.add(current.add(-1, 0, 0));
+                    queue.add(current.add(0, 0, 1));
+                    queue.add(current.add(0, 0, -1));
+                }
+            }
+        }
+    }
+
 	public boolean isModerated() {
 		return false;
 	}
-	
+
 	public abstract ColumnType getConsoleType();
-	
-	public NBTTagCompound getNBTForConsole() {
-		return null;
+
+	public RBMKColumn getConsoleData() {
+		RBMKColumn col = RBMKColumn.createForType(getConsoleType());
+		col.heat = this.heat;
+		col.maxHeat = this.maxHeat();
+		col.moderated = this.isModerated();
+		col.reasimWater = this.reasimWater;
+		col.reasimSteam = this.reasimSteam;
+		return col;
 	}
-	
+
 	public static List<String> getFancyStats(NBTTagCompound nbt) {
 		return null;
 	}
-	
+
+    private AxisAlignedBB renderBoundingBox;
+
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 17, pos.getZ() + 1);
+        if (renderBoundingBox == null) {
+            renderBoundingBox = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 17, pos.getZ() + 1);
+        }
+		return renderBoundingBox;
 	}
 
 	@Override
@@ -638,13 +734,13 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 	public void invalidate() {
 		super.invalidate();
 		ControlEventSystem.get(world).removeControllable(this);
-		NeutronNodeWorld.removeNode(world, this.getPos()); // woo-fucking-hoo!!!
+		NeutronNodeWorld.removeNode(world, pos); // woo-fucking-hoo!!!
 	}
 
 	@Override
 	public void onChunkUnload() {
 		super.onChunkUnload();
-		NeutronNodeWorld.removeNode(world, this.getPos()); // woo-fucking-hoo!!!
+		NeutronNodeWorld.removeNode(world, pos); // woo-fucking-hoo!!!
 	}
 
 	@Override

@@ -1,8 +1,0 @@
-{
-    "parent": "block/outer_stairs",
-    "textures": {
-        "bottom": "hbm:blocks/brick_obsidian",
-        "top": "hbm:blocks/brick_obsidian",
-        "side": "hbm:blocks/brick_obsidian"
-    }
-}

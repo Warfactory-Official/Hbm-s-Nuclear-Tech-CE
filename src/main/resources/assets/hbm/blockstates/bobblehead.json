@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "rot=0":  { "model": "hbm:bobblehead" },
+    "rot=1":  { "model": "hbm:bobblehead" },
+    "rot=2":  { "model": "hbm:bobblehead" },
+    "rot=3":  { "model": "hbm:bobblehead" },
+    "rot=4":  { "model": "hbm:bobblehead" },
+    "rot=5":  { "model": "hbm:bobblehead" },
+    "rot=6":  { "model": "hbm:bobblehead" },
+    "rot=7":  { "model": "hbm:bobblehead" },
+    "rot=8":  { "model": "hbm:bobblehead" },
+    "rot=9":  { "model": "hbm:bobblehead" },
+    "rot=10": { "model": "hbm:bobblehead" },
+    "rot=11": { "model": "hbm:bobblehead" },
+    "rot=12": { "model": "hbm:bobblehead" },
+    "rot=13": { "model": "hbm:bobblehead" },
+    "rot=14": { "model": "hbm:bobblehead" },
+    "rot=15": { "model": "hbm:bobblehead" }
+  }
+}

@@ -1,7 +1,6 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.blocks.BlockDummyable;
-import com.hbm.blocks.IStructTE;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.Watz;
 import com.hbm.interfaces.AutoRegister;
@@ -14,7 +13,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @AutoRegister
-public class TileEntityWatzStruct extends TileEntity implements ITickable, IStructTE<TileEntityWatzStruct> {
+public class TileEntityWatzStruct extends TileEntity implements ITickable {
 
 	
 	@Override
@@ -113,10 +112,5 @@ public class TileEntityWatzStruct extends TileEntity implements ITickable, IStru
 	@SideOnly(Side.CLIENT)
 	public double getMaxRenderDistanceSquared() {
 		return 65536.0D;
-	}
-
-	@Override
-	public TileEntityWatzStruct newInstance() {
-		return this;
 	}
 }

@@ -1,22 +1,18 @@
 package com.hbm.inventory.control_panel.controls;
 
+import com.hbm.render.loader.WaveFrontObjectVAO;
 import com.hbm.inventory.control_panel.*;
 import com.hbm.inventory.control_panel.nodes.*;
-import com.hbm.main.ClientProxy;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.IModelCustom;
-import com.hbm.render.amlfrom1710.Tessellator;
+import com.hbm.render.loader.IModelCustom;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
-import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.opengl.GL11;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -47,8 +43,7 @@ public class ButtonEncasedPush extends Control {
     public void render() {
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
         Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.ctrl_button_encased_push_tex);
-        Tessellator tes = Tessellator.instance;
-        IModelCustom model = getModel();
+        WaveFrontObjectVAO model = (WaveFrontObjectVAO) getModel();
 
         boolean isPushed = getVar("isPushed").getBoolean();
         boolean isLit = getVar("isLit").getBoolean();
@@ -57,33 +52,26 @@ public class ButtonEncasedPush extends Control {
         float lX = OpenGlHelper.lastBrightnessX;
         float lY = OpenGlHelper.lastBrightnessY;
 
-        tes.startDrawing(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-        tes.setTranslation(posX, 0, posY);
-        tes.setColorRGBA_F(1, 1, 1, 1);
-        model.tessellatePart(tes, "base");
-        tes.draw();
+        // --- Base ---
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(posX, 0, posY);
+        model.renderPart("base");
+        GlStateManager.popMatrix();
+
+        // --- Button ---
+        float[] color = EnumDyeColor.RED.getColorComponentValues();
+        float cMul = isLit ? 1F : 0.6F;
 
         if (isLit) {
             OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240, 240);
         }
 
-        float[] color = EnumDyeColor.RED.getColorComponentValues();
-        float cMul = 0.6F;
-        if (isLit) {
-            cMul = 1;
-        }
-
-        tes.startDrawing(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-        tes.setTranslation(posX, (isPushed)?-.1F:0, posY);
-        tes.setColorRGBA_F(color[0]*cMul, color[1]*cMul, color[2]*cMul, 1F);
-        model.tessellatePart(tes, "btn_top");
-        tes.draw();
-
-        tes.startDrawing(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-        tes.setTranslation(posX, (isPushed)?-.1F:0, posY);
-        tes.setColorRGBA_F(color[0]*cMul, color[1]*cMul, color[2]*cMul, 1F);
-        model.tessellatePart(tes, "btn_top_top");
-        tes.draw();
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(posX, (isPushed ? -0.1F : 0F), posY);
+        GlStateManager.color(color[0] * cMul, color[1] * cMul, color[2] * cMul, 1F);
+        model.renderPart("btn_top");
+        model.renderPart("btn_top_top");
+        GlStateManager.popMatrix();
 
         if (isLit) {
             OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lX, lY);
@@ -92,23 +80,15 @@ public class ButtonEncasedPush extends Control {
         GlStateManager.enableBlend();
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
 
-        Matrix4f rot_mat = new Matrix4f().rotate((float) ((isCoverOpen) ? Math.toRadians(-75) : 0), new Vector3f(1, 0, 0));
-        Matrix4f trans_mat = new Matrix4f().translate(new Vector3f(posX, .625F, posY-.75F));
-        Matrix4f transform_mat = new Matrix4f();
-        Matrix4f.mul(trans_mat, rot_mat, transform_mat);
-        transform_mat.store(ClientProxy.AUX_GL_BUFFER);
-        ClientProxy.AUX_GL_BUFFER.rewind();
-        GlStateManager.multMatrix(ClientProxy.AUX_GL_BUFFER);
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(posX, 0.625F, posY - 0.75F);
+        if (isCoverOpen) {
+            GlStateManager.rotate(-75F, 1F, 0F, 0F);
+        }
 
-        tes.startDrawing(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-        tes.setColorRGBA_F(1, 1, 1, 1);
-        model.tessellatePart(tes, "cover");
-        tes.draw();
-
-        tes.startDrawing(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-        tes.setColorRGBA_F(1, 1, 1, 1);
-        model.tessellatePart(tes, "cover2");
-        tes.draw();
+        model.renderPart("cover");
+        model.renderPart("cover2");
+        GlStateManager.popMatrix();
 
         GlStateManager.disableBlend();
         GlStateManager.shadeModel(GL11.GL_FLAT);

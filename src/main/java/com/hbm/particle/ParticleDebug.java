@@ -1,6 +1,6 @@
 package com.hbm.particle;
 
-import com.hbm.main.ModEventHandlerClient;
+import com.hbm.main.client.NTMClientRegistry;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -11,8 +11,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class ParticleDebug extends Particle {
-    private static final TextureAtlasSprite SPRITE_POWER = ModEventHandlerClient.debugPower;
-    private static final TextureAtlasSprite SPRITE_FLUID = ModEventHandlerClient.debugFluid;
+    private static final TextureAtlasSprite SPRITE_POWER = NTMClientRegistry.debugPower;
+    private static final TextureAtlasSprite SPRITE_FLUID = NTMClientRegistry.debugFluid;
 
     private final byte type;
 

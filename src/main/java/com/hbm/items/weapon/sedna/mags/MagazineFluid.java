@@ -20,10 +20,13 @@ public class MagazineFluid implements IMagazine<FluidType> {
     public int index;
     /** How much ammo this mag can hold */
     public int capacity;
+    /** Whichever fluids we can pour in this bastard */
+    public FluidType[] acceptedTypes;
 
-    public MagazineFluid(int index, int capacity) {
+    public MagazineFluid(int index, int capacity, FluidType... acceptedTypes) {
         this.index = index;
         this.capacity = capacity;
+        this.acceptedTypes = acceptedTypes;
     }
 
     @Override

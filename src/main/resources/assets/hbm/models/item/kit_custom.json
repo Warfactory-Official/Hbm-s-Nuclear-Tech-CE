@@ -1,0 +1,8 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "hbm:items/kit",
+    "layer1": "hbm:items/kit_1",
+    "layer2": "hbm:items/kit_2"
+  }
+}

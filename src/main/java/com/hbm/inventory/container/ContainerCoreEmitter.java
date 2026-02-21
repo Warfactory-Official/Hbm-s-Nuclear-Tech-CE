@@ -35,14 +35,14 @@ public class ContainerCoreEmitter extends Container {
     }
 
     @Override
-    public ItemStack transferStackInSlot(EntityPlayer player, int par2) {
-        ItemStack var3 = ItemStack.EMPTY;
-        Slot var4 = (Slot) this.inventorySlots.get(par2);
+    public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+        ItemStack result = ItemStack.EMPTY;
+        Slot slot = this.inventorySlots.get(index);
 
-        if (var4 != null && var4.getHasStack()) {
+        if (slot != null && slot.getHasStack()) {
             return ItemStack.EMPTY;
         }
 
-        return var3;
+        return result;
     }
 }

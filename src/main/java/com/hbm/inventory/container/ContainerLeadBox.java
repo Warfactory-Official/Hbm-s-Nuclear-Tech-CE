@@ -44,31 +44,7 @@ public class ContainerLeadBox extends Container implements ISortableContainer {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        ItemStack itemstack = ItemStack.EMPTY;
-        Slot slot = (Slot) this.inventorySlots.get(index);
-
-        if(slot != null && slot.getHasStack()) {
-            ItemStack itemstack1 = slot.getStack();
-            itemstack = itemstack1.copy();
-
-            if(index < box.getSlots()) {
-                if(!InventoryUtil.mergeItemStack(this.inventorySlots, itemstack1, box.getSlots(), this.inventorySlots.size(), true)) {
-                    return ItemStack.EMPTY;
-                }
-            } else if(!InventoryUtil.mergeItemStack(this.inventorySlots, itemstack1, 0, box.getSlots(), false)) {
-                return ItemStack.EMPTY;
-            }
-
-            if(itemstack1.isEmpty()) {
-                slot.putStack(ItemStack.EMPTY);
-            } else {
-                slot.onSlotChanged();
-            }
-
-            slot.onTake(player, itemstack1);
-        }
-
-        return itemstack;
+        return InventoryUtil.transferStack(this.inventorySlots, index, box.getSlots(), true, player);
     }
 
     @Override

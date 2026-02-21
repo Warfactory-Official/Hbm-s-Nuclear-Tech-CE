@@ -2,10 +2,10 @@ package com.hbm.items.special;
 
 import com.hbm.items.ItemEnumMulti;
 
-public class ItemPlasticScrap extends ItemEnumMulti {
+public class ItemPlasticScrap extends ItemEnumMulti<ItemPlasticScrap.ScrapType> {
 
     public ItemPlasticScrap(String registryName) {
-        super(registryName, ScrapType.class, false, false);
+        super(registryName, ScrapType.VALUES, false, false);
         this.setCreativeTab(null);
     }
 
@@ -41,6 +41,8 @@ public class ItemPlasticScrap extends ItemEnumMulti {
 
         //EXTENSION CARD
         CARD_BOARD,
-        CARD_PROCESSOR
+        CARD_PROCESSOR;
+
+        public static final ScrapType[] VALUES = values();
     }
 }

@@ -10,12 +10,15 @@ import java.io.FileReader;
 import java.io.FileWriter;
 
 public class JsonConfig {
-
 	public static final Gson gson = new Gson();
-	
+
 	private static File getFile(String filename){
 		return new File(MainRegistry.proxy.getDataDir().getPath() + "/config/hbm" + File.separatorChar + filename);
 	}
+
+    public static boolean isFileNonexistent(String filename) {
+        return !getFile(filename).exists();
+    }
 
 	public static JsonWriter startWriting(String filename){
 		try{
@@ -23,7 +26,7 @@ public class JsonConfig {
 			writer.setIndent("  ");
 			writer.beginObject();
 			return writer;
-		} catch(Exception ex) { }
+		} catch(Exception _) { }
 		return null;
 	}
 
@@ -31,7 +34,7 @@ public class JsonConfig {
 		try{
 			writer.endObject();
 			writer.close();
-		} catch(Exception ex) {	}
+		} catch(Exception _) {	}
 	}
 
 	public static JsonObject startReading(String filename){
@@ -40,7 +43,7 @@ public class JsonConfig {
 			if(file.exists())
 				return gson.fromJson(new FileReader(file), JsonObject.class);
 			return null;
-		} catch(Exception ex) { }
+		} catch(Exception _) { }
 		return null;
 	}
 }

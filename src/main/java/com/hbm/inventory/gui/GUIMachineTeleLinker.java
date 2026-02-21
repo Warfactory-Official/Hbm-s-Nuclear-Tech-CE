@@ -1,17 +1,17 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerMachineTeleLinker;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityMachineTeleLinker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.GlStateManager;
 
 public class GUIMachineTeleLinker extends GuiInfoContainer {
 	
-	private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/gui_telelinker.png");
+	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/gui_telelinker.png");
 	private TileEntityMachineTeleLinker siren;
 
 	public GUIMachineTeleLinker(InventoryPlayer invPlayer, TileEntityMachineTeleLinker tedf) {

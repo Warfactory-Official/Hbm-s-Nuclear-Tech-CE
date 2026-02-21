@@ -1,26 +1,26 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerMachineExcavator;
-import com.hbm.lib.RefStrings;
 import com.hbm.packet.toserver.NBTControlPacket;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.machine.TileEntityMachineExcavator;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUIMachineExcavator extends GuiInfoContainer {
 
-	private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/machine/gui_mining_drill.png");
+	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/machine/gui_mining_drill.png");
 	private TileEntityMachineExcavator drill;
 
 	public GUIMachineExcavator(InventoryPlayer inventory, TileEntityMachineExcavator tile) {
@@ -70,11 +70,11 @@ public class GUIMachineExcavator extends GuiInfoContainer {
 
 		if(toggle != null) {
 			// "hbm:block.leverLarge"
-			mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+			playClickSound();
 			NBTTagCompound data = new NBTTagCompound();
 			data.setBoolean(toggle, true);
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, drill.getPos()));
-		}
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, drill.getPos()));
+        }
 	}
 
 	@Override
@@ -85,7 +85,6 @@ public class GUIMachineExcavator extends GuiInfoContainer {
 	@Override
 	protected void drawGuiContainerBackgroundLayer(float interp, int x, int y) {
 		super.drawDefaultBackground();
-		GL11.glPushAttrib(GL11.GL_ENABLE_BIT);
 		GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
@@ -139,6 +138,5 @@ public class GUIMachineExcavator extends GuiInfoContainer {
 		}
 
 		drill.tank.renderTank(guiLeft + 202, guiTop + 70, this.zLevel, 16, 52);
-		GL11.glPopAttrib();
 	}
 }

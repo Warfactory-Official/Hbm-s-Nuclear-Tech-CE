@@ -20,166 +20,155 @@ public class FluidLoaderFillableItem implements IFluidLoadingHandler {
     public boolean fillItem(IItemHandler slots, int in, int out, FluidTankNTM tank) {
         if (tank.pressure != 0) return false;
         ItemStack inputStack = slots.getStackInSlot(in);
-        ItemStack outputStack = slots.getStackInSlot(out);
-        if (inputStack.isEmpty() || !outputStack.isEmpty()) {
-            return false;
-        }
+        if (inputStack.isEmpty()) return true;
         if (inputStack.getCount() > 1) {
-            ItemStack armorCopy = inputStack.copy();
-            armorCopy.setCount(1);
-            if (fill(armorCopy, tank)) {
+            ItemStack singleItem = slots.extractItem(in, 1, true);
+            int moved = fill(singleItem, tank);
+            if (moved > 0 && slots.insertItem(out, singleItem, true).isEmpty()) {
                 slots.extractItem(in, 1, false);
-                slots.insertItem(out, armorCopy, false);
+                tank.setFill(tank.getFill() - moved);
+                slots.insertItem(out, singleItem, false);
                 return true;
             }
             return false;
         }
-
-        ItemStack singleItem = slots.extractItem(in, 1, false);
-        if (singleItem.isEmpty()) return false;
-
-        ItemStack workingCopy = singleItem.copy();
-        boolean changed = fill(workingCopy, tank);
-
-        if (!changed) {
-            slots.insertItem(in, singleItem, false);
-            return false;
-        }
-
-        boolean itemIsFull = isItemFull(workingCopy, tank.getTankType());
-        boolean tankIsEmpty = tank.getFill() == 0;
-
-        if (itemIsFull || tankIsEmpty) {
-            slots.insertItem(out, workingCopy, false);
-        } else {
-            slots.insertItem(in, workingCopy, false);
-        }
-
+        ItemStack singleItem = slots.extractItem(in, 1, true);
+        if (singleItem.isEmpty()) return true;
+        int movedSim = fill(singleItem, tank);
+        if (movedSim <= 0) return false;
+        boolean wouldEmptyTank = (tank.getFill() - movedSim) == 0;
+        boolean preferOut = isItemFull(singleItem, tank.getTankType()) || wouldEmptyTank;
+        boolean toOut = preferOut && slots.insertItem(out, singleItem, true).isEmpty();
+        slots.extractItem(in, 1, false);
+        tank.setFill(tank.getFill() - movedSim);
+        slots.insertItem(toOut ? out : in, singleItem, false);
         return true;
     }
 
-    private static boolean fill(ItemStack stack, FluidTankNTM tank) {
-        if (tank.getFill() <= 0) return false;
+    private static int fill(ItemStack stack, FluidTankNTM tank) {
+        if (tank.getFill() <= 0) return 0;
 
-        boolean changed = false;
+        int movedTotal = 0;
         FluidType type = tank.getTankType();
+        int remaining = tank.getFill();
+        if (remaining > 0 && stack.getItem() instanceof ItemArmor && ArmorModHandler.hasMods(stack)) {
+            ItemStack[] mods = ArmorModHandler.pryMods(stack);
+            for (ItemStack mod : mods) {
+                if (remaining <= 0) break;
+                if (mod != null && !mod.isEmpty() && mod.getItem() instanceof IFillableItem fillableMod) {
+                    if (fillableMod.acceptsFluid(type, mod)) {
+                        int remainder = fillableMod.tryFill(type, remaining, mod);
+                        int moved = remaining - remainder;
+                        if (moved > 0) {
+                            movedTotal += moved;
+                            remaining -= moved;
+                            ArmorModHandler.applyMod(stack, mod);
+                        }
+                    }
+                }
+            }
+        }
+        if (remaining > 0 && stack.getItem() instanceof IFillableItem fillable) {
+            if (fillable.acceptsFluid(type, stack)) {
+                int remainder = fillable.tryFill(type, remaining, stack);
+                int moved = remaining - remainder;
+                if (moved > 0) {
+                    movedTotal += moved;
+                }
+            }
+        }
+        return movedTotal;
+    }
 
+    @Override
+    public boolean emptyItem(IItemHandler slots, int in, int out, FluidTankNTM tank) {
+        ItemStack inputStack = slots.getStackInSlot(in);
+        if (inputStack.isEmpty()) return true;
+        if (inputStack.getCount() > 1) {
+            ItemStack singleItem = slots.extractItem(in, 1, true);
+            FluidType chosen = tank.getTankType() != Fluids.NONE ? tank.getTankType() : pickEmptyingType(singleItem, tank);
+            int moved = empty(singleItem, tank);
+            if (moved > 0 && slots.insertItem(out, singleItem, true).isEmpty()) {
+                if (tank.getTankType() == Fluids.NONE && chosen != null && chosen != Fluids.NONE) {
+                    tank.setTankType(chosen);
+                }
+                slots.extractItem(in, 1, false);
+                tank.setFill(tank.getFill() + moved);
+                slots.insertItem(out, singleItem, false);
+                return true;
+            }
+            return false;
+        }
+        ItemStack singleItem = slots.extractItem(in, 1, true);
+        if (singleItem.isEmpty()) return true;
+        FluidType chosen = tank.getTankType() == Fluids.NONE ? pickEmptyingType(singleItem, tank) : tank.getTankType();
+        int movedSim = empty(singleItem, tank);
+        if (movedSim <= 0) return false;
+        boolean wouldFillTank = (tank.getFill() + movedSim) >= tank.getMaxFill();
+        boolean preferOut = isItemEmpty(singleItem) || wouldFillTank;
+        boolean toOut = preferOut && slots.insertItem(out, singleItem, true).isEmpty();
+        if (tank.getTankType() == Fluids.NONE && chosen != null && chosen != Fluids.NONE) {
+            tank.setTankType(chosen);
+        }
+        slots.extractItem(in, 1, false);
+        tank.setFill(tank.getFill() + movedSim);
+        slots.insertItem(toOut ? out : in, singleItem, false);
+        return true;
+    }
+
+    private static int empty(ItemStack stack, FluidTankNTM tank) {
+        int space = tank.getMaxFill() - tank.getFill();
+        if (space <= 0) return 0;
+
+        int movedTotal = 0;
+        FluidType tankType = tank.getTankType();
+        FluidType targetType = (tankType != Fluids.NONE) ? tankType : pickEmptyingType(stack, tank);
+        if (targetType == null || targetType == Fluids.NONE) return 0;
         if (stack.getItem() instanceof ItemArmor && ArmorModHandler.hasMods(stack)) {
             ItemStack[] mods = ArmorModHandler.pryMods(stack);
             for (ItemStack mod : mods) {
-                if (tank.getFill() <= 0) break;
+                if (movedTotal >= space) break;
 
                 if (mod != null && !mod.isEmpty() && mod.getItem() instanceof IFillableItem fillableMod) {
-                    if (fillableMod.acceptsFluid(type, mod)) {
-                        int amountToFill = tank.getFill();
-                        int remainder = fillableMod.tryFill(type, amountToFill, mod);
-
-                        if (remainder < amountToFill) {
-                            int amountFilled = amountToFill - remainder;
-                            tank.setFill(tank.getFill() - amountFilled);
+                    if (fillableMod.providesFluid(targetType, mod)) {
+                        int budget = space - movedTotal;
+                        int moved = fillableMod.tryEmpty(targetType, budget, mod);
+                        if (moved > 0) {
+                            movedTotal += moved;
                             ArmorModHandler.applyMod(stack, mod);
-                            changed = true;
                         }
                     }
                 }
             }
         }
 
-        if (stack.getItem() instanceof IFillableItem fillable) {
-            if (fillable.acceptsFluid(type, stack) && tank.getFill() > 0) {
-                int amountToFill = tank.getFill();
-                int remainder = fillable.tryFill(type, amountToFill, stack);
-                if (remainder < amountToFill) {
-                    tank.setFill(remainder);
-                    changed = true;
-                }
+        if (movedTotal < space && stack.getItem() instanceof IFillableItem fillable) {
+            if (fillable.providesFluid(targetType, stack)) {
+                int budget = space - movedTotal;
+                int moved = fillable.tryEmpty(targetType, budget, stack);
+                if (moved > 0) movedTotal += moved;
             }
         }
-
-        return changed;
+        return movedTotal;
     }
 
-    @Override
-    public boolean emptyItem(IItemHandler slots, int in, int out, FluidTankNTM tank) {
-        ItemStack inputStack = slots.getStackInSlot(in);
-        ItemStack outputStack = slots.getStackInSlot(out);
-        if (inputStack.isEmpty() || !outputStack.isEmpty()) return false;
-        if (inputStack.getCount() > 1) {
-            ItemStack armorCopy = inputStack.copy();
-            armorCopy.setCount(1);
-            boolean wasChanged = empty(armorCopy, tank);
-            if (wasChanged) {
-                slots.extractItem(in, 1, false);
-                slots.insertItem(out, armorCopy, false);
-                return true;
-            }
-            return false;
-        }
-        ItemStack singleItem = slots.extractItem(in, 1, false);
-        if (singleItem.isEmpty()) return false;
-
-        ItemStack workingCopy = singleItem.copy();
-        boolean wasChanged = empty(workingCopy, tank);
-
-        if (!wasChanged) {
-            slots.insertItem(in, singleItem, false);
-            return false;
-        }
-
-        boolean itemIsEmpty = isItemEmpty(workingCopy);
-        boolean tankIsFull = tank.getFill() >= tank.getMaxFill();
-
-        if (itemIsEmpty || tankIsFull) {
-            slots.insertItem(out, workingCopy, false);
-        } else {
-            slots.insertItem(in, workingCopy, false);
-        }
-
-        return true;
-    }
-
-    private static boolean empty(ItemStack stack, FluidTankNTM tank) {
-        if (tank.getFill() >= tank.getMaxFill()) return false;
-        boolean success = false;
+    private static FluidType pickEmptyingType(ItemStack stack, FluidTankNTM tank) {
+        if (tank.getTankType() != Fluids.NONE) return tank.getTankType();
         if (stack.getItem() instanceof ItemArmor && ArmorModHandler.hasMods(stack)) {
-            ItemStack[] mods = ArmorModHandler.pryMods(stack);
+            ItemStack[] mods = ArmorModHandler.pryMods(stack.copy());
             for (ItemStack mod : mods) {
-                if (tank.getFill() >= tank.getMaxFill()) break;
-                if (empty(mod, tank)) {
-                    ArmorModHandler.applyMod(stack, mod);
-                    success = true;
+                if (mod != null && !mod.isEmpty() && mod.getItem() instanceof IFillableItem fillableMod) {
+                    FluidType t = fillableMod.getFirstFluidType(mod);
+                    if (t != null && t != Fluids.NONE) return t;
                 }
             }
         }
-        if (!(stack.getItem() instanceof IFillableItem fillable)) {
-            return success;
+        if (stack.getItem() instanceof IFillableItem fillable) {
+            FluidType t = fillable.getFirstFluidType(stack);
+            if (t != null && t != Fluids.NONE) return t;
         }
 
-        FluidType fluidToTransfer = null;
-        if (tank.getTankType() == Fluids.NONE) {
-            FluidType itemFluidType = fillable.getFirstFluidType(stack);
-            if (itemFluidType != null && itemFluidType != Fluids.NONE) {
-                tank.setTankType(itemFluidType);
-                fluidToTransfer = itemFluidType;
-            }
-        } else {
-            if (fillable.providesFluid(tank.getTankType(), stack)) {
-                fluidToTransfer = tank.getTankType();
-            }
-        }
-
-        if (fluidToTransfer != null) {
-            int spaceInTank = tank.getMaxFill() - tank.getFill();
-            if (spaceInTank > 0) {
-                int amountEmptied = fillable.tryEmpty(fluidToTransfer, spaceInTank, stack);
-                if (amountEmptied > 0) {
-                    tank.setFill(tank.getFill() + amountEmptied);
-                    success = true;
-                }
-            }
-        }
-
-        return success;
+        return Fluids.NONE;
     }
 
     @Contract(pure = true)
@@ -202,7 +191,6 @@ public class FluidLoaderFillableItem implements IFluidLoadingHandler {
                 return fillable.tryFill(type, 1, stack.copy()) >= 1;
             }
         }
-
         return true;
     }
 

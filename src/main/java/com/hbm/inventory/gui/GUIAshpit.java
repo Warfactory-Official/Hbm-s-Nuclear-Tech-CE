@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerAshpit;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityAshpit;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.GlStateManager;
 public class GUIAshpit extends GuiInfoContainer {
 
     private TileEntityAshpit firebox;
-    private final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/machine/gui_ashpit.png");
+    private final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/machine/gui_ashpit.png");
 
     public GUIAshpit(InventoryPlayer invPlayer, TileEntityAshpit tedf) {
         super(new ContainerAshpit(invPlayer, tedf));

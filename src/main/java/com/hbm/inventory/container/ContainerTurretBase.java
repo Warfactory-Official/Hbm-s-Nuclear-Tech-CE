@@ -1,8 +1,10 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotBattery;
-import com.hbm.items.ModItems;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.items.machine.ItemTurretBiometry;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.turret.TileEntityTurretBaseNT;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -10,6 +12,8 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.function.Predicate;
 
 public class ContainerTurretBase extends Container {
 
@@ -43,36 +47,11 @@ public class ContainerTurretBase extends Container {
 
   @Override
   public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-    ItemStack rStack = ItemStack.EMPTY;
-    Slot slot = this.inventorySlots.get(index);
-
-    if (slot != null && slot.getHasStack()) {
-      ItemStack stack = slot.getStack();
-      rStack = stack.copy();
-
-      if (index <= turret.inventory.getSlots() - 1) {
-        if (!this.mergeItemStack(
-            stack, turret.inventory.getSlots(), this.inventorySlots.size(), true)) {
-          return ItemStack.EMPTY;
-        }
-      } else if (stack.getItem() == ModItems.turret_chip) {
-
-        if (!this.mergeItemStack(stack, 0, 1, false)) return ItemStack.EMPTY;
-
-      } else if (!this.mergeItemStack(stack, 1, turret.inventory.getSlots(), false)) {
-        return ItemStack.EMPTY;
-      }
-
-      if (stack.isEmpty()) {
-        slot.putStack(ItemStack.EMPTY);
-      } else {
-        slot.onSlotChanged();
-      }
-
-      slot.onTake(player, stack);
-    }
-
-    return rStack;
+    return InventoryUtil.transferStack(this.inventorySlots, index, 11,
+            s -> s.getItem() instanceof ItemTurretBiometry, 1,
+            Predicate.not(Library::isBattery), 10,
+            Library::isBattery, 11
+    );
   }
 
   @Override

@@ -15,7 +15,7 @@ import net.minecraftforge.fluids.Fluid;
 
 import java.util.Random;
 
-public class AcidBlock extends BlockFluidClassic {
+public class AcidBlock extends BlockFluidClassic implements IFluidFog {
     public static DamageSource damageSource;
 
     public AcidBlock(Fluid fluid, Material material, DamageSource damage, String name) {
@@ -83,5 +83,15 @@ public class AcidBlock extends BlockFluidClassic {
     @Override
     public int tickRate(World world) {
         return 5;
+    }
+
+    @Override
+    public float getFogDensity() {
+        return 2.0F;
+    }
+
+    @Override
+    public int getFogColor() {
+        return 0x9F00B9;
     }
 }

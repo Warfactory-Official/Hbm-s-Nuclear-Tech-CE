@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerMachineExposureChamber;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityMachineExposureChamber;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -11,7 +11,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GUIMachineExposureChamber extends GuiInfoContainer {
 
-    public static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_exposure_chamber.png");
+    public static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_exposure_chamber.png");
     private final TileEntityMachineExposureChamber chamber;
 
     public GUIMachineExposureChamber(InventoryPlayer invPlayer, TileEntityMachineExposureChamber chamber) {

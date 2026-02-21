@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotCraftingOutput;
-import com.hbm.inventory.SlotSmelting;
+import com.hbm.inventory.slot.SlotCraftingOutput;
+import com.hbm.inventory.slot.SlotSmelting;
 import com.hbm.tileentity.machine.TileEntityFurnaceBrick;
 import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;

@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.api.block.IToolable.ToolType;
 import com.hbm.handler.radiation.RadiationSystemNT;
 import com.hbm.interfaces.IBomb;
 import com.hbm.interfaces.IDoor;
@@ -8,6 +9,7 @@ import com.hbm.interfaces.IDummy;
 import com.hbm.interfaces.IRadResistantBlock;
 import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemLock;
+import com.hbm.items.tool.ItemTooling;
 import com.hbm.tileentity.machine.TileEntityDummy;
 import com.hbm.tileentity.machine.TileEntityVaultDoor;
 import micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock;
@@ -92,38 +94,43 @@ public class DummyBlockVault extends BlockContainer implements IDummy, IBomb, IR
 			return true;
 		} else if(player.getHeldItemMainhand().getItem() instanceof ItemLock || player.getHeldItemMainhand().getItem() == ModItems.key_kit) {
 			return false;
-			
-		} else if(!player.isSneaking())
-		{
-			TileEntity til = world.getTileEntity(pos);
-			if(til != null && til instanceof TileEntityDummy && ((TileEntityDummy)til).target != null) {
-						
-				TileEntityVaultDoor entity = (TileEntityVaultDoor) world.getTileEntity(((TileEntityDummy)til).target);
-				if(entity != null)
-				{
-					if(entity.canAccess(player)){
-						entity.tryToggle();
-						return true;
-					}
-				}
-			}
-			return false;
-			
-		} else {
-			TileEntity te = world.getTileEntity(pos);
-			if(te != null && te instanceof TileEntityDummy && ((TileEntityDummy)te).target != null) {
-						
-				TileEntityVaultDoor entity = (TileEntityVaultDoor) world.getTileEntity(((TileEntityDummy)te).target);
-				if(entity != null)
-				{
-					entity.type++;
-					if(entity.type >= TileEntityVaultDoor.maxTypes)
-						entity.type = 0;
-				}
-			}
-			
+		}
+
+		TileEntity te = world.getTileEntity(pos);
+		if(!(te instanceof TileEntityDummy) || ((TileEntityDummy) te).target == null) {
 			return false;
 		}
+
+		TileEntityVaultDoor entity = (TileEntityVaultDoor) world.getTileEntity(((TileEntityDummy) te).target);
+		if(entity == null) {
+			return false;
+		}
+
+		if (player.getHeldItem(hand).getItem() instanceof ItemTooling tool && tool.getType() == ToolType.SCREWDRIVER) {
+			if (entity.getConfiguredMode() == IDoor.Mode.TOOLABLE) {
+				if (!entity.canToggleRedstone(player)) {
+					return false;
+				}
+				entity.toggleRedstoneMode();
+				return true;
+			}
+		}
+
+		if(!player.isSneaking()) {
+			if (entity.isRedstoneOnly()) {
+				return false;
+			}
+			if(entity.canAccess(player)){
+				entity.tryToggle();
+				return true;
+			}
+			return false;
+		}
+
+		entity.type++;
+		if(entity.type >= TileEntityVaultDoor.maxTypes)
+			entity.type = 0;
+		return false;
 	}
 	
 	@Override
@@ -136,8 +143,8 @@ public class DummyBlockVault extends BlockContainer implements IDummy, IBomb, IR
     				world.destroyBlock(((TileEntityDummy)te).target, true);
     		}
     	}
+		RadiationSystemNT.markSectionForRebuild(world, pos);
     	world.removeTileEntity(pos);
-		RadiationSystemNT.markChunkForRebuild(world, pos);
 	}
 	
 	@Override
@@ -177,12 +184,6 @@ public class DummyBlockVault extends BlockContainer implements IDummy, IBomb, IR
 	@Override
 	public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
 		return new ItemStack(ModBlocks.vault_door);
-	}
-
-	@Override
-	public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
-		RadiationSystemNT.markChunkForRebuild(worldIn, pos);
-		super.onBlockAdded(worldIn, pos, state);
 	}
 
 	@Override

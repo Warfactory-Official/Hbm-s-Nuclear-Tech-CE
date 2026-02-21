@@ -1,8 +1,0 @@
-{
-    "parent": "block/inner_stairs",
-    "textures": {
-        "bottom": "hbm:blocks/pink_planks",
-        "top": "hbm:blocks/pink_planks",
-        "side": "hbm:blocks/pink_planks"
-    }
-}

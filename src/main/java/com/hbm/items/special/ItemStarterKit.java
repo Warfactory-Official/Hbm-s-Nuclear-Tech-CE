@@ -7,8 +7,8 @@ import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBattery;
 import com.hbm.items.machine.ItemBreedingRod;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.lib.Library;
 import com.hbm.util.I18nUtil;
+import com.hbm.util.ShadyUtil;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
@@ -347,10 +347,10 @@ public class ItemStarterKit extends Item {
 
         if(this == ModItems.t45_kit)
         {
-            player.inventory.addItemStackToInventory(new ItemStack(ModItems.t45_helmet, 1));
-            player.inventory.addItemStackToInventory(new ItemStack(ModItems.t45_plate, 1));
-            player.inventory.addItemStackToInventory(new ItemStack(ModItems.t45_legs, 1));
-            player.inventory.addItemStackToInventory(new ItemStack(ModItems.t45_boots, 1));
+            player.inventory.addItemStackToInventory(new ItemStack(ModItems.t51_helmet, 1));
+            player.inventory.addItemStackToInventory(new ItemStack(ModItems.t51_plate, 1));
+            player.inventory.addItemStackToInventory(new ItemStack(ModItems.t51_legs, 1));
+            player.inventory.addItemStackToInventory(new ItemStack(ModItems.t51_boots, 1));
             player.inventory.addItemStackToInventory(ItemBattery.getFullBattery(ModItems.fusion_core));
             player.inventory.addItemStackToInventory(ItemBattery.getFullBattery(ModItems.fusion_core));
             player.inventory.addItemStackToInventory(ItemBattery.getFullBattery(ModItems.fusion_core));
@@ -478,7 +478,7 @@ public class ItemStarterKit extends Item {
 
         if(this == ModItems.letter && world.isRemote)
         {
-            if(player.getUniqueID().toString().equals(Library.a20)) {
+            if(player.getUniqueID().equals(ShadyUtil.a20)) {
                 player.sendMessage(new TextComponentTranslation("chat.letter.a20"));
             } else {
                 player.sendMessage(new TextComponentTranslation("chat.letter.open"));

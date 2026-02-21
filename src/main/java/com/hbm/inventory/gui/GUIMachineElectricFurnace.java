@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerMachineElectricFurnace;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityMachineElectricFurnace;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.GlStateManager;
 
 public class GUIMachineElectricFurnace extends GuiInfoContainer {
 	
-	private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/GUIElectricFurnace.png");
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/GUIElectricFurnace.png");
 	private TileEntityMachineElectricFurnace diFurnace;
 
 	public GUIMachineElectricFurnace(InventoryPlayer invPlayer, TileEntityMachineElectricFurnace tedf) {

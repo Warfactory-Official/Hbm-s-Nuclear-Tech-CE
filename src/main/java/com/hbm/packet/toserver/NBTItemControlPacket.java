@@ -1,8 +1,8 @@
 package com.hbm.packet.toserver;
 
 import com.hbm.items.IItemControlReceiver;
+import com.hbm.packet.threading.PrecompiledPacket;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -13,58 +13,51 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 import java.io.IOException;
 
-public class NBTItemControlPacket implements IMessage {
-
-    PacketBuffer buffer;
+public class NBTItemControlPacket extends PrecompiledPacket {
+    private NBTTagCompound nbt;
+    private ByteBuf payload;
 
     public NBTItemControlPacket() { }
 
     public NBTItemControlPacket(NBTTagCompound nbt) {
-
-        this.buffer = new PacketBuffer(Unpooled.buffer());
-        buffer.writeCompoundTag(nbt);
-    }
-
-    @Override
-    public void fromBytes(ByteBuf buf) {
-
-        if (buffer == null) {
-            buffer = new PacketBuffer(Unpooled.buffer());
-        }
-        buffer.writeBytes(buf);
+        this.nbt = nbt;
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
+        new PacketBuffer(buf).writeCompoundTag(nbt);
+    }
 
-        if (buffer == null) {
-            buffer = new PacketBuffer(Unpooled.buffer());
-        }
-        buf.writeBytes(buffer);
+    @Override
+    public void fromBytes(ByteBuf buf) {
+        this.payload = buf.retain();
     }
 
     public static class Handler implements IMessageHandler<NBTItemControlPacket, IMessage> {
 
         @Override
         public IMessage onMessage(NBTItemControlPacket m, MessageContext ctx) {
+            ctx.getServerHandler().player.server.addScheduledTask(() -> {
+                try {
+                    EntityPlayer p = ctx.getServerHandler().player;
+                    if (p == null) return;
+                    PacketBuffer buffer = new PacketBuffer(m.payload);
+                    NBTTagCompound nbt = buffer.readCompoundTag();
 
-            EntityPlayer p = ctx.getServerHandler().player;
+                    if (nbt != null) {
+                        ItemStack held = p.getHeldItem(p.getActiveHand());
 
-            try {
-
-                NBTTagCompound nbt = m.buffer.readCompoundTag();
-
-                if(nbt != null) {
-                    ItemStack held = p.getHeldItem(p.getActiveHand());
-
-                    if(!held.isEmpty() && held.getItem() instanceof IItemControlReceiver) {
-                        ((IItemControlReceiver) held.getItem()).receiveControl(held, nbt);
+                        if (!held.isEmpty() && held.getItem() instanceof IItemControlReceiver) {
+                            ((IItemControlReceiver) held.getItem()).receiveControl(held, nbt);
+                        }
                     }
-                }
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    m.payload.release();
+                }
+            });
 
             return null;
         }

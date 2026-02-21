@@ -86,8 +86,7 @@ public class XFactoryCatapult {
 
         ExplosionVNT vnt = new ExplosionVNT(bullet.world, mop.hitVec.x, mop.hitVec.y, mop.hitVec.z, 10);
         vnt.setBlockAllocator(new BlockAllocatorStandard(64));
-        // TODO
-        //vnt.setBlockProcessor(new BlockProcessorStandard().withBlockEffect(new BlockMutatorBalefire()));
+        vnt.setBlockProcessor(new BlockProcessorStandard().withBlockEffect(new BlockMutatorBalefire()));
         vnt.setEntityProcessor(new EntityProcessorCrossSmooth(2, bullet.damage).withRangeMod(1.5F));
         vnt.setPlayerProcessor(new PlayerProcessorStandard());
         vnt.explode();
@@ -111,7 +110,8 @@ public class XFactoryCatapult {
     }
 
     public static void spawnMush(EntityBulletBaseMK4 bullet, RayTraceResult mop) {
-        bullet.world.playSound(null, mop.hitVec.x, mop.hitVec.y + 0.5, mop.hitVec.z, HBMSoundHandler.mukeExplosion, SoundCategory.HOSTILE, 15.0F, 1.0F);
+        // mlbv: Sound disabled because Torex will handle it
+//        bullet.world.playSound(null, mop.hitVec.x, mop.hitVec.y + 0.5, mop.hitVec.z, HBMSoundHandler.mukeExplosion, SoundCategory.HOSTILE, 15.0F, 1.0F);
         if(MainRegistry.polaroidID == 11 || bullet.world.rand.nextInt(100) == 0) EntityNukeTorex.statFacBale(bullet.world, mop.hitVec.x, mop.hitVec.y + 0.5, mop.hitVec.z, 0.3F);
         else EntityNukeTorex.statFac(bullet.world, mop.hitVec.x, mop.hitVec.y + 0.5, mop.hitVec.z, 0.4F);
     }
@@ -127,7 +127,8 @@ public class XFactoryCatapult {
         vnt.explode();
 
         incrementRad(bullet.world, mop.hitVec.x, mop.hitVec.y, mop.hitVec.z, 0.25F);
-        bullet.world.playSound(null, mop.hitVec.x, mop.hitVec.y + 0.5, mop.hitVec.z, HBMSoundHandler.mukeExplosion, SoundCategory.HOSTILE, 15.0F, 1.0F);
+        // mlbv: Sound disabled because Torex will handle it
+//        bullet.world.playSound(null, mop.hitVec.x, mop.hitVec.y + 0.5, mop.hitVec.z, HBMSoundHandler.mukeExplosion, SoundCategory.HOSTILE, 15.0F, 1.0F);
         if(MainRegistry.polaroidID == 11 || bullet.world.rand.nextInt(100) == 0) EntityNukeTorex.statFacBale(bullet.world, mop.hitVec.x, mop.hitVec.y + 0.5, mop.hitVec.z, 0.25F);
         else EntityNukeTorex.statFac(bullet.world, mop.hitVec.x, mop.hitVec.y + 0.5, mop.hitVec.z, 0.25F);
     };

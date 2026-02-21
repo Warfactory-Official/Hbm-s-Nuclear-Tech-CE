@@ -2,11 +2,10 @@ package com.hbm.tileentity.machine.pile;
 
 import com.hbm.handler.neutron.NeutronNodeWorld;
 import com.hbm.handler.neutron.PileNeutronHandler;
-import com.hbm.render.util.GaugeUtil;
+import com.hbm.util.MutableVec3d;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 
 public abstract class TileEntityPileBase extends TileEntity implements ITickable {
 
@@ -43,10 +42,10 @@ public abstract class TileEntityPileBase extends TileEntity implements ITickable
 			streamWorld.addNode(node);
 		}
 
-		Vec3d neutronVector = new Vec3d(1, 0, 0);
-		neutronVector = GaugeUtil.rotateZ(neutronVector, (float)(Math.PI * 2D * world.rand.nextDouble()));
-		neutronVector.rotateYaw((float)(Math.PI * 2D * world.rand.nextDouble()));
-		neutronVector.rotatePitch((float)(Math.PI * 2D * world.rand.nextDouble()));
+		MutableVec3d neutronVector = new MutableVec3d(1, 0, 0);
+        neutronVector.rotateRollSelf(Math.PI * 2D * world.rand.nextDouble());
+		neutronVector.rotateYawSelf(Math.PI * 2D * world.rand.nextDouble());
+		neutronVector.rotatePitchSelf(Math.PI * 2D * world.rand.nextDouble());
 
 		new PileNeutronHandler.PileNeutronStream(node, neutronVector, flux);
 	}

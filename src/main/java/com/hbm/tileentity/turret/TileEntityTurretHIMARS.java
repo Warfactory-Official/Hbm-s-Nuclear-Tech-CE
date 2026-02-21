@@ -35,7 +35,9 @@ public class TileEntityTurretHIMARS extends TileEntityTurretBaseArtillery implem
 
   public enum FiringMode {
     AUTO,
-    MANUAL
+    MANUAL;
+
+    public static final FiringMode[] VALUES = values();
   }
 
   private static final int FIRE_DELAY_TICKS = 40;
@@ -133,7 +135,7 @@ public class TileEntityTurretHIMARS extends TileEntityTurretBaseArtillery implem
   private ItemStack getSpareRocket() {
 
     for (int i = 1; i < 10; i++) {
-      if (inventory.getStackInSlot(i) != ItemStack.EMPTY) {
+      if (!inventory.getStackInSlot(i).isEmpty()) {
         if (inventory.getStackInSlot(i).getItem() == ModItems.ammo_himars) {
           return inventory.getStackInSlot(i);
         }
@@ -317,8 +319,8 @@ public class TileEntityTurretHIMARS extends TileEntityTurretBaseArtillery implem
   @Override
   public void handleButtonPacket(int value, int meta) {
     if (meta == 5) {
-      int nextOrdinal = (mode.ordinal() + 1) % FiringMode.values().length;
-      this.mode = FiringMode.values()[nextOrdinal];
+      int nextOrdinal = (mode.ordinal() + 1) % FiringMode.VALUES.length;
+      this.mode = FiringMode.VALUES[nextOrdinal];
       this.tPos = null;
       this.targetQueue.clear();
 
@@ -339,7 +341,7 @@ public class TileEntityTurretHIMARS extends TileEntityTurretBaseArtillery implem
   @Override
   public void deserialize(ByteBuf buf) {
     super.deserialize(buf);
-    this.mode = FiringMode.values()[buf.readShort()];
+    this.mode = FiringMode.VALUES[buf.readShort()];
     this.typeLoaded = buf.readShort();
     this.ammo = buf.readInt();
     this.crane = buf.readFloat();
@@ -348,7 +350,7 @@ public class TileEntityTurretHIMARS extends TileEntityTurretBaseArtillery implem
   @Override
   public void readFromNBT(NBTTagCompound nbt) {
     super.readFromNBT(nbt);
-    this.mode = FiringMode.values()[nbt.getShort("mode")];
+    this.mode = FiringMode.VALUES[nbt.getShort("mode")];
     this.typeLoaded = nbt.getInteger("type");
     this.ammo = nbt.getInteger("ammo");
   }

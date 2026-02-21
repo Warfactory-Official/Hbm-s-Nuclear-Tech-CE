@@ -1,5 +1,6 @@
 package com.hbm.blocks.network;
 
+import com.hbm.Tags;
 import com.hbm.api.block.IToolable;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.blocks.ModBlocks;
@@ -7,7 +8,6 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.IDynamicModels;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
 import com.hbm.render.model.PneumoTubeBakedModel;
 import com.hbm.tileentity.network.TileEntityPneumoTube;
@@ -19,13 +19,13 @@ import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
@@ -45,11 +45,11 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.property.ExtendedBlockState;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
-import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -156,11 +156,14 @@ public class PneumoTube extends BlockContainer implements IToolable, ITooltipPro
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
         if (ToolType.getType(player.getHeldItemMainhand()) == ToolType.SCREWDRIVER) return false;
-        else if (!player.isSneaking()) {
+        if (!player.isSneaking()) {
             TileEntity tile = world.getTileEntity(pos);
             if(tile instanceof TileEntityPneumoTube tube) {
                 if(tube.isCompressor()) {
-                    FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
+                    if (!world.isRemote) FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
+                    return true;
+                } else if(tube.isEndpoint()) {
+                    if (!world.isRemote) FMLNetworkHandler.openGui(player, MainRegistry.instance, 1, world, pos.getX(), pos.getY(), pos.getZ());
                     return true;
                 }
             }
@@ -180,8 +183,8 @@ public class PneumoTube extends BlockContainer implements IToolable, ITooltipPro
 
         TileEntityPneumoTube tube = (TileEntityPneumoTube) world.getTileEntity(pos);
 
-        ForgeDirection rot = player.isSneaking() ? tube.insertionDir : tube.ejectionDir;
-        ForgeDirection oth = player.isSneaking() ? tube.ejectionDir : tube.insertionDir;
+        ForgeDirection rot = player.isSneaking() ? tube.ejectionDir : tube.insertionDir;
+        ForgeDirection oth = player.isSneaking() ? tube.insertionDir : tube.ejectionDir;
 
         for(int i = 0; i < 7; i++) {
             rot = ForgeDirection.getOrientation((rot.ordinal() + 1) % 7);
@@ -193,13 +196,39 @@ public class PneumoTube extends BlockContainer implements IToolable, ITooltipPro
             if(tile instanceof IInventory) break; //fallback for legacy inventories
         }
 
-        if(player.isSneaking()) tube.insertionDir = rot; else tube.ejectionDir = rot;
+        if(player.isSneaking()) tube.ejectionDir = rot; else tube.insertionDir = rot;
 
         tube.markDirty();
         if(world instanceof WorldServer) ((WorldServer) world).getPlayerChunkMap().markBlockForUpdate(pos);
         world.markBlockRangeForRenderUpdate(pos, pos);
 
         return true;
+    }
+
+    @Override
+    public void addCollisionBoxToList(IBlockState state, World world, BlockPos pos, AxisAlignedBB entityBox, List<AxisAlignedBB> collidingBoxes, @Nullable Entity entityIn, boolean isActualState) {
+        double lower = 0.3125D;
+        double upper = 0.6875D;
+
+        addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(lower, lower, lower, upper, upper, upper));
+
+        if(canConnectTo(world, pos, Library.POS_X) || canConnectToAir(world, pos, Library.POS_X))
+            addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(upper, lower, lower, 1.0D, upper, upper));
+
+        if(canConnectTo(world, pos, Library.NEG_X) || canConnectToAir(world, pos, Library.NEG_X))
+            addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(0.0D, lower, lower, lower, upper, upper));
+
+        if(canConnectTo(world, pos, Library.POS_Y) || canConnectToAir(world, pos, Library.POS_Y))
+            addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(lower, upper, lower, upper, 1.0D, upper));
+
+        if(canConnectTo(world, pos, Library.NEG_Y) || canConnectToAir(world, pos, Library.NEG_Y))
+            addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(lower, 0.0D, lower, upper, lower, upper));
+
+        if(canConnectTo(world, pos, Library.POS_Z) || canConnectToAir(world, pos, Library.POS_Z))
+            addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(lower, lower, upper, upper, upper, 1.0D));
+
+        if(canConnectTo(world, pos, Library.NEG_Z) || canConnectToAir(world, pos, Library.NEG_Z))
+            addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(lower, lower, 0.0D, upper, upper, lower));
     }
 
     @Override
@@ -269,11 +298,11 @@ public class PneumoTube extends BlockContainer implements IToolable, ITooltipPro
     @Override
     @SideOnly(Side.CLIENT)
     public void registerSprite(TextureMap map) {
-        iconBase = map.registerSprite(new ResourceLocation(RefStrings.MODID, "blocks/pneumatic_tube"));
-        iconStraight = map.registerSprite(new ResourceLocation(RefStrings.MODID, "blocks/pneumatic_tube_straight"));
-        iconIn = map.registerSprite(new ResourceLocation(RefStrings.MODID, "blocks/pneumatic_tube_in"));
-        iconOut = map.registerSprite(new ResourceLocation(RefStrings.MODID, "blocks/pneumatic_tube_out"));
-        iconConnector = map.registerSprite(new ResourceLocation(RefStrings.MODID, "blocks/pneumatic_tube_connector"));
+        iconBase = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/pneumatic_tube"));
+        iconStraight = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/pneumatic_tube_straight"));
+        iconIn = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/pneumatic_tube_in"));
+        iconOut = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/pneumatic_tube_out"));
+        iconConnector = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/pneumatic_tube_connector"));
     }
 
     @Override
@@ -308,18 +337,14 @@ public class PneumoTube extends BlockContainer implements IToolable, ITooltipPro
         @Override public String valueToString(Boolean value) { return value.toString(); }
     }
 
-    private static boolean hasItemHandler(@NotNull TileEntity tile, @NotNull ForgeDirection tubeDir) {
+    public static boolean hasItemHandler(@NotNull TileEntity tile, @NotNull ForgeDirection tubeDir) {
         ForgeDirection dir = tubeDir != ForgeDirection.UNKNOWN ? tubeDir.getOpposite() : ForgeDirection.UNKNOWN;
         EnumFacing facing = dir != ForgeDirection.UNKNOWN ? dir.toEnumFacing() : null;
         if(facing != null && tile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing)) {
             IItemHandler handler = tile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, facing);
             if(handler != null && handler.getSlots() > 0) return true;
         }
-//        if(tile.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)) {
-//            IItemHandler handler = tile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-//            return handler != null && handler.getSlots() > 0;
-//        }
-        return false;
+        return tile instanceof IInventory;
     }
 
     public static class DirectionProperty implements IUnlistedProperty<ForgeDirection> {

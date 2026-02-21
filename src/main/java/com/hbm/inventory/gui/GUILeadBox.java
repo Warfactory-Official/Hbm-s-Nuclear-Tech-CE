@@ -1,8 +1,8 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerLeadBox;
 import com.hbm.items.tool.ItemLeadBox;
-import com.hbm.lib.RefStrings;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
@@ -12,7 +12,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GUILeadBox extends GuiContainer {
 
-    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/gui_containment.png");
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/gui_containment.png");
     private final ItemLeadBox.InventoryLeadBox inventory;
     private ItemStack firstHeld;
 

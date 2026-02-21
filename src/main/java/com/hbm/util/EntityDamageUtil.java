@@ -3,6 +3,8 @@ package com.hbm.util;
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.interfaces.Untested;
 import com.hbm.items.ModItems;
+import com.hbm.lib.internal.MethodHandleHelper;
+import com.hbm.main.MainRegistry;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -23,14 +25,18 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
 
-import java.lang.reflect.Method;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
 import java.util.List;
 
 @Untested
 //OH man this will be a goldmine of bugs
 public class EntityDamageUtil {
+    private static final MethodHandle getDeathSoundHandle = MethodHandleHelper.findVirtual(EntityLivingBase.class, "getDeathSound", "func_184615_bR", MethodType.methodType(SoundEvent.class));
+    private static final MethodHandle getHurtSoundHandle = MethodHandleHelper.findVirtual(EntityLivingBase.class, "getHurtSound", "func_184601_bQ", MethodType.methodType(SoundEvent.class, DamageSource.class));
+    private static final MethodHandle getSoundVolumeHandle = MethodHandleHelper.findVirtual(EntityLivingBase.class, "getSoundVolume", "func_70599_aP", MethodType.methodType(float.class));
+    private static final MethodHandle getSoundPitchHandle = MethodHandleHelper.findVirtual(EntityLivingBase.class, "getSoundPitch", "func_70647_i", MethodType.methodType(float.class));
 
     public static boolean attackEntityFromIgnoreIFrame(Entity victim, DamageSource src, float damage) {
 
@@ -336,36 +342,36 @@ public class EntityDamageUtil {
 
     public static SoundEvent getDeathSound(EntityLivingBase living) {
         try {
-            Method m = ReflectionHelper.findMethod(EntityLivingBase.class, "getDeathSound", "func_184615_bR");
-            return (SoundEvent) m.invoke(living);
-        } catch (Exception e) {
+            return (SoundEvent) getDeathSoundHandle.invokeExact(living);
+        } catch (Throwable e) {
+            MainRegistry.logger.catching(e);
         }
         return SoundEvents.ENTITY_GENERIC_DEATH;
     }
 
     public static SoundEvent getHurtSound(EntityLivingBase living, DamageSource source) {
         try {
-            Method m = ReflectionHelper.findMethod(EntityLivingBase.class, "getHurtSound", "func_184601_bQ", DamageSource.class);
-            return (SoundEvent) m.invoke(living, source);
-        } catch (Exception e) {
+            return (SoundEvent) getHurtSoundHandle.invokeExact(living, source);
+        } catch (Throwable e) {
+            MainRegistry.logger.catching(e);
         }
         return SoundEvents.ENTITY_GENERIC_HURT;
     }
 
     public static float getSoundVolume(EntityLivingBase living) {
         try {
-            Method m = ReflectionHelper.findMethod(EntityLivingBase.class, "getSoundVolume", "func_70599_aP");
-            return (float) m.invoke(living);
-        } catch (Exception e) {
+            return (float) getSoundVolumeHandle.invokeExact(living);
+        } catch (Throwable e) {
+            MainRegistry.logger.catching(e);
         }
         return 1F;
     }
 
     public static float getSoundPitch(EntityLivingBase living) {
         try {
-            Method m = ReflectionHelper.findMethod(EntityLivingBase.class, "getSoundPitch", "func_70647_i");
-            return (float) m.invoke(living);
-        } catch (Exception e) {
+            return (float) getSoundPitchHandle.invokeExact(living);
+        } catch (Throwable e) {
+            MainRegistry.logger.catching(e);
         }
         return 1F;
     }

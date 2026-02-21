@@ -93,18 +93,14 @@ public class TileEntityNukeFleija extends TileEntity implements IGUIProvider {
 
 	public boolean isReady() {
 
-		if (inventory.getStackInSlot(0).getItem() == ModItems.fleija_igniter
-				&& inventory.getStackInSlot(1).getItem() == ModItems.fleija_igniter
-				&& inventory.getStackInSlot(2).getItem() == ModItems.fleija_propellant && inventory.getStackInSlot(3).getItem() == ModItems.fleija_propellant
-				&& inventory.getStackInSlot(4).getItem() == ModItems.fleija_propellant && inventory.getStackInSlot(5).getItem() == ModItems.fleija_core
-				&& inventory.getStackInSlot(6).getItem() == ModItems.fleija_core && inventory.getStackInSlot(7).getItem() == ModItems.fleija_core
-				&& inventory.getStackInSlot(8).getItem() == ModItems.fleija_core && inventory.getStackInSlot(9).getItem() == ModItems.fleija_core
-				&& inventory.getStackInSlot(10).getItem() == ModItems.fleija_core) {
-			return true;
-		}
-
-		return false;
-	}
+        return inventory.getStackInSlot(0).getItem() == ModItems.fleija_igniter
+                && inventory.getStackInSlot(1).getItem() == ModItems.fleija_igniter
+                && inventory.getStackInSlot(2).getItem() == ModItems.fleija_propellant && inventory.getStackInSlot(3).getItem() == ModItems.fleija_propellant
+                && inventory.getStackInSlot(4).getItem() == ModItems.fleija_propellant && inventory.getStackInSlot(5).getItem() == ModItems.fleija_core
+                && inventory.getStackInSlot(6).getItem() == ModItems.fleija_core && inventory.getStackInSlot(7).getItem() == ModItems.fleija_core
+                && inventory.getStackInSlot(8).getItem() == ModItems.fleija_core && inventory.getStackInSlot(9).getItem() == ModItems.fleija_core
+                && inventory.getStackInSlot(10).getItem() == ModItems.fleija_core;
+    }
 
 	public void clearSlots() {
 		for (int i = 0; i < inventory.getSlots(); i++) {

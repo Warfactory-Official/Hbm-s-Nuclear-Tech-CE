@@ -1,6 +1,7 @@
 package com.hbm.entity.missile;
 
 import com.hbm.api.entity.IRadarDetectable;
+import com.hbm.api.entity.IThrowable;
 import com.hbm.config.BombConfig;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
@@ -9,6 +10,7 @@ import com.hbm.explosion.ExplosionLarge;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IConstantRenderer;
 import com.hbm.main.MainRegistry;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.init.Blocks;
 import net.minecraft.network.datasync.DataParameter;
@@ -28,8 +30,9 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @AutoRegister(name = "entity_mirvlet", trackingRange = 1000)
-public class EntityMIRV extends EntityThrowable implements IChunkLoader, IConstantRenderer, IRadarDetectable {
+public class EntityMIRV extends EntityThrowable implements IChunkLoader, IConstantRenderer, IRadarDetectable, IThrowable {
 	private Ticket loaderTicket;
 	public static final DataParameter<Integer> HEALTH = EntityDataManager.createKey(EntityMIRV.class, DataSerializers.VARINT);
 	public int health = 25;
@@ -171,5 +174,10 @@ public class EntityMIRV extends EntityThrowable implements IChunkLoader, IConsta
 				ForgeChunkManager.forceChunk(loaderTicket, chunk);
 			}
 		}
+	}
+
+	@Override
+	public void setThrower(EntityLivingBase thrower) {
+		this.thrower = thrower;
 	}
 }

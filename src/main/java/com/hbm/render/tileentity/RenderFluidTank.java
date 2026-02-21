@@ -1,12 +1,12 @@
 package com.hbm.render.tileentity;
 
+import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FT_Corrosive;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.misc.DiamondPronter;
@@ -43,13 +43,13 @@ public class RenderFluidTank extends TileEntitySpecialRenderer<TileEntityMachine
 
         if (!tank.hasExploded) {
             ResourceManager.fluidtank.renderPart("Frame");
-            bindTexture(new ResourceLocation(RefStrings.MODID, getTextureFromType(tank.tank.getTankType())));
+            bindTexture(new ResourceLocation(Tags.MODID, getTextureFromType(tank.tank.getTankType())));
             ResourceManager.fluidtank.renderPart("Tank");
         } else {
             ResourceManager.fluidtank_exploded.renderPart("Frame");
             bindTexture(ResourceManager.tank_inner_tex);
             ResourceManager.fluidtank_exploded.renderPart("TankInner");
-            bindTexture(new ResourceLocation(RefStrings.MODID, getTextureFromType(tank.tank.getTankType())));
+            bindTexture(new ResourceLocation(Tags.MODID, getTextureFromType(tank.tank.getTankType())));
             ResourceManager.fluidtank_exploded.renderPart("Tank");
         }
         GL11.glColor3d(1D, 1D, 1D);
@@ -102,12 +102,12 @@ public class RenderFluidTank extends TileEntitySpecialRenderer<TileEntityMachine
                 bindTexture(ResourceManager.tank_tex);
                 if(!exploded) {
                     ResourceManager.fluidtank.renderPart("Frame");
-                    bindTexture(new ResourceLocation(RefStrings.MODID, getTextureFromType(tank.getTankType())));
+                    bindTexture(new ResourceLocation(Tags.MODID, getTextureFromType(tank.getTankType())));
                     ResourceManager.fluidtank.renderPart("Tank");
                 } else {
                     ResourceManager.fluidtank_exploded.renderPart("Frame");
                     bindTexture(ResourceManager.tank_inner_tex); ResourceManager.fluidtank_exploded.renderPart("TankInner");
-                    bindTexture(new ResourceLocation(RefStrings.MODID, getTextureFromType(tank.getTankType())));
+                    bindTexture(new ResourceLocation(Tags.MODID, getTextureFromType(tank.getTankType())));
                     ResourceManager.fluidtank_exploded.renderPart("Tank");
                 }
                 GlStateManager.enableCull();
@@ -118,7 +118,7 @@ public class RenderFluidTank extends TileEntitySpecialRenderer<TileEntityMachine
 
     private String getTextureFromType(FluidType type) {
 
-        if (type.customFluid) {
+        if (type.renderWithTint) {
             int color = type.getTint();
             double r = ((color & 0xff0000) >> 16) / 255D;
             double g = ((color & 0x00ff00) >> 8) / 255D;

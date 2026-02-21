@@ -1,10 +1,10 @@
 package com.hbm.inventory.control_panel;
 
+import com.hbm.Tags;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.control_panel.ContainerControlEdit.SlotDisableable;
 import com.hbm.inventory.control_panel.ContainerControlEdit.SlotItemHandlerDisableable;
 import com.hbm.items.tool.ItemMultiDetonator;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityDummy;
 import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiButton;
@@ -20,7 +20,7 @@ import java.util.List;
 
 public class SubElementLinker extends SubElement {
 
-	public static ResourceLocation inv_tex = new ResourceLocation(RefStrings.MODID + ":textures/gui/control_panel/gui_linker_add_element.png");
+	public static ResourceLocation inv_tex = new ResourceLocation(Tags.MODID + ":textures/gui/control_panel/gui_linker_add_element.png");
 	
 	public GuiButton clear;
 	public GuiButton accept;

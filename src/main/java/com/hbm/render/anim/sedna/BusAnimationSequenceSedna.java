@@ -15,7 +15,9 @@ public class BusAnimationSequenceSedna {
         RZ,
         SX,
         SY,
-        SZ
+        SZ;
+
+        public static final Dimension[] VALUES = values();
     }
 
 
@@ -86,7 +88,7 @@ public class BusAnimationSequenceSedna {
 
     public BusAnimationSequenceSedna multiplyTime(double mult) {
 
-        for(Dimension dim : Dimension.values()) {
+        for(Dimension dim : Dimension.VALUES) {
             List<BusAnimationKeyframeSedna> keyframes = transformKeyframes.get(dim.ordinal());
             for(BusAnimationKeyframeSedna keyframe : keyframes) keyframe.duration *= mult;
         }

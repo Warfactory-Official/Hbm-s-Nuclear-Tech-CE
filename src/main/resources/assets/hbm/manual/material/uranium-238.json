@@ -1,13 +1,15 @@
 {
 	"name": "Uranium-238",
 	"icon": ["hbm:billet_u238", 1, 0],
-    "trigger": [["hbm:ingot_u238"], ["hbm:billet_u238"], ["hbm:nugget_u238"]],
-    "title": {
-        "en_us": "Uranium-238",
-		"ru_ru": "Уран-238"
-    },
+	"trigger": [["hbm:ingot_u238"], ["hbm:billet_u238"], ["hbm:nugget_u238"]],
+	"title": {
+		"en_us": "Uranium-238",
+		"ru_ru": "Уран-238",
+		"ja_jp": "ウラニウム238"
+	},
 	"content": {
 		"en_us": "Depleted uranium, not fissile (i.e. not directly reactor-usable). Primarily a byproduct from enriching [[uranium|Uranium]]. Used in [[ferrouranium|Ferrouranium]], for [[depleted uranium ammo|Depleted Uranium Ammo]] and for certain low-enriched fuels. Fuels that contain uranium-238 typically yield useful [[plutonium-239|Plutonium-239]] when reprocessing.<br><br>Slightly radioactive.",
-		"ru_ru": "Обеднённый уран, неделящийся (т. е. непосредственно непригоден для реакторов). В основном является побочным продуктом обогащения [[урана|Uranium]]. Используется в [[ферроуране|Ferrouranium]], для [[боеприпасов с обеднённым ураном|Depleted Uranium Ammo]] и для некоторого низкообогащённого топлива. Топливо, содержащее уран-238, при переработке обычно дают полезный [[плутоний-239|Plutonium-239]].<br><br>Слабо радиоактивен."
+		"ru_ru": "Обеднённый уран, неделящийся (т. е. непосредственно непригоден для реакторов). В основном является побочным продуктом обогащения [[урана|Uranium]]. Используется в [[ферроуране|Ferrouranium]], для [[боеприпасов с обеднённым ураном|Depleted Uranium Ammo]] и для некоторого низкообогащённого топлива. Топливо, содержащее уран-238, при переработке обычно дают полезный [[плутоний-239|Plutonium-239]].<br><br>Слабо радиоактивен.",
+		"ja_jp": "枯渇したウラニウムであり、核分裂性でない (直接原子炉で使用することができない)。 主には[[ウラニウム|Uranium]]を濃縮することで発生する副産物。 [[劣化ウラン弾|Depleted Uranium Ammo]]のための[[ウラン化鉄|Ferrouranium]]や、 特定の低濃縮燃料に使用される。 ウラニウム238を含むほとんどの燃料は再処理した際に役に立つ[[プルトニウム239|Plutonium-239]]を生む。<br><br>少しだけ放射性。"
 	}
 }

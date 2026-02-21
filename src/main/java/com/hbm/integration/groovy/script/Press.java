@@ -1,6 +1,7 @@
 package com.hbm.integration.groovy.script;
 
 import com.cleanroommc.groovyscript.api.GroovyLog;
+import com.cleanroommc.groovyscript.api.documentation.annotations.RegistryDescription;
 import com.cleanroommc.groovyscript.helper.recipe.AbstractRecipeBuilder;
 import com.cleanroommc.groovyscript.registry.VirtualizedRegistry;
 import com.hbm.integration.groovy.HbmGroovyPropertyContainer;
@@ -15,6 +16,7 @@ import java.util.Collections;
 import static com.hbm.inventory.recipes.AssemblerRecipes.recipeList;
 import static com.hbm.inventory.recipes.PressRecipes.recipes;
 
+@RegistryDescription(linkGenerator = "hbm", isFullyDocumented = false)
 public class Press extends VirtualizedRegistry<Tuple.Pair<Tuple.Pair<RecipesCommon.AStack, ItemStamp.StampType>, ItemStack>> {
     @Override
     public void onReload() {

@@ -78,35 +78,23 @@ public class TileEntityNukeMike extends TileEntity implements IGUIProvider {
 	}
 	
 public boolean isReady() {
-		
-			if(inventory.getStackInSlot(0).getItem() == ModItems.explosive_lenses &&
-			inventory.getStackInSlot(1).getItem() == ModItems.explosive_lenses &&
-			inventory.getStackInSlot(2).getItem() == ModItems.explosive_lenses &&
-			inventory.getStackInSlot(3).getItem() == ModItems.explosive_lenses &&
-			inventory.getStackInSlot(4).getItem() == ModItems.man_core)
-			{
-				return true;
-			}
-		
-		return false;
-	}
+    return inventory.getStackInSlot(0).getItem() == ModItems.explosive_lenses &&
+            inventory.getStackInSlot(1).getItem() == ModItems.explosive_lenses &&
+            inventory.getStackInSlot(2).getItem() == ModItems.explosive_lenses &&
+            inventory.getStackInSlot(3).getItem() == ModItems.explosive_lenses &&
+            inventory.getStackInSlot(4).getItem() == ModItems.man_core;
+}
 	
 	public boolean isFilled() {
-		
-			if(inventory.getStackInSlot(0).getItem() == ModItems.explosive_lenses &&
-			inventory.getStackInSlot(1).getItem() == ModItems.explosive_lenses &&
-			inventory.getStackInSlot(2).getItem() == ModItems.explosive_lenses &&
-			inventory.getStackInSlot(3).getItem() == ModItems.explosive_lenses &&
-			inventory.getStackInSlot(4).getItem() == ModItems.man_core && 
-			inventory.getStackInSlot(5).getItem() == ModItems.mike_core && 
-			inventory.getStackInSlot(6).getItem() == ModItems.mike_deut && 
-			inventory.getStackInSlot(7).getItem() == ModItems.mike_cooling_unit)
-			{
-				return true;
-			}
-		
-		return false;
-	}
+        return inventory.getStackInSlot(0).getItem() == ModItems.explosive_lenses &&
+                inventory.getStackInSlot(1).getItem() == ModItems.explosive_lenses &&
+                inventory.getStackInSlot(2).getItem() == ModItems.explosive_lenses &&
+                inventory.getStackInSlot(3).getItem() == ModItems.explosive_lenses &&
+                inventory.getStackInSlot(4).getItem() == ModItems.man_core &&
+                inventory.getStackInSlot(5).getItem() == ModItems.mike_core &&
+                inventory.getStackInSlot(6).getItem() == ModItems.mike_deut &&
+                inventory.getStackInSlot(7).getItem() == ModItems.mike_cooling_unit;
+    }
 	
 	public void clearSlots() {
 		for(int i = 0; i < inventory.getSlots(); i++)

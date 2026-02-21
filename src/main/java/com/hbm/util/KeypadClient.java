@@ -1,12 +1,12 @@
 package com.hbm.util;
 
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
+import com.hbm.render.loader.HFRWavefrontObject;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
 import com.hbm.packet.toserver.KeypadServerPacket;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.render.WavefrontObjDisplayList;
-import com.hbm.render.amlfrom1710.WavefrontObject;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GLAllocation;
@@ -21,7 +21,7 @@ import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector4f;
 
@@ -127,7 +127,7 @@ public class KeypadClient extends Keypad {
 	}
 	
 	public static void load(){
-		WavefrontObjDisplayList model = new WavefrontObjDisplayList(new WavefrontObject(new ResourceLocation(RefStrings.MODID, "models/keypad.obj")));
+		WavefrontObjDisplayList model = new WavefrontObjDisplayList(new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/keypad.obj")));
 		mainModel = model.getListForName("Keypad");
 		displayModel = model.getListForName("Display");
 		for(int i = 0; i < 9; i++){
@@ -208,7 +208,7 @@ public class KeypadClient extends Keypad {
 				GlStateManager.translate(0, 0, -0.05*50);
 			}
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-			GL11.glNormal3f(1, 0, 0);
+			GlStateManager.color(1, 0, 0);
 			font.drawString(disp, 0, 0, 0xFF404040);
 			GlStateManager.popMatrix();
 		}
@@ -220,7 +220,7 @@ public class KeypadClient extends Keypad {
 		if(code < 0){
 			GlStateManager.translate(0.3, 1-0.08, 0.03125);
 			GL11.glRotated(180, 0, 1, 0);
-			GL11.glNormal3f(1, 0, 0);
+			GlStateManager.color(1, 0, 0);
 			if(isSettingCode){
 				GL11.glScaled(s*0.5F, -s*0.5, s);
 				font.drawString("Enter New", 0, 0, 0xFFFFEE00);
@@ -245,7 +245,7 @@ public class KeypadClient extends Keypad {
 			GlStateManager.translate(0.3, 1-0.09, 0.03125);
 			GL11.glScaled(s*0.85, -s*0.9, s);
 			GL11.glRotated(180, 0, 1, 0);
-			GL11.glNormal3f(1, 0, 0);
+			GlStateManager.color(1, 0, 0);
 			if(isSettingCode){
 				font.drawString("" + code, 0, 0, 0xFFFFEE00);
 			} else {

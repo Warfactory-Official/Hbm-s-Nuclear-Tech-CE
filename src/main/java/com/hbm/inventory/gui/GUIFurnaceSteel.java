@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerFurnaceSteel;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityFurnaceSteel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.GlStateManager;
 
 public class GUIFurnaceSteel extends GuiInfoContainer {
 	
-	private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_furnace_steel.png");
+	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_furnace_steel.png");
 	private TileEntityFurnaceSteel furnace;
 
 	public GUIFurnaceSteel(InventoryPlayer invPlayer, TileEntityFurnaceSteel tedf) {

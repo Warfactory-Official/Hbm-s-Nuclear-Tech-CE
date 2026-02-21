@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerFileCabinet;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.storage.TileEntityFileCabinet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
@@ -12,7 +12,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GUIFileCabinet extends GuiContainer {
 
-    private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/storage/gui_file_cabinet.png");
+    private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/storage/gui_file_cabinet.png");
     private TileEntityFileCabinet cabinet;
 
     public GUIFileCabinet(InventoryPlayer invPlayer, TileEntityFileCabinet tile) {

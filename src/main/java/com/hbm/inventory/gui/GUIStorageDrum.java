@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerStorageDrum;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityStorageDrum;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.GlStateManager;
 
 public class GUIStorageDrum extends GuiInfoContainer {
 	
-	private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_drum.png");
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_drum.png");
 	private final TileEntityStorageDrum drum;
 
 	public GUIStorageDrum(InventoryPlayer invPlayer, TileEntityStorageDrum tedf) {

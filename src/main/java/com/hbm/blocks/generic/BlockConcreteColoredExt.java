@@ -9,16 +9,16 @@ import java.util.Locale;
 
 import static com.hbm.render.block.BlockBakeFrame.BlockForm.FULL_CUSTOM;
 
-public class BlockConcreteColoredExt extends BlockEnumMeta {
+public class BlockConcreteColoredExt extends BlockEnumMeta<BlockConcreteColoredExt.EnumConcreteType> {
 
-    public BlockConcreteColoredExt(Material material, SoundType type, String name, Class<? extends Enum<?>> enumClass, boolean multiName, boolean multiTex) {
-        super(material, type, name, enumClass, multiName, multiTex);
+    public BlockConcreteColoredExt(Material material, SoundType type, String name, EnumConcreteType[] enumValues, boolean multiName, boolean multiTex) {
+        super(material, type, name, enumValues, multiName, multiTex);
     }
 
     @Override
     protected BlockBakeFrame[] generateBlockFrames(String registryName) {
-        BlockBakeFrame[] frames = new BlockBakeFrame[EnumConcreteType.values().length];
-        for (EnumConcreteType type : EnumConcreteType.values()) {
+        BlockBakeFrame[] frames = new BlockBakeFrame[EnumConcreteType.VALUES.length];
+        for (EnumConcreteType type : EnumConcreteType.VALUES) {
             String name = registryName + "." + type.name().toLowerCase(Locale.US);
             if (type == EnumConcreteType.MACHINE_STRIPE) {
                 String machine = registryName + "." + EnumConcreteType.MACHINE.name().toLowerCase(Locale.US);
@@ -36,6 +36,7 @@ public class BlockConcreteColoredExt extends BlockEnumMeta {
         }
         return frames;
     }
+
     public enum EnumConcreteType {
         MACHINE,
         MACHINE_STRIPE,
@@ -44,6 +45,8 @@ public class BlockConcreteColoredExt extends BlockEnumMeta {
         PINK,
         HAZARD,
         SAND,
-        BRONZE
+        BRONZE;
+
+        public static final EnumConcreteType[] VALUES = values();
     }
 }

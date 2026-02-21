@@ -1,26 +1,31 @@
 package com.hbm.items.machine;
 
+import com.google.common.collect.ImmutableMap;
+import com.hbm.Tags;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.gui.GUIScreenFluid;
 import com.hbm.items.IItemControlReceiver;
-import com.hbm.items.ModItems;
+import com.hbm.items.ItemBakedBase;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.PlayerInformPacketLegacy;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.network.TileEntityPipeBaseNT;
 import com.hbm.util.I18nUtil;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.model.ModelRotation;
 import net.minecraft.client.renderer.color.IItemColor;
+import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.Container;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -28,7 +33,10 @@ import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -36,16 +44,34 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-import static com.hbm.items.machine.ItemForgeFluidIdentifier.spreadType;
+import static com.hbm.items.ItemEnumMulti.ROOT_PATH;
 
-public class ItemFluidIDMulti extends Item implements IItemFluidIdentifier, IItemControlReceiver, IGUIProvider {
-
+public class ItemFluidIDMulti extends ItemBakedBase implements IItemFluidIdentifier, IItemControlReceiver, IGUIProvider {
+    private final ResourceLocation baseTextureLocation;
+    private final ResourceLocation overlayTextureLocation;
+    private final ModelResourceLocation modelLocation;
     public ItemFluidIDMulti(String s) {
-        this.setTranslationKey(s);
-        this.setRegistryName(s);
-        this.setCreativeTab(MainRegistry.partsTab);
-
-        ModItems.ALL_ITEMS.add(this);
+        super(s);
+        this.baseTextureLocation = new ResourceLocation(Tags.MODID, ROOT_PATH + s);
+        String overlayName = s.substring(0, s.length() - 6) + "_overlay";
+        this.overlayTextureLocation = new ResourceLocation(Tags.MODID, ROOT_PATH + overlayName);
+        this.modelLocation = new ModelResourceLocation(this.baseTextureLocation, "inventory");
+    }
+    // this is only for display purposes, it doesn't need to have metadata at all
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> list) {
+        if (this.isInCreativeTab(tab)) {
+            FluidType[] order = Fluids.getInNiceOrder();
+            for (int i = 1; i < order.length; ++i) {
+                FluidType type = order[i];
+                if (!type.hasNoID()) {
+                    ItemStack id = new ItemStack(this, 1, type.getID());
+                    setType(id, type, true);
+                    list.add(id);
+                }
+            }
+        }
     }
 
     @Override
@@ -109,36 +135,63 @@ public class ItemFluidIDMulti extends Item implements IItemFluidIdentifier, IIte
         return true;
     }
 
-
+    @Override
     @SideOnly(Side.CLIENT)
-    public void registerModels() {
-        ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(getRegistryName(), "inventory"));
+    public void bakeModel(ModelBakeEvent event) {
+        try {
+            IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/generated"));
+
+            IModel retexturedModel = baseModel.retexture(
+                    ImmutableMap.of(
+                            "layer0", this.baseTextureLocation.toString(),
+                            "layer1", this.overlayTextureLocation.toString()
+                    )
+            );
+
+            IBakedModel bakedModel = retexturedModel.bake(ModelRotation.X0_Y0, DefaultVertexFormats.ITEM, ModelLoader.defaultTextureGetter());
+            event.getModelRegistry().putObject(this.modelLocation, bakedModel);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
+
+    @Override
     @SideOnly(Side.CLIENT)
-    public static void registerItemColors() {
-        Minecraft.getMinecraft().getItemColors().registerItemColorHandler(new ItemFluidIdentifierColor(), ModItems.fluid_identifier_multi);
+    public void registerModel() {
+        FluidType[] order = Fluids.getInNiceOrder();
+        for (FluidType fluidType : order) {
+            ModelLoader.setCustomModelResourceLocation(this, fluidType.getID(), this.modelLocation);
+        }
     }
 
+    @Override
     @SideOnly(Side.CLIENT)
-    public static class ItemFluidIdentifierColor implements IItemColor {
-        @Override
-        public int colorMultiplier(@NotNull ItemStack stack, int tintIndex) {
+    public void registerSprite(TextureMap map) {
+        map.registerSprite(this.baseTextureLocation);
+        map.registerSprite(this.overlayTextureLocation);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IItemColor getItemColorHandler() {
+        return (stack, tintIndex) -> {
             if (tintIndex == 0) {
                 return 0xFFFFFF;
-            } else {
-                FluidType type = getType(stack, true);
-                int color = type.getColor();
-                return color < 0 ? 0xFFFFFF : color;
             }
-        }
+
+            int color = getType(stack, true).getColor();
+            return color >= 0 ? color : 0xFFFFFF;
+        };
     }
 
     public static void setType(ItemStack stack, FluidType type, boolean primary) {
         if(!stack.hasTagCompound())
             stack.setTagCompound(new NBTTagCompound());
 
-        stack.getTagCompound().setInteger("fluid" + (primary ? 1 : 2), type.getID());
+        int id = type.getID();
+        stack.getTagCompound().setInteger("fluid" + (primary ? 1 : 2), id);
+        if (primary) stack.setItemDamage(id);
     }
 
     public static FluidType getType(ItemStack stack, boolean primary) {
@@ -162,6 +215,24 @@ public class ItemFluidIDMulti extends Item implements IItemFluidIdentifier, IIte
             return EnumActionResult.SUCCESS;
         }
         return super.onItemUse(player, worldIn, pos, hand, facing, hitX, hitY, hitZ);
+    }
+
+    public static void spreadType(World worldIn, BlockPos pos, FluidType hand, FluidType pipe, int x){
+        if(x > 0){
+            TileEntity te = worldIn.getTileEntity(pos);
+            if(te instanceof TileEntityPipeBaseNT duct){
+                if(duct.getType() == pipe){
+                    duct.setType(hand);
+                    duct.markDirty();
+                    spreadType(worldIn, pos.add(1, 0, 0), hand, pipe, x-1);
+                    spreadType(worldIn, pos.add(0, 1, 0), hand, pipe, x-1);
+                    spreadType(worldIn, pos.add(0, 0, 1), hand, pipe, x-1);
+                    spreadType(worldIn, pos.add(-1, 0, 0), hand, pipe, x-1);
+                    spreadType(worldIn, pos.add(0, -1, 0), hand, pipe, x-1);
+                    spreadType(worldIn, pos.add(0, 0, -1), hand, pipe, x-1);
+                }
+            }
+        }
     }
 
     @Override

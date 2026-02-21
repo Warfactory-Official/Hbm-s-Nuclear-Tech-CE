@@ -1,6 +1,8 @@
 package com.hbm.entity.projectile;
 
+import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.bomb.BlockDetonatable;
+import com.hbm.blocks.generic.RedBarrel;
 import com.hbm.entity.effect.EntityCloudFleijaRainbow;
 import com.hbm.entity.effect.EntityEMPBlast;
 import com.hbm.entity.effect.EntityNukeTorex;
@@ -15,16 +17,18 @@ import com.hbm.handler.ArmorUtil;
 import com.hbm.handler.BulletConfigSyncingUtil;
 import com.hbm.handler.BulletConfiguration;
 import com.hbm.handler.GunConfigurationSedna;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.weapon.sedna.ItemGunBaseSedna;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.potion.HbmPotion;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.Tuple;
 import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -392,7 +396,7 @@ public class EntityBulletBaseNT extends EntityThrowableInterp implements IBullet
                 data.setDouble("motion", 0.1D);
                 data.setString("mode", "blockdust");
                 data.setInteger("block", Block.getIdFromBlock(Blocks.REDSTONE_BLOCK));
-                PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, living.posX, living.posY + living.height - head, living.posZ), new NetworkRegistry.TargetPoint(living.dimension, living.posX, living.posY, living.posZ, 50));
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, living.posX, living.posY + living.height - head, living.posZ), new NetworkRegistry.TargetPoint(living.dimension, living.posX, living.posY, living.posZ, 50));
                 world.playSound(null, victim.posX, victim.posY, victim.posZ, SoundEvents.ENTITY_ZOMBIE_BREAK_DOOR_WOOD, SoundCategory.PLAYERS, 1.0F, 0.95F + rand.nextFloat() * 0.2F);
             }
         }
@@ -400,7 +404,8 @@ public class EntityBulletBaseNT extends EntityThrowableInterp implements IBullet
 
     //for when a bullet dies by hitting a block
     private void onBlockImpact(int bX, int bY, int bZ, int sideHit) {
-        Block block = world.getBlockState(new BlockPos(bX, bY, bZ)).getBlock();
+        IBlockState state = world.getBlockState(new BlockPos(bX, bY, bZ));
+        Block block = state.getBlock();
 
         if(config.bntImpact != null)
             config.bntImpact.behaveBlockHit(this, bX, bY, bZ, sideHit);
@@ -483,10 +488,11 @@ public class EntityBulletBaseNT extends EntityThrowableInterp implements IBullet
             if(block.getBlockHardness(world.getBlockState(pos), world, pos) <= 120)
                 world.destroyBlock(pos, false);
         } else if(config.doesBreakGlass && !world.isRemote) {
-            if(block == Blocks.GLASS || block == Blocks.GLASS_PANE || block == Blocks.STAINED_GLASS || block == Blocks.STAINED_GLASS_PANE)
+            if (state.getMaterial() == Material.GLASS && block.getExplosionResistance(null) < 0.6f) {
                 world.destroyBlock(pos, false);
-
-            if(block instanceof BlockDetonatable) {
+            } else if(block == ModBlocks.red_barrel)
+                ((RedBarrel) ModBlocks.red_barrel).explode(world, pos.getX(), pos.getY(), pos.getZ());
+            else if(block instanceof BlockDetonatable) {
                 ((BlockDetonatable) block).onShot(world, pos);
             }
         }
@@ -566,7 +572,7 @@ public class EntityBulletBaseNT extends EntityThrowableInterp implements IBullet
     }
 
     @Override
-    public double getGravityVelocity() {
+    public float getGravityVelocity() {
         return this.config.gravity;
     }
 

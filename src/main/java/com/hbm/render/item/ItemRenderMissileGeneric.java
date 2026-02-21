@@ -1,12 +1,11 @@
 package com.hbm.render.item;
 
-import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.items.ModItems;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.IModelCustom;
+import com.hbm.render.loader.IModelCustom;
+import com.hbm.util.RenderUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -17,11 +16,11 @@ import java.util.function.Consumer;
 
 public class ItemRenderMissileGeneric extends TEISRBase {
 	
-	public static HashMap<ComparableStack, Consumer<TextureManager>> renderers = new HashMap();
+	public static HashMap<ComparableStack, Consumer<TextureManager>> renderers = new HashMap<>();
 	
 	protected RenderMissileType category;
 	
-	public static enum RenderMissileType {
+	public enum RenderMissileType {
 		TYPE_TIER0,
 		TYPE_TIER1,
 		TYPE_TIER2,
@@ -64,48 +63,45 @@ public class ItemRenderMissileGeneric extends TEISRBase {
 		}
 
 		GlStateManager.enableLighting();
+        boolean prevAlpha = RenderUtil.isAlphaEnabled();
+        int prevAlphaFunc = RenderUtil.getAlphaFunc();
+		float prevAlphaRef = RenderUtil.getAlphaRef();
 		GlStateManager.alphaFunc(GL11.GL_GREATER, 0F);
 		GlStateManager.enableAlpha();
-		boolean l = false;
-		switch(type) {
-		case THIRD_PERSON_LEFT_HAND:
-		case THIRD_PERSON_RIGHT_HAND:
-			double s = 0.15;
-			GlStateManager.translate(0.5, -0.25, 0.25);
-			GL11.glScaled(s, s, s);
-			GL11.glScaled(guiScale, guiScale, guiScale);
-			
-			break;
-		case FIRST_PERSON_LEFT_HAND:
-		case FIRST_PERSON_RIGHT_HAND:
-			double heldScale = 0.1;
-			GlStateManager.translate(0.5, -0.25, 0.3);
-			GL11.glScaled(heldScale, heldScale, heldScale);
-			GL11.glScaled(guiScale, guiScale, guiScale);
-			break;
-		case GROUND:
-		case FIXED:
-		case HEAD:
-			double s2 = 0.15;
-			GL11.glScaled(s2, s2, s2);
-			break;
-		case GUI:
-			RenderHelper.enableGUIStandardItemLighting();
-			double s3 = 0.0625;
-			GL11.glScaled(s3, s3, s3);
-			GlStateManager.translate(15 - guiOffset, 1 + guiOffset, 0);
-			GL11.glScaled(guiScale, guiScale, guiScale);
-			GL11.glRotated(45, 0, 0, 1);
-			GlStateManager.rotate(System.currentTimeMillis() / 15 % 360, 0, 1, 0);
-			l = true;
-			break;
-		default: break;
-		}
+        switch (type) {
+            case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND -> {
+                double s = 0.15;
+                GlStateManager.translate(0.5, -0.25, 0.25);
+                GlStateManager.scale(s, s, s);
+                GlStateManager.scale(guiScale, guiScale, guiScale);
+            }
+            case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND -> {
+                double heldScale = 0.1;
+                GlStateManager.translate(0.5, -0.25, 0.3);
+                GlStateManager.scale(heldScale, heldScale, heldScale);
+                GlStateManager.scale(guiScale, guiScale, guiScale);
+            }
+            case GROUND, FIXED, HEAD -> {
+                double s2 = 0.15;
+                GlStateManager.scale(s2, s2, s2);
+            }
+            case GUI -> {
+                double s3 = 0.0625;
+                GlStateManager.scale(s3, s3, s3);
+                GlStateManager.translate(15 - guiOffset, 1 + guiOffset, 0);
+                GlStateManager.scale(guiScale, guiScale, guiScale);
+                GlStateManager.rotate(45, 0, 0, 1);
+                GlStateManager.rotate(System.currentTimeMillis() / 15 % 360, 0, 1, 0);
+            }
+            default -> {
+            }
+        }
 		
 		GlStateManager.disableCull();
 		renderer.accept(Minecraft.getMinecraft().renderEngine);
 		GlStateManager.enableCull();
-		if(l) RenderHelper.enableStandardItemLighting();
+        if (!prevAlpha) GlStateManager.disableAlpha();
+        GlStateManager.alphaFunc(prevAlphaFunc, prevAlphaRef);
 		GlStateManager.popMatrix();
 	}
 	
@@ -115,10 +111,11 @@ public class ItemRenderMissileGeneric extends TEISRBase {
 	
 	public static Consumer<TextureManager> generateWithScale(ResourceLocation texture, IModelCustom model, float scale) {
 		return x -> {
+            int prevShade = RenderUtil.getShadeModel();
 			GlStateManager.scale(scale, scale, scale);
 			GlStateManager.shadeModel(GL11.GL_SMOOTH);
 			x.bindTexture(texture); model.renderAll();
-			GlStateManager.shadeModel(GL11.GL_FLAT);
+			GlStateManager.shadeModel(prevShade);
 		};
 	}
 	
@@ -131,9 +128,10 @@ public class ItemRenderMissileGeneric extends TEISRBase {
 		renderers.put(new ComparableStack(ModItems.missile_emp), generateStandard(ResourceManager.missileMicroEMP_tex, ResourceManager.missileMicro));
 
 		renderers.put(new ComparableStack(ModItems.missile_stealth), x -> {
+            int prevShade = RenderUtil.getShadeModel();
 			GlStateManager.shadeModel(GL11.GL_SMOOTH);
 			x.bindTexture(ResourceManager.missileStealth_tex); ResourceManager.missileStealth.renderAll();
-			GlStateManager.shadeModel(GL11.GL_FLAT);
+            GlStateManager.shadeModel(prevShade);
 		});
 
 		renderers.put(new ComparableStack(ModItems.missile_generic), generateStandard(ResourceManager.missileV2_HE_tex, ResourceManager.missileV2));
@@ -161,8 +159,10 @@ public class ItemRenderMissileGeneric extends TEISRBase {
 		
 		renderers.put(new ComparableStack(ModItems.missile_endo), generateLarge(ResourceManager.missileEndo_tex, ResourceManager.missileThermo));
 		renderers.put(new ComparableStack(ModItems.missile_exo), generateLarge(ResourceManager.missileExo_tex, ResourceManager.missileThermo));
+		renderers.put(new ComparableStack(ModItems.missile_shuttle), generateStandard(ResourceManager.missileShuttle_tex, ResourceManager.missileShuttle));
 
 		renderers.put(new ComparableStack(ModItems.missile_doomsday), generateStandard(ResourceManager.missileDoomsday_tex, ResourceManager.missileNuclear));
+		renderers.put(new ComparableStack(ModItems.missile_doomsday_rusted), generateStandard(ResourceManager.missileDoomsdayRusted_tex, ResourceManager.missileNuclear));
 		renderers.put(new ComparableStack(ModItems.missile_carrier), x -> {
 			GlStateManager.scale(2F, 2F, 2F);
 			x.bindTexture(ResourceManager.missileCarrier_tex);

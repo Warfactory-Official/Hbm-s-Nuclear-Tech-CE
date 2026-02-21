@@ -18,6 +18,7 @@ import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.I18nUtil;
+import com.hbm.util.SoundUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
@@ -35,6 +36,7 @@ import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -58,7 +60,21 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements IT
 	public UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
 
 	public TileEntityMachineEPress() {
-		super(5);
+		super(0, false, true);
+
+        this.inventory = new ItemStackHandler(5) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                super.onContentsChanged(slot);
+                markDirty();
+            }
+            @Override
+            public void setStackInSlot(int slot, @NotNull ItemStack stack) {
+                if(Library.isMachineUpgrade(stack) && slot == 4)
+                    SoundUtil.playUpgradePlugSound(world, pos);
+                super.setStackInSlot(slot, stack);
+            }
+        };
 	}
 
 	@Override
@@ -173,10 +189,10 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements IT
 	@Override
 	public boolean isItemValidForSlot(int i, @NotNull ItemStack stack) {
 		return switch (i) {
-			case 0 -> Library.isItemBattery(stack);
+			case 0 -> Library.isBattery(stack);
 			case 1 -> stack.getItem() instanceof ItemStamp;
 			case 2 ->
-					!(stack.getItem() instanceof ItemStamp) && !Library.isItemBattery(stack) && !(stack.getItem() instanceof ItemMachineUpgrade);
+					!(stack.getItem() instanceof ItemStamp) && !Library.isBattery(stack) && !(stack.getItem() instanceof ItemMachineUpgrade);
 			case 4 -> stack.getItem() instanceof ItemMachineUpgrade;
 			default -> false;
 		};

@@ -119,7 +119,7 @@ public class ItemWand extends Item {
 			stack.getTagCompound().setInteger("block", 0);
 			stack.getTagCompound().setInteger("meta", 0);
 			if(world.isRemote)
-				player.sendMessage(new TextComponentTranslation("chat.constructionwand.setblock").appendSibling(new TextComponentTranslation(Block.getBlockById(stack.getTagCompound().getInteger("block")).getTranslationKey())));
+				player.sendMessage(new TextComponentTranslation("chat.constructionwand.setblock").appendSibling(new TextComponentTranslation(Block.getBlockById(stack.getTagCompound().getInteger("block")).getTranslationKey() + ".name")));
 			return ActionResult.newResult(EnumActionResult.SUCCESS, stack);
 		}
 				

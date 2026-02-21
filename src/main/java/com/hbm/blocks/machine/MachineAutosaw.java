@@ -8,7 +8,6 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.tileentity.machine.TileEntityMachineAutosaw;
 import com.hbm.util.I18nUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -72,7 +71,7 @@ public class MachineAutosaw extends BlockContainer
 
     if (!world.isRemote && !player.isSneaking()) {
 
-      if (player.getHeldItem(hand) != ItemStack.EMPTY
+      if (!player.getHeldItem(hand).isEmpty()
           && player.getHeldItem(hand).getItem() instanceof IItemFluidIdentifier) {
 
         TileEntityMachineAutosaw saw = (TileEntityMachineAutosaw) world.getTileEntity(pos);
@@ -124,9 +123,9 @@ public class MachineAutosaw extends BlockContainer
   }
 
   @Override
-  public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
+  public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
 
-    TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
+    TileEntity te = world.getTileEntity(pos);
 
     if (!(te instanceof TileEntityMachineAutosaw saw)) return;
 
@@ -141,7 +140,7 @@ public class MachineAutosaw extends BlockContainer
 
     if (saw.isSuspended) {
       text.add(
-          ChatFormatting.RED
+          TextFormatting.RED
               + "! "
               + I18nUtil.resolveKey(getTranslationKey() + ".suspended")
               + " !");

@@ -1,6 +1,6 @@
 package com.hbm.items.machine;
 
-import com.github.bsideup.jabel.Desugar;
+import com.hbm.Tags;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.NbtComparableStack;
@@ -10,7 +10,6 @@ import com.hbm.inventory.gui.GUIMachineAssembler;
 import com.hbm.inventory.recipes.AssemblerRecipes;
 import com.hbm.inventory.recipes.AssemblerRecipes.AssemblerRecipe;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
@@ -40,7 +39,7 @@ import java.util.Map;
 
 public class ItemAssemblyTemplate extends Item {
 
-    public static final ModelResourceLocation location = new ModelResourceLocation(RefStrings.MODID + ":assembly_template", "inventory");
+    public static final ModelResourceLocation location = new ModelResourceLocation(Tags.MODID + ":assembly_template", "inventory");
 
     // public static final ModelResourceLocation secret = new ModelResourceLocation(RefStrings.MODID + ":assembly_template_secret", "inventory");
     public ItemAssemblyTemplate(String s) {
@@ -50,7 +49,7 @@ public class ItemAssemblyTemplate extends Item {
         this.setMaxDamage(0);
         this.setCreativeTab(MainRegistry.templateTab);
 
-        this.addPropertyOverride(new ResourceLocation(RefStrings.MODID, "secret"), (stack, worldIn, entityIn) -> {
+        this.addPropertyOverride(new ResourceLocation(Tags.MODID, "secret"), (stack, worldIn, entityIn) -> {
             ComparableStack out = getRecipeOutput(stack);
             if (out != null) {
                 AssemblerRecipe recipe = AssemblerRecipes.recipes.get(out);
@@ -267,7 +266,6 @@ public class ItemAssemblyTemplate extends Item {
                 ".template_seconds"));
     }
 
-    @Desugar
     record CheckResult(String color, int available) {
     }
 }

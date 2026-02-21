@@ -67,61 +67,50 @@ public class ContainerBook extends Container {
     }
     
     @Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int p_82846_2_) {
-    	ItemStack itemstack = ItemStack.EMPTY;
-        Slot slot = (Slot)this.inventorySlots.get(p_82846_2_);
+    public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+    	ItemStack result = ItemStack.EMPTY;
+        Slot slot = this.inventorySlots.get(index);
 
-        if (slot != null && slot.getHasStack())
-        {
-            ItemStack itemstack1 = slot.getStack();
-            itemstack = itemstack1.copy();
+        if (slot != null && slot.getHasStack()) {
+            ItemStack stack = slot.getStack();
+            result = stack.copy();
 
-            if (p_82846_2_ == 0)
-            {
-                if (!this.mergeItemStack(itemstack1, 10 - 5, 46 - 5, true))
-                {
+            if (index == 0) {
+                if (!this.mergeItemStack(stack, 10 - 5, 46 - 5, true)) {
                     return ItemStack.EMPTY;
                 }
 
-                slot.onSlotChange(itemstack1, itemstack);
+                slot.onSlotChange(stack, result);
             }
-            else if (p_82846_2_ >= 10 - 5 && p_82846_2_ < 37 - 5)
-            {
-                if (!this.mergeItemStack(itemstack1, 37 - 5, 46 - 5, false))
-                {
+            else if (index >= 10 - 5 && index < 37 - 5) {
+                if (!this.mergeItemStack(stack, 37 - 5, 46 - 5, false)) {
                     return ItemStack.EMPTY;
                 }
             }
-            else if (p_82846_2_ >= 37 - 5 && p_82846_2_ < 46 - 5)
-            {
-                if (!this.mergeItemStack(itemstack1, 10 - 5, 37 - 5, false))
-                {
+            else if (index >= 37 - 5 && index < 46 - 5) {
+                if (!this.mergeItemStack(stack, 10 - 5, 37 - 5, false)) {
                     return ItemStack.EMPTY;
                 }
             }
-            else if (!this.mergeItemStack(itemstack1, 10 - 5, 46 - 5, false))
-            {
+            else if (!this.mergeItemStack(stack, 10 - 5, 46 - 5, false)) {
                 return ItemStack.EMPTY;
             }
 
-            if (itemstack1.isEmpty())
-            {
+            if (stack.isEmpty()) {
                 slot.putStack(ItemStack.EMPTY);
             }
-            else
-            {
+            else {
                 slot.onSlotChanged();
             }
 
-            if (itemstack1.getCount() == itemstack.getCount())
-            {
+            if (stack.getCount() == result.getCount()) {
                 return ItemStack.EMPTY;
             }
 
-            slot.onTake(p_82846_1_, itemstack1);
+            slot.onTake(player, stack);
         }
 
-        return itemstack;
+        return result;
     }
     
 	@Override

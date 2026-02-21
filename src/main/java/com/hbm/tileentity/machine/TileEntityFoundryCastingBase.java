@@ -82,7 +82,7 @@ public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase
 
 					ItemStack out = mold.getOutput(type);
 
-					if(out != null && !out.isEmpty()) {
+					if(!out.isEmpty()) {
 						inventory.setStackInSlot(1, out.copy());
 					}
 
@@ -137,7 +137,7 @@ public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase
 		Mold mold = this.getInstalledMold();
 		if(mold == null) return false;
 
-		return mold.getOutput(stack.material) != null; //no OD match -> no pouring
+		return !mold.getOutput(stack.material).isEmpty(); //no OD match -> no pouring
 	}
 
 	/** Returns an integer determining the mold size, 0 for small molds and 1 for the basin */

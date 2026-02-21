@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.api.block.IToolable.ToolType;
 import com.hbm.handler.radiation.RadiationSystemNT;
 import com.hbm.interfaces.IBomb;
 import com.hbm.interfaces.IDoor;
@@ -8,6 +9,7 @@ import com.hbm.interfaces.IDummy;
 import com.hbm.interfaces.IRadResistantBlock;
 import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemLock;
+import com.hbm.items.tool.ItemTooling;
 import com.hbm.tileentity.machine.TileEntityDummy;
 import com.hbm.tileentity.machine.TileEntitySiloHatch;
 import micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock;
@@ -78,7 +80,7 @@ public class DummyBlockSiloHatch extends BlockContainer implements IDummy, IBomb
     		}
     	}
     	world.removeTileEntity(pos);
-    	RadiationSystemNT.markChunkForRebuild(world, pos);
+        RadiationSystemNT.markSectionForRebuild(world, pos);
 	}
 	
 	@Override
@@ -95,6 +97,20 @@ public class DummyBlockSiloHatch extends BlockContainer implements IDummy, IBomb
 						
 				TileEntitySiloHatch entity = (TileEntitySiloHatch) world.getTileEntity(((TileEntityDummy)til).target);
 				if(entity != null) {
+					if (player.getHeldItem(hand).getItem() instanceof ItemTooling tool && tool.getType() == ToolType.SCREWDRIVER) {
+						if (entity.getConfiguredMode() == IDoor.Mode.TOOLABLE) {
+							if (!entity.canToggleRedstone(player)) {
+								return false;
+							}
+							entity.toggleRedstoneMode();
+							return true;
+						}
+					}
+
+					if (entity.isRedstoneOnly()) {
+						return false;
+					}
+
 					if(entity.canAccess(player)){
 						entity.tryToggle();
 						return true;
@@ -161,12 +177,11 @@ public class DummyBlockSiloHatch extends BlockContainer implements IDummy, IBomb
 	
 	@Override
 	public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
-		return new ItemStack(ModBlocks.silo_hatch);
+		return new ItemStack(ModBlocks.silo_hatch_drillgon);
 	}
 
 	@Override
 	public void onBlockAdded(World world, BlockPos pos, IBlockState state) {
-		RadiationSystemNT.markChunkForRebuild(world, pos);
 		super.onBlockAdded(world, pos, state);
 	}
 

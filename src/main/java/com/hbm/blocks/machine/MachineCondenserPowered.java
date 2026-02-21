@@ -30,9 +30,9 @@ public class MachineCondenserPowered extends BlockDummyable implements ILookOver
 	public TileEntity createNewTileEntity(World p_149915_1_, int meta) {
 		if(meta >= 12)
 			return new TileEntityCondenserPowered();
-
-		if(meta >= 8)
-			return new TileEntityProxyCombo(false, true, true);
+		// go fuck yourself you two xd
+		// metallolom just WHY do you set the (meta >= 8) when it is (meta >= 6) dude it's just ctrl+c ctrl+v goddammit
+		if(meta >= 6) return new TileEntityProxyCombo().power().fluid();
 
 		return null;
 	}
@@ -65,18 +65,17 @@ public class MachineCondenserPowered extends BlockDummyable implements ILookOver
 	}
 
 	@Override
-	public void printHook(Pre event, World world, int x, int y, int z) {
-		int[] pos = this.findCore(world, x, y, z);
+	public void printHook(Pre event, World world, BlockPos pos) {
+        BlockPos corePos = this.findCore(world, pos);
 
-		if(pos == null)
-			return;
+        if(corePos == null)
+            return;
 
-		TileEntity te = world.getTileEntity(new BlockPos(pos[0], pos[1], pos[2]));
+		TileEntity te = world.getTileEntity(corePos);
 
-		if(!(te instanceof TileEntityCondenserPowered)) return;
+		if(!(te instanceof TileEntityCondenserPowered tower)) return;
 
-		TileEntityCondenserPowered tower = (TileEntityCondenserPowered) te;
-		List<String> text = new ArrayList();
+        List<String> text = new ArrayList();
 
 		text.add(BobMathUtil.getShortNumber(tower.power) + "HE / " + BobMathUtil.getShortNumber(tower.maxPower) + "HE");
 

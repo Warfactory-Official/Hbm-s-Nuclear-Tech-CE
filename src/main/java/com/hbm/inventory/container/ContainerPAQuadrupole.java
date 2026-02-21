@@ -1,8 +1,9 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotBattery;
+import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.albion.TileEntityPAQuadrupole;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -40,32 +41,8 @@ public class ContainerPAQuadrupole extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        ItemStack rStack = ItemStack.EMPTY;
-        Slot slot = this.inventorySlots.get(index);
-
-        if (slot != null && slot.getHasStack()) {
-            ItemStack stack = slot.getStack();
-            rStack = stack.copy();
-
-            if (index <= 1) {
-                if (!this.mergeItemStack(stack, 2, this.inventorySlots.size(), true)) {
-                    return ItemStack.EMPTY;
-                }
-            } else {
-                if (Library.isItemBattery(rStack)) {
-                    if (!this.mergeItemStack(stack, 0, 1, false)) return ItemStack.EMPTY;
-                } else {
-                    if (!this.mergeItemStack(stack, 1, 2, false)) return ItemStack.EMPTY;
-                }
-            }
-
-            if (stack.isEmpty()) {
-                slot.putStack(ItemStack.EMPTY);
-            } else {
-                slot.onSlotChanged();
-            }
-        }
-
-        return rStack;
+        return InventoryUtil.transferStack(this.inventorySlots, index, 2,
+                Library::isBattery, 1
+        );
     }
 }

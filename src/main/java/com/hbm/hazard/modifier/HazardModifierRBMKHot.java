@@ -4,10 +4,10 @@ import com.hbm.items.machine.ItemRBMKRod;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 
-public class HazardModifierRBMKHot extends HazardModifier {
+public class HazardModifierRBMKHot implements IHazardModifier {
 
 	@Override
-	public float modify(final ItemStack stack, final EntityLivingBase holder, float level) {
+    public double modify(final ItemStack stack, final EntityLivingBase holder, double level) {
 		
 		level = 0;
 		

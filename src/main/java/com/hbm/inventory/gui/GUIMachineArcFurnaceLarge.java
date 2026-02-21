@@ -1,31 +1,32 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerMachineArcFurnaceLarge;
 import com.hbm.inventory.material.Mats;
-import com.hbm.lib.RefStrings;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toserver.NBTControlPacket;
 import com.hbm.tileentity.machine.TileEntityMachineArcFurnaceLarge;
 import com.hbm.util.I18nUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUIMachineArcFurnaceLarge extends GuiInfoContainer {
 
-    private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_arc_furnace.png");
+    private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_arc_furnace.png");
     private TileEntityMachineArcFurnaceLarge arc;
 
     public GUIMachineArcFurnaceLarge(InventoryPlayer invPlayer, TileEntityMachineArcFurnaceLarge arc) {
@@ -51,10 +52,11 @@ public class GUIMachineArcFurnaceLarge extends GuiInfoContainer {
         super.mouseClicked(x, y, k);
 
         if(this.checkClick(x, y, 151, 17, 18, 18)) {
-            mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            playClickSound();
             NBTTagCompound data = new NBTTagCompound();
             data.setBoolean("liquid", true);
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, arc.getPos().getX(), arc.getPos().getY(), arc.getPos().getZ()));
+            PacketThreading.createSendToServerThreadedPacket(
+                    new NBTControlPacket(data, arc.getPos().getX(), arc.getPos().getY(), arc.getPos().getZ()));
         }
     }
 
@@ -86,8 +88,9 @@ public class GUIMachineArcFurnaceLarge extends GuiInfoContainer {
 
     protected void drawStackInfo(List<Mats.MaterialStack> stack, int mouseX, int mouseY, int x, int y) {
         List<String> list = new ArrayList<>();
-        if(stack.isEmpty()) list.add(ChatFormatting.RED + "Empty");
-        for(Mats.MaterialStack sta : stack) list.add(ChatFormatting.YELLOW + I18nUtil.resolveKey(sta.material.getTranslationKey()) + ": " + Mats.formatAmount(sta.amount, Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)));
+        if(stack.isEmpty()) list.add(TextFormatting.RED + "Empty");
+        for(Mats.MaterialStack sta : stack) list.add(
+                TextFormatting.YELLOW + I18nUtil.resolveKey(sta.material.getTranslationKey()) + ": " + Mats.formatAmount(sta.amount, Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)));
         this.drawCustomInfoStat(mouseX, mouseY, guiLeft + x, guiTop + y, 16, 70, mouseX, mouseY, list);
     }
 

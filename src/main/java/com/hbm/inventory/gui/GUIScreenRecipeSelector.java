@@ -1,18 +1,16 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
-import com.hbm.lib.RefStrings;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toserver.NBTControlPacket;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -28,9 +26,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.hbm.util.SoundUtil.playClickSound;
+
 public class GUIScreenRecipeSelector extends GuiScreen {
 
-    protected static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_recipe_selector.png");
+    protected static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_recipe_selector.png");
 
     //basic GUI setup
     protected int xSize = 176;
@@ -245,13 +245,13 @@ public class GUIScreenRecipeSelector extends GuiScreen {
         this.search.mouseClicked(x, y, k);
 
         if(guiLeft + 152 <= x && guiLeft + 152 + 16 > x && guiTop + 18 < y && guiTop + 18 + 16 >= y) {
-            click();
+            playClickSound();
             if(this.pageIndex > 0) this.pageIndex--;
             return;
         }
 
         if(guiLeft + 152 <= x && guiLeft + 152 + 16 > x && guiTop + 36 < y && guiTop + 36 + 16 >= y) {
-            click();
+            playClickSound();
             if(this.pageIndex < this.size) this.pageIndex++;
             return;
         }
@@ -279,7 +279,7 @@ public class GUIScreenRecipeSelector extends GuiScreen {
                 else
                     this.selection = NULL_SELECTION;
 
-                click();
+                playClickSound();
                 return;
             }
         }
@@ -287,7 +287,7 @@ public class GUIScreenRecipeSelector extends GuiScreen {
         if(guiLeft + 151 <= x && guiLeft + 151 + 18 > x && guiTop + 71 < y && guiTop + 71 + 18 >= y) {
             if(!NULL_SELECTION.equals(this.selection)) {
                 this.selection = this.NULL_SELECTION;
-                click();
+                playClickSound();
                 return;
             }
         }
@@ -305,7 +305,7 @@ public class GUIScreenRecipeSelector extends GuiScreen {
         data.setInteger("index", this.index);
         data.setString("selection", this.selection);
         TileEntity te = (TileEntity) tile;
-        PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, te.getPos().getX(), te.getPos().getY(), te.getPos().getZ()));
+        PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, te.getPos().getX(), te.getPos().getY(), te.getPos().getZ()));
     }
 
     @Override
@@ -326,6 +326,4 @@ public class GUIScreenRecipeSelector extends GuiScreen {
         }
     }
     @Override public boolean doesGuiPauseGame() { return false; }
-
-    public void click() { mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F)); }
 }

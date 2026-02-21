@@ -16,7 +16,8 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
 import java.util.List;
-@AutoRegister(name = "entity_grenade_if_mystery")
+
+@AutoRegister(name = "entity_grenade_if_null")
 public class EntityGrenadeIFNull extends EntityGrenadeBouncyBase {
 
     public EntityGrenadeIFNull(World p_i1773_1_)
@@ -60,9 +61,9 @@ public class EntityGrenadeIFNull extends EntityGrenadeBouncyBase {
         }
         if (toKill instanceof EntityLivingBase livingBase) livingBase.setHealth(0f);
         else toKill.setDead();
-        DelayedTick.nextWorldTick(toKill.world, () -> {
+        DelayedTick.nextWorldTickEnd(toKill.world, w -> {
             if (!toKill.isDead && toKill.isEntityAlive()) {
-                WorldServer ws = (WorldServer) toKill.world;
+                WorldServer ws = (WorldServer) w;
                 if (toKill instanceof EntityPlayer) {
                     ws.removeEntity(toKill);
                     return;

@@ -21,6 +21,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 
 import java.util.List;
 
@@ -49,7 +50,7 @@ public class ItemModLens extends ItemArmorMod implements ISatChip {
         World world = entity.getEntityWorld();
         if(world.isRemote) return;
 
-        if(!(entity instanceof EntityPlayerMP) && !(entity instanceof EntityPlayer)) return;
+        if(!(entity instanceof EntityPlayer)) return;
 
         EntityPlayerMP player = (EntityPlayerMP) entity;
         ItemStack lens = ArmorModHandler.pryMods(armor)[ArmorModHandler.extra];
@@ -78,11 +79,13 @@ public class ItemModLens extends ItemArmorMod implements ISatChip {
         BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
         for(int chunkX = cX - range; chunkX <= cX + range; chunkX++) {
             for(int chunkZ = cZ - range; chunkZ <= cZ + range; chunkZ++) {
+                Chunk chunk = world.getChunkProvider().getLoadedChunk(chunkX, chunkZ);
+                if(chunk == null) continue;
 
                 for(int ix = 0; ix < 16; ix++) {
                     for(int iz = 0; iz < 16; iz++) {
                         mutablePos.setPos((chunkX << 4) + ix, seg, (chunkZ << 4) + iz);
-                        Block b = world.getBlockState(mutablePos).getBlock();
+                        Block b = chunk.getBlockState(mutablePos).getBlock();
                         int aX = mutablePos.getX();
                         int aZ = mutablePos.getZ();
 

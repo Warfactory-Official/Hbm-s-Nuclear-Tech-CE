@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerSoyuzCapsule;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntitySoyuzCapsule;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
@@ -12,7 +12,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GUISoyuzCapsule extends GuiContainer {
 
-	private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/gui_soyuz_capsule.png");
+	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/gui_soyuz_capsule.png");
 	private TileEntitySoyuzCapsule diFurnace;
 	
 	public GUISoyuzCapsule(InventoryPlayer invPlayer, TileEntitySoyuzCapsule tedf) {

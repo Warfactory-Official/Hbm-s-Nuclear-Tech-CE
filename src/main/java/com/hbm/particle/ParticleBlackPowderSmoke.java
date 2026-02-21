@@ -1,7 +1,7 @@
 package com.hbm.particle;
 
 import com.hbm.entity.particle.ParticleFXRotating;
-import com.hbm.main.ModEventHandlerClient;
+import com.hbm.main.client.NTMClientRegistry;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
@@ -12,7 +12,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
-import java.nio.FloatBuffer;
 
 @SideOnly(Side.CLIENT)
 public class ParticleBlackPowderSmoke extends ParticleFXRotating {
@@ -31,7 +30,7 @@ public class ParticleBlackPowderSmoke extends ParticleFXRotating {
         this.particleRed = color.getRed() / 255F;
         this.particleGreen = color.getGreen() / 255F;
         this.particleBlue = color.getBlue() / 255F;
-        this.setParticleTexture(ModEventHandlerClient.particle_base);
+        this.setParticleTexture(NTMClientRegistry.particle_base);
         this.canCollide = false;
     }
 

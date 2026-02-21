@@ -1,10 +1,10 @@
 package com.hbm.items.machine;
 
 import com.google.common.collect.ImmutableMap;
+import com.hbm.Tags;
 import com.hbm.items.IDynamicModels;
 import com.hbm.items.ItemEnumMulti;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
 import com.hbm.render.icon.RGBMutatorInterpolatedComponentRemap;
 import com.hbm.render.icon.TextureAtlasSpriteMutatable;
@@ -39,12 +39,12 @@ import java.util.Locale;
 /*
  * Watz Isotropic Fuel, Oxidized
  */
-public class ItemWatzPellet extends ItemEnumMulti implements IDynamicModels {
+public class ItemWatzPellet extends ItemEnumMulti<ItemWatzPellet.EnumWatzType> implements IDynamicModels {
 
     final boolean isDepleted;
 
     public ItemWatzPellet(String s, boolean isDepleted) {
-        super(s, EnumWatzType.class, true, true);
+        super(s, EnumWatzType.VALUES, true, true);
         this.setMaxStackSize(16);
         this.setTranslationKey(s);
         this.setCreativeTab(MainRegistry.controlTab);
@@ -72,7 +72,7 @@ public class ItemWatzPellet extends ItemEnumMulti implements IDynamicModels {
     }
 
     public static double getEnrichment(ItemStack stack) {
-        EnumWatzType num = EnumUtil.grabEnumSafely(EnumWatzType.class, stack.getItemDamage());
+        EnumWatzType num = EnumUtil.grabEnumSafely(EnumWatzType.VALUES, stack.getItemDamage());
         return getYield(stack) / num.yield;
     }
 
@@ -95,7 +95,7 @@ public class ItemWatzPellet extends ItemEnumMulti implements IDynamicModels {
     }
 
     private static void setNBTDefaults(ItemStack stack) {
-        EnumWatzType num = EnumUtil.grabEnumSafely(EnumWatzType.class, stack.getItemDamage());
+        EnumWatzType num = EnumUtil.grabEnumSafely(EnumWatzType.VALUES, stack.getItemDamage());
         stack.setTagCompound(new NBTTagCompound());
         setYield(stack, num.yield);
     }
@@ -103,11 +103,11 @@ public class ItemWatzPellet extends ItemEnumMulti implements IDynamicModels {
     @SideOnly(Side.CLIENT)
     @Override
     public void registerModel() {
-        for (int i = 0; i < EnumWatzType.values().length; i++) {
+        for (int i = 0; i < EnumWatzType.VALUES.length; i++) {
             if (this.isDepleted) {
-                ModelLoader.setCustomModelResourceLocation(this, i, new ModelResourceLocation(RefStrings.MODID + ":items/watz_pellet_depleted-" + i, "inventory"));
+                ModelLoader.setCustomModelResourceLocation(this, i, new ModelResourceLocation(Tags.MODID + ":items/watz_pellet_depleted-" + i, "inventory"));
             } else {
-                ModelLoader.setCustomModelResourceLocation(this, i, new ModelResourceLocation(RefStrings.MODID + ":items/watz_pellet-" + i, "inventory"));
+                ModelLoader.setCustomModelResourceLocation(this, i, new ModelResourceLocation(Tags.MODID + ":items/watz_pellet-" + i, "inventory"));
             }
         }
     }
@@ -116,9 +116,9 @@ public class ItemWatzPellet extends ItemEnumMulti implements IDynamicModels {
     @Override
     public void registerSprite(TextureMap map) {
         for (int j = 0; j <= 1; j++) {
-            for (int i = 0; i < EnumWatzType.values().length; i++) {
-                EnumWatzType type = EnumWatzType.values()[i];
-                ResourceLocation spriteLoc = new ResourceLocation(RefStrings.MODID, "items/watz_pellet" + (isDepleted ? "_depleted-" + i : "-" + i));
+            for (int i = 0; i < EnumWatzType.VALUES.length; i++) {
+                EnumWatzType type = EnumWatzType.VALUES[i];
+                ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, "items/watz_pellet" + (isDepleted ? "_depleted-" + i : "-" + i));
                 int light = isDepleted ? desaturate(type.colorLight) : type.colorLight;
                 int dark = isDepleted ? desaturate(type.colorDark) : type.colorDark;
                 TextureAtlasSpriteMutatable mutableIcon = new TextureAtlasSpriteMutatable(spriteLoc.toString(), new RGBMutatorInterpolatedComponentRemap(0xD2D2D2, 0x333333, light, dark));
@@ -133,8 +133,8 @@ public class ItemWatzPellet extends ItemEnumMulti implements IDynamicModels {
         for (int j = 0; j <= 1; j++) {
             try {
                 IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/generated"));
-                for (int i = 0; i < EnumWatzType.values().length; i++) {
-                    ResourceLocation spriteLoc = new ResourceLocation(RefStrings.MODID, "items/watz_pellet" + (isDepleted ? "_depleted-" + i : "-" + i));
+                for (int i = 0; i < EnumWatzType.VALUES.length; i++) {
+                    ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, "items/watz_pellet" + (isDepleted ? "_depleted-" + i : "-" + i));
                     IModel retexturedModel = baseModel.retexture(
                             ImmutableMap.of(
                                     "layer0", spriteLoc.toString()
@@ -142,7 +142,7 @@ public class ItemWatzPellet extends ItemEnumMulti implements IDynamicModels {
 
                     );
                     IBakedModel bakedModel = retexturedModel.bake(ModelRotation.X0_Y0, DefaultVertexFormats.ITEM, ModelLoader.defaultTextureGetter());
-                    ModelResourceLocation bakedModelLocation = new ModelResourceLocation(new ResourceLocation(RefStrings.MODID, "items/watz_pellet" + (isDepleted ? "_depleted-" + i : "-" + i)), "inventory");
+                    ModelResourceLocation bakedModelLocation = new ModelResourceLocation(new ResourceLocation(Tags.MODID, "items/watz_pellet" + (isDepleted ? "_depleted-" + i : "-" + i)), "inventory");
                     event.getModelRegistry().putObject(bakedModelLocation, bakedModel);
 
                 }
@@ -157,7 +157,7 @@ public class ItemWatzPellet extends ItemEnumMulti implements IDynamicModels {
 
         if (this != ModItems.watz_pellet) return;
 
-        EnumWatzType num = EnumUtil.grabEnumSafely(EnumWatzType.class, stack.getItemDamage());
+        EnumWatzType num = EnumUtil.grabEnumSafely(EnumWatzType.VALUES, stack.getItemDamage());
 
         list.add(TextFormatting.GREEN + "Depletion: " + String.format(Locale.US, "%.1f", getDurabilityForDisplay(stack) * 100D) + "%");
 
@@ -207,20 +207,9 @@ public class ItemWatzPellet extends ItemEnumMulti implements IDynamicModels {
         BORON(0xBDC8D2, 0x29343E, 0, 0, 0.0025D, null, null, new FunctionLinear(10)), //improved absorber, linear
         DU(0xC1C7BD, 0x2B3227, 0, 0, 0.0025D, null, null, new FunctionQuadratic(1D, 1D).withDiv(100)), //absorber with positive coefficient
         NQD(0x4B4B4B, 0x121212, 2_000, 20, 0.01D, new FunctionLinear(2D), new FunctionSqrt(1D / 25D).withOff(25D * 25D), null),
-        NQR(0x2D2D2D, 0x0B0B0B, 2_500, 30, 0.01D, new FunctionLinear(1.5D), new FunctionSqrt(1D / 25D).withOff(25D * 25D), null),
-        PU241(0x78817E, 394240, 1_950, 25, 0.0025D, new FunctionLinear(1.30D), new FunctionSqrt(2.66D / 18D).withOff(24D * 24D), null),
-        AMRG(0x93767B, 0x66474D, 2_888, 48, 0.0035D, new FunctionLinear(1.33D), new FunctionSqrt(4.33D / 25.5D).withOff(28D * 28D), null),
-        AMF(0x93767B, 0x66474D, 2_333, 44, 0.003D, new FunctionLinear(1.33D), new FunctionSqrt(4.11D / 22.2D).withOff(27D * 27D), null),
+        NQR(0x2D2D2D, 0x0B0B0B, 2_500, 30, 0.01D, new FunctionLinear(1.5D), new FunctionSqrt(1D / 25D).withOff(25D * 25D), null);
 
-        CMRG(0xD8C2C4, 0xAD9799, 2_999, 50, 0.005D, new FunctionLinear(1.5D), new FunctionSqrt(5.5D / 25.5D).withOff(30D * 28D), null),
-        CMF(0xD8C2C4, 0xAD9799, 2_444, 48, 0.0045D, new FunctionLinear(1.8D), new FunctionSqrt(5.0D / 20D).withOff(26D * 24D), null),
-        BK247(0xC2C9C7, 0x8D9592, 3_000, 55, 0.012D, new FunctionLinear(1.5D), new FunctionSqrt(6.0D / 23.5D).withOff(10D * 10D), null),
-        CF251(0x7879B4, 0x4D4E89, 1_250, 60, 0.001D, new FunctionLinear(1.7D), new FunctionSqrt(6.65D / 23.5D).withOff(10D * 10D), null),
-
-        CF252(0x7879B4, 0x4D4E89, 1_050, 120, 0.0015D, new FunctionLinear(1.8D), new FunctionSqrt(8.85D / 28.8D).withOff(10D * 10D), null),
-        ES253(0xB9BFB2, 0x594E44, 3_750, 70, 0.0001D, new FunctionLinear(1.3D), new FunctionSqrt(7.0D / 27.7D).withOff(10D * 10D), null);
-
-        public double yield = 500_000_000;
+        public static final EnumWatzType[] VALUES = values();
         public final int colorLight;
         public final int colorDark;
         public final double mudContent;    //how much mud per reaction flux should be produced
@@ -229,6 +218,7 @@ public class ItemWatzPellet extends ItemEnumMulti implements IDynamicModels {
         public final Function burnFunc;    //flux to reactivity(0) (classic reactivity)
         public final Function heatDiv;    //reactivity(0) to reactivity(1) based on heat (temperature coefficient)
         public final Function absorbFunc;    //flux to heat (flux absobtion for non-active component)
+        public double yield = 500_000_000;
 
         private EnumWatzType(int colorLight, int colorDark, double passive, double heatEmission, double mudContent, Function burnFunction, Function heatDivisor, Function absorbFunction) {
             this.colorLight = colorLight;

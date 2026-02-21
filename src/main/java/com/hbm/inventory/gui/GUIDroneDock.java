@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerDroneDock;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.network.TileEntityDroneDock;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -10,7 +10,7 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
 
 public class GUIDroneDock extends GuiInfoContainer {
-    private static ResourceLocation texture = new ResourceLocation(RefStrings.MODID, "textures/gui/storage/gui_drone_dock.png");
+    private static ResourceLocation texture = new ResourceLocation(Tags.MODID, "textures/gui/storage/gui_drone_dock.png");
     private TileEntityDroneDock dock;
 
     public GUIDroneDock(InventoryPlayer invPlayer, TileEntityDroneDock tedf) {

@@ -23,9 +23,9 @@ public class PowderRecipes {
 
         //Explosives
         CraftingManager.addShapelessAuto(new ItemStack(ModItems.ballistite, 3), Items.GUNPOWDER, KNO.dust(), Items.SUGAR );
-        CraftingManager.addShapelessAuto(new ItemStack(ModItems.ball_dynamite, 2), KNO.dust(), Items.SUGAR, Blocks.SAND, KEY_TOOL_CHEMISTRYSET );
-        CraftingManager.addShapelessAuto(new ItemStack(ModItems.ball_tnt, 4), Fluids.AROMATICS.getDict(1000), KNO.dust(), KEY_TOOL_CHEMISTRYSET );
-        CraftingManager.addShapelessAuto(new ItemStack(ModItems.ingot_c4, 4), Fluids.UNSATURATEDS.getDict(1000), KNO.dust(), KEY_TOOL_CHEMISTRYSET );
+        CraftingManager.addShapelessAuto(new ItemStack(ModItems.ball_dynamite, 2), KNO.dust(), Items.SUGAR, Blocks.SAND, new CraftingManager.ComplexOreIngredient(KEY_TOOL_CHEMISTRYSET));
+        CraftingManager.addShapelessAuto(new ItemStack(ModItems.ball_tnt, 4), Fluids.AROMATICS.getDict(1000), KNO.dust(), new CraftingManager.ComplexOreIngredient(KEY_TOOL_CHEMISTRYSET));
+        CraftingManager.addShapelessAuto(new ItemStack(ModItems.ingot_c4, 4), Fluids.UNSATURATEDS.getDict(1000), KNO.dust(), new CraftingManager.ComplexOreIngredient(KEY_TOOL_CHEMISTRYSET));
         CraftingManager.addShapelessAuto(new ItemStack(ModItems.powder_semtex_mix, 3), ModItems.solid_fuel, ModItems.cordite, KNO.dust() );
         CraftingManager.addShapelessAuto(new ItemStack(ModItems.powder_semtex_mix, 1), ModItems.solid_fuel, ModItems.ballistite, KNO.dust() );
         CraftingManager.addShapelessAuto(new ItemStack(Items.CLAY_BALL, 4), KEY_SAND, ModItems.dust, ModItems.dust, Fluids.WATER.getDict(1_000) );
@@ -34,7 +34,7 @@ public class PowderRecipes {
 
         //Other
         CraftingManager.addShapelessAuto(new ItemStack(ModItems.ingot_steel_dusted, 1), STEEL.ingot(), COAL.dust() );
-        CraftingManager.addShapelessAuto(new ItemStack(ModItems.powder_bakelite, 2), Fluids.AROMATICS.getDict(1000), Fluids.PETROLEUM.getDict(1000), KEY_TOOL_CHEMISTRYSET );
+        CraftingManager.addShapelessAuto(new ItemStack(ModItems.powder_bakelite, 2), Fluids.AROMATICS.getDict(1000), Fluids.PETROLEUM.getDict(1000), new CraftingManager.ComplexOreIngredient(KEY_TOOL_CHEMISTRYSET));
 
         //Gunpowder
         CraftingManager.addShapelessAuto(new ItemStack(Items.GUNPOWDER, 3), S.dust(), KNO.dust(), COAL.gem() );

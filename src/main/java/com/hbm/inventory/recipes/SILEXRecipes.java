@@ -23,8 +23,8 @@ import static com.hbm.inventory.OreDictManager.*;
 public class SILEXRecipes {
 
 	public static LinkedHashMap<Object, SILEXRecipe> recipes = new LinkedHashMap<>();
-	private static HashMap<ComparableStack, ComparableStack> itemTranslation = new HashMap<>();
-	private static HashMap<String, String> dictTranslation = new HashMap<>();
+	public static HashMap<ComparableStack, ComparableStack> itemTranslation = new HashMap<>();
+	public static HashMap<String, String> dictTranslation = new HashMap<>();
 
 	public static void register() {
 
@@ -651,7 +651,7 @@ public class SILEXRecipes {
 				new SILEXRecipe(1_000, 1_000, EnumWavelengths.VISIBLE).addOut(DictFrame.fromOne(ModItems.powder_ash, ItemEnums.EnumAshType.FULLERENE), 1));
 	}
 
-	private static final HashMap<Item, Item> tinyWasteTranslation = new HashMap();
+	private static final HashMap<Item, Item> tinyWasteTranslation = new HashMap<>();
 
 	static {
 		tinyWasteTranslation.put(ModItems.nuclear_waste_short_tiny, ModItems.nuclear_waste_short);
@@ -674,7 +674,7 @@ public class SILEXRecipes {
 	
 	public static SILEXRecipe getOutput(ItemStack stack) {
 		
-		if(stack == null || stack.getItem() == null)
+		if(stack == null || stack.isEmpty())
 			return null;
 		
 		ComparableStack comp = translateItem(stack);
@@ -755,8 +755,8 @@ public class SILEXRecipes {
 			
 			if(ingredient instanceof String) {
 				List<ItemStack> ingredients = OreDictionary.getOres((String)ingredient);
-				if(ingredients.size() > 0) {
-					SILEXRecipe output = getOutput(ingredients.get(0));
+				if(!ingredients.isEmpty()) {
+					SILEXRecipe output = getOutput(ingredients.getFirst());
 					if(output != null)
 						recipes.put(ingredients, output);
 				}

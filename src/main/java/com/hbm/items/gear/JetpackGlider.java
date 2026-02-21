@@ -74,7 +74,7 @@ public class JetpackGlider extends ItemArmorMod implements IFillableItem {
 	public boolean acceptsFluid(FluidType type, ItemStack stack) {
 		FluidType currentType = this.getTank(stack).getTankType();
 		if (Fluids.NONE.equals(currentType) || this.getTank(stack).getFill() == 0){
-			return type.equals(Fluids.KEROSENE) || type.equals(Fluids.BALEFIRE) || type.equals(Fluids.NITAN);
+			return type.equals(Fluids.KEROSENE) || type.equals(Fluids.KEROSENE_REFORM) || type.equals(Fluids.BALEFIRE) || type.equals(Fluids.NITAN);
 		} else return type.equals(currentType);
 	}
 

@@ -1,9 +1,9 @@
 package com.hbm.render.entity.projectile;
 
+import com.hbm.Tags;
 import com.hbm.entity.projectile.EntityRBMKDebris;
 import com.hbm.entity.projectile.EntityRBMKDebris.DebrisType;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.ResourceManager;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.Render;
@@ -16,11 +16,11 @@ public class RenderRBMKDebris extends Render<EntityRBMKDebris> {
 	public static final IRenderFactory<EntityRBMKDebris> FACTORY = man -> new RenderRBMKDebris(man);
 	
 	//for fallback only
-	private static final ResourceLocation tex_base = new ResourceLocation(RefStrings.MODID + ":textures/blocks/rbmk/rbmk_side.png");
-	private static final ResourceLocation tex_element = new ResourceLocation(RefStrings.MODID + ":textures/blocks/rbmk/rbmk_element_fuelchunk.png");
-	private static final ResourceLocation tex_control = new ResourceLocation(RefStrings.MODID + ":textures/blocks/rbmk/rbmk_control.png");
-	private static final ResourceLocation tex_blank = new ResourceLocation(RefStrings.MODID + ":textures/blocks/rbmk/rbmk_blank.png");
-	private static final ResourceLocation tex_graphite = new ResourceLocation(RefStrings.MODID + ":textures/blocks/block_graphite.png");
+	private static final ResourceLocation tex_base = new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_side.png");
+	private static final ResourceLocation tex_element = new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_element_fuelchunk.png");
+	private static final ResourceLocation tex_control = new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_control.png");
+	private static final ResourceLocation tex_blank = new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_blank.png");
+	private static final ResourceLocation tex_graphite = new ResourceLocation(Tags.MODID + ":textures/blocks/block_graphite.png");
 
 	protected RenderRBMKDebris(RenderManager renderManager){
 		super(renderManager);

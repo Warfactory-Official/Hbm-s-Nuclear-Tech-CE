@@ -1,7 +1,9 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
+import com.hbm.items.machine.ItemRTGPellet;
 import com.hbm.tileentity.machine.TileEntityRtgFurnace;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -12,13 +14,13 @@ import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerRtgFurnace extends Container {
 	
-	private TileEntityRtgFurnace diFurnace;
+	private TileEntityRtgFurnace rtgFurnace;
 	private int dualCookTime;
 	
 	public ContainerRtgFurnace(InventoryPlayer invPlayer, TileEntityRtgFurnace tedf) {
 		dualCookTime = 0;
 		
-		diFurnace = tedf;
+		rtgFurnace = tedf;
 		//Ore
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 56, 17));
 		//RTG
@@ -26,7 +28,7 @@ public class ContainerRtgFurnace extends Container {
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 2, 56, 53));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 74, 53));
 		//Output
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 4, 116, 35));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 4, 116, 35));
 		
 		for(int i = 0; i < 3; i++)
 		{
@@ -45,71 +47,41 @@ public class ContainerRtgFurnace extends Container {
 	@Override
 	public void addListener(IContainerListener crafting) {
 		super.addListener(crafting);
-		crafting.sendWindowProperty(this, 0, this.diFurnace.dualCookTime);
+		crafting.sendWindowProperty(this, 0, this.rtgFurnace.dualCookTime);
 	}
 	
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2)
+    public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-		
-		if (var4 != null && var4.getHasStack())
-		{
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-			
-            if (par2 <= 4) {
-				if (!this.mergeItemStack(var5, 5, this.inventorySlots.size(), true))
-				{
-					return ItemStack.EMPTY;
-				}
-			}
-			else if (!this.mergeItemStack(var5, 0, 4, false))
-			{
-				return ItemStack.EMPTY;
-			}
-			
-			if (var5.isEmpty())
-			{
-				var4.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
-				var4.onSlotChanged();
-			}
-		}
-		
-		return var3;
+		return InventoryUtil.transferStack(this.inventorySlots, index, 5,
+                s -> !(s.getItem() instanceof ItemRTGPellet), 1,
+                s -> s.getItem() instanceof ItemRTGPellet, 5
+        );
     }
 
 	@Override
 	public boolean canInteractWith(EntityPlayer player) {
-		return diFurnace.isUseableByPlayer(player);
+		return rtgFurnace.isUseableByPlayer(player);
 	}
 	
 	@Override
 	public void detectAndSendChanges() {
 		super.detectAndSendChanges();
+
+        for (IContainerListener listener : this.listeners) {
+            if (this.dualCookTime != this.rtgFurnace.dualCookTime) {
+                listener.sendWindowProperty(this, 0, this.rtgFurnace.dualCookTime);
+            }
+        }
 		
-		for(int i = 0; i < this.listeners.size(); i++)
-		{
-			IContainerListener par1 = (IContainerListener)this.listeners.get(i);
-			
-			if(this.dualCookTime != this.diFurnace.dualCookTime)
-			{
-				par1.sendWindowProperty(this, 0, this.diFurnace.dualCookTime);
-			}
-		}
-		
-		this.dualCookTime = this.diFurnace.dualCookTime;
+		this.dualCookTime = this.rtgFurnace.dualCookTime;
 	}
 	
 	@Override
 	public void updateProgressBar(int i, int j) {
 		if(i == 0)
 		{
-			diFurnace.dualCookTime = j;
+			rtgFurnace.dualCookTime = j;
 		}
 	}
 }

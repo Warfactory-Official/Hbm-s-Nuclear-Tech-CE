@@ -4,7 +4,6 @@ import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.misc.BeamPronter;
 import com.hbm.render.misc.BeamPronter.EnumBeamType;
@@ -13,7 +12,9 @@ import com.hbm.tileentity.machine.TileEntityMachineOrbus;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.item.Item;
+import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11;
+
 @AutoRegister
 public class RenderOrbus extends TileEntitySpecialRenderer<TileEntityMachineOrbus>
         implements IItemRendererProvider {
@@ -82,7 +83,7 @@ public class RenderOrbus extends TileEntitySpecialRenderer<TileEntityMachineOrbu
             GlStateManager.translate(0, 1, 0);
 
             BeamPronter.prontBeam(
-                    Vec3.createVectorHelper(0, 3, 0).toVec3d(),
+                    new Vec3d(0, 3, 0),
                     EnumWaveType.SPIRAL,
                     EnumBeamType.SOLID,
                     0x101020,
@@ -93,7 +94,7 @@ public class RenderOrbus extends TileEntitySpecialRenderer<TileEntityMachineOrbu
                     6,
                     (float) scale * 0.5F);
             BeamPronter.prontBeam(
-                    Vec3.createVectorHelper(0, 3, 0).toVec3d(),
+                    new Vec3d(0, 3, 0),
                     EnumWaveType.RANDOM,
                     EnumBeamType.SOLID,
                     0x202060,
@@ -104,7 +105,7 @@ public class RenderOrbus extends TileEntitySpecialRenderer<TileEntityMachineOrbu
                     2,
                     0.0625F * (float) scale);
             BeamPronter.prontBeam(
-                    Vec3.createVectorHelper(0, 3, 0).toVec3d(),
+                    new Vec3d(0, 3, 0),
                     EnumWaveType.RANDOM,
                     EnumBeamType.SOLID,
                     0x202060,

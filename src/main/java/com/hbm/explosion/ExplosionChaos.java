@@ -42,6 +42,7 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 
 import java.util.List;
 import java.util.Random;
+import java.util.function.Consumer;
 
 //TODO:This whole class looks outdated as fuck
 public class ExplosionChaos {
@@ -49,40 +50,50 @@ public class ExplosionChaos {
 	private final static Random random = new Random();
 	private static Random rand = new Random();
 
+	/**
+     * Optimized iteration algorithm to reduce CPU load during large scale block operations.
+     */
+    private static void forEachBlockInSphere(World world, Entity detonator, int x, int y, int z, int radius, Consumer<BlockPos.MutableBlockPos> action) {
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        int radiusSqHalf = (radius * radius) / 2;
+
+        for (int yy = -radius; yy < radius; yy++) {
+            int currentY = y + yy;
+            if (currentY < 0 || currentY > 255) continue;
+
+            int YY = yy * yy;
+            if (YY >= radiusSqHalf) continue;
+
+            int xzRadius = (int) Math.sqrt(radiusSqHalf - YY);
+
+            for (int xx = -xzRadius; xx <= xzRadius; xx++) {
+                int XX = xx * xx;
+                int YY_XX = YY + XX;
+                if (YY_XX >= radiusSqHalf) continue;
+
+                int zRadius = (int) Math.sqrt(radiusSqHalf - YY_XX);
+
+                for (int zz = -zRadius; zz <= zRadius; zz++) {
+                    action.accept(pos.setPos(x + xx, currentY, z + zz));
+                }
+            }
+        }
+    }
+
 	public static void explode(World world, Entity detonator, int x, int y, int z, int bombStartStrength) {
-		if(!CompatibilityConfig.isWarDim(world)){
-			return;
-		}
-		MutableBlockPos pos = new BlockPos.MutableBlockPos();
-		int r = bombStartStrength;
-		int r2 = r * r;
-		int r22 = r2 / 2;
-		for(int xx = -r; xx < r; xx++) {
-			int X = xx + x;
-			int XX = xx * xx;
-			for(int yy = -r; yy < r; yy++) {
-				int Y = yy + y;
-				int YY = XX + yy * yy;
-				for(int zz = -r; zz < r; zz++) {
-					int Z = zz + z;
-					int ZZ = YY + zz * zz;
-					if(ZZ < r22) {
-						destruction(world, detonator, pos.setPos(X, Y, Z));
-					}
-				}
-			}
-		}
+		if(!CompatibilityConfig.isWarDim(world)) return;
+		forEachBlockInSphere(world, detonator, x, y, z, bombStartStrength, pos -> destruction(world, detonator, pos));
 	}
-
+	
 	private static void destruction(World world, Entity detonator, BlockPos pos) {
-
-		Block b = world.getBlockState(pos).getBlock();
-		if(b == Blocks.BEDROCK || b == ModBlocks.reinforced_brick || b == ModBlocks.reinforced_sand || b == ModBlocks.reinforced_glass || b == ModBlocks.reinforced_lamp_on || b == ModBlocks.reinforced_lamp_off || b.getExplosionResistance(null) > 2_000_000) {
-
-		} else {
-			world.setBlockToAir(pos);
-		}
-	}
+        IBlockState state = world.getBlockState(pos);
+        Block b = state.getBlock();
+        if(b == Blocks.BEDROCK || b == ModBlocks.reinforced_brick || b == ModBlocks.reinforced_sand || b == ModBlocks.reinforced_glass || b == ModBlocks.reinforced_lamp_on || b == ModBlocks.reinforced_lamp_off || b.getExplosionResistance(null) > 2_000_000) {
+            // Indestructible
+        } else {
+            world.setBlockToAir(pos);
+        }
+    }
 
 	public static void spawnExplosion(World world, Entity detonator, int x, int y, int z, int bound) {
 		if(!CompatibilityConfig.isWarDim(world)){
@@ -195,7 +206,7 @@ public class ExplosionChaos {
 				if(d9 < wat) {
 
 					if(entity instanceof EntityPlayer) {
-						if(!ArmorRegistry.hasProtection((EntityPlayer) entity, EntityEquipmentSlot.HEAD, HazardClass.GAS_CORROSIVE)){
+						if(!ArmorRegistry.hasProtection((EntityPlayer) entity, EntityEquipmentSlot.HEAD, HazardClass.GAS_BLISTERING)){
 							ArmorUtil.damageSuit((EntityPlayer) entity, 0, 5);
 							ArmorUtil.damageSuit((EntityPlayer) entity, 1, 5);
 							ArmorUtil.damageSuit((EntityPlayer) entity, 2, 5);
@@ -229,114 +240,62 @@ public class ExplosionChaos {
 	/**
 	 * Sets all flammable blocks on fire
 	 *
-	 * @param x
-	 * @param y
-	 * @param z
 	 * @param world
 	 * @param detonator
 	 * @param bound
 	 */
 	public static void flameDeath(World world, Entity detonator, BlockPos pos, int bound) {
-		if(!CompatibilityConfig.isWarDim(world)){
-			return;
-		}
-		MutableBlockPos mPos = new BlockPos.MutableBlockPos(pos);
-		MutableBlockPos mPosUp = new BlockPos.MutableBlockPos(pos.up());
-
-		int r = bound;
-		int r2 = r * r;
-		int r22 = r2 / 2;
-		for(int xx = -r; xx < r; xx++) {
-			int X = xx + pos.getX();
-			int XX = xx * xx;
-			for(int yy = -r; yy < r; yy++) {
-				int Y = yy + pos.getY();
-				int YY = XX + yy * yy;
-				for(int zz = -r; zz < r; zz++) {
-					int Z = zz + pos.getZ();
-					int ZZ = YY + zz * zz;
-					if(ZZ < r22) {
-						mPos.setPos(X, Y, Z);
-						mPosUp.setPos(X, Y + 1, Z);
-						if(world.getBlockState(mPos).getBlock().isFlammable(world, mPos, EnumFacing.UP) && world.getBlockState(mPosUp).getBlock() == Blocks.AIR) {
-							world.setBlockState(mPosUp, Blocks.FIRE.getDefaultState());
-						}
-					}
-				}
-			}
-		}
-
-	}
+        if(!CompatibilityConfig.isWarDim(world)) return;
+        MutableBlockPos mPosUp = new BlockPos.MutableBlockPos();
+        
+        forEachBlockInSphere(world, detonator, pos.getX(), pos.getY(), pos.getZ(), bound, mPos -> {
+            mPosUp.setPos(mPos.getX(), mPos.getY() + 1, mPos.getZ());
+            if(world.getBlockState(mPos).getBlock().isFlammable(world, mPos, EnumFacing.UP) && world.getBlockState(mPosUp).getBlock() == Blocks.AIR) {
+                world.setBlockState(mPosUp, Blocks.FIRE.getDefaultState());
+            }
+        });
+    }
 
 	/**
 	 * Sets all blocks on fire
 	 *
-	 * @param x
-	 * @param y
-	 * @param z
 	 * @param world
 	 * @param detonator
 	 * @param bound
 	 */
 	public static void burn(World world, Entity detonator, BlockPos pos, int bound) {
-		if(!CompatibilityConfig.isWarDim(world)){
-			return;
-		}
-		MutableBlockPos mPos = new BlockPos.MutableBlockPos(pos);
-		MutableBlockPos mPosUp = new BlockPos.MutableBlockPos(pos.up());
-
-		int r = bound;
-		int r2 = r * r;
-		int r22 = r2 / 2;
-		for(int xx = -r; xx < r; xx++) {
-			int X = xx + pos.getX();
-			int XX = xx * xx;
-			for(int yy = -r; yy < r; yy++) {
-				int Y = yy + pos.getY();
-				int YY = XX + yy * yy;
-				for(int zz = -r; zz < r; zz++) {
-					int Z = zz + pos.getZ();
-					int ZZ = YY + zz * zz;
-					if(ZZ < r22) {
-						mPos.setPos(X, Y, Z);
-						mPosUp.setPos(X, Y + 1, Z);
-						if((world.getBlockState(mPosUp).getBlock() == Blocks.AIR || world.getBlockState(mPosUp).getBlock() == Blocks.SNOW_LAYER) && world.getBlockState(mPos) != Blocks.AIR) {
-							world.setBlockState(mPosUp, Blocks.FIRE.getDefaultState());
-						}
-					}
-				}
-			}
-		}
-
-	}
+        if(!CompatibilityConfig.isWarDim(world)) return;
+        MutableBlockPos mPosUp = new BlockPos.MutableBlockPos();
+        
+        forEachBlockInSphere(world, detonator, pos.getX(), pos.getY(), pos.getZ(), bound, mPos -> {
+            mPosUp.setPos(mPos.getX(), mPos.getY() + 1, mPos.getZ());
+            IBlockState upState = world.getBlockState(mPosUp);
+            if((upState.getBlock() == Blocks.AIR || upState.getBlock() == Blocks.SNOW_LAYER) && world.getBlockState(mPos).getBlock() != Blocks.AIR) {
+                world.setBlockState(mPosUp, Blocks.FIRE.getDefaultState());
+            }
+        });
+    }
 
 	public static void spawnChlorine(World world, double x, double y, double z, int count, double speed, int type) {
-		if(!CompatibilityConfig.isWarDim(world)){
-			return;
-		}
-		for(int i = 0; i < count; i++) {
-
-			NBTTagCompound data = new NBTTagCompound();
-			data.setDouble("moX", rand.nextGaussian() * speed);
-			data.setDouble("moY", rand.nextGaussian() * speed);
-			data.setDouble("moZ", rand.nextGaussian() * speed);
-			// Th3_Sl1ze: let's be honest, I don't know what range I should set so I'm going with 128
-			if(type == 0) {
-				data.setString("type", "chlorinefx");
-				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x, y, z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), x, y, z, 128));
-			} else if(type == 1) {
-				data.setString("type", "cloudfx");
-				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x, y, z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), x, y, z, 128));
-			} else if(type == 2) {
-				data.setString("type", "pinkcloudfx");
-				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x, y, z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), x, y, z, 128));
-			} else {
-				data.setString("type", "orangefx");
-				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x, y, z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), x, y, z, 128));
-			}
-
-		}
-	}
+        if(!CompatibilityConfig.isWarDim(world)) return;
+        for(int i = 0; i < count; i++) {
+            NBTTagCompound data = new NBTTagCompound();
+            data.setDouble("moX", rand.nextGaussian() * speed);
+            data.setDouble("moY", rand.nextGaussian() * speed);
+            data.setDouble("moZ", rand.nextGaussian() * speed);
+            
+            String particleType = switch (type) {
+                case 0 -> "chlorinefx";
+                case 1 -> "cloudfx";
+                case 2 -> "pinkcloudfx";
+                default -> "orangefx";
+            };
+            
+            data.setString("type", particleType);
+            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x, y, z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), x, y, z, 128));
+        }
+    }
+	
 	// Alcater: pc for pinkCouldPoisoning
 	public static void pc(World world, int x, int y, int z, int bombStartStrength) {
 		if(!CompatibilityConfig.isWarDim(world)){
@@ -372,7 +331,7 @@ public class ExplosionChaos {
 				if(d9 < wat) {
 
 					if(entity instanceof EntityPlayer) {
-						if(!ArmorRegistry.hasProtection((EntityPlayer) entity, EntityEquipmentSlot.HEAD, HazardClass.GAS_CORROSIVE)){
+						if(!ArmorRegistry.hasProtection((EntityPlayer) entity, EntityEquipmentSlot.HEAD, HazardClass.GAS_BLISTERING)){
 							ArmorUtil.damageSuit((EntityPlayer) entity, 0, 25);
 							ArmorUtil.damageSuit((EntityPlayer) entity, 1, 25);
 							ArmorUtil.damageSuit((EntityPlayer) entity, 2, 25);
@@ -560,30 +519,11 @@ public class ExplosionChaos {
 	}
 
 	public static void explodeZOMG(World world, int x, int y, int z, int bombStartStrength) {
-		if(!CompatibilityConfig.isWarDim(world)){
-			return;
-		}
-		MutableBlockPos pos = new BlockPos.MutableBlockPos();
-		int r = bombStartStrength;
-		int r2 = r * r;
-		int r22 = r2 / 2;
-		for(int xx = -r; xx < r; xx++) {
-			int X = xx + x;
-			int XX = xx * xx;
-			for(int yy = -r; yy < r; yy++) {
-				int Y = yy + y;
-				int YY = XX + yy * yy;
-				for(int zz = -r; zz < r; zz++) {
-					int Z = zz + z;
-					int ZZ = YY + zz * zz;
-					if(ZZ < r22) {
-						pos.setPos(X, Y, Z);
-						if(!(world.getBlockState(pos).getBlock().getExplosionResistance(null) > 2_000_000 && Y <= 0))
-							world.setBlockToAir(pos);
-					}
-				}
-			}
-		}
+		if(!CompatibilityConfig.isWarDim(world)) return;
+		forEachBlockInSphere(world, null, x, y, z, bombStartStrength, pos -> {
+			if(!(world.getBlockState(pos).getBlock().getExplosionResistance(null) > 2_000_000 && pos.getY() <= 0))
+				world.setBlockToAir(pos);
+		});
 	}
 
 	public static void frag(World world, int x, int y, int z, int count, boolean flame, Entity shooter) {
@@ -652,29 +592,12 @@ public class ExplosionChaos {
 
 	@SuppressWarnings("deprecation")
 	public static void pulse(World world, int x, int y, int z, int bombStartStrength) {
-		if(!CompatibilityConfig.isWarDim(world)){
-			return;
-		}
-		int r = bombStartStrength;
-		int r2 = r * r;
-		int r22 = r2 / 2;
-		for(int xx = -r; xx < r; xx++) {
-			int X = xx + x;
-			int XX = xx * xx;
-			for(int yy = -r; yy < r; yy++) {
-				int Y = yy + y;
-				int YY = XX + yy * yy;
-				for(int zz = -r; zz < r; zz++) {
-					int Z = zz + z;
-					int ZZ = YY + zz * zz;
-					if(ZZ < r22) {
-						if(world.getBlockState(new BlockPos(X, Y, Z)).getBlock().getExplosionResistance(null) <= 70)
-							pDestruction(world, X, Y, Z);
-					}
-				}
-			}
-		}
-	}
+		if(!CompatibilityConfig.isWarDim(world)) return;
+		forEachBlockInSphere(world, null, x, y, z, bombStartStrength, pos -> {
+			if(world.getBlockState(pos).getBlock().getExplosionResistance(null) <= 70)
+				pDestruction(world, pos.getX(), pos.getY(), pos.getZ());
+        });
+    }
 
 	public static void pDestruction(World world, int x, int y, int z) {
 		BlockPos pos = new BlockPos(x, y, z);
@@ -684,36 +607,22 @@ public class ExplosionChaos {
 	}
 
 	public static void plasma(World world, int x, int y, int z, int radius) {
-		if(!CompatibilityConfig.isWarDim(world)){
-			return;
-		}
-		MutableBlockPos pos = new BlockPos.MutableBlockPos();
-		int r = radius;
-		int r2 = r * r;
-		int r22 = r2 / 2;
-		for(int xx = -r; xx < r; xx++) {
-			int X = xx + x;
-			int XX = xx * xx;
-			for(int yy = -r; yy < r; yy++) {
-				int Y = yy + y;
-				int YY = XX + yy * yy;
-				for(int zz = -r; zz < r; zz++) {
-					int Z = zz + z;
-					int ZZ = YY + zz * zz;
-					if(ZZ < r22 + world.rand.nextInt(r22 / 2)) {
-						pos.setPos(X, Y, Z);						
-						Block block =world.getBlockState(pos).getBlock();
-						if(block.getExplosionResistance(null) > 0.1F) continue;
-						if(block != Blocks.BEDROCK && world.getBlockState(pos).getBlock() != ModBlocks.statue_elb
-													&& world.getBlockState(pos).getBlock() != ModBlocks.statue_elb_g
-													&& world.getBlockState(pos).getBlock() != ModBlocks.statue_elb_w
-													&& world.getBlockState(pos).getBlock() != ModBlocks.statue_elb_f)
-							world.setBlockState(pos, ModBlocks.plasma.getDefaultState());
-					}
-				}
-			}
-		}
-	}
+        if(!CompatibilityConfig.isWarDim(world)) return;
+        int radiusSqHalf = (radius * radius) / 2;
+        
+        forEachBlockInSphere(world, null, x, y, z, radius, pos -> {
+            if(world.rand.nextInt(radiusSqHalf / 2) > 0) { 
+                IBlockState state = world.getBlockState(pos);
+                Block block = state.getBlock();
+                if(block.getExplosionResistance(null) > 0.1F) return;
+                if(block != Blocks.BEDROCK && block != ModBlocks.statue_elb
+                        && block != ModBlocks.statue_elb_g
+                        && block != ModBlocks.statue_elb_w
+                        && block != ModBlocks.statue_elb_f)
+                    world.setBlockState(pos, ModBlocks.plasma.getDefaultState());
+            }
+        });
+    }
 
 	// Drillgon200: This method name irks me.
 	public static void tauMeSinPi(World world, double x, double y, double z, int count, Entity shooter, EntityGrenadeTau tau) {
@@ -818,37 +727,15 @@ public class ExplosionChaos {
 	}
 
 	public static void floater(World world, Entity detonator, int x, int y, int z, int radi, int height) {
-		if(!CompatibilityConfig.isWarDim(world)){
-			return;
-		}
-		MutableBlockPos pos = new BlockPos.MutableBlockPos();
-		IBlockState save;
-
-		int r = radi;
-		int r2 = r * r;
-		int r22 = r2 / 2;
-		for(int xx = -r; xx < r; xx++) {
-			int X = xx + x;
-			int XX = xx * xx;
-			for(int yy = -r; yy < r; yy++) {
-				int Y = yy + y;
-				int YY = XX + yy * yy;
-				for(int zz = -r; zz < r; zz++) {
-					int Z = zz + z;
-					int ZZ = YY + zz * zz;
-					if(ZZ < r22) {
-						pos.setPos(X, Y, Z);
-						save = world.getBlockState(pos);
-						world.setBlockState(pos, Blocks.AIR.getDefaultState());
-						if(save.getBlock() != Blocks.AIR) {
-							world.setBlockState(pos.setPos(X, Y + height, Z), save);
-						}
-					}
-				}
-			}
-		}
-
-	}
+        if(!CompatibilityConfig.isWarDim(world)) return;
+        forEachBlockInSphere(world, detonator, x, y, z, radi, pos -> {
+            IBlockState save = world.getBlockState(pos);
+            world.setBlockToAir(pos);
+            if(save.getBlock() != Blocks.AIR) {
+                world.setBlockState(new BlockPos(pos.getX(), pos.getY() + height, pos.getZ()), save);
+            }
+        });
+    }
 
 	public static void move(World world, BlockPos pos, int radius, int a, int b, int c) {
 		move(world, pos.getX(), pos.getY(), pos.getZ(), radius, a, b, c);
@@ -944,37 +831,9 @@ public class ExplosionChaos {
 		if(bblock == ModBlocks.waste_earth && random.nextInt(3) != 0) {
 			world.setBlockState(pos, Blocks.GRASS.getDefaultState());
 		}
-
-		else if(bblock == ModBlocks.waste_dirt && random.nextInt(3) != 0) {
-			world.setBlockState(pos, Blocks.DIRT.getDefaultState());
-		}
-
-		else if(bblock == ModBlocks.waste_sand && random.nextInt(3) != 0) {
-			world.setBlockState(pos, Blocks.SAND.getDefaultState());
-		}
-
-		else if(bblock == ModBlocks.waste_sand_red && random.nextInt(3) != 0) {
-			world.setBlockState(pos, Blocks.SAND.getStateFromMeta(1));
-		}
-		
-		else if(bblock == Blocks.SANDSTONE && random.nextInt(3) != 0) {
-				world.setBlockState(pos, ModBlocks.waste_sandstone.getDefaultState());
-		} 
-		
-		else if((bblock == Blocks.HARDENED_CLAY || bblock == Blocks.STAINED_HARDENED_CLAY) && random.nextInt(3) != 0) {
-			world.setBlockState(pos, ModBlocks.waste_red_sandstone.getDefaultState());
-		}
-
-		else if(bblock == Blocks.RED_SANDSTONE && random.nextInt(3) != 0) {
-			world.setBlockState(pos, ModBlocks.waste_red_sandstone.getDefaultState());
-		}
 		
 		else if(bblock == ModBlocks.waste_grass_tall && random.nextInt(3) != 0) {
 			world.setBlockState(pos, Blocks.TALLGRASS.getDefaultState());
-		}
-
-		else if(bblock == ModBlocks.waste_gravel && random.nextInt(3) != 0) {
-			world.setBlockState(pos, Blocks.GRAVEL.getDefaultState());
 		}
 
 		else if(bblock == ModBlocks.waste_mycelium && random.nextInt(5) == 0) {
@@ -1040,54 +899,18 @@ public class ExplosionChaos {
 	}
 	
 	public static void hardenVirus(World world, int x, int y, int z, int bombStartStrength) {
-		if(!CompatibilityConfig.isWarDim(world)){
-			return;
-		}
-		MutableBlockPos pos = new BlockPos.MutableBlockPos();
-		int r = bombStartStrength;
-		int r2 = r * r;
-		int r22 = r2 / 2;
-		for (int xx = -r; xx < r; xx++) {
-			int X = xx + x;
-			int XX = xx * xx;
-			for (int yy = -r; yy < r; yy++) {
-				int Y = yy + y;
-				int YY = XX + yy * yy;
-				for (int zz = -r; zz < r; zz++) {
-					int Z = zz + z;
-					int ZZ = YY + zz * zz;
-					if (ZZ < r22) {
-						if (world.getBlockState(pos.setPos(X, Y, Z)).getBlock() == ModBlocks.crystal_virus)
-							world.setBlockState(pos.setPos(X, Y, Z), ModBlocks.crystal_hardened.getDefaultState());
-					}
-				}
-			}
-		}
-	}
+        if(!CompatibilityConfig.isWarDim(world)) return;
+        forEachBlockInSphere(world, null, x, y, z, bombStartStrength, pos -> {
+            if (world.getBlockState(pos).getBlock() == ModBlocks.crystal_virus)
+                world.setBlockState(pos, ModBlocks.crystal_hardened.getDefaultState());
+        });
+    }
 
 	public static void spreadVirus(World world, int x, int y, int z, int bombStartStrength) {
-		if(!CompatibilityConfig.isWarDim(world)){
-			return;
-		}
-		MutableBlockPos pos = new BlockPos.MutableBlockPos();
-		int r = bombStartStrength;
-		int r2 = r * r;
-		int r22 = r2 / 2;
-		for (int xx = -r; xx < r; xx++) {
-			int X = xx + x;
-			int XX = xx * xx;
-			for (int yy = -r; yy < r; yy++) {
-				int Y = yy + y;
-				int YY = XX + yy * yy;
-				for (int zz = -r; zz < r; zz++) {
-					int Z = zz + z;
-					int ZZ = YY + zz * zz;
-					if (ZZ < r22) {
-						if (rand.nextInt(15) == 0 && world.getBlockState(pos.setPos(X, Y, Z)).getBlock() != Blocks.AIR)
-							world.setBlockState(pos.setPos(X, Y, Z), ModBlocks.cheater_virus_seed.getDefaultState());
-					}
-				}
-			}
-		}
-	}
+        if(!CompatibilityConfig.isWarDim(world)) return;
+        forEachBlockInSphere(world, null, x, y, z, bombStartStrength, pos -> {
+            if (rand.nextInt(15) == 0 && world.getBlockState(pos).getBlock() != Blocks.AIR)
+                world.setBlockState(pos, ModBlocks.cheater_virus_seed.getDefaultState());
+        });
+    }
 }

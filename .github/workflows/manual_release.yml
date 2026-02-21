@@ -1,0 +1,106 @@
+name: Manual Stable Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      CF_PROJECT_ID: "1312314"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: graalvm
+          java-version: '25'
+          cache: gradle
+          cache-dependency-path: |
+            **/*.gradle*
+            **/buildscript.properties
+            **/gradle-wrapper.properties
+            **/gradle.lockfile
+            src/main/resources/hbm_at.cfg
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Read modVersion from gradle.properties and compute tag
+        id: ver
+        run: |
+          set -euo pipefail
+          if [[ ! -f gradle.properties ]]; then
+            echo "::error::gradle.properties not found in repo root"; exit 1
+          fi
+          MOD_VERSION=$(grep -E '^\s*modVersion\s*=' gradle.properties | sed -E 's/^\s*modVersion\s*=\s*//; s/\r$//' | xargs || true)
+          if [[ -z "${MOD_VERSION}" ]]; then
+            echo "::error::modVersion is empty in gradle.properties"; exit 1
+          fi
+          echo "MOD_VERSION=${MOD_VERSION}" >> "$GITHUB_ENV"
+          echo "TAG=v${MOD_VERSION}" >> "$GITHUB_ENV"
+          echo "tag=v${MOD_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure tag doesn't already exist on origin
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --tags origin "refs/tags/${TAG}" >/dev/null 2>&1; then
+            echo "::error::Tag ${TAG} already exists on origin. Canceling."; exit 1
+          fi
+
+      - name: Build with Gradle
+        run: ./gradlew clean build --no-daemon
+
+      - name: Find mod jar (non-dev/non-sources/non-api)
+        run: |
+          set -euo pipefail
+          FILE=$(ls -t build/libs/*.jar 2>/dev/null | grep -vE '(-dev|-sources|-api)\.jar$' | head -n1 || true)
+          if [[ -z "${FILE}" ]]; then
+            echo "::error::No release jar found in build/libs"; ls -al build/libs || true; exit 1
+          fi
+          echo "FILE=${FILE}" >> "$GITHUB_ENV"
+
+      - name: Create and push tag
+        run: |
+          set -euo pipefail
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git tag "${TAG}"
+          git push origin "${TAG}"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: "Release ${{ env.TAG }}"
+          prerelease: false
+          generate_release_notes: true
+          files: ${{ env.FILE }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+#      - name: Publish to CurseForge
+#        uses: Kir-Antipov/mc-publish@v3.3
+#        with:
+#          curseforge-id: ${{ env.CF_PROJECT_ID }}
+#          curseforge-token: ${{ secrets.CF_API_TOKEN }}
+#          curseforge-version-type: release
+#          curseforge-game-versions: 6756
+#          curseforge-files-primary: ${{ env.FILE }}
+#          curseforge-files-secondary: |
+#            build/libs/*-dev.jar
+#            build/libs/*-sources.jar
+#          curseforge-changelog: "See GitHub release ${{ env.TAG }} for notes."
+#          loaders: forge
+#          game-versions: ["1.12.2"]
+#          curseforge-dependencies: |
+#            267602(recommended)

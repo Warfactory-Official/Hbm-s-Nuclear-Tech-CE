@@ -25,6 +25,7 @@ import net.minecraft.world.World;
 
 import java.util.*;
 
+@Deprecated
 public class ExplosionNT extends Explosion {
 
 	public Set<ExAttrib> atttributes = new HashSet<>();
@@ -61,6 +62,11 @@ public class ExplosionNT extends Explosion {
 	
 	public ExplosionNT addAllAttrib(List<ExAttrib> attrib) {
 		atttributes.addAll(attrib);
+		return this;
+	}
+
+	public ExplosionNT addAllAttrib(ExAttrib... attrib) {
+        Collections.addAll(atttributes, attrib);
 		return this;
 	}
 	

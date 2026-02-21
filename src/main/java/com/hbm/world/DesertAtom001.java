@@ -7,20 +7,16 @@ import com.hbm.itempool.ItemPool;
 import com.hbm.itempool.ItemPoolsLegacy;
 import com.hbm.lib.Library;
 import com.hbm.world.phased.AbstractPhasedStructure;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockChest;
 import net.minecraft.block.BlockLiquid;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Random;
 
 @SuppressWarnings({"UnnecessaryUnaryMinus", "PointlessArithmeticExpression"})
@@ -57,49 +53,6 @@ public class DesertAtom001 extends AbstractPhasedStructure {
 	Block Block27 = ModBlocks.pole_top;
 	Block Block28 = ModBlocks.machine_battery;
 	Block Block29 = ModBlocks.machine_electric_furnace_off;
-	
-	protected Block[] GetValidSpawnBlocks()
-	{
-		return new Block[]
-		{
-			Blocks.GRASS,
-			Blocks.DIRT,
-			Blocks.SAND,
-			Blocks.SANDSTONE,
-			Blocks.STONE,
-			Blocks.HARDENED_CLAY,
-			Blocks.STAINED_HARDENED_CLAY,
-		};
-	}
-
-	public boolean LocationIsValidSpawn(World world, BlockPos pos)
-	{
-		IBlockState checkBlockState = world.getBlockState(pos.down());
-		Block checkBlock = checkBlockState.getBlock();
-		Block blockAbove = world.getBlockState(pos).getBlock();
-		Block blockBelow = world.getBlockState(pos.down(2)).getBlock();
-
-		for (Block i : GetValidSpawnBlocks())
-		{
-			if (blockAbove != Blocks.AIR)
-			{
-				return false;
-			}
-			if (checkBlock == i)
-			{
-				return true;
-			}
-			else if (checkBlock == Blocks.SNOW_LAYER && blockBelow == i)
-			{
-				return true;
-			}
-			else if (checkBlockState.getMaterial() == Material.PLANTS && blockBelow == i)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
 
 	@Override
 	public void buildStructure(@NotNull LegacyBuilder builder, @NotNull Random rand) {
@@ -107,141 +60,153 @@ public class DesertAtom001 extends AbstractPhasedStructure {
 	}
 
 	@Override
-	public boolean checkSpawningConditions(@NotNull World world, @NotNull BlockPos pos) {
-		return LocationIsValidSpawn(world, pos.add(20, 0, 16));
+	public boolean checkSpawningConditions(@NotNull World world, long pos) {
+		return locationIsValidSpawn(world, Library.shiftBlockPos(pos, 20, 0, 16));
 	}
 
+    @Override
+    public boolean isCacheable() {
+        return false;
+    }
+
+    @Override
+    protected boolean isValidSpawnBlock(Block block) {
+        return block == Blocks.GRASS || block == Blocks.DIRT || block == Blocks.STONE || block == Blocks.SAND || block == Blocks.SANDSTONE || block == Blocks.HARDENED_CLAY || block == Blocks.STAINED_HARDENED_CLAY;
+    }
+
 	@Override
-	public @NotNull List<BlockPos> getValidationPoints(@NotNull BlockPos origin){
-		return Collections.singletonList(origin.add(20, 0, 16));
+	public @NotNull LongArrayList getHeightPoints(long origin){
+		LongArrayList points = new LongArrayList(1);
+		points.add(Library.shiftBlockPos(origin, 20, 0, 16));
+		return points;
 	}
 
 	public boolean generate_r0(LegacyBuilder world, Random rand, int x, int y, int z)
 	{
-		MutableBlockPos pos = new BlockPos.MutableBlockPos();
-		
-		world.setBlockState(pos.setPos(x + 6, y + -5, z + 9), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -5, z + 9), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 8, y + -5, z + 9), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -5, z + 9), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 10, y + -5, z + 9), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + -5, z + 10), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 6, y + -5, z + 10), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -5, z + 10), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 8, y + -5, z + 10), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -5, z + 10), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 10, y + -5, z + 10), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 11, y + -5, z + 10), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + -5, z + 11), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 6, y + -5, z + 11), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -5, z + 11), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 8, y + -5, z + 11), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -5, z + 11), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 10, y + -5, z + 11), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 11, y + -5, z + 11), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + -5, z + 12), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 6, y + -5, z + 12), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -5, z + 12), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 8, y + -5, z + 12), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -5, z + 12), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 10, y + -5, z + 12), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 11, y + -5, z + 12), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + -5, z + 13), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 6, y + -5, z + 13), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -5, z + 13), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 8, y + -5, z + 13), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -5, z + 13), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 10, y + -5, z + 13), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 11, y + -5, z + 13), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + -5, z + 14), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 6, y + -5, z + 14), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -5, z + 14), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 8, y + -5, z + 14), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -5, z + 14), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 10, y + -5, z + 14), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 11, y + -5, z + 14), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 6, y + -5, z + 15), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -5, z + 15), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 8, y + -5, z + 15), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -5, z + 15), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 10, y + -5, z + 15), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -5, z + 16), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 8, y + -5, z + 16), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -5, z + 16), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -5, z + 17), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 8, y + -5, z + 17), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -5, z + 17), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -5, z + 18), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 8, y + -5, z + 18), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -5, z + 18), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -5, z + 19), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 8, y + -5, z + 19), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -5, z + 19), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -5, z + 20), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 8, y + -5, z + 20), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -5, z + 20), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -5, z + 21), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 8, y + -5, z + 21), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -5, z + 21), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 6, y + -4, z + 9), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -4, z + 9), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 8, y + -4, z + 9), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -4, z + 9), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 10, y + -4, z + 9), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + -4, z + 10), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 6, y + -4, z + 10), Library.getRandomConcrete().getDefaultState(), 3);
+		MutableBlockPos pos = this.mutablePos;
+
+		world.setBlockState(pos.setPos(x + 6, y + -5, z + 9), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -5, z + 9), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 8, y + -5, z + 9), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -5, z + 9), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 10, y + -5, z + 9), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 5, y + -5, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 6, y + -5, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -5, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 8, y + -5, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -5, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 10, y + -5, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 11, y + -5, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 5, y + -5, z + 11), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 6, y + -5, z + 11), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -5, z + 11), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 8, y + -5, z + 11), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -5, z + 11), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 10, y + -5, z + 11), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 11, y + -5, z + 11), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 5, y + -5, z + 12), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 6, y + -5, z + 12), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -5, z + 12), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 8, y + -5, z + 12), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -5, z + 12), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 10, y + -5, z + 12), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 11, y + -5, z + 12), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 5, y + -5, z + 13), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 6, y + -5, z + 13), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -5, z + 13), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 8, y + -5, z + 13), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -5, z + 13), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 10, y + -5, z + 13), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 11, y + -5, z + 13), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 5, y + -5, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 6, y + -5, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -5, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 8, y + -5, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -5, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 10, y + -5, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 11, y + -5, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 6, y + -5, z + 15), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -5, z + 15), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 8, y + -5, z + 15), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -5, z + 15), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 10, y + -5, z + 15), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -5, z + 16), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 8, y + -5, z + 16), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -5, z + 16), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -5, z + 17), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 8, y + -5, z + 17), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -5, z + 17), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -5, z + 18), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 8, y + -5, z + 18), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -5, z + 18), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -5, z + 19), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 8, y + -5, z + 19), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -5, z + 19), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -5, z + 20), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 8, y + -5, z + 20), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -5, z + 20), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -5, z + 21), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 8, y + -5, z + 21), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -5, z + 21), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 6, y + -4, z + 9), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -4, z + 9), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 8, y + -4, z + 9), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -4, z + 9), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 10, y + -4, z + 9), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 5, y + -4, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 6, y + -4, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + -4, z + 10), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -4, z + 10), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 9, y + -4, z + 10), Block2.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 10, y + -4, z + 10), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 11, y + -4, z + 10), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + -4, z + 11), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 10, y + -4, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 11, y + -4, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 5, y + -4, z + 11), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 6, y + -4, z + 11), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + -4, z + 11), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -4, z + 11), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 9, y + -4, z + 11), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 10, y + -4, z + 11), Block2.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 11, y + -4, z + 11), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + -4, z + 12), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 11, y + -4, z + 11), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 5, y + -4, z + 12), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 6, y + -4, z + 12), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + -4, z + 12), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -4, z + 12), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 9, y + -4, z + 12), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 10, y + -4, z + 12), Blocks.WATER.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 11, y + -4, z + 12), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + -4, z + 13), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 11, y + -4, z + 12), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 5, y + -4, z + 13), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 6, y + -4, z + 13), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + -4, z + 13), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -4, z + 13), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 9, y + -4, z + 13), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 10, y + -4, z + 13), Blocks.WATER.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 11, y + -4, z + 13), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + -4, z + 14), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 6, y + -4, z + 14), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 11, y + -4, z + 13), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 5, y + -4, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 6, y + -4, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + -4, z + 14), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -4, z + 14), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 9, y + -4, z + 14), Blocks.CHEST.getDefaultState().withProperty(BlockChest.FACING, EnumFacing.NORTH),
 				(worldIn, random, blockPos, chest) ->
 						WeightedRandomChestContentFrom1710.generateChestContents(random, ItemPool.getPool(ItemPoolsLegacy.POOL_NUKE_MISC), chest, 10));
-        world.setBlockState(pos.setPos(x + 10, y + -4, z + 14), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 11, y + -4, z + 14), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 6, y + -4, z + 15), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -4, z + 15), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 10, y + -4, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 11, y + -4, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 6, y + -4, z + 15), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -4, z + 15), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -4, z + 15), Blocks.WATER.getDefaultState().withProperty(BlockLiquid.LEVEL, 8), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -4, z + 15), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 10, y + -4, z + 15), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -4, z + 16), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -4, z + 15), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 10, y + -4, z + 15), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -4, z + 16), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -4, z + 16), Blocks.WATER.getDefaultState().withProperty(BlockLiquid.LEVEL, 8), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -4, z + 16), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -4, z + 17), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -4, z + 16), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -4, z + 17), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -4, z + 17), Blocks.WATER.getDefaultState().withProperty(BlockLiquid.LEVEL, 8), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -4, z + 17), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -4, z + 18), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -4, z + 17), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -4, z + 18), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -4, z + 18), Blocks.WATER.getDefaultState().withProperty(BlockLiquid.LEVEL, 8), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -4, z + 18), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -4, z + 19), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -4, z + 18), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -4, z + 19), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -4, z + 19), Blocks.WATER.getDefaultState().withProperty(BlockLiquid.LEVEL, 8), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -4, z + 19), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -4, z + 19), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 6, y + -4, z + 20), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + -4, z + 20), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -4, z + 20), Blocks.WATER.getDefaultState(), 3);
@@ -343,63 +308,63 @@ public class DesertAtom001 extends AbstractPhasedStructure {
 		world.setBlockState(pos.setPos(x + 8, y + -4, z + 30), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 9, y + -4, z + 30), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 10, y + -4, z + 30), Block3.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 6, y + -3, z + 9), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -3, z + 9), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 8, y + -3, z + 9), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -3, z + 9), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 10, y + -3, z + 9), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + -3, z + 10), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 6, y + -3, z + 10), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 6, y + -3, z + 9), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -3, z + 9), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 8, y + -3, z + 9), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -3, z + 9), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 10, y + -3, z + 9), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 5, y + -3, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 6, y + -3, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + -3, z + 10), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -3, z + 10), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 9, y + -3, z + 10), Blocks.WATER.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 10, y + -3, z + 10), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 11, y + -3, z + 10), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + -3, z + 11), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 10, y + -3, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 11, y + -3, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 5, y + -3, z + 11), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 6, y + -3, z + 11), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + -3, z + 11), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -3, z + 11), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 9, y + -3, z + 11), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 10, y + -3, z + 11), Blocks.WATER.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 11, y + -3, z + 11), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + -3, z + 12), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 11, y + -3, z + 11), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 5, y + -3, z + 12), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 6, y + -3, z + 12), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + -3, z + 12), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -3, z + 12), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 9, y + -3, z + 12), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 10, y + -3, z + 12), Blocks.WATER.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 11, y + -3, z + 12), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + -3, z + 13), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 11, y + -3, z + 12), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 5, y + -3, z + 13), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 6, y + -3, z + 13), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + -3, z + 13), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -3, z + 13), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 9, y + -3, z + 13), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 10, y + -3, z + 13), Blocks.WATER.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 11, y + -3, z + 13), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + -3, z + 14), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 6, y + -3, z + 14), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 11, y + -3, z + 13), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 5, y + -3, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 6, y + -3, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + -3, z + 14), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -3, z + 14), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 9, y + -3, z + 14), Blocks.WATER.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 10, y + -3, z + 14), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 11, y + -3, z + 14), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 6, y + -3, z + 15), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -3, z + 15), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 10, y + -3, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 11, y + -3, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 6, y + -3, z + 15), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -3, z + 15), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -3, z + 15), Blocks.WATER.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -3, z + 15), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 10, y + -3, z + 15), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -3, z + 16), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -3, z + 15), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 10, y + -3, z + 15), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -3, z + 16), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -3, z + 16), Blocks.WATER.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -3, z + 16), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -3, z + 17), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -3, z + 16), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -3, z + 17), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -3, z + 17), Blocks.WATER.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -3, z + 17), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -3, z + 18), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -3, z + 17), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -3, z + 18), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -3, z + 18), Blocks.WATER.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -3, z + 18), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -3, z + 19), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -3, z + 18), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -3, z + 19), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -3, z + 19), Blocks.WATER.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -3, z + 19), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -3, z + 19), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 6, y + -3, z + 20), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + -3, z + 20), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -3, z + 20), Blocks.WATER.getDefaultState(), 3);
@@ -628,128 +593,128 @@ public class DesertAtom001 extends AbstractPhasedStructure {
 		world.setBlockState(pos.setPos(x + 39, y + -2, z + 7), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 40, y + -2, z + 7), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 0, y + -2, z + 8), Block3.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 6, y + -2, z + 8), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -2, z + 8), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 8, y + -2, z + 8), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -2, z + 8), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 10, y + -2, z + 8), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 6, y + -2, z + 8), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -2, z + 8), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 8, y + -2, z + 8), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -2, z + 8), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 10, y + -2, z + 8), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 38, y + -2, z + 8), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 39, y + -2, z + 8), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 40, y + -2, z + 8), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 0, y + -2, z + 9), Block3.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + -2, z + 9), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 6, y + -2, z + 9), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -2, z + 9), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 8, y + -2, z + 9), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -2, z + 9), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 10, y + -2, z + 9), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 11, y + -2, z + 9), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 5, y + -2, z + 9), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 6, y + -2, z + 9), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -2, z + 9), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 8, y + -2, z + 9), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -2, z + 9), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 10, y + -2, z + 9), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 11, y + -2, z + 9), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 38, y + -2, z + 9), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 39, y + -2, z + 9), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 40, y + -2, z + 9), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 0, y + -2, z + 10), Block3.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 4, y + -2, z + 10), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + -2, z + 10), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 6, y + -2, z + 10), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 4, y + -2, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 5, y + -2, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 6, y + -2, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + -2, z + 10), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -2, z + 10), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 9, y + -2, z + 10), Blocks.WATER.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 10, y + -2, z + 10), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 11, y + -2, z + 10), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 12, y + -2, z + 10), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 10, y + -2, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 11, y + -2, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 12, y + -2, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 38, y + -2, z + 10), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 39, y + -2, z + 10), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 40, y + -2, z + 10), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 0, y + -2, z + 11), Block3.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 4, y + -2, z + 11), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + -2, z + 11), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 4, y + -2, z + 11), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 5, y + -2, z + 11), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 6, y + -2, z + 11), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + -2, z + 11), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -2, z + 11), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 9, y + -2, z + 11), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 10, y + -2, z + 11), Blocks.WATER.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 11, y + -2, z + 11), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 12, y + -2, z + 11), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 11, y + -2, z + 11), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 12, y + -2, z + 11), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 38, y + -2, z + 11), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 39, y + -2, z + 11), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 40, y + -2, z + 11), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 0, y + -2, z + 12), Block3.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 4, y + -2, z + 12), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + -2, z + 12), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 4, y + -2, z + 12), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 5, y + -2, z + 12), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 6, y + -2, z + 12), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + -2, z + 12), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -2, z + 12), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 9, y + -2, z + 12), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 10, y + -2, z + 12), Blocks.WATER.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 11, y + -2, z + 12), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 12, y + -2, z + 12), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 11, y + -2, z + 12), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 12, y + -2, z + 12), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 38, y + -2, z + 12), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 39, y + -2, z + 12), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 40, y + -2, z + 12), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 0, y + -2, z + 13), Block3.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 4, y + -2, z + 13), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + -2, z + 13), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 4, y + -2, z + 13), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 5, y + -2, z + 13), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 6, y + -2, z + 13), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + -2, z + 13), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -2, z + 13), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 9, y + -2, z + 13), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 10, y + -2, z + 13), Blocks.WATER.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 11, y + -2, z + 13), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 12, y + -2, z + 13), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 11, y + -2, z + 13), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 12, y + -2, z + 13), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 38, y + -2, z + 13), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 39, y + -2, z + 13), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 40, y + -2, z + 13), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 0, y + -2, z + 14), Block3.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 4, y + -2, z + 14), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + -2, z + 14), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 6, y + -2, z + 14), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 4, y + -2, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 5, y + -2, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 6, y + -2, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + -2, z + 14), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + -2, z + 14), Blocks.WATER.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 9, y + -2, z + 14), Blocks.WATER.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 10, y + -2, z + 14), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 11, y + -2, z + 14), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 12, y + -2, z + 14), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 10, y + -2, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 11, y + -2, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 12, y + -2, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 38, y + -2, z + 14), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 39, y + -2, z + 14), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 40, y + -2, z + 14), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 0, y + -2, z + 15), Block3.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + -2, z + 15), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 6, y + -2, z + 15), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -2, z + 15), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 8, y + -2, z + 15), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -2, z + 15), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 10, y + -2, z + 15), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 11, y + -2, z + 15), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 5, y + -2, z + 15), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 6, y + -2, z + 15), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -2, z + 15), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 8, y + -2, z + 15), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -2, z + 15), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 10, y + -2, z + 15), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 11, y + -2, z + 15), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 38, y + -2, z + 15), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 39, y + -2, z + 15), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 40, y + -2, z + 15), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 0, y + -2, z + 16), Block3.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 6, y + -2, z + 16), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -2, z + 16), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 8, y + -2, z + 16), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -2, z + 16), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 10, y + -2, z + 16), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 6, y + -2, z + 16), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -2, z + 16), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 8, y + -2, z + 16), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -2, z + 16), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 10, y + -2, z + 16), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 38, y + -2, z + 16), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 39, y + -2, z + 16), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 40, y + -2, z + 16), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 0, y + -2, z + 17), Block3.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -2, z + 17), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 8, y + -2, z + 17), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -2, z + 17), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -2, z + 17), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 8, y + -2, z + 17), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -2, z + 17), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 38, y + -2, z + 17), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 39, y + -2, z + 17), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 40, y + -2, z + 17), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 0, y + -2, z + 18), Block3.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -2, z + 18), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 8, y + -2, z + 18), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -2, z + 18), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -2, z + 18), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 8, y + -2, z + 18), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -2, z + 18), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 38, y + -2, z + 18), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 39, y + -2, z + 18), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 40, y + -2, z + 18), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 0, y + -2, z + 19), Block3.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 7, y + -2, z + 19), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 8, y + -2, z + 19), Library.getRandomConcrete().getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 9, y + -2, z + 19), Library.getRandomConcrete().getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 7, y + -2, z + 19), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 8, y + -2, z + 19), Library.getRandomConcrete(rand).getDefaultState(), 3);
+		world.setBlockState(pos.setPos(x + 9, y + -2, z + 19), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 38, y + -2, z + 19), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 39, y + -2, z + 19), Block3.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 40, y + -2, z + 19), Block3.getDefaultState(), 3);

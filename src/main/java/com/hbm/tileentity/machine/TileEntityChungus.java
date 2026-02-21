@@ -60,7 +60,7 @@ public class TileEntityChungus extends TileEntityLoadedBase implements ITickable
 	public float fanAcceleration = 0F;
 
 	private AudioWrapper audio;
-	private float audioDesync;
+	private final float audioDesync;
 	
 	public FluidTank[] tanksOld;
 	public Fluid[] types;
@@ -122,6 +122,8 @@ public class TileEntityChungus extends TileEntityLoadedBase implements ITickable
 		}
 		if(!world.isRemote) {
 
+			this.power *= 0.95;
+
 			boolean operational = false;
 			FluidType in = tanks[0].getTankType();
 			boolean valid = false;
@@ -135,7 +137,7 @@ public class TileEntityChungus extends TileEntityLoadedBase implements ITickable
 					int ops = Math.min(inputOps, outputOps);
 					tanks[0].setFill(tanks[0].getFill() - ops * trait.amountReq);
 					tanks[1].setFill(tanks[1].getFill() + ops * trait.amountProduced);
-					this.power += (ops * trait.heatEnergy * eff);
+					this.power += (long) (ops * trait.heatEnergy * eff);
 					valid = true;
 					operational = ops > 0;
 				}
@@ -173,7 +175,7 @@ public class TileEntityChungus extends TileEntityLoadedBase implements ITickable
 
 			if(turnTimer > 0) {
 				// Fan accelerates with a random offset to ensure the audio doesn't perfectly align, makes for a more pleasant hum
-				this.fanAcceleration = Math.max(0F, Math.min(25F, this.fanAcceleration += 0.075F + audioDesync));
+				this.fanAcceleration = Math.max(0F, Math.min(25F, this.fanAcceleration + (0.075F + audioDesync)));
 
 				Random rand = world.rand;
 				ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);

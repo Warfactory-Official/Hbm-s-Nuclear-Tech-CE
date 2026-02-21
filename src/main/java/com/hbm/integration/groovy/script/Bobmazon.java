@@ -1,10 +1,7 @@
 package com.hbm.integration.groovy.script;
 
 import com.cleanroommc.groovyscript.api.GroovyLog;
-import com.cleanroommc.groovyscript.api.documentation.annotations.Comp;
-import com.cleanroommc.groovyscript.api.documentation.annotations.Property;
-import com.cleanroommc.groovyscript.api.documentation.annotations.RecipeBuilderMethodDescription;
-import com.cleanroommc.groovyscript.api.documentation.annotations.RecipeBuilderRegistrationMethod;
+import com.cleanroommc.groovyscript.api.documentation.annotations.*;
 import com.cleanroommc.groovyscript.helper.recipe.AbstractRecipeBuilder;
 import com.cleanroommc.groovyscript.registry.StandardListRegistry;
 import com.hbm.integration.groovy.HbmGroovyPropertyContainer;
@@ -13,8 +10,10 @@ import net.minecraft.util.Tuple;
 
 import java.util.Collection;
 
-import static com.hbm.handler.BobmazonOfferFactory.*;
+import static com.hbm.handler.BobmazonOfferFactory.OfferCategory;
+import static com.hbm.handler.BobmazonOfferFactory.custom;
 
+@RegistryDescription(linkGenerator = "hbm", isFullyDocumented = false)
 public class Bobmazon extends StandardListRegistry<Tuple<OfferCategory, GUIScreenBobmazon.Offer>> {
 
     @Override

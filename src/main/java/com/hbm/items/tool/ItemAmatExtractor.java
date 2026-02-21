@@ -2,12 +2,14 @@ package com.hbm.items.tool;
 
 import com.hbm.blocks.bomb.BlockCrashedBomb;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.ModItems;
 import com.hbm.items.special.ItemCell;
 import com.hbm.items.special.ItemCustomLore;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
 import com.hbm.util.ContaminationUtil.HazardType;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -32,8 +34,8 @@ public class ItemAmatExtractor extends ItemCustomLore {
 				} else if(chance <= 0.3) {
 					ItemCell.consumeEmptyCell(player);
 	
-					if(!player.inventory.addItemStackToInventory(ItemCell.getFullCell(Fluids.BALEFIRE))) {
-						player.dropItem(ItemCell.getFullCell(Fluids.BALEFIRE), false);
+					if(!player.inventory.addItemStackToInventory(new ItemStack(ModItems.cell_balefire))) {
+						player.dropItem(new ItemStack(ModItems.cell_balefire), false);
 					}
 				} else {
 					ItemCell.consumeEmptyCell(player);

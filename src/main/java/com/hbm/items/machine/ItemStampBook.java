@@ -1,6 +1,6 @@
 package com.hbm.items.machine;
 
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
@@ -27,7 +27,7 @@ public class ItemStampBook extends ItemStamp {
     @Override
     @SideOnly(Side.CLIENT)
     public void registerModel() {
-        ResourceLocation loc = new ResourceLocation(RefStrings.MODID, "items/stamp_book");
+        ResourceLocation loc = new ResourceLocation(Tags.MODID, "items/stamp_book");
         ModelResourceLocation mrl = new ModelResourceLocation(loc, "inventory");
 
         for (int i = 0; i < 8; i++) {

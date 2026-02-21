@@ -1,5 +1,6 @@
 package com.hbm.particle;
 
+import com.hbm.lib.HBMSoundHandler;
 import net.minecraft.util.SoundEvent;
 
 import java.util.HashMap;
@@ -15,6 +16,11 @@ public class SpentCasing implements Cloneable {
     public static final int COLOR_CASE_16INCH_PHOS = 0xC8C8C8;
     public static final int COLOR_CASE_16INCH_NUKE = 0x495443;
     public static final int COLOR_CASE_40MM = 0x515151;
+
+    public static final SoundEvent PLINK_SHELL = HBMSoundHandler.plinkShell;
+    public static final SoundEvent PLINK_SMALL = HBMSoundHandler.plinkSmall;
+    public static final SoundEvent PLINK_MEDIUM = HBMSoundHandler.plinkMedium;
+    public static final SoundEvent PLINK_LARGE = HBMSoundHandler.plinkLarge;
 
     public static final HashMap<String, SpentCasing> casingMap = new HashMap<String, SpentCasing>();
 
@@ -48,6 +54,11 @@ public class SpentCasing implements Cloneable {
 
     public SpentCasing(CasingType type) {
         this.type = type;
+        if(type == CasingType.SHOTGUN) {
+            this.setSound(PLINK_SHELL);
+        } else {
+            this.setSound(PLINK_SMALL);
+        }
     }
 
     /** Separated from the ctor to allow for easy creation of new casings from templates that don't need to be registered */
@@ -58,16 +69,15 @@ public class SpentCasing implements Cloneable {
     }
 
     public SpentCasing setScale(float scale) {
-        this.scaleX = scale;
-        this.scaleY = scale;
-        this.scaleZ = scale;
-        return this;
+        return setScale(scale,scale,scale);
     }
 
     public SpentCasing setScale(float x, float y, float z) {
         this.scaleX = x;
         this.scaleY = y;
         this.scaleZ = z;
+            if(x * y * z >= 3 && this.type != CasingType.SHOTGUN) this.setSound(PLINK_MEDIUM);
+            if(x * y * z >= 100 && this.type != CasingType.SHOTGUN) this.setSound(PLINK_LARGE);
         return this;
     }
 

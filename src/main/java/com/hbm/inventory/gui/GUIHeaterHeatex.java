@@ -1,12 +1,14 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerHeaterHeatex;
-import com.hbm.lib.RefStrings;
 import com.hbm.packet.toserver.NBTControlPacket;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.machine.TileEntityHeaterHeatex;
+import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.nbt.NBTTagCompound;
@@ -14,13 +16,12 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.lwjgl.input.Keyboard;
-import net.minecraft.client.renderer.GlStateManager;
 
 import java.io.IOException;
 import java.util.Arrays;
 
 public class GUIHeaterHeatex extends GuiInfoContainer {
-    private final static ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/machine/gui_heatex.png");
+    private final static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/machine/gui_heatex.png");
     private final TileEntityHeaterHeatex heater;
     private GuiTextField fieldCycles;
     private GuiTextField fieldDelay;
@@ -62,10 +63,10 @@ public class GUIHeaterHeatex extends GuiInfoContainer {
         heater.tanksNew[1].renderTankInfo(this, x, y, guiLeft + 116, guiTop + 36, 16, 52);
 
         if (guiLeft + 70 <= x && guiLeft + 70 + 36 > x && guiTop + 26 < y && guiTop + 26 + 18 >= y) {
-            drawHoveringText(Arrays.asList("Amount per cycle"), x, y);
+            drawHoveringText(Arrays.asList(I18nUtil.resolveKey("gui.heatex.amount")), x, y);
         }
         if (guiLeft + 70 <= x && guiLeft + 70 + 36 > x && guiTop + 44 < y && guiTop + 44 + 18 >= y) {
-            drawHoveringText(Arrays.asList("Cycle tick delay"), x, y);
+            drawHoveringText(Arrays.asList(I18nUtil.resolveKey("gui.heatex.cycle")), x, y);
         }
 
         super.renderHoveredToolTip(x, y);
@@ -108,14 +109,14 @@ public class GUIHeaterHeatex extends GuiInfoContainer {
             int cyc = Math.max(NumberUtils.toInt(this.fieldCycles.getText()), 1);
             NBTTagCompound data = new NBTTagCompound();
             data.setInteger("toCool", cyc);
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, heaterPos.getX(), heaterPos.getY(), heaterPos.getZ()));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, heaterPos.getX(), heaterPos.getY(), heaterPos.getZ()));
             return;
         }
         if (this.fieldDelay.textboxKeyTyped(c, i)) {
             int delay = Math.max(NumberUtils.toInt(this.fieldDelay.getText()), 1);
             NBTTagCompound data = new NBTTagCompound();
             data.setInteger("delay", delay);
-            PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, heaterPos.getX(), heaterPos.getY(), heaterPos.getZ()));
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, heaterPos.getX(), heaterPos.getY(), heaterPos.getZ()));
             return;
         }
 

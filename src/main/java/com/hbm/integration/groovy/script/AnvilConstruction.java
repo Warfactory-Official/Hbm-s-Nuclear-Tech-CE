@@ -11,9 +11,12 @@ import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import net.minecraft.item.ItemStack;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
-@RegistryDescription(linkGenerator = "hbm")
+@RegistryDescription(linkGenerator = "hbm", isFullyDocumented = false)
 public class AnvilConstruction extends StandardListRegistry<AnvilRecipes.AnvilConstructionRecipe> {
     @Override
     public Collection<AnvilRecipes.AnvilConstructionRecipe> getRecipes() {

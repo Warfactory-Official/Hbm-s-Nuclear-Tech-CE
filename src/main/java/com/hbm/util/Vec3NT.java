@@ -11,6 +11,9 @@ public class Vec3NT extends MutableVec3d {
     public Vec3NT() {
         super(0.0D, 0.0D, 0.0D);
     }
+    public static Vec3NT ZERO(){
+        return new Vec3NT(0,0,0);
+    }
 
     public Vec3NT(double x, double y, double z) {
         super(x, y, z);

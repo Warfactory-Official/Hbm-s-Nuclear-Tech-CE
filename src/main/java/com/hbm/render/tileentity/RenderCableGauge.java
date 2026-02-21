@@ -43,7 +43,7 @@ public class RenderCableGauge extends TileEntitySpecialRenderer<TileEntityCableG
 			
 			float f3 = Math.min(0.03F, 0.8F / Math.max(width, 1));
 			GlStateManager.scale(f3, -f3, f3);
-			GL11.glNormal3f(0.0F, 0.0F, -1.0F);
+			GlStateManager.color(0.0F, 0.0F, -1.0F);
 			GlStateManager.rotate(90, 0, 1, 0);
 			
 			font.drawString(text, -width / 2, -height / 2, 0xff8000);

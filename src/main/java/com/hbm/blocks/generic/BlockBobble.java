@@ -1,24 +1,28 @@
 package com.hbm.blocks.generic;
 
+import com.hbm.blocks.ICustomBlockItem;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.gui.GUIScreenBobble;
+import com.hbm.items.IModelRegister;
 import com.hbm.items.special.ItemPlasticScrap.ScrapType;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.world.gen.nbt.INBTBlockTransformable;
 import com.hbm.world.gen.nbt.INBTTileEntityTransformable;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
@@ -35,12 +39,14 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.Nullable;
 
-public class BlockBobble extends BlockContainer implements INBTBlockTransformable {
+public class BlockBobble extends BlockContainer implements INBTBlockTransformable, ICustomBlockItem {
 
     public static final PropertyInteger META = PropertyInteger.create("rot", 0, 15);
     private static final AxisAlignedBB BOUNDS = new AxisAlignedBB(5.5D / 16D, 0.0D, 5.5D / 16D, 1.0D - 5.5D / 16D, 0.625D, 1.0D - 5.5D / 16D);
@@ -51,8 +57,8 @@ public class BlockBobble extends BlockContainer implements INBTBlockTransformabl
         this.setRegistryName(name);
         this.setDefaultState(this.blockState.getBaseState().withProperty(META, 0));
         this.setLightOpacity(0);
-        this.setHardness(1.5F);
-        this.setResistance(10.0F);
+        this.setHardness(0.0F);
+        this.setResistance(0.0F);
         ModBlocks.ALL_BLOCKS.add(this);
     }
 
@@ -83,10 +89,6 @@ public class BlockBobble extends BlockContainer implements INBTBlockTransformabl
     }
 
     @Override
-    public void getDrops(NonNullList<ItemStack> drops, IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
-    }
-
-    @Override
     public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
         TileEntity te = world.getTileEntity(pos);
         if (te instanceof TileEntityBobble entity) {
@@ -96,32 +98,25 @@ public class BlockBobble extends BlockContainer implements INBTBlockTransformabl
     }
 
     @Override
-    public void onBlockHarvested(World world, BlockPos pos, IBlockState state, EntityPlayer player) {
-        if (!player.capabilities.isCreativeMode) {
-            harvesters.set(player);
-            if (!world.isRemote) {
-                TileEntity te = world.getTileEntity(pos);
-                if (te instanceof TileEntityBobble entity) {
-                    ItemStack drop = new ItemStack(this, 1, entity.type.ordinal());
-                    EntityItem item = new EntityItem(world, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, drop);
-                    item.motionX = item.motionY = item.motionZ = 0;
-                    world.spawnEntity(item);
-                }
-            }
-            harvesters.set(null);
-        }
-    }
-
-    @Override
     public void harvestBlock(World world, EntityPlayer player, BlockPos pos, IBlockState state, @Nullable TileEntity te, ItemStack tool) {
         player.addStat(StatList.getBlockStats(this));
         player.addExhaustion(0.025F);
     }
 
     @Override
+    public void breakBlock(World world, BlockPos pos, IBlockState state) {
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof TileEntityBobble entity && !world.isRemote) {
+            ItemStack drop = new ItemStack(this, 1, entity.type.ordinal());
+            spawnAsEntity(world, pos, drop);
+        }
+        super.breakBlock(world, pos, state);
+    }
+
+    @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing side, float hitX,
                                     float hitY, float hitZ) {
-        if (!world.isRemote) {
+        if (!world.isRemote && !player.isSneaking()) {
             FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
         }
         return true;
@@ -130,7 +125,7 @@ public class BlockBobble extends BlockContainer implements INBTBlockTransformabl
     @Override
     @SideOnly(Side.CLIENT)
     public void getSubBlocks(CreativeTabs tabs, NonNullList<ItemStack> list) {
-        for (int i = 1; i < BobbleType.values().length; i++) {
+        for (int i = 1; i < BobbleType.VALUES.length; i++) {
             list.add(new ItemStack(this, 1, i));
         }
     }
@@ -141,7 +136,7 @@ public class BlockBobble extends BlockContainer implements INBTBlockTransformabl
         world.setBlockState(pos, this.getDefaultState().withProperty(META, meta), 2);
         TileEntity te = world.getTileEntity(pos);
         if (te instanceof TileEntityBobble bobble) {
-            bobble.type = BobbleType.values()[Math.abs(stack.getItemDamage()) % BobbleType.values().length];
+            bobble.type = BobbleType.VALUES[Math.abs(stack.getItemDamage()) % BobbleType.VALUES.length];
             bobble.markDirty();
         }
     }
@@ -170,6 +165,27 @@ public class BlockBobble extends BlockContainer implements INBTBlockTransformabl
     @Override
     public TileEntity createNewTileEntity(World world, int meta) {
         return new TileEntityBobble();
+    }
+
+    @Override
+    public void registerItem() {
+        ItemBlock itemBlock = new BlockBobbleItem(this);
+        itemBlock.setRegistryName(this.getRegistryName());
+        ForgeRegistries.ITEMS.register(itemBlock);
+    }
+
+    private static class BlockBobbleItem extends CustomBlockItem implements IModelRegister {
+        private BlockBobbleItem(Block block) {
+            super(block);
+        }
+
+        @Override
+        @SideOnly(Side.CLIENT)
+        public void registerModels() {
+            for (int meta = 0; meta < BobbleType.VALUES.length; meta++) {
+                ModelLoader.setCustomModelResourceLocation(this, meta, new ModelResourceLocation(this.getRegistryName(), "inventory"));
+            }
+        }
     }
 
     public enum BobbleType {
@@ -206,6 +222,8 @@ public class BlockBobble extends BlockContainer implements INBTBlockTransformabl
         MELLOW("MELLOWARPEGGIATION", "Mellow", "NBT Structures, industrial lighting, animation tools",
                 "Make something cool now, ask for permission later.", true, ScrapType.CARD_PROCESSOR),
         ABEL("Abel1502", "Abel1502", "Abilities GUI, optimizations and many QoL improvements", "NANTO SUBARASHII", true, ScrapType.CPU_REGISTER);
+
+        public static final BobbleType[] VALUES = values();
 
         public final String name;
         public final String label;
@@ -254,7 +272,7 @@ public class BlockBobble extends BlockContainer implements INBTBlockTransformabl
         @Override
         public void readFromNBT(NBTTagCompound nbt) {
             super.readFromNBT(nbt);
-            this.type = BobbleType.values()[Math.abs(nbt.getByte("type")) % BobbleType.values().length];
+            this.type = BobbleType.VALUES[Math.abs(nbt.getByte("type")) % BobbleType.VALUES.length];
         }
 
         @Override
@@ -266,12 +284,17 @@ public class BlockBobble extends BlockContainer implements INBTBlockTransformabl
 
         @Override
         public void transformTE(World world, int coordBaseMode) {
-            type = BobbleType.values()[world.rand.nextInt(BobbleType.values().length - 1) + 1];
+            type = BobbleType.VALUES[world.rand.nextInt(BobbleType.VALUES.length - 1) + 1];
         }
 
         @Override
         public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
-            return null;
+            return new Container() {
+                @Override
+                public boolean canInteractWith(EntityPlayer playerIn) {
+                    return true;
+                }
+            };
         }
 
         @Override

@@ -1,7 +1,0 @@
-{
-	"parent": "block/cube_column",
-	"textures": {
-		"end": "hbm:blocks/fusion_conductor_top_alt",
-		"side": "hbm:blocks/fusion_conductor_side_alt3"
-	}
-}

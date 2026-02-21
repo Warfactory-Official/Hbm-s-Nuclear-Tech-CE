@@ -51,6 +51,8 @@ public class SoyuzPronter {
 				ResourceManager.soyuz_authentic_booster,
 				ResourceManager.soyuz_authentic_boosterside
 		);
+
+        public static final SoyuzSkin[] VALUES = values();
 		
 		public ResourceLocation engineblock;
 		public ResourceLocation bottomstage;
@@ -94,7 +96,7 @@ public class SoyuzPronter {
 	
 	public static void prontSoyuz(int type) {
 		
-		if(type >= SoyuzSkin.values().length || type < 0)
+		if(type >= SoyuzSkin.VALUES.length || type < 0)
 			return;
 		
 		prontMain(type);
@@ -102,7 +104,7 @@ public class SoyuzPronter {
 	}
 	
 	public static void prontMain(int type) {
-		SoyuzSkin skin = SoyuzSkin.values()[type];
+		SoyuzSkin skin = SoyuzSkin.VALUES[type];
 
 		GlStateManager.pushMatrix();
 		GlStateManager.enableCull();
@@ -146,7 +148,7 @@ public class SoyuzPronter {
 	
 	public static void prontBoosters(int type) {
 		
-		SoyuzSkin skin = SoyuzSkin.values()[type];
+		SoyuzSkin skin = SoyuzSkin.VALUES[type];
 
 		GlStateManager.pushMatrix();
 		GlStateManager.enableCull();

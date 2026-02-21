@@ -1,10 +1,10 @@
 package com.hbm.items.food;
 
 import com.google.common.collect.ImmutableMap;
+import com.hbm.Tags;
 import com.hbm.items.IDynamicModels;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemChemicalDye;
-import com.hbm.lib.RefStrings;
 import com.hbm.util.EnumUtil;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -27,6 +27,8 @@ import java.util.Locale;
 
 import static com.hbm.items.ItemEnumMulti.ROOT_PATH;
 
+//mlbv: the original base texture from 1.7 has overlapping parts with overlay, causing z-fighting as noted in #1325;
+//I made the base's overlapping parts transparent to fix it. There should be no behavioral changes except the flickering.
 public class ItemCrayon extends ItemFood implements IDynamicModels {
     protected String baseName;
 
@@ -45,8 +47,8 @@ public class ItemCrayon extends ItemFood implements IDynamicModels {
     @Override
     @SideOnly(Side.CLIENT)
     public void registerSprite(TextureMap map) {
-        ResourceLocation base = new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseName);
-        ResourceLocation overlay = new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseName + "_overlay");
+        ResourceLocation base = new ResourceLocation(Tags.MODID, ROOT_PATH + baseName);
+        ResourceLocation overlay = new ResourceLocation(Tags.MODID, ROOT_PATH + baseName + "_overlay");
 
         map.registerSprite(base);
         map.registerSprite(overlay);
@@ -55,11 +57,11 @@ public class ItemCrayon extends ItemFood implements IDynamicModels {
     @SideOnly(Side.CLIENT)
     public void registerModel() {
         ModelResourceLocation mrl = new ModelResourceLocation(
-                new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseName),
+                new ResourceLocation(Tags.MODID, ROOT_PATH + baseName),
                 "inventory"
         );
 
-        for (int i = 0; i < ItemChemicalDye.EnumChemDye.values().length; i++) {
+        for (int i = 0; i < ItemChemicalDye.EnumChemDye.VALUES.length; i++) {
             ModelLoader.setCustomModelResourceLocation(this, i, mrl);
         }
     }
@@ -69,8 +71,8 @@ public class ItemCrayon extends ItemFood implements IDynamicModels {
         try {
             IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/generated"));
 
-            ResourceLocation layer0 = new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseName);
-            ResourceLocation layer1 = new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseName + "_overlay");
+            ResourceLocation layer0 = new ResourceLocation(Tags.MODID, ROOT_PATH + baseName);
+            ResourceLocation layer1 = new ResourceLocation(Tags.MODID, ROOT_PATH + baseName + "_overlay");
 
             IModel retexturedModel = baseModel.retexture(ImmutableMap.of(
                     "layer0", layer0.toString(),
@@ -80,7 +82,7 @@ public class ItemCrayon extends ItemFood implements IDynamicModels {
             IBakedModel bakedModel = retexturedModel.bake(ModelRotation.X0_Y0, DefaultVertexFormats.ITEM, ModelLoader.defaultTextureGetter());
 
             ModelResourceLocation bakedModelLocation = new ModelResourceLocation(
-                    new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseName),
+                    new ResourceLocation(Tags.MODID, ROOT_PATH + baseName),
                     "inventory"
             );
 
@@ -94,7 +96,7 @@ public class ItemCrayon extends ItemFood implements IDynamicModels {
     @SideOnly(Side.CLIENT)
     public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
         if (tab == CreativeTabs.SEARCH || tab == this.getCreativeTab()) {
-            for (int i = 0; i < ItemChemicalDye.EnumChemDye.values().length; i++) {
+            for (int i = 0; i < ItemChemicalDye.EnumChemDye.VALUES.length; i++) {
                 items.add(new ItemStack(this, 1, i));
             }
         }
@@ -102,7 +104,7 @@ public class ItemCrayon extends ItemFood implements IDynamicModels {
 
     @Override
     public String getTranslationKey(ItemStack stack) {
-        Enum num = EnumUtil.grabEnumSafely(ItemChemicalDye.EnumChemDye.class, stack.getItemDamage());
+        Enum num = EnumUtil.grabEnumSafely(ItemChemicalDye.EnumChemDye.VALUES, stack.getItemDamage());
         return super.getTranslationKey() + "." + num.name().toLowerCase(Locale.US);
     }
 }

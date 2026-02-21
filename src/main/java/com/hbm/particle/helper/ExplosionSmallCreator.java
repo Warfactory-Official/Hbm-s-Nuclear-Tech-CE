@@ -63,7 +63,7 @@ public class ExplosionSmallCreator implements IParticleCreator {
         // Debris particles
         BlockPos found = null;
         IBlockState state = null;
-        for (EnumFacing dir : EnumFacing.values()) {
+        for (EnumFacing dir : EnumFacing.VALUES) {
             BlockPos pos = new BlockPos((int) Math.floor(x) + dir.getXOffset(), (int) Math.floor(y) + dir.getYOffset(), (int) Math.floor(z) + dir.getZOffset());
             IBlockState candidate = world.getBlockState(pos);
             if (candidate.getMaterial() != Material.AIR) {

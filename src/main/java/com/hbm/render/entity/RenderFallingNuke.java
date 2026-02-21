@@ -1,10 +1,10 @@
 package com.hbm.render.entity;
 
+import com.hbm.Tags;
 import com.hbm.entity.projectile.EntityFallingNuke;
-import com.hbm.hfr.render.loader.HFRWavefrontObject;
+import com.hbm.render.loader.HFRWavefrontObject;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
-import com.hbm.render.amlfrom1710.IModelCustom;
+import com.hbm.render.loader.IModelCustom;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -15,15 +15,15 @@ public class RenderFallingNuke extends Render<EntityFallingNuke> {
 
 	public static final IRenderFactory<EntityFallingNuke> FACTORY = (RenderManager man) -> {return new RenderFallingNuke(man);};
 	
-	private static final ResourceLocation objTesterModelRL = new ResourceLocation(/*"/assets/" + */RefStrings.MODID, "models/bombs/LilBoy.obj");
+	private static final ResourceLocation objTesterModelRL = new ResourceLocation(/*"/assets/" + */Tags.MODID, "models/bombs/LilBoy.obj");
 	private IModelCustom boyModel;
     private ResourceLocation boyTexture;
-    private static final ResourceLocation gadget_rl = new ResourceLocation(RefStrings.MODID +":textures/models/bombs/gadget.png");
+    private static final ResourceLocation gadget_rl = new ResourceLocation(Tags.MODID +":textures/models/bombs/gadget.png");
 	
 	protected RenderFallingNuke(RenderManager renderManager) {
 		super(renderManager);
 		boyModel = new HFRWavefrontObject(objTesterModelRL);
-		boyTexture = new ResourceLocation(RefStrings.MODID, "textures/models/bombs/CustomNuke.png");
+		boyTexture = new ResourceLocation(Tags.MODID, "textures/models/bombs/CustomNuke.png");
 	}
 
 	@Override

@@ -15,6 +15,7 @@ import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class ItemTurretBiometry extends Item {
@@ -31,8 +32,7 @@ public class ItemTurretBiometry extends Item {
 	public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
 		String[] names = getNames(stack);
 		if(names != null)
-			for(int i = 0; i < names.length; i++)
-				tooltip.add(names[i]);
+            Collections.addAll(tooltip, names);
 	}
 	
 	@Override

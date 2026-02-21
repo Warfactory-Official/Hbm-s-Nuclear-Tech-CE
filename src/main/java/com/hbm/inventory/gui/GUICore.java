@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerCore;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityCore;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -11,7 +11,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GUICore extends GuiInfoContainer {
 
-    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/dfc/gui_core.png");
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/dfc/gui_core.png");
     private final TileEntityCore core;
 
     public GUICore(InventoryPlayer invPlayer, TileEntityCore tedf) {

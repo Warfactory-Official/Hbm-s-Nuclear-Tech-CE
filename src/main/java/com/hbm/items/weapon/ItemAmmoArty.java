@@ -12,6 +12,7 @@ import com.hbm.explosion.vanillant.standard.*;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.IModelRegister;
 import com.hbm.items.ModItems;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
@@ -45,7 +46,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import java.util.List;
 import java.util.Random;
 
-public class ItemAmmoArty extends Item {
+public class ItemAmmoArty extends Item implements IModelRegister {
 
     public static Random rand = new Random();
     public static ArtilleryShell[] itemTypes =	new ArtilleryShell[ /* >>> */ 12 /* <<< */ ];
@@ -84,6 +85,7 @@ public class ItemAmmoArty extends Item {
         }
     }
 
+    @Override
     public void registerModels() {
         for (int i = 0; i <= 11; i++) {
             ModelLoader.setCustomModelResourceLocation(this, i,
@@ -148,20 +150,9 @@ public class ItemAmmoArty extends Item {
                 list.add(TextFormatting.RED + "Splits x5");
                 break;
             case NUKE:
-                  list.add(TextFormatting.RED + "Billions must die");
-//                list.add(TextFormatting.RED + "☠");
-//                list.add(TextFormatting.RED + "(that is the best skull and crossbones");
-//                list.add(TextFormatting.RED + "minecraft's unicode has to offer)");
-                break;
-            case CHLORINE:
-                list.add(TextFormatting.RED + "Releases chlorine gas");
-                list.add(TextFormatting.YELLOW + "Low area of effect, extremely toxic");
-                list.add(TextFormatting.BLUE + "Does not destroy blocks");
-                break;
-            case MUSTARD:
-                list.add(TextFormatting.RED + "Releases mustard gas");
-                list.add(TextFormatting.YELLOW + "High area of effect, toxic");
-                list.add(TextFormatting.BLUE + "Does not destroy blocks");
+                list.add(TextFormatting.RED + "☠");
+                list.add(TextFormatting.RED + "(that is the best skull and crossbones");
+                list.add(TextFormatting.RED + "minecraft's unicode has to offer)");
                 break;
             case CARGO:
                 NBTTagCompound nbt = stack.getTagCompound();
@@ -247,12 +238,12 @@ public class ItemAmmoArty extends Item {
 
     private void init() {
         /* STANDARD SHELLS */
-        this.itemTypes[NORMAL] = new ArtilleryShell("ammo_arty", SpentCasing.COLOR_CASE_16INCH) { public void onImpact(EntityArtilleryShell shell, RayTraceResult mop) { standardExplosion(shell, mop, 10F, 3F, false);  ExplosionCreator.composeEffect(shell.world, mop.hitVec.x + 0.5, mop.hitVec.y + 0.5, mop.hitVec.z + 0.5, 10, 2F, 0.5F, 25F, 5, 0, 20, 0.75F, 1F, -2F, 150); }};
-        this.itemTypes[CLASSIC] = new ArtilleryShell("ammo_arty_classic", SpentCasing.COLOR_CASE_16INCH) { public void onImpact(EntityArtilleryShell shell, RayTraceResult mop) { standardExplosion(shell, mop, 15F, 5F, false); ExplosionCreator.composeEffect(shell.world, mop.hitVec.x + 0.5, mop.hitVec.y + 0.5, mop.hitVec.z + 0.5, 15, 5F, 1F, 45F, 10, 0, 50, 1F, 3F, -2F, 200); }};
-        this.itemTypes[EXPLOSIVE] = new ArtilleryShell("ammo_arty_he", SpentCasing.COLOR_CASE_16INCH) { public void onImpact(EntityArtilleryShell shell, RayTraceResult mop) { standardExplosion(shell, mop, 15F, 3F, true); ExplosionCreator.composeEffect(shell.world, mop.hitVec.x + 0.5, mop.hitVec.y + 0.5, mop.hitVec.z + 0.5, 15, 5F, 1F, 45F, 10, 16, 50, 1F, 3F, -2F, 200); }};
+        itemTypes[NORMAL] = new ArtilleryShell("ammo_arty", SpentCasing.COLOR_CASE_16INCH) { public void onImpact(EntityArtilleryShell shell, RayTraceResult mop) { standardExplosion(shell, mop, 10F, 3F, false);  ExplosionCreator.composeEffect(shell.world, mop.hitVec.x + 0.5, mop.hitVec.y + 0.5, mop.hitVec.z + 0.5, 10, 2F, 0.5F, 25F, 5, 0, 20, 0.75F, 1F, -2F, 150); }};
+        itemTypes[CLASSIC] = new ArtilleryShell("ammo_arty_classic", SpentCasing.COLOR_CASE_16INCH) { public void onImpact(EntityArtilleryShell shell, RayTraceResult mop) { standardExplosion(shell, mop, 15F, 5F, false); ExplosionCreator.composeEffect(shell.world, mop.hitVec.x + 0.5, mop.hitVec.y + 0.5, mop.hitVec.z + 0.5, 15, 5F, 1F, 45F, 10, 0, 50, 1F, 3F, -2F, 200); }};
+        itemTypes[EXPLOSIVE] = new ArtilleryShell("ammo_arty_he", SpentCasing.COLOR_CASE_16INCH) { public void onImpact(EntityArtilleryShell shell, RayTraceResult mop) { standardExplosion(shell, mop, 15F, 3F, true); ExplosionCreator.composeEffect(shell.world, mop.hitVec.x + 0.5, mop.hitVec.y + 0.5, mop.hitVec.z + 0.5, 15, 5F, 1F, 45F, 10, 16, 50, 1F, 3F, -2F, 200); }};
 
         /* MINI NUKE */
-        this.itemTypes[MINI_NUKE] = new ArtilleryShell("ammo_arty_mini_nuke", SpentCasing.COLOR_CASE_16INCH_NUKE) {
+        itemTypes[MINI_NUKE] = new ArtilleryShell("ammo_arty_mini_nuke", SpentCasing.COLOR_CASE_16INCH_NUKE) {
             public void onImpact(EntityArtilleryShell shell, RayTraceResult mop) {
                 shell.world.spawnEntity(EntityNukeExplosionMK5.statFac(shell.world, 20, mop.hitVec.x, mop.hitVec.y, mop.hitVec.z));
                 EntityNukeTorex.statFac(shell.world, mop.hitVec.x, mop.hitVec.y, mop.hitVec.z, 20);
@@ -261,7 +252,7 @@ public class ItemAmmoArty extends Item {
         };
 
         /* FULL NUKE */
-        this.itemTypes[NUKE] = new ArtilleryShell("ammo_arty_nuke", SpentCasing.COLOR_CASE_16INCH_NUKE) {
+        itemTypes[NUKE] = new ArtilleryShell("ammo_arty_nuke", SpentCasing.COLOR_CASE_16INCH_NUKE) {
             public void onImpact(EntityArtilleryShell shell, RayTraceResult mop) {
                 shell.world.spawnEntity(EntityNukeExplosionMK5.statFac(shell.world, 100, mop.hitVec.x, mop.hitVec.y, mop.hitVec.z));
                 EntityNukeTorex.statFac(shell.world, mop.hitVec.x, mop.hitVec.y, mop.hitVec.z, 100);
@@ -270,7 +261,7 @@ public class ItemAmmoArty extends Item {
         };
 
         /* PHOSPHORUS */
-        this.itemTypes[PHOSPHORUS] = new ArtilleryShell("ammo_arty_phosphorus", SpentCasing.COLOR_CASE_16INCH_PHOS) {
+        itemTypes[PHOSPHORUS] = new ArtilleryShell("ammo_arty_phosphorus", SpentCasing.COLOR_CASE_16INCH_PHOS) {
             public void onImpact(EntityArtilleryShell shell, RayTraceResult mop) {
                 standardExplosion(shell, mop, 10F, 3F, false);
                 ExplosionLarge.spawnShrapnels(shell.world, (int) mop.hitVec.x, (int) mop.hitVec.y, (int) mop.hitVec.z, 15);
@@ -285,12 +276,13 @@ public class ItemAmmoArty extends Item {
                         ((EntityLivingBase)e).addPotionEffect(eff);
                     }
                 }
+
                 for(int i = 0; i < 5; i++) {
-                    //FIXME:Some alpha stuff, inspite of it being enabled it insists on fucking breaking
-//                    NBTTagCompound haze = new NBTTagCompound();
-//                    haze.setString("type", "haze");
-//                    PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(haze, mop.hitVec.x + shell.world.rand.nextGaussian() * 10, mop.hitVec.y, mop.hitVec.z + shell.world.rand.nextGaussian() * 10), new NetworkRegistry.TargetPoint(shell.dimension, shell.posX, shell.posY, shell.posZ, 150));
+                    NBTTagCompound haze = new NBTTagCompound();
+                    haze.setString("type", "haze");
+                    PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(haze, mop.hitVec.x + shell.world.rand.nextGaussian() * 10, mop.hitVec.y, mop.hitVec.z + shell.world.rand.nextGaussian() * 10), new NetworkRegistry.TargetPoint(shell.dimension, shell.posX, shell.posY, shell.posZ, 150));
                 }
+
                 NBTTagCompound data = new NBTTagCompound();
                 data.setString("type", "rbmkmush");
                 data.setFloat("scale", 10);
@@ -299,7 +291,7 @@ public class ItemAmmoArty extends Item {
         };
 
         /* THIS DOOFUS */
-        this.itemTypes[CARGO] = new ArtilleryShell("ammo_arty_cargo", SpentCasing.COLOR_CASE_16INCH) { public void onImpact(EntityArtilleryShell shell, RayTraceResult mop) {
+        itemTypes[CARGO] = new ArtilleryShell("ammo_arty_cargo", SpentCasing.COLOR_CASE_16INCH) { public void onImpact(EntityArtilleryShell shell, RayTraceResult mop) {
             if(mop.typeOfHit == RayTraceResult.Type.BLOCK) {
                 shell.setPosition(mop.hitVec.x, mop.hitVec.y, mop.hitVec.z);
                 shell.getStuck(mop.getBlockPos(), mop.sideHit.ordinal());
@@ -307,7 +299,7 @@ public class ItemAmmoArty extends Item {
         }};
 
         /* GAS */
-        this.itemTypes[CHLORINE] = new ArtilleryShell("ammo_arty_chlorine", SpentCasing.COLOR_CASE_16INCH) {
+        itemTypes[CHLORINE] = new ArtilleryShell("ammo_arty_chlorine", SpentCasing.COLOR_CASE_16INCH) {
             public void onImpact(EntityArtilleryShell shell, RayTraceResult mop) {
                 shell.killAndClear();
                 Vec3d vec = new Vec3d(shell.motionX, shell.motionY, shell.motionZ).normalize();
@@ -320,7 +312,7 @@ public class ItemAmmoArty extends Item {
                 PollutionHandler.incrementPollution(shell.world, mop.getBlockPos(), PollutionHandler.PollutionType.HEAVYMETAL, 5F);
             }
         };
-        this.itemTypes[PHOSGENE] = new ArtilleryShell("ammo_arty_phosgene", SpentCasing.COLOR_CASE_16INCH_NUKE) {
+        itemTypes[PHOSGENE] = new ArtilleryShell("ammo_arty_phosgene", SpentCasing.COLOR_CASE_16INCH_NUKE) {
             public void onImpact(EntityArtilleryShell shell, RayTraceResult mop) {
                 shell.killAndClear();
                 Vec3d vec = new Vec3d(shell.motionX, shell.motionY, shell.motionZ).normalize();
@@ -342,7 +334,7 @@ public class ItemAmmoArty extends Item {
                 PollutionHandler.incrementPollution(shell.world, mop.getBlockPos(), PollutionHandler.PollutionType.POISON, 15F);
             }
         };
-        this.itemTypes[MUSTARD] = new ArtilleryShell("ammo_arty_mustard_gas", SpentCasing.COLOR_CASE_16INCH_NUKE) {
+        itemTypes[MUSTARD] = new ArtilleryShell("ammo_arty_mustard_gas", SpentCasing.COLOR_CASE_16INCH_NUKE) {
             public void onImpact(EntityArtilleryShell shell, RayTraceResult mop) {
                 shell.killAndClear();
                 Vec3d vec =  new Vec3d(shell.motionX, shell.motionY, shell.motionZ).normalize();
@@ -366,12 +358,12 @@ public class ItemAmmoArty extends Item {
         };
 
         /* CLUSTER SHELLS */
-        this.itemTypes[PHOSPHORUS_MULTI] = new ArtilleryShell("ammo_arty_phosphorus_multi", SpentCasing.COLOR_CASE_16INCH_PHOS) {
-            public void onImpact(EntityArtilleryShell shell, RayTraceResult mop) { ItemAmmoArty.this.itemTypes[PHOSPHORUS].onImpact(shell, mop); }
+        itemTypes[PHOSPHORUS_MULTI] = new ArtilleryShell("ammo_arty_phosphorus_multi", SpentCasing.COLOR_CASE_16INCH_PHOS) {
+            public void onImpact(EntityArtilleryShell shell, RayTraceResult mop) { itemTypes[PHOSPHORUS].onImpact(shell, mop); }
             public void onUpdate(EntityArtilleryShell shell) { standardCluster(shell, PHOSPHORUS, 10, 300, 5); }
         };
-        this.itemTypes[MINI_NUKE_MULTI] = new ArtilleryShell("ammo_arty_mini_nuke_multi", SpentCasing.COLOR_CASE_16INCH_NUKE) {
-            public void onImpact(EntityArtilleryShell shell, RayTraceResult mop) { ItemAmmoArty.this.itemTypes[MINI_NUKE].onImpact(shell, mop); }
+        itemTypes[MINI_NUKE_MULTI] = new ArtilleryShell("ammo_arty_mini_nuke_multi", SpentCasing.COLOR_CASE_16INCH_NUKE) {
+            public void onImpact(EntityArtilleryShell shell, RayTraceResult mop) { itemTypes[MINI_NUKE].onImpact(shell, mop); }
             public void onUpdate(EntityArtilleryShell shell) { standardCluster(shell, MINI_NUKE, 5, 300, 5); }
         };
     }

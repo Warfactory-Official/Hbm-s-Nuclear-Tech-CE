@@ -1,112 +1,99 @@
 package com.hbm.blocks.bomb;
 
-import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.BlockDummyable;
 import com.hbm.interfaces.IBomb;
-import com.hbm.lib.InventoryHelper;
-import com.hbm.main.MainRegistry;
-import com.hbm.main.ModContext;
+import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.TileEntityProxyCombo;
 import com.hbm.tileentity.bomb.TileEntityLaunchPad;
-import com.hbm.tileentity.bomb.TileEntityLaunchPadBase;
 import net.minecraft.block.Block;
-import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
-public class LaunchPad extends Block implements IBomb, ITileEntityProvider {
+public class LaunchPad extends BlockDummyable implements IBomb {
 
 	public LaunchPad(Material materialIn, String s) {
-		super(materialIn);
-		this.setRegistryName(s);
-		this.setTranslationKey(s);
-		this.setCreativeTab(MainRegistry.missileTab);
-
-		ModBlocks.ALL_BLOCKS.add(this);
-	}
-
-	@Nullable
-	@Override
-	public TileEntity createNewTileEntity(World worldIn, int meta) {
-		return new TileEntityLaunchPad();
+		super(materialIn, s);
+		this.bounding.add(new AxisAlignedBB(-1.5D, 0D, -1.5D, -0.5D, 1D, -0.5D));
+		this.bounding.add(new AxisAlignedBB(0.5D, 0D, -1.5D, 1.5D, 1D, -0.5D));
+		this.bounding.add(new AxisAlignedBB(-1.5D, 0D, 0.5D, -0.5D, 1D, 1.5D));
+		this.bounding.add(new AxisAlignedBB(0.5D, 0D, 0.5D, 1.5D, 1D, 1.5D));
+		this.bounding.add(new AxisAlignedBB(-0.5D, 0.5D, -1.5D, 0.5D, 1D, 1.5D));
+		this.bounding.add(new AxisAlignedBB(-1.5D, 0.5D, -0.5D, 1.5D, 1D, 0.5D));
 	}
 
 	@Override
-	public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
-		TileEntity te = worldIn.getTileEntity(pos);
-		if (te != null) {
-			InventoryHelper.dropInventoryItems(worldIn, pos, te);
-		}
-		super.breakBlock(worldIn, pos, state);
+	public TileEntity createNewTileEntity(@NotNull World world, int meta) {
+		if(meta >= 12) return new TileEntityLaunchPad();
+		if(meta >= 6) return new TileEntityProxyCombo().inventory().power().fluid();
+		return null;
 	}
 
 	@Override
-	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-		if (world.isRemote) {
-			return true;
-		} else if (!player.isSneaking()) {
-			TileEntity te = world.getTileEntity(pos);
-			if (te instanceof TileEntityLaunchPad) {
-				FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
-			}
-			return true;
-		} else {
-			return false;
-		}
+	public boolean onBlockActivated(@NotNull World world, BlockPos pos, @NotNull IBlockState state, @NotNull EntityPlayer player, @NotNull EnumHand hand, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ) {
+		return this.standardOpenBehavior(world, pos.getX(), pos.getY(), pos.getZ(), player, 0);
 	}
 
 	@Override
-	public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
-		TileEntity te = worldIn.getTileEntity(pos);
-		if (te instanceof TileEntityLaunchPadBase) {
-			((TileEntityLaunchPadBase) te).updateRedstonePower(pos.getX(), pos.getY(), pos.getZ());
-		}
+	public int[] getDimensions() {
+		return new int[] {0, 0, 1, 1, 1, 1};
+	}
+
+	@Override
+	public int getOffset() {
+		return 1;
 	}
 
 	@Override
 	public BombReturnCode explode(World world, BlockPos pos, Entity detonator) {
-		if (world.isRemote) return BombReturnCode.UNDEFINED;
 
-		TileEntity te = world.getTileEntity(pos);
-		if (te instanceof TileEntityLaunchPad launchPad) {
-			ModContext.DETONATOR_CONTEXT.set(detonator);
-			BombReturnCode result;
-			try {
-				result = launchPad.launchFromDesignator();
-			} finally {
-				ModContext.DETONATOR_CONTEXT.remove();
+		if(!world.isRemote) {
+
+			int[] corePos = findCore(world, pos.getX(), pos.getY(), pos.getZ());
+			if(corePos != null){
+				TileEntity core = world.getTileEntity(new BlockPos(corePos[0], corePos[1], corePos[2]));
+				if(core instanceof TileEntityLaunchPad entity){
+					return entity.launchFromDesignator();
+				}
 			}
-			return result;
 		}
+
 		return BombReturnCode.UNDEFINED;
 	}
 
 	@Override
-	public EnumBlockRenderType getRenderType(IBlockState state) {
-		return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
+	public void neighborChanged(@NotNull IBlockState state, World world, @NotNull BlockPos pos, @NotNull Block blockIn, @NotNull BlockPos fromPos) {
+		if (!world.isRemote) {
+			int[] corePos = findCore(world, pos.getX(), pos.getY(), pos.getZ());
+			if (corePos != null) {
+				TileEntity core = world.getTileEntity(new BlockPos(corePos[0], corePos[1], corePos[2]));
+				if (core instanceof TileEntityLaunchPad) {
+					TileEntityLaunchPad launchpad = (TileEntityLaunchPad) core;
+					launchpad.updateRedstonePower(pos.getX(), pos.getY(), pos.getZ());
+				}
+			}
+		}
+		super.neighborChanged(state, world, pos, blockIn, fromPos);
 	}
 
 	@Override
-	public boolean isOpaqueCube(IBlockState state) {
-		return false;
-	}
+	public void fillSpace(World world, int x, int y, int z, ForgeDirection dir, int o) {
+		super.fillSpace(world, x, y, z, dir, o);
 
-	@Override
-	public boolean isFullCube(IBlockState state) {
-		return false;
-	}
+		x += dir.offsetX * o;
+		z += dir.offsetZ * o;
 
-	@Override
-	public boolean shouldSideBeRendered(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
-		return false;
+		this.makeExtra(world, x + 1, y, z + 1);
+		this.makeExtra(world, x + 1, y, z - 1);
+		this.makeExtra(world, x - 1, y, z + 1);
+		this.makeExtra(world, x - 1, y, z - 1);
 	}
 }

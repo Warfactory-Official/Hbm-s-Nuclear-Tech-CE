@@ -33,7 +33,7 @@ import static com.hbm.blocks.BlockEnumMeta.stateFromEnum;
 import static com.hbm.blocks.BlockEnums.EnumBasaltOreType.*;
 import static com.hbm.blocks.ModBlocks.basalt_ore;
 
-public class VolcanicBlock extends BlockFluidClassic {
+public class VolcanicBlock extends BlockFluidClassic implements IFluidFog {
 
 	public VolcanicBlock(Fluid fluid, Material material, String s) {
 		super(fluid, material);
@@ -177,4 +177,14 @@ public class VolcanicBlock extends BlockFluidClassic {
 			world.spawnParticle(EnumParticleTypes.DRIP_LAVA, dx, dy, dz, 0.0D, 0.0D, 0.0D);
 		}
 	}
+
+    @Override
+    public float getFogDensity() {
+        return 2.0F;
+    }
+
+    @Override
+    public int getFogColor() {
+        return 0xCF340E;
+    }
 }

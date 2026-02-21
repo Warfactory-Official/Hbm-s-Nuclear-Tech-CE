@@ -10,6 +10,7 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.gui.GUIDiFurnace;
 import com.hbm.inventory.recipes.BlastFurnaceRecipes;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.util.Tuple;
 import io.netty.buffer.ByteBuf;
@@ -110,7 +111,7 @@ public class TileEntityDiFurnace extends TileEntityMachinePolluting implements I
                 progress += extension ? 3 : 1;
 
                 if (this.progress >= TileEntityDiFurnace.processingSpeed) {
-                    this.progress = 0;
+                    this.progress -= TileEntityDiFurnace.processingSpeed;
                     this.processItem();
                     markDirty = true;
                 }
@@ -141,7 +142,7 @@ public class TileEntityDiFurnace extends TileEntityMachinePolluting implements I
         }
     }
 
-    private boolean hasItemPower(ItemStack itemStack) {
+    public boolean hasItemPower(ItemStack itemStack) {
         return BlastFurnaceRecipes.getItemPower(itemStack) > 0;
     }
 
@@ -241,7 +242,6 @@ public class TileEntityDiFurnace extends TileEntityMachinePolluting implements I
     }
 
     private void processItem() {
-        if (!canProcess()) return;
 
         ItemStack slotA = inventory.getStackInSlot(0);
         ItemStack slotB = inventory.getStackInSlot(1);
@@ -326,9 +326,7 @@ public class TileEntityDiFurnace extends TileEntityMachinePolluting implements I
 
     @Override
     public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
-        boolean isSwapBetweenVariants = (oldState.getBlock() == ModBlocks.machine_difurnace_off && newState.getBlock() == ModBlocks.machine_difurnace_on) ||
-                        (oldState.getBlock() == ModBlocks.machine_difurnace_on  && newState.getBlock() == ModBlocks.machine_difurnace_off);
-        if (isSwapBetweenVariants) return false;
+        if (Library.isSwappingBetweenVariants(oldState, newState, ModBlocks.machine_difurnace_off, ModBlocks.machine_difurnace_on)) return false;
         return super.shouldRefresh(world, pos, oldState, newState);
     }
 }

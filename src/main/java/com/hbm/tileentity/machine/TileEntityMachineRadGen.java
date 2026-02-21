@@ -236,16 +236,16 @@ public class TileEntityMachineRadGen extends TileEntityMachineBase implements IT
 
 	static {
 
-		for(int i = 0; i < ItemWasteShort.WasteClass.values().length; i++) {
+		for(int i = 0; i < ItemWasteShort.WasteClass.VALUES.length; i++) {
 			fuels.put(	new RecipesCommon.ComparableStack(ModItems.nuclear_waste_short, 1, i), new Tuple.Triplet<>(1500, 30 * 60 * 20, new ItemStack(ModItems.nuclear_waste_short_depleted, 1, i)));
 			fuels.put(	new RecipesCommon.ComparableStack(ModItems.nuclear_waste_short_tiny, 1, i), new Tuple.Triplet<>(150, 3 * 60 * 20, new ItemStack(ModItems.nuclear_waste_short_depleted_tiny, 1, i)));
 		}
-		for(int i = 0; i < ItemWasteLong.WasteClass.values().length; i++) {
+		for(int i = 0; i < ItemWasteLong.WasteClass.VALUES.length; i++) {
 			fuels.put(	new RecipesCommon.ComparableStack(ModItems.nuclear_waste_long, 1, i), new Tuple.Triplet<>(500, 2 * 60 * 60 * 20, new ItemStack(ModItems.nuclear_waste_long_depleted, 1, i)));
 			fuels.put(	new RecipesCommon.ComparableStack(ModItems.nuclear_waste_long_tiny, 1, i), new Tuple.Triplet<>(50, 12 * 60 * 20, new ItemStack(ModItems.nuclear_waste_long_depleted_tiny, 1, i)));
 		}
 
-		//fuels.put(		new RecipesCommon.ComparableStack(ModItems.scrap_nuclear),					new Tuple.Triplet<Integer, Integer, ItemStack>(50,		5 * 60 * 20,		null));
+		fuels.put(		new RecipesCommon.ComparableStack(ModItems.scrap_nuclear), new Tuple.Triplet<>(50, 5 * 60 * 20, null));
 		fuels.put(		new RecipesCommon.ComparableStack(ModItems.gem_rad), new Tuple.Triplet<>(25_000, 30 * 60 * 20, new ItemStack(Items.DIAMOND)));
 	}
 

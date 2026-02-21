@@ -1,11 +1,11 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.items.machine.ItemDrillbit;
-import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineExcavator;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -31,7 +31,7 @@ public class ContainerMachineExcavator extends Container {
 		//Buffer: 5-13
 		for(int i = 0; i < 3; i++) {
 			for(int j = 0; j < 3; j++) {
-				this.addSlotToContainer(new SlotTakeOnly(tile.inventory, 5 + j + i * 3, 136 + j * 18, 5 + i * 18));
+				this.addSlotToContainer(SlotFiltered.takeOnly(tile.inventory, 5 + j + i * 3, 136 + j * 18, 5 + i * 18));
 			}
 		}
 		
@@ -48,41 +48,13 @@ public class ContainerMachineExcavator extends Container {
 	}
 
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int i)
+    public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		ItemStack rStack = ItemStack.EMPTY;
-		Slot slot = this.inventorySlots.get(i);
-
-		if(slot != null && slot.getHasStack()) {
-			ItemStack stack = slot.getStack();
-			rStack = stack.copy();
-
-			if(i <= 13) {
-				if(!this.mergeItemStack(stack, 14, this.inventorySlots.size(), true)) {
-					return ItemStack.EMPTY;
-				}
-			} else {
-
-				if(Library.isItemBattery(rStack)) {
-					if(!this.mergeItemStack(stack, 0, 1, false)) return ItemStack.EMPTY;
-				} else if(rStack.getItem() instanceof IItemFluidIdentifier) {
-					if(!this.mergeItemStack(stack, 1, 2, false)) return ItemStack.EMPTY;
-				} else if(rStack.getItem() instanceof ItemMachineUpgrade) {
-					if(!this.mergeItemStack(stack, 2, 4, false)) return ItemStack.EMPTY;
-				} else if(rStack.getItem() instanceof ItemDrillbit) {
-					if(!this.mergeItemStack(stack, 4, 5, false)) return ItemStack.EMPTY;
-				} else
-					return ItemStack.EMPTY;
-			}
-
-			if(stack.getCount() == 0) {
-				slot.putStack(ItemStack.EMPTY);
-			} else {
-				slot.onSlotChanged();
-			}
-		}
-		
-		return rStack;
+		return InventoryUtil.transferStack(this.inventorySlots, index, 14,
+                Library::isBattery, 1,
+                s -> s.getItem() instanceof IItemFluidIdentifier, 2,
+                Library::isMachineUpgrade, 4,
+                s -> s.getItem() instanceof ItemDrillbit, 5);
     }
 
 	@Override

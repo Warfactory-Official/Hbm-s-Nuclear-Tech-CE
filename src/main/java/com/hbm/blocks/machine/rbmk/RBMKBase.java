@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine.rbmk;
 
+import com.hbm.Tags;
 import com.hbm.api.block.IToolable;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ITooltipProvider;
@@ -7,7 +8,6 @@ import com.hbm.handler.MultiblockHandlerXR;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemRBMKLid;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.machine.rbmk.RBMKDials;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKBase;
@@ -24,11 +24,14 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -42,8 +45,8 @@ public abstract class RBMKBase extends BlockDummyable implements IToolable, IToo
 	
 	public RBMKBase(String s, String columnTexture){
 		super(Material.IRON, s);
-		coverTexture = new ResourceLocation(RefStrings.MODID, "textures/blocks/rbmk/" + s + ".png");
-		this.columnTexture = new ResourceLocation(RefStrings.MODID, "textures/blocks/rbmk/" + columnTexture +".png");
+		coverTexture = new ResourceLocation(Tags.MODID, "textures/blocks/rbmk/" + s + ".png");
+		this.columnTexture = new ResourceLocation(Tags.MODID, "textures/blocks/rbmk/" + columnTexture +".png");
 	}
 	
 	@Override
@@ -95,7 +98,7 @@ public abstract class RBMKBase extends BlockDummyable implements IToolable, IToo
 	}
 
 	@Override
-	public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos bpos){
+	public @NotNull AxisAlignedBB getBoundingBox(@NotNull IBlockState state, @NotNull IBlockAccess source, @NotNull BlockPos bpos){
 		float height = 0.0F;
 		
 		int[] pos = this.findCore(source, bpos.getX(), bpos.getY(), bpos.getZ());
@@ -142,7 +145,7 @@ public abstract class RBMKBase extends BlockDummyable implements IToolable, IToo
 	}
 	
 	@Override
-	public void breakBlock(World world, BlockPos pos, IBlockState state){
+	public void breakBlock(@NotNull World world, @NotNull BlockPos pos, IBlockState state){
 		if(!world.isRemote && dropLids) {
 			int i = state.getValue(META);
 			if(i == DIR_NORMAL_LID.ordinal() + offset) {
@@ -155,6 +158,49 @@ public abstract class RBMKBase extends BlockDummyable implements IToolable, IToo
 		
 		super.breakBlock(world, pos, state);
 	}
+
+    @Override
+    @Nullable
+    public RayTraceResult collisionRayTrace(IBlockState state, World world, BlockPos pos, Vec3d start, Vec3d end) {
+        final double px = pos.getX(), py = pos.getY(), pz = pos.getZ();
+        final Vec3d s = start.subtract(px, py, pz);
+        final Vec3d e = end.subtract(px, py, pz);
+
+        final AxisAlignedBB bb = state.getBoundingBox(world, pos);
+        RayTraceResult local = bb.calculateIntercept(s, e);
+        if (local == null) return null;
+
+        Vec3d hitWorld = local.hitVec.add(px, py, pz);
+
+        final double EPS = 1.0e-7;
+        final double hx = local.hitVec.x;
+        final double hy = local.hitVec.y;
+        final double hz = local.hitVec.z;
+        EnumFacing face;
+        if (Math.abs(hy - bb.maxY) <= EPS) {
+            face = EnumFacing.UP;
+        } else if (Math.abs(hy - bb.minY) <= EPS) {
+            face = EnumFacing.DOWN;
+        } else if (Math.abs(hx - bb.maxX) <= EPS) {
+            face = EnumFacing.EAST;
+        } else if (Math.abs(hx - bb.minX) <= EPS) {
+            face = EnumFacing.WEST;
+        } else if (Math.abs(hz - bb.maxZ) <= EPS) {
+            face = EnumFacing.SOUTH;
+        } else if (Math.abs(hz - bb.minZ) <= EPS) {
+            face = EnumFacing.NORTH;
+        } else {
+            face = local.sideHit;
+        }
+        boolean goingDown = e.y < s.y;
+        boolean insideTallCap = s.x > bb.minX - EPS && s.x < bb.maxX + EPS && s.z > bb.minZ - EPS && s.z < bb.maxZ + EPS && s.y >= 1.0 - EPS && s.y <= bb.maxY + EPS;
+
+        if (face == EnumFacing.DOWN && goingDown && insideTallCap) {
+            face = EnumFacing.UP;
+            hitWorld = new Vec3d(hitWorld.x, py + Math.min(1.0, bb.maxY), hitWorld.z);
+        }
+        return new RayTraceResult(hitWorld, face, pos);
+    }
 	
 	@Override
 	public boolean onScrew(World world, EntityPlayer player, int x, int y, int z, EnumFacing side, float fX, float fY, float fZ, EnumHand hand, ToolType tool){

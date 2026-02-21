@@ -1,16 +1,16 @@
 package com.hbm.items.special;
 
 import com.google.common.collect.ImmutableMap;
+import com.hbm.Tags;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.NTMMaterial;
+import com.hbm.items.IModelRegister;
 import com.hbm.items.ModItems;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
 import com.hbm.render.icon.RGBMutatorInterpolatedComponentRemap;
 import com.hbm.render.icon.TextureAtlasSpriteMutatable;
 import com.hbm.util.EnumUtil;
 import com.hbm.util.I18nUtil;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.model.ModelRotation;
@@ -42,7 +42,7 @@ import static com.hbm.inventory.material.Mats.*;
 import static com.hbm.items.special.ItemBedrockOreNew.ProcessingTrait.*;
 
 //TODO: fix IDynamicModels
-public class ItemBedrockOreNew extends Item {
+public class ItemBedrockOreNew extends Item implements IModelRegister {
 
     private static final List<ItemBedrockOreNew> INSTANCES = new ArrayList<>();
 
@@ -63,23 +63,24 @@ public class ItemBedrockOreNew extends Item {
     @Override
     public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
         if (this.isInCreativeTab(tab)) {
-            for (int j = 0; j < BedrockOreType.values().length; j++) {
-                BedrockOreType type = BedrockOreType.values()[j];
-                for (int i = 0; i < BedrockOreGrade.values().length; i++) {
-                    BedrockOreGrade grade = BedrockOreGrade.values()[i];
+            for (int j = 0; j < BedrockOreType.VALUES.length; j++) {
+                BedrockOreType type = BedrockOreType.VALUES[j];
+                for (int i = 0; i < BedrockOreGrade.VALUES.length; i++) {
+                    BedrockOreGrade grade = BedrockOreGrade.VALUES[i];
                     items.add(this.make(grade, type));
                 }
             }
         }
     }
 
+    @Override
     @SideOnly(Side.CLIENT)
     public void registerModels() {
-        for(int i = 0; i < BedrockOreGrade.values().length; i++) {
-            BedrockOreGrade grade = BedrockOreGrade.values()[i];
-            for (int j = 0; j < BedrockOreType.values().length; j++) {
-                BedrockOreType type = BedrockOreType.values()[j];
-                String placeholderName = RefStrings.MODID + ":items/bedrock_ore_" + grade.prefix + "_" + type.suffix + "-" + (i * BedrockOreType.values().length + j);
+        for(int i = 0; i < BedrockOreGrade.VALUES.length; i++) {
+            BedrockOreGrade grade = BedrockOreGrade.VALUES[i];
+            for (int j = 0; j < BedrockOreType.VALUES.length; j++) {
+                BedrockOreType type = BedrockOreType.VALUES[j];
+                String placeholderName = Tags.MODID + ":items/bedrock_ore_" + grade.prefix + "_" + type.suffix + "-" + (i * BedrockOreType.VALUES.length + j);
                 ModelLoader.setCustomModelResourceLocation(this, grade.ordinal() << 4 | type.ordinal(), new ModelResourceLocation(placeholderName, "inventory"));
             }
         }
@@ -91,16 +92,16 @@ public class ItemBedrockOreNew extends Item {
             IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft",  "item/generated"));
 
             Map<ProcessingTrait, ResourceLocation> overlayLocations = new HashMap<>();
-            for (ProcessingTrait trait : ProcessingTrait.values()) {
-                String overlayName = RefStrings.MODID + ":items/bedrock_ore_overlay." + trait.name().toLowerCase(Locale.US);
+            for (ProcessingTrait trait : VALUES) {
+                String overlayName = Tags.MODID + ":items/bedrock_ore_overlay." + trait.name().toLowerCase(Locale.US);
                 overlayLocations.put(trait, new ResourceLocation(overlayName));
             }
 
-            for(int i = 0; i < BedrockOreGrade.values().length; i++) {
-                BedrockOreGrade grade = BedrockOreGrade.values()[i];
-                for (int j = 0; j < BedrockOreType.values().length; j++) {
-                    BedrockOreType type = BedrockOreType.values()[j];
-                    String placeholderName = RefStrings.MODID + ":items/bedrock_ore_" + grade.prefix + "_" + type.suffix + "-" + (i * BedrockOreType.values().length + j);
+            for(int i = 0; i < BedrockOreGrade.VALUES.length; i++) {
+                BedrockOreGrade grade = BedrockOreGrade.VALUES[i];
+                for (int j = 0; j < BedrockOreType.VALUES.length; j++) {
+                    BedrockOreType type = BedrockOreType.VALUES[j];
+                    String placeholderName = Tags.MODID + ":items/bedrock_ore_" + grade.prefix + "_" + type.suffix + "-" + (i * BedrockOreType.VALUES.length + j);
                     ResourceLocation spriteLoc = new ResourceLocation(placeholderName);
                     ImmutableMap.Builder<String, String> textureMapBuilder = ImmutableMap.builder();
                     textureMapBuilder.put("layer0", spriteLoc.toString());
@@ -125,18 +126,18 @@ public class ItemBedrockOreNew extends Item {
 
     @SideOnly(Side.CLIENT)
     public static void registerSprites(TextureMap map) {
-        for(int i = 0; i < BedrockOreGrade.values().length; i++) {
-            BedrockOreGrade grade = BedrockOreGrade.values()[i];
-            for (int j = 0; j < BedrockOreType.values().length; j++) {
-                BedrockOreType type = BedrockOreType.values()[j];
-                ResourceLocation spriteLoc = new ResourceLocation(RefStrings.MODID + ":items/bedrock_ore_" + grade.prefix + "_" + type.suffix + "-" + (i * BedrockOreType.values().length + j));
+        for(int i = 0; i < BedrockOreGrade.VALUES.length; i++) {
+            BedrockOreGrade grade = BedrockOreGrade.VALUES[i];
+            for (int j = 0; j < BedrockOreType.VALUES.length; j++) {
+                BedrockOreType type = BedrockOreType.VALUES[j];
+                ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID + ":items/bedrock_ore_" + grade.prefix + "_" + type.suffix + "-" + (i * BedrockOreType.VALUES.length + j));
                 TextureAtlasSprite sprite = new TextureAtlasSpriteMutatable(spriteLoc.toString(), new RGBMutatorInterpolatedComponentRemap(0xFFFFFF, 0x505050, type.light, type.dark));
                 map.setTextureEntry(sprite);
             }
         }
 
-        for (ProcessingTrait trait : ProcessingTrait.values()) {
-            String overlayName = RefStrings.MODID + ":items/bedrock_ore_overlay." + trait.name().toLowerCase(Locale.US);
+        for (ProcessingTrait trait : ProcessingTrait.VALUES) {
+            String overlayName = Tags.MODID + ":items/bedrock_ore_overlay." + trait.name().toLowerCase(Locale.US);
             map.registerSprite(new ResourceLocation(overlayName));
         }
     }
@@ -202,6 +203,8 @@ public class ItemBedrockOreNew extends Item {
         CRYSTALLINE(	0xE2FFFA, 0x1E8A77, "crystal",	o(MAT_REDSTONE, 9),	o(MAT_CINNABAR, 4),	o(MAT_SODALITE, 9),	o(MAT_ASBESTOS, 6),		o(MAT_DIAMOND, 3),		o(MAT_CINNABAR, 3),			o(MAT_ASBESTOS, 5),		o(MAT_EMERALD, 3),		o(MAT_BORAX, 3),			o(MAT_MOLYSITE, 3),		o(MAT_SODALITE, 9));
         //sediment
 
+        public static final BedrockOreType[] VALUES = values();
+
         public int light;
         public int dark;
         public String suffix;
@@ -244,7 +247,9 @@ public class ItemBedrockOreNew extends Item {
         CENTRIFUGED,
         SULFURIC,
         SOLVENT,
-        RAD
+        RAD;
+
+        public static final ProcessingTrait[] VALUES = values();
     }
 
     public static enum BedrockOreGrade {
@@ -278,6 +283,8 @@ public class ItemBedrockOreNew extends Item {
         RAD_ARC(arc, "rad", ARC, RAD),									//alternate step
         RAD_WASHED(washed, "rad", WASHED, RAD);							//rad endpoint
 
+        public static final BedrockOreGrade[] VALUES = values();
+
         public int tint;
         public String prefix;
         public ProcessingTrait[] traits;
@@ -298,10 +305,10 @@ public class ItemBedrockOreNew extends Item {
     }
 
     public BedrockOreGrade getGrade(int meta) {
-        return EnumUtil.grabEnumSafely(BedrockOreGrade.class, meta >> 4);
+        return EnumUtil.grabEnumSafely(BedrockOreGrade.VALUES, meta >> 4);
     }
 
     public BedrockOreType getType(int meta) {
-        return EnumUtil.grabEnumSafely(BedrockOreType.class, meta & 15);
+        return EnumUtil.grabEnumSafely(BedrockOreType.VALUES, meta & 15);
     }
 }

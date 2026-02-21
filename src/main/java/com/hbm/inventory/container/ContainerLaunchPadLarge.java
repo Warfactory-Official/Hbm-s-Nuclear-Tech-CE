@@ -2,8 +2,8 @@ package com.hbm.inventory.container;
 
 import com.hbm.api.item.IDesignatorItem;
 import com.hbm.inventory.FluidContainerRegistry;
-import com.hbm.inventory.SlotBattery;
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.ModItems;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.bomb.TileEntityLaunchPadBase;
@@ -31,11 +31,11 @@ public class ContainerLaunchPadLarge extends Container {
 		//Fuel in
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 125, 90));
 		//Fuel out
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 4, 125, 108));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 4, 125, 108));
 		//Oxidizer in
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 5, 143, 90));
 		//Oxidizer out
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 6, 143, 108));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 6, 143, 108));
 		
 		for(int i = 0; i < 3; i++) {
 			for(int j = 0; j < 9; j++) {
@@ -49,21 +49,21 @@ public class ContainerLaunchPadLarge extends Container {
 	}
 
 	@Override
-	public ItemStack transferStackInSlot(EntityPlayer player, int par2) {
+	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
 		ItemStack stackCopy = ItemStack.EMPTY;
-		Slot slot = this.inventorySlots.get(par2);
+		Slot slot = this.inventorySlots.get(index);
 
 		if(slot != null && slot.getHasStack()) {
 			ItemStack stack = slot.getStack();
 			stackCopy = stack.copy();
 
-			if(par2 <= 6) {
+			if(index <= 6) {
 				if(!this.mergeItemStack(stack, 7, this.inventorySlots.size(), true)) {
 					return ItemStack.EMPTY;
 				}
 			} else {
 				
-				if(Library.isItemBattery(stackCopy)) {
+				if(Library.isBattery(stackCopy)) {
 					if(!this.mergeItemStack(stack, 2, 3, false)) {
 						return ItemStack.EMPTY;
 					}

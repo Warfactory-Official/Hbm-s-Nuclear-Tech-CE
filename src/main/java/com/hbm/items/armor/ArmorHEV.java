@@ -15,7 +15,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 public class ArmorHEV extends ArmorFSBPowered {
 
@@ -55,16 +55,13 @@ public class ArmorHEV extends ArmorFSBPowered {
     }
 
 	private static long lastSurvey;
-	private static float prevResult;
-	private static float lastResult;
+    private static double prevResult;
+    private static double lastResult;
 
     private void renderOverlay(RenderGameOverlayEvent.Pre event, EntityPlayer player) {
-		float in = 0;
-		in = (float)Library.getEntRadCap(player).getRads();
+        double in = Library.getEntRadCap(player).getRads();
 
-        float radiation = 0;
-
-        radiation = lastResult - prevResult;
+        double radiation = lastResult - prevResult;
 
         if(System.currentTimeMillis() >= lastSurvey + 1000) {
         	lastSurvey = System.currentTimeMillis();

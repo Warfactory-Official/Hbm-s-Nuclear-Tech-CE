@@ -2,6 +2,7 @@ package com.hbm.inventory.container;
 
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.tileentity.machine.TileEntityMachineRotaryFurnace;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -38,35 +39,16 @@ public class ContainerMachineRotaryFurnace extends Container {
         }
     }
 
+    private static boolean isNormal(ItemStack stack) {
+        return !(stack.getItem() instanceof IItemFluidIdentifier) && !TileEntityFurnace.isItemFuel(stack);
+    }
+
     @Override
     public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-        ItemStack rStack = ItemStack.EMPTY;
-        Slot slot = this.inventorySlots.get(index);
-
-        if(slot != null && slot.getHasStack()) {
-            ItemStack stack = slot.getStack();
-            rStack = stack.copy();
-
-            if(index <= 4) {
-                if(!this.mergeItemStack(stack, 5, this.inventorySlots.size(), true)) return ItemStack.EMPTY;
-            } else {
-                if(TileEntityFurnace.isItemFuel(rStack)) {
-                    if(!this.mergeItemStack(stack, 4, 5, false)) return ItemStack.EMPTY;
-                } else if(rStack.getItem() instanceof IItemFluidIdentifier) {
-                    if(!this.mergeItemStack(stack, 3, 4, false)) return ItemStack.EMPTY;
-                } else {
-                    if(!this.mergeItemStack(stack, 0, 3, false)) return ItemStack.EMPTY;
-                }
-            }
-
-            if(stack.isEmpty()) {
-                slot.putStack(ItemStack.EMPTY);
-            } else {
-                slot.onSlotChanged();
-            }
-        }
-
-        return rStack;
+        return InventoryUtil.transferStack(this.inventorySlots, index, 5,
+                ContainerMachineRotaryFurnace::isNormal, 3,
+                s -> s.getItem() instanceof IItemFluidIdentifier, 4,
+                TileEntityFurnace::isItemFuel, 5);
     }
 
     @Override

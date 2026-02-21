@@ -1,0 +1,13 @@
+{
+	"name": "Borax",
+	"icon": ["hbm:powder_borax", 1, 0],
+	"trigger": [["hbm:powder_borax"]],
+	"title": {
+		"en_us": "Borax",
+		"zh_cn": "硼砂"
+	},
+	"content": {
+		"en_us": "Found as depth deposits near bedrock, required explosives to be mined. Source of [[boron|Boron]], and an efficient way to make [[flux|Flux]].",
+		"zh_cn": "可在基岩附近的深层岩石团簇中发现，需要爆炸才能开采。<br>是[[硼|Boron]]的来源，也是高效的[[助熔剂|Flux]]原料。"
+	}
+}

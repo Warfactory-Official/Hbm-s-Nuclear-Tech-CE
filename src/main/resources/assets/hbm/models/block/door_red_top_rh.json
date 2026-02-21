@@ -1,0 +1,7 @@
+{
+    "parent": "block/door_top_rh",
+    "textures": {
+        "bottom": "hbm:blocks/door_red_lower",
+        "top": "hbm:blocks/door_red_upper"
+    }
+}

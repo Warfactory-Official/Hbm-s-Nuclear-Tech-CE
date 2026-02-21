@@ -1,6 +1,8 @@
 package com.hbm.packet.toclient;
 
 import com.hbm.interfaces.IKeypadHandler;
+import com.hbm.main.MainRegistry;
+import com.hbm.packet.threading.PrecompiledPacket;
 import com.hbm.util.KeypadClient;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
@@ -12,59 +14,73 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class KeypadClientPacket implements IMessage {
+public class KeypadClientPacket extends PrecompiledPacket {
 
-	public int x, y, z;
-	byte[] data;
-	
-	public KeypadClientPacket() {
-	}
-	
-	public KeypadClientPacket(BlockPos pos, byte[] data) {
-		this.x = pos.getX();
-		this.y = pos.getY();
-		this.z = pos.getZ();
-		this.data = data;
-	}
+    private int x, y, z;
+    private byte[] data;
+    private ByteBuf payload;
 
-	@Override
-	public void fromBytes(ByteBuf buf) {
-		x = buf.readInt();
-		y = buf.readInt();
-		z = buf.readInt();
-		data = new byte[21];
-		buf.readBytes(data);
-	}
+    public KeypadClientPacket() {
+    }
 
-	@Override
-	public void toBytes(ByteBuf buf) {
-		buf.writeInt(x);
-		buf.writeInt(y);
-		buf.writeInt(z);
-		buf.writeBytes(data);
-	}
+    public KeypadClientPacket(BlockPos pos, byte[] data) {
+        if (data == null || data.length != 21) throw new IllegalArgumentException();
+        this.x = pos.getX();
+        this.y = pos.getY();
+        this.z = pos.getZ();
+        this.data = data;
+    }
 
-	public static class Handler implements IMessageHandler<KeypadClientPacket, IMessage> {
+    @Override
+    public void toBytes(ByteBuf buf) {
+        buf.writeInt(x);
+        buf.writeInt(y);
+        buf.writeInt(z);
+        buf.writeBytes(data);
+    }
 
-		@Override
-		@SideOnly(Side.CLIENT)
-		public IMessage onMessage(KeypadClientPacket m, MessageContext ctx) {
-			TileEntity te = Minecraft.getMinecraft().world.getTileEntity(new BlockPos(m.x, m.y, m.z));
-			if(te instanceof IKeypadHandler){
-				KeypadClient pad = ((IKeypadHandler) te).getKeypad().client();
-				for(int i = 0; i < 12; i ++){
-					pad.buttons[i].cooldown = m.data[i];
-				}
-				pad.isSettingCode = m.data[12] == 1 ? true : false;
-				for(int i = 0; i < 6; i ++){
-					pad.code[i] = m.data[13 + i];
-				}
-				pad.successColorTicks = m.data[19];
-				pad.failColorTicks = m.data[20];
-			}
-			return null;
-		}
-		
-	}
-	
+    @Override
+    public void fromBytes(ByteBuf buf) {
+        this.payload = buf.retain();
+    }
+
+    public static class Handler implements IMessageHandler<KeypadClientPacket, IMessage> {
+
+        @Override
+        @SideOnly(Side.CLIENT)
+        public IMessage onMessage(KeypadClientPacket m, MessageContext ctx) {
+            Minecraft.getMinecraft().addScheduledTask(() -> {
+                try {
+                    handle(m);
+                } catch (Exception e) {
+                    MainRegistry.logger.catching(e);
+                } finally {
+                    m.payload.release();
+                }
+            });
+            return null;
+        }
+
+        @SideOnly(Side.CLIENT)
+        private void handle(KeypadClientPacket m) {
+            int x = m.payload.readInt();
+            int y = m.payload.readInt();
+            int z = m.payload.readInt();
+
+            TileEntity te = Minecraft.getMinecraft().world.getTileEntity(new BlockPos(x, y, z));
+
+            if (te instanceof IKeypadHandler) {
+                KeypadClient pad = ((IKeypadHandler) te).getKeypad().client();
+                for (int i = 0; i < 12; i++) {
+                    pad.buttons[i].cooldown = m.payload.readByte();
+                }
+                pad.isSettingCode = m.payload.readByte() == 1;
+                for (int i = 0; i < 6; i++) {
+                    pad.code[i] = m.payload.readByte();
+                }
+                pad.successColorTicks = m.payload.readByte();
+                pad.failColorTicks = m.payload.readByte();
+            }
+        }
+    }
 }

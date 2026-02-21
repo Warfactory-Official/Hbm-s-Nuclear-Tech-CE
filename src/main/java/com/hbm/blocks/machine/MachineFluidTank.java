@@ -40,6 +40,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Random;
@@ -52,7 +53,8 @@ public class MachineFluidTank extends BlockDummyable implements IPersistentInfoP
 	@Override
 	public TileEntity createNewTileEntity(World world, int meta) {
 		if(meta >= 12) return new TileEntityMachineFluidTank();
-		if(meta >= 6) return new TileEntityProxyCombo(false, false, true);
+        // mlbv: added inventory support for https://github.com/MisterNorwood/Hbm-s-Nuclear-Tech-CE/issues/891
+        if (meta >= 6) return new TileEntityProxyCombo(true, false, true);
 		return null;
 	}
 
@@ -124,7 +126,7 @@ public class MachineFluidTank extends BlockDummyable implements IPersistentInfoP
 	}
 
 	@Override
-	public void addInformation(ItemStack stack, NBTTagCompound persistentTag, EntityPlayer player, List list, boolean ext) {
+	public void addInformation(ItemStack stack, NBTTagCompound persistentTag, EntityPlayer player, List<String> list, boolean ext) {
 		FluidTankNTM tank = new FluidTankNTM(Fluids.NONE, 0);
 		tank.readFromNBT(persistentTag, "tank");
 		list.add(TextFormatting.YELLOW + "" + tank.getFill() + "/" + tank.getMaxFill() + "mB " + tank.getTankType().getLocalizedName());
@@ -136,7 +138,7 @@ public class MachineFluidTank extends BlockDummyable implements IPersistentInfoP
     }
 
     @Override
-    public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+    public void breakBlock(@NotNull World worldIn, @NotNull BlockPos pos, IBlockState state) {
         IPersistentNBT.breakBlock(worldIn, pos, state);
         super.breakBlock(worldIn, pos, state);
     }
@@ -156,10 +158,9 @@ public class MachineFluidTank extends BlockDummyable implements IPersistentInfoP
 		int[] posC = this.findCore(world, pos.getX(), pos.getY(), pos.getZ());
 		if(posC == null) return;
 		TileEntity core = world.getTileEntity(new BlockPos(posC[0], posC[1], posC[2]));
-		if(!(core instanceof TileEntityMachineFluidTank)) return;
+		if(!(core instanceof TileEntityMachineFluidTank tank)) return;
 
-		TileEntityMachineFluidTank tank = (TileEntityMachineFluidTank) core;
-		if(tank.lastExplosion == explosion) return;
+        if(tank.lastExplosion == explosion) return;
 		tank.lastExplosion = explosion;
 
 		if(!tank.hasExploded) {
@@ -174,6 +175,7 @@ public class MachineFluidTank extends BlockDummyable implements IPersistentInfoP
 				for(EntityPlayer p : players) AdvancementManager.grantAchievement(p, AdvancementManager.achInferno);
 			}
 		} else {
+            tank.shouldDrop = false;
 			world.setBlockToAir(new BlockPos(posC[0], posC[1], posC[2]));
 		}
 	}
@@ -187,8 +189,8 @@ public class MachineFluidTank extends BlockDummyable implements IPersistentInfoP
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
-		IRepairable.addGenericOverlay(event, world, x, y, z, this);
+	public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
+		IRepairable.addGenericOverlay(event, world, pos.getX(), pos.getY(), pos.getZ(), this);
 	}
 	
 }

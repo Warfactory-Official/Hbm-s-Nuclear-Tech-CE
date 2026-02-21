@@ -1,6 +1,6 @@
 package com.hbm.inventory.control_panel;
 
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.NTMRenderHelper;
 import net.minecraft.client.gui.GuiButton;
@@ -10,14 +10,14 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.config.GuiSlider;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 // placeholder gui until i make something better
 public class SubElementPanelResize extends SubElement {
 
-    public static ResourceLocation bg_tex = new ResourceLocation(RefStrings.MODID + ":textures/gui/control_panel/gui_base.png");
-    public static ResourceLocation black_shit = new ResourceLocation(RefStrings.MODID + ":textures/gui/control_panel/gui_resize_grid.png");
-    public static ResourceLocation smol_gridz = new ResourceLocation(RefStrings.MODID + ":textures/gui/control_panel/resize_grids.png");
+    public static ResourceLocation bg_tex = new ResourceLocation(Tags.MODID + ":textures/gui/control_panel/gui_base.png");
+    public static ResourceLocation black_shit = new ResourceLocation(Tags.MODID + ":textures/gui/control_panel/gui_resize_grid.png");
+    public static ResourceLocation smol_gridz = new ResourceLocation(Tags.MODID + ":textures/gui/control_panel/resize_grids.png");
 
     GuiButton back;
     GuiSlider a_offset;

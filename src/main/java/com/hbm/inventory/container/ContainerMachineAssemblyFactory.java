@@ -1,7 +1,8 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotCraftingOutput;
-import com.hbm.inventory.SlotNonRetarded;
+import com.hbm.inventory.slot.SlotCraftingOutput;
+import com.hbm.inventory.slot.SlotNonRetarded;
+import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.Library;
@@ -20,7 +21,9 @@ public class ContainerMachineAssemblyFactory extends ContainerBase {
         // Battery
         this.addSlotToContainer(new SlotNonRetarded(assemFac, 0, 234, 112));
         // Upgrades
-        this.addSlots(assemFac, 1, 214, 149, 3, 1);
+        this.addSlotToContainer(new SlotUpgrade(assemFac, 1, 214, 149));
+        this.addSlotToContainer(new SlotUpgrade(assemFac, 2, 214, 167));
+        this.addSlotToContainer(new SlotUpgrade(assemFac, 3, 214, 185));
 
         for(int i = 0; i < 4; i++) {
             // Template
@@ -50,7 +53,7 @@ public class ContainerMachineAssemblyFactory extends ContainerBase {
                 }
             } else {
 
-                if(Library.isItemBattery(slotOriginal)) {
+                if(Library.isBattery(slotOriginal)) {
                     if(!this.mergeItemStack(slotStack, 0, 1, false)) return ItemStack.EMPTY;
                 } else if(slotOriginal.getItem() instanceof ItemBlueprints) {
                     if(!this.mergeItemStack(slotStack, 4, 5, false)) return ItemStack.EMPTY;

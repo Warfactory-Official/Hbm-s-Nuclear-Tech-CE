@@ -1,5 +1,6 @@
 package com.hbm.saveddata.satellites;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraft.world.storage.WorldSavedData;
@@ -11,7 +12,7 @@ import java.util.Map.Entry;
 
 public class SatelliteSavedData extends WorldSavedData {
 
-	public HashMap<Integer, Satellite> sats = new HashMap<Integer, Satellite>();
+	public Int2ObjectOpenHashMap<Satellite> sats = new Int2ObjectOpenHashMap<>();
 	
 	public SatelliteSavedData(String p_i2141_1_) {
 		super(p_i2141_1_);
@@ -76,15 +77,15 @@ public class SatelliteSavedData extends WorldSavedData {
 	    return data;
 	}
 
-	public static HashMap<Integer, Satellite> clientSats = new HashMap<>();
+	public static Int2ObjectOpenHashMap<Satellite> clientSats = new Int2ObjectOpenHashMap<>();
 
 	@SideOnly(Side.CLIENT)
-	public static void setClientSats(HashMap<Integer, Satellite> sats) {
+	public static void setClientSats(Int2ObjectOpenHashMap<Satellite> sats) {
 		clientSats = sats;
 	}
 
 	@SideOnly(Side.CLIENT)
-	public static HashMap<Integer, Satellite> getClientSats() {
+	public static Int2ObjectOpenHashMap<Satellite> getClientSats() {
 		return clientSats;
 	}
 }

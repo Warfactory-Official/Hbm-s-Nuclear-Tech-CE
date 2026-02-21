@@ -1,4 +1,4 @@
-//version: 1753288091
+//version: 1762213476
 /*
  * DO NOT CHANGE THIS FILE! fuck off
  * Also, you may replace this file at any time if there is an update available.
@@ -6,18 +6,18 @@
  * You can also run ./gradlew updateBuildScript to update your buildscript.
  */
 
+
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.gtnewhorizons.retrofuturagradle.MinecraftExtension
 import com.gtnewhorizons.retrofuturagradle.mcp.MCPTasks
-import com.gtnewhorizons.retrofuturagradle.minecraft.MinecraftTasks
 import com.gtnewhorizons.retrofuturagradle.mcp.ReobfuscatedJar
+import com.gtnewhorizons.retrofuturagradle.minecraft.MinecraftTasks
 import com.gtnewhorizons.retrofuturagradle.minecraft.RunMinecraftTask
 import com.gtnewhorizons.retrofuturagradle.util.Distribution
 import com.modrinth.minotaur.dependencies.ModDependency
 import com.modrinth.minotaur.dependencies.VersionDependency
 import de.undercouch.gradle.tasks.download.DownloadExtension
 import org.apache.commons.io.FileUtils
-import org.gradle.api.internal.artifacts.configurations.DefaultUnlockedConfiguration
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.gradle.internal.logging.text.StyledTextOutputFactory
@@ -34,16 +34,17 @@ plugins {
     id 'eclipse'
     id 'maven-publish'
     id 'org.jetbrains.gradle.plugin.idea-ext' version '1.2'
-    id 'com.gtnewhorizons.retrofuturagradle' version '1.4.0'
+    id 'com.gtnewhorizons.retrofuturagradle' version '2.0.0'
     id 'net.darkhax.curseforgegradle' version '1.1.24' apply false
     id 'com.modrinth.minotaur' version '2.8.7' apply false
     id 'com.diffplug.spotless' version '6.13.0' apply false
     id 'com.palantir.git-version' version '3.0.0' apply false
-    id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
+    id 'com.gradleup.shadow' version '8.3.9' apply false
     id 'org.jetbrains.kotlin.jvm' version '1.8.0' apply false
     id 'org.jetbrains.kotlin.kapt' version '1.8.0' apply false
     id 'com.google.devtools.ksp' version '1.8.0-1.0.9' apply false
     id 'de.undercouch.download' version '5.6.0' apply false
+    id 'xyz.wagyourtail.jvmdowngrader' version '1.3.4' apply false
 }
 
 def out = services.get(StyledTextOutputFactory).create('an-output')
@@ -274,7 +275,7 @@ if (project.file('.git/HEAD').isFile() || project.file('.git').isFile()) {
 
 // Shadowing
 if (usesShadowedDependencies.toBoolean()) {
-    apply plugin: 'com.github.johnrengelman.shadow'
+    apply plugin: 'com.gradleup.shadow'
 }
 
 
@@ -283,7 +284,7 @@ if (usesShadowedDependencies.toBoolean()) {
 java {
     toolchain {
         if (enableModernJavaSyntax.toBoolean()) {
-            languageVersion.set(JavaLanguageVersion.of(17))
+            languageVersion.set(JavaLanguageVersion.of(25))
         } else {
             languageVersion.set(JavaLanguageVersion.of(8))
         }
@@ -297,17 +298,30 @@ java {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+    def suppressCheckedExceptionsPluginArg = '-Xplugin:suppress-checked-exceptions'
+    def javacExports = [
+            '--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
+            '--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED'
+    ]
+    if (name in ['compileJava', 'compileTestJava'] && !options.compilerArgs.contains(suppressCheckedExceptionsPluginArg)) {
+        options.compilerArgs.add(suppressCheckedExceptionsPluginArg)
+        javacExports.each { arg ->
+            if (!options.compilerArgs.contains(arg)) {
+                options.compilerArgs.add(arg)
+            }
+        }
+    }
 
     if (enableModernJavaSyntax.toBoolean()) {
         if (it.name in ['compileMcLauncherJava', 'compilePatchedMcJava']) {
             return
         }
 
-        sourceCompatibility = 17
-        options.release.set(8)
+        sourceCompatibility = 25
+        // options.release.set(8) // removed for jvmdowngrader
 
         javaCompiler.set(javaToolchains.compilerFor {
-            languageVersion.set(JavaLanguageVersion.of(17))
+            languageVersion.set(JavaLanguageVersion.of(25))
 //            vendor.set(JvmVendorSpec.AZUL)
         })
     }
@@ -316,15 +330,6 @@ tasks.withType(JavaCompile).configureEach {
 tasks.withType(ScalaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
-
-
-// Allow others using this buildscript to have custom gradle code run
-if (getFile('addon.gradle').exists()) {
-    apply from: 'addon.gradle'
-} else if (getFile('addon.gradle.kts').exists()) {
-    apply from: 'addon.gradle.kts'
-}
-
 
 // Configure Minecraft
 
@@ -372,6 +377,10 @@ minecraft {
 
     // JVM arguments
     extraRunJvmArguments.add("-ea:${modGroup}")
+
+    // enable JLine Terminal since idea_rt.jar is no longer added to the classpath
+    extraRunJvmArguments.add('-Dterminal.jline=true')
+
     if (usesMixins.toBoolean()) {
         extraRunJvmArguments.addAll([
             '-Dmixin.hotSwap=true',
@@ -548,20 +557,20 @@ dependencies {
     }
 
     if (enableModernJavaSyntax.toBoolean()) {
-        annotationProcessor 'com.github.bsideup.jabel:jabel-javac-plugin:1.0.1'
-        compileOnly('com.github.bsideup.jabel:jabel-javac-plugin:1.0.1') {
-            transitive = false
-        }
+        // annotationProcessor 'com.github.bsideup.jabel:jabel-javac-plugin:1.0.1'
+        // compileOnly('com.github.bsideup.jabel:jabel-javac-plugin:1.0.1') {
+        //     transitive = false
+        // }
         // workaround for https://github.com/bsideup/jabel/issues/174
-        annotationProcessor 'net.java.dev.jna:jna-platform:5.13.0'
+        // annotationProcessor 'net.java.dev.jna:jna-platform:5.13.0'
         // Allow jdk.unsupported classes like sun.misc.Unsafe, workaround for JDK-8206937 and fixes Forge crashes in tests.
         patchedMinecraft 'me.eigenraven.java8unsupported:java-8-unsupported-shim:1.0.0'
 
         // allow Jabel to work in tests
-        testAnnotationProcessor "com.github.bsideup.jabel:jabel-javac-plugin:1.0.1"
-        testCompileOnly("com.github.bsideup.jabel:jabel-javac-plugin:1.0.1") {
-            transitive = false // We only care about the 1 annotation class
-        }
+        // testAnnotationProcessor "com.github.bsideup.jabel:jabel-javac-plugin:1.0.1"
+        // testCompileOnly("com.github.bsideup.jabel:jabel-javac-plugin:1.0.1") {
+        //    transitive = false // We only care about the 1 annotation class
+        // }
         testCompileOnly "me.eigenraven.java8unsupported:java-8-unsupported-shim:1.0.0"
     }
 
@@ -755,6 +764,26 @@ jar {
     }
 }
 
+if (enableModernJavaSyntax.toBoolean()) {
+    apply plugin: 'xyz.wagyourtail.jvmdowngrader'
+
+    shadeDowngradedApi {
+        archiveClassifier.set('dev')
+    }
+
+    tasks.named('reobfJar', ReobfuscatedJar) {
+        inputJar.set(tasks.named('shadeDowngradedApi', Jar).flatMap { it.archiveFile })
+        dependsOn('shadeDowngradedApi')
+    }
+
+    for (runTask in ['runClient', 'runServer']) {
+        tasks.named(runTask, RunMinecraftTask).configure {
+            classpath = classpath.minus(project.layout.files(tasks.jar)) + project.layout.files(tasks.shadeDowngradedApi)
+            dependsOn('shadeDowngradedApi')
+        }
+    }
+}
+
 // Configure default run tasks
 if (separateRunDirectories.toBoolean()) {
     runClient {
@@ -862,11 +891,11 @@ if (enableJava17RunTasks.toBoolean()) {
         spec.vendor.set(JvmVendorSpec.matching("jetbrains"))
     }
 
-    ext.java17DependenciesCfg = (DefaultUnlockedConfiguration) configurations.create("java17Dependencies") {
+    ext.java17DependenciesCfg = configurations.create("java17Dependencies") {
         extendsFrom(configurations.getByName("runtimeClasspath")) // Ensure consistent transitive dependency resolution
         canBeConsumed = false
     }
-    ext.java17PatchDependenciesCfg = (DefaultUnlockedConfiguration) configurations.create("java17PatchDependencies") {
+    ext.java17PatchDependenciesCfg = configurations.create("java17PatchDependencies") {
         canBeConsumed = false
     }
 
@@ -1393,7 +1422,7 @@ def getChangelog() {
 
 // Buildscript updating
 
-def buildscriptGradleVersion = '8.9'
+def buildscriptGradleVersion = '9.2.1'
 
 tasks.named('wrapper', Wrapper).configure {
     gradleVersion = buildscriptGradleVersion
@@ -1550,6 +1579,100 @@ def getLastTag() {
             (githubTag.isPresent() ? runShell('git rev-list --tags --skip=1 --max-count=1') : ''))
 }
 
+// Allow others using this buildscript to have custom gradle code run
+if (getFile('addon.gradle').exists()) {
+    apply from: 'addon.gradle'
+} else if (getFile('addon.gradle.kts').exists()) {
+    apply from: 'addon.gradle.kts'
+}
+
+// Obfuscated Java 25 jar for cleanroom users
+tasks.register('jarJava25', Jar) {
+    group = 'build'
+    description = 'Packages the Java 25 classes into a temporary jar.'
+    destinationDirectory.set(layout.buildDirectory.dir("libs"))
+    archiveClassifier.set('dev-java25')
+    from sourceSets.main.output
+    if (useSrcApiPath && apiPackage) {
+        from sourceSets.api.output
+        dependsOn apiClasses
+
+        include "${modGroupPath}/**"
+        include "assets/**"
+        include "mcmod.info"
+        include "pack.mcmeta"
+        if (accessTransformersFile) {
+            include "META-INF/${accessTransformersFile}"
+        }
+    }
+    from provider {
+        configurations.embed.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    manifest {
+        attributes(getManifestAttributes())
+    }
+}
+
+def cleanroomInputTask = tasks.named('jarJava25')
+
+if (usesShadowedDependencies.toBoolean()) {
+    tasks.register('shadowJarJava25', ShadowJar) {
+        group = 'build'
+        destinationDirectory.set(layout.buildDirectory.dir("libs"))
+        archiveClassifier.set('dev-java25')
+
+        from sourceSets.main.output
+        if (useSrcApiPath && apiPackage) {
+            from sourceSets.api.output
+        }
+        configurations = [
+                project.configurations.shadowImplementation,
+                project.configurations.shadowCompile
+        ]
+
+        manifest {
+            attributes(getManifestAttributes())
+        }
+
+        if (minimizeShadowedDependencies.toBoolean()) {
+            minimize()
+        }
+        if (relocateShadowedDependencies.toBoolean()) {
+            relocationPrefix = modGroup + '.shadow'
+            enableRelocation = true
+        }
+    }
+    cleanroomInputTask = tasks.named('shadowJarJava25')
+}
+
+def mainReobfProv = tasks.named('reobfJar', ReobfuscatedJar)
+tasks.register('reobfJarJava25', ReobfuscatedJar) { t ->
+    group = 'deployment'
+    description = 'Creates a reobfuscated JAR with Java 25 bytecode for Cleanroom.'
+
+    inputJar.set(cleanroomInputTask.flatMap { it.archiveFile })
+    archiveClassifier.set('java25')
+
+    mcVersion.set(mainReobfProv.flatMap { it.mcVersion })
+    srg.set(mainReobfProv.flatMap { it.srg })
+    fieldCsv.set(mainReobfProv.flatMap { it.fieldCsv })
+    methodCsv.set(mainReobfProv.flatMap { it.methodCsv })
+    exceptorCfg.set(mainReobfProv.flatMap { it.exceptorCfg })
+    recompMcJar.set(mainReobfProv.flatMap { it.recompMcJar })
+    extraSrgEntries.set(mainReobfProv.flatMap { it.extraSrgEntries })
+    def main = mainReobfProv.get()
+    t.referenceClasspath.setFrom(main.referenceClasspath)
+    t.extraSrgFiles.setFrom(main.extraSrgFiles)
+
+    dependsOn(cleanroomInputTask)
+}
+
+tasks.named('build').configure {
+    dependsOn('reobfJarJava25')
+}
+// End Obfuscated Java 25 jar
+
+// GlStateManager hack
 def sourceBackupDir = file("build/tmp/sourceBackup")
 
 tasks.register('patchAndBackupSources') {
@@ -1628,3 +1751,29 @@ tasks.named('compilePatchedMcJava').configure {it.dependsOn(tasks.named('patchAn
 tasks.named('restoreOriginalSources').configure {it.dependsOn(tasks.named('classes'))}
 tasks.named('reobfJar').configure {it.dependsOn(tasks.named('restoreOriginalSources'))}
 tasks.named('build').configure {it.finalizedBy(tasks.named('repatchSourcesForIDE'))}
+// End GlStateManager hack
+
+// JVMDG configuration
+jvmdg {
+    // mlbv: my fork with proper switch bootstrap and Runtime.version()
+    def fileName = 'jvmdowngrader-java-api-1.3.4-downgraded-8.jar'
+    def src  = file("libs/$fileName")
+    if (!src.exists()) {
+        throw new GradleException("Missing source api jar: $src")
+    }
+    def dest = layout.buildDirectory.file("jvmdg/$fileName").get().asFile
+    copy {
+        from src
+        into dest.parentFile
+    }
+    apiJar = [dest]
+    ignoreWarningsIn = ["com/hbm/lib/internal/TrustedLookupAccessor"] as Set
+    shadeInlining = false
+}
+// End JVMDG configuration
+
+tasks.withType(Test).configureEach {
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}

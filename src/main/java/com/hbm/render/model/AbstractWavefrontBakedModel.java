@@ -1,6 +1,6 @@
 package com.hbm.render.model;
 
-import com.hbm.render.amlfrom1710.*;
+import com.hbm.render.loader.*;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -22,14 +22,14 @@ import java.util.*;
 @SideOnly(Side.CLIENT)
 public abstract class AbstractWavefrontBakedModel extends AbstractBakedModel {
 
-    protected final WavefrontObject model;
+    protected final HFRWavefrontObject model;
     protected final VertexFormat format;
     protected final float baseScale;
     protected final float tx;
     protected final float ty;
     protected final float tz;
 
-    protected AbstractWavefrontBakedModel(WavefrontObject model, VertexFormat format, float baseScale, float tx, float ty, float tz, ItemCameraTransforms transforms) {
+    protected AbstractWavefrontBakedModel(HFRWavefrontObject model, VertexFormat format, float baseScale, float tx, float ty, float tz, ItemCameraTransforms transforms) {
         super(transforms);
         this.model = model;
         this.format = format;

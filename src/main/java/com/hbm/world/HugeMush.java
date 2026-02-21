@@ -14,6 +14,7 @@ public class HugeMush extends WorldGenerator {
 
 	Block Block0 = ModBlocks.mush_block;
 	Block Block1 = ModBlocks.mush_block_stem;
+	private final MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
 	
     public HugeMush()
     {
@@ -23,7 +24,7 @@ public class HugeMush extends WorldGenerator {
     @Override
 	public boolean generate(World world, Random rand, BlockPos pos1)
     {
-    	MutableBlockPos pos = new BlockPos.MutableBlockPos();
+    	MutableBlockPos pos = this.mutablePos;
     	pos.setPos(pos1);
     	for(int i = -1; i < 2; i++)
     	{

@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "meta=0": { "model": "hbm:brick_red_top", "x": 180 },
+    "meta=1": { "model": "hbm:brick_red_top" },
+    "meta=2": { "model": "hbm:stone_keyhole_meta" },
+    "meta=3": { "model": "hbm:stone_keyhole_meta", "y": 180 },
+    "meta=4": { "model": "hbm:stone_keyhole_meta", "y": 270 },
+    "meta=5": { "model": "hbm:stone_keyhole_meta", "y": 90 },
+    "meta=6": { "model": "hbm:brick_base" }
+  }
+}

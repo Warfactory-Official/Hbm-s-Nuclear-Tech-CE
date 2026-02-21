@@ -1,6 +1,7 @@
 package com.hbm.tileentity;
 
 import com.hbm.api.block.ICrucibleAcceptor;
+import com.hbm.api.energymk2.IEnergyConductorMK2;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidConnectorMK2;
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
@@ -30,6 +31,7 @@ public class TileEntityProxyCombo extends TileEntityProxyBase implements IEnergy
 	TileEntity tile;
 	boolean inventory;
 	boolean power;
+	boolean conductor;
 	boolean fluid;
 	public boolean moltenMetal;
 
@@ -60,6 +62,10 @@ public class TileEntityProxyCombo extends TileEntityProxyBase implements IEnergy
 
 	public TileEntityProxyCombo power() {
 		this.power = true;
+		return this;
+	}
+	public TileEntityProxyCombo conductor() {
+		this.conductor = true;
 		return this;
 	}
 	public TileEntityProxyCombo moltenMetal() {
@@ -129,6 +135,11 @@ public class TileEntityProxyCombo extends TileEntityProxyBase implements IEnergy
 		return te instanceof IEnergyReceiverMK2 ? (IEnergyReceiverMK2) te : null;
 	}
 
+	private @Nullable IEnergyConductorMK2 coreEnergyConductor() {
+		Object te = getCoreObject();
+		return te instanceof IEnergyConductorMK2 ? (IEnergyConductorMK2) te : null;
+	}
+
 	@Override
 	public void setPower(long i) {
 		if (!power) return;
@@ -192,10 +203,18 @@ public class TileEntityProxyCombo extends TileEntityProxyBase implements IEnergy
 	public boolean canConnect(ForgeDirection dir) {
 		if (!power) return false;
 		IEnergyReceiverMK2 core = coreEnergy();
+		IEnergyConductorMK2 conductor = coreEnergyConductor();
 		if (core != null) {
 			BlockPos prev = CapabilityContextProvider.pushPos(this.pos);
 			try {
 				return core.canConnect(dir);
+			} finally {
+				CapabilityContextProvider.popPos(prev);
+			}
+		} else if (conductor != null ) {
+			BlockPos prev = CapabilityContextProvider.pushPos(this.pos);
+			try {
+				return conductor.canConnect(dir);
 			} finally {
 				CapabilityContextProvider.popPos(prev);
 			}
@@ -209,6 +228,7 @@ public class TileEntityProxyCombo extends TileEntityProxyBase implements IEnergy
 		fluid = compound.getBoolean("flu");
 		this.moltenMetal = compound.getBoolean("metal");
 		power = compound.getBoolean("pow");
+		conductor = compound.getBoolean("conductor");
 		heat = compound.getBoolean("hea");
 
 		super.readFromNBT(compound);
@@ -220,9 +240,18 @@ public class TileEntityProxyCombo extends TileEntityProxyBase implements IEnergy
 		compound.setBoolean("flu", fluid);
 		compound.setBoolean("metal", moltenMetal);
 		compound.setBoolean("pow", power);
+		compound.setBoolean("conductor", conductor);
 		compound.setBoolean("hea", heat);
 		return super.writeToNBT(compound);
 	}
+
+	@Override
+	public boolean allowDirectProvision() {
+		if(!power) return false;
+		if(getCoreObject() instanceof IEnergyReceiverMK2) return ((IEnergyReceiverMK2)getCoreObject()).allowDirectProvision();
+		return true;
+	}
+
 
 	public static final FluidTankNTM[] EMPTY_TANKS = new FluidTankNTM[0];
 

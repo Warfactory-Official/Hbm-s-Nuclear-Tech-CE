@@ -1,7 +1,10 @@
 package com.hbm.items.weapon.sedna;
 
 
+import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.bomb.BlockDetonatable;
+import com.hbm.blocks.generic.BlockMeta;
+import com.hbm.blocks.generic.RedBarrel;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.entity.projectile.EntityBulletBeamBase;
 import com.hbm.inventory.OreDictManager;
@@ -36,26 +39,28 @@ import java.util.function.Consumer;
 
 public class BulletConfig implements Cloneable {
 
-    public static List<BulletConfig> configs = new ArrayList();
+    public static List<BulletConfig> configs = new ArrayList<>();
     public static BiConsumer<EntityBulletBaseMK4, RayTraceResult> LAMBDA_STANDARD_RICOCHET = (bullet, mop) -> {
 
-        if (mop.typeOfHit == mop.typeOfHit.BLOCK) {
+        if (mop.typeOfHit == RayTraceResult.Type.BLOCK) {
 
             IBlockState b = bullet.world.getBlockState(mop.getBlockPos());
-            if (b.getMaterial() == Material.GLASS) {
+            //mlbv: to avoid destroying blocks such as reinforced glass i added a check for the explosion resistance
+            //vanilla glass has resistance == 0.3f
+            if (b.getMaterial() == Material.GLASS && b.getBlock().getExplosionResistance(null) < 0.6f) {
                 bullet.world.destroyBlock(mop.getBlockPos(), false);
                 bullet.setPosition(mop.hitVec.x, mop.hitVec.y, mop.hitVec.z);
                 return;
             }
-            if (b instanceof BlockDetonatable) {
-                ((BlockDetonatable) b).onShot(bullet.world, mop.getBlockPos());
+            if (b.getBlock() == ModBlocks.red_barrel) {
+                ((RedBarrel) ModBlocks.red_barrel).explode(bullet.world, mop.getBlockPos().getX(), mop.getBlockPos().getY(), mop.getBlockPos().getZ());
             }
-            //Fixme
-//            if (b == ModBlocks.deco_crt) {
-//                int meta = bullet.world.getBlockMetadata(mop.getBlockPos());
-//                bullet.world.setBlockMetadataWithNotify(mop.getBlockPos(), meta % 4 + 4, 3);
-//            }
-
+            if (b instanceof BlockDetonatable detonatable) {
+                detonatable.onShot(bullet.world, mop.getBlockPos());
+            }
+            if (b.getBlock() == ModBlocks.deco_crt) {
+                bullet.world.setBlockState(mop.getBlockPos(), b.withProperty(BlockMeta.META, b.getBlock().getMetaFromState(b) % 4 + 4));
+            }
             ForgeDirection dir = ForgeDirection.getOrientation(mop.sideHit);
             Vec3d face = new Vec3d(dir.offsetX, dir.offsetY, dir.offsetZ);
             Vec3d vel = new Vec3d(bullet.motionX, bullet.motionY, bullet.motionZ).normalize();
@@ -196,7 +201,7 @@ public class BulletConfig implements Cloneable {
     public BiConsumer<EntityBulletBeamBase, RayTraceResult> onImpactBeam; //fuck fuck fuck fuck i should have used a better base class here god dammit
     public BiConsumer<EntityBulletBaseMK4, RayTraceResult> onRicochet = LAMBDA_STANDARD_RICOCHET;
     public BiConsumer<EntityBulletBaseMK4, RayTraceResult> onEntityHit = LAMBDA_STANDARD_ENTITY_HIT;
-    public double gravity = 0;
+    public float gravity = 0;
     public int expires = 30;
     public boolean impactsEntities = true;
     public boolean doesPenetrate = false;
@@ -366,7 +371,7 @@ public class BulletConfig implements Cloneable {
         return this;
     }
 
-    public BulletConfig setGrav(double gravity) {
+    public BulletConfig setGrav(float gravity) {
         this.gravity = gravity;
         return this;
     }

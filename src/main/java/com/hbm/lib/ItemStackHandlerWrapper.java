@@ -3,19 +3,22 @@ package com.hbm.lib;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.ItemStackHandler;
-
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class ItemStackHandlerWrapper implements IItemHandlerModifiable {
     protected final ItemStackHandler handle;
-    private final int[] validSlots;
+    private final int @Nullable [] validSlots;
 
-    public ItemStackHandlerWrapper(ItemStackHandler handle) {
+    public ItemStackHandlerWrapper(@NotNull ItemStackHandler handle) {
         this.handle = handle;
         this.validSlots = null;
     }
 
-    public ItemStackHandlerWrapper(ItemStackHandler handle, int[] validSlots) {
+    /**
+     * @param validSlots null -> full access
+     */
+    public ItemStackHandlerWrapper(@NotNull ItemStackHandler handle, int @Nullable [] validSlots) {
         this.handle = handle;
         this.validSlots = validSlots;
     }
@@ -31,7 +34,7 @@ public class ItemStackHandlerWrapper implements IItemHandlerModifiable {
     }
 
     @Override
-    public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+    public ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
         if (validSlots == null) return handle.insertItem(slot, stack, simulate);
         for (int i : validSlots)
             if (i == slot) return handle.insertItem(slot, stack, simulate);
@@ -52,12 +55,12 @@ public class ItemStackHandlerWrapper implements IItemHandlerModifiable {
     }
 
     @Override
-    public void setStackInSlot(int slot, ItemStack stack) {
+    public void setStackInSlot(int slot, @NotNull ItemStack stack) {
         handle.setStackInSlot(slot, stack);
     }
 
     @Override
-    public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
+    public boolean isItemValid(int slot, @NotNull ItemStack stack) {
         if (validSlots == null) return handle.isItemValid(slot, stack);
         for (int i : validSlots)
             if (i == slot) return handle.isItemValid(slot, stack);

@@ -1,5 +1,6 @@
 package com.hbm.packet.toclient;
 
+import com.hbm.lib.internal.MethodHandleHelper;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ModEventHandlerClient;
@@ -29,19 +30,19 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.util.vector.Matrix4f;
 
-import java.lang.reflect.Method;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
 import java.util.List;
 import java.util.Random;
 
 public class PacketSpecialDeath implements IMessage {
 
-	public static Method rGetHurtSound;
+	private static final MethodHandle rGetHurtSound = MethodHandleHelper.findVirtual(EntityLivingBase.class, "getHurtSound", "func_184601_bQ", MethodType.methodType(SoundEvent.class, DamageSource.class));
 	
 	Entity serverEntity;
 	int entId;
@@ -93,27 +94,26 @@ public class PacketSpecialDeath implements IMessage {
 		public IMessage onMessage(PacketSpecialDeath m, MessageContext ctx) {
 			Minecraft.getMinecraft().addScheduledTask(() -> {
 				Entity ent = Minecraft.getMinecraft().world.getEntityByID(m.entId);
-				if(ent instanceof EntityLivingBase){
+				if(ent instanceof EntityLivingBase livingBase){
 					switch(m.effectId){
 					case 0:
 						ent.setDead();
-						ModEventHandlerClient.specialDeathEffectEntities.add((EntityLivingBase) ent);
+						ModEventHandlerClient.specialDeathEffectEntities.add(livingBase);
 						DisintegrationParticleHandler.spawnGluonDisintegrateParticles(ent);
 						break;
 					case 1:
-						((EntityLivingBase) ent).hurtTime = 2;
+						livingBase.hurtTime = 2;
 						try {
-							if(rGetHurtSound == null)
-								rGetHurtSound = ReflectionHelper.findMethod(EntityLivingBase.class, "getHurtSound", "func_184601_bQ", DamageSource.class);
-							SoundEvent s = (SoundEvent) rGetHurtSound.invoke(ent, ModDamageSource.radiation);
+							SoundEvent s = (SoundEvent) rGetHurtSound.invokeExact(livingBase, ModDamageSource.radiation);
 							Minecraft.getMinecraft().world.playSound(ent.posX, ent.posY, ent.posZ, s, SoundCategory.MASTER, 1, 1, false);
-						} catch(Exception e) {
-							e.printStackTrace();
+						} catch(Throwable e) {
+                            MainRegistry.logger.catching(e);
+                            throw new RuntimeException(e);
 						}
 						break;
 					case 2:
 						ent.setDead();
-						ModEventHandlerClient.specialDeathEffectEntities.add((EntityLivingBase) ent);
+						ModEventHandlerClient.specialDeathEffectEntities.add(livingBase);
 						DisintegrationParticleHandler.spawnLightningDisintegrateParticles(ent, new Vec3(m.auxData[0], m.auxData[1], m.auxData[2]));
 						break;
 					case 3:
@@ -192,7 +192,7 @@ public class PacketSpecialDeath implements IMessage {
 						ent.setDead();
 						@SuppressWarnings("unchecked")
 						List<BulletHit> bHits = (List<BulletHit>) m.auxObj;
-						List<Pair<Matrix4f, ModelRenderer>> boxes = ModelRendererUtil.getBoxesFromMob((EntityLivingBase)ent);
+						List<Pair<Matrix4f, ModelRenderer>> boxes = ModelRendererUtil.getBoxesFromMob(livingBase);
 						RigidBody[] bodies = ModelRendererUtil.generateRigidBodiesFromBoxes(ent, boxes);
 						int[] displayLists = ModelRendererUtil.generateDisplayListsFromBoxes(boxes);
 						ResourceLocation tex = ModelRendererUtil.getEntityTexture(ent);

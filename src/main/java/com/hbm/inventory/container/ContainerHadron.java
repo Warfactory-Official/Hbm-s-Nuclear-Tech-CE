@@ -1,14 +1,18 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.SlotBattery;
-import com.hbm.inventory.SlotTakeOnly;
+import com.hbm.inventory.slot.SlotBattery;
+import com.hbm.inventory.slot.SlotFiltered;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityHadron;
+import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
+
+import java.util.function.Predicate;
 
 public class ContainerHadron extends Container {
 
@@ -22,8 +26,8 @@ public class ContainerHadron extends Container {
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 17, 36));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 1, 35, 36));
 		//Outputs
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 2, 125, 36));
-		this.addSlotToContainer(new SlotTakeOnly(tedf.inventory, 3, 143, 36));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 2, 125, 36));
+		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 3, 143, 36));
 		//Battery
 		this.addSlotToContainer(new SlotBattery(tedf.inventory, 4, 44, 108));
 
@@ -42,36 +46,11 @@ public class ContainerHadron extends Container {
 	}
 
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer p_82846_1_, int par2)
+    public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		ItemStack var3 = ItemStack.EMPTY;
-		Slot var4 = (Slot) this.inventorySlots.get(par2);
-
-		if (var4 != null && var4.getHasStack())
-		{
-			ItemStack var5 = var4.getStack();
-			var3 = var5.copy();
-
-            if (par2 <= 4) {
-				if (!this.mergeItemStack(var5, 5, this.inventorySlots.size(), true))
-				{
-					return ItemStack.EMPTY;
-				}
-			} else if (!this.mergeItemStack(var5, 0, 2, false)) {
-							return ItemStack.EMPTY;
-			}
-
-			if (var5.isEmpty())
-			{
-				var4.putStack(ItemStack.EMPTY);
-			}
-			else
-			{
-				var4.onSlotChanged();
-			}
-		}
-
-		return var3;
+		return InventoryUtil.transferStack(this.inventorySlots, index, 5,
+                Predicate.not(Library::isBattery), 4,
+                Library::isBattery, 5);
     }
 
 	@Override

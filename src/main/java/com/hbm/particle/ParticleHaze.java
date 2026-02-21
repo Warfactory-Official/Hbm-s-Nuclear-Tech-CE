@@ -1,6 +1,6 @@
 package com.hbm.particle;
 
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.*;
@@ -17,7 +17,7 @@ import java.util.Random;
 
 public class ParticleHaze extends Particle {
 
-	private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/particle/haze.png");
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/particle/haze.png");
 	private int maxAge;
 	
 	public ParticleHaze(World worldIn, double posXIn, double posYIn, double posZIn){
@@ -63,9 +63,7 @@ public class ParticleHaze extends Particle {
 	@Override
 	public void renderParticle(BufferBuilder buffer, Entity entityIn, float partialTicks, float rotationX, float rotationZ, float rotationYZ, float rotationXY, float rotationXZ){
 		Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
-		float alpha = 0;
-
-		alpha = (float) Math.sin(particleAge * Math.PI / (400F)) * 0.25F;
+		float alpha = (float) Math.sin(particleAge * Math.PI / (400F)) * 0.25F;
 
 		GlStateManager.color(1.0F, 1.0F, 1.0F, alpha * 0.1F);
 		GlStateManager.disableLighting();
@@ -97,10 +95,10 @@ public class ParticleHaze extends Particle {
 			float pZ = (float) ((this.prevPosZ + (this.posZ - this.prevPosZ) * (double) partialTicks - interpPosZ) + rand.nextGaussian() * 0.5);
 
 			buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-			buf.pos((double) (pX - rotationX * size - rotationXY * size), (double) (pY - rotationZ * size), (double) (pZ - rotationYZ * size - rotationXZ * size)).tex(1, 1).endVertex();
-			buf.pos((double) (pX - rotationX * size + rotationXY * size), (double) (pY + rotationZ * size), (double) (pZ - rotationYZ * size + rotationXZ * size)).tex(1, 0).endVertex();
-			buf.pos((double) (pX + rotationX * size + rotationXY * size), (double) (pY + rotationZ * size), (double) (pZ + rotationYZ * size + rotationXZ * size)).tex(0, 0).endVertex();
-			buf.pos((double) (pX + rotationX * size - rotationXY * size), (double) (pY - rotationZ * size), (double) (pZ + rotationYZ * size - rotationXZ * size)).tex(0, 1).endVertex();
+			buf.pos(pX - rotationX * size - rotationXY * size, pY - rotationZ * size, pZ - rotationYZ * size - rotationXZ * size).tex(1, 1).endVertex();
+			buf.pos(pX - rotationX * size + rotationXY * size, pY + rotationZ * size, pZ - rotationYZ * size + rotationXZ * size).tex(1, 0).endVertex();
+			buf.pos(pX + rotationX * size + rotationXY * size, pY + rotationZ * size, pZ + rotationYZ * size + rotationXZ * size).tex(0, 0).endVertex();
+			buf.pos(pX + rotationX * size - rotationXY * size, pY - rotationZ * size, pZ + rotationYZ * size - rotationXZ * size).tex(0, 1).endVertex();
 			tes.draw();
 
 			GlStateManager.translate((float) -dX, (float) -dY, (float) -dZ);

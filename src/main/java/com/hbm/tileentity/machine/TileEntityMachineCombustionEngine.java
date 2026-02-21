@@ -106,7 +106,7 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
           && tank.getTankType().hasTrait(FT_Combustible.class)) {
         ItemPistons.EnumPistonType piston =
             EnumUtil.grabEnumSafely(
-                ItemPistons.EnumPistonType.class, inventory.getStackInSlot(2).getItemDamage());
+                ItemPistons.EnumPistonType.VALUES, inventory.getStackInSlot(2).getItemDamage());
         FT_Combustible trait = tank.getTankType().getTrait(FT_Combustible.class);
 
         double eff = piston.eff[trait.getGrade().ordinal()];
@@ -238,7 +238,7 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
 
   @Override
   public void onChunkUnload() {
-
+    super.onChunkUnload();
     if (audio != null) {
       audio.stopSound();
       audio = null;
@@ -447,7 +447,7 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
   public Object[] getEfficiency(Context context, Arguments args) {
     ItemPistons.EnumPistonType piston =
         EnumUtil.grabEnumSafely(
-            ItemPistons.EnumPistonType.class, inventory.getStackInSlot(2).getItemDamage());
+            ItemPistons.EnumPistonType.VALUES, inventory.getStackInSlot(2).getItemDamage());
     FT_Combustible trait = tank.getTankType().getTrait(FT_Combustible.class);
     double eff = piston.eff[trait.getGrade().ordinal()];
     return new Object[] {eff};
@@ -486,7 +486,7 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
   public Object[] getInfo(Context context, Arguments args) {
     ItemPistons.EnumPistonType piston =
         EnumUtil.grabEnumSafely(
-            ItemPistons.EnumPistonType.class, inventory.getStackInSlot(2).getItemDamage());
+            ItemPistons.EnumPistonType.VALUES, inventory.getStackInSlot(2).getItemDamage());
     FT_Combustible trait = tank.getTankType().getTrait(FT_Combustible.class);
     double eff = piston.eff[trait.getGrade().ordinal()];
     return new Object[] {

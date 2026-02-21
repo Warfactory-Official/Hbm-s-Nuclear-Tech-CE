@@ -14,6 +14,7 @@ import net.minecraftforge.oredict.OreDictionary;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 //'t was about time
 public class InventoryUtil {
@@ -44,11 +45,6 @@ public class InventoryUtil {
 
 	/**
 	 * Functionally equal to tryAddItemToInventory, but will not try to create new stacks in empty slots
-	 * @param inv
-	 * @param start
-	 * @param end
-	 * @param stack
-	 * @return
 	 */
 	public static ItemStack tryAddItemToExistingStack(ItemStack[] inv, int start, int end, ItemStack stack) {
 
@@ -76,10 +72,6 @@ public class InventoryUtil {
 
 	/**
 	 * Will place the stack in the first empty slot
-	 * @param inv
-	 * @param start
-	 * @param end
-	 * @param stack
 	 * @return whether the stack could be added or not
 	 */
 	public static boolean tryAddItemToNewSlot(ItemStack[] inv, int start, int end, ItemStack stack) {
@@ -100,11 +92,7 @@ public class InventoryUtil {
 
 	/**
 	 * Much of the same but with an ISidedInventory instance instead of a slot array
-	 * @param inv
-	 * @param start
-	 * @param end
 	 * @param stack This is not modified!
-	 * @return
 	 */
 	public static ItemStack tryAddItemToInventory(IItemHandler inv, int start, int end, ItemStack stack) {
 		ItemStack remaining = stack;
@@ -118,19 +106,16 @@ public class InventoryUtil {
 
 	/**
 	 * Compares item, metadata and NBT data of two stacks. Also handles null values!
-	 * @param stack1
-	 * @param stack2
-	 * @return
 	 */
 	public static boolean doesStackDataMatch(ItemStack stack1, ItemStack stack2) {
 
 		if(stack1 == null && stack2 == null)
 			return true;
 
-		if(stack1 == null && stack2 != null)
+		if(stack1 == null)
 			return false;
 
-		if(stack1 != null && stack2 == null)
+		if(stack2 == null)
 			return false;
 
 		if(stack1.getItem() != stack2.getItem())
@@ -210,7 +195,7 @@ public class InventoryUtil {
 	
 	/**
 	 * Checks if a player has matching item stacks in his inventory and removes them if so desired
-	 * @param player
+	 * @param player the player whose inventory to check
 	 * @param stacks the AStacks (comparable or ore-dicted)
 	 * @param shouldRemove whether it should just return true or false or if a successful check should also remove all the items
 	 * @return whether the player has the required item stacks or not
@@ -350,8 +335,6 @@ public class InventoryUtil {
 	 * <li>AStack</li>
 	 * <li>AStack[]</li>
 	 * </ul>
-	 * @param o
-	 * @return
 	 */
 	public static ItemStack[][] extractObject(Object o) {
 
@@ -409,7 +392,7 @@ public class InventoryUtil {
 			return stacks;
 		}
 
-		MainRegistry.logger.warn("InventoryUtil: extractObject failed for type " + o);
+        MainRegistry.logger.warn("InventoryUtil: extractObject failed for type {}", o);
 		return new ItemStack[0][0];
 	}
 
@@ -490,46 +473,40 @@ public class InventoryUtil {
 	}
 
 	/**
-	 * A fixed re-implementation of the original Container.mergeItemStack that repects stack size and slot restrictions.
-	 * @param slots
-	 * @param stack
-	 * @param start
-	 * @param end
-	 * @param reverse
-	 * @return
+	 * A fixed re-implementation of the original Container.mergeItemStack that respects stack size and slot restrictions.
 	 */
 	public static boolean mergeItemStack(List<Slot> slots, ItemStack stack, int start, int end, boolean reverse) {
 
 		boolean success = false;
 		int index = start;
 
-		if(reverse) {
+		if (reverse) {
 			index = end - 1;
 		}
 
 		Slot slot;
 		ItemStack current;
 
-		if(stack.isStackable()) {
+		if (stack.isStackable()) {
 
-			while(stack.getCount() > 0 && (!reverse && index < end || reverse && index >= start)) {
+			while (stack.getCount() > 0 && (!reverse && index < end || reverse && index >= start)) {
 				slot = slots.get(index);
 				current = slot.getStack();
 
-				if(!current.isEmpty()) {
+				if (!current.isEmpty()) {
 					int max = Math.min(stack.getMaxStackSize(), slot.getSlotStackLimit());
 					int toRemove = Math.min(stack.getCount(), max);
 
-					if(slot.isItemValid(ItemStackUtil.carefulCopyWithSize(stack, toRemove)) && current.getItem() == stack.getItem() &&
+					if (slot.isItemValid(ItemStackUtil.carefulCopyWithSize(stack, toRemove)) && current.getItem() == stack.getItem() &&
 							(!stack.getHasSubtypes() || stack.getItemDamage() == current.getItemDamage()) && ItemStack.areItemStackTagsEqual(stack, current)) {
 
 						int currentSize = current.getCount() + stack.getCount();
-						if(currentSize <= max) {
+						if (currentSize <= max) {
 							stack.setCount(0);
 							current.setCount(currentSize);
 							slot.putStack(current);
 							success = true;
-						} else if(current.getCount() < max) {
+						} else if (current.getCount() < max) {
 							stack.shrink(max - current.getCount());
 							current.setCount(max);
 							slot.putStack(current);
@@ -538,7 +515,7 @@ public class InventoryUtil {
 					}
 				}
 
-				if(reverse) {
+				if (reverse) {
 					--index;
 				} else {
 					++index;
@@ -546,30 +523,30 @@ public class InventoryUtil {
 			}
 		}
 
-		if(stack.getCount() > 0) {
-			if(reverse) {
+		if (stack.getCount() > 0) {
+			if (reverse) {
 				index = end - 1;
 			} else {
 				index = start;
 			}
 
-			while((!reverse && index < end || reverse && index >= start) && stack.getCount() > 0) {
+			while ((!reverse && index < end || reverse && index >= start) && stack.getCount() > 0) {
 				slot = slots.get(index);
 				current = slot.getStack();
 
-				if(current.isEmpty()) {
+				if (current.isEmpty()) {
 
 					int max = Math.min(stack.getMaxStackSize(), slot.getSlotStackLimit());
 					int toRemove = Math.min(stack.getCount(), max);
 
-					if(slot.isItemValid(ItemStackUtil.carefulCopyWithSize(stack, toRemove))) {
+					if (slot.isItemValid(ItemStackUtil.carefulCopyWithSize(stack, toRemove))) {
 						current = stack.splitStack(toRemove);
 						slot.putStack(current);
 						success = true;
 					}
 				}
 
-				if(reverse) {
+				if (reverse) {
 					--index;
 				} else {
 					++index;
@@ -591,5 +568,288 @@ public class InventoryUtil {
             if(stack.getItem() == item) return true;
         }
         return false;
+    }
+
+    /**
+     * Common implementation of transferStackInSlot, for use in containers with no special slots.
+     * @param maxSlots How many slots are in the container that don't belong to the player's inventory
+     */
+    public static ItemStack transferStack(List<Slot> slots, int index, int maxSlots, boolean callOnTake, EntityPlayer player) {
+        ItemStack result = ItemStack.EMPTY;
+        Slot slot = slots.get(index);
+
+        if (slot != null && slot.getHasStack())
+        {
+            ItemStack stack = slot.getStack();
+            result = stack.copy();
+
+            if (index < maxSlots) {
+                if (!mergeItemStack(slots, stack, maxSlots + 1, slots.size(), true)) return ItemStack.EMPTY;
+            }
+
+            else if (!mergeItemStack(slots, stack, 0, maxSlots, false)) return ItemStack.EMPTY;
+
+            if (stack.getCount() == 0) slot.putStack(ItemStack.EMPTY);
+            else slot.onSlotChanged();
+
+            if (callOnTake) slot.onTake(player, stack);
+        }
+
+        return result;
+    }
+
+    public static ItemStack transferStack(List<Slot> slots, int index, int maxSlots) {
+        return transferStack(slots, index, maxSlots, false, null);
+    }
+
+    /**
+     * Common implementation of transferStackInSlot, for use in containers with one type of special slot.
+     * @param p1 A predicate that checks if the stack to transfer should go in the special slot.
+     * @param s1 The index of the last special slot. All slots from 0 - s1 will count as special.
+     */
+    public static ItemStack transferStack(List<Slot> slots, int index, int maxSlots, Predicate<ItemStack> p1, int s1) {
+        ItemStack result = ItemStack.EMPTY;
+        Slot slot = slots.get(index);
+
+        if (slot != null && slot.getHasStack())
+        {
+            ItemStack stack = slot.getStack();
+            result = stack.copy();
+
+            if (index < maxSlots) {
+                if (!mergeItemStack(slots, stack, maxSlots + 1, slots.size(), true)) return ItemStack.EMPTY;
+            } else {
+                if (p1.test(stack) && !mergeItemStack(slots, stack, 0, s1, false)) return ItemStack.EMPTY;
+                else if (!mergeItemStack(slots, stack, s1, maxSlots, false)) return ItemStack.EMPTY;
+            }
+
+            if (stack.getCount() == 0) slot.putStack(ItemStack.EMPTY);
+            else slot.onSlotChanged();
+        }
+
+        return result;
+    }
+
+    /**
+     * Common implementation of transferStackInSlot, for use in containers with two types of special slots.
+     * @param p1 A predicate that checks if the stack to transfer should go in the first special slot.
+     * @param s1 The index of the last slot of the first special slots. All slots from 0 - s1 will count as special.
+     * @param p2 A predicate that checks if the stack to transfer should go in the second special slot. Done after p1 is checked.
+     * @param s2 The index of the last slot of the second special slots. All slots from s1 - s2 will count as special.
+     */
+    public static ItemStack transferStack(List<Slot> slots, int index, int maxSlots, Predicate<ItemStack> p1, int s1, Predicate<ItemStack> p2, int s2) {
+        ItemStack result = ItemStack.EMPTY;
+        Slot slot = slots.get(index);
+
+        if (slot != null && slot.getHasStack())
+        {
+            ItemStack stack = slot.getStack();
+            result = stack.copy();
+
+            if (index < maxSlots) {
+                if (!mergeItemStack(slots, stack, maxSlots + 1, slots.size(), true)) return ItemStack.EMPTY;
+            } else {
+                if (p1.test(stack) && !mergeItemStack(slots, stack, 0, s1, false)) return ItemStack.EMPTY;
+                else if (p2.test(stack) && !mergeItemStack(slots, stack, s1, s2, false)) return ItemStack.EMPTY;
+                else if (!mergeItemStack(slots, stack, s2, maxSlots, false)) return ItemStack.EMPTY;
+            }
+
+            if (stack.getCount() == 0) slot.putStack(ItemStack.EMPTY);
+            else slot.onSlotChanged();
+        }
+
+        return result;
+    }
+
+    /**
+     * Common implementation of transferStackInSlot, for use in containers with three types of special slots.
+     * @param p1 A predicate that checks if the stack to transfer should go in the first special slot.
+     * @param s1 The index of the last slot of the first special slots. All slots from 0 - s1 will count as special.
+     * @param p2 A predicate that checks if the stack to transfer should go in the second special slot. Done after p1 is checked.
+     * @param s2 The index of the last slot of the second special slots. All slots from s1 - s2 will count as special.
+     * @param p3 A predicate that checks if the stack to transfer should go in the third special slot. Done after p2 is checked.
+     * @param s3 The index of the last slot of the third special slots. All slots from s2 - s3 will count as special.
+     */
+    public static ItemStack transferStack(List<Slot> slots, int index, int maxSlots, Predicate<ItemStack> p1, int s1, Predicate<ItemStack> p2, int s2, Predicate<ItemStack> p3, int s3) {
+		ItemStack result = ItemStack.EMPTY;
+		Slot slot = slots.get(index);
+
+		if (slot != null && slot.getHasStack()) {
+			ItemStack stack = slot.getStack();
+			result = stack.copy();
+			int originalCount = stack.getCount();
+
+			if (index < maxSlots) {
+				if (!mergeItemStack(slots, stack, maxSlots, slots.size(), true)) {
+					return ItemStack.EMPTY;
+				}
+			}
+			else {
+				boolean moved = false;
+
+				if (p1.test(stack)) {
+					moved = mergeItemStack(slots, stack, 0, s1, false);
+				}
+
+				if (!moved && p2.test(stack)) {
+					moved = mergeItemStack(slots, stack, s1, s2, false);
+				}
+
+				if (!moved && p3.test(stack)) {
+					moved = mergeItemStack(slots, stack, s2, s3, false);
+				}
+
+				if (!moved && !mergeItemStack(slots, stack, s3, maxSlots, false)) {
+					if (index < maxSlots + 27) {
+						if (!mergeItemStack(slots, stack, maxSlots + 27, slots.size(), false)) return ItemStack.EMPTY;
+					} else {
+						if (!mergeItemStack(slots, stack, maxSlots, maxSlots + 27, false)) return ItemStack.EMPTY;
+					}
+				}
+			}
+
+			if (stack.getCount() == originalCount) {
+				return ItemStack.EMPTY;
+			}
+
+			if (stack.isEmpty()) {
+				slot.putStack(ItemStack.EMPTY);
+			} else {
+				slot.onSlotChanged();
+			}
+		}
+
+		return result;
+    }
+
+    /**
+     * Common implementation of transferStackInSlot, for use in containers with four types of special slots.
+     * @param p1 A predicate that checks if the stack to transfer should go in the first special slot.
+     * @param s1 The index of the last slot of the first special slots. All slots from 0 - s1 will count as special.
+     * @param p2 A predicate that checks if the stack to transfer should go in the second special slot. Done after p1 is checked.
+     * @param s2 The index of the last slot of the second special slots. All slots from s1 - s2 will count as special.
+     * @param p3 A predicate that checks if the stack to transfer should go in the third special slot. Done after p2 is checked.
+     * @param s3 The index of the last slot of the third special slots. All slots from s2 - s3 will count as special.
+     * @param p4 A predicate that checks if the stack to transfer should go in the fourth special slot. Done after p3 is checked.
+     * @param s4 The index of the last slot of the fourth special slots. All slots from s3 - s4 will count as special.
+     */
+    public static ItemStack transferStack(List<Slot> slots, int index, int maxSlots, Predicate<ItemStack> p1, int s1, Predicate<ItemStack> p2, int s2, Predicate<ItemStack> p3, int s3, Predicate<ItemStack> p4, int s4) {
+        ItemStack result = ItemStack.EMPTY;
+        Slot slot = slots.get(index);
+
+        if (slot != null && slot.getHasStack())
+        {
+            ItemStack stack = slot.getStack();
+            result = stack.copy();
+
+            if (index < maxSlots) {
+                if (!mergeItemStack(slots, stack, maxSlots + 1, slots.size(), true)) return ItemStack.EMPTY;
+            } else {
+                if (p1.test(stack) && !mergeItemStack(slots, stack, 0, s1, false)) return ItemStack.EMPTY;
+                else if (p2.test(stack) && !mergeItemStack(slots, stack, s1, s2, false)) return ItemStack.EMPTY;
+                else if (p3.test(stack) && !mergeItemStack(slots, stack, s2, s3, false)) return ItemStack.EMPTY;
+                else if (p4.test(stack) && !mergeItemStack(slots, stack, s3, s4, false)) return ItemStack.EMPTY;
+                else if (!mergeItemStack(slots, stack, s4, maxSlots, false)) return ItemStack.EMPTY;
+            }
+
+            if (stack.getCount() == 0) slot.putStack(ItemStack.EMPTY);
+            else slot.onSlotChanged();
+        }
+
+        return result;
+    }
+
+    /**
+     * Common implementation of transferStackInSlot, for use in containers with five types of special slots.
+     * I think you can figure out what the parameters do
+     */
+    public static ItemStack transferStack(List<Slot> slots, int index, int maxSlots, Predicate<ItemStack> p1, int s1, Predicate<ItemStack> p2, int s2, Predicate<ItemStack> p3, int s3, Predicate<ItemStack> p4, int s4, Predicate<ItemStack> p5, int s5) {
+        ItemStack result = ItemStack.EMPTY;
+        Slot slot = slots.get(index);
+
+        if (slot != null && slot.getHasStack())
+        {
+            ItemStack stack = slot.getStack();
+            result = stack.copy();
+
+            if (index < maxSlots) {
+                if (!mergeItemStack(slots, stack, maxSlots + 1, slots.size(), true)) return ItemStack.EMPTY;
+            } else {
+                if (p1.test(stack) && !mergeItemStack(slots, stack, 0, s1, false)) return ItemStack.EMPTY;
+                else if (p2.test(stack) && !mergeItemStack(slots, stack, s1, s2, false)) return ItemStack.EMPTY;
+                else if (p3.test(stack) && !mergeItemStack(slots, stack, s2, s3, false)) return ItemStack.EMPTY;
+                else if (p4.test(stack) && !mergeItemStack(slots, stack, s3, s4, false)) return ItemStack.EMPTY;
+                else if (p5.test(stack) && !mergeItemStack(slots, stack, s4, s5, false)) return ItemStack.EMPTY;
+                else if (!mergeItemStack(slots, stack, s5, maxSlots, false)) return ItemStack.EMPTY;
+            }
+
+            if (stack.getCount() == 0) slot.putStack(ItemStack.EMPTY);
+            else slot.onSlotChanged();
+        }
+
+        return result;
+    }
+
+    /**
+     * Common implementation of transferStackInSlot, for use in containers with six types of special slots.
+     */
+    public static ItemStack transferStack(List<Slot> slots, int index, int maxSlots, Predicate<ItemStack> p1, int s1, Predicate<ItemStack> p2, int s2, Predicate<ItemStack> p3, int s3, Predicate<ItemStack> p4, int s4, Predicate<ItemStack> p5, int s5, Predicate<ItemStack> p6, int s6) {
+        ItemStack result = ItemStack.EMPTY;
+        Slot slot = slots.get(index);
+
+        if (slot != null && slot.getHasStack())
+        {
+            ItemStack stack = slot.getStack();
+            result = stack.copy();
+
+            if (index < maxSlots) {
+                if (!mergeItemStack(slots, stack, maxSlots + 1, slots.size(), true)) return ItemStack.EMPTY;
+            } else {
+                if (p1.test(stack) && !mergeItemStack(slots, stack, 0, s1, false)) return ItemStack.EMPTY;
+                else if (p2.test(stack) && !mergeItemStack(slots, stack, s1, s2, false)) return ItemStack.EMPTY;
+                else if (p3.test(stack) && !mergeItemStack(slots, stack, s2, s3, false)) return ItemStack.EMPTY;
+                else if (p4.test(stack) && !mergeItemStack(slots, stack, s3, s4, false)) return ItemStack.EMPTY;
+                else if (p5.test(stack) && !mergeItemStack(slots, stack, s4, s5, false)) return ItemStack.EMPTY;
+                else if (p6.test(stack) && !mergeItemStack(slots, stack, s5, s6, false)) return ItemStack.EMPTY;
+                else if (!mergeItemStack(slots, stack, s6, maxSlots, false)) return ItemStack.EMPTY;
+            }
+
+            if (stack.getCount() == 0) slot.putStack(ItemStack.EMPTY);
+            else slot.onSlotChanged();
+        }
+
+        return result;
+    }
+
+    /**
+     * Common implementation of transferStackInSlot, for use in containers with six types of special slots.
+     */
+    public static ItemStack transferStack(List<Slot> slots, int index, int maxSlots, Predicate<ItemStack> p1, int s1, Predicate<ItemStack> p2, int s2, Predicate<ItemStack> p3, int s3, Predicate<ItemStack> p4, int s4, Predicate<ItemStack> p5, int s5, Predicate<ItemStack> p6, int s6, Predicate<ItemStack> p7, int s7) {
+        ItemStack result = ItemStack.EMPTY;
+        Slot slot = slots.get(index);
+
+        if (slot != null && slot.getHasStack())
+        {
+            ItemStack stack = slot.getStack();
+            result = stack.copy();
+
+            if (index < maxSlots) {
+                if (!mergeItemStack(slots, stack, maxSlots + 1, slots.size(), true)) return ItemStack.EMPTY;
+            } else {
+                if (p1.test(stack) && !mergeItemStack(slots, stack, 0, s1, false)) return ItemStack.EMPTY;
+                else if (p2.test(stack) && !mergeItemStack(slots, stack, s1, s2, false)) return ItemStack.EMPTY;
+                else if (p3.test(stack) && !mergeItemStack(slots, stack, s2, s3, false)) return ItemStack.EMPTY;
+                else if (p4.test(stack) && !mergeItemStack(slots, stack, s3, s4, false)) return ItemStack.EMPTY;
+                else if (p5.test(stack) && !mergeItemStack(slots, stack, s4, s5, false)) return ItemStack.EMPTY;
+                else if (p6.test(stack) && !mergeItemStack(slots, stack, s5, s6, false)) return ItemStack.EMPTY;
+                else if (p7.test(stack) && !mergeItemStack(slots, stack, s6, s7, false)) return ItemStack.EMPTY;
+                else if (!mergeItemStack(slots, stack, s7, maxSlots, false)) return ItemStack.EMPTY;
+            }
+
+            if (stack.getCount() == 0) slot.putStack(ItemStack.EMPTY);
+            else slot.onSlotChanged();
+        }
+
+        return result;
     }
 }

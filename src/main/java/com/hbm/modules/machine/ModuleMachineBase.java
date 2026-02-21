@@ -64,6 +64,13 @@ public abstract class ModuleMachineBase {
         if(power != 1 && battery.getPower() < recipe.power * power) return false; // only check with floating point numbers if mult is not 1
         if(power == 1 && battery.getPower() < recipe.power) return false;
 
+        if(!hasInput(recipe)) return false;
+
+        return canFitOutput(recipe);
+    }
+
+    protected boolean hasInput(GenericRecipe recipe) {
+
         if(recipe.inputItem != null) {
             for(int i = 0; i < Math.min(recipe.inputItem.length, inputSlots.length); i++) {
                 if(!recipe.inputItem[i].matchesRecipe(inventory.getStackInSlot(inputSlots[i]), false)) return false;
@@ -75,6 +82,12 @@ public abstract class ModuleMachineBase {
                 if(inputTanks[i].getFill() < recipe.inputFluid[i].fill) return false;
             }
         }
+
+        return true;
+    }
+
+    /** Whether the machine can hold the output produced by the recipe */
+    protected boolean canFitOutput(GenericRecipe recipe) {
 
         if(recipe.outputItem != null) {
             for(int i = 0; i < Math.min(recipe.outputItem.length, outputSlots.length); i++) {
@@ -106,57 +119,65 @@ public abstract class ModuleMachineBase {
         this.progress += step;
 
         if(this.progress >= 1D) {
+            consumeInput(recipe);
+            produceItem(recipe);
 
-            if(recipe.inputItem != null) {
-                for(int i = 0; i < Math.min(recipe.inputItem.length, inputSlots.length); i++) {
-                    int idx = inputSlots[i];
-                    ItemStack in = inventory.getStackInSlot(idx);
-                    if(!in.isEmpty()) {
-                        in.shrink(recipe.inputItem[i].stacksize);
-                        if(in.getCount() <= 0) {
-                            inventory.setStackInSlot(idx, ItemStack.EMPTY);
-                        } else {
-                            inventory.setStackInSlot(idx, in);
-                        }
-                    }
-                }
-            }
-
-            if(recipe.inputFluid != null) {
-                for(int i = 0; i < Math.min(recipe.inputFluid.length, inputTanks.length); i++) {
-                    inputTanks[i].setFill(inputTanks[i].getFill() - recipe.inputFluid[i].fill);
-                }
-            }
-
-            if(recipe.outputItem != null) {
-                for(int i = 0; i < Math.min(recipe.outputItem.length, outputSlots.length); i++) {
-                    ItemStack collapse = recipe.outputItem[i].collapse();
-                    int idx = outputSlots[i];
-                    ItemStack out = inventory.getStackInSlot(idx);
-                    if(out.isEmpty()) {
-                        inventory.setStackInSlot(idx, collapse == null ? ItemStack.EMPTY : collapse);
-                    } else {
-                        if(collapse != null && !collapse.isEmpty()) {
-                            out.grow(collapse.getCount()); // we can do this because we've already established that the result slot is not null if it's a single output
-                            inventory.setStackInSlot(idx, out);
-                        }
-                    }
-                }
-            }
-
-            if(recipe.outputFluid != null) {
-                for(int i = 0; i < Math.min(recipe.outputFluid.length, outputTanks.length); i++) {
-                    outputTanks[i].setFill(outputTanks[i].getFill() + recipe.outputFluid[i].fill);
-                }
-            }
-
-            this.markDirty = true;
-
-            if(this.canProcess(recipe, speed, power))
-                this.progress -= 1D;
-            else
-                this.progress = 0D;
+            if(this.canProcess(recipe, speed, power))  this.progress -= 1D;
+            else this.progress = 0D;
         }
+    }
+
+    /** Part 1 of the process completion, uses up input */
+    protected void consumeInput(GenericRecipe recipe) {
+
+        if(recipe.inputItem != null) {
+            for(int i = 0; i < Math.min(recipe.inputItem.length, inputSlots.length); i++) {
+                int idx = inputSlots[i];
+                ItemStack in = inventory.getStackInSlot(idx);
+                if(!in.isEmpty()) {
+                    in.shrink(recipe.inputItem[i].stacksize);
+                    if(in.getCount() <= 0) {
+                        inventory.setStackInSlot(idx, ItemStack.EMPTY);
+                    } else {
+                        inventory.setStackInSlot(idx, in);
+                    }
+                }
+            }
+        }
+
+        if(recipe.inputFluid != null) {
+            for(int i = 0; i < Math.min(recipe.inputFluid.length, inputTanks.length); i++) {
+                inputTanks[i].setFill(inputTanks[i].getFill() - recipe.inputFluid[i].fill);
+            }
+        }
+    }
+
+    /** Part 2 of the process completion, generated output */
+    protected void produceItem(GenericRecipe recipe) {
+
+        if(recipe.outputItem != null) {
+            for(int i = 0; i < Math.min(recipe.outputItem.length, outputSlots.length); i++) {
+                ItemStack collapse = recipe.outputItem[i].collapse();
+                int idx = outputSlots[i];
+                ItemStack out = inventory.getStackInSlot(idx);
+                if(out.isEmpty()) {
+                    inventory.setStackInSlot(idx, collapse == null ? ItemStack.EMPTY : collapse);
+                } else {
+                    if(collapse != null && !collapse.isEmpty()) {
+                        out.grow(collapse.getCount()); // we can do this because we've already established that the result slot is not null if it's a single output
+                        inventory.setStackInSlot(idx, out);
+                    }
+                }
+            }
+        }
+
+        if(recipe.outputFluid != null) {
+            for(int i = 0; i < Math.min(recipe.outputFluid.length, outputTanks.length); i++) {
+                outputTanks[i].setFill(outputTanks[i].getFill() + recipe.outputFluid[i].fill);
+            }
+        }
+
+        this.markDirty = true;
     }
 
     public GenericRecipe getRecipe() {
@@ -214,7 +235,11 @@ public abstract class ModuleMachineBase {
     /** Returns true if the supplied slot is occupied with an item that does not match the recipe */
     public boolean isSlotClogged(int slot) {
         boolean isSlotValid = false;
-        for(int i : inputSlots) if(i == slot) isSlotValid = true;
+        for(int i : inputSlots)
+            if (i == slot) {
+                isSlotValid = true;
+                break;
+            }
         if(!isSlotValid) return false;
         ItemStack stack = inventory.getStackInSlot(slot);
         if(stack.isEmpty()) return false;

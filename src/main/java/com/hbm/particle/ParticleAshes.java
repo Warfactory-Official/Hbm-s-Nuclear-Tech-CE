@@ -1,6 +1,6 @@
 package com.hbm.particle;
 
-import com.hbm.main.ModEventHandlerClient;
+import com.hbm.main.client.NTMClientRegistry;
 import com.hbm.util.Vec3NT;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.entity.Entity;
@@ -10,7 +10,7 @@ import net.minecraft.world.World;
 public class ParticleAshes extends ParticleRotating {
     public ParticleAshes(World world, double x, double y, double z, float scale) {
         super(world, x, y, z);
-        particleTexture = ModEventHandlerClient.particle_base;
+        particleTexture = NTMClientRegistry.particle_base;
         this.particleMaxAge = 1200 + rand.nextInt(20);
         this.particleScale = scale * 0.9F + rand.nextFloat() * 0.2F;
 

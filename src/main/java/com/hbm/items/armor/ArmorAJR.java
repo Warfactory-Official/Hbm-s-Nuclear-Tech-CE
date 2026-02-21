@@ -1,25 +1,35 @@
 package com.hbm.items.armor;
 
+import com.hbm.main.ResourceManager;
+import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.model.ModelArmorAJR;
+import com.hbm.render.tileentity.IItemRendererProvider;
+import com.hbm.render.util.ViewModelPositonDebugger;
 import net.minecraft.client.model.ModelBiped;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
-public class ArmorAJR extends ArmorFSBPowered {
+public class ArmorAJR extends ArmorFSBPowered implements IItemRendererProvider {
+
+    @SideOnly(Side.CLIENT)
+    ModelArmorAJR[] models;
+
+    @SideOnly(Side.CLIENT)
+    protected ViewModelPositonDebugger offsets;
 
 	public ArmorAJR(ArmorMaterial material, int layer, EntityEquipmentSlot slot, String texture, long maxPower, long chargeRate, long consumption, long drain, String s) {
 		super(material, layer, slot, texture, maxPower, chargeRate, consumption, drain, s);
 	}
 
-	@SideOnly(Side.CLIENT)
-	ModelArmorAJR[] models;
-
 	@Override
 	@SideOnly(Side.CLIENT)
-	public ModelBiped getArmorModel(EntityLivingBase entityLiving, ItemStack itemStack, EntityEquipmentSlot armorSlot, ModelBiped _default) {
+	public ModelBiped getArmorModel(@NotNull EntityLivingBase entityLiving, @NotNull ItemStack itemStack, @NotNull EntityEquipmentSlot armorSlot, @NotNull ModelBiped _default) {
 		if(models == null) {
 			models = new ModelArmorAJR[4];
 
@@ -29,5 +39,49 @@ public class ArmorAJR extends ArmorFSBPowered {
 
 		return models[3-armorSlot.getIndex()];
 	}
-	
+
+    @Override
+    public Item getItemForRenderer() {
+        return this;
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public ItemRenderBase getRenderer(Item item) {
+        return new ItemRenderBase( ) {
+            public void renderInventory() {
+                setupRenderInv();
+            }
+
+            public void renderNonInv() {
+                setupRenderNonInv();
+            }
+
+            public void renderCommon() {
+                if (offsets == null)
+                    offsets = new ViewModelPositonDebugger()
+                            .get(ItemCameraTransforms.TransformType.GUI)
+                            .setScale(1.0F).setPosition(-1.2, 0.0, 1.0).setRotation(255, -36, -143)
+                            .getHelper()
+                            .get(ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND)
+                            .setPosition(-1.00, -31.30, -4.95).setRotation(-23, -139, 85)
+                            .getHelper()
+                            .get(ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND)
+                            .setPosition(-0.5, 3, -2.75).setRotation(610, -115, -100)
+                            .getHelper()
+                            .get(ItemCameraTransforms.TransformType.THIRD_PERSON_RIGHT_HAND)
+                            .setScale(0.7F).setPosition(-0.25, -3.6, -1.25).setRotation(5, -90, 340)
+                            .getHelper()
+                            .get(ItemCameraTransforms.TransformType.THIRD_PERSON_LEFT_HAND)
+                            .setPosition(-8, -5.50, -1.00).setRotation(0, 330, 180)
+                            .getHelper()
+                            .get(ItemCameraTransforms.TransformType.GROUND)
+                            .setScale(1F).setPosition(0, 1, 0).setRotation(0, 0, 180)
+                            .getHelper();
+
+                offsets.apply(type);
+
+                renderStandard(ResourceManager.armor_ajr, armorType, ResourceManager.ajr_helmet, ResourceManager.ajr_chest, ResourceManager.ajr_arm, ResourceManager.ajr_leg, "Head", "Body", "LeftArm", "RightArm", "LeftLeg", "RightLeg", "LeftBoot", "RightBoot");
+            }};
+    }
 }

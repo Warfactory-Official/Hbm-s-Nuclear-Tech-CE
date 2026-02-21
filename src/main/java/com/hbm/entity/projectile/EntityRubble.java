@@ -8,6 +8,7 @@ import com.hbm.packet.toclient.ParticleBurstPacket;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.projectile.EntityThrowable;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
@@ -15,40 +16,40 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 @AutoRegister(name = "entity_rubble", trackingRange = 1000)
-public class EntityRubble extends EntityThrowable {
+public class EntityRubble extends EntityThrowableNT {
 	
 	public static final DataParameter<Integer> BLOCKID = EntityDataManager.createKey(EntityRubble.class, DataSerializers.VARINT);
 	public static final DataParameter<Integer> BLOCKMETA = EntityDataManager.createKey(EntityRubble.class, DataSerializers.VARINT);
 	
-	public EntityRubble(World p_i1773_1_)
+	public EntityRubble(World world)
     {
-        super(p_i1773_1_);
+        super(world);
     }
 
-    public EntityRubble(World p_i1774_1_, EntityLivingBase p_i1774_2_)
+    public EntityRubble(World world, EntityLivingBase entity)
     {
-        super(p_i1774_1_, p_i1774_2_);
+        super(world, entity);
     }
 
     @Override
 	public void entityInit() {
-        this.dataManager.register(BLOCKID, (int)Integer.valueOf(0));
-        this.dataManager.register(BLOCKMETA, (int)Integer.valueOf(0));
+        this.dataManager.register(BLOCKID, 0);
+        this.dataManager.register(BLOCKMETA, 0);
     }
 
-    public EntityRubble(World p_i1775_1_, double p_i1775_2_, double p_i1775_4_, double p_i1775_6_)
+    public EntityRubble(World world, double x, double y, double z)
     {
-        super(p_i1775_1_, p_i1775_2_, p_i1775_4_, p_i1775_6_);
+        super(world, x, y, z);
     }
 
     @Override
-	protected void onImpact(RayTraceResult p_70184_1_)
+	protected void onImpact(RayTraceResult result)
     {
-        if (p_70184_1_.entityHit != null)
+        if (result.entityHit != null)
         {
             byte b0 = 15;
 
-            p_70184_1_.entityHit.attackEntityFrom(ModDamageSource.rubble, b0);
+            result.entityHit.attackEntityFrom(ModDamageSource.rubble, b0);
         }
 
         if(this.ticksExisted > 2) {
@@ -60,10 +61,28 @@ public class EntityRubble extends EntityThrowable {
     			PacketDispatcher.wrapper.sendToAll(new ParticleBurstPacket((int)posX - 1, (int)posY, (int)posZ - 1, this.dataManager.get(BLOCKID), this.dataManager.get(BLOCKMETA)));
         }
     }
-    
-    public void setMetaBasedOnBlock(Block b, int i) {
 
+    @Override
+    protected float getAirDrag() {
+        return 1F;
+    }
+
+    public void setMetaBasedOnBlock(Block b, int i) {
     	this.dataManager.set(BLOCKID, Block.getIdFromBlock(b));
     	this.dataManager.set(BLOCKMETA, i);
+    }
+
+    @Override
+    public void readEntityFromNBT(NBTTagCompound nbt) {
+        super.readEntityFromNBT(nbt);
+        this.dataManager.set(BLOCKID, nbt.getInteger("block"));
+        this.dataManager.set(BLOCKMETA, nbt.getInteger("meta"));
+    }
+
+    @Override
+    public void writeEntityToNBT(NBTTagCompound nbt) {
+        super.writeEntityToNBT(nbt);
+        nbt.setInteger("block", this.dataManager.get(BLOCKID));
+        nbt.setInteger("meta", this.dataManager.get(BLOCKMETA));
     }
 }

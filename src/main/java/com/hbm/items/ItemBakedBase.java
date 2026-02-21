@@ -1,7 +1,7 @@
 package com.hbm.items;
 
 import com.google.common.collect.ImmutableMap;
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.model.ModelRotation;
@@ -34,7 +34,7 @@ public class ItemBakedBase extends ItemBase implements IDynamicModels {
     public void bakeModel(ModelBakeEvent event) {
         try {
             IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/generated"));
-            ResourceLocation spriteLoc = new ResourceLocation(RefStrings.MODID, ROOT_PATH + texturePath);
+            ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath);
             IModel retexturedModel = baseModel.retexture(
                     ImmutableMap.of(
                             "layer0", spriteLoc.toString()
@@ -53,11 +53,11 @@ public class ItemBakedBase extends ItemBase implements IDynamicModels {
 
     @Override
     public void registerModel() {
-        ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(new ResourceLocation(RefStrings.MODID, ROOT_PATH + texturePath), "inventory"));
+        ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath), "inventory"));
     }
 
     @Override
     public void registerSprite(TextureMap map) {
-        map.registerSprite(new ResourceLocation(RefStrings.MODID, ROOT_PATH + texturePath));
+        map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath));
     }
 }

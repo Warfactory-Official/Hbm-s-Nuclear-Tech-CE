@@ -48,8 +48,8 @@ public class ItemDosimeter extends Item implements IBauble {
 			
 			if(world.getTotalWorldTime() % 5 == 0) {
 				
-				if(x > 0.001) {
-					List<Integer> list = new ArrayList<Integer>();
+				if(x > 1e-5) {
+					List<Integer> list = new ArrayList<>();
 
 					if(x < 0.5)
 						list.add(0);

@@ -6,6 +6,7 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.container.ContainerDiFurnaceRTG;
 import com.hbm.inventory.gui.GUIDiFurnaceRTG;
 import com.hbm.inventory.recipes.BlastFurnaceRecipes;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.RTGUtil;
@@ -223,9 +224,7 @@ public class TileEntityDiFurnaceRTG extends TileEntityMachineBase implements ITi
 
     @Override
     public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
-        boolean isSwapBetweenVariants = (oldState.getBlock() == ModBlocks.machine_difurnace_rtg_off && newState.getBlock() == ModBlocks.machine_difurnace_rtg_on) ||
-                (oldState.getBlock() == ModBlocks.machine_difurnace_rtg_on  && newState.getBlock() == ModBlocks.machine_difurnace_rtg_off);
-        if (isSwapBetweenVariants) return false;
+        if (Library.isSwappingBetweenVariants(oldState, newState, ModBlocks.machine_difurnace_rtg_off, ModBlocks.machine_difurnace_rtg_on)) return false;
         return super.shouldRefresh(world, pos, oldState, newState);
     }
 }

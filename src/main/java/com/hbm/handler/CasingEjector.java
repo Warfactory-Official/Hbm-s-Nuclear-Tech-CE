@@ -2,70 +2,81 @@ package com.hbm.handler;
 
 import com.hbm.particle.ParticleSpentCasing;
 import com.hbm.particle.SpentCasing;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.Matrix4f;
-import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.util.vector.Vector3f;
-import org.lwjgl.util.vector.Vector4f;
 
 import java.util.HashMap;
 import java.util.Random;
 
-public class CasingEjector implements Cloneable{
-    public static HashMap<Integer, CasingEjector> mappings = new HashMap<Integer, CasingEjector>();
+public class CasingEjector implements Cloneable {
     public static final Random rand = new Random();
-
-    private int id;
+    public static HashMap<Integer, CasingEjector> mappings = new HashMap<>();
     private static int nextId = 0;
-    private Vec3 posOffset = Vec3.createVectorHelper(0, 0, 0);
-    private Vec3 initialMotion = Vec3.createVectorHelper(0, 0, 0);
-    @Deprecated private int casingAmount = 1;
-    @Deprecated private boolean afterReload = false;
-    @Deprecated private int delay = 0;
+    private final int id;
+    private Vec3NT posOffset = Vec3NT.ZERO();
+    private Vec3NT initialMotion = Vec3NT.ZERO();
+
+    @Deprecated
+    private int casingAmount = 1;
+    @Deprecated
+    private boolean afterReload = false;
+    @Deprecated
+    private int delay = 0;
+
     private float randomYaw = 0F;
     private float randomPitch = 0F;
 
     public CasingEjector() {
-        this.id = nextId;
-        nextId++;
-
+        this.id = nextId++;
         mappings.put(id, this);
     }
 
-    public CasingEjector setOffset(double x, double y, double z) {
-        return setOffset(Vec3.createVectorHelper(x, y, z));
+
+    /**
+     * Translates the particle position from the player's center to the ejection port.
+     */
+    @SideOnly(Side.CLIENT)
+    private static void offsetCasing(ParticleSpentCasing casing, Vec3NT offset, float pitch, float yaw, boolean crouched) {
+        Vec3NT result = new Vec3NT(crouched ? 0 : offset.x, offset.y, offset.z);
+
+        result.rotateAroundXRad(pitch);
+        result.rotateAroundYRad(-yaw);
+
+        casing.setPosition(casing.getPosX() + result.x, casing.getPosY() + result.y, casing.getPosZ() + result.z);
     }
 
-    public CasingEjector setOffset(Vec3 vec) {
-        this.posOffset = vec;
+    /**
+     * Rotates the base motion vector and applies gaussian jitter.
+     */
+    private static Vec3NT rotateVector(Vec3NT vector, float pitch, float yaw, float pitchFactor, float yawFactor) {
+        Vec3NT result = vector.clone();
+
+        result.addi(
+                rand.nextGaussian() * yawFactor * 0.1D,
+                rand.nextGaussian() * pitchFactor * 0.1D,
+                rand.nextGaussian() * yawFactor * 0.1D
+        );
+
+        result.rotateAroundXRad(pitch);
+        result.rotateAroundYRad(-yaw);
+
+        return result;
+    }
+
+    public static CasingEjector fromId(int id) {
+        return mappings.get(id);
+    }
+
+    public CasingEjector setOffset(double x, double y, double z) {
+        this.posOffset.set(x, y, z);
         return this;
     }
 
     public CasingEjector setMotion(double x, double y, double z) {
-        return setMotion(Vec3.createVectorHelper(x, y, z));
-    }
-
-    public CasingEjector setMotion(Vec3 vec) {
-        this.initialMotion = vec;
-        return this;
-    }
-
-    @Deprecated public CasingEjector setAmount(int am) {
-        this.casingAmount = am;
-        return this;
-    }
-
-    @Deprecated public CasingEjector setAfterReload() {
-        this.afterReload = true;
-        return this;
-    }
-
-    @Deprecated public CasingEjector setDelay(int delay) {
-        this.delay = delay;
+        this.initialMotion.set(x, y, z);
         return this;
     }
 
@@ -75,19 +86,84 @@ public class CasingEjector implements Cloneable{
         return this;
     }
 
-    public int getId() { return this.id; }
-    public Vec3 getOffset() { return this.posOffset; }
-    public Vec3 getMotion() { return this.initialMotion; }
-    public int getAmount() { return this.casingAmount; }
-    public boolean getAfterReload() { return this.afterReload; }
-    public int getDelay() { return this.delay; }
-    public float getYawFactor() { return this.randomYaw; }
-    public float getPitchFactor() { return this.randomPitch; }
+    @Deprecated
+    public CasingEjector setAfterReload() {
+        this.afterReload = true;
+        return this;
+    }
+
+    public int getId() {
+        return this.id;
+    }
+
+    public Vec3NT getOffset() {
+        return this.posOffset;
+    }
+
+    public CasingEjector setOffset(Vec3NT vec) {
+        this.posOffset.set(vec);
+        return this;
+    }
+
+    public Vec3NT getMotion() {
+        return this.initialMotion;
+    }
+
+    public CasingEjector setMotion(Vec3NT vec) {
+        this.initialMotion.set(vec);
+        return this;
+    }
+
+    public int getAmount() {
+        return this.casingAmount;
+    }
+
+    @Deprecated
+    public CasingEjector setAmount(int am) {
+        this.casingAmount = am;
+        return this;
+    }
+
+    public boolean getAfterReload() {
+        return this.afterReload;
+    }
+
+    public int getDelay() {
+        return this.delay;
+    }
+
+    @Deprecated
+    public CasingEjector setDelay(int delay) {
+        this.delay = delay;
+        return this;
+    }
+
+    public float getYawFactor() {
+        return this.randomYaw;
+    }
+
+    public float getPitchFactor() {
+        return this.randomPitch;
+    }
 
     @SideOnly(Side.CLIENT)
-    public void spawnCasing(TextureManager textureManager, SpentCasing config, World world, double x, double y, double z, float pitch, float yaw, boolean crouched) {
-        Vec3 rotatedMotionVec = rotateVector(getMotion(), pitch + (float) rand.nextGaussian() * getPitchFactor(), yaw + (float) rand.nextGaussian() * getPitchFactor(), getPitchFactor(), getPitchFactor());
-        ParticleSpentCasing casing = new ParticleSpentCasing(textureManager, world, x, y, z, rotatedMotionVec.xCoord, rotatedMotionVec.yCoord, rotatedMotionVec.zCoord, (float) (getPitchFactor() * rand.nextGaussian()), (float) (getYawFactor() * rand.nextGaussian()), config, false, 0, 0, 0);
+    public void spawnCasing(SpentCasing config, World world, double x, double y, double z, float pitch, float yaw, boolean crouched) {
+        Vec3NT rotatedMotionVec = rotateVector(getMotion(), pitch, yaw, getPitchFactor(), getYawFactor());
+
+        float momentumP = (float) (getPitchFactor() * rand.nextGaussian() * 5.0F);
+        float momentumY = (float) (getYawFactor() * rand.nextGaussian() * 5.0F);
+
+        ParticleSpentCasing casing = new ParticleSpentCasing(
+                world,
+                x, y, z,
+                rotatedMotionVec.x, rotatedMotionVec.y, rotatedMotionVec.z,
+                momentumP, momentumY,
+                config,
+                true, // isSmoking
+                60,   // smokeLife
+                0.5D, // smokeLift
+                30    // nodeLife
+        );
 
         offsetCasing(casing, getOffset(), pitch, yaw, crouched);
 
@@ -97,57 +173,18 @@ public class CasingEjector implements Cloneable{
         Minecraft.getMinecraft().effectRenderer.addEffect(casing);
     }
 
-    // Rotate a position
-    @SideOnly(Side.CLIENT)
-    private static void offsetCasing(ParticleSpentCasing casing, Vec3 offset, float pitch, float yaw, boolean crouched) {
-        // x-axis offset, 0 if crouched to center
-        final float oX = (float) (crouched ? 0 : offset.xCoord);
-        // Create rotation matrices for pitch and yaw
-        final Matrix4f pitchMatrix = new Matrix4f(), yawMatrix = new Matrix4f();
-
-        pitchMatrix.rotate(pitch, new Vector3f(1, 0, 0)); // modify axis of rotation
-        yawMatrix.rotate(-yaw, new Vector3f(0, 1, 0));
-
-        // Multiply matrices to get combined rotation matrix
-        final org.lwjgl.util.vector.Matrix4f rotMatrix = Matrix4f.mul(yawMatrix, pitchMatrix, null);
-        // Create vector representing the offset and apply rotation
-        final org.lwjgl.util.vector.Vector4f offsetVector = new org.lwjgl.util.vector.Vector4f(oX, (float) offset.yCoord, (float) offset.zCoord, 1); // set fourth coordinate to 1
-        Matrix4f.transform(rotMatrix, offsetVector, offsetVector);
-        final Vector3f result = new Vector3f(); // create result vector
-        result.set(offsetVector.x, offsetVector.y, offsetVector.z); // set result vector using transformed coordinates
-        // Apply rotation
-        casing.setPosition(casing.getPosX() + result.x, casing.getPosY() + result.y, casing.getPosZ() + result.z);
-    }
-
-    private static Vec3 rotateVector(Vec3 vector, float pitch, float yaw, float pitchFactor, float yawFactor) {
-
-        final org.lwjgl.util.vector.Matrix4f pitchMatrix = new org.lwjgl.util.vector.Matrix4f(), yawMatrix = new org.lwjgl.util.vector.Matrix4f();
-
-        pitchMatrix.setIdentity();
-        pitchMatrix.rotate(pitch, new Vector3f(1, 0, 0));
-
-        yawMatrix.setIdentity();
-        yawMatrix.rotate(-yaw, new Vector3f(0, 1, 0));
-
-        // Apply randomness to vector
-        final org.lwjgl.util.vector.Vector4f vector4f = new Vector4f((float) (vector.xCoord + rand.nextGaussian() * yawFactor), (float) (vector.yCoord + rand.nextGaussian() * pitchFactor), (float) (vector.zCoord + rand.nextGaussian() * yawFactor), 1);
-
-        org.lwjgl.util.vector.Matrix4f.transform(pitchMatrix, vector4f, vector4f);
-        org.lwjgl.util.vector.Matrix4f.transform(yawMatrix, vector4f, vector4f);
-
-        return Vec3.createVectorHelper(vector4f.x, vector4f.y, vector4f.z);
-    }
-
-    public static CasingEjector fromId(int id) {
-        return mappings.get(id);
-    }
-
     @Override
     public CasingEjector clone() {
         try {
-            return (CasingEjector) super.clone();
-        } catch(CloneNotSupportedException e) {
-            return new CasingEjector();
+            CasingEjector cloned = (CasingEjector) super.clone();
+            cloned.posOffset = this.posOffset.clone();
+            cloned.initialMotion = this.initialMotion.clone();
+            return cloned;
+        } catch (CloneNotSupportedException e) {
+            return new CasingEjector()
+                    .setOffset(this.posOffset.clone())
+                    .setMotion(this.initialMotion.clone())
+                    .setAngleRange(this.randomYaw, this.randomPitch);
         }
     }
 }

@@ -1,8 +1,8 @@
 package com.hbm.render.entity.mob;
 
+import com.hbm.Tags;
 import com.hbm.entity.mob.EntityRADBeast;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.misc.BeamPronter;
 import com.hbm.render.misc.BeamPronter.EnumBeamType;
 import com.hbm.render.misc.BeamPronter.EnumWaveType;
@@ -21,8 +21,8 @@ public class RenderRADBeast extends RenderLiving<EntityRADBeast> {
 
 	public static final IRenderFactory<EntityRADBeast> FACTORY = man -> new RenderRADBeast(man);
 	
-	private static final ResourceLocation blazeTextures = new ResourceLocation(RefStrings.MODID, "textures/entity/radbeast.png");
-    private static final ResourceLocation mask = new ResourceLocation(RefStrings.MODID, "textures/armor/ModelM65Blaze.png");
+	private static final ResourceLocation blazeTextures = new ResourceLocation(Tags.MODID, "textures/entity/radbeast.png");
+    private static final ResourceLocation mask = new ResourceLocation(Tags.MODID, "textures/armor/ModelM65Blaze.png");
 	
 	public RenderRADBeast(RenderManager rendermanagerIn) {
 		super(rendermanagerIn, new ModelBlaze(), 0.5F);

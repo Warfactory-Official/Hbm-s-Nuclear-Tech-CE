@@ -20,7 +20,7 @@ public class MagicRecipes {
 	//Drillgon200: I hate these warnings. 
 	//All it takes are these two characters                 ||
 	//But bob evidently just hates not having warnings      VV
-	private static List<MagicRecipe> recipes = new ArrayList<>();
+	public static List<MagicRecipe> recipes = new ArrayList<>();
 
 	public static ItemStack getRecipe(InventoryCrafting matrix) {
 

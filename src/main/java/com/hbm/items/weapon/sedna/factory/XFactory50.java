@@ -1,5 +1,6 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.Tags;
 import com.hbm.entity.projectile.EntityBuilding;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.items.ItemEnums;
@@ -11,7 +12,6 @@ import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.mags.MagazineBelt;
 import com.hbm.items.weapon.sedna.mags.MagazineFullReload;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.lib.RefStrings;
 import com.hbm.particle.SpentCasing;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna.IType;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
@@ -27,8 +27,8 @@ import java.util.function.BiFunction;
 
 public class XFactory50 {
 
-    public static final ResourceLocation scope = new ResourceLocation(RefStrings.MODID, "textures/misc/scope_amat.png");
-    public static final ResourceLocation scope_thermal = new ResourceLocation(RefStrings.MODID, "textures/misc/scope_penance.png");
+    public static final ResourceLocation scope = new ResourceLocation(Tags.MODID, "textures/misc/scope_amat.png");
+    public static final ResourceLocation scope_thermal = new ResourceLocation(Tags.MODID, "textures/misc/scope_penance.png");
 
     public static BulletConfig bmg50_sp;
     public static BulletConfig bmg50_fmj;

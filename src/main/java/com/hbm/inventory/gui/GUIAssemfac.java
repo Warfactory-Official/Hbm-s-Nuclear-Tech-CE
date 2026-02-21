@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerAssemfac;
-import com.hbm.lib.RefStrings;
 import com.hbm.tileentity.machine.TileEntityMachineAssemfac;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -10,12 +10,12 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.items.ItemStackHandler;
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 public class GUIAssemfac extends GuiInfoContainer {
 
-    private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_assemfac.png");
-    private static final ResourceLocation chemfac = new ResourceLocation(RefStrings.MODID + ":textures/gui/processing/gui_chemfac.png");
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_assemfac.png");
+    private static final ResourceLocation chemfac = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_chemfac.png");
     private final TileEntityMachineAssemfac assemfac;
 
     public GUIAssemfac(InventoryPlayer invPlayer, TileEntityMachineAssemfac tedf) {
@@ -70,7 +70,6 @@ public class GUIAssemfac extends GuiInfoContainer {
     @Override
     protected void drawGuiContainerBackgroundLayer(float interp, int mX, int mY) {
         super.drawDefaultBackground();
-        GL11.glPushAttrib(GL11.GL_ENABLE_BIT);
         GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
@@ -95,7 +94,6 @@ public class GUIAssemfac extends GuiInfoContainer {
                 this.fontRenderer.drawStringWithShadow(s.getSlotIndex() + "", guiLeft + s.xPos + 2, guiTop + s.yPos + 8, 0xff8080);
             }
 
-        GL11.glPopAttrib();
     }
     public ItemStackHandler getInventory() {
         return assemfac.inventory;

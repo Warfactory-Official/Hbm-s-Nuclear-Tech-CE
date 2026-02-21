@@ -1,22 +1,27 @@
 package com.hbm.world;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.lib.Library;
+import com.hbm.main.MainRegistry;
+import com.hbm.util.BufferUtil;
 import com.hbm.world.phased.AbstractPhasedStructure;
+import io.netty.buffer.ByteBuf;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 
 public class OilSandBubble extends AbstractPhasedStructure {
 	private final int radius;
+	private final LongArrayList chunkOffsets;
 
 	public OilSandBubble(int radius) {
 		this.radius = radius;
+		this.chunkOffsets = collectChunkOffsetsByRadius(radius);
 	}
 
 	@Override
@@ -25,22 +30,20 @@ public class OilSandBubble extends AbstractPhasedStructure {
 	}
 
 	@Override
-	protected void buildStructure(@NotNull LegacyBuilder builder, @NotNull Random rand) {
+	protected boolean useDynamicScheduler() {
+		return true;
 	}
 
 	@Override
-	public List<@NotNull BlockPos> getValidationPoints(@NotNull BlockPos origin) {
-		return Arrays.asList(
-				origin.add(-radius, 0, -radius),
-				origin.add(radius, 0, -radius),
-				origin.add(-radius, 0, radius),
-				origin.add(radius, 0, radius)
-		);
+	public LongArrayList getWatchedChunkOffsets(long origin) {
+		return chunkOffsets;
 	}
-
 	@Override
-	public void postGenerate(@NotNull World world, @NotNull Random rand, @NotNull BlockPos finalOrigin) {
-		OilSandBubble.spawnOil(world, rand, finalOrigin.getX(), finalOrigin.getY(), finalOrigin.getZ(), this.radius);
+	public void postGenerate(@NotNull World world, @NotNull Random rand, long finalOrigin) {
+		int ox = Library.getBlockPosX(finalOrigin);
+		int oy = Library.getBlockPosY(finalOrigin);
+		int oz = Library.getBlockPosZ(finalOrigin);
+		OilSandBubble.spawnOil(world, rand, ox, oy, oz, this.radius);
 	}
 
 	private static void spawnOil(World world, Random rand, int x, int y, int z, int radius) {
@@ -67,5 +70,20 @@ public class OilSandBubble extends AbstractPhasedStructure {
 			}
 		}
 	}
-	
+
+
+    public void writeToBuf(@NotNull ByteBuf out) {
+		BufferUtil.writeVarInt(out, radius);
+	}
+
+    public static OilSandBubble readFromBuf(@NotNull ByteBuf in) {
+        int radius;
+        try {
+			radius = BufferUtil.readVarInt(in);
+        } catch (Exception ex) {
+            MainRegistry.logger.warn("[OilSandBubble] Failed to read from buffer", ex);
+            return null;
+        }
+        return new OilSandBubble(radius);
+    }
 }

@@ -4,12 +4,12 @@ import com.hbm.entity.missile.EntityMissileTier3;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.NTMRenderHelper;
+import com.hbm.util.RenderUtil;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
-import org.lwjgl.opengl.GL11;
 @AutoRegister(factory = "FACTORY")
 public class RenderMissileEndo extends Render<EntityMissileTier3.EntityMissileEndo> {
 
@@ -22,8 +22,8 @@ public class RenderMissileEndo extends Render<EntityMissileTier3.EntityMissileEn
 	@Override
 	public void doRender(EntityMissileTier3.EntityMissileEndo missile, double x, double y, double z, float entityYaw, float partialTicks) {
 		GlStateManager.pushMatrix();
-		GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
-		GlStateManager.enableLighting();
+        boolean prevLighting = RenderUtil.isLightingEnabled();
+        if (!prevLighting) GlStateManager.enableLighting();
 		double[] renderPos = NTMRenderHelper.getRenderPosFromMissile(missile, partialTicks);
 		x = renderPos[0];
 		y = renderPos[1];
@@ -35,7 +35,7 @@ public class RenderMissileEndo extends Render<EntityMissileTier3.EntityMissileEn
         
 		bindTexture(ResourceManager.missileEndo_tex);
         ResourceManager.missileThermo.renderAll();
-        GL11.glPopAttrib();
+        if (!prevLighting) GlStateManager.disableLighting();
 		GlStateManager.popMatrix();
 	}
 

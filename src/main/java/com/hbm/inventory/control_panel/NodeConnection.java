@@ -16,7 +16,7 @@ import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManage
 
 import javax.annotation.Nonnull;
 
-public class NodeConnection extends NodeElement {
+public class NodeConnection extends NodeElement implements ITypableNode {
 
 	public String name;
 	//These should always be null and -1 for output nodes.
@@ -67,7 +67,7 @@ public class NodeConnection extends NodeElement {
 			connection = sys.nodes.get(nodeIdx);
 		}
 		isInput = tag.getBoolean("in");
-		type = DataType.values()[tag.getInteger("T") % DataType.values().length];
+		type = DataType.VALUES[tag.getInteger("T") % DataType.VALUES.length];
 		defaultValue = DataValue.newFromNBT(tag.getTag("D"));
 		if(defaultValue == null){
 			type = DataType.NUMBER;
@@ -216,48 +216,57 @@ public class NodeConnection extends NodeElement {
 	}
 
 	@SideOnly(Side.CLIENT)
+	@Override
+	public boolean isTyping() {
+		return isTyping;
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
 	public void startTyping(){
 		isTyping = true;
 		builder = new StringBuilder();
 		builder.append(defaultValue.toString());
 	}
-	
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@SideOnly(Side.CLIENT)
+	@Override
 	public void stopTyping(){
 		DataValue val = new DataValueString(builder.toString());
 		builder = null;
 		isTyping = false;
 		switch(type){
-		case GENERIC:
-		case STRING:
-			defaultValue = val;
-			break;
-		case ENUM:
-			DataValueEnum<?> def = (DataValueEnum<?>)defaultValue;
-			Enum<?>[] possibleVals = def.getPossibleValues();
-			for(Enum<?> e : possibleVals){
-				if(e.name().equalsIgnoreCase(val.toString())){
-					defaultValue = new DataValueEnum(e);
-					break;
+			case GENERIC:
+			case STRING:
+				defaultValue = val;
+				break;
+			case ENUM:
+				DataValueEnum<?> def = (DataValueEnum<?>)defaultValue;
+				Enum<?>[] possibleVals = def.getPossibleValues();
+				for(Enum<?> e : possibleVals){
+					if(e.name().equalsIgnoreCase(val.toString())){
+						defaultValue = new DataValueEnum(e);
+						break;
+					}
 				}
-			}
-			int idx = Math.abs(((int)val.getNumber()))%possibleVals.length;
-			defaultValue = new DataValueEnum(possibleVals[idx]);
-			break;
-		case NUMBER:
-			defaultValue = new DataValueFloat(val.getNumber());
+				int idx = Math.abs(((int)val.getNumber()))%possibleVals.length;
+				defaultValue = new DataValueEnum(possibleVals[idx]);
+				break;
+			case NUMBER:
+				defaultValue = new DataValueFloat(val.getNumber());
 		}
 	}
-	
+
 	@SideOnly(Side.CLIENT)
+	@Override
 	public void keyTyped(char c, int key){
 		if(key == Keyboard.KEY_BACK){
 			if(builder.length() > 0)
 				builder.deleteCharAt(builder.length()-1);
 		} else if(key == Keyboard.KEY_RETURN){
 			stopTyping();
-		} else {
+		} else if (key != Keyboard.KEY_LSHIFT && key != Keyboard.KEY_RSHIFT) {
 			builder.append(c);
 		}
 	}

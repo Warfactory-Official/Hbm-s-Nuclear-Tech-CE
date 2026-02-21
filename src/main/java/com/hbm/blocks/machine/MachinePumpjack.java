@@ -93,7 +93,7 @@ public class MachinePumpjack extends BlockDummyable implements IPersistentInfoPr
     }
 
     @Override
-    public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+    public void breakBlock(@NotNull World worldIn, @NotNull BlockPos pos, IBlockState state) {
         IPersistentNBT.breakBlock(worldIn, pos, state);
         super.breakBlock(worldIn, pos, state);
     }
@@ -103,7 +103,7 @@ public class MachinePumpjack extends BlockDummyable implements IPersistentInfoPr
     }
 
 	@Override
-	public void addInformation(ItemStack stack, NBTTagCompound persistentTag, EntityPlayer player, List list, boolean ext) {
+	public void addInformation(ItemStack stack, NBTTagCompound persistentTag, EntityPlayer player, List<String> list, boolean ext) {
 		list.add(TextFormatting.GREEN + BobMathUtil.getShortNumber(persistentTag.getLong("power")) + "HE");
 		for(int i = 0; i < 2; i++) {
 			FluidTankNTM tank = new FluidTankNTM(Fluids.NONE, 0);

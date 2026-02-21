@@ -58,9 +58,9 @@ public class RodRecipes {
         CraftingManager.addShapelessAuto(new ItemStack(ModItems.rod_quad, 1, ItemBreedingRod.BreedingRodType.LITHIUM.ordinal()), ModItems.rod_quad_empty, LI.ingot(), LI.ingot(), LI.ingot(), LI.ingot() );
         CraftingManager.addShapelessAuto(new ItemStack(ModItems.lithium, 4), new ItemStack(ModItems.rod_quad, 1, ItemBreedingRod.BreedingRodType.LITHIUM.ordinal()) );
 
-        CraftingManager.addShapelessAuto(new ItemStack(ModItems.cell, 1, Fluids.TRITIUM.getID()), new ItemStack(ModItems.rod, 1, ItemBreedingRod.BreedingRodType.TRITIUM.ordinal()), ModItems.cell );
-        CraftingManager.addShapelessAuto(new ItemStack(ModItems.cell, 2, Fluids.TRITIUM.getID()), new ItemStack(ModItems.rod_dual, 1, ItemBreedingRod.BreedingRodType.TRITIUM.ordinal()), ModItems.cell, ModItems.cell );
-        CraftingManager.addShapelessAuto(new ItemStack(ModItems.cell, 4, Fluids.TRITIUM.getID()), new ItemStack(ModItems.rod_quad, 1, ItemBreedingRod.BreedingRodType.TRITIUM.ordinal()), ModItems.cell, ModItems.cell, ModItems.cell, ModItems.cell );
+        CraftingManager.addShapelessAuto(new ItemStack(ModItems.cell, 1, Fluids.TRITIUM.getID()), new ItemStack(ModItems.rod, 1, ItemBreedingRod.BreedingRodType.TRITIUM.ordinal()), new ItemStack(ModItems.cell));
+        CraftingManager.addShapelessAuto(new ItemStack(ModItems.cell, 2, Fluids.TRITIUM.getID()), new ItemStack(ModItems.rod_dual, 1, ItemBreedingRod.BreedingRodType.TRITIUM.ordinal()), new ItemStack(ModItems.cell), new ItemStack(ModItems.cell) );
+        CraftingManager.addShapelessAuto(new ItemStack(ModItems.cell, 4, Fluids.TRITIUM.getID()), new ItemStack(ModItems.rod_quad, 1, ItemBreedingRod.BreedingRodType.TRITIUM.ordinal()), new ItemStack(ModItems.cell), new ItemStack(ModItems.cell), new ItemStack(ModItems.cell), new ItemStack(ModItems.cell) );
 
         addBreedingRod(CO, ModItems.billet_cobalt, ItemBreedingRod.BreedingRodType.CO);
         addBreedingRod(CO60, ModItems.billet_co60, ItemBreedingRod.BreedingRodType.CO60);
@@ -88,7 +88,7 @@ public class RodRecipes {
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.pile_rod_uranium, 1), " U ", "PUP", " U ", 'P', IRON.plate(), 'U', U.billet() );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.pile_rod_source, 1), " U ", "PUP", " U ", 'P', IRON.plate(), 'U', ModItems.billet_ra226be );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.pile_rod_boron, 1), " B ", " W ", " B ", 'B', B.ingot(), 'W', KEY_PLANKS );
-        CraftingManager.addShapelessAuto(new ItemStack(ModItems.pile_rod_lithium, 1), ModItems.cell, LI.ingot() );
+        CraftingManager.addShapelessAuto(new ItemStack(ModItems.pile_rod_lithium, 1), new ItemStack(ModItems.cell), LI.ingot() );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.pile_rod_detector, 1), " B ", "CM ", " B ", 'B', B.ingot(), 'C', DictFrame.fromOne(ModItems.circuit, ItemEnums.EnumCircuitType.VACUUM_TUBE), 'M', ModItems.motor );
 
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.rbmk_fuel_empty, 1), "ZRZ", "Z Z", "ZRZ", 'Z', ZR.ingot(), 'R', ModItems.rod_quad_empty );

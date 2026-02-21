@@ -1,9 +1,9 @@
 package com.hbm.items.machine;
 
 import com.google.common.collect.ImmutableMap;
+import com.hbm.Tags;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.items.ItemBakedBase;
-import com.hbm.lib.RefStrings;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -52,9 +52,9 @@ public class ItemBlueprintFolder extends ItemBakedBase {
         try {
             IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/generated"));
 
-            spriteBase = new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseTexturePath);
-            spriteDiscover = new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseTexturePath + "_discover");
-            spriteSecret = new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseTexturePath + "_secret");
+            spriteBase = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath);
+            spriteDiscover = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_discover");
+            spriteSecret = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_secret");
 
             mrlBase = new ModelResourceLocation(spriteBase, "inventory");
             mrlDiscover = new ModelResourceLocation(spriteDiscover, "inventory");
@@ -86,9 +86,9 @@ public class ItemBlueprintFolder extends ItemBakedBase {
     @Override
     @SideOnly(Side.CLIENT)
     public void registerModel() {
-        spriteBase = new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseTexturePath);
-        spriteDiscover = new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseTexturePath + "_discover");
-        spriteSecret = new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseTexturePath + "_secret");
+        spriteBase = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath);
+        spriteDiscover = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_discover");
+        spriteSecret = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_secret");
 
         mrlBase = new ModelResourceLocation(spriteBase, "inventory");
         mrlDiscover = new ModelResourceLocation(spriteDiscover, "inventory");
@@ -107,9 +107,9 @@ public class ItemBlueprintFolder extends ItemBakedBase {
     @Override
     @SideOnly(Side.CLIENT)
     public void registerSprite(TextureMap map) {
-        map.registerSprite(new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseTexturePath));
-        map.registerSprite(new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseTexturePath + "_discover"));
-        map.registerSprite(new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseTexturePath + "_secret"));
+        map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath));
+        map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_discover"));
+        map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_secret"));
     }
 
     @Override
@@ -138,10 +138,7 @@ public class ItemBlueprintFolder extends ItemBakedBase {
             String chosen = pools.get(player.getRNG().nextInt(pools.size()));
             ItemStack blueprint = ItemBlueprints.make(chosen);
 
-            if (!player.inventory.addItemStackToInventory(blueprint)) {
-                player.dropItem(blueprint, false);
-            }
-            return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+            return new ActionResult<>(EnumActionResult.SUCCESS, blueprint);
         }
 
         return new ActionResult<>(EnumActionResult.PASS, stack);

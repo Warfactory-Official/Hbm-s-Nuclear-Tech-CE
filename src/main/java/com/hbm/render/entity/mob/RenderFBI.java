@@ -1,8 +1,8 @@
 package com.hbm.render.entity.mob;
 
+import com.hbm.Tags;
 import com.hbm.entity.mob.EntityFBI;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.model.ModelFBI;
 import net.minecraft.client.renderer.entity.RenderBiped;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -13,7 +13,7 @@ public class RenderFBI extends RenderBiped<EntityFBI> {
 
 	public static final IRenderFactory<EntityFBI> FACTORY = man -> new RenderFBI(man);
 	
-	private static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID + ":" + "textures/entity/fbi.png");
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":" + "textures/entity/fbi.png");
 	
 	public RenderFBI(RenderManager renderManagerIn) {
 		super(renderManagerIn, new ModelFBI(), 1.0F);

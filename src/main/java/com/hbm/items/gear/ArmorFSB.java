@@ -1,17 +1,16 @@
 package com.hbm.items.gear;
 
-import com.hbm.capability.HbmLivingProps;
 import com.hbm.config.PotionConfig;
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.interfaces.NotableComments;
 import com.hbm.items.ModItems;
+import com.hbm.items.armor.IArmorDisableModel;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.render.NTMRenderHelper;
-import com.hbm.util.ContaminationUtil;
-import com.hbm.util.I18nUtil;
-import com.hbm.util.InventoryUtil;
-import com.hbm.util.ShadyUtil;
+import com.hbm.render.loader.IModelCustom;
+import com.hbm.util.*;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -44,8 +43,10 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 // mlbv: heads up! The original 1.7 version has almost all the methods expect a param of EntityPlayer.
@@ -53,7 +54,7 @@ import java.util.List;
 // by making them accept EntityLivingBase instead and moving update methods to onLivingUpdate.
 // This is hereby reverted by me since I'd rather trade compatibility for convenience.
 @NotableComments
-public class ArmorFSB extends ItemArmor {
+public class ArmorFSB extends ItemArmor implements IArmorDisableModel {
 
 
     public List<PotionEffect> effects = new ArrayList<>();
@@ -91,7 +92,7 @@ public class ArmorFSB extends ItemArmor {
 
             boolean noHelmet = chestplate.noHelmet;
 
-            for (EntityEquipmentSlot slot : EntityEquipmentSlot.values()) {
+            for (EntityEquipmentSlot slot : EnumUtil.ENTITY_EQUIPMENT_SLOTS) {
                 if (slot == EntityEquipmentSlot.MAINHAND || slot == EntityEquipmentSlot.OFFHAND)
                     continue;
                 if (noHelmet && slot == EntityEquipmentSlot.HEAD)
@@ -131,7 +132,7 @@ public class ArmorFSB extends ItemArmor {
         if (!plate.isEmpty() && plate.getItem() instanceof ArmorFSB chestplate) {
             boolean noHelmet = chestplate.noHelmet;
 
-            for (EntityEquipmentSlot slot : EntityEquipmentSlot.values()) {
+            for (EntityEquipmentSlot slot : EnumUtil.ENTITY_EQUIPMENT_SLOTS) {
                 if (slot == EntityEquipmentSlot.MAINHAND || slot == EntityEquipmentSlot.OFFHAND)
                     continue;
                 if (noHelmet && slot == EntityEquipmentSlot.HEAD)
@@ -148,6 +149,24 @@ public class ArmorFSB extends ItemArmor {
         }
 
         return false;
+    }
+
+    private final ReferenceOpenHashSet<EnumPlayerPart> hidden = new ReferenceOpenHashSet<>();
+    private boolean needsFullSet = false;
+
+    public ArmorFSB setHides(EnumPlayerPart... parts) {
+        Collections.addAll(hidden, parts);
+        return this;
+    }
+
+    public ArmorFSB setFullSetForHide() {
+        needsFullSet = true;
+        return this;
+    }
+
+    @Override
+    public boolean disablesPart(EntityPlayer player, ItemStack stack, EnumPlayerPart part) {
+        return hidden.contains(part) && (!needsFullSet || hasFSBArmorIgnoreCharge(player));
     }
 
     public void handleAttack(LivingAttackEvent event) {
@@ -256,7 +275,7 @@ public class ArmorFSB extends ItemArmor {
         if (!hasFSBArmor(entity) || !this.geigerSound) return;
         if(InventoryUtil.hasItem(entity, ModItems.geiger_counter) || InventoryUtil.hasItem(entity, ModItems.dosimeter)) return;
         if(world.getTotalWorldTime() % 5 == 0) {
-            float x = (float) ContaminationUtil.getActualPlayerRads(entity);
+            double x = ContaminationUtil.getActualPlayerRads(entity);
 
             if(x > 1e-5) {
                 IntArrayList list = new IntArrayList();
@@ -434,4 +453,63 @@ public class ArmorFSB extends ItemArmor {
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
+    public static void setupRenderInv() {
+        GlStateManager.translate(0, -1.5, 0);
+        GlStateManager.scale(3.25, 3.25, 3.25);
+        GlStateManager.rotate(180, 1, 0, 0);
+        GlStateManager.rotate(-135, 0, 1, 0);
+        GlStateManager.rotate(-20, 1, 0, 0);
+    }
+
+    public static void setupRenderNonInv() {
+        GlStateManager.rotate(180, 1, 0, 0);
+        GlStateManager.scale(0.75, 0.75, 0.75);
+        GlStateManager.rotate(-90, 0, 1, 0);
+    }
+
+    // if it's the same vomit every time, why not make a method that does it for us?
+    public static void renderStandard(IModelCustom model, EntityEquipmentSlot slot,
+                                      ResourceLocation helmetTex, ResourceLocation chestTex, ResourceLocation armTex, ResourceLocation legTex,
+                                      String helmet, String chest, String leftArm, String rightArm, String leftLeg, String rightLeg, String leftBoot, String rightBoot) {
+        GlStateManager.shadeModel(GL11.GL_SMOOTH);
+        switch (slot) {
+            case HEAD -> {
+                GlStateManager.scale(0.3125, 0.3125, 0.3125);
+                GlStateManager.translate(0, 1, 0);
+                Minecraft.getMinecraft().getTextureManager().bindTexture(helmetTex);
+                for (String s : helmet.split(",")) model.renderPart(s);
+            }
+            case CHEST -> {
+                GlStateManager.scale(0.225, 0.225, 0.225);
+                GlStateManager.translate(0, -10, 0);
+                Minecraft.getMinecraft().getTextureManager().bindTexture(chestTex);
+                for (String s : chest.split(",")) model.renderPart(s);
+                GlStateManager.translate(0, 0, 0.1);
+                Minecraft.getMinecraft().getTextureManager().bindTexture(armTex);
+                for (String s : leftArm.split(",")) model.renderPart(s);
+                for (String s : rightArm.split(",")) model.renderPart(s);
+            }
+            case LEGS -> {
+                GlStateManager.scale(0.25, 0.25, 0.25);
+                GlStateManager.translate(0, -20, 0);
+                Minecraft.getMinecraft().getTextureManager().bindTexture(legTex);
+                GlStateManager.disableCull();
+                for (String s : leftLeg.split(",")) model.renderPart(s);
+                GlStateManager.translate(0, 0, 0.1);
+                for (String s : rightLeg.split(",")) model.renderPart(s);
+                GlStateManager.enableCull();
+            }
+            case FEET -> {
+                GlStateManager.scale(0.25, 0.25, 0.25);
+                GlStateManager.translate(0, -22, 0);
+                Minecraft.getMinecraft().getTextureManager().bindTexture(legTex);
+                GlStateManager.disableCull();
+                for (String s : leftBoot.split(",")) model.renderPart(s);
+                GlStateManager.translate(0, 0, 0.1);
+                for (String s : rightBoot.split(",")) model.renderPart(s);
+                GlStateManager.enableCull();
+            }
+        }
+        GlStateManager.shadeModel(GL11.GL_FLAT);
+    }
 }

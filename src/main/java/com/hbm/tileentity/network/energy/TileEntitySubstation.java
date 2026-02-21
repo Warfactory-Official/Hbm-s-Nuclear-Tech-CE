@@ -6,6 +6,7 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.util.Vec3NT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -22,14 +23,13 @@ public class TileEntitySubstation extends TileEntityPylonBase {
 	public Vec3d[] getMountPos() {
 
 		double topOff = 5.25D;
-		Vec3d vec = new Vec3d(1, 0, 0);
+        Vec3NT vec = new Vec3NT(1, 0, 0);
 
-		switch (getBlockMetadata() - BlockDummyable.offset) {
-			case 2 -> vec.rotateYaw((float) Math.PI * 0.0F);
-			case 4 -> vec.rotateYaw((float) Math.PI * 0.5F);
-			case 3 -> vec.rotateYaw((float) Math.PI * 0.0F);
-			case 5 -> vec.rotateYaw((float) Math.PI * 0.5F);
-		}
+        int meta = getBlockMetadata() - BlockDummyable.offset; // if you want to ask me "why" - judging by new torex' behaviour, it needs to be cached in a local int
+        switch (meta) {
+			case 4, 5 -> vec.rotateAroundYRad((float) Math.PI * 0.5F);
+            default -> vec.rotateAroundYRad((float) Math.PI * 0.0F);
+        }
 
 		return new Vec3d[] {
 				new Vec3d(0.5D + vec.x * 0.5D, topOff, 0.5D + vec.z * 0.5D),

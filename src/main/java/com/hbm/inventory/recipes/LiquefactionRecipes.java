@@ -23,7 +23,7 @@ import static com.hbm.inventory.OreDictManager.*;
 
 public class LiquefactionRecipes extends SerializableRecipe {
 
-    private static HashMap<Object, FluidStack> recipes = new HashMap();
+    public static HashMap<Object, FluidStack> recipes = new HashMap<>();
 
     @Override
     public void registerDefaults() {
@@ -69,8 +69,7 @@ public class LiquefactionRecipes extends SerializableRecipe {
 
     public static FluidStack getOutput(ItemStack stack) {
 
-        if(stack == ItemStack.EMPTY || stack.getItem() == null)
-            return null;
+        if(stack.isEmpty()) return null;
 
         RecipesCommon.ComparableStack comp = new RecipesCommon.ComparableStack(stack.getItem(), 1, stack.getItemDamage());
 
@@ -94,7 +93,7 @@ public class LiquefactionRecipes extends SerializableRecipe {
 
     public static HashMap<Object, ItemStack> getRecipes() {
 
-        HashMap<Object, ItemStack> recipes = new HashMap<Object, ItemStack>();
+        HashMap<Object, ItemStack> recipes = new HashMap<>();
 
         for(Map.Entry<Object, FluidStack> entry : LiquefactionRecipes.recipes.entrySet()) {
 
@@ -133,8 +132,8 @@ public class LiquefactionRecipes extends SerializableRecipe {
     @Override
     public void readRecipe(JsonElement recipe) {
         JsonObject obj = (JsonObject) recipe;
-        RecipesCommon.AStack in = this.readAStack(obj.get("input").getAsJsonArray());
-        FluidStack out = this.readFluidStack(obj.get("output").getAsJsonArray());
+        RecipesCommon.AStack in = readAStack(obj.get("input").getAsJsonArray());
+        FluidStack out = readFluidStack(obj.get("output").getAsJsonArray());
 
         if(in instanceof RecipesCommon.ComparableStack) {
             recipes.put(((RecipesCommon.ComparableStack) in).makeSingular(), out);
@@ -150,12 +149,12 @@ public class LiquefactionRecipes extends SerializableRecipe {
 
         writer.name("input");
         if(key instanceof String) {
-            this.writeAStack(new RecipesCommon.OreDictStack((String) key), writer);
+            writeAStack(new RecipesCommon.OreDictStack((String) key), writer);
         } else if(key instanceof RecipesCommon.ComparableStack) {
-            this.writeAStack((RecipesCommon.ComparableStack) key, writer);
+            writeAStack((RecipesCommon.ComparableStack) key, writer);
         }
 
         writer.name("output");
-        this.writeFluidStack(rec.getValue(), writer);
+        writeFluidStack(rec.getValue(), writer);
     }
 }

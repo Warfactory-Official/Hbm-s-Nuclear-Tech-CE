@@ -2,6 +2,7 @@ package com.hbm.entity.mob;
 
 import com.hbm.entity.projectile.EntityBullet;
 import com.hbm.entity.projectile.EntityChopperMine;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IRadiationImmune;
 import com.hbm.inventory.material.Mats;
@@ -9,7 +10,6 @@ import com.hbm.items.ModItems;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.lib.ModDamageSource;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.render.amlfrom1710.Vec3;
 import net.minecraft.entity.Entity;
@@ -274,7 +274,7 @@ public class EntityHunterChopper extends EntityFlying implements IMob, IRadiatio
 				data.setString("mode", "meteor");
 				data.setInteger("count", 10);
 				data.setDouble("width", 1);
-				PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, posX, posY, posZ),  new NetworkRegistry.TargetPoint(dimension, posX, posY, posZ, 100));
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, posX, posY, posZ),  new NetworkRegistry.TargetPoint(dimension, posX, posY, posZ, 100));
 			}
 			
 			rotationYaw += 20;

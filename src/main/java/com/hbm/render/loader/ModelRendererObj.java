@@ -1,6 +1,5 @@
 package com.hbm.render.loader;
 
-import com.hbm.render.amlfrom1710.IModelCustom;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;

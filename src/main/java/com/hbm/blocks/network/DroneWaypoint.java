@@ -128,8 +128,8 @@ public class DroneWaypoint extends BlockContainer implements ILookOverlay, ITool
     }
 
     @Override
-    public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
-        TileEntityDroneWaypoint tile = (TileEntityDroneWaypoint) world.getTileEntity(new BlockPos(x, y, z));
+    public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
+        TileEntityDroneWaypoint tile = (TileEntityDroneWaypoint) world.getTileEntity(pos);
         List<String> text = new ArrayList<>();
 
         text.add("Waypoint distance: " + tile.height);

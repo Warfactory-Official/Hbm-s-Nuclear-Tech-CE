@@ -17,7 +17,9 @@ public class PlayerSoundPacket implements IMessage {
     private boolean restart;
 
     public enum SoundType {
-        NULLRADAR
+        NULLRADAR;
+
+        public static final SoundType[] VALUES = values();
     }
 
     public PlayerSoundPacket() {
@@ -46,7 +48,7 @@ public class PlayerSoundPacket implements IMessage {
         @SideOnly(Side.CLIENT)
         public IMessage onMessage(PlayerSoundPacket m, MessageContext ctx) {
             Minecraft.getMinecraft().addScheduledTask(() -> {
-                SoundType type = SoundType.values()[m.id];
+                SoundType type = SoundType.VALUES[m.id];
                 SoundLoopPlayer existingSound = SoundLoopPlayer.getPlayingSound(type);
                 if (existingSound != null) {
                     if (m.restart) {

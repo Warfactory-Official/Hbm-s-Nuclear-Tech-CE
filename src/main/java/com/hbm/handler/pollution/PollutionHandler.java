@@ -2,6 +2,8 @@ package com.hbm.handler.pollution;
 
 import com.hbm.config.MobConfig;
 import com.hbm.config.RadiationConfig;
+import com.hbm.entity.mob.glyphid.EntityGlyphidDigger;
+import com.hbm.entity.mob.glyphid.EntityGlyphidScout;
 import com.hbm.render.amlfrom1710.Vec3;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -16,6 +18,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.gen.ChunkProviderServer;
+import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -191,7 +194,7 @@ public class PollutionHandler {
                     int z = chunk.getKey().z;
                     PollutionData data = chunk.getValue();
 
-                    float[] pollutionForNeightbors = new float[PollutionType.values().length];
+                    float[] pollutionForNeightbors = new float[PollutionType.VALUES.length];
                     int S = PollutionType.SOOT.ordinal();
                     int H = PollutionType.HEAVYMETAL.ordinal();
                     int P = PollutionType.POISON.ordinal();
@@ -326,21 +329,21 @@ public class PollutionHandler {
     }
 
     public static class PollutionData {
-        public float[] pollution = new float[PollutionType.values().length];
+        public float[] pollution = new float[PollutionType.VALUES.length];
 
         public static PollutionData fromNBT(NBTTagCompound nbt) {
             PollutionData data = new PollutionData();
 
-            for(int i = 0; i < PollutionType.values().length; i++) {
-                data.pollution[i] = nbt.getFloat(PollutionType.values()[i].name().toLowerCase(Locale.US));
+            for(int i = 0; i < PollutionType.VALUES.length; i++) {
+                data.pollution[i] = nbt.getFloat(PollutionType.VALUES[i].name().toLowerCase(Locale.US));
             }
 
             return data;
         }
 
         public void toNBT(NBTTagCompound nbt) {
-            for(int i = 0; i < PollutionType.values().length; i++) {
-                nbt.setFloat(PollutionType.values()[i].name().toLowerCase(Locale.US), pollution[i]);
+            for(int i = 0; i < PollutionType.VALUES.length; i++) {
+                nbt.setFloat(PollutionType.VALUES[i].name().toLowerCase(Locale.US), pollution[i]);
             }
         }
     }
@@ -351,6 +354,8 @@ public class PollutionHandler {
         HEAVYMETAL("trait.ptype.heavymetal"),
         FALLOUT("trait.ptype.fallout");
 
+        public static final PollutionType[] VALUES = values();
+
         public String name;
 
         private PollutionType(String name) {
@@ -358,9 +363,34 @@ public class PollutionHandler {
         }
     }
 
-    ////////////////////////////////////////////
-    /// MOB EFFECTS: GLYPHIDS GONNA BE LATER ///
-    ////////////////////////////////////////////
+    @SubscribeEvent
+    public void rampantTargetSetter(PlayerSleepInBedEvent event){
+        if (MobConfig.rampantGlyphidGuidance) targetCoords = Vec3.createVectorHelper(event.getPos().getX(), event.getPos().getY(), event.getPos().getZ());
+    }
 
-    // RAMPANT MODE: GONNA BE LATER //
+    @SubscribeEvent
+    public void rampantScoutPopulator(WorldEvent.PotentialSpawns event){
+        BlockPos pos = event.getPos();
+        if(MobConfig.rampantNaturalScoutSpawn && !event.getWorld().isRemote && event.getWorld().provider.getDimension() == 0 && event.getWorld().canSeeSky(pos) && !event.isCanceled()) {
+            if (event.getWorld().rand.nextInt(MobConfig.rampantScoutSpawnChance) == 0) {
+                int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+
+                float soot = PollutionHandler.getPollution(event.getWorld(), pos, PollutionType.SOOT);
+
+                if (soot >= MobConfig.rampantScoutSpawnThresh) {
+                    EntityGlyphidScout scout = new EntityGlyphidScout(event.getWorld());
+                    scout.setLocationAndAngles(x, y, z, event.getWorld().rand.nextFloat() * 360.0F, 0.0F);
+                    if(scout.isValidLightLevel()) {
+                        //escort for the scout, which can also deal with obstacles
+                        EntityGlyphidDigger digger = new EntityGlyphidDigger(event.getWorld());
+                        scout.setLocationAndAngles(x, y, z, event.getWorld().rand.nextFloat() * 360.0F, 0.0F);
+                        digger.setLocationAndAngles(x, y, z, event.getWorld().rand.nextFloat() * 360.0F, 0.0F);
+                        if(scout.getCanSpawnHere()) event.getWorld().spawnEntity(scout);
+                        if(digger.getCanSpawnHere()) event.getWorld().spawnEntity(digger);
+                    }
+                }
+            }
+        }
+
+    }
 }

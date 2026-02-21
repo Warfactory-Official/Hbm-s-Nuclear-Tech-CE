@@ -1,6 +1,6 @@
 package com.hbm.particle;
 
-import com.hbm.main.ModEventHandlerClient;
+import com.hbm.main.client.NTMClientRegistry;
 import com.hbm.particle.helper.FlameCreator;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.entity.Entity;
@@ -16,7 +16,7 @@ public class ParticleFlamethrower extends ParticleRotating {
 
   public ParticleFlamethrower(World world, double x, double y, double z, int type) {
     super(world, x, y, z);
-    this.particleTexture = ModEventHandlerClient.particle_base;
+    this.particleTexture = NTMClientRegistry.particle_base;
     this.particleMaxAge = 20 + rand.nextInt(10);
     this.particleScale = 0.5F;
 

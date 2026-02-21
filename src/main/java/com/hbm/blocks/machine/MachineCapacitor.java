@@ -13,7 +13,6 @@ import com.hbm.tileentity.IPersistentNBT;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.I18nUtil;
-import com.mojang.realmsclient.gui.ChatFormatting;
 import io.netty.buffer.ByteBuf;
 import li.cil.oc.api.machine.Arguments;
 import li.cil.oc.api.machine.Callback;
@@ -35,6 +34,7 @@ import net.minecraft.stats.StatList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -110,8 +110,7 @@ public class MachineCapacitor extends BlockContainer implements ILookOverlay, IP
     }
 
     @Override
-    public void printHook(RenderGameOverlayEvent.Pre event, World world, int x, int y, int z) {
-        BlockPos pos = new BlockPos(x, y, z);
+    public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
         TileEntity te = world.getTileEntity(pos);
 
         if(!(te instanceof TileEntityCapacitor))
@@ -125,29 +124,29 @@ public class MachineCapacitor extends BlockContainer implements ILookOverlay, IP
         int charge = (int) Math.floor(percent * 10_000D);
         int color = ((int) (0xFF - 0xFF * percent)) << 16 | ((int)(0xFF * percent) << 8);
         text.add("&[" + color + "&]" + (charge / 100D) + "%");
-        text.add(ChatFormatting.GREEN + "-> " + ChatFormatting.RESET + "+" + BobMathUtil.getShortNumber(battery.powerReceived) + "HE/t");
-        text.add(ChatFormatting.RED + "<- " + ChatFormatting.RESET + "-" + BobMathUtil.getShortNumber(battery.powerSent) + "HE/t");
+        text.add(TextFormatting.GREEN + "-> " + TextFormatting.RESET + "+" + BobMathUtil.getShortNumber(battery.powerReceived) + "HE/t");
+        text.add(TextFormatting.RED + "<- " + TextFormatting.RESET + "-" + BobMathUtil.getShortNumber(battery.powerSent) + "HE/t");
 
         ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getTranslationKey() + ".name"), 0xffff00, 0x404000, text);
     }
 
     @Override
-    public void addInformation(ItemStack stack, NBTTagCompound persistentTag, EntityPlayer player, List list, boolean ext) {
-        list.add(ChatFormatting.GOLD + "Stores up to "+ BobMathUtil.getShortNumber(this.power) + "HE");
-        list.add(ChatFormatting.GOLD + "Charge speed: "+ BobMathUtil.getShortNumber(this.power / 200) + "HE");
-        list.add(ChatFormatting.GOLD + "Discharge speed: "+ BobMathUtil.getShortNumber(this.power / 600) + "HE");
-        list.add(ChatFormatting.YELLOW + "" + BobMathUtil.getShortNumber(persistentTag.getLong("power")) + "/" + BobMathUtil.getShortNumber(persistentTag.getLong("maxPower")) + "HE");
+    public void addInformation(ItemStack stack, NBTTagCompound persistentTag, EntityPlayer player, List<String> list, boolean ext) {
+        list.add(TextFormatting.GOLD + "Stores up to "+ BobMathUtil.getShortNumber(this.power) + "HE");
+        list.add(TextFormatting.GOLD + "Charge speed: "+ BobMathUtil.getShortNumber(this.power / 200) + "HE");
+        list.add(TextFormatting.GOLD + "Discharge speed: "+ BobMathUtil.getShortNumber(this.power / 600) + "HE");
+        list.add(TextFormatting.YELLOW + "" + BobMathUtil.getShortNumber(persistentTag.getLong("power")) + "/" + BobMathUtil.getShortNumber(persistentTag.getLong("maxPower")) + "HE");
     }
 
     @Override
     public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
 
         if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
-            for(String s : I18nUtil.resolveKeyArray("tile.capacitor.desc")) tooltip.add(ChatFormatting.YELLOW + s);
+            for(String s : I18nUtil.resolveKeyArray("tile.capacitor.desc")) tooltip.add(TextFormatting.YELLOW + s);
         } else {
-            tooltip.add(ChatFormatting.DARK_GRAY + "" + ChatFormatting.ITALIC +"Hold <" +
-                    ChatFormatting.YELLOW + "" + ChatFormatting.ITALIC + "LSHIFT" +
-                    ChatFormatting.DARK_GRAY + "" + ChatFormatting.ITALIC + "> to display more info");
+            tooltip.add(TextFormatting.DARK_GRAY + "" + TextFormatting.ITALIC +"Hold <" +
+                    TextFormatting.YELLOW + "" + TextFormatting.ITALIC + "LSHIFT" +
+                    TextFormatting.DARK_GRAY + "" + TextFormatting.ITALIC + "> to display more info");
         }
     }
 
@@ -163,7 +162,12 @@ public class MachineCapacitor extends BlockContainer implements ILookOverlay, IP
     @Override
     public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
         IPersistentNBT.onBlockPlacedBy(world, pos, stack);
-        world.setBlockState(pos, state.withProperty(FACING, EnumFacing.getDirectionFromEntityLiving(pos, placer)));
+    }
+    @Override
+    public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing,
+                                            float hitX, float hitY, float hitZ,
+                                            int meta, EntityLivingBase placer) {
+        return this.getDefaultState().withProperty(FACING, facing);
     }
 
     @Override

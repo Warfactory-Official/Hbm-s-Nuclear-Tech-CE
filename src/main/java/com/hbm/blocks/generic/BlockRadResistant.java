@@ -22,24 +22,19 @@ public class BlockRadResistant extends Block implements IRadResistantBlock {
 		this.setTranslationKey(s);
 
 		ModBlocks.ALL_BLOCKS.add(this);
-	}
+    }
 
-	@Override
-	public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
-		RadiationSystemNT.markChunkForRebuild(worldIn, pos);
-		super.onBlockAdded(worldIn, pos, state);
-	}
+    @Override
+    public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
+        RadiationSystemNT.markSectionForRebuild(worldIn, pos);
+        super.onBlockAdded(worldIn, pos, state);
+    }
 
-	@Override
-	public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
-		RadiationSystemNT.markChunkForRebuild(worldIn, pos);
-		super.breakBlock(worldIn, pos, state);
-	}
-
-	@Override
-	public boolean isRadResistant(World worldIn, BlockPos blockPos){
-		return true;
-	}
+    @Override
+    public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+        RadiationSystemNT.markSectionForRebuild(worldIn, pos);
+        super.breakBlock(worldIn, pos, state);
+    }
 
 	@Override
 	public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {

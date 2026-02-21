@@ -2,8 +2,10 @@ package com.hbm.handler;
 
 import com.hbm.capability.HbmCapability;
 import com.hbm.config.GeneralConfig;
+import com.hbm.inventory.gui.GUICalculator;
 import com.hbm.items.IKeybindReceiver;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.lib.internal.MethodHandleHelper;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.KeybindPacket;
 import com.hbm.packet.PacketDispatcher;
@@ -14,7 +16,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.settings.KeyBindingMap;
 import net.minecraftforge.client.settings.KeyModifier;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -22,10 +24,14 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Keyboard;
 
+import java.lang.invoke.MethodHandle;
+
 public class HbmKeybinds {
 
 	public static final String category = "key.categories.hbm";
-	
+    private static final MethodHandle hashHandle = MethodHandleHelper.findStaticGetter(KeyBinding.class, "HASH", "field_74514_b", KeyBindingMap.class);
+
+    public static KeyBinding calculatorKey = new KeyBinding(category + ".calculator", Keyboard.KEY_N, category);
 	public static KeyBinding jetpackKey = new KeyBinding(category + ".toggleBack", Keyboard.KEY_C, category);
 	public static KeyBinding hudKey = new KeyBinding(category + ".toggleHUD", Keyboard.KEY_V, category);
 	public static KeyBinding reloadKey = new KeyBinding(category + ".reload", Keyboard.KEY_R, category);
@@ -41,10 +47,12 @@ public class HbmKeybinds {
 
 	public static KeyBinding abilityCycle = new KeyBinding(category + ".ability", -99, category);
 	public static KeyBinding abilityAlt = new KeyBinding(category + ".abilityAlt", Keyboard.KEY_LMENU, category);
+	public static KeyBinding copyToolAlt = new KeyBinding(category + ".copyToolAlt", Keyboard.KEY_LMENU, category);
 	public static KeyBinding gunSecondaryKey = new KeyBinding(category + ".gunSecondary", -99, category);
 	public static KeyBinding gunTertiaryKey = new KeyBinding(category + ".gunTertitary", -98, category);
 	
 	public static void register() {
+        ClientRegistry.registerKeyBinding(calculatorKey);
 		ClientRegistry.registerKeyBinding(jetpackKey);
 		ClientRegistry.registerKeyBinding(hudKey);
 		ClientRegistry.registerKeyBinding(reloadKey);
@@ -71,6 +79,12 @@ public class HbmKeybinds {
 
 		/// KEYBIND PROPS ///
 		handleProps(Keyboard.getEventKeyState(), Keyboard.getEventKey());
+
+        /// CALCULATOR ///
+        if(calculatorKey.isPressed()) {
+            MainRegistry.proxy.me().closeScreen();
+            FMLCommonHandler.instance().showGuiScreen(new GUICalculator());
+        }
 	}
 
 	/**
@@ -101,6 +115,16 @@ public class HbmKeybinds {
 				onPressedClient(player, EnumKeybind.ABILITY_CYCLE, current);
 			}
 		}
+
+		if(!player.getHeldItemMainhand().isEmpty() && player.getHeldItemMainhand().getItem() instanceof ItemGunBaseNT
+				&& props.getKeyPressed(EnumKeybind.GUN_PRIMARY)) {
+			Minecraft mc = Minecraft.getMinecraft();
+			KeyBinding.setKeyBindState(mc.gameSettings.keyBindAttack.getKeyCode(), false);
+			mc.leftClickCounter = 2;
+			if(mc.playerController != null) {
+				mc.playerController.resetBlockRemoving();
+			}
+		}
 	}
 	
 	public static enum EnumKeybind {
@@ -116,16 +140,24 @@ public class HbmKeybinds {
 		CRANE_LOAD,
 		ABILITY_CYCLE,
 		ABILITY_ALT,
+		TOOL_ALT,
 		GUN_PRIMARY,
 		GUN_SECONDARY,
-		GUN_TERTIARY
+		GUN_TERTIARY;
+
+        public static final EnumKeybind[] VALUES = values();
 	}
 
 	/** Handles keybind overlap. Make sure this runs first before referencing the keybinds set by the extprops */
 	public static void handleOverlap(boolean state, int keyCode) {
 		Minecraft mc = Minecraft.getMinecraft();
 		if(GeneralConfig.enableKeybindOverlap && (mc.currentScreen == null || mc.currentScreen.allowUserInput)) {
-			KeyBindingMap HASH = ObfuscationReflectionHelper.getPrivateValue(KeyBinding.class, null, "field_74514_b", "HASH");
+            KeyBindingMap HASH;
+            try {
+                HASH = (KeyBindingMap) hashHandle.invokeExact();
+            } catch (Throwable t) {
+                throw new RuntimeException(t);
+            }
 
 			//if anything errors here, run ./gradlew clean setupDecompWorkSpace
 			for (KeyBinding key : KeyBinding.KEYBIND_ARRAY.values()) {
@@ -143,7 +175,8 @@ public class HbmKeybinds {
 			}
 
 			/// GUN HANDLING ///
-			boolean gunKey = keyCode == HbmKeybinds.gunSecondaryKey.getKeyCode() ||
+			boolean gunKey = keyCode == mc.gameSettings.keyBindAttack.getKeyCode() ||
+					keyCode == HbmKeybinds.gunSecondaryKey.getKeyCode() ||
 					keyCode == HbmKeybinds.gunTertiaryKey.getKeyCode() || keyCode == HbmKeybinds.reloadKey.getKeyCode();
 
 			EntityPlayer player = mc.player;
@@ -177,7 +210,7 @@ public class HbmKeybinds {
 		EntityPlayer player = MainRegistry.proxy.me();
 		HbmCapability.IHBMData props = HbmCapability.getData(player);
 
-		for(EnumKeybind key : EnumKeybind.values()) {
+		for(EnumKeybind key : EnumKeybind.VALUES) {
 			boolean last = props.getKeyPressed(key);
 			boolean current = MainRegistry.proxy.getIsKeyPressed(key);
 

@@ -2,8 +2,8 @@ package com.hbm.items.special;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.hbm.Tags;
 import com.hbm.items.ItemBakedBase;
-import com.hbm.lib.RefStrings;
 import com.hbm.render.model.BakedModelTransforms;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.*;
@@ -102,8 +102,8 @@ public class ItemHot extends ItemBakedBase {
 		try {
 			IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/generated"));
 
-			ResourceLocation baseSpriteLoc = new ResourceLocation(RefStrings.MODID, ROOT_PATH + baseTexturePath);
-			ResourceLocation overlaySpriteLoc = new ResourceLocation(RefStrings.MODID, ROOT_PATH + overlayTexturePath);
+			ResourceLocation baseSpriteLoc = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath);
+			ResourceLocation overlaySpriteLoc = new ResourceLocation(Tags.MODID, ROOT_PATH + overlayTexturePath);
 
 			IModel twoLayerModel = baseModel.retexture(
 					ImmutableMap.of(
@@ -151,7 +151,7 @@ public class ItemHot extends ItemBakedBase {
 	@SideOnly(Side.CLIENT)
 	public void registerSprite(TextureMap map) {
 		super.registerSprite(map);
-		map.registerSprite(new ResourceLocation(RefStrings.MODID, ROOT_PATH + overlayTexturePath));
+		map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + overlayTexturePath));
 	}
 	// Th3_Sl1ze: if you have a more elegant solution, you're free to change this shit
 	// color handler won't give the same result, tried it already

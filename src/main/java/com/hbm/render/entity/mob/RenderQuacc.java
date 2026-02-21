@@ -1,8 +1,8 @@
 package com.hbm.render.entity.mob;
 
+import com.hbm.Tags;
 import com.hbm.entity.mob.EntityQuackos;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
 import net.minecraft.client.renderer.entity.RenderChicken;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.passive.EntityChicken;
@@ -24,7 +24,7 @@ public class RenderQuacc extends RenderChicken {
 	/**
 	 *  BOW
 	 */
-	public static final ResourceLocation ducc = new ResourceLocation(RefStrings.MODID, "textures/entity/duck.png");
+	public static final ResourceLocation ducc = new ResourceLocation(Tags.MODID, "textures/entity/duck.png");
 	
 	 /**
      *  BOW

@@ -1,10 +1,10 @@
 package com.hbm.render.entity;
 
+import com.hbm.Tags;
 import com.hbm.entity.mob.botprime.EntityBOTPrimeHead;
-import com.hbm.hfr.render.loader.HFRWavefrontObject;
+import com.hbm.render.loader.HFRWavefrontObject;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.lib.RefStrings;
-import com.hbm.render.amlfrom1710.IModelCustom;
+import com.hbm.render.loader.IModelCustom;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -16,8 +16,8 @@ public class RenderWormHead extends Render<EntityBOTPrimeHead> {
 
 	public static final IRenderFactory<EntityBOTPrimeHead> FACTORY = man -> new RenderWormHead(man);
 	
-	public static final IModelCustom body = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/mobs/bot_prime_head.obj"));
-	public static final ResourceLocation texture = new ResourceLocation(RefStrings.MODID, "textures/entity/mark_zero_head.png");
+	public static final IModelCustom body = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/mobs/bot_prime_head.obj"));
+	public static final ResourceLocation texture = new ResourceLocation(Tags.MODID, "textures/entity/mark_zero_head.png");
 	
 	public RenderWormHead(RenderManager rendermanagerIn) {
 		super(rendermanagerIn);

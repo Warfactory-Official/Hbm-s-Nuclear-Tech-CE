@@ -1,6 +1,6 @@
 package com.hbm.inventory.control_panel;
 
-import com.hbm.lib.RefStrings;
+import com.hbm.Tags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.event.world.WorldEvent;
@@ -10,7 +10,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.WorldTickEvent;
 
 import java.util.*;
 
-@Mod.EventBusSubscriber(modid = RefStrings.MODID)
+@Mod.EventBusSubscriber(modid = Tags.MODID)
 public class ControlEventSystem {
 
 	private static Map<World, ControlEventSystem> systems = new HashMap<>();

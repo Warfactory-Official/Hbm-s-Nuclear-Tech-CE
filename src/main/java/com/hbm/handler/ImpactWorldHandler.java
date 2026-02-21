@@ -25,16 +25,14 @@ public class ImpactWorldHandler {
 
 	public static void impactEffects(World world) {
 
-		if(!(world instanceof WorldServer))
+		if(!(world instanceof WorldServer serv))
 			return;
 
 		if(world.provider.getDimension() != 0) {
 			return;
 		}
 
-		WorldServer serv = (WorldServer) world;
-
-		ChunkProviderServer chunkProvider = serv.getChunkProvider();
+        ChunkProviderServer chunkProvider = serv.getChunkProvider();
 		List<Chunk> loadedChunks = chunkProvider.getLoadedChunks().stream().collect(Collectors.toList());
 		int listSize = loadedChunks.size();
 

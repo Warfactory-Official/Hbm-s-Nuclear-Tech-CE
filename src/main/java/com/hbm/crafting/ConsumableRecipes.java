@@ -89,7 +89,7 @@ public class ConsumableRecipes {
         CraftingManager.addShapelessAuto(new ItemStack(ModItems.bottle2_fritz, 1),ModItems.bottle2_empty, Items.POTIONITEM, Items.SUGAR, W.dust() );
 
         //Syringes
-        CraftingManager.addRecipeAuto(new ItemStack(ModItems.syringe_empty, 6),"P", "C", "B", 'B', Item.getItemFromBlock(Blocks.IRON_BARS), 'C', ModItems.cell, 'P', IRON.plate() );
+        CraftingManager.addRecipeAuto(new ItemStack(ModItems.syringe_empty, 6),"P", "C", "B", 'B', Item.getItemFromBlock(Blocks.IRON_BARS), 'C', new ItemStack(ModItems.cell), 'P', IRON.plate() );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.syringe_antidote, 6),"SSS", "PMP", "SSS", 'S', ModItems.syringe_empty, 'P', Items.PUMPKIN_SEEDS, 'M', Items.MILK_BUCKET );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.syringe_antidote, 6),"SPS", "SMS", "SPS", 'S', ModItems.syringe_empty, 'P', Items.PUMPKIN_SEEDS, 'M', Items.MILK_BUCKET );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.syringe_antidote, 6),"SSS", "PMP", "SSS", 'S', ModItems.syringe_empty, 'P', Items.PUMPKIN_SEEDS, 'M', Items.REEDS );
@@ -185,7 +185,7 @@ public class ConsumableRecipes {
 
         //Special Mods
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.horseshoe_magnet, 1),"L L", "I I", "ILI", 'L', ModItems.lodestone, 'I', IRON.ingot() );
-        CraftingManager.addRecipeAuto(new ItemStack(ModItems.industrial_magnet, 1),"SMS", " B ", "SMS", 'S', STEEL.ingot(), 'M', ModItems.horseshoe_magnet, 'B', ModBlocks.fusion_conductor );
+        CraftingManager.addRecipeAuto(new ItemStack(ModItems.industrial_magnet, 1),"SMS", " B ", "SMS", 'S', STEEL.ingot(), 'M', ModItems.horseshoe_magnet, 'B', new ItemStack(ModBlocks.hadron_coil_alloy, 1, 0) );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.heart_container, 1),"HAH", "ACA", "HAH", 'H', ModItems.heart_piece, 'A', AL.ingot(), 'C', ModItems.coin_creeper );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.heart_booster, 1),"GHG", "MCM", "GHG", 'G', GOLD.ingot(), 'H', ModItems.heart_container, 'M', ModItems.morning_glory, 'C', ModItems.coin_maskman );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.heart_fab, 1),"GHG", "MCM", "GHG", 'G', PO210.billet(), 'H', ModItems.heart_booster, 'M', ANY_COKE.gem(), 'C', ModItems.coin_worm );
@@ -204,7 +204,6 @@ public class ConsumableRecipes {
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.defuser_gold, 1),"GPG", "PRP", "GPG", 'G', Items.GUNPOWDER, 'P', GOLD.plate(), 'R', "record" );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.ballistic_gauntlet, 1)," WS", "WRS", " RS", 'W', CU.wireFine(), 'R', ModItems.ring_starmetal, 'S', STEEL.plate() );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.night_vision, 1), "P P", "GCG", 'P', ANY_PLASTIC.ingot(), 'G', KEY_ANYGLASS, 'C', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.BASIC));
-        CraftingManager.addRecipeAuto(new ItemStack(ModItems.pocket_ptsd, 1), " R ", "PBP", "PSP", 'R', ModBlocks.machine_radar, 'P', ANY_PLASTIC.ingot(), 'B', ModItems.battery_sc_polonium, 'S', ModBlocks.machine_siren);
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.jetpack_glider), "CSC", "DJD", "T T", 'J', ModItems.jetpack_boost, 'C', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.ADVANCED), 'D', ModItems.plate_desh, 'T', ModItems.thruster_nuclear, 'S', ModItems.motor);
 
         //Stealth boy
