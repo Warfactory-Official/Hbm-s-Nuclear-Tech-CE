@@ -1284,7 +1284,7 @@ public class ModEventHandler {
         World world = event.getWorld();
         BlockPos pos = event.getPos();
 
-        if (block == ModBlocks.stone_gneiss && !AdvancementManager.hasAdvancement(playerMP, AdvancementManager.achStratum)) {
+        if (block == ModBlocks.stone_gneiss && GeneralConfig.enableAdvancements && !AdvancementManager.hasAdvancement(playerMP, AdvancementManager.achStratum)) {
             AdvancementManager.grantAchievement(playerMP, AdvancementManager.achStratum);
             event.setExpToDrop(500);
         }

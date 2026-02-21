@@ -1,6 +1,7 @@
 package com.hbm.main;
 
 import com.hbm.Tags;
+import com.hbm.config.GeneralConfig;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -86,6 +87,7 @@ public class AdvancementManager {
     }
 
     public static void init(MinecraftServer serv) {
+        if (!GeneralConfig.enableAdvancements) return;
         net.minecraft.advancements.AdvancementManager adv = serv.getAdvancementManager();
 
         achSacrifice  = load(adv, "achsacrifice");
@@ -168,25 +170,26 @@ public class AdvancementManager {
     }
 
     public static void grantAchievement(EntityPlayerMP player, Advancement a) {
-        if (a == null) {
-            MainRegistry.logger.log(Level.ERROR, "Failed to grant null advancement! This should never happen.");
-            return;
-        }
+        if (!GeneralConfig.enableAdvancements) return;
+        Objects.requireNonNull(a, "Failed to grant null advancement! This should never happen.");
         for (String s : player.getAdvancements().getProgress(a).getRemaningCriteria()) {
             player.getAdvancements().grantCriterion(a, s);
         }
     }
 
+    /**
+     * @deprecated use {@link #grantAchievement(EntityPlayerMP, Advancement)} instead.
+     */
     @Deprecated
     public static void grantAchievement(EntityPlayer player, Advancement a) {
         if (player instanceof EntityPlayerMP) grantAchievement((EntityPlayerMP) player, a);
     }
 
+    /**
+     * @apiNote Call sites shall test with {@link GeneralConfig#enableAdvancements} first
+     */
     public static boolean hasAdvancement(EntityPlayerMP playerMP, Advancement a) {
-        if (a == null) {
-            MainRegistry.logger.log(Level.ERROR, "Failed to test null advancement! This should never happen.");
-            return false;
-        }
+        Objects.requireNonNull(a, "Failed to test null advancement! This should never happen.");
         return playerMP.getAdvancements().getProgress(a).isDone();
     }
 }
