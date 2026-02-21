@@ -63,6 +63,7 @@ import static com.hbm.items.machine.ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted
 public class TileEntityReactorZirnox extends TileEntityMachineBase implements ITickable, IControlReceiver, IFluidStandardTransceiver, SimpleComponent, IGUIProvider, CompatHandler.OCComponent {
 
     public static final int maxHeat = 100000;
+    private boolean redstonePowered = false;
     public static final int maxPressure = 100000;
     public static final HashMap<RecipesCommon.ComparableStack, ItemStack> fuelMap = new HashMap<RecipesCommon.ComparableStack, ItemStack>();
     private static final int[] slots_io = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
@@ -94,6 +95,12 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
         steam = new FluidTankNTM(Fluids.SUPERHOTSTEAM, 8000);
         carbonDioxide = new FluidTankNTM(Fluids.CARBONDIOXIDE, 16000);
         water = new FluidTankNTM(Fluids.WATER, 32000);
+    }
+    public void setRedstonePowered(boolean powered) {
+        this.redstonePowered = powered;
+        if (!powered) {
+            isOn = false;
+        }
     }
 
     @Override
@@ -237,7 +244,9 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
     public void update() {
 
         if (!world.isRemote) {
-
+            if (redstonePowered) {
+                isOn = true;
+            }
             this.output = 0;
 
             if (world.getTotalWorldTime() % 20 == 0) {
@@ -481,7 +490,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
 
     @Override
     public void receiveControl(NBTTagCompound data) {
-        if (data.hasKey("control")) {
+        if (data.hasKey("control") && !redstonePowered) {
             this.isOn = !this.isOn;
         }
 

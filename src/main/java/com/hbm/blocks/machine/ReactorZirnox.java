@@ -7,6 +7,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.TileEntityProxyCombo;
 import com.hbm.tileentity.machine.TileEntityReactorZirnox;
+import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -88,4 +89,36 @@ public class ReactorZirnox extends BlockDummyable {
         this.makeExtra(world, x + dir.offsetX * o, y + 4, z + dir.offsetZ * o);
     }
 
+    @Override
+    public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
+        super.neighborChanged(state, world, pos, blockIn, fromPos);
+        if (!world.isRemote) {
+            int[] posC = this.findCore(world, pos.getX(), pos.getY(), pos.getZ());
+            if (posC == null) return;
+            BlockPos corePos = new BlockPos(posC[0], posC[1], posC[2]);
+            TileEntity te = world.getTileEntity(corePos);
+            if (te instanceof TileEntityReactorZirnox) {
+                boolean powered = false;
+
+                // Check for redstone on surface blocks
+                for (int dx = -2; dx <= 2 && !powered; dx++) {
+                    for (int dy = 0; dy <= 4 && !powered; dy++) {
+                        for (int dz = -2; dz <= 2 && !powered; dz++) {
+                            // Check only multiblock cube surface
+                            if (dx == -2 || dx == 2 ||
+                                    dy == 0  || dy == 4 ||
+                                    dz == -2 || dz == 2) {
+                                BlockPos checkPos = corePos.add(dx, dy, dz);
+                                if (world.isBlockPowered(checkPos)) {
+                                    powered = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                ((TileEntityReactorZirnox) te).setRedstonePowered(powered);
+            }
+        }
+    }
 }
