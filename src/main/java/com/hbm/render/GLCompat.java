@@ -1,9 +1,8 @@
 package com.hbm.render;
 
-import com.hbm.core.HbmCorePlugin;
 import com.hbm.main.MainRegistry;
+import com.hbm.render.util.AppleVAO;
 import net.minecraft.client.Minecraft;
-import org.lwjgl.LWJGLUtil;
 import org.lwjgl.Sys;
 import org.lwjgl.opengl.*;
 
@@ -57,6 +56,7 @@ public class GLCompat {
     public static boolean arbFragmentShader;
     public static boolean arbMultitexture;
     public static boolean arbOcclusionQuery;
+    @Deprecated
     public static boolean aplLwjglWorkaround;
 
     public static int genVertexArrays() {
@@ -64,52 +64,34 @@ public class GLCompat {
             case NORMAL -> GL30.glGenVertexArrays();
             case ARB -> ARBVertexArrayObject.glGenVertexArrays();
             case APPLE -> APPLEVertexArrayObject.glGenVertexArraysAPPLE();
+            case APPLE_COMPAT -> AppleVAO.glGenVertexArraysAPPLE();
         };
-    }
-
-    public static void uploadVertexArrays(){
-
     }
 
     public static void bindVertexArray(int vao) {
         switch (vaoType) {
-            case NORMAL:
-                GL30.glBindVertexArray(vao);
-                break;
-            case ARB:
-                ARBVertexArrayObject.glBindVertexArray(vao);
-                break;
-            case APPLE:
-                APPLEVertexArrayObject.glBindVertexArrayAPPLE(vao);
-                break;
+            case NORMAL -> GL30.glBindVertexArray(vao);
+            case ARB -> ARBVertexArrayObject.glBindVertexArray(vao);
+            case APPLE -> APPLEVertexArrayObject.glBindVertexArrayAPPLE(vao);
+            case APPLE_COMPAT -> AppleVAO.glBindVertexArrayAPPLE(vao);
         }
     }
 
     public static void deleteVertexArray(int vao) {
         switch (vaoType) {
-            case NORMAL:
-                GL30.glDeleteVertexArrays(vao);
-                break;
-            case ARB:
-                ARBVertexArrayObject.glDeleteVertexArrays(vao);
-                break;
-            case APPLE:
-                APPLEVertexArrayObject.glDeleteVertexArraysAPPLE(vao);
-                break;
+            case NORMAL -> GL30.glDeleteVertexArrays(vao);
+            case ARB -> ARBVertexArrayObject.glDeleteVertexArrays(vao);
+            case APPLE -> APPLEVertexArrayObject.glDeleteVertexArraysAPPLE(vao);
+            case APPLE_COMPAT -> AppleVAO.glDeleteVertexArraysAPPLE(vao);
         }
     }
 
     public static void deleteVertexArray(IntBuffer buffer) {
         switch (vaoType) {
-            case NORMAL:
-                GL30.glDeleteVertexArrays(buffer);
-                break;
-            case ARB:
-                ARBVertexArrayObject.glDeleteVertexArrays(buffer);
-                break;
-            case APPLE:
-                APPLEVertexArrayObject.glDeleteVertexArraysAPPLE(buffer);
-                break;
+            case NORMAL -> GL30.glDeleteVertexArrays(buffer);
+            case ARB -> ARBVertexArrayObject.glDeleteVertexArrays(buffer);
+            case APPLE -> APPLEVertexArrayObject.glDeleteVertexArraysAPPLE(buffer);
+            case APPLE_COMPAT -> AppleVAO.glDeleteVertexArraysAPPLE(buffer);
         }
     }
 
@@ -516,12 +498,11 @@ public class GLCompat {
         if (cap.OpenGL30)
             vaoType = VAOType.NORMAL;
         else if (Minecraft.IS_RUNNING_ON_MAC) {
-            try {
-                Class.forName("org.lwjgl.opengl.APPLEVertexArrayObject");
-                vaoType = VAOType.APPLE;
-            } catch (ClassNotFoundException e) {
-                vaoType = VAOType.NORMAL; // lwjgl3
-            }
+            vaoType = VAOType.APPLE;
+            if (Sys.getVersion().startsWith("3.")) {
+                MainRegistry.logger.info("Apple + LWJGL 3.X.X environment detected, using workaround");
+                vaoType = VAOType.APPLE_COMPAT;
+                if (!AppleVAO.init()) throw new UnsupportedOperationException("VAO not supported");           }
         } else if (cap.GL_ARB_vertex_array_object)
             vaoType = VAOType.ARB;
         else
@@ -709,12 +690,6 @@ public class GLCompat {
             GL_QUERY_RESULT_AVAILABLE = GL15.GL_QUERY_RESULT_AVAILABLE;
             GL_QUERY_RESULT = GL15.GL_QUERY_RESULT;
         }
-
-        if (vaoType == VAOType.APPLE && Sys.getVersion().startsWith("3.")) {
-            MainRegistry.logger.info("Apple + LWJGL 3.X.X environment detected, disabling VAOs");
-            aplLwjglWorkaround = true;
-        } else aplLwjglWorkaround = false;
-
         return "";
 
     }
@@ -725,6 +700,7 @@ public class GLCompat {
         NORMAL,
         ARB,
         APPLE,
+        APPLE_COMPAT
     }
 
     public static enum FBOType {
