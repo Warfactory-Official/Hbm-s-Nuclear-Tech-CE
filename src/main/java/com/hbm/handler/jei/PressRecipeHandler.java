@@ -7,16 +7,12 @@ import com.hbm.items.machine.ItemStamp;
 import com.hbm.util.I18nUtil;
 import com.hbm.util.Tuple;
 import mezz.jei.api.IGuiHelper;
-import mezz.jei.api.gui.IDrawable;
-import mezz.jei.api.gui.IGuiItemStackGroup;
-import mezz.jei.api.gui.IRecipeLayout;
+import mezz.jei.api.gui.*;
 import mezz.jei.api.ingredients.IIngredients;
 import mezz.jei.api.ingredients.VanillaTypes;
 import mezz.jei.api.recipe.IRecipeCategory;
 import mezz.jei.api.recipe.IRecipeWrapper;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
@@ -30,9 +26,12 @@ public class PressRecipeHandler implements IRecipeCategory<PressRecipeHandler.Wr
 	private static final ResourceLocation GUI_TEXTURE = new ResourceLocation(Tags.MODID, "textures/gui/jei/gui_nei_press.png");
 
 	private final IDrawable background;
+    private final IDrawable progressAnimated;
 
 	public PressRecipeHandler(IGuiHelper guiHelper) {
 		this.background = guiHelper.createDrawable(GUI_TEXTURE, 5, 11, 166, 65);
+        IDrawableStatic progressStatic = guiHelper.createDrawable(GUI_TEXTURE, 0, 86, 18, 18);
+        this.progressAnimated = guiHelper.createAnimatedDrawable(progressStatic, 20, IDrawableAnimated.StartDirection.TOP, false);
 	}
 
 	@Override
@@ -108,13 +107,6 @@ public class PressRecipeHandler implements IRecipeCategory<PressRecipeHandler.Wr
 			ingredients.setInputLists(VanillaTypes.ITEM, ins);
 			ingredients.setOutputs(VanillaTypes.ITEM, results);
 		}
-
-		@Override
-		public void drawInfo(Minecraft minecraft, int recipeWidth, int recipeHeight, int mouseX, int mouseY) {
-			GlStateManager.color(1.0F, 1.0F, 1.0F);
-			minecraft.getTextureManager().bindTexture(GUI_TEXTURE);
-			Gui.drawModalRectWithCustomSizedTexture(47, 24, 0, 86, 18, 18, 256, 256);
-		}
 	}
 
 	public static List<Wrapper> getRecipes() {
@@ -125,4 +117,9 @@ public class PressRecipeHandler implements IRecipeCategory<PressRecipeHandler.Wr
 		}
 		return list;
 	}
+
+    @Override
+    public void drawExtras(@NotNull Minecraft minecraft) {
+        this.progressAnimated.draw(minecraft, 47, 24);
+    }
 }
