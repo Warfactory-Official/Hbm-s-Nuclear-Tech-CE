@@ -7,6 +7,7 @@ import net.minecraftforge.common.config.Property;
 
 public class GeneralConfig {
 
+	public static boolean enableFluidContainersV2 = false;
 	public static double conversionRateHeToRF = 1.0F;
 	public static boolean autoCableConversion = false;
 	public static boolean enablePacketThreading = true;
@@ -208,6 +209,8 @@ public class GeneralConfig {
 		if(crucibleMaxCharges <= 0){
 			crucibleMaxCharges = 16;
 		}
+
+		enableFluidContainersV2 = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.6329_enableFluidContainersV2", "If enabled, fluid barrels are replaced with an enhanced version that supports partial filling.", false);
 		conversionRateHeToRF = CommonConfig.createConfigDouble(config, CommonConfig.CATEGORY_GENERAL, "1.35_conversionRateHeToRF", "One HE is (insert number) RF - <number> (double)", 1.0D);
 		autoCableConversion = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.35.1_autoCableConversion", "If enabled, NTM cables will automatically convert FE <-> HE. Note: WILL MAKE ALL OTHER MODS' CABLES USELESS", false);
 

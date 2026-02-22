@@ -606,6 +606,11 @@ public class OreDictManager {
         OreDictionary.registerOre(KEY_UNIVERSAL_TANK, new ItemStack(fluid_tank_full, 1, OreDictionary.WILDCARD_VALUE));
         OreDictionary.registerOre(KEY_HAZARD_TANK, new ItemStack(fluid_tank_lead_full, 1, OreDictionary.WILDCARD_VALUE));
         OreDictionary.registerOre(KEY_UNIVERSAL_BARREL, new ItemStack(fluid_barrel_full, 1, OreDictionary.WILDCARD_VALUE));
+        if (GeneralConfig.enableFluidContainersV2) {
+            OreDictionary.registerOre(KEY_UNIVERSAL_TANK, new ItemStack(fluid_tank_v2, 1, OreDictionary.WILDCARD_VALUE));
+            OreDictionary.registerOre(KEY_HAZARD_TANK, new ItemStack(fluid_tank_lead_v2, 1, OreDictionary.WILDCARD_VALUE));
+            OreDictionary.registerOre(KEY_UNIVERSAL_BARREL, new ItemStack(fluid_barrel_v2, 1, OreDictionary.WILDCARD_VALUE));
+        }
 
         /*
          * TOOLS
