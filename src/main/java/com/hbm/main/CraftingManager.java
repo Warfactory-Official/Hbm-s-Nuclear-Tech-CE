@@ -607,7 +607,14 @@ public class CraftingManager {
 		if (GeneralConfig.enableFluidContainersV2) {
 			addRecipeAuto(new ItemStack(ModItems.fluid_tank_v2, 8), "121", "1G1", "121", '1', AL.plate(), '2', IRON.plate(), 'G', KEY_ANYPANE );
 			addRecipeAuto(new ItemStack(ModItems.fluid_tank_lead_v2, 4), "LUL", "LTL", "LUL", 'L', PB.plate(), 'U', U238.billet(), 'T', ModItems.fluid_tank_empty );
+			addRecipeAuto(new ItemStack(ModItems.fluid_tank_lead_v2, 4), "LUL", "LTL", "LUL", 'L', PB.plate(), 'U', U238.billet(), 'T', new ItemStack(ModItems.fluid_tank_v2, 1, 0) );
 			addRecipeAuto(new ItemStack(ModItems.fluid_barrel_v2, 2), "121", "1G1", "121", '1', STEEL.plate(), '2', AL.plate(), 'G', KEY_ANYPANE );
+			addShapelessAuto(new ItemStack(ModItems.fluid_tank_v2, 1, 0), ModItems.fluid_tank_empty);
+			addShapelessAuto(new ItemStack(ModItems.fluid_tank_lead_v2, 1, 0), ModItems.fluid_tank_lead_empty);
+			addShapelessAuto(new ItemStack(ModItems.fluid_barrel_v2, 1, 0), ModItems.fluid_barrel_empty);
+			addShapelessAuto(new ItemStack(ModItems.fluid_tank_empty, 1), new ItemStack(ModItems.fluid_tank_v2, 1, 0));
+			addShapelessAuto(new ItemStack(ModItems.fluid_tank_lead_empty, 1), new ItemStack(ModItems.fluid_tank_lead_v2, 1, 0));
+			addShapelessAuto(new ItemStack(ModItems.fluid_barrel_empty, 1), new ItemStack(ModItems.fluid_barrel_v2, 1, 0));
 		}
 
 		if(!GeneralConfig.enable528) {
