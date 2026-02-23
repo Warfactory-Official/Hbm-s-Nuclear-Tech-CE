@@ -97,10 +97,10 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
         water = new FluidTankNTM(Fluids.WATER, 32000);
     }
     public void setRedstonePowered(boolean powered) {
-        this.redstonePowered = powered;
-        if (!powered) {
+        if (!powered && this.redstonePowered) {
             isOn = false;
         }
+        this.redstonePowered = powered;
     }
 
     @Override
@@ -132,6 +132,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
         steam.readFromNBT(nbt, "steam");
         carbonDioxide.readFromNBT(nbt, "carbondioxide");
         water.readFromNBT(nbt, "water");
+        redstonePowered = nbt.getBoolean("redstonePowered");
     }
 
     @Override
@@ -164,6 +165,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
         steam.writeToNBT(nbt, "steam");
         carbonDioxide.writeToNBT(nbt, "carbondioxide");
         water.writeToNBT(nbt, "water");
+        nbt.setBoolean("redstonePowered", redstonePowered);
         return super.writeToNBT(nbt);
     }
 
