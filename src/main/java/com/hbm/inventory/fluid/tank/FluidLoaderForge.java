@@ -8,12 +8,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
-
-import static micdoodle8.mods.galacticraft.core.world.gen.BiomeOrbit.space;
 
 public class FluidLoaderForge implements IFluidLoadingHandler {
 
@@ -37,25 +34,43 @@ public class FluidLoaderForge implements IFluidLoadingHandler {
         int offer = tank.getFill();
         int canFill = handler.fill(new FluidStack(forgeFluid, offer), false);
         if (canFill <= 0) return false;
-
-        // Prevent Fluid Dupe if stack count is greater than one and output slot is occupied.
-        ItemStack stack = slots.getStackInSlot(in);
-        if (stack.getCount() > 1 && stack.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null) && stack.getItem() instanceof ItemFluidTankV2 fluidTankV2) {
-            System.err.println("FIX A");
+        // Prevent Fluid Dupe in V2 if stack count is greater than one and output slot is occupied.
+        ItemStack inputStack = slots.getStackInSlot(in);
+        if (inputStack.getCount() > 1 && inputStack.getItem() instanceof ItemFluidTankV2 fluidTankV2) {
             if (fluidTankV2.cap > offer) return false;
         }
-
-
         int actualFill = handler.fill(new FluidStack(forgeFluid, canFill), true);
         if (actualFill <= 0) return false;
-
         ItemStack container = handler.getContainer();
-
-        if (!slots.insertItem(out, container, true).isEmpty()) return false;
-        slots.extractItem(in, 1, false);
-        tank.setFill(tank.getFill() - actualFill);
-        slots.insertItem(out, container, false);
-        return true;
+        if (inputStack.getItem() instanceof ItemFluidTankV2 inputFluidTankV2) { // V2
+            ItemStack outputStack = slots.getStackInSlot(out);
+            int inputCapacity = inputFluidTankV2.cap;
+            FluidStack inputFluidStackAfterFill = handler.drain(Integer.MAX_VALUE, false);
+            if (inputFluidStackAfterFill == null) return false; // Should never happen
+            boolean isItemFull = inputFluidStackAfterFill.amount == inputCapacity;
+            tank.setFill(tank.getFill() - actualFill);
+            if (isItemFull) {
+                if (outputStack.isEmpty()) { // The output slot is empty
+                    slots.extractItem(in, 1, false);
+                    slots.insertItem(out, container, false);
+                    return true;
+                } else if (outputStack.getItem() == inputStack.getItem() && outputStack.getMetadata() == inputStack.getMetadata()) { // The output slot contains the same tank with the same metadata
+                    slots.extractItem(in, 1, false);
+                    slots.insertItem(out, container, false);
+                    return true;
+                } else { // The output slot contains another tank or the same tank but with another fluid
+                    return false; // Maybe true?
+                }
+            } else {
+                return false;
+            }
+        } else { // Legacy
+            if (!slots.insertItem(out, container, true).isEmpty()) return false;
+            slots.extractItem(in, 1, false);
+            tank.setFill(tank.getFill() - actualFill);
+            slots.insertItem(out, container, false);
+            return true;
+        }
     }
 
     @Override
