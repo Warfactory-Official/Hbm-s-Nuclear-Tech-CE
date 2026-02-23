@@ -8,9 +8,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
+
+import static micdoodle8.mods.galacticraft.core.world.gen.BiomeOrbit.space;
 
 public class FluidLoaderForge implements IFluidLoadingHandler {
 
@@ -34,9 +37,20 @@ public class FluidLoaderForge implements IFluidLoadingHandler {
         int offer = tank.getFill();
         int canFill = handler.fill(new FluidStack(forgeFluid, offer), false);
         if (canFill <= 0) return false;
+
+        // Prevent Fluid Dupe if stack count is greater than one and output slot is occupied.
+        ItemStack stack = slots.getStackInSlot(in);
+        if (stack.getCount() > 1 && stack.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null) && stack.getItem() instanceof ItemFluidTankV2 fluidTankV2) {
+            System.err.println("FIX A");
+            if (fluidTankV2.cap > offer) return false;
+        }
+
+
         int actualFill = handler.fill(new FluidStack(forgeFluid, canFill), true);
         if (actualFill <= 0) return false;
+
         ItemStack container = handler.getContainer();
+
         if (!slots.insertItem(out, container, true).isEmpty()) return false;
         slots.extractItem(in, 1, false);
         tank.setFill(tank.getFill() - actualFill);
