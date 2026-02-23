@@ -3,6 +3,7 @@ package com.hbm.inventory.fluid.tank;
 import com.hbm.capability.NTMFluidCapabilityHandler;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.machine.ItemFluidTankV2;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
@@ -57,6 +58,12 @@ public class FluidLoaderForge implements IFluidLoadingHandler {
         if (space <= 0) return false;
         int toDrain = Math.min(space, contained.amount);
         if (toDrain <= 0) return false;
+
+        // Prevent Fluid Dupe if stack count is greater than one and output slot is occupied.
+        ItemStack stack = slots.getStackInSlot(in);
+        if (stack.getCount() > 1 && stack.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null) && stack.getItem() instanceof ItemFluidTankV2 fluidTankV2) {
+            if (fluidTankV2.cap > space) return false;
+        }
         FluidStack drained = handler.drain(toDrain, true);
         if (drained == null || drained.amount <= 0) return false;
         ItemStack container = handler.getContainer();

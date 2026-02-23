@@ -46,7 +46,7 @@ public class ItemFluidTankV2 extends ItemBakedBase {
 	protected ResourceLocation overlayTextureLocation;
 	private final ModelResourceLocation modelLocation;
 
-	private final int cap;
+	public final int cap;
 
 	public ItemFluidTankV2(String name, int cap) {
 		super(name);
