@@ -428,6 +428,7 @@ public class ResourceManager {
     //Large Turbine
     public static final IModelCustom steam_engine = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/steam_engine.obj")).asVBO();
     public static final IModelCustom turbine = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/turbine.obj")).asVBO();
+    public static final IModelCustom industrial_turbine = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/industrial_turbine.obj")).asVBO();
     public static final IModelCustom chungus = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/chungus.obj")).asVBO();
     //Cooling Tower
     public static final IModelCustom tower_small = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/tower_small.obj")).asVBO();
@@ -840,6 +841,7 @@ public class ResourceManager {
     //Large Turbine
     public static final ResourceLocation steam_engine_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/steam_engine.png");
     public static final ResourceLocation turbine_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/turbine.png");
+    public static final ResourceLocation industrial_turbine_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/industrial_turbine.png");
     public static final ResourceLocation chungus_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/chungus.png");
     //Cooling Tower
     public static final ResourceLocation tower_small_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/tower_small.png");
