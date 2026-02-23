@@ -82,30 +82,29 @@ public class TileEntityCrateTungsten extends TileEntityCrate implements IBufPack
         heatTimer = 5;
 
         for (int i = 0; i < inventory.getSlots(); i++) {
+            ItemStack stack = inventory.getStackInSlot(i);
 
-            if (inventory.getStackInSlot(i).isEmpty())
+            if (stack.isEmpty())
                 continue;
 
-            ItemStack result = FurnaceRecipes.instance().getSmeltingResult(inventory.getStackInSlot(i));
+            ItemStack result = FurnaceRecipes.instance().getSmeltingResult(stack);
 
-            long requiredEnergy = DFCRecipes.getRequiredFlux(inventory.getStackInSlot(i));
-            int count = inventory.getStackInSlot(i).getCount();
-            requiredEnergy *= 0.9D;
+            long requiredEnergy = DFCRecipes.getRequiredFlux(stack);
             if (requiredEnergy > -1 && energy > requiredEnergy) {
-                if (0.001D > count * rand.nextDouble() * ((double) requiredEnergy / (double) energy)) {
-                    result = DFCRecipes.getOutput(inventory.getStackInSlot(i));
-                }
+                result = DFCRecipes.getOutput(stack);
             }
 
-            if (inventory.getStackInSlot(i).getItem() == ModItems.crucible && ItemCrucible.getCharges(inventory.getStackInSlot(i)) < 3 && energy > 10000000)
-                ItemCrucible.charge(inventory.getStackInSlot(i));
+            if (stack.getItem() == ModItems.crucible && ItemCrucible.getCharges(stack) < 3 && energy > 10000000) {
+                ItemCrucible.charge(stack);
+            }
 
-            if (result != null && !result.isEmpty()) {
-                int size = inventory.getStackInSlot(i).getCount();
+            if (!result.isEmpty()) {
+                int size = stack.getCount();
 
                 if (result.getCount() * size <= result.getMaxStackSize()) {
-                    inventory.setStackInSlot(i, result.copy());
-                    inventory.getStackInSlot(i).setCount(inventory.getStackInSlot(i).getCount() * size);
+                    ItemStack newStack = result.copy();
+                    newStack.setCount(result.getCount() * size);
+                    inventory.setStackInSlot(i, newStack);
                 }
             }
         }
