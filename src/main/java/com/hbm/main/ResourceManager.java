@@ -361,6 +361,8 @@ public class ResourceManager {
     public static final IModelCustom blast_door_tooth = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/blast_door_tooth.obj")).asVBO();
     public static final IModelCustom blast_door_slider = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/blast_door_slider.obj")).asVBO();
     public static final IModelCustom blast_door_block = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/blast_door_block.obj")).asVBO();
+    //Lights
+    //public static final IModelCustom lantern = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/trinkets/lantern.obj"));
     //Tesla Coil
     public static final IModelCustom tesla = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/tesla.obj")).asVBO();
     public static final IModelCustom teslacrab = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/mobs/teslacrab.obj")).asVBO();

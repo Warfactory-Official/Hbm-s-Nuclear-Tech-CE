@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static com.hbm.blocks.BlockEnums.LightType;
 import static com.hbm.blocks.BlockEnums.OreType;
 import static com.hbm.blocks.OreEnumUtil.OreEnum;
 
@@ -245,9 +246,16 @@ public class ModBlocks {
     public static final Block tile_lab_broken_double_slab = new BlockGenericSlab(Material.ROCK, tile_lab_broken_slab, "tile_lab_broken_double_slab").setSoundType(SoundType.GLASS).setCreativeTab(MainRegistry.blockTab).setHardness(1.0F).setResistance(10.0F);
 
     public static final Block lamp_demon = new DemonLamp(SoundType.METAL, "lamp_demon").setCreativeTab(MainRegistry.blockTab).setLightLevel(1F).setHardness(3.0F);
-
     public static final Block lantern = new BlockLantern("lantern").setSoundType(SoundType.METAL).setCreativeTab(MainRegistry.blockTab).setLightLevel(1F).setHardness(3.0F);
     public static final Block lantern_behemoth = new BlockLanternBehemoth("lantern_behemoth").setSoundType(SoundType.METAL).setCreativeTab(null).setHardness(3.0F);
+
+    public static final Block spotlight_incandescent = new Spotlight("spotlight_incandescent", Material.IRON, 2, LightType.INCANDESCENT, true).setCreativeTab(MainRegistry.blockTab);
+    public static final Block spotlight_incandescent_off = new Spotlight("spotlight_incandescent_off", Material.IRON, 2, LightType.INCANDESCENT, false);
+    public static final Block spotlight_fluoro = new SpotlightModular("spotlight_fluoro", Material.IRON, 8, LightType.FLUORESCENT, true).setCreativeTab(MainRegistry.blockTab);
+    public static final Block spotlight_fluoro_off = new SpotlightModular("spotlight_fluoro_off", Material.IRON, 8, LightType.FLUORESCENT, false);
+    public static final Block spotlight_halogen = new Spotlight("spotlight_halogen", Material.IRON, 32, LightType.HALOGEN, true).setCreativeTab(MainRegistry.blockTab);
+    public static final Block spotlight_halogen_off = new Spotlight("spotlight_halogen_off", Material.IRON, 32, LightType.HALOGEN, false);
+    public static final Block spotlight_beam = new SpotlightBeam("spotlight_beam");
 
     public static final Block block_scrap = new BlockFallingBase(Material.SAND, "block_scrap", SoundType.GROUND).setCreativeTab(MainRegistry.blockTab).setHardness(2.5F).setResistance(5.0F);
     public static final Block block_electrical_scrap = new BlockFallingBase(Material.IRON, "block_electrical_scrap", SoundType.METAL).setCreativeTab(MainRegistry.blockTab).setHardness(2.5F).setResistance(5.0F);

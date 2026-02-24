@@ -25,9 +25,9 @@ public abstract class AbstractWavefrontBakedModel extends AbstractBakedModel {
     protected final HFRWavefrontObject model;
     protected final VertexFormat format;
     protected final float baseScale;
-    protected final float tx;
-    protected final float ty;
-    protected final float tz;
+    protected float tx;
+    protected float ty;
+    protected float tz;
 
     protected AbstractWavefrontBakedModel(HFRWavefrontObject model, VertexFormat format, float baseScale, float tx, float ty, float tz, ItemCameraTransforms transforms) {
         super(transforms);

@@ -465,10 +465,10 @@ public class CraftingManager {
 		/*addShapelessAuto(new ItemStack(ModBlocks.lamp_tritium_green_off, 1), KEY_ANYGLASS, P_RED.dust(), Fluids.TRITIUM.getDict(1_000), S.dust() );
 		addShapelessAuto(new ItemStack(ModBlocks.lamp_tritium_blue_off, 1), KEY_ANYGLASS, P_RED.dust(), Fluids.TRITIUM.getDict(1_000), AL.dust() );*/
 		addRecipeAuto(new ItemStack(ModBlocks.lantern, 1), "PGP", " S ", " S ", 'P', KEY_ANYPANE, 'G', Items.GLOWSTONE_DUST, 'S', ModBlocks.steel_beam );
-		/*addRecipeAuto(new ItemStack(ModBlocks.spotlight_incandescent, 8), "G", "T", "I", 'G', KEY_ANYPANE, 'T', W.wireFine(), 'I', IRON.ingot() );
+		addRecipeAuto(new ItemStack(ModBlocks.spotlight_incandescent, 8), "G", "T", "I", 'G', KEY_ANYPANE, 'T', W.wireFine(), 'I', IRON.ingot() );
 		addRecipeAuto(new ItemStack(ModBlocks.spotlight_fluoro, 8), "G", "M", "A", 'G', KEY_ANYPANE, 'M', ModItems.ingot_mercury, 'A', ModItems.plate_aluminium );
 		addRecipeAuto(new ItemStack(ModBlocks.spotlight_halogen, 8), "G", "B", "S", 'G', KEY_ANYPANE, 'B', ModItems.powder_bromine, 'S', STEEL.plate() );
-		addRecipeAuto(new ItemStack(ModBlocks.floodlight, 2), "CSC", "TST", "G G", 'C', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.CAPACITOR), 'S', STEEL.plate(), 'T', ModItems.coil_tungsten, 'G', KEY_ANYPANE );*/
+		//addRecipeAuto(new ItemStack(ModBlocks.floodlight, 2), "CSC", "TST", "G G", 'C', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.CAPACITOR), 'S', STEEL.plate(), 'T', ModItems.coil_tungsten, 'G', KEY_ANYPANE );
 
 		addRecipeAuto(new ItemStack(ModBlocks.barbed_wire, 16), "AIA", "I I", "AIA", 'A', STEEL.wireFine(), 'I', IRON.ingot() );
 		addRecipeAuto(new ItemStack(ModBlocks.barbed_wire_fire, 8), "BBB", "BIB", "BBB", 'B', ModBlocks.barbed_wire, 'I', P_RED.dust() );
