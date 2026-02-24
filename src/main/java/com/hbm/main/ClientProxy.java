@@ -1741,6 +1741,7 @@ public class ClientProxy extends ServerProxy {
             case "vanish" -> vanish(data.getInteger("ent"));
             case "giblets" -> {
                 int ent = data.getInteger("ent");
+                int gibType = data.getInteger("gibType");
                 vanish(ent);
                 Entity e = world.getEntityByID(ent);
 
@@ -1752,6 +1753,11 @@ public class ClientProxy extends ServerProxy {
                 int gW = (int) (width / 0.25F);
                 int gH = (int) (height / 0.25F);
 
+                int count = (int) (gW * 1.5 * gH);
+
+                if(data.hasKey("cDiv"))
+                    count = (int) Math.ceil(count / (double)data.getInteger("cDiv"));
+
                 boolean blowMeIntoTheGodDamnStratosphere = rand.nextInt(15) == 0;
                 double mult = 1D;
 
@@ -1762,7 +1768,7 @@ public class ClientProxy extends ServerProxy {
                     for (int j = 0; j <= gH; j++) {
                         Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleGiblet(world, x, y, z,
                                 rand.nextGaussian() * 0.25 * mult, rand.nextDouble() * mult,
-                                rand.nextGaussian() * 0.25 * mult));
+                                rand.nextGaussian() * 0.25 * mult, gibType));
                     }
                 }
             }
