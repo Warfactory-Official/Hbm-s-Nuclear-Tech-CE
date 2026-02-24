@@ -2768,6 +2768,7 @@ public class ModItems {
     public static final Item ln2_9 = new EffectItem("ln2_9").setCreativeTab(null);
     public static final Item ln2_10 = new EffectItem("ln2_10").setCreativeTab(null);
     public static final Item nothing = new EffectItem("nothing").setCreativeTab(null);
+    public static final Item broken_item = new BrokenItem("broken_item").setCreativeTab(null);
     public static final Item ducc = new ItemBase("ducc").setCreativeTab(MainRegistry.controlTab);
     public static final Item discharge = new EffectItem("discharge").setCreativeTab(null);
     public static final Item undefined = new ItemCustomLore("undefined").setCreativeTab(MainRegistry.partsTab);

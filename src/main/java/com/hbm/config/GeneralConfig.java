@@ -1,5 +1,6 @@
 package com.hbm.config;
 
+import com.hbm.inventory.recipes.PrecAssRecipes;
 import com.hbm.main.MainRegistry;
 import com.hbm.render.GLCompat;
 import net.minecraftforge.common.config.Configuration;
@@ -75,6 +76,10 @@ public class GeneralConfig {
 	public static boolean enableSteamParticles = true;
 	public static boolean enableServerRecipeSync = true;
 	public static boolean enableExpensiveMode = false;
+
+	public static boolean trueExp() {
+		return enableExpensiveMode && !PrecAssRecipes.INSTANCE.modified;
+	}
 	
 	public static boolean enable528 = false;
 	public static boolean enable528ReasimBoilers = true;

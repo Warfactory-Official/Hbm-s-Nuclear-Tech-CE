@@ -74,6 +74,7 @@ public class JEIConfig implements IModPlugin {
     public static final String LIQUEFACTION = "hbm.liquefaction";
     public static final String MIXER = "hbm.mixer";
     public static final String PYROLYSIS = "hbm.pyrolysis";
+    public static final String PREC_ASS = "hbm.precass";
     public static final String PRESS = "hbm.press";
     public static final String RBMKFUEL = "hbm.rbmkfueluncrafting";
     public static final String RBMKOUTGASSER = "hbm.rbmk_outgasser";
@@ -131,6 +132,7 @@ public class JEIConfig implements IModPlugin {
     private HydrotreatingHandler hydrotreatHandler;
     private LiquefactionHandler liquefactHandler;
     private MixerRecipeHandler mixerHandler;
+    private PrecAssRecipeHandler precassHandler;
     private PyroHandler pyroHandler;
     private RBMKOutgasserRecipeHandler outgasserHandler;
     private ReformingHandler reformingHandler;
@@ -211,6 +213,7 @@ public class JEIConfig implements IModPlugin {
         registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_soldering_station), SOLDERING_STATION);
         registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_arc_welder), ARC_WELDER);
         registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_rotary_furnace), ROTARY_FURNACE);
+        registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_precass), PREC_ASS);
         registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_pyrooven), PYROLYSIS);
         //This recipe catalyst doesn't work, since the book of is blacklisted.
         registry.addRecipeCatalyst(new ItemStack(ModItems.book_of_), BOOK);
@@ -281,6 +284,7 @@ public class JEIConfig implements IModPlugin {
         registry.addRecipes(electrolyserFluidHandler.getRecipes(), ELECTROLYSIS_FLUID);
         registry.addRecipes(electrolyserMetalHandler.getRecipes(), ELECTROLYSIS_METAL);
         registry.addRecipes(rtgRecipeHandler.getRecipes(), RTG);
+        registry.addRecipes(precassHandler.getRecipes(), PREC_ASS);
         registry.addRecipes(pyroHandler.getRecipes(), PYROLYSIS);
         registry.addRecipes(crystallizerHandler.getRecipes(), CRYSTALLIZER);
         registry.addRecipes(cokingHandler.getRecipes(), COKER);
@@ -475,6 +479,7 @@ public class JEIConfig implements IModPlugin {
                 liquefactHandler = new LiquefactionHandler(help),
                 mixerHandler = new MixerRecipeHandler(help),
                 outgasserHandler = new RBMKOutgasserRecipeHandler(help),
+                precassHandler = new PrecAssRecipeHandler(help),
                 pyroHandler = new PyroHandler(help),
                 reformingHandler = new ReformingHandler(help),
                 rotaryFurnaceRecipeHandler = new RotaryFurnaceRecipeHandler(help),

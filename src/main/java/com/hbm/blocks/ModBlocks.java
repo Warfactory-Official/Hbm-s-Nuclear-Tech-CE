@@ -959,6 +959,7 @@ public class ModBlocks {
     public static final Block machine_assemfac = new MachineAssemfac(Material.IRON, "machine_assemfac").setHardness(5.0F).setResistance(30.0F).setCreativeTab(MainRegistry.machineTab);
     public static final Block machine_assembly_machine = new MachineAssemblyMachine(Material.IRON, "machine_assembly_machine").setHardness(5.0F).setResistance(30.0F).setCreativeTab(MainRegistry.machineTab);
     public static final Block machine_assembly_factory = new MachineAssemblyFactory(Material.IRON, "machine_assembly_factory").setHardness(5.0F).setResistance(30.0F).setCreativeTab(MainRegistry.machineTab);
+    public static final Block machine_precass = new MachinePrecAss(Material.IRON, "machine_precass").setHardness(5.0F).setResistance(30.0F).setCreativeTab(null /* the world isn't ready for your beauty yet */);
 
     public static final Block machine_arc_welder = new MachineArcWelder(Material.IRON, "machine_arc_welder").setHardness(5.0F).setResistance(30.0F).setCreativeTab(MainRegistry.machineTab);
 

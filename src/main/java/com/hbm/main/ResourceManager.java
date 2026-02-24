@@ -894,6 +894,7 @@ public class ResourceManager {
     public static final ResourceLocation assemfac_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/assemfac.png");
     public static final ResourceLocation assembly_factory_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/assembly_factory.png");
     public static final ResourceLocation assembly_factory_sparks_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/assembly_factory_sparks.png");
+    public static final ResourceLocation precass_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/precass.png");
     //Chemplant
     public static final ResourceLocation chemplant_body_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/chemplant_base_new.png");
     public static final ResourceLocation chemplant_spinner_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/chemplant_spinner_new.png");

@@ -83,6 +83,7 @@ public abstract class SerializableRecipe {
         recipeHandlers.add(ChemicalPlantRecipes.INSTANCE);
         recipeHandlers.add(PUREXRecipes.INSTANCE);
         recipeHandlers.add(FusionRecipes.INSTANCE);
+        recipeHandlers.add(PrecAssRecipes.INSTANCE);
     }
 
     public static void initialize() {
