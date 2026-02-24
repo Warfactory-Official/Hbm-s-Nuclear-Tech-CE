@@ -2,8 +2,8 @@ package com.hbm.inventory.gui;
 
 import com.hbm.Tags;
 import com.hbm.util.I18nUtil;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.text.TextFormatting;
-import org.lwjgl.opengl.GL11;
 
 import com.hbm.inventory.container.ContainerMachinePrecAss;
 import com.hbm.inventory.recipes.PrecAssRecipes;
@@ -12,7 +12,6 @@ import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.tileentity.machine.TileEntityMachinePrecAss;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
@@ -22,8 +21,8 @@ import java.io.IOException;
 
 public class GUIMachinePrecAss extends GuiInfoContainer {
 
-    private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_precass.png");
-    private TileEntityMachinePrecAss assembler;
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_precass.png");
+    private final TileEntityMachinePrecAss assembler;
 
     public GUIMachinePrecAss(InventoryPlayer invPlayer, TileEntityMachinePrecAss tedf) {
         super(new ContainerMachinePrecAss(invPlayer, tedf.inventory));
@@ -46,7 +45,7 @@ public class GUIMachinePrecAss extends GuiInfoContainer {
 
         if(guiLeft + 7 <= mouseX && guiLeft + 7 + 18 > mouseX && guiTop + 125 < mouseY && guiTop + 125 + 18 >= mouseY) {
             if(this.assembler.assemblerModule.recipe != null && PrecAssRecipes.INSTANCE.recipeNameMap.containsKey(this.assembler.assemblerModule.recipe)) {
-                GenericRecipe recipe = (GenericRecipe) PrecAssRecipes.INSTANCE.recipeNameMap.get(this.assembler.assemblerModule.recipe);
+                GenericRecipe recipe = PrecAssRecipes.INSTANCE.recipeNameMap.get(this.assembler.assemblerModule.recipe);
                 this.drawHoveringText(recipe.print(), mouseX, mouseY);
             } else {
                 this.drawHoveringText(TextFormatting.YELLOW + I18nUtil.resolveKey("gui.recipe.setRecipe"), mouseX, mouseY);
@@ -71,7 +70,7 @@ public class GUIMachinePrecAss extends GuiInfoContainer {
 
     @Override
     protected void drawGuiContainerBackgroundLayer(float p_146976_1_, int p_146976_2_, int p_146976_3_) {
-        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 
@@ -103,22 +102,22 @@ public class GUIMachinePrecAss extends GuiInfoContainer {
 
         if(recipe != null && recipe.inputItem != null) {
             for(int i = 0; i < recipe.inputItem.length; i++) {
-                Slot slot = (Slot) this.inventorySlots.inventorySlots.get(assembler.assemblerModule.inputSlots[i]);
+                Slot slot = this.inventorySlots.inventorySlots.get(assembler.assemblerModule.inputSlots[i]);
                 if(!slot.getHasStack()) this.renderItem(recipe.inputItem[i].extractForCyclingDisplay(20), slot.xPos, slot.yPos, 10F);
             }
 
             Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
-            OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-            GL11.glColor4f(1F, 1F, 1F, 0.5F);
-            GL11.glEnable(GL11.GL_BLEND);
+            GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+            GlStateManager.color(1F, 1F, 1F, 0.5F);
+            GlStateManager.enableBlend();
             this.zLevel = 300F;
             for(int i = 0; i < recipe.inputItem.length; i++) {
-                Slot slot = (Slot) this.inventorySlots.inventorySlots.get(assembler.assemblerModule.inputSlots[i]);
+                Slot slot = this.inventorySlots.inventorySlots.get(assembler.assemblerModule.inputSlots[i]);
                 if(!slot.getHasStack()) drawTexturedModalRect(guiLeft + slot.xPos, guiTop + slot.yPos, slot.xPos, slot.yPos, 16, 16);
             }
             this.zLevel = 0F;
-            GL11.glColor4f(1F, 1F, 1F, 1F);
-            GL11.glDisable(GL11.GL_BLEND);
+            GlStateManager.color(1F, 1F, 1F, 1F);
+            GlStateManager.disableBlend();
         }
 
         assembler.inputTank.renderTank(guiLeft + 8, guiTop + 115, this.zLevel, 52, 16, 1);

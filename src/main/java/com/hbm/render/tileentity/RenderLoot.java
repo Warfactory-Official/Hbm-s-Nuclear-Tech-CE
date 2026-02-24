@@ -3,9 +3,11 @@ package com.hbm.render.tileentity;
 import com.hbm.blocks.generic.BlockLoot.TileEntityLoot;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.ModItems;
+import com.hbm.items.armor.ArmorNCRPA;
 import com.hbm.items.armor.ArmorTrenchmaster;
 import com.hbm.items.weapon.sedna.factory.GunFactory.EnumAmmo;
 import com.hbm.main.ResourceManager;
+import com.hbm.util.RenderUtil;
 import com.hbm.util.Tuple.Quartet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -16,6 +18,7 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.item.ItemStack;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 
 @AutoRegister
 public class RenderLoot extends TileEntitySpecialRenderer<TileEntityLoot> {
@@ -40,6 +43,8 @@ public class RenderLoot extends TileEntitySpecialRenderer<TileEntityLoot> {
                 renderShotgun();
             } else if (stack.getItem() instanceof ArmorTrenchmaster) {
                 renderTrenchmaster(stack);
+            } else if(stack.getItem() instanceof ArmorNCRPA) {
+                renderNCR(stack);
             } else {
                 renderStandardItem(stack);
             }
@@ -94,6 +99,57 @@ public class RenderLoot extends TileEntitySpecialRenderer<TileEntityLoot> {
             GlStateManager.pushMatrix();
             GlStateManager.rotate(-0.1F, 1, 0, 0);
             ResourceManager.armor_trenchmaster.renderPart("RightBoot");
+            GlStateManager.popMatrix();
+        }
+        GlStateManager.popMatrix();
+    }
+
+    private void renderNCR(ItemStack stack) {
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(0.5, 1.5, 0.5);
+        GlStateManager.scale(0.0625, 0.0625, 0.0625);
+        GlStateManager.rotate(180, 1, 0, 0);
+        GlStateManager.enableRescaleNormal();
+        if(stack.getItem() == ModItems.ncrpa_helmet) {
+            bindTexture(ResourceManager.ncrpa_helmet);
+            GlStateManager.enableBlend();
+            GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+            ResourceManager.armor_ncr.renderPart("Helmet");
+            GlStateManager.disableBlend();
+            float lastX = OpenGlHelper.lastBrightnessX;
+            float lastY = OpenGlHelper.lastBrightnessY;
+            RenderUtil.pushAttrib(GL11.GL_LIGHTING_BIT);
+            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
+            GlStateManager.disableLighting();
+            ResourceManager.armor_ncr.renderPart("Eyes");
+            GlStateManager.enableLighting();
+            RenderUtil.popAttrib();
+            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lastX, lastY);
+        }
+        if(stack.getItem() == ModItems.ncrpa_plate) {
+            bindTexture(ResourceManager.ncrpa_chest);
+            ResourceManager.armor_ncr.renderPart("Chest");
+            bindTexture(ResourceManager.ncrpa_arm);
+            GlStateManager.pushMatrix();
+            GlStateManager.rotate(-3, 1, 0, 0);
+            ResourceManager.armor_ncr.renderPart("LeftArm");
+            ResourceManager.armor_ncr.renderPart("RightArm");
+            GlStateManager.popMatrix();
+        }
+        if(stack.getItem() == ModItems.ncrpa_legs) {
+            Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.ncrpa_leg);
+            ResourceManager.armor_ncr.renderPart("LeftLeg");
+            GlStateManager.pushMatrix();
+            GlStateManager.rotate(-0.1, 1, 0, 0);
+            ResourceManager.armor_ncr.renderPart("RightLeg");
+            GlStateManager.popMatrix();
+        }
+        if(stack.getItem() == ModItems.ncrpa_boots) {
+            Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.ncrpa_leg);
+            ResourceManager.armor_ncr.renderPart("LeftBoot");
+            GlStateManager.pushMatrix();
+            GlStateManager.rotate(-0.1, 1, 0, 0);
+            ResourceManager.armor_ncr.renderPart("RightBoot");
             GlStateManager.popMatrix();
         }
         GlStateManager.popMatrix();
