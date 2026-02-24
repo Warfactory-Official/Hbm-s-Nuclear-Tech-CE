@@ -5,7 +5,7 @@ import com.hbm.items.weapon.sedna.factory.XFactory556mm;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
 import com.hbm.render.anim.sedna.BusAnimationSequenceSedna;
-import com.hbm.render.anim.sedna.HbmAnimationsSedna.AnimType;
+import com.hbm.render.anim.sedna.HbmAnimationsSedna.GunAnimation;
 import net.minecraft.item.ItemStack;
 
 import java.util.Objects;
@@ -24,8 +24,8 @@ public class WeapnModG3SawedOff extends WeaponModBase {
 		return base;
 	}
 	
-	@SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, AnimType, BusAnimationSedna> LAMBDA_G3_ANIMS = (stack, type) -> {
-		if (Objects.requireNonNull(type) == AnimType.EQUIP) {
+	@SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, GunAnimation, BusAnimationSedna> LAMBDA_G3_ANIMS = (stack, type) -> {
+		if (Objects.requireNonNull(type) == GunAnimation.EQUIP) {
 			return new BusAnimationSedna().addBus("EQUIP", new BusAnimationSequenceSedna().addPos(45, 0, 0, 0).addPos(0, 0, 0, 250, BusAnimationKeyframeSedna.IType.SIN_FULL));
 		}
 		return XFactory556mm.LAMBDA_G3_ANIMS.apply(stack, type);

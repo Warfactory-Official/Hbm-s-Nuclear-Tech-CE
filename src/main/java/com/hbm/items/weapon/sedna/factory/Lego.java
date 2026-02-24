@@ -68,10 +68,10 @@ public class Lego {
                 mag.setAmountBeforeReload(stack, loaded);
                 ItemGunBaseNT.setState(stack, ctx.configIndex, GunState.RELOADING);
                 ItemGunBaseNT.setTimer(stack, ctx.configIndex, rec.getReloadBeginDuration(stack) + (loaded <= 0 ? rec.getReloadCockOnEmptyPre(stack) : 0));
-                ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.AnimType.RELOAD, ctx.configIndex);
+                ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.GunAnimation.RELOAD, ctx.configIndex);
                 if(ctx.config.getReloadChangesType(stack)) mag.initNewType(stack, ctx.inventory);
             } else {
-                ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.AnimType.INSPECT, ctx.configIndex);
+                ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.GunAnimation.INSPECT, ctx.configIndex);
                 if(!ctx.config.getInspectCancel(stack)) {
                     ItemGunBaseNT.setState(stack, ctx.configIndex, GunState.DRAWING);
                     ItemGunBaseNT.setTimer(stack, ctx.configIndex, ctx.config.getInspectDuration(stack));
@@ -107,7 +107,7 @@ public class Lego {
             } else {
 
                 if(rec.getDoesDryFire(stack)) {
-                    ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.AnimType.CYCLE_DRY, index);
+                    ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.GunAnimation.CYCLE_DRY, index);
                     ItemGunBaseNT.setState(stack, index, rec.getRefireAfterDry(stack) ? GunState.COOLDOWN : GunState.DRAWING);
                     ItemGunBaseNT.setTimer(stack, index, rec.getDelayAfterDryFire(stack));
                 }
@@ -188,16 +188,16 @@ public class Lego {
     public static BiFunction<ItemStack, LambdaContext, Boolean> LAMBDA_DEBUG_CAN_FIRE = (stack, ctx) -> true;
 
     /** Spawns an EntityBulletBaseMK4 with the loaded bulletcfg */
-    public static BiConsumer<ItemStack, LambdaContext> LAMBDA_STANDARD_FIRE = (stack, ctx) -> doStandardFire(stack, ctx, HbmAnimationsSedna.AnimType.CYCLE, true);
+    public static BiConsumer<ItemStack, LambdaContext> LAMBDA_STANDARD_FIRE = (stack, ctx) -> doStandardFire(stack, ctx, HbmAnimationsSedna.GunAnimation.CYCLE, true);
     /** Spawns an EntityBulletBaseMK4 with the loaded bulletcfg, ignores wear */
-    public static BiConsumer<ItemStack, LambdaContext> LAMBDA_NOWEAR_FIRE = (stack, ctx) -> doStandardFire(stack, ctx, HbmAnimationsSedna.AnimType.CYCLE, false);
+    public static BiConsumer<ItemStack, LambdaContext> LAMBDA_NOWEAR_FIRE = (stack, ctx) -> doStandardFire(stack, ctx, HbmAnimationsSedna.GunAnimation.CYCLE, false);
     /** Spawns an EntityBulletBaseMK4 with the loaded bulletcfg, then resets lockon progress */
     public static BiConsumer<ItemStack, LambdaContext> LAMBDA_LOCKON_FIRE = (stack, ctx) -> {
-        doStandardFire(stack, ctx, HbmAnimationsSedna.AnimType.CYCLE, true);
+        doStandardFire(stack, ctx, HbmAnimationsSedna.GunAnimation.CYCLE, true);
         ItemGunBaseNT.setIsLockedOn(stack, false);
     };
 
-    public static void doStandardFire(ItemStack stack, LambdaContext ctx, HbmAnimationsSedna.AnimType anim, boolean calcWear) {
+    public static void doStandardFire(ItemStack stack, LambdaContext ctx, HbmAnimationsSedna.GunAnimation anim, boolean calcWear) {
         EntityLivingBase entity = ctx.entity;
         EntityPlayer player = ctx.getPlayer();
         int index = ctx.configIndex;
@@ -358,7 +358,7 @@ public class Lego {
     }
 
     /** anims for the DEBUG revolver, mostly a copy of the li'lpip but with some fixes regarding the cylinder movement */
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_DEBUG_ANIMS = (stack, type) -> switch (type) {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_DEBUG_ANIMS = (stack, type) -> switch (type) {
         case CYCLE -> new BusAnimationSedna()
                 .addBus("RECOIL", new BusAnimationSequenceSedna().addPos(0, 0, 0, 50).addPos(0, 0, -3, 50).addPos(0, 0, 0, 250))
                 .addBus("HAMMER", new BusAnimationSequenceSedna().addPos(0, 0, 1, 50).addPos(0, 0, 1, 400).addPos(0, 0, 0, 200))

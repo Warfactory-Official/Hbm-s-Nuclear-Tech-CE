@@ -5,6 +5,7 @@ import com.hbm.blocks.fluid.ModFluids;
 import com.hbm.inventory.OreDictManager;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.Mats;
+import com.hbm.items.ItemAmmoEnums;
 import com.hbm.items.ItemAmmoEnums.Ammo240Shell;
 import com.hbm.items.ItemEnums;
 import com.hbm.items.ItemEnums.EnumCircuitType;
@@ -92,6 +93,9 @@ public class WeaponRecipes {
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.gun_charge_thrower, 1),"MMM", "BBL", "GG ", 'M', GUNMETAL.mechanism(), 'B', STEEL.heavyBarrel(), 'G', STEEL.grip(), 'L', Items.LEATHER );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.gun_charge_thrower, 1),"MMM", "BBL", "GG ", 'M', GUNMETAL.mechanism(), 'B', STEEL.heavyBarrel(), 'G', STEEL.grip(), 'L', ANY_RUBBER.ingot() );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.gun_drill, 1), " GL", "IBP", " GL", 'G', GUNMETAL.ingot(), 'L', ANY_RUBBER.ingot(), 'I', TI.ingot(), 'B', STEEL.block(), 'P', ModItems.piston_selenium );
+
+        CraftingManager.addRecipeAuto(new ItemStack(ModItems.gun_pa_melee, 1), " C ", "MWM", 'C', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.BASIC), 'M', ModItems.motor, 'W', GOLD.wireDense() );
+        CraftingManager.addRecipeAuto(new ItemStack(ModItems.gun_pa_ranged, 1), "C", "W", "P", 'C', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.BASIC), 'P', ANY_PLASTIC.ingot(), 'W', GOLD.wireDense() );
 
         //SEDNA Ammo
         CraftingManager.addRecipeAuto(DictFrame.fromOne(ModItems.ammo_standard, GunFactory.EnumAmmo.STONE, 6), "C", "P", "G", 'C', KEY_COBBLESTONE, 'P', Items.PAPER, 'G', Items.GUNPOWDER );
@@ -247,9 +251,9 @@ public class WeaponRecipes {
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.ammo_dgk, 1), "LLL", "GGG", "CCC", 'L', PB.plate(), 'G', ModItems.cordite, 'C', CU.ingot() );
 
         //Fire Extingusisher Tanks
-        /*CraftingManager.addRecipeAuto(new ItemStack(ModItems.ammo_fireext, 1), " P ", "BDB", " P ", 'P', STEEL.plate(), 'B', STEEL.bolt(), 'D', new ItemStack(ModItems.fluid_tank_full, 1, Fluids.WATER.getID()) );
-        CraftingManager.addRecipeAuto(ModItems.ammo_fireext.stackFromEnum(AmmoFireExt.FOAM), " N ", "NFN", " N ", 'N', KNO.dust(), 'F', ModItems.ammo_fireext );
-        CraftingManager.addRecipeAuto(ModItems.ammo_fireext.stackFromEnum(AmmoFireExt.SAND), "NNN", "NFN", "NNN", 'N', ModBlocks.sand_boron, 'F', ModItems.ammo_fireext );*/
+        CraftingManager.addRecipeAuto(new ItemStack(ModItems.ammo_fireext, 1), " P ", "BDB", " P ", 'P', STEEL.plate(), 'B', STEEL.bolt(), 'D', new ItemStack(ModItems.fluid_tank_full, 1, Fluids.WATER.getID()) );
+        CraftingManager.addRecipeAuto(ModItems.ammo_fireext.stackFromEnum(ItemAmmoEnums.AmmoFireExt.FOAM), " N ", "NFN", " N ", 'N', KNO.dust(), 'F', ModItems.ammo_fireext );
+        CraftingManager.addRecipeAuto(ModItems.ammo_fireext.stackFromEnum(ItemAmmoEnums.AmmoFireExt.SAND), "NNN", "NFN", "NNN", 'N', ModBlocks.sand_boron, 'F', ModItems.ammo_fireext );
 
         //Grenades
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.grenade_generic, 4), "RS ", "ITI", " I ", 'I', IRON.plate(), 'R', MINGRADE.wireFine(), 'S', STEEL.plate(), 'T', Item.getItemFromBlock(Blocks.TNT) );

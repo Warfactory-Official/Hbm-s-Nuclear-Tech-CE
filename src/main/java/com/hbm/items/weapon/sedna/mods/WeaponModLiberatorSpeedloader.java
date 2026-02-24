@@ -35,7 +35,7 @@ public class WeaponModLiberatorSpeedloader extends WeaponModBase {
 		return base;
 	}
 
-	@SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_LIBERATOR_ANIMS = (stack, type) -> switch (type) {
+	@SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_LIBERATOR_ANIMS = (stack, type) -> switch (type) {
 		case RELOAD -> new BusAnimationSedna()
 				.addBus("LATCH", new BusAnimationSequenceSedna().addPos(15, 0, 0, 100))
 				.addBus("BREAK", new BusAnimationSequenceSedna().addPos(0, 0, 0, 100).addPos(60, 0, 0, 350, IType.SIN_DOWN))

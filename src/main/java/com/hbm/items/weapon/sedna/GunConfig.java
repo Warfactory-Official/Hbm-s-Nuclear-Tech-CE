@@ -85,7 +85,7 @@ public class GunConfig {
     /** The engine for the state machine that determines the gun's overall behavior */
     protected BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> decider_DNA;
     /** Lambda that returns the relevant animation for the given params */
-    protected BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> animations_DNA;
+    protected BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> animations_DNA;
     protected IHUDComponent[] hudComponents_DNA;
 
     /* GETTERS */
@@ -116,7 +116,7 @@ public class GunConfig {
 
     public BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> getDecider(ItemStack stack) {			return WeaponModManager.eval(this.decider_DNA, stack, CON_DECIDER, this, this.index); }
 
-    public BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> getAnims(ItemStack stack) {	return WeaponModManager.eval(this.animations_DNA, stack, FUN_ANIMNATIONS, this, this.index); }
+    public BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> getAnims(ItemStack stack) {	return WeaponModManager.eval(this.animations_DNA, stack, FUN_ANIMNATIONS, this, this.index); }
     public IHUDComponent[] getHUDComponents(ItemStack stack) {							return WeaponModManager.eval(this.hudComponents_DNA, stack, O_HUDCOMPONENTS, this, this.index); }
 
     /* SETTERS */
@@ -153,7 +153,7 @@ public class GunConfig {
     public GunConfig decider(BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> lambda) { this.decider_DNA = lambda;	return this; }
 
     //client
-    public GunConfig anim(BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> lambda) {	this.animations_DNA = lambda;			return this; }
+    public GunConfig anim(BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> lambda) {	this.animations_DNA = lambda;			return this; }
     public GunConfig hud(IHUDComponent... components) {								this.hudComponents_DNA = components;	return this; }
 
     /** Standard package for keybind handling and decider using LEGO prefabs: Primary fire on LMB,

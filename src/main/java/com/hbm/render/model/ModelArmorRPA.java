@@ -2,7 +2,7 @@ package com.hbm.render.model;
 
 import com.hbm.main.ResourceManager;
 import com.hbm.render.loader.ModelRendererObj;
-import net.minecraft.client.Minecraft;
+import com.hbm.util.RenderUtil;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.entity.Entity;
@@ -55,11 +55,12 @@ public class ModelArmorRPA extends ModelArmorBase {
                 // START GLOW //
                 float lastX = OpenGlHelper.lastBrightnessX;
                 float lastY = OpenGlHelper.lastBrightnessY;
+                RenderUtil.pushAttrib(GL11.GL_LIGHTING_BIT);
                 OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
                 GlStateManager.disableLighting();
                 this.glow.render(scaleFactor);
                 GlStateManager.enableLighting();
-                GlStateManager.popAttrib();
+                RenderUtil.popAttrib();
                 OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lastX, lastY);
                 // END GLOW //
 

@@ -64,6 +64,7 @@ public class GunFactory {
         XFactoryTool.init();
         XFactory10ga.init();
         XFactoryDrill.init();
+        XFactoryPA.init();
         XFactory35800.init();
 
         ModItems.weapon_mod_test = new ItemEnumMulti<>("weapon_mod_test", EnumModTest.VALUES, true, true).setMaxStackSize(1);

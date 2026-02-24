@@ -1,7 +1,6 @@
 package com.hbm.items.weapon.sedna.factory;
 
 import com.hbm.blocks.ICustomBlockHighlight;
-import com.hbm.blocks.ModBlocks;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModItems;
 import com.hbm.items.weapon.sedna.GunConfig;
@@ -11,9 +10,6 @@ import com.hbm.items.weapon.sedna.impl.ItemGunDrill;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
 import com.hbm.items.weapon.sedna.mags.MagazineFluid;
 import com.hbm.items.weapon.sedna.mods.WeaponModManager;
-import com.hbm.render.anim.BusAnimation;
-import com.hbm.render.anim.BusAnimationSequence;
-import com.hbm.render.anim.HbmAnimations;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
 import com.hbm.render.anim.sedna.BusAnimationSequenceSedna;
@@ -26,7 +22,6 @@ import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.server.SPacketEffect;
 import net.minecraft.util.DamageSource;
@@ -72,7 +67,7 @@ public class XFactoryDrill {
         int index = ctx.configIndex;
         if (player == null) return;
 
-        ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.AnimType.CYCLE, ctx.configIndex);
+        ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.GunAnimation.CYCLE, ctx.configIndex);
 
         Receiver primary = ctx.config.getReceivers(stack)[0];
         IMagazine mag = primary.getMagazine(stack);
@@ -146,7 +141,7 @@ public class XFactoryDrill {
     public static int getModdableHarvestLevel(ItemStack stack, int base) {		return WeaponModManager.eval(base, stack, I_HARVEST, ModItems.gun_drill, 0); }
 
     @SuppressWarnings("incomplete-switch")
-    public static final BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_DRILL_ANIMS = (stack, type) -> {
+    public static final BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_DRILL_ANIMS = (stack, type) -> {
         switch (type) {
 
             case EQUIP:

@@ -115,22 +115,22 @@ public class XFactoryFolly {
         if(ItemGunBaseNT.getState(stack, ctx.configIndex) == ItemGunBaseNT.GunState.IDLE) {
             boolean wasAiming = ItemGunBaseNT.getIsAiming(stack);
             ItemGunBaseNT.setIsAiming(stack, !wasAiming);
-            if(!wasAiming) ItemGunBaseNT.playAnimation(ctx.getPlayer(), stack, HbmAnimationsSedna.AnimType.SPINUP, ctx.configIndex);
+            if(!wasAiming) ItemGunBaseNT.playAnimation(ctx.getPlayer(), stack, HbmAnimationsSedna.GunAnimation.SPINUP, ctx.configIndex);
         }
     };
 
-    public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_FIRE = (stack, ctx) -> Lego.doStandardFire(stack, ctx, HbmAnimationsSedna.AnimType.CYCLE, false);
+    public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_FIRE = (stack, ctx) -> Lego.doStandardFire(stack, ctx, HbmAnimationsSedna.GunAnimation.CYCLE, false);
 
     public static BiFunction<ItemStack, ItemGunBaseNT.LambdaContext, Boolean> LAMBDA_CAN_FIRE = (stack, ctx) -> {
         if(!ItemGunBaseNT.getIsAiming(stack)) return false;
-        if(ItemGunBaseNT.getLastAnim(stack, ctx.configIndex) != HbmAnimationsSedna.AnimType.SPINUP) return false;
+        if(ItemGunBaseNT.getLastAnim(stack, ctx.configIndex) != HbmAnimationsSedna.GunAnimation.SPINUP) return false;
         if(ItemGunBaseNT.getAnimTimer(stack, ctx.configIndex) < 100) return false;
         return ctx.config.getReceivers(stack)[0].getMagazine(stack).getAmount(stack, ctx.inventory) > 0;
     };
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_RECOIL_FOLLY = (stack, ctx) -> ItemGunBaseNT.setupRecoil(25, (float) (ctx.getPlayer().getRNG().nextGaussian() * 1.5));
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_FOLLY_ANIMS = (stack, type) -> switch (type) {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_FOLLY_ANIMS = (stack, type) -> switch (type) {
         case EQUIP -> new BusAnimationSedna()
                 .addBus("EQUIP", new BusAnimationSequenceSedna().addPos(-60, 0, 0, 0).addPos(5, 0, 0, 1500, IType.SIN_DOWN).addPos(0, 0, 0, 500, IType.SIN_FULL));
         case CYCLE -> new BusAnimationSedna()

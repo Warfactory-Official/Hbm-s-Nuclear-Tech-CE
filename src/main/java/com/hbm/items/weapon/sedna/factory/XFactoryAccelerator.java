@@ -121,14 +121,14 @@ public class XFactoryAccelerator {
     }
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_TAU_PRIMARY_RELEASE = (stack, ctx) -> {
-        if(ctx.getPlayer() == null || ItemGunBaseNT.getLastAnim(stack, ctx.configIndex) != HbmAnimationsSedna.AnimType.CYCLE) return;
+        if(ctx.getPlayer() == null || ItemGunBaseNT.getLastAnim(stack, ctx.configIndex) != HbmAnimationsSedna.GunAnimation.CYCLE) return;
         ctx.getPlayer().world.playSound(null, ctx.getPlayer().posX, ctx.getPlayer().posY, ctx.getPlayer().posZ, HBMSoundHandler.fireTauRelease, SoundCategory.PLAYERS, 1F, 1F);
     };
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_TAU_SECONDARY_PRESS = (stack, ctx) -> {
         if(ctx.getPlayer() == null) return;
         if(ctx.config.getReceivers(stack)[0].getMagazine(stack).getAmount(stack, ctx.inventory) <= 0) return;
-        ItemGunBaseNT.playAnimation(ctx.getPlayer(), stack, HbmAnimationsSedna.AnimType.SPINUP, ctx.configIndex);
+        ItemGunBaseNT.playAnimation(ctx.getPlayer(), stack, HbmAnimationsSedna.GunAnimation.SPINUP, ctx.configIndex);
         tauChargeMag.getMagType(stack); //caches the last loaded ammo
     };
 
@@ -136,8 +136,8 @@ public class XFactoryAccelerator {
         if(ctx.getPlayer() == null) return;
         int timer = ItemGunBaseNT.getAnimTimer(stack, ctx.configIndex);
 
-        if(timer >= 10 && ItemGunBaseNT.getLastAnim(stack, ctx.configIndex) == HbmAnimationsSedna.AnimType.SPINUP) {
-            ItemGunBaseNT.playAnimation(ctx.getPlayer(), stack, HbmAnimationsSedna.AnimType.ALT_CYCLE, ctx.configIndex);
+        if(timer >= 10 && ItemGunBaseNT.getLastAnim(stack, ctx.configIndex) == HbmAnimationsSedna.GunAnimation.SPINUP) {
+            ItemGunBaseNT.playAnimation(ctx.getPlayer(), stack, HbmAnimationsSedna.GunAnimation.ALT_CYCLE, ctx.configIndex);
             int unitsUsed = 1 + Math.min(12, timer / 10);
 
             EntityLivingBase entity = ctx.entity;
@@ -159,7 +159,7 @@ public class XFactoryAccelerator {
             ItemGunBaseNT.setWear(stack, index, Math.min(ItemGunBaseNT.getWear(stack, index) + config.wear * unitsUsed, ctx.config.getDurability(stack)));
 
         } else {
-            ItemGunBaseNT.playAnimation(ctx.getPlayer(), stack, HbmAnimationsSedna.AnimType.CYCLE_DRY, ctx.configIndex);
+            ItemGunBaseNT.playAnimation(ctx.getPlayer(), stack, HbmAnimationsSedna.GunAnimation.CYCLE_DRY, ctx.configIndex);
         }
     };
 
@@ -167,7 +167,7 @@ public class XFactoryAccelerator {
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_RECOIL_COILGUN = (stack, ctx) -> ItemGunBaseNT.setupRecoil(10, (float) (ctx.getPlayer().getRNG().nextGaussian() * 1.5));
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_TAU_ANIMS = (stack, type) -> switch (type) {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_TAU_ANIMS = (stack, type) -> switch (type) {
         case EQUIP -> new BusAnimationSedna()
                 .addBus("EQUIP", new BusAnimationSequenceSedna().addPos(45, 0, 0, 0).addPos(0, 0, 0, 500, IType.SIN_FULL));
         case CYCLE -> new BusAnimationSedna()
@@ -185,10 +185,10 @@ public class XFactoryAccelerator {
         default -> null;
     };
 
-    public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_COILGUN_ANIMS = (stack, type) -> {
-        if(type == HbmAnimationsSedna.AnimType.EQUIP) return new BusAnimationSedna().addBus("RELOAD", new BusAnimationSequenceSedna().addPos(1, 0, 0, 0).addPos(0, 0, 0, 250));
-        if(type == HbmAnimationsSedna.AnimType.CYCLE) return new BusAnimationSedna().addBus("RECOIL", new BusAnimationSequenceSedna().addPos(ItemGunBaseNT.getIsAiming(stack) ? 0.5 : 1, 0, 0, 100).addPos(0, 0, 0, 200));
-        if(type == HbmAnimationsSedna.AnimType.RELOAD) return new BusAnimationSedna().addBus("RELOAD", new BusAnimationSequenceSedna().addPos(1, 0, 0, 250).addPos(1, 0, 0, 500).addPos(0, 0, 0, 250));
+    public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_COILGUN_ANIMS = (stack, type) -> {
+        if(type == HbmAnimationsSedna.GunAnimation.EQUIP) return new BusAnimationSedna().addBus("RELOAD", new BusAnimationSequenceSedna().addPos(1, 0, 0, 0).addPos(0, 0, 0, 250));
+        if(type == HbmAnimationsSedna.GunAnimation.CYCLE) return new BusAnimationSedna().addBus("RECOIL", new BusAnimationSequenceSedna().addPos(ItemGunBaseNT.getIsAiming(stack) ? 0.5 : 1, 0, 0, 100).addPos(0, 0, 0, 200));
+        if(type == HbmAnimationsSedna.GunAnimation.RELOAD) return new BusAnimationSedna().addBus("RELOAD", new BusAnimationSequenceSedna().addPos(1, 0, 0, 250).addPos(1, 0, 0, 500).addPos(0, 0, 0, 250));
         return null;
     };
 }

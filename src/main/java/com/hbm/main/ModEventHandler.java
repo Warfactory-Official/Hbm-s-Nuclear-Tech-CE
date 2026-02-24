@@ -1629,7 +1629,7 @@ public class ModEventHandler {
             return false;
         }
         return switch (stack.getItem().getRegistryName().getPath()){
-            case "gun_light_revolver_dani", "gun_aberrator_eott", "gun_maresleg_akimbo", "gun_uzi_akimbo", "gun_minigun_dual" -> true;
+            case "gun_light_revolver_dani", "gun_aberrator_eott", "gun_maresleg_akimbo", "gun_uzi_akimbo", "gun_minigun_dual", "gun_pa_melee" -> true;
             default -> false;
         };
         // TileEntityItemStackRenderer is client only. I'll comment them out for now.

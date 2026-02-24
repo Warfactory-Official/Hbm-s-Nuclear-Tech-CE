@@ -7,7 +7,7 @@ import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
 import com.hbm.particle.SpentCasing;
 import com.hbm.render.anim.sedna.HbmAnimationsSedna;
-import com.hbm.render.anim.sedna.HbmAnimationsSedna.AnimType;
+import com.hbm.render.anim.sedna.HbmAnimationsSedna.GunAnimation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.item.ItemStack;
@@ -82,7 +82,7 @@ public class ItemRenderCongoLake extends ItemRenderWeaponBase {
 
         GlStateManager.pushMatrix();
         IMagazine mag = gun.getConfig(stack, 0).getReceivers(stack)[0].getMagazine(stack);
-        if (gun.getLastAnim(stack, 0) != AnimType.INSPECT ||
+        if (gun.getLastAnim(stack, 0) != GunAnimation.INSPECT ||
                 mag.getAmount(stack, MainRegistry.proxy.me().inventory) > 0) { //omit when inspecting and no shell is loaded
 
             Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.casings_tex);

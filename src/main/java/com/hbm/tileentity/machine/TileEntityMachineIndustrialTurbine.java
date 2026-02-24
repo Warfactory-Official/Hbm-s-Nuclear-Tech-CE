@@ -27,8 +27,8 @@ import org.jetbrains.annotations.NotNull;
 @AutoRegister
 public class TileEntityMachineIndustrialTurbine extends TileEntityTurbineBase implements IConfigurableMachine {
 
-    public static int inputTankSize = 512_000;
-    public static int outputTankSize = 2_048_000;
+    public static int inputTankSize = 750_000;
+    public static int outputTankSize = 3_000_000;
     public static double efficiency = 1D;
 
     public float rotor;

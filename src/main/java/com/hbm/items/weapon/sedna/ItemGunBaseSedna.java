@@ -249,7 +249,7 @@ public class ItemGunBaseSedna extends ItemBakedBase implements IHoldableWeapon, 
         }
 
         if(player instanceof EntityPlayerMP) {
-            HbmAnimationsSedna.AnimType animType = getMag(stack) == 0 ? HbmAnimationsSedna.AnimType.CYCLE_EMPTY : HbmAnimationsSedna.AnimType.CYCLE;
+            HbmAnimationsSedna.GunAnimation animType = getMag(stack) == 0 ? HbmAnimationsSedna.GunAnimation.CYCLE_EMPTY : HbmAnimationsSedna.GunAnimation.CYCLE;
             PacketDispatcher.wrapper.sendTo(new GunAnimationPacketSedna(animType.ordinal()), (EntityPlayerMP) player);
         }
 
@@ -284,7 +284,7 @@ public class ItemGunBaseSedna extends ItemBakedBase implements IHoldableWeapon, 
             }
 
             if(player instanceof EntityPlayerMP)
-                PacketDispatcher.wrapper.sendTo(new GunAnimationPacketSedna(HbmAnimationsSedna.AnimType.ALT_CYCLE.ordinal()), (EntityPlayerMP) player);
+                PacketDispatcher.wrapper.sendTo(new GunAnimationPacketSedna(HbmAnimationsSedna.GunAnimation.ALT_CYCLE.ordinal()), (EntityPlayerMP) player);
 
             useUpAmmo(player, stack, false);
             player.inventoryContainer.detectAndSendChanges();
@@ -374,10 +374,10 @@ public class ItemGunBaseSedna extends ItemBakedBase implements IHoldableWeapon, 
             setMag(stack, getMag(stack) + toAdd);
             if (getMag(stack) >= mainConfig.ammoCap) {
                 setIsReloading(stack, false);
-                PacketDispatcher.wrapper.sendTo(new GunAnimationPacketSedna(HbmAnimationsSedna.AnimType.RELOAD_END.ordinal()), (EntityPlayerMP) player);
+                PacketDispatcher.wrapper.sendTo(new GunAnimationPacketSedna(HbmAnimationsSedna.GunAnimation.RELOAD_END.ordinal()), (EntityPlayerMP) player);
             } else {
                 resetReloadCycle(player, stack);
-                HbmAnimationsSedna.AnimType animType = availableFills <= 1 ? HbmAnimationsSedna.AnimType.RELOAD_END : HbmAnimationsSedna.AnimType.RELOAD_CYCLE;
+                HbmAnimationsSedna.GunAnimation animType = availableFills <= 1 ? HbmAnimationsSedna.GunAnimation.RELOAD_END : HbmAnimationsSedna.GunAnimation.RELOAD_CYCLE;
                 PacketDispatcher.wrapper.sendTo(new GunAnimationPacketSedna(animType.ordinal()), (EntityPlayerMP) player);
                 if (availableFills > 1 && !mainConfig.reloadSoundEnd)
                     world.playSound(player, player.posX, player.posY, player.posZ, reloadSound, SoundCategory.PLAYERS, 1.0F, 1.0F);
@@ -429,7 +429,7 @@ public class ItemGunBaseSedna extends ItemBakedBase implements IHoldableWeapon, 
         }
 
         if(!world.isRemote) {
-            HbmAnimationsSedna.AnimType reloadType = getMag(stack) == 0 ? HbmAnimationsSedna.AnimType.RELOAD_EMPTY : HbmAnimationsSedna.AnimType.RELOAD;
+            HbmAnimationsSedna.GunAnimation reloadType = getMag(stack) == 0 ? HbmAnimationsSedna.GunAnimation.RELOAD_EMPTY : HbmAnimationsSedna.GunAnimation.RELOAD;
             PacketDispatcher.wrapper.sendTo(new GunAnimationPacketSedna(reloadType.ordinal()), (EntityPlayerMP) player);
         }
 
@@ -790,7 +790,7 @@ public class ItemGunBaseSedna extends ItemBakedBase implements IHoldableWeapon, 
     }
 
     @SideOnly(Side.CLIENT)
-    public BusAnimationSedna getAnimation(ItemStack stack, HbmAnimationsSedna.AnimType type) {
+    public BusAnimationSedna getAnimation(ItemStack stack, HbmAnimationsSedna.GunAnimation type) {
         GunConfigurationSedna config = ((ItemGunBaseSedna) stack.getItem()).mainConfig;
         if (!config.animationsLoaded && config.loadAnimations != null) {
             config.loadAnimations.accept(null);
@@ -805,7 +805,7 @@ public class ItemGunBaseSedna extends ItemBakedBase implements IHoldableWeapon, 
             player.world.playSound(player, player.posX, player.posY, player.posZ, mainConfig.equipSound, SoundCategory.PLAYERS, 1, 1);
         }
 
-        if(player instanceof EntityPlayerMP) PacketDispatcher.wrapper.sendTo(new GunAnimationPacketSedna(HbmAnimationsSedna.AnimType.EQUIP.ordinal()), (EntityPlayerMP) player);
+        if(player instanceof EntityPlayerMP) PacketDispatcher.wrapper.sendTo(new GunAnimationPacketSedna(HbmAnimationsSedna.GunAnimation.EQUIP.ordinal()), (EntityPlayerMP) player);
     }
 
     protected static void queueCasing(Entity entity, CasingEjector ejector, BulletConfiguration bullet, ItemStack stack) {

@@ -17,7 +17,7 @@ public class HbmAnimationsSedna {
     //animation is playing, though this will cancel the animation entirely.
     public static final Animation[][] hotbar = new Animation[9][8]; //now with 8 parallel rails per slot! time to get railed!
 
-    public static enum AnimType {
+    public enum GunAnimation {
         RELOAD,			//either a full reload or start of a reload
         @Deprecated RELOAD_EMPTY,	//same as reload, but the mag is completely empty
         RELOAD_CYCLE,	//animation that plays for every individual round (for shotguns and similar single round loading weapons)
@@ -32,7 +32,7 @@ public class HbmAnimationsSedna {
         INSPECT,		//animation for inspecting the weapon
         JAMMED;			//animation for jammed weapons
 
-        public static final AnimType[] VALUES = values();
+        public static final GunAnimation[] VALUES = values();
     }
 
     public static enum ToolAnimation {
@@ -55,16 +55,16 @@ public class HbmAnimationsSedna {
         // If set, don't cancel this animation when the timer ends, instead wait for the next to start
         public boolean holdLastFrame = false;
         // so we know what type of animation we're playing, only used rarely
-        public HbmAnimationsSedna.AnimType type;
+        public GunAnimation type;
 
-        public Animation(String key, long startMillis, BusAnimationSedna animation, HbmAnimationsSedna.AnimType type) {
+        public Animation(String key, long startMillis, BusAnimationSedna animation, GunAnimation type) {
             this.key = key;
             this.startMillis = startMillis;
             this.animation = animation;
             this.type = type;
         }
 
-        public Animation(String key, long startMillis, BusAnimationSedna animation, HbmAnimationsSedna.AnimType type, boolean holdLastFrame) {
+        public Animation(String key, long startMillis, BusAnimationSedna animation, GunAnimation type, boolean holdLastFrame) {
             this.key = key;
             this.startMillis = startMillis;
             this.animation = animation;

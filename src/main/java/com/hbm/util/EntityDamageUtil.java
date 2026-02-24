@@ -96,6 +96,10 @@ public class EntityDamageUtil {
     }
 
     public static RayTraceResult getMouseOver(EntityPlayer attacker, double reach) {
+        return getMouseOver(attacker, reach, 0D);
+    }
+
+    public static RayTraceResult getMouseOver(EntityPlayer attacker, double reach, double threshold) {
 
         World world = attacker.world;
         RayTraceResult objectMouseOver;
@@ -117,7 +121,7 @@ public class EntityDamageUtil {
 
             if(entity.canBeCollidedWith()) {
 
-                float borderSize = entity.getCollisionBorderSize();
+                double borderSize = entity.getCollisionBorderSize() + threshold;
                 AxisAlignedBB axisalignedbb = entity.getEntityBoundingBox().expand(borderSize, borderSize, borderSize);
                 RayTraceResult movingobjectposition = axisalignedbb.calculateIntercept(pos, end);
 

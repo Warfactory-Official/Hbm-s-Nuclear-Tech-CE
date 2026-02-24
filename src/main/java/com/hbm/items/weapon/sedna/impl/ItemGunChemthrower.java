@@ -80,7 +80,7 @@ public class ItemGunChemthrower extends ItemGunBaseNT implements IFillableItem {
         EntityLivingBase entity = ctx.entity;
         EntityPlayer player = ctx.getPlayer();
         int index = ctx.configIndex;
-        ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.AnimType.CYCLE, ctx.configIndex);
+        ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.GunAnimation.CYCLE, ctx.configIndex);
 
         Receiver primary = ctx.config.getReceivers(stack)[0];
         IMagazine mag = primary.getMagazine(stack);
