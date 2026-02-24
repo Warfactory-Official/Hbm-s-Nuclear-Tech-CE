@@ -9,6 +9,7 @@ import net.minecraft.item.Item;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.IBlockAccess;
 import org.jetbrains.annotations.NotNull;
 
@@ -64,6 +65,27 @@ public abstract class BlockBeamBase extends BlockContainer {
     @Override
     public boolean isReplaceable(IBlockAccess world, BlockPos pos) {
         return true;
+    }
+
+    @Nullable
+    @Override
+    public RayTraceResult collisionRayTrace(@NotNull IBlockState blockState, @NotNull net.minecraft.world.World worldIn, @NotNull BlockPos pos, @NotNull net.minecraft.util.math.Vec3d start, @NotNull net.minecraft.util.math.Vec3d end) {
+        return null;
+    }
+
+    @Override
+    public boolean canCollideCheck(IBlockState state, boolean hitIfLiquid) {
+        return false;
+    }
+
+    @Override
+    public boolean isCollidable() {
+        return false;
+    }
+
+    @Override
+    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+        return NULL_AABB;
     }
 
     @Nullable
