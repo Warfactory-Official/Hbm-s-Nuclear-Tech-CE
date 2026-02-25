@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.interfaces.AutoRegister;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -19,6 +20,7 @@ public class FloodlightBeam extends BlockBeamBase {
         return new TileEntityFloodlightBeam();
     }
 
+    @AutoRegister
     public static class TileEntityFloodlightBeam extends TileEntity implements ITickable {
 
         public Floodlight.TileEntityFloodlight cache;
