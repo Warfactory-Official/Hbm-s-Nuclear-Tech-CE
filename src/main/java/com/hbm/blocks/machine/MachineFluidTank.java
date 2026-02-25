@@ -17,6 +17,7 @@ import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.IPersistentNBT;
 import com.hbm.tileentity.IRepairable;
 import com.hbm.tileentity.TileEntityProxyCombo;
+import com.hbm.tileentity.machine.TileEntityBarrel;
 import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -59,6 +60,24 @@ public class MachineFluidTank extends BlockDummyable implements IPersistentInfoP
 	}
 
 	@Override
+	public boolean hasComparatorInputOverride(IBlockState state) {
+		return true;
+	}
+	@Override
+	public int getComparatorInputOverride(IBlockState blockState, World worldIn, BlockPos pos) {
+		TileEntity te = worldIn.getTileEntity(pos);
+		if (te instanceof TileEntityBarrel teBarrel) {
+			System.err.println(teBarrel.getComparatorPower());
+			return teBarrel.getComparatorPower();
+		}
+		TileEntity core = this.findCoreTE(worldIn, pos);
+		if (core instanceof TileEntityMachineFluidTank tank) {
+			return tank.getComparatorPower();
+		}
+		return 0;
+	}
+
+	@Override
 	public int[] getDimensions() {
 		return new int[] {2, 0, 1, 1, 2, 2};
 	}
@@ -67,7 +86,7 @@ public class MachineFluidTank extends BlockDummyable implements IPersistentInfoP
 	public int getOffset() {
 		return 1;
 	}
-	
+
 	@Override
 	public Item getItemDropped(IBlockState state, Random rand, int fortune) {
 		return Item.getItemFromBlock(ModBlocks.machine_fluidtank);
@@ -192,5 +211,5 @@ public class MachineFluidTank extends BlockDummyable implements IPersistentInfoP
 	public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
 		IRepairable.addGenericOverlay(event, world, pos.getX(), pos.getY(), pos.getZ(), this);
 	}
-	
+
 }
