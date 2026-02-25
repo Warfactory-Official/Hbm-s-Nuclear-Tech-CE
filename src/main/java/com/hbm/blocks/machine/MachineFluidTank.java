@@ -17,7 +17,6 @@ import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.IPersistentNBT;
 import com.hbm.tileentity.IRepairable;
 import com.hbm.tileentity.TileEntityProxyCombo;
-import com.hbm.tileentity.machine.TileEntityBarrel;
 import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -66,9 +65,8 @@ public class MachineFluidTank extends BlockDummyable implements IPersistentInfoP
 	@Override
 	public int getComparatorInputOverride(IBlockState blockState, World worldIn, BlockPos pos) {
 		TileEntity te = worldIn.getTileEntity(pos);
-		if (te instanceof TileEntityBarrel teBarrel) {
-			System.err.println(teBarrel.getComparatorPower());
-			return teBarrel.getComparatorPower();
+		if (te instanceof TileEntityMachineFluidTank tank) {
+			return tank.getComparatorPower();
 		}
 		TileEntity core = this.findCoreTE(worldIn, pos);
 		if (core instanceof TileEntityMachineFluidTank tank) {
