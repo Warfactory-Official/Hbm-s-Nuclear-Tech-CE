@@ -39,6 +39,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.Fluid;
@@ -67,6 +68,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements
     private static final int[] slots_side = new int[]{4};
     private static boolean converted = false;
     protected FluidNode node;
+    public byte lastRedstone = 0;
     protected FluidType lastType;
     public FluidTank tank;
     public FluidTankNTM tankNew;
@@ -83,6 +85,12 @@ public class TileEntityBarrel extends TileEntityMachineBase implements
         tank = new FluidTank(-1);
         tankNew = new FluidTankNTM(Fluids.NONE, 0);
         converted = true;
+    }
+
+    public byte getComparatorPower() {
+        if(tankNew.getFill() == 0) return 0;
+        double frac = (double) tankNew.getFill() / (double) tankNew.getMaxFill() * 15D;
+        return (byte) (MathHelper.clamp((int) frac + 1, 0, 15));
     }
 
     public TileEntityBarrel(int cap) {
@@ -220,6 +228,15 @@ public class TileEntityBarrel extends TileEntityMachineBase implements
             tankNew.setType(0, 1, inventory);
             tankNew.loadTank(2, 3, inventory);
             tankNew.unloadTank(4, 5, inventory);
+
+            // Comparator Check
+            byte comp = this.getComparatorPower();
+            System.err.println(comp + " : " + (comp != this.lastRedstone));
+            if(comp != this.lastRedstone) {
+                this.markDirty();
+                for(DirPos pos : getConPos()) this.updateRedstoneConnection(pos);
+            }
+            this.lastRedstone = comp;
 
             // In buffer mode, acts like a pipe block, providing fluid to its own node
             // otherwise, it is a regular providing/receiving machine, blocking further propagation

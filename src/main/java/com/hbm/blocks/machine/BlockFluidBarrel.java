@@ -14,6 +14,7 @@ import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.IPersistentNBT;
 import com.hbm.tileentity.machine.TileEntityBarrel;
+import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
 import com.hbm.util.I18nUtil;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
@@ -54,6 +55,20 @@ public class BlockFluidBarrel extends BlockContainer implements ITooltipProvider
         capacity = cap;
 
         ModBlocks.ALL_BLOCKS.add(this);
+    }
+
+    @Override
+    public boolean hasComparatorInputOverride(IBlockState state) {
+        return true;
+    }
+    @Override
+    public int getComparatorInputOverride(IBlockState blockState, World worldIn, BlockPos pos) {
+        TileEntity te = worldIn.getTileEntity(pos);
+        if (te instanceof TileEntityBarrel teBarrel) {
+            System.err.println(teBarrel.getComparatorPower());
+            return teBarrel.getComparatorPower();
+        }
+        return 0;
     }
 
     @Override
