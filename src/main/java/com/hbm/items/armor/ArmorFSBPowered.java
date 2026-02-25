@@ -5,6 +5,7 @@ import com.hbm.blocks.machine.ItemSelfcharger;
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.items.gear.ArmorFSB;
 import com.hbm.lib.Library;
+import com.hbm.util.BobMathUtil;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.EntityLivingBase;
@@ -41,8 +42,7 @@ public class ArmorFSBPowered extends ArmorFSB implements IBatteryItem {
     @Override
     @SideOnly(Side.CLIENT)
     public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
-    	final long power = getCharge(stack);
-    	list.add("Charge: " + getColor(power, getMaxCharge(stack)) + Library.getShortNumber(power) + " §2/ " + Library.getShortNumber(getMaxCharge(stack)));
+        list.add("Charge: " + BobMathUtil.getShortNumber(getCharge(stack)) + " / " + BobMathUtil.getShortNumber(getMaxCharge(stack)));
     	super.addInformation(stack, worldIn, list, flagIn);
     }
 

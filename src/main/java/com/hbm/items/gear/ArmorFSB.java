@@ -442,9 +442,9 @@ public class ArmorFSB extends ItemArmor implements IArmorDisableModel {
         GlStateManager.disableAlpha();
         Minecraft.getMinecraft().getTextureManager().bindTexture(overlay);
         NTMRenderHelper.startDrawingTexturedQuads();
-        NTMRenderHelper.addVertexWithUV(0.0D, (double) resolution.getScaledHeight(), -90.0D, 0.0D, 1.0D);
-        NTMRenderHelper.addVertexWithUV((double) resolution.getScaledWidth(), (double) resolution.getScaledHeight(), -90.0D, 1.0D, 1.0D);
-        NTMRenderHelper.addVertexWithUV((double) resolution.getScaledWidth(), 0.0D, -90.0D, 1.0D, 0.0D);
+        NTMRenderHelper.addVertexWithUV(0.0D, resolution.getScaledHeight(), -90.0D, 0.0D, 1.0D);
+        NTMRenderHelper.addVertexWithUV(resolution.getScaledWidth(), resolution.getScaledHeight(), -90.0D, 1.0D, 1.0D);
+        NTMRenderHelper.addVertexWithUV(resolution.getScaledWidth(), 0.0D, -90.0D, 1.0D, 0.0D);
         NTMRenderHelper.addVertexWithUV(0.0D, 0.0D, -90.0D, 0.0D, 0.0D);
         NTMRenderHelper.draw();
         GlStateManager.depthMask(true);
