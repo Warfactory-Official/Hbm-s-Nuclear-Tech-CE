@@ -38,11 +38,11 @@ public class MachineOrbus extends BlockDummyable implements IPersistentInfoProvi
 	public int getComparatorInputOverride(IBlockState blockState, World worldIn, BlockPos pos) {
 		TileEntity te = worldIn.getTileEntity(pos);
 		if (te instanceof TileEntityMachineOrbus orbus) {
-			return orbus.getComparatorPower();
+			return orbus.tankNew.getRedstoneComparatorPower();
 		}
 		TileEntity core = this.findCoreTE(worldIn, pos);
 		if (core instanceof TileEntityMachineOrbus orbus) {
-			return orbus.getComparatorPower();
+			return orbus.tankNew.getRedstoneComparatorPower();
 		}
 		return 0;
 	}

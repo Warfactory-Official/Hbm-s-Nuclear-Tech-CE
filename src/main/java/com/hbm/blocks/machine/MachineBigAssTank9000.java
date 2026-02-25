@@ -31,11 +31,11 @@ public class MachineBigAssTank9000 extends BlockDummyable {
 	public int getComparatorInputOverride(IBlockState blockState, World worldIn, BlockPos pos) {
 		TileEntity te = worldIn.getTileEntity(pos);
 		if (te instanceof TileEntityMachineBAT9000 bat) {
-			return bat.getComparatorPower();
+			return bat.tankNew.getRedstoneComparatorPower();
 		}
 		TileEntity core = this.findCoreTE(worldIn, pos);
 		if (core instanceof TileEntityMachineBAT9000 bat) {
-			return bat.getComparatorPower();
+			return bat.tankNew.getRedstoneComparatorPower();
 		}
 		return 0;
 	}

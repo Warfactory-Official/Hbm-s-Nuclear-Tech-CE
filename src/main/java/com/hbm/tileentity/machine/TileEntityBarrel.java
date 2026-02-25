@@ -39,7 +39,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.Fluid;
@@ -85,12 +84,6 @@ public class TileEntityBarrel extends TileEntityMachineBase implements
         tank = new FluidTank(-1);
         tankNew = new FluidTankNTM(Fluids.NONE, 0);
         converted = true;
-    }
-
-    public byte getComparatorPower() {
-        if(tankNew.getFill() == 0) return 0;
-        double frac = (double) tankNew.getFill() / (double) tankNew.getMaxFill() * 15D;
-        return (byte) (MathHelper.clamp((int) frac + 1, 0, 15));
     }
 
     public TileEntityBarrel(int cap) {
@@ -229,11 +222,11 @@ public class TileEntityBarrel extends TileEntityMachineBase implements
             tankNew.loadTank(2, 3, inventory);
             tankNew.unloadTank(4, 5, inventory);
 
-            // Comparator Check
-            byte comp = this.getComparatorPower();
+            // Redstone Comparator Check
+            byte comp = tankNew.getRedstoneComparatorPower();
             if(comp != this.lastRedstone) {
                 this.markDirty();
-                for(DirPos pos : getConPos()) this.updateRedstoneConnection(pos);
+                for(DirPos pos : getConPos()) this.updateRedstoneComparatorConnection(pos);
             }
             this.lastRedstone = comp;
 
