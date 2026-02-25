@@ -165,4 +165,10 @@ public class BlockEnums {
 			return 128;
 		}
 	}
+
+    public enum LightType {
+        INCANDESCENT,
+        FLUORESCENT,
+        HALOGEN
+    }
 }

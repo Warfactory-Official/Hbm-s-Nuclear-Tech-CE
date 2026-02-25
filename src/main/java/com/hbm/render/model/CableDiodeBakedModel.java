@@ -38,8 +38,6 @@ public class CableDiodeBakedModel extends AbstractBakedModel {
 
   private List<BakedQuad> inventoryCache;
 
-  private static final ItemCameraTransforms STANDARD_BLOCK = BakedModelTransforms.standardBlock();
-
   public CableDiodeBakedModel(TextureAtlasSprite sprite, boolean isInventory) {
     super(makeItemTransforms());
     this.sprite = sprite;
@@ -81,10 +79,10 @@ public class CableDiodeBakedModel extends AbstractBakedModel {
         thirdPerson,
         firstPerson,
         firstPerson,
-        STANDARD_BLOCK.head,
+        BakedModelTransforms.standardBlock().head,
         gui,
         ground,
-        STANDARD_BLOCK.fixed);
+        BakedModelTransforms.standardBlock().fixed);
   }
 
   @Override
