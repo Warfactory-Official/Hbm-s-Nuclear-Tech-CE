@@ -231,7 +231,6 @@ public class TileEntityBarrel extends TileEntityMachineBase implements
 
             // Comparator Check
             byte comp = this.getComparatorPower();
-            System.err.println(comp + " : " + (comp != this.lastRedstone));
             if(comp != this.lastRedstone) {
                 this.markDirty();
                 for(DirPos pos : getConPos()) this.updateRedstoneConnection(pos);

@@ -65,7 +65,6 @@ public class BlockFluidBarrel extends BlockContainer implements ITooltipProvider
     public int getComparatorInputOverride(IBlockState blockState, World worldIn, BlockPos pos) {
         TileEntity te = worldIn.getTileEntity(pos);
         if (te instanceof TileEntityBarrel teBarrel) {
-            System.err.println(teBarrel.getComparatorPower());
             return teBarrel.getComparatorPower();
         }
         return 0;
