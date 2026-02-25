@@ -2,6 +2,8 @@ package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.TileEntityData;
 import net.minecraft.block.Block;
+import net.minecraft.block.properties.PropertyInteger;
+import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -13,9 +15,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SpotlightBeam extends BlockBeamBase {
+  public static final PropertyInteger META = PropertyInteger.create("meta", 0, 3);
 
   public SpotlightBeam(String name) {
     super(name);
+
+    setDefaultState(this.blockState.getBaseState().withProperty(META, 0));
+  }
+
+  @Override
+  protected @NotNull BlockStateContainer createBlockState() {
+    return new BlockStateContainer(this, META);
+  }
+
+  @Override
+  public @NotNull IBlockState getStateFromMeta(int meta) {
+    return getDefaultState().withProperty(META, meta);
+  }
+
+  @Override
+  public int getMetaFromState(IBlockState state) {
+    return state.getValue(META);
   }
 
   // If a block is placed onto the beam, handle the new cutoff
@@ -42,7 +62,7 @@ public class SpotlightBeam extends BlockBeamBase {
     if (blockIn instanceof SpotlightBeam) return;
 
     for (EnumFacing facing : getDirections(world, pos)) {
-      Spotlight.backPropagate(world, pos, facing);
+      Spotlight.backPropagate(world, pos, facing, world.getBlockState(pos).getValue(META));
     }
   }
 

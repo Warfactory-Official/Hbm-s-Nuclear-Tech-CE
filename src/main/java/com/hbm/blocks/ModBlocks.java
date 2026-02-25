@@ -249,6 +249,11 @@ public class ModBlocks {
     public static final Block lantern = new BlockLantern("lantern").setSoundType(SoundType.METAL).setCreativeTab(MainRegistry.blockTab).setLightLevel(1F).setHardness(3.0F);
     public static final Block lantern_behemoth = new BlockLanternBehemoth("lantern_behemoth").setSoundType(SoundType.METAL).setCreativeTab(null).setHardness(3.0F);
 
+    public static final Block lamp_tritium_green_off = new TritiumLamp("lamp_tritium_green_off", false).setHardness(3.0F);
+    public static final Block lamp_tritium_green_on = new TritiumLamp("lamp_tritium_green_on", true).setHardness(3.0F);
+    public static final Block lamp_tritium_blue_off = new TritiumLamp("lamp_tritium_blue_off", false).setHardness(3.0F);
+    public static final Block lamp_tritium_blue_on = new TritiumLamp("lamp_tritium_blue_on", true).setHardness(3.0F);
+
     public static final Block spotlight_incandescent = new Spotlight("spotlight_incandescent", Material.IRON, 2, LightType.INCANDESCENT, true).setCreativeTab(MainRegistry.blockTab);
     public static final Block spotlight_incandescent_off = new Spotlight("spotlight_incandescent_off", Material.IRON, 2, LightType.INCANDESCENT, false);
     public static final Block spotlight_fluoro = new SpotlightModular("spotlight_fluoro", Material.IRON, 8, LightType.FLUORESCENT, true).setCreativeTab(MainRegistry.blockTab);

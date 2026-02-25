@@ -461,9 +461,8 @@ public class CraftingManager {
 		addRecipeAuto(new ItemStack(Item.getItemFromBlock(ModBlocks.reinforced_light), 1), "FFF", "FBF", "FFF", 'F', Blocks.IRON_BARS, 'B', Blocks.GLOWSTONE );
 		addRecipeAuto(new ItemStack(Item.getItemFromBlock(ModBlocks.reinforced_lamp_off), 1), "FFF", "FBF", "FFF", 'F', Blocks.IRON_BARS, 'B', Blocks.REDSTONE_LAMP );
 		addRecipeAuto(new ItemStack(Item.getItemFromBlock(ModBlocks.reinforced_sand), 4), "FBF", "BFB", "FBF", 'F', Blocks.IRON_BARS, 'B', Blocks.SANDSTONE );
-		// TODO
-		/*addShapelessAuto(new ItemStack(ModBlocks.lamp_tritium_green_off, 1), KEY_ANYGLASS, P_RED.dust(), Fluids.TRITIUM.getDict(1_000), S.dust() );
-		addShapelessAuto(new ItemStack(ModBlocks.lamp_tritium_blue_off, 1), KEY_ANYGLASS, P_RED.dust(), Fluids.TRITIUM.getDict(1_000), AL.dust() );*/
+		addShapelessAuto(new ItemStack(ModBlocks.lamp_tritium_green_off, 1), KEY_ANYGLASS, P_RED.dust(), Fluids.TRITIUM.getDict(1_000), S.dust() );
+		addShapelessAuto(new ItemStack(ModBlocks.lamp_tritium_blue_off, 1), KEY_ANYGLASS, P_RED.dust(), Fluids.TRITIUM.getDict(1_000), AL.dust() );
 		addRecipeAuto(new ItemStack(ModBlocks.lantern, 1), "PGP", " S ", " S ", 'P', KEY_ANYPANE, 'G', Items.GLOWSTONE_DUST, 'S', ModBlocks.steel_beam );
 		addRecipeAuto(new ItemStack(ModBlocks.spotlight_incandescent, 8), "G", "T", "I", 'G', KEY_ANYPANE, 'T', W.wireFine(), 'I', IRON.ingot() );
 		addRecipeAuto(new ItemStack(ModBlocks.spotlight_fluoro, 8), "G", "M", "A", 'G', KEY_ANYPANE, 'M', ModItems.ingot_mercury, 'A', ModItems.plate_aluminium );

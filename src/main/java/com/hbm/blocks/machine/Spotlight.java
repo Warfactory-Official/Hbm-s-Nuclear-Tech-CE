@@ -44,6 +44,8 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Random;
 
+import static com.hbm.blocks.machine.SpotlightBeam.META;
+
 public class Spotlight extends Block implements ISpotlight, INBTBlockTransformable, IDynamicModels {
   @SideOnly(Side.CLIENT)
   public TextureAtlasSprite sprite;
@@ -371,7 +373,7 @@ public class Spotlight extends Block implements ISpotlight, INBTBlockTransformab
   private void updateBeam(World world, BlockPos pos, IBlockState state) {
     if (!isOn) return;
 
-    propagateBeam(world, pos, state.getValue(FACING), beamLength); // META_YELLOW
+    propagateBeam(world, pos, state.getValue(FACING), beamLength, META_YELLOW);
   }
 
   // Replace bulbs on broken lights with a click
@@ -393,13 +395,14 @@ public class Spotlight extends Block implements ISpotlight, INBTBlockTransformab
   }
 
   private void repair(World world, BlockPos pos) {
-    if (!isBroken(world.getBlockState(pos))) return;
+    IBlockState state = world.getBlockState(pos);
+    if (!isBroken(state)) return;
 
     world.setBlockState(
         pos,
         getOn()
             .getDefaultState()
-            .withProperty(FACING, world.getBlockState(pos).getValue(FACING))
+            .withProperty(FACING, state.getValue(FACING))
             .withProperty(BROKEN, false),
         2);
 
@@ -407,9 +410,9 @@ public class Spotlight extends Block implements ISpotlight, INBTBlockTransformab
       int ox = pos.getX() + facing.getXOffset();
       int oy = pos.getY() + facing.getYOffset();
       int oz = pos.getZ() + facing.getZOffset();
-      IBlockState state = world.getBlockState(new BlockPos(ox, oy, oz));
+      IBlockState offsetState = world.getBlockState(new BlockPos(ox, oy, oz));
 
-      if (state.getBlock() == this) repair(world, new BlockPos(ox, oy, oz));
+      if (offsetState.getBlock() == this) repair(world, new BlockPos(ox, oy, oz));
     }
   }
 
@@ -434,7 +437,8 @@ public class Spotlight extends Block implements ISpotlight, INBTBlockTransformab
   }
 
   // Recursively add beam blocks, updating any that already exist with new incoming light directions
-  public static void propagateBeam(World world, BlockPos pos, EnumFacing facing, int distance) {
+  public static void propagateBeam(
+      World world, BlockPos pos, EnumFacing facing, int distance, int meta) {
     distance--;
     if (distance <= 0) return;
 
@@ -444,14 +448,15 @@ public class Spotlight extends Block implements ISpotlight, INBTBlockTransformab
     if (!state.getBlock().isAir(state, world, pos)) return;
 
     if (!(state.getBlock() instanceof SpotlightBeam)) {
-      world.setBlockState(pos, ModBlocks.spotlight_beam.getDefaultState(), 3);
+      world.setBlockState(
+          pos, ModBlocks.spotlight_beam.getDefaultState().withProperty(META, meta), 3);
     }
 
     // If we encounter an existing beam, add a new INCOMING direction to the
     // metadata, and cancel propagation if something goes wrong
     if (SpotlightBeam.setDirection(world, pos, facing, true) == 0) return;
 
-    propagateBeam(world, pos, facing, distance);
+    propagateBeam(world, pos, facing, distance, meta);
   }
 
   // Recursively delete beam blocks, if they aren't still illuminated from a different direction
@@ -471,17 +476,17 @@ public class Spotlight extends Block implements ISpotlight, INBTBlockTransformab
   }
 
   // Travels back through a beam to the source, and if found, repropagates the beam
-  public static void backPropagate(World world, BlockPos pos, EnumFacing facing) {
+  public static void backPropagate(World world, BlockPos pos, EnumFacing facing, int meta) {
     pos = pos.offset(facing.getOpposite());
 
     IBlockState block = world.getBlockState(pos);
     if (block instanceof ISpotlight spot) {
-      propagateBeam(world, pos, facing, spot.getBeamLength());
+      propagateBeam(world, pos, facing, spot.getBeamLength(), meta);
     } else if (!(block instanceof SpotlightBeam)) {
       return;
     }
 
-    backPropagate(world, pos, facing);
+    backPropagate(world, pos, facing, meta);
   }
 
   protected Block getOff() {
