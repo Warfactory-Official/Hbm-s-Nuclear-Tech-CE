@@ -1,93 +1,135 @@
 package com.hbm.blocks.generic;
 
-import com.hbm.blocks.ModBlocks;
-import com.hbm.items.IDynamicModels;
+import com.hbm.blocks.machine.ZirnoxDestroyed;
+import com.hbm.blocks.machine.rbmk.RBMKDebris;
 import com.hbm.main.MainRegistry;
 import com.hbm.render.block.BlockBakeFrame;
 import net.minecraft.block.Block;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
 
-public class BlockLayering extends BlockBakeBase  {
+public class BlockLayering extends BlockBakeBase {
+  public BlockLayering(Material material, String name, SoundType type, String texture) {
+    super(material, name, new BlockBakeFrame(BlockBakeFrame.BlockForm.LAYER, texture));
+    setSoundType(type);
+    setHarvestLevel("pickaxe", 0);
+    setCreativeTab(MainRegistry.blockTab);
+  }
 
-    private static final AxisAlignedBB LAYER_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 1.0D, 0.125D, 1.0D);
+  @Override
+  @SideOnly(Side.CLIENT)
+  public @NotNull BlockRenderLayer getRenderLayer() {
+    return BlockRenderLayer.CUTOUT;
+  }
 
-    public BlockLayering(Material material, String s, String texture) {
-        super(material, s, new BlockBakeFrame(BlockBakeFrame.BlockForm.LAYER, texture));
-        this.setHarvestLevel("pickaxe", 0);
-        this.setCreativeTab(MainRegistry.controlTab);
+  @SuppressWarnings("deprecation")
+  @Override
+  public @NotNull AxisAlignedBB getBoundingBox(
+      @NotNull IBlockState state, @NotNull IBlockAccess source, @NotNull BlockPos pos) {
+    int meta = getMetaFromState(state) & 7;
+    float height = (2 * (1 + meta)) / 16.0F;
+    return new AxisAlignedBB(0.0D, 0.0D, 0.0D, 1.0D, height, 1.0D);
+  }
+
+  @SuppressWarnings("deprecation")
+  @Override
+  public boolean isOpaqueCube(@NotNull IBlockState state) {
+    return false;
+  }
+
+  @SuppressWarnings("deprecation")
+  @Override
+  public boolean isFullCube(@NotNull IBlockState state) {
+    return false;
+  }
+
+  @SuppressWarnings("deprecation")
+  @Override
+  public boolean canPlaceBlockAt(World world, BlockPos pos) {
+    IBlockState state = world.getBlockState(pos.down());
+
+    Block blockBelow = state.getBlock();
+
+    if (blockBelow instanceof RBMKDebris || blockBelow instanceof ZirnoxDestroyed) {
+      return true;
     }
 
-    @Override
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
-        int meta = state.getBlock().getMetaFromState(state) & 7;
-        float height = (2 * (1 + meta)) / 16.0F;
-        return new AxisAlignedBB(0.0D, 0.0D, 0.0D, 1.0D, height, 1.0D);
-    }
+    return blockBelow != Blocks.ICE
+        && blockBelow != Blocks.PACKED_ICE
+        && (blockBelow.isLeaves(state, world, pos.down())
+            || (blockBelow == this && (getMetaFromState(state) & 7) == 7
+                || blockBelow.isOpaqueCube(state)
+                    && blockBelow.getMaterial(state).blocksMovement()));
+  }
 
-    @Override
-    public boolean isOpaqueCube(IBlockState state) {
-        return false;
+  @SuppressWarnings("deprecation")
+  @Override
+  public void neighborChanged(
+      @NotNull IBlockState state,
+      @NotNull World world,
+      @NotNull BlockPos pos,
+      @NotNull Block blockIn,
+      @NotNull BlockPos fromPos) {
+    if (!this.canPlaceBlockAt(world, pos)) {
+      world.setBlockToAir(pos);
     }
+  }
 
-    @Override
-    public boolean isFullCube(IBlockState state) {
-        return false;
-    }
+  @Override
+  public void harvestBlock(
+      @NotNull World world,
+      @NotNull EntityPlayer player,
+      @NotNull BlockPos pos,
+      @NotNull IBlockState state,
+      net.minecraft.tileentity.TileEntity te,
+      @NotNull ItemStack stack) {
+    super.harvestBlock(world, player, pos, state, te, stack);
+    world.setBlockToAir(pos);
+  }
 
-    @Override
-    public boolean canPlaceBlockAt(World world, BlockPos pos) {
-        Block blockBelow = world.getBlockState(pos.down()).getBlock();
-        return blockBelow.isOpaqueCube(world.getBlockState(pos.down())) || blockBelow.isLeaves(world.getBlockState(pos.down()), world, pos.down());
-    }
+  @Override
+  public @NotNull Item getItemDropped(
+      @NotNull IBlockState state, @NotNull Random rand, int fortune) {
+    return Items.AIR;
+  }
 
-    @Override
-    public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
-        if (!this.canPlaceBlockAt(world, pos)) {
-            world.setBlockToAir(pos);
-        }
-    }
+  @Override
+  public int quantityDropped(@NotNull IBlockState state, int fortune, @NotNull Random random) {
+    return (getMetaFromState(state) & 7) + 1;
+  }
 
-    @Override
-    public void harvestBlock(World world, EntityPlayer player, BlockPos pos, IBlockState state, net.minecraft.tileentity.TileEntity te, ItemStack stack) {
-        super.harvestBlock(world, player, pos, state, te, stack);
-        world.setBlockToAir(pos);
-    }
+  @Override
+  public boolean isReplaceable(IBlockAccess world, @NotNull BlockPos pos) {
+    IBlockState state = world.getBlockState(pos);
+    int meta = getMetaFromState(state);
+    return meta < 7 && this.material.isReplaceable();
+  }
 
-    @Override
-    public Item getItemDropped(IBlockState state, Random rand, int fortune) {
-        return null;
-    }
-
-    @Override
-    public int quantityDropped(IBlockState state, int fortune, Random random) {
-        return (state.getBlock().getMetaFromState(state) & 7) + 1;
-    }
-
-    @Override
-    public boolean isReplaceable(IBlockAccess world, BlockPos pos) {
-        IBlockState state = world.getBlockState(pos);
-        int meta = state.getBlock().getMetaFromState(state);
-        return meta < 7 && this.material.isReplaceable();
-    }
-
-    @SideOnly(Side.CLIENT)
-    @Override
-    public boolean shouldSideBeRendered(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
-        return side == EnumFacing.UP || super.shouldSideBeRendered(blockState, blockAccess, pos, side);
-    }
+  @SuppressWarnings("deprecation")
+  @Override
+  @SideOnly(Side.CLIENT)
+  public boolean shouldSideBeRendered(
+      @NotNull IBlockState blockState,
+      @NotNull IBlockAccess blockAccess,
+      @NotNull BlockPos pos,
+      @NotNull EnumFacing side) {
+    return side == EnumFacing.UP || super.shouldSideBeRendered(blockState, blockAccess, pos, side);
+  }
 }

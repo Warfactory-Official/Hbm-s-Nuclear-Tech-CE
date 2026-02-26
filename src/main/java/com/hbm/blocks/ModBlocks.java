@@ -566,10 +566,10 @@ public class ModBlocks {
     public static final Block fallout = new BlockPowder(Material.SNOW, SoundType.SNOW, "fallout").setCreativeTab(MainRegistry.resourceTab).setHardness(0.1F).setLightOpacity(0);
     public static final Block block_fallout = new BlockHazardFalling(SoundType.GROUND, "block_fallout", HazardRegistry.fo * HazardRegistry.block).setCreativeTab(MainRegistry.resourceTab).setHardness(0.2F);
 
-    public static final Block foam_layer = new BlockLayering(Material.SNOW, "foam_layer", "block_foam").setCreativeTab(MainRegistry.blockTab).setHardness(0.1F).setLightOpacity(0);
-    public static final Block sand_boron_layer = new BlockLayering(Material.SAND, "sand_boron_layer", "sand_boron").setCreativeTab(MainRegistry.blockTab).setHardness(0.1F).setLightOpacity(0);
-    public static final Block leaves_layer = new BlockLayering(Material.LEAVES, "leaves_layer", "waste_leaves").setCreativeTab(MainRegistry.blockTab).setHardness(0.1F).setLightOpacity(0);
-    public static final Block oil_spill = new BlockLayering(Material.GROUND, "oil_spill", "oil_spill").setCreativeTab(MainRegistry.blockTab).setHardness(0.1F).setLightOpacity(0);
+    public static final Block foam_layer = new BlockLayering(Material.SNOW, "foam_layer", SoundType.SNOW,"block_foam").setHardness(0.1F).setLightOpacity(0);
+    public static final Block sand_boron_layer = new BlockLayering(Material.SAND, "sand_boron_layer", SoundType.SAND, "sand_boron").setHardness(0.1F).setLightOpacity(0);
+    public static final Block leaves_layer = new BlockLayering(Material.LEAVES, "leaves_layer",  SoundType.PLANT, "waste_leaves").setHardness(0.1F).setLightOpacity(0);
+    public static final Block oil_spill = new BlockLayering(Material.GROUND, "oil_spill", SoundType.SNOW, "oil_spill").setHardness(0.1F).setLightOpacity(0);
 
     public static final Block block_boron = new BlockRadResistant(Material.IRON, "block_boron").setSoundType(SoundType.METAL).setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(10.0F);
     public static final Block block_lanthanium = new BlockBeaconable(Material.IRON, "block_lanthanium").setSoundType(SoundType.METAL).setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(10.0F);
