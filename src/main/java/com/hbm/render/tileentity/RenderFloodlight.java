@@ -7,10 +7,10 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.loader.HFRWavefrontObject;
 import com.hbm.render.loader.IModelCustom;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.client.renderer.GlStateManager;
 
 @AutoRegister
 public class RenderFloodlight extends TileEntitySpecialRenderer<TileEntityFloodlight>
@@ -27,7 +27,7 @@ public class RenderFloodlight extends TileEntitySpecialRenderer<TileEntityFloodl
       double x,
       double y,
       double z,
-      float interp,
+      float partialTicks,
       int destroyStage,
       float alpha) {
 

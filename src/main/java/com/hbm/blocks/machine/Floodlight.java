@@ -33,9 +33,10 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 public class Floodlight extends BlockContainer implements IToolable, INBTBlockTransformable {
-  public static final PropertyInteger META = PropertyInteger.create("meta", 0, 15);
+  public static final PropertyInteger META = PropertyInteger.create("meta", 0, 11);
 
   public Floodlight(String name, Material mat) {
     super(mat);
@@ -49,18 +50,32 @@ public class Floodlight extends BlockContainer implements IToolable, INBTBlockTr
   }
 
   @Override
-  protected BlockStateContainer createBlockState() {
+  protected @NotNull BlockStateContainer createBlockState() {
     return new BlockStateContainer(this, META);
   }
 
   @Override
-  public IBlockState getStateFromMeta(int meta) {
+  public @NotNull IBlockState getStateFromMeta(int meta) {
     return this.getDefaultState().withProperty(META, meta);
   }
 
   @Override
   public int getMetaFromState(IBlockState state) {
     return state.getValue(META);
+  }
+
+  @Override
+  public @NotNull IBlockState getStateForPlacement(
+      @NotNull World world,
+      @NotNull BlockPos pos,
+      EnumFacing facing,
+      float hitX,
+      float hitY,
+      float hitZ,
+      int meta,
+      @NotNull EntityLivingBase placer,
+      @NotNull EnumHand hand) {
+    return getDefaultState().withProperty(META, facing.getIndex());
   }
 
   @Override
@@ -115,13 +130,13 @@ public class Floodlight extends BlockContainer implements IToolable, INBTBlockTr
     TileEntity tile = world.getTileEntity(pos);
 
     if (tile instanceof TileEntityFloodlight floodlight) {
-      int meta = world.getBlockState(pos).getValue(META) % 6;
+      IBlockState state = world.getBlockState(pos);
+      int meta = state.getValue(META) % 6;
 
       if (meta == 0 || meta == 1) {
         if (i == 0 || i == 2)
           if (updateMeta) {
-            IBlockState state = world.getBlockState(pos);
-            world.setBlockState(pos, state.withProperty(META, state.getValue(META) + 6), 3);
+            world.setBlockState(pos, state.withProperty(META, meta + 6), 3);
           }
         if (meta == 1) if (i == 0 || i == 1) rotation = 180F - rotation;
         if (meta == 0) if (i == 0 || i == 3) rotation = 180F - rotation;
@@ -301,14 +316,14 @@ public class Floodlight extends BlockContainer implements IToolable, INBTBlockTr
       float rotation = this.rotation;
       if (meta == 1 || meta == 7) rotation = 180 - rotation;
       if (meta == 6) rotation = 180 - rotation;
-      dir.rotateRoll((float) (rotation / 180D * Math.PI) + angles[0]);
+      dir.rotateRollSelf((float) (rotation / 180D * Math.PI) + angles[0]);
 
-      if (meta == 6) dir.rotateYaw((float) (Math.PI / 2D));
-      if (meta == 7) dir.rotateYaw((float) (Math.PI / 2D));
-      if (meta == 2) dir.rotateYaw((float) (Math.PI / 2D));
-      if (meta == 3) dir.rotateYaw((float) -(Math.PI / 2D));
-      if (meta == 4) dir.rotateYaw((float) (Math.PI));
-      dir.rotateYaw(angles[1]);
+      if (meta == 6) dir.rotateYawSelf((float) (Math.PI / 2D));
+      if (meta == 7) dir.rotateYawSelf((float) (Math.PI / 2D));
+      if (meta == 2) dir.rotateYawSelf((float) (Math.PI / 2D));
+      if (meta == 3) dir.rotateYawSelf((float) -(Math.PI / 2D));
+      if (meta == 4) dir.rotateYawSelf((float) (Math.PI));
+      dir.rotateYawSelf(angles[1]);
 
       for (int i = 1; i < 64; i++) {
         int x = getPos().getX();
