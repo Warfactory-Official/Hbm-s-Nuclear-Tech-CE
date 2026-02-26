@@ -42,6 +42,7 @@ import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Random;
@@ -94,27 +95,27 @@ public class ItemAmmoArty extends Item implements IModelRegister {
     }
 
     private String getShellName(int meta) {
-        switch (meta) {
-            case 0: return "normal";
-            case 1: return "classic";
-            case 2: return "he";
-            case 3: return "mini_nuke";
-            case 4: return "nuke";
-            case 5: return "phosphorus";
-            case 6: return "mini_nuke_multi";
-            case 7: return "phosphorus_multi";
-            case 8: return "cargo";
-            case 9: return "chlorine";
-            case 10: return "phosgene";
-            case 11: return "mustard_gas";
-            default: return "normal";
-        }
+        return switch (meta) {
+            case 0 -> "normal";
+            case 1 -> "classic";
+            case 2 -> "he";
+            case 3 -> "mini_nuke";
+            case 4 -> "nuke";
+            case 5 -> "phosphorus";
+            case 6 -> "mini_nuke_multi";
+            case 7 -> "phosphorus_multi";
+            case 8 -> "cargo";
+            case 9 -> "chlorine";
+            case 10 -> "phosgene";
+            case 11 -> "mustard_gas";
+            default -> "normal";
+        };
     }
 
 
 
     @Override
-    public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
+    public void addInformation(ItemStack stack, World worldIn, @NotNull List<String> list, @NotNull ITooltipFlag flagIn) {
 
         switch(stack.getItemDamage()) {
             case NORMAL:
@@ -172,13 +173,13 @@ public class ItemAmmoArty extends Item implements IModelRegister {
     }
 
     @Override
-    public String getTranslationKey(ItemStack stack) {
+    public @NotNull String getTranslationKey(ItemStack stack) {
         return "item." + itemTypes[Math.abs(stack.getItemDamage()) % itemTypes.length].name;
     }
 
     protected static SpentCasing SIXTEEN_INCH_CASE = new SpentCasing(SpentCasing.CasingType.STRAIGHT).setScale(15F, 15F, 10F).setupSmoke(1F, 1D, 200, 60).setMaxAge(300);
 
-    public abstract class ArtilleryShell {
+    public abstract static class ArtilleryShell {
 
         String name;
         public SpentCasing casing;
