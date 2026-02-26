@@ -6,6 +6,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
+import io.netty.util.ReferenceCountUtil;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.INetHandlerPlayClient;
@@ -37,15 +38,15 @@ public final class FMLNetworkHook {
     private static void releaseCustomPayloadData(Object pkt) {
         if (pkt instanceof SPacketCustomPayload sp) {
             Object o = U.getReference(sp, SP_DATA_OFF);
-            if (o != null) {
+            if (o instanceof ByteBuf buf) {
                 U.putReference(sp, SP_DATA_OFF, null);
-                ((ByteBuf) o).release();
+                ReferenceCountUtil.safeRelease(buf);
             }
         } else if (pkt instanceof CPacketCustomPayload cp) {
             Object o = U.getReference(cp, CP_DATA_OFF);
-            if (o != null) {
+            if (o instanceof ByteBuf buf) {
                 U.putReference(cp, CP_DATA_OFF, null);
-                ((ByteBuf) o).release();
+                ReferenceCountUtil.safeRelease(buf);
             }
         }
     }
@@ -73,13 +74,19 @@ public final class FMLNetworkHook {
             return;
         }
 
-        final ByteBuf payload = pkt.payload();
+        final ByteBuf original = pkt.payload();
+        if (original == null || original.refCnt() == 0) {
+            return;
+        }
+
+        final ByteBuf payload = original.retainedDuplicate();
         final boolean local = self.manager.isLocalChannel();
 
         try {
             final Side side = (Side) U.getReference(self, SIDE_OFF);
 
             if (side == Side.CLIENT) { // Client -> Server
+
                 PacketBuffer pb = new PacketBuffer(payload.retainedSlice());
                 CPacketCustomPayload out;
 
@@ -97,9 +104,12 @@ public final class FMLNetworkHook {
                 });
 
             } else { // Server -> Client
+
                 if (local) {
+
                     PacketBuffer pb = new PacketBuffer(payload.retainedSlice());
                     SPacketCustomPayload out = createUncheckedSPacket(pkt.channel(), pb);
+
                     final ChannelFuture f = ctx.write(out, promise);
                     f.addListener((ChannelFutureListener) future -> {
                         if (!future.isSuccess()) {
@@ -108,7 +118,8 @@ public final class FMLNetworkHook {
                     });
                     return;
                 }
-                List<Packet<INetHandlerPlayClient>> parts = fmlProxyPacketToS3FPackets(pkt);
+
+                List<Packet<INetHandlerPlayClient>> parts = fmlProxyPacketToS3FPackets(payload, pkt.channel());
                 int last = parts.size() - 1;
 
                 for (int i = 0; i <= last; i++) {
@@ -122,26 +133,27 @@ public final class FMLNetworkHook {
                 }
             }
         } finally {
-            // We retained slices for the packets, so we release the original reference from the FMLProxyPacket
+            // We retained slices for the packets, so we release the original reference from the duplicated payload
             // This may throw IllegalReferenceCountException iff some other mod a) reused packets without properly
             // retaining them, or b) routed their packets through vanilla that reuses packet instances, or c) performed
             // incorrect reference counting. This is a bug on their side. Known mods:
             // - Ancient Warfare 2: problem b). Patched with AncientWarfareNetworkTransformer.
-            payload.release();
+            ReferenceCountUtil.safeRelease(payload);
         }
     }
 
-    public static List<Packet<INetHandlerPlayClient>> fmlProxyPacketToS3FPackets(FMLProxyPacket self) {
-        final ByteBuf buf = self.payload();
+    public static List<Packet<INetHandlerPlayClient>> fmlProxyPacketToS3FPackets(ByteBuf buf, String channel) {
+
         final int len = buf.readableBytes();
         final int ri = buf.readerIndex();
 
-        final ArrayList<Packet<INetHandlerPlayClient>> ret = new ArrayList<>(Math.min(4, (len / (PART_SIZE - 1)) + 2));
+        final ArrayList<Packet<INetHandlerPlayClient>> ret =
+                new ArrayList<>(Math.min(4, (len / (PART_SIZE - 1)) + 2));
 
         try {
             if (len < PART_SIZE) {
                 PacketBuffer pb = new PacketBuffer(buf.retainedSlice(ri, len));
-                ret.add(new SPacketCustomPayload(self.channel(), pb));
+                ret.add(new SPacketCustomPayload(channel, pb));
                 return ret;
             }
 
@@ -150,7 +162,7 @@ public final class FMLNetworkHook {
                 throw new IllegalArgumentException("Payload too large (parts=" + parts + ", max=" + MAX_PARTS + ")");
 
             PacketBuffer preamble = new PacketBuffer(Unpooled.buffer());
-            preamble.writeString(self.channel());
+            preamble.writeString(channel);
             preamble.writeByte(parts);
             preamble.writeInt(len);
             ret.add(new SPacketCustomPayload("FML|MP", preamble));
@@ -167,7 +179,7 @@ public final class FMLNetworkHook {
                 try {
                     ret.add(new SPacketCustomPayload("FML|MP", pb));
                 } catch (Throwable t) {
-                    combined.release();
+                    ReferenceCountUtil.safeRelease(combined);
                     throw t;
                 }
                 offset += dataLen;
