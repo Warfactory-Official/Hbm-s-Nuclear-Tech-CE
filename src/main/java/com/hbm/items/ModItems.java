@@ -1915,6 +1915,7 @@ public class ModItems {
     public static Item gun_double_barrel;
     public static Item gun_double_barrel_sacred_dragon;
 
+    public static Item gun_n_i_4_n_i;
     public static Item gun_charge_thrower;
     public static Item gun_drill;
     public static Item gun_fireext;

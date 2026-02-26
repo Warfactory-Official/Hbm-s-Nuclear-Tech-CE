@@ -20,6 +20,7 @@ import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.Project;
@@ -27,6 +28,7 @@ import org.lwjgl.util.glu.Project;
 import java.nio.FloatBuffer;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.List;
 
 public abstract class ItemRenderWeaponBase extends TEISRBase {
@@ -42,17 +44,18 @@ public abstract class ItemRenderWeaponBase extends TEISRBase {
     public static final ResourceLocation flash_plume =  new ResourceLocation(Tags.MODID, "textures/models/weapons/lilmac_plume.png");
     public static final ResourceLocation laser_flash = new ResourceLocation(Tags.MODID, "textures/models/weapons/laser_flash.png");
     public static float interp;
+    public static HashMap<EntityLivingBase, Long> flashMap = new HashMap<>();
     private static final FloatBuffer DEPTH_RANGE_BUF = BufferUtils.createFloatBuffer(16);
 
     public boolean isAkimbo() { return false; }
 
     @Override
-    public void renderByItem(ItemStack itemStackIn) {
+    public void renderByItem(@NotNull ItemStack itemStackIn) {
         this.renderByItem(itemStackIn, 1.0F);
     }
 
     @Override
-    public void renderByItem(ItemStack stack, float partialTicks) {
+    public void renderByItem(@NotNull ItemStack stack, float partialTicks) {
         GlStateManager.pushMatrix();
         final boolean prevCull = RenderUtil.isCullEnabled();
         if (!prevCull) GlStateManager.enableCull();

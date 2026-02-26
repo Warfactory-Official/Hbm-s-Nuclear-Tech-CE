@@ -7,11 +7,12 @@ import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
 @AutoRegister(factory = "FACTORY")
 public class RenderSawblade extends Render<EntitySawblade> {
 
-    public static final IRenderFactory<EntitySawblade> FACTORY = man -> new RenderSawblade(man);
+    public static final IRenderFactory<EntitySawblade> FACTORY = RenderSawblade::new;
 
     protected RenderSawblade(RenderManager renderManager){
         super(renderManager);
@@ -47,7 +48,7 @@ public class RenderSawblade extends Render<EntitySawblade> {
     }
 
     @Override
-    protected ResourceLocation getEntityTexture(EntitySawblade entity) {
+    protected ResourceLocation getEntityTexture(@NotNull EntitySawblade entity) {
         return ResourceManager.sawmill_tex;
     }
 }

@@ -22,7 +22,6 @@ import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
-import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
@@ -42,12 +41,12 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase implemen
     public static final String MODE_WILDCARD = "wildcard";
     public String[] modes = new String[9];
 
-    public List<IRecipe> recipes = new ArrayList();
+    public List<IRecipe> recipes = new ArrayList<>();
     public int recipeIndex;
     public int recipeCount;
 
     public TileEntityMachineAutocrafter() {
-        super(21);
+        super(21, false, true);
     }
 
     public void initPattern(ItemStack stack, int i) {
@@ -108,13 +107,13 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase implemen
             if(names.isEmpty()) {
                 modes[i] = MODE_EXACT;
             } else {
-                modes[i] = names.get(0);
+                modes[i] = names.getFirst();
             }
         } else {
 
             List<String> names = ItemStackUtil.getOreDictNames(stack);
 
-            if(names.size() < 2 || modes[i].equals(names.get(names.size() - 1))) {
+            if(names.size() < 2 || modes[i].equals(names.getLast())) {
                 modes[i] = MODE_EXACT;
             } else {
 
@@ -151,17 +150,18 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase implemen
     }
 
     protected InventoryCraftingAuto craftingInventory = new InventoryCraftingAuto(3, 3);
-    private NonNullList<ItemStack> slots = NonNullList.withSize(21, ItemStack.EMPTY);;
 
     @Override
     public void update() {
 
         if(!world.isRemote) {
 
+            this.balanceInputs();
+
             this.power = Library.chargeTEFromItems(inventory, 20, power, maxPower);
             for(ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) this.trySubscribe(world, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
 
-            if(!this.recipes.isEmpty() && this.power >= this.consumption) {
+            if(!this.recipes.isEmpty() && this.power >= consumption) {
                 IRecipe recipe = this.recipes.get(recipeIndex);
 
                 if(recipe.matches(this.getRecipeGrid(), this.world)) {
@@ -190,7 +190,7 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase implemen
                                     if(this.inventory.getStackInSlot(i).isEmpty() && ingredient.getItem().hasContainerItem(ingredient)) {
                                         ItemStack container = ingredient.getItem().getContainerItem(ingredient);
 
-                                        if(container != null && container.isItemStackDamageable() && container.getItemDamage() > container.getMaxDamage()) {
+                                        if(container.isItemStackDamageable() && container.getItemDamage() > container.getMaxDamage()) {
                                             continue;
                                         }
 
@@ -199,13 +199,72 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase implemen
                                 }
                             }
 
-                            this.power -= this.consumption;
+                            this.power -= consumption;
                         }
                     }
                 }
             }
 
             this.networkPackNT(15);
+        }
+    }
+
+    private void balanceInputs() {
+        for (int i = 10; i < 19; i++) {
+            ItemStack stack = this.inventory.getStackInSlot(i);
+            if (stack.isEmpty()) continue;
+
+            List<Integer> targets = new ArrayList<>();
+            int totalCount = stack.getCount();
+            targets.add(i);
+
+            for (int j = 10; j < 19; j++) {
+                if (i == j) continue;
+
+                ItemStack other = this.inventory.getStackInSlot(j);
+                if (!other.isEmpty()) {
+                    if (other.isItemEqual(stack) && ItemStack.areItemStackTagsEqual(other, stack)) {
+                        targets.add(j);
+                        totalCount += other.getCount();
+                    }
+                } else {
+                    ItemStack filter = this.inventory.getStackInSlot(j - 10);
+                    String mode = this.modes[j - 10];
+                    if (!filter.isEmpty() && mode != null && !mode.isEmpty() && this.isValidForFilter(filter, mode, stack)) {
+                        targets.add(j);
+                    }
+                }
+            }
+
+            if (targets.size() > 1) {
+                int min = Integer.MAX_VALUE;
+                int max = -1;
+
+                for (int slot : targets) {
+                    int count = this.inventory.getStackInSlot(slot).getCount();
+                    if (count < min) min = count;
+                    if (count > max) max = count;
+                }
+
+                if (max - min > 1) {
+                    int perSlot = totalCount / targets.size();
+                    int remainder = totalCount % targets.size();
+
+                    for (int slot : targets) {
+                        int amount = perSlot + (remainder > 0 ? 1 : 0);
+                        if (remainder > 0) remainder--;
+
+                        if (amount == 0) {
+                            this.inventory.setStackInSlot(slot, ItemStack.EMPTY);
+                        } else {
+                            ItemStack newStack = stack.copy();
+                            newStack.setCount(amount);
+                            this.inventory.setStackInSlot(slot, newStack);
+                        }
+                    }
+                    return;
+                }
+            }
         }
     }
 
@@ -253,9 +312,9 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase implemen
     }
 
     public List<IRecipe> getMatchingRecipes(InventoryCrafting grid) {
-        List<IRecipe> recipes = new ArrayList();
+        List<IRecipe> recipes = new ArrayList<>();
 
-        for(IRecipe recipe : ForgeRegistries.RECIPES.getValues()) {
+        for(IRecipe recipe : ForgeRegistries.RECIPES.getValuesCollection()) {
 
             if(recipe.matches(grid, world)) {
                 recipes.add(recipe);
@@ -281,13 +340,9 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase implemen
             ItemStack filter = this.inventory.getStackInSlot(i-10);
             String mode = modes[i - 10];
 
-            if(filter == null || mode == null || mode.isEmpty()) return true;
+            if(mode == null || mode.isEmpty()) return true;
 
-            if(isValidForFilter(filter, mode, stack)) {
-                return false;
-            }
-
-            return true;
+            return !isValidForFilter(filter, mode, stack);
         }
 
         return false;
@@ -309,7 +364,7 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase implemen
             return false;
 
         //let's find all slots that this item could potentially go in
-        List<Integer> validSlots = new ArrayList();
+        List<Integer> validSlots = new ArrayList<>();
         for(int i = 0; i < 9; i++) {
             ItemStack filter = this.inventory.getStackInSlot(i);
             String mode = modes[i];
@@ -347,22 +402,21 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase implemen
         }
 
         //prevent items with containers from stacking
-        if(stack.getItem().hasContainerItem(stack))
-            return false;
+        return !stack.getItem().hasContainerItem(stack);
 
         //by now, we either already have filled the slot (if valid by filter and null) or weeded out all other options, which means it is good to go
-        return true;
     }
 
     private boolean isValidForFilter(ItemStack filter, String mode, ItemStack input) {
 
-        switch(mode) {
-            case MODE_EXACT: return input.isItemEqual(filter) && ItemStack.areItemStackTagsEqual(input, filter);
-            case MODE_WILDCARD: return input.getItem() == filter.getItem() && ItemStack.areItemStackTagsEqual(input, filter);
-            default:
+        return switch (mode) {
+            case MODE_EXACT -> input.isItemEqual(filter) && ItemStack.areItemStackTagsEqual(input, filter);
+            case MODE_WILDCARD -> input.getItem() == filter.getItem() && ItemStack.areItemStackTagsEqual(input, filter);
+            default -> {
                 List<String> keys = ItemStackUtil.getOreDictNames(input);
-                return keys.contains(mode);
-        }
+                yield keys.contains(mode);
+            }
+        };
     }
 
     public InventoryCrafting getTemplateGrid() {
@@ -393,8 +447,8 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase implemen
         }
 
         public static class ContainerBlank extends Container {
-            @Override public void onCraftMatrixChanged(IInventory inventory) { }
-            @Override public boolean canInteractWith(EntityPlayer player) { return false; }
+            @Override public void onCraftMatrixChanged(@NotNull IInventory inventory) { }
+            @Override public boolean canInteractWith(@NotNull EntityPlayer player) { return false; }
         }
     }
 

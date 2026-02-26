@@ -9,7 +9,7 @@ import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.mags.MagazineFullReload;
-import com.hbm.items.weapon.sedna.mods.WeaponModManager;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
@@ -85,12 +85,12 @@ public class XFactory556mm {
     }
 
     public static Function<ItemStack, String> LAMBDA_NAME_G3 = (stack) -> {
-        if(WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_SILENCER) &&
-                WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_NO_STOCK) &&
-                WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_FURNITURE_BLACK) &&
-                WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_SCOPE)) return stack.getTranslationKey() + "_infiltrator";
-        if(!WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_NO_STOCK) &&
-                WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_FURNITURE_GREEN)) return stack.getTranslationKey() + "_a3";
+        if(XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_SILENCER) &&
+                XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_NO_STOCK) &&
+                XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_FURNITURE_BLACK) &&
+                XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_SCOPE)) return stack.getTranslationKey() + "_infiltrator";
+        if(!XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_NO_STOCK) &&
+                XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_FURNITURE_GREEN)) return stack.getTranslationKey() + "_a3";
         return null;
     };
 

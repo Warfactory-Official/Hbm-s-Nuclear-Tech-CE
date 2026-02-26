@@ -104,10 +104,13 @@ public class LegoClient {
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
         GlStateManager.color(1F, 1F, 1F, 1F);
 
-        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+        float lastX = OpenGlHelper.lastBrightnessX;
+        float lastY = OpenGlHelper.lastBrightnessY;
         if(fullbright) {
-            buffer.lightmap(240, 240);
+            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
         }
+
+        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
 
         buffer.pos(length, widthB, -widthB).color((dark >> 16) & 0xFF, (dark >> 8) & 0xFF, dark & 0xFF, 255).endVertex();
         buffer.pos(length, widthB, widthB).color((dark >> 16) & 0xFF, (dark >> 8) & 0xFF, dark & 0xFF, 255).endVertex();
@@ -140,6 +143,10 @@ public class LegoClient {
         buffer.pos(0, -widthF, widthF).color((light >> 16) & 0xFF, (light >> 8) & 0xFF, light & 0xFF, 255).endVertex();
 
         Tessellator.getInstance().draw();
+
+        if(fullbright) {
+            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lastX, lastY);
+        }
 
         GlStateManager.shadeModel(GL11.GL_FLAT);
         GlStateManager.enableLighting();
@@ -388,6 +395,25 @@ public class LegoClient {
         GlStateManager.translate(0, bullet.beamLength, 0);
         GlStateManager.rotate(-90, 0, 0, 1);
         renderBulletStandard(Tessellator.getInstance().getBuffer(), 0x4C3093, 0x000000, bullet.beamLength, true);
+
+        GlStateManager.popMatrix();
+        RenderArcFurnace.fullbright(false);
+    };
+
+    public static BiConsumer<EntityBulletBeamBase, Float> RENDER_NI4NI_BOLT = (bullet, interp) -> {
+
+        RenderArcFurnace.fullbright(true);
+        double age = MathHelper.clamp(1D - ((double) bullet.ticksExisted - 2 + interp) / (double) bullet.getBulletConfig().expires, 0, 1);
+
+        GlStateManager.pushMatrix();
+        GlStateManager.rotate(180 - bullet.rotationYaw, 0, 1F, 0);
+        GlStateManager.rotate(-bullet.rotationPitch - 90, 1F, 0, 0);
+
+        double scale = 5D;
+        GlStateManager.scale(age * scale, 1, age * scale);
+        GlStateManager.translate(0, bullet.beamLength, 0);
+        GlStateManager.rotate(-90, 0, 0, 1);
+        renderBulletStandard(Tessellator.getInstance().getBuffer(), 0xAAD2E5, 0xffffff, bullet.beamLength, true);
 
         GlStateManager.popMatrix();
         RenderArcFurnace.fullbright(false);

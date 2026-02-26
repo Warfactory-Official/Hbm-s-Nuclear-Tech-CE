@@ -43,7 +43,7 @@ import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.inventory.recipes.loader.SerializableRecipe;
 import com.hbm.items.ModItems;
 import com.hbm.items.weapon.GrenadeDispenserRegistry;
-import com.hbm.items.weapon.sedna.mods.WeaponModManager;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.HbmWorld;
 import com.hbm.packet.PacketDispatcher;
@@ -246,7 +246,7 @@ public class MainRegistry {
         SiegeTier.registerTiers();
         HazardRegistry.registerItems();
         HazardRegistry.registerTrafos();
-        WeaponModManager.init();
+        XWeaponModManager.init();
 
         proxy.registerRenderInfo();
         HbmWorld.mainRegistry();
