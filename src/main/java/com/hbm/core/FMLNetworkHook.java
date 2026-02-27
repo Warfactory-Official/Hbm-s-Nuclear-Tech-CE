@@ -40,13 +40,17 @@ public final class FMLNetworkHook {
             Object o = U.getReference(sp, SP_DATA_OFF);
             if (o != null) {
                 U.putReference(sp, SP_DATA_OFF, null);
-                ((ByteBuf) o).release();
+                if (o instanceof ByteBuf buf && buf.refCnt() > 0) {
+                    buf.release();
+                }
             }
         } else if (pkt instanceof CPacketCustomPayload cp) {
             Object o = U.getReference(cp, CP_DATA_OFF);
             if (o != null) {
                 U.putReference(cp, CP_DATA_OFF, null);
-                ((ByteBuf) o).release();
+                if (o instanceof ByteBuf buf && buf.refCnt() > 0) {
+                    buf.release();
+                }
             }
         }
     }
@@ -75,13 +79,17 @@ public final class FMLNetworkHook {
         }
 
         final ByteBuf payload = pkt.payload();
+        ByteBuf bufToUse = payload;
         final boolean local = self.manager.isLocalChannel();
 
         try {
             final Side side = (Side) U.getReference(self, SIDE_OFF);
 
             if (side == Side.CLIENT) { // Client -> Server
-                PacketBuffer pb = new PacketBuffer(payload.retainedSlice());
+                if (!local) {
+                    bufToUse = payload.retainedDuplicate();
+                }
+                PacketBuffer pb = new PacketBuffer(local ? bufToUse : bufToUse.retainedSlice()); // No need to retain if local
                 CPacketCustomPayload out;
 
                 if (local) {
@@ -99,7 +107,7 @@ public final class FMLNetworkHook {
 
             } else { // Server -> Client
                 if (local) {
-                    PacketBuffer pb = new PacketBuffer(payload.retainedSlice());
+                    PacketBuffer pb = new PacketBuffer(bufToUse); // No need to retain if local
                     SPacketCustomPayload out = createUncheckedSPacket(pkt.channel(), pb);
                     final ChannelFuture f = ctx.write(out, promise);
                     f.addListener((ChannelFutureListener) future -> {
@@ -117,9 +125,7 @@ public final class FMLNetworkHook {
                     ChannelPromise pPromise = (i == last) ? promise : ctx.newPromise();
 
                     final ChannelFuture f = ctx.write(p, pPromise);
-                    f.addListener((ChannelFutureListener) _ -> {
-                        releaseCustomPayloadData(p);
-                    });
+                    f.addListener((ChannelFutureListener) _ -> releaseCustomPayloadData(p));
                 }
             }
         } finally {
@@ -129,7 +135,9 @@ public final class FMLNetworkHook {
             // incorrect reference counting. This is a bug on their side. Known mods:
             // - Ancient Warfare 2: problem b). Patched with AncientWarfareNetworkTransformer.
             // payload.release();
-            ReferenceCountUtil.safeRelease(payload);
+            if (!local && bufToUse != payload) {
+                ReferenceCountUtil.safeRelease(bufToUse);
+            }
         }
     }
 
@@ -142,7 +150,7 @@ public final class FMLNetworkHook {
 
         try {
             if (len < PART_SIZE) {
-                PacketBuffer pb = new PacketBuffer(buf.retainedSlice(ri, len));
+                PacketBuffer pb = new PacketBuffer(buf.retainedDuplicate());
                 ret.add(new SPacketCustomPayload(self.channel(), pb));
                 return ret;
             }
@@ -161,7 +169,9 @@ public final class FMLNetworkHook {
             for (int x = 0; x < parts; x++) {
                 int dataLen = Math.min(PART_SIZE - 1, len - offset);
 
-                ByteBuf slice = buf.retainedSlice(ri + offset, dataLen);
+                ByteBuf slice = buf.retainedDuplicate();
+                slice.readerIndex(ri + offset).writerIndex(ri + offset + dataLen);
+
                 ByteBuf header = Unpooled.buffer(1, 1).writeByte(x & 0xFF);
                 ByteBuf combined = Unpooled.wrappedBuffer(header, slice);
                 PacketBuffer pb = new PacketBuffer(combined);
