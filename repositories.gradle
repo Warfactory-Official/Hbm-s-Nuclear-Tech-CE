@@ -13,6 +13,14 @@ repositories {
         name = "Forge Maven"
         url = "https://maven.minecraftforge.net/"
     }
+    maven {
+        name = "Warfactory Releases";
+        url = "https://repo.warfactory.co/releases"
+    }
+    maven {
+        name = "Warfactory Snapshots";
+        url = "https://repo.warfactory.co/snapshots"
+    }
     mavenCentral()
     maven { //  baubles
         name = "thiakil"

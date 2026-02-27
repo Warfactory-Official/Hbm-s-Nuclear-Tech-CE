@@ -10,6 +10,10 @@ pluginManagement {
                 includeGroup 'com.gtnewhorizons.retrofuturagradle'
             }
         }
+        maven {
+            name 'Warfactory Releases"'
+            url 'https://repo.warfactory.co/releases'
+        }
         gradlePluginPortal()
         mavenCentral()
         mavenLocal()
