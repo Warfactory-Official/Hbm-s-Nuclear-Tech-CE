@@ -6,6 +6,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
+import io.netty.util.ReferenceCountUtil;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.INetHandlerPlayClient;
@@ -127,7 +128,8 @@ public final class FMLNetworkHook {
             // retaining them, or b) routed their packets through vanilla that reuses packet instances, or c) performed
             // incorrect reference counting. This is a bug on their side. Known mods:
             // - Ancient Warfare 2: problem b). Patched with AncientWarfareNetworkTransformer.
-            payload.release();
+            // payload.release();
+            ReferenceCountUtil.safeRelease(payload);
         }
     }
 
