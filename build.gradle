@@ -1810,3 +1810,9 @@ tasks.withType(Test).configureEach {
         languageVersion = JavaLanguageVersion.of(25)
     }
 }
+
+tasks.withType(GenerateModuleMetadata).configureEach {
+    if (name == "generateMetadataFileForMavenJava25Publication") {
+        enabled = false
+    }
+}
