@@ -4,10 +4,13 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.explosion.ExplosionNukeGeneric;
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Explosion;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.relauncher.Side;
@@ -26,6 +29,11 @@ public class YellowBarrel extends BaseBarrel {
 
 		ModBlocks.ALL_BLOCKS.add(this);
 	}
+
+    @Override
+    public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
+        return BlockFaceShape.CENTER_BIG;
+    }
 
 	@Override
 	public void onExplosionDestroy(World worldIn, BlockPos pos, Explosion explosionIn) {
