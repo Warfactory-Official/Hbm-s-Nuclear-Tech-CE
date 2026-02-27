@@ -9,6 +9,7 @@ import net.minecraftforge.common.config.Property;
 public class GeneralConfig {
 
 	public static double conversionRateHeToRF = 1.0F;
+	public static boolean enableRefCntWorkaround = false;
 	public static boolean autoCableConversion = false;
 	public static boolean enablePacketThreading = true;
 	public static int packetThreadingCoreCount = 1;
@@ -119,6 +120,7 @@ public class GeneralConfig {
 		packetThreadingErrorBypass = config.get(CommonConfig.CATEGORY_GENERAL, "0.04_packetThreadingErrorBypass", false, "Forces the bypassing of most packet threading errors, only enable this if directed to or if you know what you're doing.").getBoolean(false);
 		enableServerRecipeSync = config.get(CommonConfig.CATEGORY_GENERAL, "0.05_enableServerRecipeSync", true, "Syncs any recipes customised via JSON to clients connecting to the server.").getBoolean(true);
         enableThreadedNodeSpaceUpdate = config.get(CommonConfig.CATEGORY_GENERAL, "0.07_enableThreadedNodeSpaceUpdate", true, "Enables threaded updating of the nodespace. This can improve performance, but may cause issues with certain mods.").getBoolean(true);
+		enableRefCntWorkaround = config.get(CommonConfig.CATEGORY_GENERAL, "0.08_enableRefCntWorkaround", false, "Enables a workaround that prevents crash in case of improper packet handling from other mods. Will probably cause some memory leaks but will avoid some kind of player crash.").getBoolean(false);
 		enableBlockReplcement = config.get(CommonConfig.CATEGORY_GENERAL, "0.99_CE_01_enableBlockAutoReplacing", false, """
                 Enables automatic block replacement for missing blocks to avoid giant holes in the ground when they got removed. This may severely impact chunkloading performance,
                 only enable when you are sure that we removed some blocks AND we added that to this replacement system AND you are absolutely sure about what you are doing.
