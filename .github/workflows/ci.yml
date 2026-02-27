@@ -146,5 +146,6 @@ jobs:
           MAVEN_USER: ${{ secrets.MAVEN_USER }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
           ARTIFACT_ID: ${{ vars.ARTIFACT_ID }}
+          MAVEN_URL: https://repo.warfactory.co/snapshots
         run: |
-          ./gradlew publish --no-daemon --stacktrace -PcustomMavenPublishUrl=https://repo.warfactory.co/snapshots
+          ./gradlew publish --no-daemon --stacktrace

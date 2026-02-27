@@ -576,7 +576,7 @@ dependencies {
 
     compileOnlyApi 'org.jetbrains:annotations:26.0.2'
     annotationProcessor 'org.jetbrains:annotations:26.0.2'
-    patchedMinecraft('net.minecraft:launchwrapper:1.17.2') {
+    patchedMinecraft('net.minecraft:launchwrapper:1.12') {
         transitive = false
     }
 
@@ -1409,8 +1409,9 @@ if (customMavenPublishUrl) {
 
             repositories {
                 maven {
-                    url = customMavenPublishUrl
-                    allowInsecureProtocol = !customMavenPublishUrl.startsWith('https')
+                    def mvnurl = System.getenv('MAVEN_URL') ?: customMavenPublishUrl
+                    url = mvnurl
+                    allowInsecureProtocol = !mvnurl.startsWith('https')
                     credentials {
                         username = providers.environmentVariable('MAVEN_USER').getOrElse('NONE')
                         password = providers.environmentVariable('MAVEN_PASSWORD').getOrElse('NONE')
