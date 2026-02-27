@@ -1359,60 +1359,62 @@ def addModrinthDep(String scope, String type, String name) {
 }
 
 if (customMavenPublishUrl) {
-    String publishedVersion = modVersion
-    String baseVersion = System.getenv('RELEASE_VERSION') ?: publishedVersion
+    afterEvaluate {
+        String publishedVersion = modVersion
+        String baseVersion = System.getenv('RELEASE_VERSION') ?: publishedVersion
 
-    // Java 25 version formatting:
-    //   1.2.3.4           -> 1.2.3.4-java25
-    //   1.2.3.4-SNAPSHOT  -> 1.2.3.4-java25-SNAPSHOT
-    String java25Version
-    if (baseVersion.endsWith("-SNAPSHOT")) {
-        java25Version = baseVersion.substring(0, baseVersion.length() - "-SNAPSHOT".length()) + "-java25-SNAPSHOT"
-    } else {
-        java25Version = baseVersion + "-java25"
-    }
-    def java25DevJarTask = tasks.named(usesShadowedDependencies.toBoolean() ? "shadowJarJava25" : "jarJava25")
-
-    publishing {
-        publications {
-            create('maven', MavenPublication) {
-                //noinspection GroovyAssignabilityCheck
-                from components.java
-
-                if (apiPackage) {
-                    artifact apiJar
-                }
-
-                // providers is not available here, use System for getting env vars
-                groupId = System.getenv('ARTIFACT_GROUP_ID') ?: project.mavenArtifactGroup
-                artifactId = System.getenv('ARTIFACT_ID') ?: project.modArchivesBaseName
-                version = baseVersion
-            }
-
-            create('mavenJava25', MavenPublication) {
-                from components.java
-
-                groupId = System.getenv('ARTIFACT_GROUP_ID') ?: project.mavenArtifactGroup
-                artifactId = System.getenv('ARTIFACT_ID') ?: project.modArchivesBaseName
-                version = java25Version
-                artifacts.clear()
-                artifact(java25DevJarTask)
-                if (!noPublishedSources.toBoolean() && tasks.findByName("sourcesJar") != null) {
-                    artifact(tasks.sourcesJar)
-                }
-                if (apiPackage) {
-                    artifact apiJar
-                }
-            }
+        // Java 25 version formatting:
+        //   1.2.3.4           -> 1.2.3.4-java25
+        //   1.2.3.4-SNAPSHOT  -> 1.2.3.4-java25-SNAPSHOT
+        String java25Version
+        if (baseVersion.endsWith("-SNAPSHOT")) {
+            java25Version = baseVersion.substring(0, baseVersion.length() - "-SNAPSHOT".length()) + "-java25-SNAPSHOT"
+        } else {
+            java25Version = baseVersion + "-java25"
         }
+        def java25DevJarTask = tasks.named(usesShadowedDependencies.toBoolean() ? "shadowJarJava25" : "jarJava25")
 
-        repositories {
-            maven {
-                url = customMavenPublishUrl
-                allowInsecureProtocol = !customMavenPublishUrl.startsWith('https')
-                credentials {
-                    username = providers.environmentVariable('MAVEN_USER').getOrElse('NONE')
-                    password = providers.environmentVariable('MAVEN_PASSWORD').getOrElse('NONE')
+        publishing {
+            publications {
+                create('maven', MavenPublication) {
+                    //noinspection GroovyAssignabilityCheck
+                    from components.java
+
+                    if (apiPackage) {
+                        artifact apiJar
+                    }
+
+                    // providers is not available here, use System for getting env vars
+                    groupId = System.getenv('ARTIFACT_GROUP_ID') ?: project.mavenArtifactGroup
+                    artifactId = System.getenv('ARTIFACT_ID') ?: project.modArchivesBaseName
+                    version = baseVersion
+                }
+
+                create('mavenJava25', MavenPublication) {
+                    from components.java
+
+                    groupId = System.getenv('ARTIFACT_GROUP_ID') ?: project.mavenArtifactGroup
+                    artifactId = System.getenv('ARTIFACT_ID') ?: project.modArchivesBaseName
+                    version = java25Version
+                    artifacts.clear()
+                    artifact(java25DevJarTask)
+                    if (!noPublishedSources.toBoolean() && tasks.findByName("sourcesJar") != null) {
+                        artifact(tasks.sourcesJar)
+                    }
+                    if (apiPackage) {
+                        artifact apiJar
+                    }
+                }
+            }
+
+            repositories {
+                maven {
+                    url = customMavenPublishUrl
+                    allowInsecureProtocol = !customMavenPublishUrl.startsWith('https')
+                    credentials {
+                        username = providers.environmentVariable('MAVEN_USER').getOrElse('NONE')
+                        password = providers.environmentVariable('MAVEN_PASSWORD').getOrElse('NONE')
+                    }
                 }
             }
         }
