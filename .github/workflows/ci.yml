@@ -10,6 +10,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Build Mod
@@ -127,3 +130,21 @@ jobs:
           fi
 
           echo 'No crash reports detected'
+
+      - name: Resolve snapshot version
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        shell: bash
+        run: |
+          set -euo pipefail
+          MOD_VERSION=$(grep -E '^\s*modVersion\s*=' gradle.properties | sed -E 's/^\s*modVersion\s*=\s*//; s/\r$//' | xargs || true)
+          test -n "$MOD_VERSION"
+          echo "RELEASE_VERSION=${MOD_VERSION}-SNAPSHOT" >> "$GITHUB_ENV"
+
+      - name: Publish
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        env:
+          MAVEN_USER: ${{ secrets.MAVEN_USER }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+          ARTIFACT_ID: ${{ vars.ARTIFACT_ID }}
+        run: |
+          ./gradlew publish --no-daemon --stacktrace -PcustomMavenPublishUrl=https://repo.warfactory.co/snapshots

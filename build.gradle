@@ -836,10 +836,13 @@ if (usesShadowedDependencies.toBoolean()) {
             enableRelocation = true
         }
     }
+    def publishedDevTask = enableModernJavaSyntax.toBoolean()
+            ? tasks.named('shadeDowngradedApi', Jar)
+            : tasks.named('shadowJar', ShadowJar)
     configurations.runtimeElements.outgoing.artifacts.clear()
     configurations.apiElements.outgoing.artifacts.clear()
-    configurations.runtimeElements.outgoing.artifact(tasks.named('shadowJar', ShadowJar))
-    configurations.apiElements.outgoing.artifact(tasks.named('shadowJar', ShadowJar))
+    configurations.runtimeElements.outgoing.artifact(publishedDevTask)
+    configurations.apiElements.outgoing.artifact(publishedDevTask)
     tasks.named('jar', Jar) {
         enabled = false
         finalizedBy(tasks.shadowJar)
@@ -1357,6 +1360,18 @@ def addModrinthDep(String scope, String type, String name) {
 
 if (customMavenPublishUrl) {
     String publishedVersion = modVersion
+    String baseVersion = System.getenv('RELEASE_VERSION') ?: publishedVersion
+
+    // Java 25 version formatting:
+    //   1.2.3.4           -> 1.2.3.4-java25
+    //   1.2.3.4-SNAPSHOT  -> 1.2.3.4-java25-SNAPSHOT
+    String java25Version
+    if (baseVersion.endsWith("-SNAPSHOT")) {
+        java25Version = baseVersion.substring(0, baseVersion.length() - "-SNAPSHOT".length()) + "-java25-SNAPSHOT"
+    } else {
+        java25Version = baseVersion + "-java25"
+    }
+    def java25DevJarTask = tasks.named(usesShadowedDependencies.toBoolean() ? "shadowJarJava25" : "jarJava25")
 
     publishing {
         publications {
@@ -1371,7 +1386,23 @@ if (customMavenPublishUrl) {
                 // providers is not available here, use System for getting env vars
                 groupId = System.getenv('ARTIFACT_GROUP_ID') ?: project.mavenArtifactGroup
                 artifactId = System.getenv('ARTIFACT_ID') ?: project.modArchivesBaseName
-                version = System.getenv('RELEASE_VERSION') ?: publishedVersion
+                version = baseVersion
+            }
+
+            create('mavenJava25', MavenPublication) {
+                from components.java
+
+                groupId = System.getenv('ARTIFACT_GROUP_ID') ?: project.mavenArtifactGroup
+                artifactId = System.getenv('ARTIFACT_ID') ?: project.modArchivesBaseName
+                version = java25Version
+                artifacts.clear()
+                artifact(java25DevJarTask)
+                if (!noPublishedSources.toBoolean() && tasks.findByName("sourcesJar") != null) {
+                    artifact(tasks.sourcesJar)
+                }
+                if (apiPackage) {
+                    artifact apiJar
+                }
             }
         }
 
