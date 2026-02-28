@@ -48,36 +48,36 @@ public class ExplosionChaos {
 
 	/** Single shared Random instance — no per-method allocations. */
 	private static final Random rand = new Random();
+	private static final int[][] signs = {
+		{ 1,  1,  1}, { 1, -1,  1}, {-1,  1,  1},
+		{-1, -1,  1}, {-1,  1, -1}, { 1, -1, -1},
+		{-1, -1, -1}, { 1,  1, -1}
+	};
 
 	/**
-	 * Iterates over every block inside a sphere of the given radius using a
-	 * proper r² check, avoiding sqrt in the inner-most loop.
-	 *
-	 * <p>The MutableBlockPos passed to {@code action} is reused on every call;
-	 * callers must NOT store it between iterations.
+	 * Optimized iteration inside a sphere. 
+	 * Note: uses (radius² / 2) as calculation base to match original mod behavior, 
+	 * although it results in a smaller volume than a full Euclidean sphere.
 	 */
-	private static void forEachBlockInSphere(World world, Entity detonator,
-			int x, int y, int z, int radius, Consumer<BlockPos.MutableBlockPos> action) {
-
+	private static void forEachBlockInSphere(World world, Entity detonator, int x, int y, int z, int radius, Consumer<BlockPos.MutableBlockPos> action) {
 		BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-		int radiusSq = radius * radius;
+		int radiusSqHalf = (radius * radius) / 2;
 
-		for (int yy = -radius; yy <= radius; yy++) {
+		for (int yy = -radius; yy < radius; yy++) {
 			int currentY = y + yy;
 			if (currentY < 0 || currentY > 255) continue;
 
-			int ySq = yy * yy;
-			if (ySq > radiusSq) continue;
+			int YY = yy * yy;
+			if (YY >= radiusSqHalf) continue;
 
-			int xzRadiusSq = radiusSq - ySq;
-			int xzRadius = (int) Math.sqrt(xzRadiusSq);
+			int xzRadius = (int) Math.sqrt(radiusSqHalf - YY);
 
 			for (int xx = -xzRadius; xx <= xzRadius; xx++) {
-				int xSq = xx * xx;
-				int rem = xzRadiusSq - xSq;
-				if (rem < 0) continue;
+				int XX = xx * xx;
+				int YY_XX = YY + XX;
+				if (YY_XX >= radiusSqHalf) continue;
 
-				int zRadius = (int) Math.sqrt(rem);
+				int zRadius = (int) Math.sqrt(radiusSqHalf - YY_XX);
 
 				for (int zz = -zRadius; zz <= zRadius; zz++) {
 					action.accept(pos.setPos(x + xx, currentY, z + zz));
@@ -106,23 +106,19 @@ public class ExplosionChaos {
 		world.setBlockToAir(pos);
 	}
 
+	/** Spawns a series of explosions in all 8 octants around the center. */
 	public static void spawnExplosion(World world, Entity detonator, int x, int y, int z, int bound) {
 		if (!CompatibilityConfig.isWarDim(world)) return;
 
-		// Signs for all 8 octants
-		final int[][] signs = {
-			{ 1,  1,  1}, { 1, -1,  1}, {-1,  1,  1},
-			{-1, -1,  1}, {-1,  1, -1}, { 1, -1, -1},
-			{-1, -1, -1}, { 1,  1, -1}
-		};
-
 		for (int i = 0; i < 25; i++) {
-			int[] s = signs[i & 7]; // cycle through octants
-			world.createExplosion(detonator,
-					x + s[0] * rand.nextInt(bound),
-					y + s[1] * rand.nextInt(bound),
-					z + s[2] * rand.nextInt(bound),
-					10.0F, true);
+			// Sign pairs for all 8 octants to ensure coverage.
+			for (int[] s : signs) {
+				world.createExplosion(detonator,
+						x + s[0] * rand.nextInt(bound),
+						y + s[1] * rand.nextInt(bound),
+						z + s[2] * rand.nextInt(bound),
+						10.0F, true);
+			}
 		}
 	}
 
@@ -144,6 +140,7 @@ public class ExplosionChaos {
 		double radiusSq = radius * radius;
 
 		for (Entity entity : getEntitiesInRadius(world, x, y, z, radius)) {
+			if (entity instanceof EntityPlayer player && (player.isSpectator() || player.capabilities.isCreativeMode)) continue;
 			if (distanceSq(entity, x, y, z) > radiusSq) continue;
 
 			if (entity instanceof EntityPlayer) {
@@ -186,6 +183,7 @@ public class ExplosionChaos {
 		double radiusSq = radius * radius;
 
 		for (Entity entity : getEntitiesInRadius(world, x, y, z, radius)) {
+			if (entity instanceof EntityPlayer player && (player.isSpectator() || player.capabilities.isCreativeMode)) continue;
 			if (distanceSq(entity, x, y, z) > radiusSq) continue;
 
 			if (entity instanceof EntityPlayer) {
@@ -217,6 +215,7 @@ public class ExplosionChaos {
 		double radiusSq = radius * radius;
 
 		for (Entity entity : getEntitiesInRadius(world, x, y, z, radius)) {
+			if (entity instanceof EntityPlayer player && (player.isSpectator() || player.capabilities.isCreativeMode)) continue;
 			if (distanceSq(entity, x, y, z) > radiusSq) continue;
 			if (!(entity instanceof EntityLivingBase)) continue;
 
@@ -243,6 +242,7 @@ public class ExplosionChaos {
 		double radiusSq = radiusDouble * radiusDouble;
 
 		for (Entity entity : getEntitiesInRadius(world, x, y, z, radiusDouble)) {
+			if (entity instanceof EntityPlayer player && (player.isSpectator() || player.capabilities.isCreativeMode)) continue;
 			if (distanceSq(entity, x, y, z) > radiusSq) continue;
 
 			if (entity instanceof EntityLiving && !(entity instanceof EntitySheep)) {

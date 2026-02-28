@@ -40,6 +40,11 @@ public class NeutronNodeWorld {
     public static class StreamWorld {
 
         public List<NeutronStream> streams = new ArrayList<>();
+        /**
+         * Cache for neutron nodes. 
+         * Replaced HashMap<BlockPos, NeutronNode> with Long2ObjectOpenHashMap 
+         * to eliminate BlockPos allocations and improve lookup speed.
+         */
         public Long2ObjectOpenHashMap<NeutronNode> nodeCache = new Long2ObjectOpenHashMap<>();
 
         public StreamWorld() { }
@@ -59,8 +64,14 @@ public class NeutronNodeWorld {
         }
 
         public void cleanNodes() {
-            List<Long> toRemove = new ArrayList<>();
-            for(Long2ObjectMap.Entry<NeutronNode> entry : nodeCache.long2ObjectEntrySet()) {
+            ObjectArrayList<Long> toRemove = new ObjectArrayList<>();
+            /** 
+             * Using fastIterator to avoid creating Entry objects for every iteration step,
+             * which significantly reduces GC pressure in large neutron networks.
+             */
+            it.unimi.dsi.fastutil.objects.ObjectIterator<Long2ObjectMap.Entry<NeutronNode>> it = nodeCache.long2ObjectEntrySet().fastIterator();
+            while(it.hasNext()) {
+                Long2ObjectMap.Entry<NeutronNode> entry = it.next();
                 NeutronNode cachedNode = entry.getValue();
                 if(cachedNode.type == NeutronStream.NeutronType.RBMK) {
                     RBMKNeutronHandler.RBMKNeutronNode node = (RBMKNeutronHandler.RBMKNeutronNode) cachedNode;

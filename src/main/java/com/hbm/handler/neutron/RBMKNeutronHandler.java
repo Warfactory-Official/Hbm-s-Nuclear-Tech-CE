@@ -43,6 +43,10 @@ public class RBMKNeutronHandler {
     }
 
     public static class RBMKNeutronNode extends NeutronNode {
+        /**
+         * Replaced generic data map with direct fields to avoid 
+         * map overhead and unnecessary object allocations.
+         */
         public boolean hasLid;
         public RBMKType rbmkType;
         protected BlockPos.MutableBlockPos posInstance;
@@ -58,6 +62,7 @@ public class RBMKNeutronHandler {
         public void removeLid() { this.hasLid = false; }
 
 
+        /** Checks if this node should be removed from the cache. */
         public void checkNode(StreamWorld streamWorld, List<Long> toRemove) {
             BlockPos pos = this.tile.getPos();
             ForgeDirection[] fluxDirs = TileEntityRBMKRod.fluxDirs;
@@ -173,7 +178,11 @@ public class RBMKNeutronHandler {
             return positions;
         }
 
-        // The... small one? whatever it's still pretty big, runs the interaction for the stream.
+        /** 
+         * Optimized interaction of the neutron stream.
+         * Skips the old 'getBlocks' iterator to avoid BlockPos and Iterator allocations.
+         */
+        @Override
         public void runStreamInteraction(World worldObj, StreamWorld streamWorld) {
             if(fluxQuantity <= 0D) return;
 

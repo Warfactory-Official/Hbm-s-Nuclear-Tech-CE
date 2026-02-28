@@ -5,8 +5,10 @@ import com.hbm.config.RadiationConfig;
 import com.hbm.entity.mob.glyphid.EntityGlyphidDigger;
 import com.hbm.entity.mob.glyphid.EntityGlyphidScout;
 import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.lib.Library;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -192,10 +194,16 @@ public class PollutionHandler {
                 Long2ObjectOpenHashMap<PollutionData> newPollution = new Long2ObjectOpenHashMap<>();
                 Long2ObjectOpenHashMap<PollutionData> currentPollution = entry.getValue().pollution;
 
-                for(Long2ObjectMap.Entry<PollutionData> chunk : currentPollution.long2ObjectEntrySet()) {
+                /** 
+                 * Using fastIterator to skip Map.Entry object allocations 
+                 * during the heavy tick update.
+                 */
+                ObjectIterator<Long2ObjectMap.Entry<PollutionData>> it = currentPollution.long2ObjectEntrySet().fastIterator();
+                while(it.hasNext()) {
+                    Long2ObjectMap.Entry<PollutionData> chunk = it.next();
                     long key = chunk.getLongKey();
-                    int x = (int)(key >> 32);
-                    int z = (int)key;
+                    int x = Library.getChunkPosX(key);
+                    int z = Library.getChunkPosZ(key);
                     PollutionData data = chunk.getValue();
 
                     float sToNeighbors = 0;
@@ -217,14 +225,21 @@ public class PollutionHandler {
                         data.pollution[P] *= 0.995F;
                     }
 
-                    /* SPREADING */
-                    PollutionData newDataSelf = newPollution.get(key);
-                    if(newDataSelf == null) {
-                        newDataSelf = new PollutionData();
-                        newPollution.put(key, newDataSelf);
-                    }
+                    /* SELECTION */
+                    boolean shouldPut = false;
                     for(int i = 0; i < typeCount; i++) {
-                        newDataSelf.pollution[i] += data.pollution[i];
+                        if(data.pollution[i] > 0) shouldPut = true;
+                    }
+                    
+                    if(shouldPut) {
+                        PollutionData newDataSelf = newPollution.get(key);
+                        if(newDataSelf == null) {
+                            newDataSelf = new PollutionData();
+                            newPollution.put(key, newDataSelf);
+                        }
+                        for(int i = 0; i < typeCount; i++) {
+                            newDataSelf.pollution[i] += data.pollution[i];
+                        }
                     }
 
                     if(sToNeighbors > 0 || pToNeighbors > 0) {
@@ -262,26 +277,29 @@ public class PollutionHandler {
             WorldServer serv = (WorldServer) world;
             ChunkProviderServer provider = (ChunkProviderServer) serv.getChunkProvider();
 
-            for(Long2ObjectMap.Entry<PollutionData> pollution : entry.getValue().pollution.long2ObjectEntrySet()) {
+            // Iterating with fastIterator to avoid per-chunk Entry allocations.
+            ObjectIterator<Long2ObjectMap.Entry<PollutionData>> it = entry.getValue().pollution.long2ObjectEntrySet().fastIterator();
+            while(it.hasNext()) {
+                Long2ObjectMap.Entry<PollutionData> pollution = it.next();
                 float poison = pollution.getValue().pollution[P];
                 if(poison < DESTRUCTION_THRESHOLD) continue;
 
                 long key = pollution.getLongKey();
-                int xCoord = (int)(key >> 32);
-                int zCoord = (int)key;
+                int xCoord = Library.getChunkPosX(key);
+                int zCoord = Library.getChunkPosZ(key);
 
                 for(int i = 0; i < DESTRUCTION_COUNT; i++) {
                     int x = (xCoord << 6) + world.rand.nextInt(64);
                     int z = (zCoord << 6) + world.rand.nextInt(64);
 
                     if(provider.chunkExists(x >> 4, z >> 4)) {
-                        int y = world.getHeight(x, z) - 1;
+                        int y = world.getHeight(x, z) - world.rand.nextInt(3) + 1;
                         BlockPos bPos = new BlockPos(x, y, z);
                         IBlockState state = world.getBlockState(bPos);
                         Block b = state.getBlock();
 
                         if(b == Blocks.GRASS || (b == Blocks.DIRT && b.getMetaFromState(state) == 0)) {
-                            world.setBlockState(bPos, Blocks.DIRT.getDefaultState(), 2);
+                            world.setBlockState(bPos, Blocks.DIRT.getDefaultState(), 3);
                         } else if(b == Blocks.TALLGRASS || b.getMaterial(state) == Material.LEAVES || b.getMaterial(state) == Material.PLANTS) {
                             world.setBlockToAir(bPos);
                         }
@@ -295,6 +313,10 @@ public class PollutionHandler {
     /// DATA STRUCTURE ///
     //////////////////////
     public static class PollutionPerWorld {
+        /**
+         * Replaced HashMap<ChunkPos, PollutionData> with Long2ObjectOpenHashMap 
+         * using ChunkPos.asLong() for keys to zero out object churn.
+         */
         public Long2ObjectOpenHashMap<PollutionData> pollution = new Long2ObjectOpenHashMap<>();
 
         public PollutionPerWorld() { }
@@ -314,11 +336,13 @@ public class PollutionHandler {
             NBTTagCompound data = new NBTTagCompound();
             NBTTagList list = new NBTTagList();
 
-            for(Long2ObjectMap.Entry<PollutionData> entry : pollution.long2ObjectEntrySet()) {
+            ObjectIterator<Long2ObjectMap.Entry<PollutionData>> it = pollution.long2ObjectEntrySet().fastIterator();
+            while(it.hasNext()) {
+                Long2ObjectMap.Entry<PollutionData> entry = it.next();
                 NBTTagCompound nbt = new NBTTagCompound();
                 long key = entry.getLongKey();
-                nbt.setInteger("chunkX", (int)(key >> 32));
-                nbt.setInteger("chunkZ", (int)key);
+                nbt.setInteger("chunkX", Library.getChunkPosX(key));
+                nbt.setInteger("chunkZ", Library.getChunkPosZ(key));
                 entry.getValue().toNBT(nbt);
                 list.appendTag(nbt);
             }
