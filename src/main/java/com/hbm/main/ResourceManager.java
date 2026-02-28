@@ -1318,6 +1318,8 @@ public class ResourceManager {
     public static final ResourceLocation spinny_light_tex = new ResourceLocation(Tags.MODID, "textures/blocks/spinnylight.png");
     //Drones
     public static final IModelCustom delivery_drone = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/drone.obj"));
+    //Scaffold
+    public static final IModelCustom scaffold = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/blocks/scaffold.obj"));
     //Blast
     public static final ResourceLocation tomblast = new ResourceLocation(Tags.MODID, "textures/models/explosion/tomblast.png");
     public static final ResourceLocation dust = new ResourceLocation(Tags.MODID, "textures/models/explosion/dust.png");

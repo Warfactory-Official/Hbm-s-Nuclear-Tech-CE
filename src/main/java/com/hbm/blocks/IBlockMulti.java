@@ -5,17 +5,17 @@ import net.minecraft.item.ItemStack;
 
 public interface IBlockMulti {
 
-    public int getSubCount();
+    int getSubCount();
 
-    public default String getTranslationKey(ItemStack stack) {
+    default String getTranslationKey(ItemStack stack) {
         return ((Block)this).getTranslationKey();
     }
 
-    public default String getOverrideDisplayName(ItemStack stack) {
+    default String getOverrideDisplayName(ItemStack stack) {
         return null;
     }
 
-    public default int rectify(int meta) {
+    default int rectify(int meta) {
         return Math.abs(meta % getSubCount());
     }
 }
