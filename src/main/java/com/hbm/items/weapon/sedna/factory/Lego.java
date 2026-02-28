@@ -167,7 +167,7 @@ public class Lego {
             double alpha = (System.currentTimeMillis() - lastShot) / (double) smokeDuration;
             alpha = (1 - alpha) * 0.5D;
 
-            if(gun.getState(stack, index) == GunState.RELOADING || smokeNodes.size() == 0) alpha = 0;
+            if(gun.getState(stack, index) == GunState.RELOADING || smokeNodes.isEmpty()) alpha = 0;
             smokeNodes.add(new SmokeNode(alpha));
         }
     }
@@ -188,23 +188,24 @@ public class Lego {
     public static BiFunction<ItemStack, LambdaContext, Boolean> LAMBDA_DEBUG_CAN_FIRE = (stack, ctx) -> true;
 
     /** Spawns an EntityBulletBaseMK4 with the loaded bulletcfg */
-    public static BiConsumer<ItemStack, LambdaContext> LAMBDA_STANDARD_FIRE = (stack, ctx) -> doStandardFire(stack, ctx, HbmAnimationsSedna.GunAnimation.CYCLE, true);
+    public static BiConsumer<ItemStack, LambdaContext> LAMBDA_STANDARD_FIRE = (stack, ctx) -> doStandardFire(stack, ctx, HbmAnimationsSedna.GunAnimation.CYCLE, 0, true);
+    public static BiConsumer<ItemStack, LambdaContext> LAMBDA_SECOND_FIRE = (stack, ctx) -> doStandardFire(stack, ctx, HbmAnimationsSedna.GunAnimation.CYCLE, 1, true);
     /** Spawns an EntityBulletBaseMK4 with the loaded bulletcfg, ignores wear */
-    public static BiConsumer<ItemStack, LambdaContext> LAMBDA_NOWEAR_FIRE = (stack, ctx) -> doStandardFire(stack, ctx, HbmAnimationsSedna.GunAnimation.CYCLE, false);
+    public static BiConsumer<ItemStack, LambdaContext> LAMBDA_NOWEAR_FIRE = (stack, ctx) -> doStandardFire(stack, ctx, HbmAnimationsSedna.GunAnimation.CYCLE, 0, false);
     /** Spawns an EntityBulletBaseMK4 with the loaded bulletcfg, then resets lockon progress */
     public static BiConsumer<ItemStack, LambdaContext> LAMBDA_LOCKON_FIRE = (stack, ctx) -> {
-        doStandardFire(stack, ctx, HbmAnimationsSedna.GunAnimation.CYCLE, true);
+        doStandardFire(stack, ctx, HbmAnimationsSedna.GunAnimation.CYCLE, 0, true);
         ItemGunBaseNT.setIsLockedOn(stack, false);
     };
 
-    public static void doStandardFire(ItemStack stack, LambdaContext ctx, HbmAnimationsSedna.GunAnimation anim, boolean calcWear) {
+    public static void doStandardFire(ItemStack stack, LambdaContext ctx, HbmAnimationsSedna.GunAnimation anim, int receiver, boolean calcWear) {
         EntityLivingBase entity = ctx.entity;
         EntityPlayer player = ctx.getPlayer();
         int index = ctx.configIndex;
         if(anim != null) ItemGunBaseNT.playAnimation(player, stack, anim, ctx.configIndex);
 
         boolean aim = ItemGunBaseNT.getIsAiming(stack);
-        Receiver primary = ctx.config.getReceivers(stack)[0];
+        Receiver primary = ctx.config.getReceivers(stack)[receiver];
         IMagazine mag = primary.getMagazine(stack);
         BulletConfig config = (BulletConfig) mag.getType(stack, ctx.inventory);
 

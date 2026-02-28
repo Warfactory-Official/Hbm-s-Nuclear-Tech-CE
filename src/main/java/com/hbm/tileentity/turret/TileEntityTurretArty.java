@@ -13,9 +13,8 @@ import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.particle.helper.CasingCreator;
-import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.tileentity.IGUIProvider;
-import com.hbm.util.Vec3dUtil;
+import com.hbm.util.Vec3NT;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
@@ -138,9 +137,9 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
     @Override
     protected void alignTurret() {
         Vec3d pos = this.getTurretPos();
-        Vec3d barrel = new Vec3d(this.getBarrelLength(), 0, 0);
-        Vec3dUtil.rotateRoll(barrel, (float) this.rotationPitch);
-        barrel.rotateYaw((float) -(this.rotationYaw + Math.PI * 0.5));
+        Vec3NT barrel = new Vec3NT(this.getBarrelLength(), 0, 0);
+        barrel.rotateRollSelf(this.rotationPitch);
+        barrel.rotateYawSelf((float) -(this.rotationYaw + Math.PI * 0.5));
         /*
          * This is done to compensate for the barrel length, as this small deviation has a huge impact in both modes at longer ranges.
          * The consequence of this is that using the >before< angle of the barrel as an approximation can lead to problems at closer range,
@@ -201,14 +200,14 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
 
     public void spawnShell(ItemStack type) {
 
-        Vec3 pos = new Vec3(this.getTurretPos());
-        Vec3 vec = Vec3.createVectorHelper(this.getBarrelLength(), 0, 0);
-        vec.rotateAroundZ((float) -this.rotationPitch);
-        vec.rotateAroundY((float) -(this.rotationYaw + Math.PI * 0.5));
+        Vec3NT pos = new Vec3NT(this.getTurretPos());
+        Vec3NT vec = new Vec3NT(this.getBarrelLength(), 0, 0);
+        vec.rotateRollSelf((float) -this.rotationPitch);
+        vec.rotateYawSelf((float) -(this.rotationYaw + Math.PI * 0.5));
 
         EntityArtilleryShell proj = new EntityArtilleryShell(world);
-        proj.setPositionAndRotation(pos.xCoord + vec.xCoord, pos.yCoord + vec.yCoord, pos.zCoord + vec.zCoord, 0.0F, 0.0F);
-        proj.shoot(vec.xCoord, vec.yCoord, vec.zCoord, (float) getV0(), 0.0F);
+        proj.setPositionAndRotation(pos.x + vec.x, pos.y + vec.y, pos.z + vec.z, 0.0F, 0.0F);
+        proj.shoot(vec.x, vec.y, vec.z, (float) getV0(), 0.0F);
         proj.setTarget((int) tPos.x, (int) tPos.y, (int) tPos.z);
         proj.setType(type.getItemDamage());
 
@@ -366,10 +365,10 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
                 this.spawnShell(conf);
                 this.consumeAmmo(ModItems.ammo_arty);
                 world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.jeremy_fire, SoundCategory.BLOCKS, 25.0F, 1.0F);
-                Vec3 pos = new Vec3(this.getTurretPos());
-                Vec3 vec = Vec3.createVectorHelper(this.getBarrelLength(), 0, 0);
-                vec.rotateAroundZ((float) -this.rotationPitch);
-                vec.rotateAroundY((float) -(this.rotationYaw + Math.PI * 0.5));
+                Vec3NT pos = new Vec3NT(this.getTurretPos());
+                Vec3NT vec = new Vec3NT(this.getBarrelLength(), 0, 0);
+                vec.rotateRollSelf((float) -this.rotationPitch);
+                vec.rotateYawSelf((float) -(this.rotationYaw + Math.PI * 0.5));
                 this.didJustShoot = true;
 
                 NBTTagCompound data = new NBTTagCompound();
@@ -377,11 +376,11 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
                 data.setString("mode", "largeexplode");
                 data.setFloat("size", 0F);
                 data.setByte("count", (byte) 5);
-                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.xCoord + vec.xCoord, pos.yCoord + vec.yCoord, pos.zCoord + vec.zCoord), new TargetPoint(world.provider.getDimension(), pos.xCoord, pos.yCoord, pos.zCoord, 150));
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.x + vec.x, pos.y + vec.y, pos.z + vec.z), new TargetPoint(world.provider.getDimension(), pos.x, pos.y, pos.z, 150));
             }
 
             if (this.mode == MODE_MANUAL && !this.targetQueue.isEmpty()) {
-                this.targetQueue.remove(0);
+                this.targetQueue.removeFirst();
                 this.tPos = null;
             }
         }
@@ -390,11 +389,6 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
     @Override
     protected CasingEjector getEjector() {
         return ejector;
-    }
-
-    @Override
-    protected Vec3d getCasingSpawnPos() {
-        return this.getTurretPos();
     }
 
     @Override

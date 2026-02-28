@@ -142,8 +142,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.Level;
 
 import java.io.File;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
@@ -153,16 +151,12 @@ public class ModEventHandler {
 
     public static final ResourceLocation ENT_HBM_PROP_ID = new ResourceLocation(Tags.MODID, "HBMLIVINGPROPS");
     public static final ResourceLocation DATA_LOC = new ResourceLocation(Tags.MODID, "HBMDATA");
-    private static final Set<String> hashes = new HashSet();
     public static final Int2IntOpenHashMap RBMK_COL_HEIGHT_MAP = new Int2IntOpenHashMap(); // server only, to avoid sending redundant packets
-    public static boolean showMessage = true;
     public static Random rand = new Random();
     private static final ForkJoinPool THREAD_POOL = ForkJoinPool.commonPool();
 
     static {
         RBMK_COL_HEIGHT_MAP.defaultReturnValue((int) RBMKDials.RBMKKeys.KEY_COLUMN_HEIGHT.defValue);
-        hashes.add("41de5c372b0589bbdb80571e87efa95ea9e34b0d74c6005b8eab495b7afd9994");
-        hashes.add("31da6223a100ed348ceb3254ceab67c9cc102cb2a04ac24de0df3ef3479b1036");
     }
 
     public static boolean doesArrayContain(Object[] array, Object objectCheck) {
@@ -543,81 +537,23 @@ public class ModEventHandler {
     }
 
     @SubscribeEvent
-    public void onClickSign(PlayerInteractEvent event) {
-
+    public void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         BlockPos pos = event.getPos();
         World world = event.getWorld();
 
-        if (!world.isRemote && world.getBlockState(pos).getBlock() == Blocks.STANDING_SIGN) {
+        if (!world.isRemote && world.getTileEntity(pos) instanceof TileEntitySign sign) {
+            String result = ShadyUtil.smoosh(sign.signText[0].getUnformattedText(), sign.signText[1].getUnformattedText(), sign.signText[2].getUnformattedText(), sign.signText[3].getUnformattedText());
 
-            TileEntitySign sign = (TileEntitySign) world.getTileEntity(pos);
-
-            String result = smoosh(sign.signText[0].getUnformattedText(), sign.signText[1].getUnformattedText(), sign.signText[2].getUnformattedText(), sign.signText[3].getUnformattedText());
-            //System.out.println(result);
-
-            if (hashes.contains(result)) {
+            if (ShadyUtil.hashes.contains(result)) {
                 world.destroyBlock(pos, false);
                 EntityItem entityitem = new EntityItem(world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(ModItems.bobmazon_hidden));
-                entityitem.setPickupDelay(10);
+                entityitem.setPickupDelay(1);
                 world.spawnEntity(entityitem);
+                MainRegistry.logger.fatal("THE HIDDENCAT HAS BEEN OBTAINED  x: {} /  y: {} / z: {} by {}!", pos.getX(),
+                        pos.getY(), pos.getZ(), event.getEntityPlayer().getDisplayName());
             }
         }
 
-    }
-
-    private String smoosh(String s1, String s2, String s3, String s4) {
-
-        Random rand = new Random();
-        String s = "";
-
-        byte[] b1 = s1.getBytes();
-        byte[] b2 = s2.getBytes();
-        byte[] b3 = s3.getBytes();
-        byte[] b4 = s4.getBytes();
-
-        if (b1.length == 0 || b2.length == 0 || b3.length == 0 || b4.length == 0)
-            return "";
-
-        s += s1;
-        rand.setSeed(b1[0]);
-        s += rand.nextInt(0xffffff);
-
-        s += s2;
-        rand.setSeed(rand.nextInt(0xffffff) + b2[0]);
-        rand.setSeed(b2[0]);
-        s += rand.nextInt(0xffffff);
-
-        s += s3;
-        rand.setSeed(rand.nextInt(0xffffff) + b3[0]);
-        rand.setSeed(b3[0]);
-        s += rand.nextInt(0xffffff);
-
-        s += s4;
-        rand.setSeed(rand.nextInt(0xffffff) + b4[0]);
-        rand.setSeed(b4[0]);
-        s += rand.nextInt(0xffffff);
-
-        //System.out.println(s);
-
-        return getHash(s);
-    }
-
-    private String getHash(String inp) {
-
-        try {
-            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
-            byte[] bytes = sha256.digest(inp.getBytes());
-            String str = "";
-
-            for (int b : bytes)
-                str = str + Integer.toString((b & 0xFF) + 256, 16).substring(1);
-
-            return str;
-
-        } catch (NoSuchAlgorithmException e) {
-        }
-
-        return "";
     }
 
     @SubscribeEvent

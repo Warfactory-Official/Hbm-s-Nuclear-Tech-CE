@@ -9,7 +9,7 @@ import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.impl.ItemGunDrill;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
 import com.hbm.items.weapon.sedna.mags.MagazineFluid;
-import com.hbm.items.weapon.sedna.mods.WeaponModManager;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
 import com.hbm.render.anim.sedna.BusAnimationSequenceSedna;
@@ -97,7 +97,7 @@ public class XFactoryDrill {
         }
         int ammoToUse = 10;
 
-        if(WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_ENGINE_ELECTRIC)) ammoToUse = 1_000; // that's 1,000 operations
+        if(XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_ENGINE_ELECTRIC)) ammoToUse = 1_000; // that's 1,000 operations
         mag.useUpAmmo(stack, ctx.inventory, ammoToUse);
         if(calcWear) ItemGunBaseNT.setWear(stack, index, Math.min(ItemGunBaseNT.getWear(stack, index), ctx.config.getDurability(stack)));
     }
@@ -134,11 +134,11 @@ public class XFactoryDrill {
     }
 
     // this system technically doesn't need to be part of the GunCfg or Receiver or anything, we can just do this and it works the exact same
-    public static double getModdableReach(ItemStack stack, double base) {		return WeaponModManager.eval(base, stack, D_REACH, ModItems.gun_drill, 0); }
-    public static float getModdableDTNegation(ItemStack stack, float base) {	return WeaponModManager.eval(base, stack, F_DTNEG, ModItems.gun_drill, 0); }
-    public static float getModdablePiercing(ItemStack stack, float base) {		return WeaponModManager.eval(base, stack, F_PIERCE, ModItems.gun_drill, 0); }
-    public static int getModdableAoE(ItemStack stack, int base) {				return WeaponModManager.eval(base, stack, I_AOE, ModItems.gun_drill, 0); }
-    public static int getModdableHarvestLevel(ItemStack stack, int base) {		return WeaponModManager.eval(base, stack, I_HARVEST, ModItems.gun_drill, 0); }
+    public static double getModdableReach(ItemStack stack, double base) {		return XWeaponModManager.eval(base, stack, D_REACH, ModItems.gun_drill, 0); }
+    public static float getModdableDTNegation(ItemStack stack, float base) {	return XWeaponModManager.eval(base, stack, F_DTNEG, ModItems.gun_drill, 0); }
+    public static float getModdablePiercing(ItemStack stack, float base) {		return XWeaponModManager.eval(base, stack, F_PIERCE, ModItems.gun_drill, 0); }
+    public static int getModdableAoE(ItemStack stack, int base) {				return XWeaponModManager.eval(base, stack, I_AOE, ModItems.gun_drill, 0); }
+    public static int getModdableHarvestLevel(ItemStack stack, int base) {		return XWeaponModManager.eval(base, stack, I_HARVEST, ModItems.gun_drill, 0); }
 
     @SuppressWarnings("incomplete-switch")
     public static final BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_DRILL_ANIMS = (stack, type) -> {

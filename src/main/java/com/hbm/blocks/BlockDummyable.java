@@ -67,6 +67,7 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
     //meta offset from dummy to extra rotation
     public static final int extra = 6;
     private static final long NO_CORE = Long.MIN_VALUE;
+    private static final AxisAlignedBB DETAIL_AABB = new AxisAlignedBB(0.0F, 0.0F, 0.0F, 1.0F, 0.999F, 1.0F);
     public static boolean safeRem = false;
     public List<AxisAlignedBB> bounding = new ArrayList<>();
 
@@ -491,7 +492,7 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 		if (!this.useDetailedHitbox()) {
 			return FULL_BLOCK_AABB;
 		} else {
-			return new AxisAlignedBB(0.0F, 0.0F, 0.0F, 1.0F, 0.999F, 1.0F);
+			return DETAIL_AABB;
 		}
 	}
 

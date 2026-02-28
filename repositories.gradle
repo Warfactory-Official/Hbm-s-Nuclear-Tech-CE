@@ -5,7 +5,22 @@ repositories {
 //        name = "galacticraft"
 //        url = "https://maven.galacticraft.net/repository/legacy/"
 //    }
-
+    maven {
+        name = "Minecraft Libraries"
+        url = "https://libraries.minecraft.net/"
+    }
+    maven {
+        name = "Forge Maven"
+        url = "https://maven.minecraftforge.net/"
+    }
+    maven {
+        name = "Warfactory Releases";
+        url = "https://repo.warfactory.co/releases"
+    }
+    maven {
+        name = "Warfactory Snapshots";
+        url = "https://repo.warfactory.co/snapshots"
+    }
     mavenCentral()
     maven { //  baubles
         name = "thiakil"

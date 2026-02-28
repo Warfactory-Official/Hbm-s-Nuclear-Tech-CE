@@ -41,7 +41,7 @@ public class XFactoryPA {
     }
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA = (stack, ctx) -> {
-        IPAMelee component = IPAWeaponsProvider.getMeleeComponentClient();
+        IPAMelee component = IPAWeaponsProvider.getMeleeComponentCommon(ctx.getPlayer());
         if(component != null) component.orchestra(stack, ctx);
     };
 
@@ -52,11 +52,11 @@ public class XFactoryPA {
     };
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_CLICK_MELEE_PRIMARY = (stack, ctx) -> {
-        IPAMelee component = IPAWeaponsProvider.getMeleeComponentClient();
+        IPAMelee component = IPAWeaponsProvider.getMeleeComponentCommon(ctx.getPlayer());
         if(component != null) component.clickPrimary(stack, ctx);
     };
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_CLICK_MELEE_SENONDARY = (stack, ctx) -> {
-        IPAMelee component = IPAWeaponsProvider.getMeleeComponentClient();
+        IPAMelee component = IPAWeaponsProvider.getMeleeComponentCommon(ctx.getPlayer());
         if(component != null) component.clickSecondary(stack, ctx);
     };
 

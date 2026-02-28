@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
-import com.hbm.items.weapon.sedna.mods.WeaponModManager;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ClickType;
@@ -36,7 +36,7 @@ public class ContainerWeaponTable extends Container {
                 ContainerWeaponTable.this.configIndex = 0;
 
                 if (!stack.isEmpty()) {
-                    ItemStack[] upgrades = WeaponModManager.getUpgradeItems(stack, ContainerWeaponTable.this.configIndex);
+                    ItemStack[] upgrades = XWeaponModManager.getUpgradeItems(stack, ContainerWeaponTable.this.configIndex);
 
                     for (int i = 0; i < Math.min(upgrades.length, 7); i++) {
                         ContainerWeaponTable.this.mods.setStackInSlot(i, upgrades[i]);
@@ -50,7 +50,7 @@ public class ContainerWeaponTable extends Container {
             public ItemStack onTake(EntityPlayer player, ItemStack stack) {
                 ItemStack ret = super.onTake(player, stack);
 
-                WeaponModManager.install(
+                XWeaponModManager.install(
                         stack, ContainerWeaponTable.this.configIndex,
                         mods.getStackInSlot(0),
                         mods.getStackInSlot(1),
@@ -62,7 +62,7 @@ public class ContainerWeaponTable extends Container {
 
                 for (int i = 0; i < 7; i++) {
                     ItemStack mod = ContainerWeaponTable.this.mods.getStackInSlot(i);
-                    if (WeaponModManager.isApplicable(stack, mod, ContainerWeaponTable.this.configIndex, false)) {
+                    if (XWeaponModManager.isApplicable(stack, mod, ContainerWeaponTable.this.configIndex, false)) {
                         ContainerWeaponTable.this.mods.setStackInSlot(i, ItemStack.EMPTY);
                     }
                 }
@@ -97,7 +97,7 @@ public class ContainerWeaponTable extends Container {
                 int configs = ((ItemGunBaseNT) stack.getItem()).getConfigCount();
                 if (configs < slotId) return ItemStack.EMPTY;
 
-                WeaponModManager.install(
+                XWeaponModManager.install(
                         stack, this.configIndex,
                         mods.getStackInSlot(0),
                         mods.getStackInSlot(1),
@@ -109,7 +109,7 @@ public class ContainerWeaponTable extends Container {
 
                 for (int i = 0; i < 7; i++) {
                     ItemStack mod = this.mods.getStackInSlot(i);
-                    if (WeaponModManager.isApplicable(stack, mod, this.configIndex, false)) {
+                    if (XWeaponModManager.isApplicable(stack, mod, this.configIndex, false)) {
                         this.mods.setStackInSlot(i, ItemStack.EMPTY);
                     }
                 }
@@ -117,7 +117,7 @@ public class ContainerWeaponTable extends Container {
                 this.configIndex = slotId;
 
                 if (!stack.isEmpty()) {
-                    ItemStack[] upgrades = WeaponModManager.getUpgradeItems(stack, this.configIndex);
+                    ItemStack[] upgrades = XWeaponModManager.getUpgradeItems(stack, this.configIndex);
                     for (int i = 0; i < Math.min(upgrades.length, 7); i++) {
                         this.mods.setStackInSlot(i, upgrades[i]);
                     }
@@ -146,7 +146,7 @@ public class ContainerWeaponTable extends Container {
 
             ItemStack itemstack = this.gun.getStackInSlot(0);
             if (!itemstack.isEmpty()) {
-                WeaponModManager.uninstall(itemstack, this.configIndex);
+                XWeaponModManager.uninstall(itemstack, this.configIndex);
                 player.dropItem(itemstack, false);
                 this.gun.setStackInSlot(0, ItemStack.EMPTY);
             }
@@ -169,7 +169,7 @@ public class ContainerWeaponTable extends Container {
 
             if (index < 8) {
                 if (index == 7) {
-                    WeaponModManager.install(
+                    XWeaponModManager.install(
                             stack, this.configIndex,
                             mods.getStackInSlot(0),
                             mods.getStackInSlot(1),
@@ -181,7 +181,7 @@ public class ContainerWeaponTable extends Container {
 
                     for (int i = 0; i < 7; i++) {
                         ItemStack mod = this.mods.getStackInSlot(i);
-                        if (WeaponModManager.isApplicable(stack, mod, this.configIndex, false)) {
+                        if (XWeaponModManager.isApplicable(stack, mod, this.configIndex, false)) {
                             this.mods.setStackInSlot(i, ItemStack.EMPTY);
                         }
                     }
@@ -222,21 +222,21 @@ public class ContainerWeaponTable extends Container {
 
         @Override
         public boolean isItemValid(ItemStack stack) {
-            return !gun.getStackInSlot(0).isEmpty() && WeaponModManager.isApplicable(gun.getStackInSlot(0), stack, ContainerWeaponTable.this.configIndex, true);
+            return !gun.getStackInSlot(0).isEmpty() && XWeaponModManager.isApplicable(gun.getStackInSlot(0), stack, ContainerWeaponTable.this.configIndex, true);
         }
 
         @Override
         public void putStack(ItemStack stack) {
             super.putStack(stack);
             refreshInstalledMods();
-            WeaponModManager.onInstallStack(gun.getStackInSlot(0), stack, ContainerWeaponTable.this.configIndex);
+            XWeaponModManager.onInstallStack(gun.getStackInSlot(0), stack, ContainerWeaponTable.this.configIndex);
         }
 
         @Override
         public ItemStack onTake(EntityPlayer player, ItemStack stack) {
             ItemStack ret = super.onTake(player, stack);
             refreshInstalledMods();
-            WeaponModManager.onUninstallStack(gun.getStackInSlot(0), stack, ContainerWeaponTable.this.configIndex);
+            XWeaponModManager.onUninstallStack(gun.getStackInSlot(0), stack, ContainerWeaponTable.this.configIndex);
             return ret;
         }
 
@@ -244,8 +244,8 @@ public class ContainerWeaponTable extends Container {
             ItemStack gunStack = gun.getStackInSlot(0);
             if (gunStack.isEmpty()) return;
 
-            WeaponModManager.uninstall(gunStack, ContainerWeaponTable.this.configIndex);
-            WeaponModManager.install(
+            XWeaponModManager.uninstall(gunStack, ContainerWeaponTable.this.configIndex);
+            XWeaponModManager.install(
                     gunStack, ContainerWeaponTable.this.configIndex,
                     mods.getStackInSlot(0),
                     mods.getStackInSlot(1),

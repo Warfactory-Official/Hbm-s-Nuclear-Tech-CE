@@ -49,6 +49,8 @@ public class ResourceManager {
 
     public static final IModelCustom bm_box_lever = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/bm_box_lever.obj")).asVBO();
 
+    public static final IModelCustom coin = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/trinkets/chip.obj")).asVBO();
+
     //Assembler
     public static final IModelCustom assembler_body = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/assembler_new_body.obj")).asVBO();
     public static final IModelCustom assembler_cog = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/assembler_new_cog.obj")).asVBO();
@@ -361,6 +363,8 @@ public class ResourceManager {
     public static final IModelCustom blast_door_tooth = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/blast_door_tooth.obj")).asVBO();
     public static final IModelCustom blast_door_slider = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/blast_door_slider.obj")).asVBO();
     public static final IModelCustom blast_door_block = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/blast_door_block.obj")).asVBO();
+    //Lights
+    //public static final IModelCustom lantern = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/trinkets/lantern.obj"));
     //Tesla Coil
     public static final IModelCustom tesla = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/tesla.obj")).asVBO();
     public static final IModelCustom teslacrab = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/mobs/teslacrab.obj")).asVBO();
@@ -885,6 +889,9 @@ public class ResourceManager {
     public static final ResourceLocation conveyor_press_belt_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/conveyor_press_belt.png");
     public static final ResourceLocation ammo_press_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/ammo_press.png");
     public static final ResourceLocation bm_box_lever_tex = new ResourceLocation(Tags.MODID, "textures/models/turrets/bm_box_lever.png");
+
+    public static final ResourceLocation coin_tex = new ResourceLocation(Tags.MODID, "textures/models/trinkets/chip_gold.png");
+
     //Assembler
     public static final ResourceLocation assembler_body_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/assembler_base_new.png");
     public static final ResourceLocation assembler_cog_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/assembler_cog_new.png");
@@ -894,6 +901,7 @@ public class ResourceManager {
     public static final ResourceLocation assemfac_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/assemfac.png");
     public static final ResourceLocation assembly_factory_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/assembly_factory.png");
     public static final ResourceLocation assembly_factory_sparks_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/assembly_factory_sparks.png");
+    public static final ResourceLocation precass_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/precass.png");
     //Chemplant
     public static final ResourceLocation chemplant_body_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/chemplant_base_new.png");
     public static final ResourceLocation chemplant_spinner_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/chemplant_spinner_new.png");

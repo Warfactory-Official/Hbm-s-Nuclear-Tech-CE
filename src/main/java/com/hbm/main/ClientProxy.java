@@ -1307,6 +1307,102 @@ public class ClientProxy extends ServerProxy {
                 }
             }
 
+            case "bnuuy" -> {
+                if(particleSetting == 2)
+                    return;
+
+                Entity ent = world.getEntityByID(data.getInteger("player"));
+
+                if(ent instanceof EntityPlayer p) {
+
+                    Vec3NT vec = new Vec3NT(0, 0, -0.6);
+                    Vec3NT offset = new Vec3NT(0.275, 0, 0);
+                    float angle = (float) -Math.toRadians(p.rotationYawHead - (p.rotationYawHead - p.renderYawOffset));
+
+                    vec.rotateYawSelf(angle);
+                    offset.rotateYawSelf(angle);
+
+                    double ix = p.posX + vec.x;
+                    double iy = p.posY + p.eyeHeight - 1 + 0.4;
+                    double iz = p.posZ + vec.z;
+                    double ox = offset.x;
+                    double oz = offset.z;
+
+                    if(player.isSneaking()) {
+                        iy += 0.25;
+                    }
+
+                    vec.normalize();
+                    double mult = 0.025D;
+                    double mX = vec.x * mult;
+                    double mZ = vec.z * mult;
+
+                    //Minecraft.getMinecraft().effectRenderer.addEffect(new EntityFlameFX(world, ix + ox, iy, iz + oz, 0, 0, 0));
+                    //Minecraft.getMinecraft().effectRenderer.addEffect(new EntityFlameFX(world, ix - ox, iy, iz - oz, 0, 0, 0));
+
+                    for(int i = 0; i < 2; i++) {
+                        Particle fx = new ParticleSmokeNormal.Factory().createParticle(-1, world, ix + ox * (i == 0 ? -1 : 1), iy, iz + oz * (i == 0 ? -1 : 1), mX, 0, mZ);
+                        fx.particleScale = 0.5F;
+                        Minecraft.getMinecraft().effectRenderer.addEffect(fx);
+                    }
+                }
+            }
+
+            case "jetpack_bj" -> {
+                if(particleSetting == 2)
+                    return;
+
+                Entity ent = world.getEntityByID(data.getInteger("player"));
+
+                if(ent instanceof EntityPlayer p) {
+
+                    Vec3NT vec = new Vec3NT(0, 0, -0.3125);
+                    Vec3NT offset = new Vec3NT(0.125, 0, 0);
+                    float angle = (float) -Math.toRadians(p.rotationYawHead - (p.rotationYawHead - p.renderYawOffset));
+
+                    vec.rotateYawSelf(angle);
+                    offset.rotateYawSelf(angle);
+
+                    double ix = p.posX + vec.x;
+                    double iy = p.posY + p.eyeHeight - 0.9375;
+                    double iz = p.posZ + vec.z;
+                    double ox = offset.x;
+                    double oz = offset.z;
+
+                    if(particleSetting == 0) {
+                        Vec3d pos = new Vec3d(ix, iy, iz);
+                        Vec3d thrust = new Vec3d(0, -1, 0);
+                        Vec3d target = pos.add(thrust.x * 10, thrust.y * 10, thrust.z * 10);
+                        RayTraceResult ray = player.world.rayTraceBlocks(pos, target, false, false, true);
+
+                        if(ray != null && ray.typeOfHit == Type.BLOCK && ray.sideHit == EnumFacing.UP) {
+                            IBlockState state = world.getBlockState(ray.getBlockPos());
+
+                            Vec3d delta = new Vec3d(ix - ray.hitVec.x, iy - ray.hitVec.y, iz - ray.hitVec.z);
+                            Vec3NT vel = new Vec3NT(0.75 - delta.length() * 0.075, 0, 0);
+
+                            for(int i = 0; i < (10 - delta.length()); i++) {
+                                vel.rotateYawSelf(world.rand.nextFloat() * (float)Math.PI * 2F);
+                                Particle particle = new ParticleBlockDust.Factory().createParticle(-1, world, ray.hitVec.x, ray.hitVec.y + 0.1, ray.hitVec.z, vel.x, 0.1, vel.z, Block.getStateId(state));
+                                if (particle == null) {
+                                    continue;
+                                }
+
+                                Minecraft.getMinecraft().effectRenderer.addEffect(particle);
+                            }
+                        }
+                    }
+
+                    Particle dust1 = new ParticleRedstone.Factory().createParticle(-1, world, ix + ox, iy, iz + oz, p.motionX, p.motionY, p.motionZ);
+                    Particle dust2 = new ParticleRedstone.Factory().createParticle(-1, world, ix - ox, iy, iz - oz, p.motionX, p.motionY, p.motionZ);
+                    dust1.setRBGColorF(0.8F, 0.5F, 1.0F);
+                    dust2.setRBGColorF(0.8F, 0.5F, 1.0F);
+
+                    Minecraft.getMinecraft().effectRenderer.addEffect(dust1);
+                    Minecraft.getMinecraft().effectRenderer.addEffect(dust2);
+                }
+            }
+
             case "jetpack_dns" -> {
 
                 if(particleSetting == 2)
@@ -1316,10 +1412,10 @@ public class ClientProxy extends ServerProxy {
 
                 if(ent instanceof EntityPlayer p) {
 
-                    Vec3d offset = new Vec3d(0.125, 0, 0);
+                    Vec3NT offset = new Vec3NT(0.125, 0, 0);
                     float angle = (float) -Math.toRadians(p.rotationYawHead - (p.rotationYawHead - p.renderYawOffset));
 
-                    offset = offset.rotateYaw(angle);
+                    offset.rotateYawSelf(angle);
 
                     double ix = p.posX;
                     double iy = p.posY - p.getYOffset() - 0.5D;

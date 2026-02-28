@@ -67,9 +67,7 @@ public class EntityDamageUtil {
                 if (!chestplate.isEmpty() && ArmorModHandler.hasMods(chestplate)) {
                     ItemStack[] mods = ArmorModHandler.pryMods(chestplate);
 
-                    if (mods[ArmorModHandler.extra] != null && mods[ArmorModHandler.extra].getItem() == ModItems.v1) {
-                        return true;
-                    }
+                    return mods[ArmorModHandler.extra] != null && mods[ArmorModHandler.extra].getItem() == ModItems.v1;
                 }
             }
         }
@@ -112,32 +110,30 @@ public class EntityDamageUtil {
         Vec3d end = pos.add(look.x * reach, look.y * reach, look.z * reach);
         Vec3d hitvec = null;
         float grace = 1.0F;
-        List list = world.getEntitiesWithinAABBExcludingEntity(attacker, attacker.getEntityBoundingBox().expand(look.x * reach, look.y * reach, look.z * reach).expand(grace, grace, grace));
+        List<Entity> list = world.getEntitiesWithinAABBExcludingEntity(attacker, attacker.getEntityBoundingBox().expand(look.x * reach, look.y * reach, look.z * reach).expand(grace, grace, grace));
 
         double closest = reach;
 
-        for(int i = 0; i < list.size(); ++i) {
-            Entity entity = (Entity) list.get(i);
-
-            if(entity.canBeCollidedWith()) {
+        for (Entity entity : list) {
+            if (entity.canBeCollidedWith()) {
 
                 double borderSize = entity.getCollisionBorderSize() + threshold;
                 AxisAlignedBB axisalignedbb = entity.getEntityBoundingBox().expand(borderSize, borderSize, borderSize);
                 RayTraceResult movingobjectposition = axisalignedbb.calculateIntercept(pos, end);
 
-                if(axisalignedbb.contains(pos)) {
-                    if(0.0D <= closest) {
+                if (axisalignedbb.contains(pos)) {
+                    if (0.0D <= closest) {
                         pointedEntity = entity;
                         hitvec = movingobjectposition == null ? pos : movingobjectposition.hitVec;
                         closest = 0.0D;
                     }
 
-                } else if(movingobjectposition != null) {
+                } else if (movingobjectposition != null) {
                     double dist = pos.distanceTo(movingobjectposition.hitVec);
 
-                    if(dist < closest || closest == 0.0D) {
-                        if(entity == attacker.getRidingEntity() && !entity.canRiderInteract()) {
-                            if(closest == 0.0D) {
+                    if (dist < closest || closest == 0.0D) {
+                        if (entity == attacker.getRidingEntity() && !entity.canRiderInteract()) {
+                            if (closest == 0.0D) {
                                 pointedEntity = entity;
                                 hitvec = movingobjectposition.hitVec;
                             }
@@ -280,7 +276,7 @@ public class EntityDamageUtil {
     public static float applyArmorCalculationsNT(EntityLivingBase living, DamageSource source, float amount) {
         if (!source.isUnblockable()) {
             float i = 25F - (living.getTotalArmorValue() * (1 - DamageResistanceHandler.currentPDR));
-            float armor = amount * (float) i;
+            float armor = amount * i;
             damageArmorNT(living, amount);
             amount = armor / 25.0F;
         }
@@ -335,7 +331,7 @@ public class EntityDamageUtil {
             living.motionY /= 2.0D;
             living.motionZ /= 2.0D;
             living.motionX -= motionX / horizontal * magnitude;
-            living.motionY += (double) magnitude;
+            living.motionY += magnitude;
             living.motionZ -= motionZ / horizontal * magnitude;
 
             if (living.motionY > 0.2D) {

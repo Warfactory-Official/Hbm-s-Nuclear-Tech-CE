@@ -29,6 +29,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Random;
@@ -43,17 +44,17 @@ public class BlockKeyhole extends Block {
     }
 
     @Override
-    public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
+    public @NotNull ItemStack getPickBlock(@NotNull IBlockState state, @NotNull RayTraceResult target, @NotNull World world, @NotNull BlockPos pos, @NotNull EntityPlayer player) {
         return new ItemStack(Blocks.STONE);
     }
 
     @Override
-    public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+    public @NotNull Item getItemDropped(@NotNull IBlockState state, @NotNull Random rand, int fortune) {
         return Item.getItemFromBlock(Blocks.COBBLESTONE);
     }
 
     @Override
-    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+    public boolean onBlockActivated(@NotNull World world, @NotNull BlockPos pos, @NotNull IBlockState state, EntityPlayer player, @NotNull EnumHand hand, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ) {
         if(!player.getHeldItem(hand).isEmpty()) {
             boolean cracked = player.getHeldItem(hand).getItem() == ModItems.key_red_cracked;
             if((player.getHeldItem(hand).getItem() == ModItems.key_red || cracked) && facing != EnumFacing.UP && facing != EnumFacing.DOWN) {
@@ -201,10 +202,18 @@ public class BlockKeyhole extends Block {
         if(rand == 0) {
             world.setBlockState(new BlockPos(x, y + 1, z), ModBlocks.deco_loot.getDefaultState());
             BlockLoot.TileEntityLoot loot = (BlockLoot.TileEntityLoot) world.getTileEntity(new BlockPos(x, y + 1, z));
-            loot.addItem(new ItemStack(ModItems.trenchmaster_helmet), 0, 0, 0);
-            loot.addItem(new ItemStack(ModItems.trenchmaster_plate), 0, 0, 0);
-            loot.addItem(new ItemStack(ModItems.trenchmaster_legs), 0, 0, 0);
-            loot.addItem(new ItemStack(ModItems.trenchmaster_boots), 0, 0, 0);
+
+            if(world.rand.nextInt(5) == 0) {
+                loot.addItem(new ItemStack(ModItems.ncrpa_helmet), 0, 0, 0);
+                loot.addItem(new ItemStack(ModItems.ncrpa_plate), 0, 0, 0);
+                loot.addItem(new ItemStack(ModItems.ncrpa_legs), 0, 0, 0);
+                loot.addItem(new ItemStack(ModItems.ncrpa_boots), 0, 0, 0);
+            } else {
+                loot.addItem(new ItemStack(ModItems.trenchmaster_helmet), 0, 0, 0);
+                loot.addItem(new ItemStack(ModItems.trenchmaster_plate), 0, 0, 0);
+                loot.addItem(new ItemStack(ModItems.trenchmaster_legs), 0, 0, 0);
+                loot.addItem(new ItemStack(ModItems.trenchmaster_boots), 0, 0, 0);
+            }
         } else {
             spawnPedestalItem(world, x, y + 1, z);
         }

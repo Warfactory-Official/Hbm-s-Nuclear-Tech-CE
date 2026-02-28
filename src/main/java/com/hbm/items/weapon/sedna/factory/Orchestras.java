@@ -8,11 +8,13 @@ import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.impl.ItemGunChargeThrower;
 import com.hbm.items.weapon.sedna.impl.ItemGunStinger;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
-import com.hbm.items.weapon.sedna.mods.WeaponModManager;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.main.MainRegistry;
+import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.packet.toclient.MuzzleFlashPacket;
 import com.hbm.particle.SpentCasing;
 import com.hbm.particle.helper.CasingCreator;
 import com.hbm.render.anim.sedna.HbmAnimationsSedna;
@@ -1027,13 +1029,13 @@ public class Orchestras {
         if(type == HbmAnimationsSedna.GunAnimation.CYCLE) {
             if(timer == 0) {
                 int index = ctx.configIndex == 0 ? -1 : 1;
-                int rounds = WeaponModManager.hasUpgrade(stack, ctx.configIndex, WeaponModManager.ID_MINIGUN_SPEED) ? 3 : 1;
+                int rounds = XWeaponModManager.hasUpgrade(stack, ctx.configIndex, XWeaponModManager.ID_MINIGUN_SPEED) ? 3 : 1;
                 for(int i = 0; i < rounds; i++) {
                     SpentCasing casing = ctx.config.getReceivers(stack)[0].getMagazine(stack).getCasing(stack, ctx.inventory);
                     if(casing != null && entity instanceof EntityPlayer plr) CasingCreator.composeEffect(entity.world, plr, 0.25, -0.25, -0.5D * index, 0, 0.18, -0.12 * index, 0.01, (float)entity.getRNG().nextGaussian() * 15F, (float)entity.getRNG().nextGaussian() * 15F, casing.getName());
                 }
             }
-            if(timer == (WeaponModManager.hasUpgrade(stack, 0, 207) ? 3 : 1)) entity.world.playSound(null, entity.getPosition(), HBMSoundHandler.revolverSpin, SoundCategory.PLAYERS, 1F, 0.75F);
+            if(timer == (XWeaponModManager.hasUpgrade(stack, 0, 207) ? 3 : 1)) entity.world.playSound(null, entity.getPosition(), HBMSoundHandler.revolverSpin, SoundCategory.PLAYERS, 1F, 0.75F);
         }
         if(type == HbmAnimationsSedna.GunAnimation.CYCLE_DRY) {
             if(timer == 0) entity.world.playSound(null, entity.getPosition(), HBMSoundHandler.dryFireClick, SoundCategory.PLAYERS, 1F, 0.75F);
@@ -1295,7 +1297,9 @@ public class Orchestras {
         if(entity.world.isRemote) return;
         HbmAnimationsSedna.GunAnimation type = ItemGunBaseNT.getLastAnim(stack, ctx.configIndex);
         int timer = ItemGunBaseNT.getAnimTimer(stack, ctx.configIndex);
-
+        if(type == HbmAnimationsSedna.GunAnimation.CYCLE && stack.getItem() == ModItems.gun_n_i_4_n_i) {
+            if(timer == 0) PacketDispatcher.wrapper.sendToAllAround(new MuzzleFlashPacket(entity), new NetworkRegistry.TargetPoint(entity.world.provider.getDimension(), entity.posX, entity.posY, entity.posZ, 100));
+        }
         if(type == HbmAnimationsSedna.GunAnimation.RELOAD) {
             if(timer == 0) entity.world.playSound(null, entity.getPosition(), HBMSoundHandler.coilgunReload, SoundCategory.PLAYERS, 1F, 1F);
         }
@@ -1531,7 +1535,7 @@ public class Orchestras {
             if(speed > 0) {
                 //start sound
                 if(runningAudio == null || !runningAudio.isPlaying()) {
-                    boolean electric = WeaponModManager.hasUpgrade(stack, ctx.configIndex, WeaponModManager.ID_ENGINE_ELECTRIC);
+                    boolean electric = XWeaponModManager.hasUpgrade(stack, ctx.configIndex, XWeaponModManager.ID_ENGINE_ELECTRIC);
                     SoundEvent sound = electric ? HBMSoundHandler.largeTurbineRunning : HBMSoundHandler.engine;
                     AudioWrapper audio = MainRegistry.proxy.getLoopedSound(
                             sound, SoundCategory.BLOCKS,

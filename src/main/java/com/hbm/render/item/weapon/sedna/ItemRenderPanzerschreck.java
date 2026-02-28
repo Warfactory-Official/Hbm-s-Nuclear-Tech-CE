@@ -2,7 +2,7 @@ package com.hbm.render.item.weapon.sedna;
 
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
-import com.hbm.items.weapon.sedna.mods.WeaponModManager;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.anim.sedna.HbmAnimationsSedna;
 import net.minecraft.client.Minecraft;
@@ -112,7 +112,7 @@ public class ItemRenderPanzerschreck extends ItemRenderWeaponBase {
 	}
 
 	public boolean hasShield(ItemStack stack) {
-		return !WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_NO_SHIELD);
+		return !XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_NO_SHIELD);
 	}
 }
 

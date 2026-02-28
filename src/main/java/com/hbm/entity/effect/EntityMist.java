@@ -51,7 +51,7 @@ public class EntityMist extends Entity {
 
     public EntityMist(World world) {
         super(world);
-        this.noClip = true;
+        noClip = true;
     }
 
     public static SprayStyle getStyleFromType(FluidType type) {
@@ -72,73 +72,73 @@ public class EntityMist extends Entity {
     }
 
     public EntityMist setArea(float width, float height) {
-        this.dataManager.set(WIDTH, width);
-        this.dataManager.set(HEIGHT, height);
+        dataManager.set(WIDTH, width);
+        dataManager.set(HEIGHT, height);
         return this;
     }
 
     public EntityMist setDuration(int duration) {
-        this.maxAge = duration;
+        maxAge = duration;
         return this;
     }
 
     @Override
     protected void entityInit() {
-        this.dataManager.register(TYPE, Integer.valueOf(0));
-        this.dataManager.register(WIDTH, Float.valueOf(0));
-        this.dataManager.register(HEIGHT, Float.valueOf(0));
+        dataManager.register(TYPE, Integer.valueOf(0));
+        dataManager.register(WIDTH, Float.valueOf(0));
+        dataManager.register(HEIGHT, Float.valueOf(0));
     }
 
     public FluidType getType() {
-        return Fluids.fromID(this.dataManager.get(TYPE));
+        return Fluids.fromID(dataManager.get(TYPE));
     }
 
     public EntityMist setType(FluidType fluid) {
-        this.dataManager.set(TYPE, fluid.getID());
+        dataManager.set(TYPE, fluid.getID());
         return this;
     }
 
     @Override
     public void onEntityUpdate() {
 
-        float height = this.dataManager.get(HEIGHT);
-        float width = this.dataManager.get(WIDTH);
+        float height = dataManager.get(HEIGHT);
+        float width = dataManager.get(WIDTH);
 
-        this.setSize(-width, height);
-        this.setPosition(this.posX, this.posY, this.posZ);
+        setSize(-width, height);
+        setPosition(posX, posY, posZ);
 
         if (!world.isRemote) {
 
-            if (this.ticksExisted >= this.getMaxAge()) {
-                this.setDead();
+            if (ticksExisted >= getMaxAge()) {
+                setDead();
             }
 
-            FluidType type = this.getType();
+            FluidType type = getType();
 
             if (type.hasTrait(FT_VentRadiation.class)) {
                 FT_VentRadiation trait = type.getTrait(FT_VentRadiation.class);
-                ChunkRadiationManager.proxy.incrementRad(world, this.getPosition(), trait.getRadPerMB() * 2);
+                ChunkRadiationManager.proxy.incrementRad(world, getPosition(), trait.getRadPerMB() * 2);
             }
 
-            double intensity = 1D - (double) this.ticksExisted / (double) this.getMaxAge();
+            double intensity = 1D - (double) ticksExisted / (double) getMaxAge();
 
-            if (type.hasTrait(FT_Flammable.class) && this.isBurning()) {
+            if (type.hasTrait(FT_Flammable.class) && isBurning()) {
                 world.createExplosion(this, posX, posY + height / 2, posZ, (float) intensity * 15F, true);
-                this.setDead();
+                setDead();
                 return;
             }
 
-            AxisAlignedBB aabb = this.getEntityBoundingBox();
-            List<Entity> affected = world.getEntitiesWithinAABBExcludingEntity(this, aabb); //It has no offset now
+            AxisAlignedBB aabb = getEntityBoundingBox();
+            List<Entity> affected = world.getEntitiesInAABBexcluding(this, aabb, e -> !(e instanceof EntityPlayer p && (p.isSpectator() || p.isCreative()))); //It has no offset now
 
             for (Entity e : affected) {
                 if (!(e instanceof EntityMist))
-                    this.affect(e, intensity);
+                    affect(e, intensity);
             }
         } else {
 
             for (int i = 0; i < 2; i++) {
-                AxisAlignedBB boundingBox = this.getEntityBoundingBox();
+                AxisAlignedBB boundingBox = getEntityBoundingBox();
                 double x = boundingBox.minX + rand.nextDouble() * (boundingBox.maxX - boundingBox.minX);
                 double y = boundingBox.minY + rand.nextDouble() * (boundingBox.maxY - boundingBox.minY);
                 double z = boundingBox.minZ + rand.nextDouble() * (boundingBox.maxZ - boundingBox.minZ);
@@ -150,7 +150,7 @@ public class EntityMist extends Entity {
                 fx.setFloat("base", 0.75F);
                 fx.setFloat("max", 2F);
                 fx.setInteger("life", 50 + world.rand.nextInt(10));
-                fx.setInteger("color", this.getType().getColor());
+                fx.setInteger("color", getType().getColor());
                 fx.setDouble("posX", x);
                 fx.setDouble("posY", y);
                 fx.setDouble("posZ", z);
@@ -162,7 +162,7 @@ public class EntityMist extends Entity {
     /* can't reuse EntityChemical here, while similar or identical in some places, the actual effects are often different */
     protected void affect(Entity entity, double intensity) {
 
-        FluidType type = this.getType();
+        FluidType type = getType();
         EntityLivingBase living = entity instanceof EntityLivingBase ? (EntityLivingBase) entity : null;
 
         if (type.temperature >= 100) {
@@ -192,7 +192,7 @@ public class EntityMist extends Entity {
             }
         }
 
-        if (this.isExtinguishing(type)) {
+        if (isExtinguishing(type)) {
             entity.extinguish();
         }
 
@@ -256,7 +256,7 @@ public class EntityMist extends Entity {
     }
 
     protected boolean isExtinguishing(FluidType type) {
-        return this.getType().temperature < 50 && !type.hasTrait(FT_Flammable.class);
+        return getType().temperature < 50 && !type.hasTrait(FT_Flammable.class);
     }
 
     public int getMaxAge() {
@@ -265,15 +265,15 @@ public class EntityMist extends Entity {
 
     @Override
     protected void readEntityFromNBT(NBTTagCompound nbt) {
-        this.setType(Fluids.fromID(nbt.getInteger("type")));
-        this.setArea(nbt.getFloat("width"), nbt.getFloat("height"));
+        setType(Fluids.fromID(nbt.getInteger("type")));
+        setArea(nbt.getFloat("width"), nbt.getFloat("height"));
     }
 
     @Override
     protected void writeEntityToNBT(NBTTagCompound nbt) {
-        nbt.setInteger("type", this.getType().getID());
-        nbt.setFloat("width", this.dataManager.get(WIDTH));
-        nbt.setFloat("height", this.dataManager.get(HEIGHT));
+        nbt.setInteger("type", getType().getID());
+        nbt.setFloat("width", dataManager.get(WIDTH));
+        nbt.setFloat("height", dataManager.get(HEIGHT));
     }
 
     @Override
@@ -292,16 +292,16 @@ public class EntityMist extends Entity {
 
     @Override
     public void setPosition(double x, double y, double z) {
-        if (this.ticksExisted == 0) super.setPosition(x, y, z); //honest to fucking god mojang suck my fucking nuts
+        if (ticksExisted == 0) super.setPosition(x, y, z); //honest to fucking god mojang suck my fucking nuts
     }
 
     //terribly copy-pasted from EntityChemical.class, whose method was terribly copy-pasted from EntityEnderman.class
     //the fun never ends
     public void teleportRandomly(Entity e) {
-        double x = this.posX + (this.rand.nextDouble() - 0.5D) * 64.0D;
-        double y = this.posY + (double) (this.rand.nextInt(64) - 32);
-        double z = this.posZ + (this.rand.nextDouble() - 0.5D) * 64.0D;
-        this.teleportTo(e, x, y, z);
+        double x = posX + (rand.nextDouble() - 0.5D) * 64.0D;
+        double y = posY + (double) (rand.nextInt(64) - 32);
+        double z = posZ + (rand.nextDouble() - 0.5D) * 64.0D;
+        teleportTo(e, x, y, z);
     }
 
     public void teleportTo(Entity entity, double x, double y, double z) {
@@ -346,12 +346,12 @@ public class EntityMist extends Entity {
 
             for (int l = 0; l < short1; ++l) {
                 double d6 = (double) l / ((double) short1 - 1.0D);
-                float f = (this.rand.nextFloat() - 0.5F) * 0.2F;
-                float f1 = (this.rand.nextFloat() - 0.5F) * 0.2F;
-                float f2 = (this.rand.nextFloat() - 0.5F) * 0.2F;
-                double d7 = targetX + (entity.posX - targetX) * d6 + (this.rand.nextDouble() - 0.5D) * (double) entity.width * 2.0D;
-                double d8 = targetY + (entity.posY - targetY) * d6 + this.rand.nextDouble() * (double) entity.height;
-                double d9 = targetZ + (entity.posZ - targetZ) * d6 + (this.rand.nextDouble() - 0.5D) * (double) entity.width * 2.0D;
+                float f = (rand.nextFloat() - 0.5F) * 0.2F;
+                float f1 = (rand.nextFloat() - 0.5F) * 0.2F;
+                float f2 = (rand.nextFloat() - 0.5F) * 0.2F;
+                double d7 = targetX + (entity.posX - targetX) * d6 + (rand.nextDouble() - 0.5D) * (double) entity.width * 2.0D;
+                double d8 = targetY + (entity.posY - targetY) * d6 + rand.nextDouble() * (double) entity.height;
+                double d9 = targetZ + (entity.posZ - targetZ) * d6 + (rand.nextDouble() - 0.5D) * (double) entity.width * 2.0D;
                 entity.world.spawnParticle(EnumParticleTypes.PORTAL, d7, d8, d9, f, f1, f2);
             }
 

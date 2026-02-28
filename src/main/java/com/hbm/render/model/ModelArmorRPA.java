@@ -101,8 +101,8 @@ public class ModelArmorRPA extends ModelArmorBase {
             }
         }
 
-        GL11.glShadeModel(GL11.GL_FLAT);
-        GL11.glPopMatrix();
+        GlStateManager.shadeModel(GL11.GL_FLAT);
+        GlStateManager.popMatrix();
     }
 
     @Override

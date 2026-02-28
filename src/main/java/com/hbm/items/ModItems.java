@@ -1915,6 +1915,7 @@ public class ModItems {
     public static Item gun_double_barrel;
     public static Item gun_double_barrel_sacred_dragon;
 
+    public static Item gun_n_i_4_n_i;
     public static Item gun_charge_thrower;
     public static Item gun_drill;
     public static Item gun_fireext;
@@ -2768,6 +2769,7 @@ public class ModItems {
     public static final Item ln2_9 = new EffectItem("ln2_9").setCreativeTab(null);
     public static final Item ln2_10 = new EffectItem("ln2_10").setCreativeTab(null);
     public static final Item nothing = new EffectItem("nothing").setCreativeTab(null);
+    public static final Item broken_item = new BrokenItem("broken_item").setCreativeTab(null);
     public static final Item ducc = new ItemBase("ducc").setCreativeTab(MainRegistry.controlTab);
     public static final Item discharge = new EffectItem("discharge").setCreativeTab(null);
     public static final Item undefined = new ItemCustomLore("undefined").setCreativeTab(MainRegistry.partsTab);
