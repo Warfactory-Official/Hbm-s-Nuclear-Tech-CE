@@ -123,6 +123,7 @@ public class Library {
     public static final ForgeDirection NEG_Z = ForgeDirection.NORTH;
 
     public static final IBlockState AIR_DEFAULT_STATE = Blocks.AIR.getDefaultState();
+    public static final AxisAlignedBB EMPTY_AABB = new AxisAlignedBB(0, 0, 0, 0, 0, 0);
 
     public static final int[] powersOfTen = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000};
 

@@ -9,6 +9,7 @@ import com.hbm.interfaces.IKeypadHandler;
 import com.hbm.interfaces.IRadResistantBlock;
 import com.hbm.items.tool.ItemTooling;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.TileEntitySlidingBlastDoorKeypad;
 import com.hbm.tileentity.machine.TileEntitySlidingBlastDoor;
 import com.hbm.util.I18nUtil;
@@ -153,13 +154,13 @@ public class BlockSlidingBlastDoor extends BlockDummyable implements IRadResista
 			return FULL_BLOCK_AABB;
 		if(hasExtra(meta)) {
 			if(source.getBlockState(pos.up()).getBlock() == this) {
-				return new AxisAlignedBB(0, 0, 0, 0, 0, 0);
+				return Library.EMPTY_AABB;
 			}
 			return new AxisAlignedBB(0, 0.5, 0, 1, 1, 1);
 		}
 		TileEntity te = source.getTileEntity(pos);
 		if(te instanceof TileEntitySlidingBlastDoor && !((TileEntitySlidingBlastDoor) te).shouldUseBB) {
-			return new AxisAlignedBB(0, 0, 0, 0, 0, 0);
+			return Library.EMPTY_AABB;
 		}
 		return FULL_BLOCK_AABB;
 	}
