@@ -5,6 +5,8 @@ import com.hbm.config.RadiationConfig;
 import com.hbm.entity.mob.glyphid.EntityGlyphidDigger;
 import com.hbm.entity.mob.glyphid.EntityGlyphidScout;
 import com.hbm.render.amlfrom1710.Vec3;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -48,16 +50,15 @@ public class PollutionHandler {
     /// UTILITY METHODS ///
     ///////////////////////
     public static void incrementPollution(World world, BlockPos pos, PollutionType type, float amount) {
-
-        if(!RadiationConfig.enablePollution || pos == null) return; //FIXME: This is a temporary fix for a crash, pos should never be null
+        if(!RadiationConfig.enablePollution || pos == null) return;
 
         PollutionPerWorld ppw = perWorld.get(world);
         if(ppw == null) return;
-        ChunkPos chPos = new ChunkPos(pos.getX() >> 6, pos.getZ() >> 6);
-        PollutionData data = ppw.pollution.get(chPos);
+        long chLong = ChunkPos.asLong(pos.getX() >> 6, pos.getZ() >> 6);
+        PollutionData data = ppw.pollution.get(chLong);
         if(data == null) {
             data = new PollutionData();
-            ppw.pollution.put(chPos, data);
+            ppw.pollution.put(chLong, data);
         }
         data.pollution[type.ordinal()] = MathHelper.clamp((float) (data.pollution[type.ordinal()] + amount * MobConfig.pollutionMult), 0F, 10_000F);
     }
@@ -67,41 +68,37 @@ public class PollutionHandler {
     }
 
     public static void setPollution(World world, BlockPos pos, PollutionType type, float amount) {
-
         if(!RadiationConfig.enablePollution) return;
 
         PollutionPerWorld ppw = perWorld.get(world);
         if(ppw == null) return;
-        ChunkPos chPos = new ChunkPos(pos.getX() >> 6, pos.getZ() >> 6);
-        PollutionData data = ppw.pollution.get(chPos);
+        long chLong = ChunkPos.asLong(pos.getX() >> 6, pos.getZ() >> 6);
+        PollutionData data = ppw.pollution.get(chLong);
         if(data == null) {
             data = new PollutionData();
-            ppw.pollution.put(chPos, data);
+            ppw.pollution.put(chLong, data);
         }
         data.pollution[type.ordinal()] = amount;
     }
 
     public static float getPollution(World world, BlockPos pos, PollutionType type) {
-
         if(!RadiationConfig.enablePollution) return 0;
 
         PollutionPerWorld ppw = perWorld.get(world);
         if(ppw == null) return 0F;
-        ChunkPos chPos = new ChunkPos(pos.getX() >> 6, pos.getZ() >> 6);
-        PollutionData data = ppw.pollution.get(chPos);
+        long chLong = ChunkPos.asLong(pos.getX() >> 6, pos.getZ() >> 6);
+        PollutionData data = ppw.pollution.get(chLong);
         if(data == null) return 0F;
         return data.pollution[type.ordinal()];
     }
 
     public static PollutionData getPollutionData(World world, BlockPos pos) {
-
         if(!RadiationConfig.enablePollution) return null;
 
         PollutionPerWorld ppw = perWorld.get(world);
         if(ppw == null) return null;
-        ChunkPos chPos = new ChunkPos(pos.getX() >> 6, pos.getZ() >> 6);
-        PollutionData data = ppw.pollution.get(chPos);
-        return data;
+        long chLong = ChunkPos.asLong(pos.getX() >> 6, pos.getZ() >> 6);
+        return ppw.pollution.get(chLong);
     }
 
     //////////////////////
@@ -180,28 +177,33 @@ public class PollutionHandler {
 
         if(event.side == Side.SERVER && event.phase == TickEvent.Phase.END) {
 
-            handleWorldDestruction();
-
             eggTimer++;
             if(eggTimer < 60) return;
             eggTimer = 0;
 
-            for(Map.Entry<World, PollutionPerWorld> entry : perWorld.entrySet()) {
-                HashMap<ChunkPos, PollutionData> newPollution = new HashMap();
+            handleWorldDestruction();
 
-                for(Map.Entry<ChunkPos, PollutionData> chunk : entry.getValue().pollution.entrySet()) {
-                    int x = chunk.getKey().x;
-                    int z = chunk.getKey().z;
+            int typeCount = PollutionType.VALUES.length;
+            int S = PollutionType.SOOT.ordinal();
+            int H = PollutionType.HEAVYMETAL.ordinal();
+            int P = PollutionType.POISON.ordinal();
+
+            for(Map.Entry<World, PollutionPerWorld> entry : perWorld.entrySet()) {
+                Long2ObjectOpenHashMap<PollutionData> newPollution = new Long2ObjectOpenHashMap<>();
+                Long2ObjectOpenHashMap<PollutionData> currentPollution = entry.getValue().pollution;
+
+                for(Long2ObjectMap.Entry<PollutionData> chunk : currentPollution.long2ObjectEntrySet()) {
+                    long key = chunk.getLongKey();
+                    int x = (int)(key >> 32);
+                    int z = (int)key;
                     PollutionData data = chunk.getValue();
 
-                    float[] pollutionForNeightbors = new float[PollutionType.VALUES.length];
-                    int S = PollutionType.SOOT.ordinal();
-                    int H = PollutionType.HEAVYMETAL.ordinal();
-                    int P = PollutionType.POISON.ordinal();
+                    float sToNeighbors = 0;
+                    float pToNeighbors = 0;
 
                     /* CALCULATION */
                     if(data.pollution[S] > 10) {
-                        pollutionForNeightbors[S] = (float) (data.pollution[S] * 0.05F);
+                        sToNeighbors = data.pollution[S] * 0.05F;
                         data.pollution[S] *= 0.8F;
                     }
 
@@ -209,42 +211,42 @@ public class PollutionHandler {
                     data.pollution[H] *= 0.9995F;
 
                     if(data.pollution[P] > 10) {
-                        pollutionForNeightbors[P] = data.pollution[P] * 0.025F;
+                        pToNeighbors = data.pollution[P] * 0.025F;
                         data.pollution[P] *= 0.9F;
                     } else {
                         data.pollution[P] *= 0.995F;
                     }
 
                     /* SPREADING */
-                    //apply new data to self
-                    PollutionData newData = newPollution.get(chunk.getKey());
-                    if(newData == null) newData = new PollutionData();
-
-                    boolean shouldPut = false;
-                    for(int i = 0; i < newData.pollution.length; i++) {
-                        newData.pollution[i] += data.pollution[i];
-                        if(newData.pollution[i] > 0) shouldPut = true;
+                    PollutionData newDataSelf = newPollution.get(key);
+                    if(newDataSelf == null) {
+                        newDataSelf = new PollutionData();
+                        newPollution.put(key, newDataSelf);
                     }
-                    if(shouldPut) newPollution.put(chunk.getKey(), newData);
+                    for(int i = 0; i < typeCount; i++) {
+                        newDataSelf.pollution[i] += data.pollution[i];
+                    }
 
-                    //apply neighbor data to neighboring chunks
-                    int[][] offsets = new int[][] {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-                    for(int[] offset : offsets) {
-                        ChunkPos offPos = new ChunkPos(x + offset[0], z + offset[1]);
-                        PollutionData offsetData = newPollution.get(offPos);
-                        if(offsetData == null) offsetData = new PollutionData();
+                    if(sToNeighbors > 0 || pToNeighbors > 0) {
+                        for(int ox = -1; ox <= 1; ox++) {
+                            for(int oz = -1; oz <= 1; oz++) {
+                                if(ox == 0 && oz == 0) continue;
+                                if(ox != 0 && oz != 0) continue;
 
-                        shouldPut = false;
-                        for(int i = 0; i < offsetData.pollution.length; i++) {
-                            offsetData.pollution[i] += pollutionForNeightbors[i];
-                            if(offsetData.pollution[i] > 0) shouldPut = true;
+                                long offKey = ChunkPos.asLong(x + ox, z + oz);
+                                PollutionData offsetData = newPollution.get(offKey);
+                                if(offsetData == null) {
+                                    offsetData = new PollutionData();
+                                    newPollution.put(offKey, offsetData);
+                                }
+                                offsetData.pollution[S] += sToNeighbors;
+                                offsetData.pollution[P] += pToNeighbors;
+                            }
                         }
-                        if(shouldPut) newPollution.put(offPos, offsetData);
                     }
                 }
 
-                entry.getValue().pollution.clear();
-                entry.getValue().pollution.putAll(newPollution);
+                entry.getValue().pollution = newPollution;
             }
         }
     }
@@ -253,32 +255,33 @@ public class PollutionHandler {
     protected static final int DESTRUCTION_COUNT = 5;
 
     protected static void handleWorldDestruction() {
+        int P = PollutionType.POISON.ordinal();
 
         for(Map.Entry<World, PollutionPerWorld> entry : perWorld.entrySet()) {
-
             World world = entry.getKey();
             WorldServer serv = (WorldServer) world;
             ChunkProviderServer provider = (ChunkProviderServer) serv.getChunkProvider();
 
-            for(Map.Entry<ChunkPos, PollutionData> pollution : entry.getValue().pollution.entrySet()) {
-
-                float poison = pollution.getValue().pollution[PollutionType.POISON.ordinal()];
+            for(Long2ObjectMap.Entry<PollutionData> pollution : entry.getValue().pollution.long2ObjectEntrySet()) {
+                float poison = pollution.getValue().pollution[P];
                 if(poison < DESTRUCTION_THRESHOLD) continue;
 
-                ChunkPos entryPos = pollution.getKey();
+                long key = pollution.getLongKey();
+                int xCoord = (int)(key >> 32);
+                int zCoord = (int)key;
 
                 for(int i = 0; i < DESTRUCTION_COUNT; i++) {
-                    int x = (entryPos.x << 6) + world.rand.nextInt(64);
-                    int z = (entryPos.z << 6) + world.rand.nextInt(64);
+                    int x = (xCoord << 6) + world.rand.nextInt(64);
+                    int z = (zCoord << 6) + world.rand.nextInt(64);
 
                     if(provider.chunkExists(x >> 4, z >> 4)) {
-                        int y = world.getHeight(x, z) - world.rand.nextInt(3) + 1;
+                        int y = world.getHeight(x, z) - 1;
                         BlockPos bPos = new BlockPos(x, y, z);
                         IBlockState state = world.getBlockState(bPos);
                         Block b = state.getBlock();
 
                         if(b == Blocks.GRASS || (b == Blocks.DIRT && b.getMetaFromState(state) == 0)) {
-                            world.setBlockState(bPos, Blocks.DIRT.getDefaultState(), 3);
+                            world.setBlockState(bPos, Blocks.DIRT.getDefaultState(), 2);
                         } else if(b == Blocks.TALLGRASS || b.getMaterial(state) == Material.LEAVES || b.getMaterial(state) == Material.PLANTS) {
                             world.setBlockToAir(bPos);
                         }
@@ -292,38 +295,35 @@ public class PollutionHandler {
     /// DATA STRUCTURE ///
     //////////////////////
     public static class PollutionPerWorld {
-        public HashMap<ChunkPos, PollutionData> pollution = new HashMap();
+        public Long2ObjectOpenHashMap<PollutionData> pollution = new Long2ObjectOpenHashMap<>();
 
         public PollutionPerWorld() { }
 
         public PollutionPerWorld(NBTTagCompound data) {
-
             NBTTagList list = data.getTagList("entries", 10);
 
             for(int i = 0; i < list.tagCount(); i++) {
                 NBTTagCompound nbt = list.getCompoundTagAt(i);
                 int chunkX = nbt.getInteger("chunkX");
                 int chunkZ = nbt.getInteger("chunkZ");
-                pollution.put(new ChunkPos(chunkX, chunkZ), PollutionData.fromNBT(nbt));
+                pollution.put(ChunkPos.asLong(chunkX, chunkZ), PollutionData.fromNBT(nbt));
             }
         }
 
         public NBTTagCompound writeToNBT() {
-
             NBTTagCompound data = new NBTTagCompound();
-
             NBTTagList list = new NBTTagList();
 
-            for(Map.Entry<ChunkPos, PollutionData> entry : pollution.entrySet()) {
+            for(Long2ObjectMap.Entry<PollutionData> entry : pollution.long2ObjectEntrySet()) {
                 NBTTagCompound nbt = new NBTTagCompound();
-                nbt.setInteger("chunkX", entry.getKey().x);
-                nbt.setInteger("chunkZ", entry.getKey().z);
+                long key = entry.getLongKey();
+                nbt.setInteger("chunkX", (int)(key >> 32));
+                nbt.setInteger("chunkZ", (int)key);
                 entry.getValue().toNBT(nbt);
                 list.appendTag(nbt);
             }
 
             data.setTag("entries", list);
-
             return data;
         }
     }
