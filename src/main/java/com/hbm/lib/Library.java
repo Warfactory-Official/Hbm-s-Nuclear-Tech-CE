@@ -592,14 +592,12 @@ public class Library {
                     Chunk chunk = prov.getLoadedChunk(scx, scz);
                     if (chunk == null) continue;
 
-                    ClassInheritanceMultiMap<Entity>[] lists = chunk.entityLists;
+                    ClassInheritanceMultiMap<Entity>[] lists = chunk.getEntityLists();
                     for (int sec = minSec; sec <= maxSec; sec++) {
                         ClassInheritanceMultiMap<Entity> map = lists[sec];
                         if (map.isEmpty()) continue;
 
-                        List<Entity> values = map.values;
-                        for (int i = 0, n = values.size(); i < n; i++) {
-                            Entity ent = values.get(i);
+                        for (Entity ent : map) {
                             if (ent == player) continue;
                             if (!(ent instanceof EntityLiving)) continue;
                             if (!ent.isEntityAlive()) continue;
@@ -1754,16 +1752,12 @@ public class Library {
                         continue;
                     }
 
-                    ClassInheritanceMultiMap<Entity>[] lists = chunk.entityLists;
-
+                    ClassInheritanceMultiMap<Entity>[] lists = chunk.getEntityLists();
                     for (int sec = minSec; sec <= maxSec; sec++) {
                         ClassInheritanceMultiMap<Entity> map = lists[sec];
                         if (map.isEmpty()) continue;
 
-                        List<Entity> values = map.values;
-                        //noinspection ForLoopReplaceableByForEach
-                        for (int i = 0, n = values.size(); i < n; i++) {
-                            Entity e = values.get(i);
+                        for (Entity e : map) {
                             if (e == exclude) continue;
                             if (e instanceof EntityPlayer p && p.isSpectator()) continue;
                             if (hasFilter && !extraFilter.test(e)) continue;
