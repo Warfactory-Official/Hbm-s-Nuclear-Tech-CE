@@ -1,5 +1,8 @@
 package com.hbm.handler.neutron;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -8,12 +11,11 @@ import java.util.HashMap;
 import java.util.List;
 
 public class NeutronNodeWorld {
-    // List of all stream worlds.
     public static HashMap<World, StreamWorld> streamWorlds = new HashMap<>();
 
     public static NeutronNode getNode(World world, BlockPos pos) {
         StreamWorld streamWorld = streamWorlds.get(world);
-        return streamWorld != null ? streamWorld.nodeCache.get(pos) : null;
+        return streamWorld != null ? streamWorld.nodeCache.get(pos.toLong()) : null;
     }
 
     public static void removeNode(World world, BlockPos pos) {
@@ -31,24 +33,16 @@ public class NeutronNodeWorld {
         return streamWorld;
     }
 
-    public static void removeAllWorlds() {
-        streamWorlds.clear();
-    }
-
     public static void removeEmptyWorlds() {
-        streamWorlds.values().removeIf((streamWorld) -> {
-            return streamWorld.streams.isEmpty();
-        });
+        streamWorlds.values().removeIf((streamWorld) -> streamWorld.streams.isEmpty());
     }
 
     public static class StreamWorld {
 
-        private List<NeutronStream> streams;
-        private HashMap<BlockPos, NeutronNode> nodeCache = new HashMap<>();
+        public List<NeutronStream> streams = new ArrayList<>();
+        public Long2ObjectOpenHashMap<NeutronNode> nodeCache = new Long2ObjectOpenHashMap<>();
 
-        public StreamWorld() {
-            streams = new ArrayList<>();
-        }
+        public StreamWorld() { }
 
         public void runStreamInteractions(World world) {
             for(NeutronStream stream : streams) {
@@ -65,35 +59,34 @@ public class NeutronNodeWorld {
         }
 
         public void cleanNodes() {
-            List<BlockPos> toRemove = new ArrayList<>();
-            for(NeutronNode cachedNode : nodeCache.values()) {
+            List<Long> toRemove = new ArrayList<>();
+            for(Long2ObjectMap.Entry<NeutronNode> entry : nodeCache.long2ObjectEntrySet()) {
+                NeutronNode cachedNode = entry.getValue();
                 if(cachedNode.type == NeutronStream.NeutronType.RBMK) {
                     RBMKNeutronHandler.RBMKNeutronNode node = (RBMKNeutronHandler.RBMKNeutronNode) cachedNode;
-                    toRemove.addAll(node.checkNode(this));
+                    node.checkNode(this, toRemove);
                 }
-				/* TODO: actually do this and uncache pile nodes
-				if(cachedNode.type == NeutronStream.NeutronType.PILE) {
-					PileNeutronNode node = (PileNeutronNode) cachedNode;
-					toRemove.addAll(node.checkNode());
-				}
-				*/
             }
 
-            for(BlockPos pos : toRemove) {
+            for(long pos : toRemove) {
                 nodeCache.remove(pos);
             }
         }
 
         public NeutronNode getNode(BlockPos pos) {
-            return nodeCache.get(pos);
+            return nodeCache.get(pos.toLong());
+        }
+
+        public NeutronNode getNode(long posLong) {
+            return nodeCache.get(posLong);
         }
 
         public void addNode(NeutronNode node) {
-            nodeCache.put(node.pos, node);
+            nodeCache.put(node.pos.toLong(), node);
         }
 
         public void removeNode(BlockPos pos) {
-            nodeCache.remove(pos);
+            nodeCache.remove(pos.toLong());
         }
 
         public void removeAllStreamsOfType(NeutronStream.NeutronType type) {
