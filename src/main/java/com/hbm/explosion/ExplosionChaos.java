@@ -54,11 +54,6 @@ public class ExplosionChaos {
 		{-1, -1, -1}, { 1,  1, -1}
 	};
 
-	/**
-	 * Optimized iteration inside a sphere. 
-	 * Note: uses (radius² / 2) as calculation base to match original mod behavior, 
-	 * although it results in a smaller volume than a full Euclidean sphere.
-	 */
 	private static void forEachBlockInSphere(World world, Entity detonator, int x, int y, int z, int radius, Consumer<BlockPos.MutableBlockPos> action) {
 		BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 		int radiusSqHalf = (radius * radius) / 2;
@@ -106,7 +101,7 @@ public class ExplosionChaos {
 		world.setBlockToAir(pos);
 	}
 
-	/** Spawns a series of explosions in all 8 octants around the center. */
+
 	public static void spawnExplosion(World world, Entity detonator, int x, int y, int z, int bound) {
 		if (!CompatibilityConfig.isWarDim(world)) return;
 
@@ -432,10 +427,10 @@ public class ExplosionChaos {
 
 	public static void plasma(World world, int x, int y, int z, int radius) {
 		if (!CompatibilityConfig.isWarDim(world)) return;
-		int threshold = Math.max(1, (radius * radius) / 4);
+		int radiusSqHalf = (radius * radius) / 2;
 
 		forEachBlockInSphere(world, null, x, y, z, radius, pos -> {
-			if (world.rand.nextInt(threshold) > 0) return;
+			if (world.rand.nextInt(radiusSqHalf / 2) > 0) return;
 			IBlockState state = world.getBlockState(pos);
 			Block block = state.getBlock();
 			if (block.getExplosionResistance(null) > 0.1F) return;
@@ -647,21 +642,14 @@ public class ExplosionChaos {
 	}
 
 
-	/**
-	 * Returns all entities inside an AABB bounding the given sphere radius.
-	 * We intentionally over-approximate with the AABB and then check the exact
-	 * squared distance in each caller — avoids repeated AABB construction.
-	 */
+
 	private static List<Entity> getEntitiesInRadius(World world, int x, int y, int z, double radius) {
 		return world.getEntitiesWithinAABBExcludingEntity(null,
 				new AxisAlignedBB(x - radius, y - radius, z - radius,
 						x + radius, y + radius, z + radius));
 	}
 
-	/**
-	 * Squared distance from an entity's eye position to a point.
-	 * Avoids {@link Math#sqrt} compared to {@link Entity#getDistance}.
-	 */
+
 	private static double distanceSq(Entity entity, double x, double y, double z) {
 		double dx = entity.posX - x;
 		double dy = entity.posY + entity.getEyeHeight() - y;

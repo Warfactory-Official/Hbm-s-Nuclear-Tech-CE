@@ -43,10 +43,7 @@ public class RBMKNeutronHandler {
     }
 
     public static class RBMKNeutronNode extends NeutronNode {
-        /**
-         * Replaced generic data map with direct fields to avoid 
-         * map overhead and unnecessary object allocations.
-         */
+
         public boolean hasLid;
         public RBMKType rbmkType;
         protected BlockPos.MutableBlockPos posInstance;
@@ -62,7 +59,7 @@ public class RBMKNeutronHandler {
         public void removeLid() { this.hasLid = false; }
 
 
-        /** Checks if this node should be removed from the cache. */
+
         public void checkNode(StreamWorld streamWorld, List<Long> toRemove) {
             BlockPos pos = this.tile.getPos();
             ForgeDirection[] fluxDirs = TileEntityRBMKRod.fluxDirs;

@@ -194,10 +194,7 @@ public class PollutionHandler {
                 Long2ObjectOpenHashMap<PollutionData> newPollution = new Long2ObjectOpenHashMap<>();
                 Long2ObjectOpenHashMap<PollutionData> currentPollution = entry.getValue().pollution;
 
-                /** 
-                 * Using fastIterator to skip Map.Entry object allocations 
-                 * during the heavy tick update.
-                 */
+
                 ObjectIterator<Long2ObjectMap.Entry<PollutionData>> it = currentPollution.long2ObjectEntrySet().fastIterator();
                 while(it.hasNext()) {
                     Long2ObjectMap.Entry<PollutionData> chunk = it.next();
@@ -289,8 +286,8 @@ public class PollutionHandler {
                 int zCoord = Library.getChunkPosZ(key);
 
                 for(int i = 0; i < DESTRUCTION_COUNT; i++) {
-                    int x = (xCoord << 6) + world.rand.nextInt(64);
-                    int z = (zCoord << 6) + world.rand.nextInt(64);
+                    int x = (xCoord << 4) + world.rand.nextInt(16);
+                    int z = (zCoord << 4) + world.rand.nextInt(16);
 
                     if(provider.chunkExists(x >> 4, z >> 4)) {
                         int y = world.getHeight(x, z) - world.rand.nextInt(3) + 1;
@@ -313,10 +310,6 @@ public class PollutionHandler {
     /// DATA STRUCTURE ///
     //////////////////////
     public static class PollutionPerWorld {
-        /**
-         * Replaced HashMap<ChunkPos, PollutionData> with Long2ObjectOpenHashMap 
-         * using ChunkPos.asLong() for keys to zero out object churn.
-         */
         public Long2ObjectOpenHashMap<PollutionData> pollution = new Long2ObjectOpenHashMap<>();
 
         public PollutionPerWorld() { }

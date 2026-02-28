@@ -40,11 +40,7 @@ public class NeutronNodeWorld {
     public static class StreamWorld {
 
         public List<NeutronStream> streams = new ArrayList<>();
-        /**
-         * Cache for neutron nodes. 
-         * Replaced HashMap<BlockPos, NeutronNode> with Long2ObjectOpenHashMap 
-         * to eliminate BlockPos allocations and improve lookup speed.
-         */
+
         public Long2ObjectOpenHashMap<NeutronNode> nodeCache = new Long2ObjectOpenHashMap<>();
 
         public StreamWorld() { }
