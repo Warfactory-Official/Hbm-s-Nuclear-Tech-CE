@@ -126,6 +126,26 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
         }; // ho boy, a big fucking array of hand-written values, surely this isn't gonna bite me in the ass some day
     }
 
+    /// CONDITIONAL ACCESS ///
+    @Override public boolean canInsertItem(int slot, ItemStack stack, EnumFacing side, BlockPos accessorPos) { return this.canInsertItem(slot, stack); }
+    @Override public boolean canExtractItem(int slot, ItemStack stack, int amount, EnumFacing side, BlockPos accessorPos) { return this.canExtractItem(slot, stack, side.getIndex()); }
+
+    @Override public int[] getAccessibleSlotsFromSide(EnumFacing side, BlockPos accessorPos) {
+        DirPos[] io = getIOPos();
+        for(int i = 0; i < io.length; i++) {
+            if(io[i].compare(accessorPos.getX() + io[i].getDir().offsetX, accessorPos.getY(), accessorPos.getZ() + io[i].getDir().offsetZ)) {
+                return new int[] {
+                        5 + i * 14, 6 + i * 14, 7 + i * 14, 8 + i * 14,
+                        9 + i * 14, 10 + i * 14, 11 + i * 14, 12 + i * 14,
+                        13 + i * 14, 14 + i * 14, 15 + i * 14, 16 + i * 14,
+                        17, 31, 45, 59 // entering flavor town...
+                };
+            }
+        }
+        return this.getAccessibleSlotsFromSide(side);
+    }
+
+
     @Override
     public String getDefaultName() {
         return "container.machineAssemblyFactory";
@@ -396,7 +416,7 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
 
     @Override
     public void provideInfo(ItemMachineUpgrade.UpgradeType type, int level, List<String> info, boolean extendedInfo) {
-        info.add(IUpgradeInfoProvider.getStandardLabel(ModBlocks.machine_chemical_factory));
+        info.add(IUpgradeInfoProvider.getStandardLabel(ModBlocks.machine_assembly_factory));
         if(type == ItemMachineUpgrade.UpgradeType.SPEED) {
             info.add(TextFormatting.GREEN + I18nUtil.resolveKey(KEY_SPEED, "+" + (level * 100 / 3) + "%"));
             info.add(TextFormatting.RED + I18nUtil.resolveKey(KEY_CONSUMPTION, "+" + (level * 50) + "%"));
