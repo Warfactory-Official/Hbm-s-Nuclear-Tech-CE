@@ -24,6 +24,23 @@ public class MachineBigAssTank9000 extends BlockDummyable {
 	}
 
 	@Override
+	public boolean hasComparatorInputOverride(IBlockState state) {
+		return true;
+	}
+	@Override
+	public int getComparatorInputOverride(IBlockState blockState, World worldIn, BlockPos pos) {
+		TileEntity te = worldIn.getTileEntity(pos);
+		if (te instanceof TileEntityMachineBAT9000 bat) {
+			return bat.tankNew.getRedstoneComparatorPower();
+		}
+		TileEntity core = this.findCoreTE(worldIn, pos);
+		if (core instanceof TileEntityMachineBAT9000 bat) {
+			return bat.tankNew.getRedstoneComparatorPower();
+		}
+		return 0;
+	}
+
+	@Override
 	public TileEntity createNewTileEntity(World world, int meta) {
 		
 		if(meta >= 12) return new TileEntityMachineBAT9000();

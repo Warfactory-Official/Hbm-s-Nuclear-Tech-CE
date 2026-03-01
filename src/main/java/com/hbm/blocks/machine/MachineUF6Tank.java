@@ -37,6 +37,19 @@ public class MachineUF6Tank extends BlockContainer implements IMultiBlock {
 		
 		ModBlocks.ALL_BLOCKS.add(this);
 	}
+
+	@Override
+	public boolean hasComparatorInputOverride(IBlockState state) {
+		return true;
+	}
+	@Override
+	public int getComparatorInputOverride(IBlockState blockState, World worldIn, BlockPos pos) {
+		TileEntity te = worldIn.getTileEntity(pos);
+		if (te instanceof TileEntityMachineUF6Tank teTank) {
+			return teTank.tank.getRedstoneComparatorPower();
+		}
+		return 0;
+	}
 	
 	@Override
 	public EnumBlockRenderType getRenderType(IBlockState state) {
