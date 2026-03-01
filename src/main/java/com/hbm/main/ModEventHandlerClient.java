@@ -909,14 +909,8 @@ public class ModEventHandlerClient {
         }
     }
 
-    public boolean hasBauble(EntityPlayer player, Item bauble) {
-        try {
-            if (BaublesApi.isBaubleEquipped(player, bauble) != -1) {
-                return true;
-            }
-        } catch (Throwable t) {
-        }
-        return false;
+    public static boolean hasBauble(EntityPlayer player, Item bauble) {
+        return Compat.BAUBLES_LOADED && BaublesApi.isBaubleEquipped(player, bauble) != -1;
     }
 
     @SubscribeEvent

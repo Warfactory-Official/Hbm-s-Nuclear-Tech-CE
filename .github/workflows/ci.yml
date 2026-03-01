@@ -39,7 +39,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build with Gradle
-        run: ./gradlew build --no-daemon
+        run: ./gradlew build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -62,7 +62,7 @@ jobs:
 
           echo "stop" > run/server/stop.txt
           set +e
-          timeout 120s ./gradlew runServer --no-daemon --stacktrace < run/server/stop.txt 2>&1 | tee server.log
+          timeout 120s ./gradlew runServer --stacktrace < run/server/stop.txt 2>&1 | tee server.log
           code=${PIPESTATUS[0]}
           set -e
 
@@ -148,4 +148,4 @@ jobs:
           ARTIFACT_ID: ${{ vars.ARTIFACT_ID }}
           MAVEN_URL: https://repo.warfactory.co/snapshots
         run: |
-          ./gradlew publish --no-daemon --stacktrace
+          ./gradlew publish --stacktrace
