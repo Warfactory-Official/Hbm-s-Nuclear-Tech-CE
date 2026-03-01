@@ -1363,6 +1363,7 @@ if (customMavenPublishUrl) {
         String publishedVersion = modVersion
         String baseVersion = System.getenv('RELEASE_VERSION') ?: publishedVersion
         def java25DevJarTask = tasks.named(usesShadowedDependencies.toBoolean() ? "shadowJarJava25" : "jarJava25")
+        def java25ReobfJarTask = tasks.named("reobfJarJava25")
 
         publishing {
             publications {
@@ -1374,6 +1375,7 @@ if (customMavenPublishUrl) {
                         artifact apiJar
                     }
                     artifact(java25DevJarTask)
+                    artifact(java25ReobfJarTask)
 
                     // providers is not available here, use System for getting env vars
                     groupId = System.getenv('ARTIFACT_GROUP_ID') ?: project.mavenArtifactGroup
