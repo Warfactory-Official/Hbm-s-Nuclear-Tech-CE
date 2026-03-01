@@ -105,3 +105,52 @@ You can use one of the following methods:
     3. Clear downloaded JVMs `rm -rf /path/to/used/jvm`
        (path to used jvm can be found in /run/logs/latest.log like this `Java is OpenJDK 64-Bit Server VM, version 1.8.0_442, running on Mac OS X:x86_64:15.3.2, installed at /this/is/the/path`)
     4. Repeat quickstart.
+
+## Maven
+
+### Snapshots
+These represent the latest commit for a given version.
+
+```groovy
+repositories {
+    maven {
+        name "Warfactory Snapshots"
+        url "https://repo.warfactory.co/snapshots"
+    }
+}
+dependencies {
+    // Java 8, unobfuscated
+    implementation "com.hbm:ntm-ce:2.1.1.0-SNAPSHOT:dev"
+    // Java 25, unobfuscated
+    implementation "com.hbm:ntm-ce:2.1.1.0-SNAPSHOT:dev-java25"
+    // Java 8, obfuscated
+    implementation "com.hbm:ntm-ce:2.1.1.0-SNAPSHOT"
+    // Java 25, obfuscated
+    implementation "com.hbm:ntm-ce:2.1.1.0-SNAPSHOT:java25"
+}
+```
+
+### Releases
+These correspond to a CurseForge / Modrinth release.
+
+```groovy
+repositories {
+    maven {
+        name "Warfactory Releases"
+        url "https://repo.warfactory.co/releases"
+    }
+}
+dependencies {
+    // Java 8, unobfuscated
+    implementation "com.hbm:ntm-ce:2.1.1.0:dev"
+    // Java 25, unobfuscated
+    implementation "com.hbm:ntm-ce:2.1.1.0:dev-java25"
+    // Java 8, obfuscated
+    implementation "com.hbm:ntm-ce:2.1.1.0"
+    // Java 25, obfuscated
+    implementation "com.hbm:ntm-ce:2.1.1.0:java25"
+}
+```
+
+Normally you should use unobfuscated jars (`:dev` / `:dev-java25`) for development.  
+If you are on Cleanroom and is using JDK 25 then both Java 8 and Java 25 variants are fine; otherwise the Java 8 ones are recommended.
