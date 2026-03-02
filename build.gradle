@@ -750,7 +750,7 @@ jar {
         }
     }
 
-    if (useSrcApiPath && apiPackage) {
+    if (useSrcApiPath.toBoolean() && apiPackage) {
         from sourceSets.api.output
         dependsOn apiClasses
 
@@ -798,7 +798,7 @@ if (separateRunDirectories.toBoolean()) {
 // Create API library jar
 tasks.register('apiJar', Jar) {
     archiveClassifier.set 'api'
-    if (useSrcApiPath) {
+    if (useSrcApiPath.toBoolean()) {
         from(sourceSets.api.java) {
             include "${modGroupPath}/${apiPackagePath}/**"
         }
@@ -1604,7 +1604,7 @@ tasks.register('jarJava25', Jar) {
     destinationDirectory.set(layout.buildDirectory.dir("libs"))
     archiveClassifier.set('dev-java25')
     from sourceSets.main.output
-    if (useSrcApiPath && apiPackage) {
+    if (useSrcApiPath.toBoolean() && apiPackage) {
         from sourceSets.api.output
         dependsOn apiClasses
 
@@ -1633,7 +1633,7 @@ if (usesShadowedDependencies.toBoolean()) {
         archiveClassifier.set('dev-java25')
 
         from sourceSets.main.output
-        if (useSrcApiPath && apiPackage) {
+        if (useSrcApiPath.toBoolean() && apiPackage) {
             from sourceSets.api.output
         }
         configurations = [
