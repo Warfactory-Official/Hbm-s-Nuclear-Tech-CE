@@ -269,22 +269,26 @@ public class MachineCapacitor extends BlockContainer implements ILookOverlay, IP
 
         @Override
         public long transferPower(long power, boolean simulate) {
-            if(power + this.getPower() <= this.getMaxPower()) {
-                this.setPower(power + this.getPower());
-                this.powerReceived += power;
-                return 0;
+            if(power <= 0) return power;
+
+            long currentPower = getPower();
+            long capacity = Math.max(getMaxPower() - currentPower, 0L);
+            if(capacity <= 0) return power;
+            long accepted = Math.min(power, capacity);
+            if(!simulate) {
+                setPower(currentPower + accepted);
+                powerReceived += accepted;
             }
-            long capacity = this.getMaxPower() - this.getPower();
-            long overshoot = power - capacity;
-            this.powerReceived += (this.getMaxPower() - this.getPower());
-            this.setPower(this.getMaxPower());
-            return overshoot;
+            return power - accepted;
         }
 
         @Override
         public void usePower(long power) {
-            this.powerSent += Math.min(this.getPower(), power);
-            this.setPower(this.getPower() - power);
+            if(power <= 0) return;
+            long used = Math.min(getPower(), power);
+            if(used <= 0) return;
+            powerSent += used;
+            setPower(getPower() - used);
         }
 
         @Override
@@ -312,7 +316,11 @@ public class MachineCapacitor extends BlockContainer implements ILookOverlay, IP
 
         @Override
         public void setPower(long power) {
-            this.power = power;
+            if(this.maxPower > 0) {
+                this.power = Math.max(0L, Math.min(power, this.maxPower));
+            } else {
+                this.power = Math.max(0L, power);
+            }
         }
 
         @Override
