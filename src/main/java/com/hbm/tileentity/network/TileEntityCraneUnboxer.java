@@ -24,6 +24,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
+import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
 public class TileEntityCraneUnboxer extends TileEntityCraneBase implements IGUIProvider {
@@ -40,7 +41,7 @@ public class TileEntityCraneUnboxer extends TileEntityCraneBase implements IGUIP
             }
 
             @Override
-            public void setStackInSlot(int slot, ItemStack stack) {
+            public void setStackInSlot(int slot, @NotNull ItemStack stack) {
                 super.setStackInSlot(slot, stack);
                 if (Library.isMachineUpgrade(stack) && slot >= 21 && slot <= 22)
                     SoundUtil.playUpgradePlugSound(world, pos);
@@ -68,7 +69,7 @@ public class TileEntityCraneUnboxer extends TileEntityCraneBase implements IGUIP
             int yCoord = pos.getY();
             int zCoord = pos.getZ();
             int delay = 20;
-            if (inventory.getStackInSlot(22) != null && !inventory.getStackInSlot(22).isEmpty()) {
+            if (!inventory.getStackInSlot(22).isEmpty()) {
                 if (inventory.getStackInSlot(22).getItem() == ModItems.upgrade_ejector_1) {
                     delay = 10;
                 } else if (inventory.getStackInSlot(22).getItem() == ModItems.upgrade_ejector_2) {
@@ -82,7 +83,7 @@ public class TileEntityCraneUnboxer extends TileEntityCraneBase implements IGUIP
                 tickCounter = 0;
                 int amount = 1;
 
-                if (inventory.getStackInSlot(21) != null && !inventory.getStackInSlot(21).isEmpty()) {
+                if (!inventory.getStackInSlot(21).isEmpty()) {
                     if (inventory.getStackInSlot(21).getItem() == ModItems.upgrade_stack_1) {
                         amount = 4;
                     } else if (inventory.getStackInSlot(21).getItem() == ModItems.upgrade_stack_2) {
@@ -95,9 +96,7 @@ public class TileEntityCraneUnboxer extends TileEntityCraneBase implements IGUIP
                 EnumFacing inputSide = getOutputSide(); // note the switcheroo!
                 Block b = world.getBlockState(pos.offset(inputSide)).getBlock();
 
-                if (b instanceof IConveyorBelt) {
-
-                    IConveyorBelt belt = (IConveyorBelt) b;
+                if (b instanceof IConveyorBelt belt) {
 
                     for (int index : allowed_slots) {
                         ItemStack stack = inventory.getStackInSlot(index);
@@ -155,16 +154,6 @@ public class TileEntityCraneUnboxer extends TileEntityCraneBase implements IGUIP
         }
 
         return false;
-    }
-
-    @Override
-    public boolean isItemValidForSlot(int i, ItemStack itemStack) {
-        return true;
-    }
-
-    @Override
-    public boolean canExtractItem(int i, ItemStack itemStack, int j) {
-        return true;
     }
 
     @Override

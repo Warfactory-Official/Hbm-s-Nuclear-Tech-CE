@@ -43,11 +43,9 @@ public class TileEntityCraneInserter extends TileEntityCraneBase implements IGUI
         EnumFacing outputSide = getOutputSide();
         TileEntity te = world.getTileEntity(pos.offset(outputSide));
 
-        int meta = this.getBlockMetadata();
         if(te != null){
-            ICapabilityProvider capte = te;
-            if(capte.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, outputSide)) {
-                IItemHandler cap = capte.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, outputSide);
+            if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, outputSide)) {
+                IItemHandler cap = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, outputSide);
             
                 for(int i = 0; i < inventory.getSlots(); i++) {
                     tryFillContainerCap(cap, i);

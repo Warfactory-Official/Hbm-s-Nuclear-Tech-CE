@@ -1,5 +1,6 @@
 package com.hbm.tileentity.network;
 
+import com.hbm.blocks.network.BlockCraneBase;
 import com.hbm.interfaces.ICopiable;
 import com.hbm.tileentity.IControlReceiverFilter;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -51,13 +52,8 @@ public abstract class TileEntityCraneBase extends TileEntityMachineBase implemen
 
     public EnumFacing getInputSide() {
         IBlockState state = world.getBlockState(pos);
-        EnumFacing currentFacing = state.getValue(BlockHorizontal.FACING);
-        return switch (currentFacing) {
-            case NORTH -> EnumFacing.NORTH;
-            case EAST -> EnumFacing.EAST;
-            case WEST -> EnumFacing.WEST;
-            default -> EnumFacing.SOUTH;
-        };
+        EnumFacing currentFacing = state.getValue(BlockCraneBase.FACING);
+        return currentFacing != null ? currentFacing : EnumFacing.NORTH;
     }
 
     public EnumFacing getOutputSide() {
@@ -65,15 +61,7 @@ public abstract class TileEntityCraneBase extends TileEntityMachineBase implemen
         if (override != null) {
             return override;
         }
-        IBlockState state = world.getBlockState(pos);
-        EnumFacing currentFacing = state.getValue(BlockHorizontal.FACING);
-
-        return switch (currentFacing) {
-            case NORTH -> EnumFacing.SOUTH;
-            case EAST -> EnumFacing.WEST;
-            case WEST -> EnumFacing.EAST;
-            default -> EnumFacing.NORTH;
-        };
+        return getInputSide().getOpposite();
     }
 
     public EnumFacing getOutputOverride() {
@@ -95,20 +83,31 @@ public abstract class TileEntityCraneBase extends TileEntityMachineBase implemen
     public void setInput(EnumFacing direction) {
         outputOverride = getOutputSide(); // save the current output, if it isn't saved yet
 
-        EnumFacing  oldSide = getInputSide();
-        if(oldSide == direction) direction = direction.getOpposite();
+        EnumFacing oldSide = getInputSide();
+        if (oldSide == direction) direction = direction.getOpposite();
 
         boolean needSwapOutput = direction == getOutputSide();
-        world.setBlockState(pos, getBlockType().getDefaultState().withProperty(BlockHorizontal.FACING, direction), needSwapOutput ? 4 : 3);
 
-        if(needSwapOutput)
+        IBlockState oldState = world.getBlockState(pos);
+        if (oldState.getPropertyKeys().contains(BlockCraneBase.FACING)) {
+            IBlockState newState = oldState.withProperty(BlockCraneBase.FACING, direction);
+            world.setBlockState(pos, newState, needSwapOutput ? 4 : 3);
+        }
+
+        if (needSwapOutput)
             setOutputOverride(oldSide);
+    }
+
+    @Override
+    public @NotNull NBTTagCompound getUpdateTag() {
+        return writeToNBT(new NBTTagCompound());
     }
 
     protected void onBlockChanged() {
         if(!hasWorld()) return;
+        IBlockState state = world.getBlockState(pos);
         world.markBlockRangeForRenderUpdate(pos, pos);
-        world.notifyBlockUpdate(pos, getBlockType().getDefaultState(), getBlockType().getDefaultState(), 3);
+        world.notifyBlockUpdate(pos, state, state, 3);
         markDirty();
     }
 
@@ -124,14 +123,21 @@ public abstract class TileEntityCraneBase extends TileEntityMachineBase implemen
         readFromNBT(pkt.getNbtCompound());
     }
 
+
     @Override
     public void readFromNBT(NBTTagCompound nbt) {
         super.readFromNBT(nbt);
-        if(nbt.hasKey("CraneOutputOverride", Constants.NBT.TAG_BYTE)) {
-            outputOverride = EnumFacing.VALUES[nbt.getByte("CraneOutputOverride")];
-        } else {
+        if (nbt.hasKey("CraneOutputOverride", Constants.NBT.TAG_BYTE)) {
+            byte idx = nbt.getByte("CraneOutputOverride");
+            if (idx >= 0 && idx < EnumFacing.VALUES.length) {
+                outputOverride = EnumFacing.VALUES[idx];
+            } else {
                 outputOverride = null;
+            }
+        } else {
+            outputOverride = null;
         }
+        cachedOutputOverride = outputOverride;
     }
 
     @Override

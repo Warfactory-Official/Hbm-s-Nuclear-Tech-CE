@@ -30,7 +30,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -66,7 +65,7 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGU
             }
 
             @Override
-            public void setStackInSlot(int slot, ItemStack stack) {
+            public void setStackInSlot(int slot, @NotNull ItemStack stack) {
                 super.setStackInSlot(slot, stack);
                 if (Library.isMachineUpgrade(stack) && slot >= 18 && slot <= 19)
                     world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.upgradePlug, SoundCategory.BLOCKS, 1.0F, 1.0F);
@@ -156,8 +155,8 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGU
                 if(te != null) {
 
                     /* try to send items from a connected inv, if present */
-                    if(((ICapabilityProvider) te).hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, inputSide)) {
-                        IItemHandler inv = ((ICapabilityProvider) te).getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, inputSide);
+                    if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, inputSide)) {
+                        IItemHandler inv = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, inputSide);
 
                         int size = access == null ? inv.getSlots() : access.length;
 
@@ -356,7 +355,7 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGU
     @Override
     public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY && inventory != null) {
-            return true; // всегда есть item-cap
+            return true;
         }
         return super.hasCapability(capability, facing);
     }
@@ -365,12 +364,10 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGU
     public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY && inventory != null) {
             if (facing == null) {
-                // ВАЖНО: наружу при null-стороне показываем только буфер 9..17.
                 if (nullInsertHandler == null) {
                     nullInsertHandler = new ItemStackHandlerWrapper(inventory, allowed_slots) {
                         @Override
-                        public boolean isItemValid(int slot, ItemStack stack) {
-                            // не даем класть что-либо в фильтр снаружи — но мы уже отрезали фильтр
+                        public boolean isItemValid(int slot, @NotNull ItemStack stack) {
                             return isItemValidForSlot(slot, stack);
                         }
                     };

@@ -17,15 +17,12 @@ import net.minecraft.inventory.Container;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 
@@ -114,15 +111,14 @@ public class TileEntityCraneBoxer extends TileEntityCraneBase implements IGUIPro
 
             if(mode != MODE_REDSTONE && tickCounter%10==0) {
                 tickCounter = 0;
-                int pack = 0;
-
-                switch(mode) {
-                    case MODE_1: pack = 1; break;
-                    case MODE_2: pack = 2; break;
-                    case MODE_4: pack = 4; break;
-                    case MODE_8: pack = 8; break;
-                    case MODE_16: pack = 16; break;
-                }
+                int pack = switch (mode) {
+                    case MODE_1 -> 1;
+                    case MODE_2 -> 2;
+                    case MODE_4 -> 4;
+                    case MODE_8 -> 8;
+                    case MODE_16 -> 16;
+                    default -> 0;
+                };
 
                 int fullStacks = 0;
 
@@ -171,33 +167,8 @@ public class TileEntityCraneBoxer extends TileEntityCraneBase implements IGUIPro
         }
     }
 
-    public void tryFillTe(){
-        EnumFacing outputSide = getOutputSide();
-        TileEntity te = world.getTileEntity(pos.offset(outputSide));
-
-        int meta = this.getBlockMetadata();
-        if(te != null){
-            ICapabilityProvider capte = te;
-            if(capte.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, outputSide)) {
-                IItemHandler cap = capte.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, outputSide);
-
-                for(int i = 0; i < inventory.getSlots(); i++) {
-                    tryFillContainerCap(cap, i);
-                }
-            }
-        }
-    }
-
     public boolean tryFillTeDirect(ItemStack stack){
         return tryInsertItemCap(inventory, stack);
-    }
-
-    public boolean tryFillContainerCap(IItemHandler chest, int slot) {
-        //Check if we have something to output
-        if(inventory.getStackInSlot(slot).isEmpty())
-            return false;
-
-        return tryInsertItemCap(chest, inventory.getStackInSlot(slot));
     }
 
     public boolean tryInsertItemCap(IItemHandler chest, ItemStack stack) {
@@ -231,11 +202,6 @@ public class TileEntityCraneBoxer extends TileEntityCraneBase implements IGUIPro
     @Override
     public int[] getAccessibleSlotsFromSide(EnumFacing e) {
         return allowed_slots;
-    }
-
-    @Override
-    public boolean isItemValidForSlot(int i, ItemStack itemStack) {
-        return true;
     }
 
     @Override

@@ -1,12 +1,16 @@
 package com.hbm.blocks.network;
 
+import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.tileentity.network.TileEntityCraneBase;
 import com.hbm.tileentity.network.TileEntityCraneGrabber;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 public class CraneGrabber extends BlockCraneBase {
     public CraneGrabber(Material materialIn, String s) {
@@ -17,12 +21,32 @@ public class CraneGrabber extends BlockCraneBase {
     }
 
     @Override
-    public TileEntityCraneBase createNewTileEntity(World world, int meta) {
+    public void registerSprite(TextureMap map) {
+        super.registerSprite(map);
+        this.iconIn = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/crane_pull"));
+        this.iconSideIn = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/crane_side_pull"));
+        this.iconDirectional = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/crane_grabber_top"));
+        this.iconDirectionalUp = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/crane_grabber_side_up"));
+        this.iconDirectionalDown = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/crane_grabber_side_down"));
+        this.iconDirectionalTurnLeft = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/crane_grabber_top_left"));
+        this.iconDirectionalTurnRight = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/crane_grabber_top_right"));
+        this.iconDirectionalSideLeftTurnUp = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/crane_grabber_side_left_turn_up"));
+        this.iconDirectionalSideRightTurnUp = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/crane_grabber_side_right_turn_up"));
+        this.iconDirectionalSideLeftTurnDown = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/crane_grabber_side_left_turn_down"));
+        this.iconDirectionalSideRightTurnDown = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/crane_grabber_side_right_turn_down"));
+        this.iconDirectionalSideUpTurnLeft = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/crane_grabber_side_up_turn_left"));
+        this.iconDirectionalSideUpTurnRight = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/crane_grabber_side_up_turn_right"));
+        this.iconDirectionalSideDownTurnLeft = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/crane_grabber_side_down_turn_left"));
+        this.iconDirectionalSideDownTurnRight = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/crane_grabber_side_down_turn_right"));
+    }
+
+    @Override
+    public TileEntityCraneBase createNewTileEntity(@NotNull World world, int meta) {
         return new TileEntityCraneGrabber();
     }
 
     @Override
-    public void breakBlock(World world, BlockPos pos, IBlockState state) {
+    public void breakBlock(World world, @NotNull BlockPos pos, @NotNull IBlockState state) {
         super.breakBlock(world, pos, state);
     }
 }
