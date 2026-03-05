@@ -42,6 +42,7 @@ public abstract class SerializableRecipe {
 
     public static void registerAllHandlers() {
         recipeHandlers.add(new AmmoPressRecipes());
+        recipeHandlers.add(new AnnihilatorRecipes());
         recipeHandlers.add(new AnvilRecipes());
         recipeHandlers.add(new ArcFurnaceRecipes());
         recipeHandlers.add(new ArcWelderRecipes());

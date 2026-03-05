@@ -36,13 +36,13 @@ public class JEIConfig implements IModPlugin {
 
     public static final String AMMO_PRESS = "hbm.ammo_press";
     public static final String ALLOY = "hbm.alloy";
+    public static final String ANNIHILATING = "hbm.annihilating";
     public static final String ANVIL_CON = "hbm.anvil_construction";
     public static final String ANVIL_SMITH = "hbm.anvil_smithing";
     public static final String ARC_FURNACE_FLUID = "hbm.arc_furnace_fluid";
     public static final String ARC_FURNACE_SOLID = "hbm.arc_furnace_solid";
     public static final String ARC_WELDER = "hbm.arc_welder";
     public static final String ASHPIT = "hbm.ashpit";
-    public static final String ASSEMBLY = "hbm.assembly";
     public static final String ASSEMBLY_MACHINE = "hbm.assembly_machine";
     public static final String BOILER = "hbm.boiler";
     public static final String BOOK = "hbm.book_of";
@@ -103,6 +103,7 @@ public class JEIConfig implements IModPlugin {
     public static final String ZIRNOX = "hbm.zirnox";
     static final String PUREX = "hbm.purex";
     private AmmoPressHandler ammoPressHandler;
+    private AnnihilatorHandler annihilatorHandler;
     private AnvilRecipeHandler anvilRecipeHandler;
     private AnvilSmithingRecipeHandler anvilSmithingRecipeHandler;
     private ArcFurnaceFluidHandler arcFurnaceFluidHandler;
@@ -211,6 +212,7 @@ public class JEIConfig implements IModPlugin {
         registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_crystallizer), CRYSTALLIZER);
         registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_soldering_station), SOLDERING_STATION);
         registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_arc_welder), ARC_WELDER);
+        registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_annihilator), ANNIHILATING);
         registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_rotary_furnace), ROTARY_FURNACE);
         registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_precass), PREC_ASS);
         registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_pyrooven), PYROLYSIS);
@@ -252,6 +254,7 @@ public class JEIConfig implements IModPlugin {
         registry.addRecipes(fuelPoolHandler.getRecipes(), WASTEDRUM);
         registry.addRecipes(JeiRecipes.getStorageDrumRecipes(), STORAGEDRUM);
         registry.addRecipes(JeiRecipes.getRefineryRecipe(), REFINERY);
+        registry.addRecipes(annihilatorHandler.getRecipes(), ANNIHILATING);
         registry.addRecipes(anvilRecipeHandler.getRecipes(), ANVIL_CON);
         registry.addRecipes(anvilSmithingRecipeHandler.getRecipes(), ANVIL_SMITH);
         registry.addRecipes(centrifugeRecipeHandler.getRecipes(), CENTRIFUGE);
@@ -436,6 +439,7 @@ public class JEIConfig implements IModPlugin {
                 new RefineryRecipeHandler(help),
                 new RadiolysisRecipeHandler(help),
                 ammoPressHandler = new AmmoPressHandler(help),
+                annihilatorHandler = new AnnihilatorHandler(help),
                 anvilRecipeHandler = new AnvilRecipeHandler(help),
                 anvilSmithingRecipeHandler = new AnvilSmithingRecipeHandler(help),
                 arcFurnaceFluidHandler = new ArcFurnaceFluidHandler(help),

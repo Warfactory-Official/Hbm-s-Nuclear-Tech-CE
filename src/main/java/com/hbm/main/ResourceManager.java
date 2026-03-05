@@ -47,6 +47,9 @@ public class ResourceManager {
     public static final IModelCustom conveyor_press = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/conveyor_press.obj")).asVBO();
     public static final IModelCustom ammo_press = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/ammo_press.obj")).asVBO();
 
+    //Annihilator
+    public static final IModelCustom annihilator = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/annihilator.obj")).asVBO();
+
     public static final IModelCustom bm_box_lever = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/bm_box_lever.obj")).asVBO();
 
     public static final IModelCustom coin = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/trinkets/chip.obj")).asVBO();
@@ -877,6 +880,10 @@ public class ResourceManager {
     public static final ResourceLocation conveyor_press_belt_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/conveyor_press_belt.png");
     public static final ResourceLocation ammo_press_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/ammo_press.png");
     public static final ResourceLocation bm_box_lever_tex = new ResourceLocation(Tags.MODID, "textures/models/turrets/bm_box_lever.png");
+
+    //Annihilator
+    public static final ResourceLocation annihilator_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/annihilator.png");
+    public static final ResourceLocation annihilator_belt_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/annihilator_belt.png");
 
     public static final ResourceLocation coin_tex = new ResourceLocation(Tags.MODID, "textures/models/trinkets/chip_gold.png");
 
