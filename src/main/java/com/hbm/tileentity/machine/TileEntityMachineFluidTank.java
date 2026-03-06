@@ -41,7 +41,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
@@ -139,12 +138,6 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
 		return super.getCapability(capability, facing);
 	}
 
-	public byte getComparatorPower() {
-		if(tank.getFill() == 0) return 0;
-		double frac = (double) tank.getFill() / (double) tank.getMaxFill() * 15D;
-		return (byte) (MathHelper.clamp((int) frac + 1, 0, 15));
-	}
-
 	@Override
 	public void update() {
 		if (!world.isRemote) {
@@ -221,10 +214,11 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
 				this.node = null;
 			}
 
-			byte comp = this.getComparatorPower(); //comparator shit
+			// Redstone Comparator Check
+			byte comp = tank.getRedstoneComparatorPower();
 			if(comp != this.lastRedstone) {
 				this.markDirty();
-				for(DirPos pos : getConPos()) this.updateRedstoneConnection(pos);
+				for(DirPos pos : getConPos()) this.updateRedstoneComparatorConnection(pos);
 			}
 			this.lastRedstone = comp;
 
