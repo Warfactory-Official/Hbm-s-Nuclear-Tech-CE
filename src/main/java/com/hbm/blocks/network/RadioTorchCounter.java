@@ -34,8 +34,8 @@ public class RadioTorchCounter extends RadioTorchBase implements IGUIProvider {
 
     public RadioTorchCounter(String regName) {
         super();
-        this.setTranslationKey(regName);
-        this.setRegistryName(regName);
+        setRegistryName(regName);
+        setTranslationKey(regName);
 
         ModBlocks.ALL_BLOCKS.add(this);
     }

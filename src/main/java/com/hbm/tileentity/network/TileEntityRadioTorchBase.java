@@ -31,6 +31,7 @@ import java.util.Map;
 
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 public class TileEntityRadioTorchBase extends TileEntity implements IBufPacketReceiver, ITickable, IControlReceiver, CompatHandler.OCComponent {
+    private static final int MAPPING_SIZE = 16;
 
     /**
      * channel we're broadcasting on/listening to
@@ -55,7 +56,7 @@ public class TileEntityRadioTorchBase extends TileEntity implements IBufPacketRe
     /**
      * custom mapping
      */
-    public String[] mapping = new String[16];
+    public String[] mapping = new String[MAPPING_SIZE];
 
     @Override
     public boolean shouldRefresh(@NotNull World world, @NotNull BlockPos pos, IBlockState oldState, IBlockState newState) {
@@ -93,7 +94,7 @@ public class TileEntityRadioTorchBase extends TileEntity implements IBufPacketRe
         this.lastState = nbt.getInteger("lastPower");
         this.lastUpdate = nbt.getLong("lastTime");
         this.channel = nbt.getString("channel");
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < MAPPING_SIZE; i++) {
             this.mapping[i] = nbt.getString("mapping" + i);
         }
     }
@@ -105,7 +106,7 @@ public class TileEntityRadioTorchBase extends TileEntity implements IBufPacketRe
         nbt.setInteger("lastPower", lastState);
         nbt.setLong("lastTime", lastUpdate);
         if (channel != null) nbt.setString("channel", channel);
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < MAPPING_SIZE; i++) {
             if (mapping[i] != null) {
                 nbt.setString("mapping" + i, mapping[i]);
             }
@@ -154,7 +155,7 @@ public class TileEntityRadioTorchBase extends TileEntity implements IBufPacketRe
         if (data.hasKey("isPolling")) this.polling = data.getBoolean("isPolling");
         if (data.hasKey("hasMapping")) this.customMap = data.getBoolean("hasMapping");
         if (data.hasKey("channel")) this.channel = data.getString("channel");
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < MAPPING_SIZE; i++) {
             if (data.hasKey("mapping" + i)) {
                 this.mapping[i] = data.getString("mapping" + i);
             }
@@ -170,7 +171,7 @@ public class TileEntityRadioTorchBase extends TileEntity implements IBufPacketRe
         buf.writeBoolean(channel != null);
         if (channel != null) BufferUtil.writeString(buf, channel);
 
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < MAPPING_SIZE; i++) {
             buf.writeBoolean(mapping[i] != null);
             if (mapping[i] != null) BufferUtil.writeString(buf, mapping[i]);
         }
@@ -185,7 +186,7 @@ public class TileEntityRadioTorchBase extends TileEntity implements IBufPacketRe
             this.channel = BufferUtil.readString(buf);
         }
 
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < MAPPING_SIZE; i++) {
             if (buf.readBoolean()) {
                 this.mapping[i] = BufferUtil.readString(buf);
             }

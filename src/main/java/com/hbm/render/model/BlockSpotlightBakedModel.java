@@ -29,7 +29,7 @@ public class BlockSpotlightBakedModel extends AbstractWavefrontBakedModel {
     private final boolean isInventory;
     private final LightType type;
     @SuppressWarnings("unchecked")
-    private final List<BakedQuad>[][] cache = new List[6][64];
+    private final List<BakedQuad>[][] cache = new List[64][6];
     private List<BakedQuad> inventoryCache;
 
     public BlockSpotlightBakedModel(HFRWavefrontObject model, TextureAtlasSprite sprite, boolean isInventory, LightType type, float baseScale, float tx, float ty, float tz, float itemYaw) {
@@ -127,12 +127,12 @@ public class BlockSpotlightBakedModel extends AbstractWavefrontBakedModel {
                     connectionCount++;
                 }
 
-                roll = getRotation(connectionFacing, facing);
+                roll = getRoll(connectionFacing, facing);
             }
         }
 
-        if (cache[facing.getIndex()][mask] != null) return cache[facing.getIndex()][mask];
-        return cache[facing.getIndex()][mask] = Collections.unmodifiableList(buildWorldQuads(spotlight.getPartName(connectionCount), roll, pitch, yaw));
+        if (cache[mask][facing.getIndex()] != null) return cache[mask][facing.getIndex()];
+        return cache[mask][facing.getIndex()] = Collections.unmodifiableList(buildWorldQuads(spotlight.getPartName(connectionCount), roll, pitch, yaw));
     }
 
     private List<BakedQuad> buildWorldQuads(String partName, float roll, float pitch, float yaw) {
@@ -161,15 +161,15 @@ public class BlockSpotlightBakedModel extends AbstractWavefrontBakedModel {
         return true;
     }
 
-    private float getRotation(EnumFacing facing, EnumFacing axis) {
+    private float getRoll(EnumFacing facing, EnumFacing axis) {
         float flipX = axis == EnumFacing.DOWN || axis == EnumFacing.NORTH || axis == EnumFacing.WEST ? -0.5F : 0.5F;
         float addX = axis == EnumFacing.NORTH || axis == EnumFacing.SOUTH ? -0.5F : 0;
         boolean flipNS = axis == EnumFacing.WEST;
         return switch (facing) {
             case NORTH -> flipNS ? (float) Math.PI : 0;
             case SOUTH -> !flipNS ? (float) Math.PI : 0;
-            case EAST -> (float) Math.PI * (flipX + addX);
-            case WEST -> (float) Math.PI * (-flipX + addX);
+            case EAST -> (float) Math.PI * (-flipX + addX);
+            case WEST -> (float) Math.PI * (flipX + addX);
             case UP -> (float) Math.PI * 0.5F;
             case DOWN -> (float) Math.PI * -0.5F;
         };

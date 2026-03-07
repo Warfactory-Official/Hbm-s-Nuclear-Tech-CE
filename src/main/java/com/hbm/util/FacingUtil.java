@@ -10,7 +10,7 @@ public class FacingUtil {
     }
 
     public static float getYaw(EnumFacing facing) {
-        if (facing == EnumFacing.NORTH) return (float)Math.PI * 0.5f;;
+        if (facing == EnumFacing.NORTH) return (float)Math.PI * 0.5f;
         if (facing == EnumFacing.SOUTH) return (float)Math.PI * -0.5f;
         if (facing == EnumFacing.WEST) return (float)Math.PI;
         return 0;

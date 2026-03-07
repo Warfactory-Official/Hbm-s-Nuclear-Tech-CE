@@ -1357,6 +1357,7 @@ public class ModBlocks {
     public static final Block radio_torch_counter = new RadioTorchCounter("radio_torch_counter").setHardness(0.1F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
     public static final Block radio_torch_logic = new RadioTorchLogic("radio_torch_logic").setHardness(0.1F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
     public static final Block radio_torch_reader = new RadioTorchReader("radio_torch_reader").setHardness(0.1F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
+    public static final Block radio_torch_controller = new RadioTorchController("radio_torch_controller").setHardness(0.1F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
     public static final Block radio_telex = new RadioTelex("radio_telex").setHardness(3F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
 
     //Drillgon200: Removed, by order of lord Bob.
