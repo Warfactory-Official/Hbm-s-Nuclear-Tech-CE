@@ -3,6 +3,7 @@ package com.hbm.inventory.fluid.tank;
 import com.hbm.capability.NTMFluidCapabilityHandler;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.machine.ItemFluidTankV2;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
@@ -33,14 +34,53 @@ public class FluidLoaderForge implements IFluidLoadingHandler {
         int offer = tank.getFill();
         int canFill = handler.fill(new FluidStack(forgeFluid, offer), false);
         if (canFill <= 0) return false;
+        ItemStack inputStack = slots.getStackInSlot(in);
+        ItemStack outputStack = slots.getStackInSlot(out);
+
+        // Security Checks
+        if (inputStack.getCount() > 1 && inputStack.getItem() instanceof ItemFluidTankV2 fluidTankV2) {
+            if (!outputStack.isEmpty()) {
+                if (inputStack.getItem() != outputStack.getItem()) return false;
+                if (inputStack.getMetadata() > 0 && inputStack.getMetadata() != outputStack.getMetadata()) return false;
+            }
+            if (fluidTankV2.cap > offer) return false;
+        }
+
         int actualFill = handler.fill(new FluidStack(forgeFluid, canFill), true);
         if (actualFill <= 0) return false;
         ItemStack container = handler.getContainer();
-        if (!slots.insertItem(out, container, true).isEmpty()) return false;
-        slots.extractItem(in, 1, false);
-        tank.setFill(tank.getFill() - actualFill);
-        slots.insertItem(out, container, false);
-        return true;
+        if (inputStack.getItem() instanceof ItemFluidTankV2 inputFluidTankV2) { // V2
+            int inputCapacity = inputFluidTankV2.cap;
+            FluidStack inputFluidStackAfterFill = handler.drain(Integer.MAX_VALUE, false);
+            if (inputFluidStackAfterFill == null) return false; // Should never happen
+            boolean isItemFull = inputFluidStackAfterFill.amount == inputCapacity;
+            tank.setFill(tank.getFill() - actualFill);
+            if (isItemFull) {
+                if (outputStack.isEmpty()) { // The output slot is empty
+                    slots.extractItem(in, 1, false);
+                    slots.insertItem(out, container, false);
+                    return true;
+                } else if (outputStack.getItem() == inputStack.getItem() && outputStack.getMetadata() == inputStack.getMetadata()) { // The output slot contains the same tank type with the same metadata
+                    slots.extractItem(in, 1, false);
+                    slots.insertItem(out, container, false);
+                    return true;
+                } else if (outputStack.getItem() == inputStack.getItem() && inputStack.getMetadata() == 0) { // The output slot contains the same tank type and the input is an empty tank
+                    slots.extractItem(in, 1, false);
+                    slots.insertItem(out, container, false);
+                    return true;
+                } else { // The output slot contains another tank or the same tank but with another fluid
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else { // Legacy
+            if (!slots.insertItem(out, container, true).isEmpty()) return false;
+            slots.extractItem(in, 1, false);
+            tank.setFill(tank.getFill() - actualFill);
+            slots.insertItem(out, container, false);
+            return true;
+        }
     }
 
     @Override
@@ -57,6 +97,12 @@ public class FluidLoaderForge implements IFluidLoadingHandler {
         if (space <= 0) return false;
         int toDrain = Math.min(space, contained.amount);
         if (toDrain <= 0) return false;
+
+        // Prevent Fluid Dupe if stack count is greater than one and output slot is occupied.
+        ItemStack stack = slots.getStackInSlot(in);
+        if (stack.getCount() > 1 && stack.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null) && stack.getItem() instanceof ItemFluidTankV2 fluidTankV2) {
+            if (fluidTankV2.cap > space) return false;
+        }
         FluidStack drained = handler.drain(toDrain, true);
         if (drained == null || drained.amount <= 0) return false;
         ItemStack container = handler.getContainer();

@@ -16,6 +16,10 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidUtil;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.oredict.OreDictionary;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -138,6 +142,20 @@ public class FluidContainerRegistry {
     @Contract(pure = true)
     public static int getFluidContent(ItemStack stack, FluidType type) {
         if (stack == null || stack.isEmpty() || type == null) return 0;
+
+        if (stack.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
+            IFluidHandlerItem handler = stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
+            if (handler != null) {
+                FluidStack fs = FluidUtil.getFluidContained(stack);
+                if (fs != null) {
+                    FluidType t = NTMFluidCapabilityHandler.getFluidType(fs.getFluid());
+                    if (t == type) {
+                        return fs.amount;
+                    }
+                }
+            }
+        }
+
         FluidContainer recipe = getFluidContainer(stack);
         return (recipe != null && recipe.type() == type) ? recipe.content() : 0;
     }
@@ -145,6 +163,12 @@ public class FluidContainerRegistry {
     @Contract(pure = true)
     public static int getFluidContent(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return 0;
+
+        FluidStack fs = FluidUtil.getFluidContained(stack);
+        if (fs != null) {
+            return fs.amount;
+        }
+
         FluidContainer recipe = getFluidContainer(stack);
         return recipe != null ? recipe.content() : 0;
     }

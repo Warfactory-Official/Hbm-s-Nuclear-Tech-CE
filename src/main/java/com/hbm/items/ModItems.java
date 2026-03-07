@@ -396,11 +396,14 @@ public class ModItems {
     public static final Item cell_balefire = new ItemBakedBase("cell_balefire").setCreativeTab(MainRegistry.controlTab).setContainerItem(ModItems.cell);
 
     public static final Item fluid_tank_empty = new ItemBakedBase("fluid_tank_empty").setCreativeTab(MainRegistry.controlTab);
+    public static final Item fluid_tank_v2 = new ItemFluidTankV2("fluid_tank_v2", 1000).setCreativeTab(MainRegistry.controlTab);
     public static final Item fluid_tank_full = new ItemFluidTank("fluid_tank_full", 1000).setCreativeTab(MainRegistry.controlTab);
     public static final Item fluid_tank_lead_empty = new ItemBakedBase("fluid_tank_lead_empty").setCreativeTab(MainRegistry.controlTab);
     public static final Item fluid_tank_lead_full = new ItemFluidTank("fluid_tank_lead_full", 1000).setCreativeTab(MainRegistry.controlTab);
+    public static final Item fluid_tank_lead_v2 = new ItemFluidTankV2("fluid_tank_lead_v2", 1000).setCreativeTab(MainRegistry.controlTab);
     public static final Item fluid_barrel_empty = new ItemBakedBase("fluid_barrel_empty").setCreativeTab(MainRegistry.controlTab);
     public static final Item fluid_barrel_full = new ItemFluidTank("fluid_barrel_full", 16000).setCreativeTab(MainRegistry.controlTab);
+    public static final Item fluid_barrel_v2 = new ItemFluidTankV2("fluid_barrel_v2", 16000).setCreativeTab(MainRegistry.controlTab);
     public static final Item fluid_barrel_infinite = new ItemFluidContainerInfinite(null, 1_000_000_000, "fluid_barrel_infinite").setMaxStackSize(1).setCreativeTab(MainRegistry.controlTab);
     public static final Item fluid_pack_empty = new ItemBakedBase("fluid_pack_empty").setCreativeTab(MainRegistry.controlTab);
     public static final Item fluid_pack_full = new ItemFluidTank("fluid_pack_full", 32000).setContainerItem(ModItems.fluid_pack_empty).setCreativeTab(MainRegistry.controlTab);
