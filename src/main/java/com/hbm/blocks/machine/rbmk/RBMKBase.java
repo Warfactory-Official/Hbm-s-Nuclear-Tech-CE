@@ -4,6 +4,7 @@ import com.hbm.Tags;
 import com.hbm.api.block.IToolable;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ITooltipProvider;
+import com.hbm.blocks.ModBlocks;
 import com.hbm.handler.MultiblockHandlerXR;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemRBMKLid;
@@ -116,6 +117,11 @@ public abstract class RBMKBase extends BlockDummyable implements IToolable, IToo
 			}
 		}
 		return new AxisAlignedBB(0, 0, 0, 1, 1+height, 1);
+	}
+
+	public boolean hasOwnLid() {
+		return this == ModBlocks.rbmk_control || this == ModBlocks.rbmk_control_auto || this == ModBlocks.rbmk_control_mod ||
+				this == ModBlocks.rbmk_control_reasim || this == ModBlocks.rbmk_control_reasim_auto;
 	}
 	
 	/*

@@ -24,7 +24,7 @@ import org.lwjgl.opengl.GL11;
 public class RenderRBMKLid extends TileEntitySpecialRenderer<TileEntityRBMKBase> {
 
 	private static final ResourceLocation texture_glass = new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_blank_glass.png");
-	private static final ResourceLocation texture_rods = new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_element_colorable.png");
+	private static final ResourceLocation texture_rods = new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_element_fuel.png");
 	
 	@Override
 	public boolean isGlobalRenderer(TileEntityRBMKBase te){
@@ -35,28 +35,12 @@ public class RenderRBMKLid extends TileEntitySpecialRenderer<TileEntityRBMKBase>
 	public void render(TileEntityRBMKBase control, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
 		boolean hasRod = false;
 		boolean cherenkov = false;
-		float fuelR = 0F;
-		float fuelG = 0F;
-		float fuelB = 0F;
-		float cherenkovR = 0F;
-		float cherenkovG = 0F;
-		float cherenkovB = 0F;
-		float cherenkovA = 0.1F;
+		int color = 0;
 
 		if(control instanceof TileEntityRBMKRod rod) {
-            if(rod.hasRod) {
-				hasRod = true;
-				fuelR = rod.fuelR;
-				fuelG = rod.fuelG;
-				fuelB = rod.fuelB;
-				cherenkovR = rod.cherenkovR;
-				cherenkovG = rod.cherenkovG;
-				cherenkovB = rod.cherenkovB;
-			}
-			if(rod.fluxQuantity > 5) {
-				cherenkov = true;
-				cherenkovA = (float) Math.max(0.25F, Math.log(rod.fluxQuantity) * 0.01F);
-			}
+			if(rod.hasRod) hasRod = true;
+			if(rod.fluxQuantity > 5) cherenkov = true;
+			color = rod.rodColor;
 		}
 		int offset = 1;
 		for (int o = 1; o < 16; o++){
@@ -86,7 +70,7 @@ public class RenderRBMKLid extends TileEntitySpecialRenderer<TileEntityRBMKBase>
 		}
 
 		if(cherenkov) {
-			renderCherenkovEffect(control, cherenkovR, cherenkovG, cherenkovB, cherenkovA, offset);
+			renderCherenkovEffect(control, 0.4F, 0.9F, 1.0F, 0.1F, offset);
 		}
 
 		GlStateManager.popMatrix();
@@ -118,13 +102,14 @@ public class RenderRBMKLid extends TileEntitySpecialRenderer<TileEntityRBMKBase>
 
 	private void renderFuelRodStack(TileEntityRBMKBase control, float r, float g, float b, int offset) {
 		GlStateManager.pushMatrix();
+		bindTexture(texture_rods);
 		try {
 			GlStateManager.color(r, g, b, 1);
 			Minecraft.getMinecraft().getTextureManager().bindTexture(texture_rods);
 
 			// Render full segments
 			for (int i = 0; i < offset; i++) {
-				ResourceManager.rbmk_element.renderPart("Rods");
+				ResourceManager.rbmk_element_rods_vbo.renderPart("Rods");
 				GlStateManager.translate(0, 1, 0);
 			}
 			GlStateManager.color(1, 1, 1, 1);
@@ -136,7 +121,6 @@ public class RenderRBMKLid extends TileEntitySpecialRenderer<TileEntityRBMKBase>
 	private void renderLid(TileEntityRBMKBase control, int offset) {
 		GlStateManager.enableAlpha();
 		GlStateManager.pushMatrix();
-		GlStateManager.translate(0, offset + control.jumpheight, 0);
 
 		int meta = control.getBlockMetadata() - RBMKBase.offset;
 		ResourceLocation lidTexture = (meta == RBMKBase.DIR_GLASS_LID.ordinal()) ?

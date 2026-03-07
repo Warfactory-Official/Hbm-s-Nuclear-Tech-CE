@@ -17,9 +17,10 @@ public class RenderRBMKDebris extends Render<EntityRBMKDebris> {
 	
 	//for fallback only
 	private static final ResourceLocation tex_base = new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_side.png");
-	private static final ResourceLocation tex_element = new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_element_fuelchunk.png");
+	private static final ResourceLocation tex_element = new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_fuel.png");
 	private static final ResourceLocation tex_control = new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_control.png");
-	private static final ResourceLocation tex_blank = new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_blank.png");
+	private static final ResourceLocation tex_blank = new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_blank_side.png");
+	private static final ResourceLocation tex_lid = new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_blank_cover_top.png");
 	private static final ResourceLocation tex_graphite = new ResourceLocation(Tags.MODID + ":textures/blocks/block_graphite.png");
 
 	protected RenderRBMKDebris(RenderManager renderManager){
@@ -37,13 +38,13 @@ public class RenderRBMKDebris extends Render<EntityRBMKDebris> {
 		GlStateManager.rotate(debris.lastRot + (debris.rot - debris.lastRot) * partialTicks, 1, 1, 1);
 		
 		DebrisType type = debris.getType();
-		
+
 		switch(type) {
 		case BLANK: bindTexture(tex_blank); ResourceManager.deb_blank.renderAll(); break;
-		case ELEMENT: bindTexture(tex_element); ResourceManager.deb_element.renderAll(); break;
+		case ELEMENT: bindTexture(tex_base); ResourceManager.deb_element.renderAll(); break;
 		case FUEL: bindTexture(tex_element); ResourceManager.deb_fuel.renderAll(); break;
 		case GRAPHITE: bindTexture(tex_graphite); ResourceManager.deb_graphite.renderAll(); break;
-		case LID: bindTexture(tex_blank); ResourceManager.deb_lid.renderAll(); break;
+		case LID: bindTexture(tex_lid); ResourceManager.deb_lid.renderAll(); break;
 		case ROD: bindTexture(tex_control); ResourceManager.deb_rod.renderAll(); break;
 		default: break;
 		}

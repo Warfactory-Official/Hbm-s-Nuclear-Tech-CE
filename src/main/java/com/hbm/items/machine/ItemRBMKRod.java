@@ -35,14 +35,9 @@ public class ItemRBMKRod extends Item {
 	public double diffusion = 0.02D;		//the speed at which the core heats the hull
 	public NType nType = NType.SLOW;		//neutronType, the most efficient neutron type for fission
 	public NType rType = NType.FAST;		//releaseType, the type of neutrons released by this fuel
-
-    //Alc's graphical stuff. Perhaps remove?
-	public float fuelR = 0.105F;
-	public float fuelG = 0.247F;
-	public float fuelB = 0.015F;
-	public float cherenkovR = 0.4F;
-	public float cherenkovG = 0.9F;
-	public float cherenkovB = 1F;
+	public int colorTint = 0x304825;		//RGB color of the rod when rendered in the fuel channel
+	public double heatCoeffStart = 0D;		//when the heat coefficient starts acting
+	public double heatCoeffLength = 0D;		//when the reaction multiplier of the coefficient hits 0 after taking effect
 
 	/*   _____
 	 * ,I I I I,
@@ -84,6 +79,11 @@ public class ItemRBMKRod extends Item {
 		ModItems.ALL_ITEMS.add(this);
 	}
 
+	public ItemRBMKRod setTint(int tint) {
+		this.colorTint = tint;
+		return this;
+	}
+
 	public ItemRBMKRod setYield(double yield) {
 		this.yield = yield;
 		return this;
@@ -106,6 +106,12 @@ public class ItemRBMKRod extends Item {
 
 	public ItemRBMKRod setDepletionFunction(EnumDepleteFunc func) {
 		this.depFunc = func;
+		return this;
+	}
+
+	public ItemRBMKRod setHeatCoeff(double start, double length) {
+		this.heatCoeffStart = start;
+		this.heatCoeffLength = length;
 		return this;
 	}
 
@@ -136,20 +142,6 @@ public class ItemRBMKRod extends Item {
 		return this;
 	}
 
-	public ItemRBMKRod setFuelColor(float R, float G, float B) {
-		this.fuelR = R;
-		this.fuelG = G;
-		this.fuelB = B;
-		return this;
-	}
-
-	public ItemRBMKRod setCherenkovColor(float R, float G, float B) {
-		this.cherenkovR = R;
-		this.cherenkovG = G;
-		this.cherenkovB = B;
-		return this;
-	}
-
 	/**
 	 * Adjusts the input flux using the poison level
 	 * Generates, then burns poison
@@ -177,7 +169,18 @@ public class ItemRBMKRod extends Item {
             setPoison(stack, xenon);
         }
 
-        double outFlux = reactivityFunc(inFlux, getEnrichment(stack)) * RBMKDials.getReactivityMod(world);
+		double mult = 1D;
+		double coreHeat = this.getCoreHeat(stack);
+
+		if(this.heatCoeffStart != 0) {
+			if(coreHeat >= this.heatCoeffStart) {
+				double prog = (coreHeat - this.heatCoeffStart) / this.heatCoeffLength;
+				if(prog > 1) prog = 1;
+				mult = Math.sin((prog * Math.PI + Math.PI) / 2);
+			}
+		}
+
+		double outFlux = reactivityFunc(inFlux, getEnrichment(stack) * mult) * RBMKDials.getReactivityMod(world);
 
         //if depletion is enabled
         if(RBMKDials.getDepletion(world)) {
@@ -189,7 +192,6 @@ public class ItemRBMKRod extends Item {
             setYield(stack, y);
         }
 
-        double coreHeat = this.getCoreHeat(stack);
         coreHeat += outFlux * heat;
 
         this.setCoreHeat(stack, rectify(coreHeat));

@@ -1238,6 +1238,7 @@ public class ClientProxy extends ServerProxy {
                 int maxAge = data.getInteger("maxAge");
                 Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleRBMKFlame(world, x, y, z, maxAge));
             }
+            case "rbmksteam" -> Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleRBMKSteam(world, x, y, z));
             case "rbmkmush" -> {
                 float scale = data.getFloat("scale");
                 Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleRBMKMush(world, x, y, z, scale));

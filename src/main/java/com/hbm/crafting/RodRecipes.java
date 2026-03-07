@@ -44,7 +44,7 @@ public class RodRecipes {
         CraftingManager.addShapelessAuto(new ItemStack(ModItems.waste_zfb_mox, 2, 1), new ItemStack(ModItems.rod_zirnox_depleted, 1, ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.ZFB_MOX_FUEL.ordinal()) );
 
         //Breeding Rods
-        CraftingManager.addRecipeAuto(new ItemStack(ModItems.rod_empty, 16), "SSS", "L L", "SSS", 'S', STEEL.plate528(), 'L', PB.plate528() );
+        CraftingManager.addRecipeAuto(new ItemStack(ModItems.rod_empty, 16), "SSS", "L L", "SSS", 'S', STEEL.plate(), 'L', PB.plate() );
         CraftingManager.addShapelessAuto(new ItemStack(ModItems.rod_empty, 2), ModItems.rod_dual_empty );
         CraftingManager.addShapelessAuto(new ItemStack(ModItems.rod_dual_empty, 1), ModItems.rod_empty, ModItems.rod_empty );
         CraftingManager.addShapelessAuto(new ItemStack(ModItems.rod_empty, 4), ModItems.rod_quad_empty );
@@ -96,6 +96,7 @@ public class RodRecipes {
         addRBMKRod(ModItems.billet_uranium_fuel, ModItems.rbmk_fuel_meu);
         addRBMKRod(U233, ModItems.rbmk_fuel_heu233);
         addRBMKRod(U235, ModItems.rbmk_fuel_heu235);
+        addRBMKRod(ModItems.billet_uzh, ModItems.rbmk_fuel_uzh);
         addRBMKRod(ModItems.billet_thorium_fuel, ModItems.rbmk_fuel_thmeu);
         addRBMKRod(ModItems.billet_mox_fuel, ModItems.rbmk_fuel_mox);
         addRBMKRod(ModItems.billet_plutonium_fuel, ModItems.rbmk_fuel_lep);

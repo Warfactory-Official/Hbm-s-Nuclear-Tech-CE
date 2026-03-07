@@ -1,6 +1,7 @@
 package com.hbm.tileentity.machine.rbmk;
 
 import com.hbm.api.fluid.IFluidStandardTransceiver;
+import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.capability.NTMFluidHandlerWrapper;
 import com.hbm.entity.projectile.EntityRBMKDebris.DebrisType;
@@ -40,7 +41,7 @@ import javax.annotation.Nullable;
 import java.util.Map;
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 @AutoRegister
-public class TileEntityRBMKHeater extends TileEntityRBMKSlottedBase implements IFluidStandardTransceiver, IGUIProvider, SimpleComponent, CompatHandler.OCComponent {
+public class TileEntityRBMKHeater extends TileEntityRBMKSlottedBase implements IFluidStandardTransceiverMK2, IGUIProvider, SimpleComponent, CompatHandler.OCComponent {
 
 	public FluidTankNTM feed;
 	public FluidTankNTM steam;
@@ -82,13 +83,19 @@ public class TileEntityRBMKHeater extends TileEntityRBMKSlottedBase implements I
 					this.heat -= (step.heatReq * ops / TU_PER_DEGREE) * trait.getEfficiency(FT_Heatable.HeatingType.HEATEXCHANGER);
 				}
 
+				if(eff <= 0) {
+					feed.setTankType(Fluids.NONE);
+					steam.setTankType(Fluids.NONE);
+				}
+
 			} else {
+				feed.setTankType(Fluids.NONE);
 				steam.setTankType(Fluids.NONE);
 			}
 
 			this.trySubscribe(feed.getTankType(), world, pos.getX(), pos.getY() - 1, pos.getZ(), Library.NEG_Y);
 			for(DirPos pos : getOutputPos()) {
-				if(this.steam.getFill() > 0) this.sendFluid(steam, world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
+				if(this.steam.getFill() > 0) this.tryProvide(steam, world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
 			}
 		}
 		

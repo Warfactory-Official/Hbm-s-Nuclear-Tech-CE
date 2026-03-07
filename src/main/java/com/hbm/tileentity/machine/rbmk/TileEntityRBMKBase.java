@@ -5,7 +5,6 @@ import com.hbm.api.fluidmk2.FluidNode;
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.rbmk.RBMKBase;
-import com.hbm.config.MachineConfig;
 import com.hbm.entity.effect.EntitySpear;
 import com.hbm.entity.projectile.EntityRBMKDebris;
 import com.hbm.entity.projectile.EntityRBMKDebris.DebrisType;
@@ -21,14 +20,11 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.AdvancementManager;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
-import com.hbm.saveddata.TomSaveData;
 import com.hbm.tileentity.IOverpressurable;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.tileentity.machine.rbmk.RBMKColumn.ColumnType;
 import com.hbm.util.I18nUtil;
 import io.netty.buffer.ByteBuf;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
-import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -36,7 +32,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
@@ -47,7 +42,6 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -75,10 +69,6 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
     }
 
 	public double heat = 20.0D;
-	public double jumpheight = 0.0D;
-	public float downwardSpeed = 0.0F;
-	public boolean falling = false;
-	public static final byte gravity = 5; //in blocks per s^2
 
 	public int reasimWater;
 	public static final int maxWater = 16000;
@@ -120,33 +110,28 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 	}
 
 	/**
-	 * Around the same for every component except boilers which do not have passive cooling
+	 * Around the same for every component except boilers which do not have passive cooling.
+	 * Requires the amount of connected neighbors to scale cooling
 	 * @return
 	 */
-	public double passiveCooling() {
-		return RBMKDials.getPassiveCooling(world); //default: 5.0D
-	}
-
-	//necessary checks to figure out whether players are close enough to ensure that the reactor can be safely used
-	public boolean shouldUpdate() {
-		return true;
-	}
-
-	public int trackingRange() {
-		return 15;
+	public double passiveCooling(int neighbors) {
+		double min = RBMKDials.getPassiveCoolingInner(world); //default: 0.1D
+		double max = RBMKDials.getPassiveCooling(world); //default: 1.0D
+		return min + (max - min) * ((4 - MathHelper.clamp(neighbors, 0, 4)) / 4D);
 	}
 
     @Override
     public void update() {
 
         if(!world.isRemote) {
+			this.world.profiler.startSection("rbmkBase_heat_movement");
             moveHeat();
-            if(RBMKDials.getReasimBoilers(world))
-                boilWater();
-            coolPassively();
-            jump();
+            if(RBMKDials.getReasimBoilers(world)) {
+				this.world.profiler.endStartSection("rbmkBase_reasim_boilers");
+				boilWater();
+			}
 
-            networkPackNT(trackingRange());
+            networkPackNT(15);
         }
     }
 
@@ -157,39 +142,6 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
         if (world == null) return;
         markChanged();
     }
-
-	private void jump(){
-		if(this.heat <= MachineConfig.rbmkJumpTemp && !falling)
-			return;
-
-		if(!falling){ // linear rise
-			if(this.heat > MachineConfig.rbmkJumpTemp){
-				if(this.jumpheight > 0 || world.rand.nextInt((int)(25D*maxHeat()/(this.heat-MachineConfig.rbmkJumpTemp+200D))+1) == 0){
-					double change = (this.heat-MachineConfig.rbmkJumpTemp)*0.0002D;
-					double heightLimit = (this.heat-MachineConfig.rbmkJumpTemp)*0.002D;
-
-					this.jumpheight = this.jumpheight + change;
-
-					if(this.jumpheight > heightLimit){
-						this.jumpheight = heightLimit;
-						this.falling = true;
-					}
-				}
-			} else {
-				this.falling = true;
-			}
-		} else{ // gravity fall
-			if(this.jumpheight > 0){
-				this.downwardSpeed = this.downwardSpeed + gravity * 0.05F;
-				this.jumpheight = this.jumpheight - this.downwardSpeed;
-			} else {
-				this.jumpheight = 0;
-				this.downwardSpeed = 0;
-				this.falling = false;
-				world.playSound(null, pos.getX(),  pos.getY() + 4,  pos.getZ(), HBMSoundHandler.rbmkLid, SoundCategory.BLOCKS, 2.0F, 1.0F);
-			}
-		}
-	}
 
 
 	/**
@@ -318,21 +270,15 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 
             this.markDirty();
         }
+
+		this.world.profiler.endStartSection("rbmkBase_rpassive_cooling");
+		coolPassively(members - 1);
+		this.world.profiler.endSection();
     }
 
-	private void coolPassively() {
-
-		if(TomSaveData.forWorld(world).fire > 1e-5) {
-			double light = this.world.getLightFor(EnumSkyBlock.SKY, getPos()) / 15D;
-			if(heat < 20 + (480 * light)) {
-				this.heat += this.passiveCooling() * 2;
-			}
-		}
-
-		this.heat -= this.passiveCooling();
-
-		if(heat < 20)
-			heat = 20D;
+	protected void coolPassively(int neighbors) {
+		this.heat -= this.passiveCooling(neighbors);
+		if(heat < 20) heat = 20D;
 	}
 
 	public RBMKType getRBMKType() {
@@ -699,7 +645,7 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
     private AxisAlignedBB renderBoundingBox;
 
 	@Override
-	public AxisAlignedBB getRenderBoundingBox() {
+	public @NotNull AxisAlignedBB getRenderBoundingBox() {
         if (renderBoundingBox == null) {
             renderBoundingBox = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 17, pos.getZ() + 1);
         }

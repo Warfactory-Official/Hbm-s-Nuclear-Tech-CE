@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import com.hbm.inventory.RecipesCommon;
 import com.hbm.inventory.recipes.loader.SerializableRecipe;
+import com.hbm.items.ItemEnums;
 import com.hbm.items.ModItems;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -15,6 +16,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import static com.hbm.inventory.OreDictManager.SBD;
 
 public class ParticleAcceleratorRecipes extends SerializableRecipe {
 
@@ -78,6 +81,9 @@ public class ParticleAcceleratorRecipes extends SerializableRecipe {
                 new ItemStack(ModItems.dust)));
         recipes.add(new ParticleAcceleratorRecipe(new RecipesCommon.ComparableStack(ModItems.particle_sparkticle),
                 new RecipesCommon.ComparableStack(ModItems.particle_higgs), 70_000, new ItemStack(ModItems.particle_digamma), null));
+        recipes.add(new ParticleAcceleratorRecipe(new RecipesCommon.ComparableStack(ModItems.item_expensive, 1,
+                ItemEnums.EnumExpensiveType.GOLD_DUST), new RecipesCommon.OreDictStack(SBD.ingot()), 10_000,
+                new ItemStack(ModItems.item_expensive, 1, ItemEnums.EnumExpensiveType.DEGENERATE_MATTER.ordinal()), null));
         recipes.add(new ParticleAcceleratorRecipe(new RecipesCommon.ComparableStack(Items.CHICKEN),
                 new RecipesCommon.ComparableStack(Items.CHICKEN), 100, new ItemStack(ModItems.nugget), new ItemStack(ModItems.nugget)));
     }

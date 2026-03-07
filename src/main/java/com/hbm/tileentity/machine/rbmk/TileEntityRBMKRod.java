@@ -60,6 +60,7 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 	public double lastFluxRatio;
 
 	public boolean hasRod;
+	public int rodColor = 0;
 
 	// Fuel rod item data client sync
 	private String fuelYield;
@@ -72,21 +73,6 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
             new Vec3d(0, 0, 1),  // SOUTH
             new Vec3d(-1, 0, 0)  // WEST
     };
-
-    private int cherenkovVisualTimer = 0;
-
-	@SideOnly(Side.CLIENT)
-	public float fuelR;
-	@SideOnly(Side.CLIENT)
-	public float fuelG;
-	@SideOnly(Side.CLIENT)
-	public float fuelB;
-	@SideOnly(Side.CLIENT)
-	public float cherenkovR;
-	@SideOnly(Side.CLIENT)
-	public float cherenkovG;
-	@SideOnly(Side.CLIENT)
-	public float cherenkovB;
 
 	public TileEntityRBMKRod() {
 		super(1);
@@ -117,6 +103,7 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 		if(!world.isRemote) {
 			ItemStack stack = inventory.getStackInSlot(0).copy();
 			if(stack.getItem() instanceof ItemRBMKRod rod) {
+				this.rodColor = rod.colorTint;
 				double fluxRatioOut;
 				double fluxQuantityOut;
 				// Experimental flux ratio curve rods!
@@ -144,10 +131,6 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 				rod.updateHeat(world, stack, 1.0D);
 				this.heat += rod.provideHeat(world, stack, heat, 1.0D);
 				inventory.setStackInSlot(0, stack);
-
-                if (this.fluxQuantity > 0.01) {
-                    this.cherenkovVisualTimer = 10;
-                }
 				
 				if(!this.hasLid()) {
                     ChunkRadiationManager.proxy.incrementRad(world, pos, (float) (fluxQuantity * 0.05F), (float) (fluxQuantity * 10F));
@@ -184,10 +167,6 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 
 				super.update();
 			}
-
-            if(cherenkovVisualTimer > 0) {
-                cherenkovVisualTimer--;
-            }
 		}
 	}
 
@@ -275,7 +254,7 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 		buf.writeDouble(this.lastFluxQuantity);
 		buf.writeDouble(this.lastFluxRatio);
 		buf.writeBoolean(this.hasRod);
-        buf.writeInt(this.cherenkovVisualTimer);
+		buf.writeInt(this.rodColor);
 		ItemStack stack = this.inventory.getStackInSlot(0);
 		if(this.hasRod) {
 			ItemRBMKRod rod = ((ItemRBMKRod)stack.getItem());
@@ -293,18 +272,11 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 		this.fluxQuantity = buf.readDouble();
 		this.fluxFastRatio = buf.readDouble();
 		this.hasRod = buf.readBoolean();
-        this.cherenkovVisualTimer = buf.readInt();
+		this.rodColor = buf.readInt();
 		if(this.hasRod) {
 			fuelYield = BufferUtil.readString(buf);
 			fuelXenon = BufferUtil.readString(buf);
 			fuelHeat = BufferUtil.readString(buf);
-			ItemRBMKRod rod = (ItemRBMKRod) Item.getByNameOrId("hbm:" + BufferUtil.readString(buf));
-			this.fuelR = rod.fuelR;
-			this.fuelG = rod.fuelG;
-			this.fuelB = rod.fuelB;
-			this.cherenkovR = rod.cherenkovR;
-			this.cherenkovG = rod.cherenkovG;
-			this.cherenkovB = rod.cherenkovB;
 		} else {
 			fuelYield = fuelXenon = fuelHeat = null;
 		}
@@ -324,6 +296,8 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 	
 	@Override
 	public void onMelt(int reduce) {
+
+		boolean moderated = this.isModerated();
 		int h = RBMKDials.getColumnHeight(world);
 		reduce = MathHelper.clamp(reduce, 1, h);
 		
@@ -358,19 +332,20 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 		} else {
 			this.standardMelt(reduce);
 		}
+
+		if(moderated) {
+
+			int count = 2 + world.rand.nextInt(2);
+
+			for(int i = 0; i < count; i++) {
+				spawnDebris(DebrisType.GRAPHITE);
+			}
+		}
 		
 		spawnDebris(DebrisType.ELEMENT);
 		
 		if(this.getBlockMetadata() == RBMKBase.DIR_NORMAL_LID.ordinal() + RBMKBase.offset)
 			spawnDebris(DebrisType.LID);
-
-		if(MobConfig.enableElementals) {
-			List<EntityPlayer> players = world.getEntitiesWithinAABB(EntityPlayer.class, new AxisAlignedBB(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5).grow(100, 100, 100));
-
-			for(EntityPlayer player : players) {
-				player.getEntityData().getCompoundTag(EntityPlayer.PERSISTED_NBT_TAG).setBoolean("radMark", true);
-			}
-		}
 	}
 
 	@Override
