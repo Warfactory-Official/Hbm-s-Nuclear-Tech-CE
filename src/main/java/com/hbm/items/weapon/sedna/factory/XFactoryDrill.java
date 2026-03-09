@@ -9,7 +9,7 @@ import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.impl.ItemGunDrill;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
 import com.hbm.items.weapon.sedna.mags.MagazineFluid;
-import com.hbm.items.weapon.sedna.mods.WeaponModManager;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
 import com.hbm.render.anim.sedna.BusAnimationSequenceSedna;
@@ -58,48 +58,49 @@ public class XFactoryDrill {
         );
     }
 
-    public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_DRILL_FIRE = (stack, ctx) -> {
-        doStandardFire(stack, ctx, true);
-    };
+    public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_DRILL_FIRE = (stack, ctx) -> doStandardFire(stack, ctx, true);
+
 
     public static void doStandardFire(ItemStack stack, ItemGunBaseNT.LambdaContext ctx, boolean calcWear) {
         EntityPlayer player = ctx.getPlayer();
         int index = ctx.configIndex;
         if (player == null) return;
 
-        ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.GunAnimation.CYCLE, ctx.configIndex);
+        Lego.spawnBullet(player.world, () -> {
+            ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.GunAnimation.CYCLE, index);
 
-        Receiver primary = ctx.config.getReceivers(stack)[0];
-        IMagazine mag = primary.getMagazine(stack);
+            Receiver primary = ctx.config.getReceivers(stack)[0];
+            IMagazine mag = primary.getMagazine(stack);
 
-        RayTraceResult mop = EntityDamageUtil.getMouseOver(ctx.getPlayer(), getModdableReach(stack, 5.0D));
-        if(mop != null) {
-            if(mop.typeOfHit == mop.typeOfHit.ENTITY) {
-                float damage = primary.getBaseDamage(stack);
-                if(mop.entityHit instanceof EntityLivingBase) {
-                    EntityDamageUtil.attackEntityFromNT((EntityLivingBase) mop.entityHit, DamageSource.causePlayerDamage(ctx.getPlayer()), damage, true, true, 0.1F, getModdableDTNegation(stack, 2F), getModdablePiercing(stack, 0.15F));
-                } else {
-                    mop.entityHit.attackEntityFrom(DamageSource.causePlayerDamage(ctx.getPlayer()), damage);
+            RayTraceResult mop = EntityDamageUtil.getMouseOver(ctx.getPlayer(), getModdableReach(stack, 5.0D));
+            if(mop != null) {
+                if(mop.typeOfHit == RayTraceResult.Type.ENTITY) {
+                    float damage = primary.getBaseDamage(stack);
+                    if(mop.entityHit instanceof EntityLivingBase) {
+                        EntityDamageUtil.attackEntityFromNT((EntityLivingBase) mop.entityHit, DamageSource.causePlayerDamage(ctx.getPlayer()), damage, true, true, 0.1F, getModdableDTNegation(stack, 2F), getModdablePiercing(stack, 0.15F));
+                    } else {
+                        mop.entityHit.attackEntityFrom(DamageSource.causePlayerDamage(ctx.getPlayer()), damage);
+                    }
                 }
-            }
-            if(player != null && mop.typeOfHit == mop.typeOfHit.BLOCK) {
+                if(player != null && mop.typeOfHit == RayTraceResult.Type.BLOCK) {
 
-                int aoe = player.isSneaking() ? 0 : getModdableAoE(stack, 1);
-                for(int i = -aoe; i <= aoe; i++) {
-                    for(int j = -aoe; j <= aoe; j++) {
-                        for(int k = -aoe; k <= aoe; k++) {
-                            BlockPos targetPos = mop.getBlockPos().add(i, j, k);
-                            breakExtraBlock(player.world, targetPos, player, mop.getBlockPos());
+                    int aoe = player.isSneaking() ? 0 : getModdableAoE(stack, 1);
+                    for(int i = -aoe; i <= aoe; i++) {
+                        for(int j = -aoe; j <= aoe; j++) {
+                            for(int k = -aoe; k <= aoe; k++) {
+                                BlockPos targetPos = mop.getBlockPos().add(i, j, k);
+                                breakExtraBlock(player.world, targetPos, player, mop.getBlockPos());
+                            }
                         }
                     }
                 }
             }
-        }
-        int ammoToUse = 10;
+            int ammoToUse = 10;
 
-        if(WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_ENGINE_ELECTRIC)) ammoToUse = 1_000; // that's 1,000 operations
-        mag.useUpAmmo(stack, ctx.inventory, ammoToUse);
-        if(calcWear) ItemGunBaseNT.setWear(stack, index, Math.min(ItemGunBaseNT.getWear(stack, index), ctx.config.getDurability(stack)));
+            if(XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_ENGINE_ELECTRIC)) ammoToUse = 1_000; // that's 1,000 operations
+            mag.useUpAmmo(stack, ctx.inventory, ammoToUse);
+            if(calcWear) ItemGunBaseNT.setWear(stack, index, Math.min(ItemGunBaseNT.getWear(stack, index), ctx.config.getDurability(stack)));
+        });
     }
 
     public static void breakExtraBlock(World world, BlockPos pos, EntityPlayer playerEntity, BlockPos refPos) {
@@ -134,11 +135,11 @@ public class XFactoryDrill {
     }
 
     // this system technically doesn't need to be part of the GunCfg or Receiver or anything, we can just do this and it works the exact same
-    public static double getModdableReach(ItemStack stack, double base) {		return WeaponModManager.eval(base, stack, D_REACH, ModItems.gun_drill, 0); }
-    public static float getModdableDTNegation(ItemStack stack, float base) {	return WeaponModManager.eval(base, stack, F_DTNEG, ModItems.gun_drill, 0); }
-    public static float getModdablePiercing(ItemStack stack, float base) {		return WeaponModManager.eval(base, stack, F_PIERCE, ModItems.gun_drill, 0); }
-    public static int getModdableAoE(ItemStack stack, int base) {				return WeaponModManager.eval(base, stack, I_AOE, ModItems.gun_drill, 0); }
-    public static int getModdableHarvestLevel(ItemStack stack, int base) {		return WeaponModManager.eval(base, stack, I_HARVEST, ModItems.gun_drill, 0); }
+    public static double getModdableReach(ItemStack stack, double base) {		return XWeaponModManager.eval(base, stack, D_REACH, ModItems.gun_drill, 0); }
+    public static float getModdableDTNegation(ItemStack stack, float base) {	return XWeaponModManager.eval(base, stack, F_DTNEG, ModItems.gun_drill, 0); }
+    public static float getModdablePiercing(ItemStack stack, float base) {		return XWeaponModManager.eval(base, stack, F_PIERCE, ModItems.gun_drill, 0); }
+    public static int getModdableAoE(ItemStack stack, int base) {				return XWeaponModManager.eval(base, stack, I_AOE, ModItems.gun_drill, 0); }
+    public static int getModdableHarvestLevel(ItemStack stack, int base) {		return XWeaponModManager.eval(base, stack, I_HARVEST, ModItems.gun_drill, 0); }
 
     @SuppressWarnings("incomplete-switch")
     public static final BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_DRILL_ANIMS = (stack, type) -> {
@@ -183,7 +184,7 @@ public class XFactoryDrill {
                                 .addPos(0, 0, 0, 250, BusAnimationKeyframeSedna.IType.SIN_FULL)
                         )
                         .addBus("SPIN", new BusAnimationSequenceSedna()
-                                .addPos(360 * 1, 0, 0, 1500, BusAnimationKeyframeSedna.IType.SIN_DOWN)
+                                .addPos(360, 0, 0, 1500, BusAnimationKeyframeSedna.IType.SIN_DOWN)
                         )
                         .addBus("SPEED", new BusAnimationSequenceSedna()
                             .addPos(0.75, 0, 0, 250)

@@ -83,10 +83,8 @@ public class ItemCassette extends Item {
         public int getId() { return id; }
 
 		public static TrackType byIndex(int i) {
-			if (i < VALUES.size())
-				return VALUES.get(i);
-			else
-				return NULL;
+			TrackType track = VALUES.get(i);
+			return track != null ? track : NULL;
 		}
 	}
 
@@ -106,8 +104,10 @@ public class ItemCassette extends Item {
 	@Override
 	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
 		if(tab == this.getCreativeTab() || tab == CreativeTabs.SEARCH) {
-			for(int i = 1; i < TrackType.VALUES.size(); ++i) {
-				items.add(new ItemStack(this, 1, i));
+			for (TrackType track : TrackType.VALUES.values()) {
+				if (track != TrackType.NULL) {
+					items.add(new ItemStack(this, 1, track.getId()));
+				}
 			}
 		}
 	}

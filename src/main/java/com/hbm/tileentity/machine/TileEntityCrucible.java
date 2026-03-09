@@ -5,6 +5,7 @@ import com.google.gson.stream.JsonWriter;
 import com.hbm.api.block.ICrucibleAcceptor;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.blocks.BlockDummyable;
+import com.hbm.config.ServerConfig;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
@@ -16,6 +17,7 @@ import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.inventory.recipes.CrucibleRecipes;
 import com.hbm.items.ModItems;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.tileentity.IConfigurableMachine;
 import com.hbm.tileentity.IGUIProvider;
@@ -121,6 +123,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
                                 if(stack.getCount() == 1) {
                                     inventory.setStackInSlot(i, stack.copy());
                                     item.setDead();
+                                    item.setPickupDelay(60);
                                     break;
                                 } else {
                                     inventory.setStackInSlot(i, stack.copy());
@@ -227,6 +230,24 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
 
             /* sync */
             this.networkPackNT(25);
+        } else {
+
+            if(!this.recipeStack.isEmpty() || !this.wasteStack.isEmpty()) {
+
+                if(world.getTotalWorldTime() % 10 == 0) {
+                    NBTTagCompound fx = new NBTTagCompound();
+                    fx.setString("type", "tower");
+                    fx.setFloat("lift", 10F);
+                    fx.setFloat("base", 0.75F);
+                    fx.setFloat("max", 3.5F);
+                    fx.setInteger("life", 100 + world.rand.nextInt(20));
+                    fx.setInteger("color",0x202020);
+                    fx.setDouble("posX", pos.getX() + 0.5);
+                    fx.setDouble("posY", pos.getY() + 1);
+                    fx.setDouble("posZ", pos.getZ() + 0.5);
+                    MainRegistry.proxy.effectNT(fx);
+                }
+            }
         }
     }
 
@@ -361,9 +382,9 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
             CrucibleRecipes.CrucibleRecipe recipe = getLoadedRecipe();
 
             for(Mats.MaterialStack material : materials) {
-                boolean mainStack = recipe != null && (getQuantaFromType(recipe.input, material.material) > 0 || getQuantaFromType(recipe.output, material.material) > 0);
+                boolean recipeMaterial = recipe != null && (getQuantaFromType(recipe.input, material.material) > 0 || getQuantaFromType(recipe.output, material.material) > 0);
 
-                if(mainStack) {
+                if((recipe == null && !ServerConfig.LEGACY_CRUCIBLE_RULES.get()) || recipeMaterial) {
                     this.addToStack(this.recipeStack, material);
                 } else {
                     this.addToStack(this.wasteStack, material);
@@ -450,7 +471,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
             //if no recipe is loaded, everything will land in the waste stack
             int recipeInputRequired = recipe != null ? getQuantaFromType(recipe.input, mat.material) : 0;
 
-            //this allows pouring the ouput material back into the crucible
+            //this allows pouring the output material back into the crucible
             if(recipe != null && getQuantaFromType(recipe.output, mat.material) > 0) {
                 recipeAmount += mat.amount;
                 matchesRecipe = true;
@@ -458,8 +479,13 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
             }
 
             if(recipeInputRequired == 0) {
-                //if this type isn't required by the recipe, add it to the waste stack
-                wasteAmount += mat.amount;
+                // if no recipe is set and legacy support is turned off, throw everything into the recipe stack
+                if(recipe == null && !ServerConfig.LEGACY_CRUCIBLE_RULES.get()) {
+                    recipeAmount += mat.amount;
+                } else {
+                    //if this type isn't required by the recipe, add it to the waste stack
+                    wasteAmount += mat.amount;
+                }
             } else {
 
                 //the maximum is the recipe's ratio scaled up to the recipe stack's capacity

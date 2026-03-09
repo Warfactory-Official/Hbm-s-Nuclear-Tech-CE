@@ -37,6 +37,7 @@ public abstract class TileEntityCrate extends TileEntityCrateBase implements IGU
     boolean needsUpdate = false;
     private boolean needsSync = false;
     private boolean destroyedByCreativePlayer = false;
+    public transient ItemStack boundItem = ItemStack.EMPTY;
 
     private record CrateDropData(NBTTagCompound persistentData, double radiation) {
     }
@@ -50,22 +51,37 @@ public abstract class TileEntityCrate extends TileEntityCrateBase implements IGU
     protected ItemStackHandler getNewInventory(int scount, int slotlimit){
         return new ItemStackHandler(scount){
             @Override
-            public ItemStack getStackInSlot(int slot) {
+            public @NotNull ItemStack getStackInSlot(int slot) {
                 ensureFilled();
                 return super.getStackInSlot(slot);
             }
 
             @Override
-            public void setStackInSlot(int slot, ItemStack stack) {
+            public void setStackInSlot(int slot, @NotNull ItemStack stack) {
                 ensureFilled();
                 super.setStackInSlot(slot, stack);
             }
+
+            @Override
+            public boolean isItemValid(int slot, @NotNull ItemStack stack) {
+                if (!boundItem.isEmpty() && (stack == boundItem || ItemStack.areItemStacksEqual(stack, boundItem))) {
+                    return false;
+                }
+                return super.isItemValid(slot, stack);
+            }
+
 
             @Override
             protected void onContentsChanged(int slot) {
                 super.onContentsChanged(slot);
                 markDirty();
                 needsUpdate = true;
+
+                if (!boundItem.isEmpty()) {
+                    NBTTagCompound nbt = boundItem.hasTagCompound() ? boundItem.getTagCompound() : new NBTTagCompound();
+                    writeNBT(nbt);
+                    boundItem.setTagCompound(nbt);
+                }
             }
 
             @Override
@@ -176,7 +192,7 @@ public abstract class TileEntityCrate extends TileEntityCrateBase implements IGU
     }
 
     @Override
-    public String getName() {
+    public @NotNull String getName() {
         return this.hasCustomName() ? this.customName : name;
     }
 
@@ -201,17 +217,22 @@ public abstract class TileEntityCrate extends TileEntityCrateBase implements IGU
             InventoryHelper.dropInventoryItems(world, pos, this);
             return;
         }
-        if (!data.persistentData.isEmpty()) {
-            nbt.setTag(NBT_PERSISTENT_KEY, data.persistentData);
-        }
-        if (data.radiation > 0D) {
-            nbt.setDouble(BlockStorageCrate.CRATE_RAD_KEY, data.radiation);
-        }
+
+        if (!data.persistentData.isEmpty()) nbt.setTag(NBT_PERSISTENT_KEY, data.persistentData);
+        else nbt.removeTag(NBT_PERSISTENT_KEY);
+
+        if (data.radiation > 0D) nbt.setDouble(BlockStorageCrate.CRATE_RAD_KEY, data.radiation);
+        else nbt.removeTag(BlockStorageCrate.CRATE_RAD_KEY);
     }
 
     @Override
     public void readNBT(NBTTagCompound nbt) {
         NBTTagCompound data = nbt.hasKey(NBT_PERSISTENT_KEY) ? nbt.getCompoundTag(NBT_PERSISTENT_KEY) : nbt;
+        if (data.hasKey("lock")) {
+            this.setPins(data.getInteger("lock"));
+            this.setMod(data.getDouble("lockMod"));
+            this.lock();
+        }
         for (int i = 0; i < inventory.getSlots(); i++) {
             String key = "slot" + i;
             if (data.hasKey(key)) {
@@ -219,11 +240,6 @@ public abstract class TileEntityCrate extends TileEntityCrateBase implements IGU
             } else {
                 inventory.setStackInSlot(i, ItemStack.EMPTY);
             }
-        }
-        if (data.hasKey("lock")) {
-            this.setPins(data.getInteger("lock"));
-            this.setMod(data.getDouble("lockMod"));
-            this.lock();
         }
     }
 
@@ -250,5 +266,13 @@ public abstract class TileEntityCrate extends TileEntityCrateBase implements IGU
     @Override
     protected boolean checkLock(EnumFacing facing){
         return facing == null || !isLocked();
+    }
+
+    @Override
+    public boolean isUseableByPlayer(EntityPlayer player) {
+        if (boundItem != null && !boundItem.isEmpty()) {
+            return player.getHeldItemMainhand() == boundItem;
+        }
+        return super.isUseableByPlayer(player);
     }
 }

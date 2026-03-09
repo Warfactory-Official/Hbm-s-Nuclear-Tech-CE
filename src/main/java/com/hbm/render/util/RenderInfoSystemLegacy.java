@@ -1,5 +1,6 @@
 package com.hbm.render.util;
 
+import com.hbm.config.ClientConfig;
 import com.hbm.config.GeneralConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -64,17 +65,20 @@ public class RenderInfoSystemLegacy {
 
         int longest = 0;
 
-        for(InfoEntry entry : messages.values()) {
+        for(InfoEntry entry : entries) {
             int length = mc.fontRenderer.getStringWidth(entry.text);
 
             if(length > longest)
                 longest = length;
         }
 
-        int mode = GeneralConfig.hintPos;
+        int mode = ClientConfig.INFO_POSITION.get();
 
         int pX = mode == 0 ? 15 : mode == 1 ? (resolution.getScaledWidth() - longest - 15) : mode == 2 ? (resolution.getScaledWidth() / 2 + 7) : (resolution.getScaledWidth() / 2 - longest - 6);
         int pZ = mode == 0 ? 15 : mode == 1 ? 15 : resolution.getScaledHeight() / 2 + 7;
+
+        pX += ClientConfig.INFO_OFFSET_HORIZONTAL.get();
+        pZ += ClientConfig.INFO_OFFSET_VERTICAL.get();
 
         int side = pX + 5 + longest;
         int height = messages.size() * 10 + pZ + 2;
@@ -95,7 +99,7 @@ public class RenderInfoSystemLegacy {
         int off = 0;
         long now = System.currentTimeMillis();
 
-        for(InfoEntry entry : messages.values()) {
+        for(InfoEntry entry : entries) {
 
             int elapsed = (int) (now - entry.start);
 

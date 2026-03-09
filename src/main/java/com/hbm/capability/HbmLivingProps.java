@@ -2,6 +2,7 @@ package com.hbm.capability;
 
 import com.hbm.capability.HbmLivingCapability.IEntityHbmProps;
 import com.hbm.config.RadiationConfig;
+import com.hbm.config.ServerConfig;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.main.AdvancementManager;
@@ -211,6 +212,7 @@ public class HbmLivingProps {
 
     /// CONTAGION ///
     public static int getContagion(EntityLivingBase entity) {
+        if(!ServerConfig.ENABLE_MKU.get()) return 0;
         return getData(entity).getContagion();
     }
 

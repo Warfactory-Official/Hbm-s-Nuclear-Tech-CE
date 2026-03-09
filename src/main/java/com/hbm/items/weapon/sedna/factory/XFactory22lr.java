@@ -8,7 +8,7 @@ import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.mags.MagazineFullReload;
-import com.hbm.items.weapon.sedna.mods.WeaponModManager;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.ResourceManager;
 import com.hbm.particle.SpentCasing;
@@ -53,7 +53,7 @@ public class XFactory22lr {
     }
 
     public static Function<ItemStack, String> LAMBDA_NAME_AM180 = (stack) -> {
-        if(WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_SILENCER)) return stack.getTranslationKey() + "_silenced";
+        if(XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_SILENCER)) return stack.getTranslationKey() + "_silenced";
         return null;
     };
 

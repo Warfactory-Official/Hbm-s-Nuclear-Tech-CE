@@ -1,13 +1,15 @@
 package com.hbm.tileentity.machine.storage;
 
 import com.hbm.api.energymk2.IBatteryItem;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.container.ContainerBatterySocket;
 import com.hbm.inventory.gui.GUIBatterySocket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
-
 import com.hbm.util.BufferUtil;
+import com.hbm.util.EnumUtil;
 import io.netty.buffer.ByteBuf;
 import li.cil.oc.api.machine.Arguments;
 import li.cil.oc.api.machine.Callback;
@@ -25,7 +27,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @AutoRegister
-public class TileEntityBatterySocket extends TileEntityBatteryBase {
+public class TileEntityBatterySocket extends TileEntityBatteryBase implements IRORValueProvider, IRORInteractive {
 
     public long[] log = new long[20];
     public long delta = 0;
@@ -87,8 +89,15 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase {
         return new int[]{0};
     }
 
-    @Override public long getPower() { return powerFromStack(this.inventory.getStackInSlot(0)); }
-    @Override public long getMaxPower() { return maxPowerFromStack(this.inventory.getStackInSlot(0)); }
+    @Override
+    public long getPower() {
+        return powerFromStack(this.inventory.getStackInSlot(0));
+    }
+
+    @Override
+    public long getMaxPower() {
+        return maxPowerFromStack(this.inventory.getStackInSlot(0));
+    }
 
     @Override
     public void setPower(long power) {
@@ -98,12 +107,12 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase {
     }
 
     public static long powerFromStack(ItemStack stack) {
-        if(stack == null || !(stack.getItem() instanceof IBatteryItem)) return 0;
+        if (stack == null || !(stack.getItem() instanceof IBatteryItem)) return 0;
         return ((IBatteryItem) stack.getItem()).getCharge(stack);
     }
 
     public static long maxPowerFromStack(ItemStack stack) {
-        if(stack == null || !(stack.getItem() instanceof IBatteryItem)) return 0;
+        if (stack == null || !(stack.getItem() instanceof IBatteryItem)) return 0;
         return ((IBatteryItem) stack.getItem()).getMaxCharge(stack);
     }
 
@@ -127,31 +136,20 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase {
     public BlockPos[] getPortPos() {
         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        return new BlockPos[]{
-                new BlockPos(pos.getX(), pos.getY(), pos.getZ()),
-                new BlockPos(pos.getX() - dir.offsetX, pos.getY(), pos.getZ() - dir.offsetZ),
-                new BlockPos(pos.getX() + rot.offsetX, pos.getY(), pos.getZ() + rot.offsetZ),
-                new BlockPos(pos.getX() - dir.offsetX + rot.offsetX, pos.getY(), pos.getZ() - dir.offsetZ + rot.offsetZ)
-        };
+        return new BlockPos[]{new BlockPos(pos.getX(), pos.getY(), pos.getZ()), new BlockPos(pos.getX() - dir.offsetX, pos.getY(), pos.getZ() - dir.offsetZ), new BlockPos(pos.getX() + rot.offsetX, pos.getY(), pos.getZ() + rot.offsetZ), new BlockPos(pos.getX() - dir.offsetX + rot.offsetX, pos.getY(), pos.getZ() - dir.offsetZ + rot.offsetZ)};
     }
 
     @Override
     public DirPos[] getConPos() {
         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        return new DirPos[]{
-                new DirPos(pos.getX() + dir.offsetX, pos.getY(), pos.getZ() + dir.offsetZ, dir),
-                new DirPos(pos.getX() + dir.offsetX + rot.offsetX, pos.getY(), pos.getZ() + dir.offsetZ + rot.offsetZ, dir),
+        return new DirPos[]{new DirPos(pos.getX() + dir.offsetX, pos.getY(), pos.getZ() + dir.offsetZ, dir), new DirPos(pos.getX() + dir.offsetX + rot.offsetX, pos.getY(), pos.getZ() + dir.offsetZ + rot.offsetZ, dir),
 
-                new DirPos(pos.getX() - dir.offsetX * 2, pos.getY(), pos.getZ() - dir.offsetZ * 2, dir.getOpposite()),
-                new DirPos(pos.getX() - dir.offsetX * 2 + rot.offsetX, pos.getY(), pos.getZ() - dir.offsetZ * 2 + rot.offsetZ, dir.getOpposite()),
+                new DirPos(pos.getX() - dir.offsetX * 2, pos.getY(), pos.getZ() - dir.offsetZ * 2, dir.getOpposite()), new DirPos(pos.getX() - dir.offsetX * 2 + rot.offsetX, pos.getY(), pos.getZ() - dir.offsetZ * 2 + rot.offsetZ, dir.getOpposite()),
 
-                new DirPos(pos.getX() + rot.offsetX * 2, pos.getY(), pos.getZ() + rot.offsetZ * 2, rot),
-                new DirPos(pos.getX() + rot.offsetX * 2 - dir.offsetX, pos.getY(), pos.getZ() + rot.offsetZ * 2 - dir.offsetZ, rot),
+                new DirPos(pos.getX() + rot.offsetX * 2, pos.getY(), pos.getZ() + rot.offsetZ * 2, rot), new DirPos(pos.getX() + rot.offsetX * 2 - dir.offsetX, pos.getY(), pos.getZ() + rot.offsetZ * 2 - dir.offsetZ, rot),
 
-                new DirPos(pos.getX() - rot.offsetX, pos.getY(), pos.getZ() - rot.offsetZ, rot.getOpposite()),
-                new DirPos(pos.getX() - rot.offsetX - dir.offsetX, pos.getY(), pos.getZ() - rot.offsetZ - dir.offsetZ, rot.getOpposite())
-        };
+                new DirPos(pos.getX() - rot.offsetX, pos.getY(), pos.getZ() - rot.offsetZ, rot.getOpposite()), new DirPos(pos.getX() - rot.offsetX - dir.offsetX, pos.getY(), pos.getZ() - rot.offsetZ - dir.offsetZ, rot.getOpposite())};
     }
 
     @Override
@@ -171,31 +169,82 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase {
     public AxisAlignedBB getRenderBoundingBox() {
 
         if (bb == null) {
-            bb = new AxisAlignedBB(
-                    pos.getX() - 1,
-                    pos.getY(),
-                    pos.getZ() - 1,
-                    pos.getX() + 2,
-                    pos.getY() + 2,
-                    pos.getZ() + 2
-            );
+            bb = new AxisAlignedBB(pos.getX() - 1, pos.getY(), pos.getZ() - 1, pos.getX() + 2, pos.getY() + 2, pos.getZ() + 2);
         }
 
         return bb;
     }
 
-    // do some opencomputer stuff
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "fill", PREFIX_VALUE + "fillpercent", PREFIX_VALUE + "delta", PREFIX_FUNCTION + "setmode" + NAME_SEPARATOR + "mode", PREFIX_FUNCTION + "setmode" + NAME_SEPARATOR + "mode" + PARAM_SEPARATOR + "fallback", PREFIX_FUNCTION + "setredmode" + NAME_SEPARATOR + "mode", PREFIX_FUNCTION + "setredmode" + NAME_SEPARATOR + "mode" + PARAM_SEPARATOR + "fallback", PREFIX_FUNCTION + "setpriority" + NAME_SEPARATOR + "priority",};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "fill").equals(name)) return "" + this.getPower();
+        if ((PREFIX_VALUE + "fillpercent").equals(name))
+            return "" + this.getPower() * 100 / (Math.max(this.getMaxPower(), 1));
+        if ((PREFIX_VALUE + "delta").equals(name)) return "" + delta;
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+
+        if ((PREFIX_FUNCTION + "setmode").equals(name) && params.length > 0) {
+            int mode = IRORInteractive.parseInt(params[0], 0, 3);
+
+            if (mode != this.redLow) {
+                this.redLow = (short) mode;
+                this.markChanged();
+                return null;
+            } else if (params.length > 1) {
+                int altmode = IRORInteractive.parseInt(params[1], 0, 3);
+                this.redLow = (short) altmode;
+                this.markChanged();
+                return null;
+            }
+            return null;
+        }
+
+        if ((PREFIX_FUNCTION + "setredmode").equals(name) && params.length > 0) {
+            int mode = IRORInteractive.parseInt(params[0], 0, 3);
+
+            if (mode != this.redHigh) {
+                this.redHigh = (short) mode;
+                this.markChanged();
+                return null;
+            } else if (params.length > 1) {
+                int altmode = IRORInteractive.parseInt(params[1], 0, 3);
+                this.redHigh = (short) altmode;
+                this.markChanged();
+                return null;
+            }
+            return null;
+        }
+
+        if ((PREFIX_FUNCTION + "setpriority").equals(name) && params.length > 0) {
+            int priority = IRORInteractive.parseInt(params[0], 0, 2) + 1;
+            this.priority = EnumUtil.grabEnumSafely(ConnectionPriority.values(), priority);
+            this.markChanged();
+            return null;
+        }
+        return null;
+    }
+
     @Callback(direct = true)
     @Optional.Method(modid = "opencomputers")
     public Object[] getEnergyInfo(Context context, Arguments args) {
-        return new Object[] {getPower(), getMaxPower(), this.delta};
+        return new Object[]{getPower(), getMaxPower(), this.delta};
     }
 
     @Callback(direct = true)
     @Optional.Method(modid = "opencomputers")
     public Object[] getPackInfo(Context context, Arguments args) {
-        if(inventory.getStackInSlot(0).isEmpty() || !(inventory.getStackInSlot(0).getItem() instanceof IBatteryItem bat)) return new Object[] {"", 0, 0};
-        return new Object[] {inventory.getStackInSlot(0).getTranslationKey(), bat.getChargeRate(inventory.getStackInSlot(0)), bat.getDischargeRate(inventory.getStackInSlot(0))};
+        if (inventory.getStackInSlot(0).isEmpty() || !(inventory.getStackInSlot(0).getItem() instanceof IBatteryItem bat))
+            return new Object[]{"", 0, 0};
+        return new Object[]{inventory.getStackInSlot(0).getTranslationKey(), bat.getChargeRate(inventory.getStackInSlot(0)), bat.getDischargeRate(inventory.getStackInSlot(0))};
     }
 
     @Callback(direct = true)
@@ -204,21 +253,13 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase {
         Object[] energyInfo = getEnergyInfo(context, args);
         Object[] packInfo = getPackInfo(context, args);
         Object[] modeInfo = getModeInfo(context, args);
-        return new Object[] {energyInfo[0], energyInfo[1], energyInfo[2], modeInfo[0], modeInfo[1], modeInfo[2], packInfo[0], packInfo[1], packInfo[2]};
+        return new Object[]{energyInfo[0], energyInfo[1], energyInfo[2], modeInfo[0], modeInfo[1], modeInfo[2], packInfo[0], packInfo[1], packInfo[2]};
     }
 
     @Override
     @Optional.Method(modid = "opencomputers")
     public String[] methods() {
-        return new String[] {
-                "getEnergyInfo",
-                "getPackInfo",
-                "getModeInfo",
-                "setModeLow",
-                "setModeHigh",
-                "setPriority",
-                "getInfo"
-        };
+        return new String[]{"getEnergyInfo", "getPackInfo", "getModeInfo", "setModeLow", "setModeHigh", "setPriority", "getInfo"};
     }
 
     @Override

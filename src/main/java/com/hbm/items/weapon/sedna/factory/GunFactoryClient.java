@@ -164,6 +164,8 @@ public class GunFactoryClient {
         p35800.setRendererBeam(LegoClient.RENDER_CRACKLE);
         p35800_bl.setRendererBeam(LegoClient.RENDER_BLACK_LIGHTNING);
 
+        ni4ni_arc.setRendererBeam(LegoClient.RENDER_NI4NI_BOLT);
+
         ct_hook.setRenderer(LegoClient.RENDER_CT_HOOK);
         ct_mortar.setRenderer(LegoClient.RENDER_CT_MORTAR);
         ct_mortar_charge.setRenderer(LegoClient.RENDER_CT_MORTAR_CHARGE);

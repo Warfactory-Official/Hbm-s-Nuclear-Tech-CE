@@ -2,12 +2,10 @@ package com.hbm.entity.item;
 
 import com.hbm.api.conveyor.IConveyorBelt;
 import com.hbm.api.conveyor.IEnterableBlock;
-import com.hbm.tileentity.network.TileEntityCraneBase;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.MoverType;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -118,16 +116,7 @@ public abstract class EntityMovingConveyorObject extends Entity {
                     else if (lastPos.getX() == newPos.getX() && lastPos.getY() == newPos.getY() && lastPos.getZ() < newPos.getZ())
                         dir = EnumFacing.NORTH;
 
-                    TileEntity tileEntity = world.getTileEntity(newPos);
-                    if(tileEntity instanceof TileEntityCraneBase) {
-                        TileEntityCraneBase craneBase = (TileEntityCraneBase) tileEntity;
-                        EnumFacing inputSide = craneBase.getInputSide();
-                        if (dir == inputSide) {
-                            enterBlock(enterable, newPos, dir);
-                        }
-                    } else {
-                        enterBlock(enterable, newPos, dir);
-                    }
+                    enterBlock(enterable, newPos, dir);
 
                 } else {
                     if(!newBlock.getMaterial(world.getBlockState(newPos)).isSolid()) {

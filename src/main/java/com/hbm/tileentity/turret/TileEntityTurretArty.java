@@ -16,6 +16,9 @@ import com.hbm.particle.helper.CasingCreator;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.util.Vec3NT;
 import io.netty.buffer.ByteBuf;
+import li.cil.oc.api.machine.Arguments;
+import li.cil.oc.api.machine.Callback;
+import li.cil.oc.api.machine.Context;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -26,6 +29,7 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -52,8 +56,7 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
     @SideOnly(Side.CLIENT)
     public List<ItemStack> getAmmoTypesForDisplay() {
 
-        if (ammoStacks != null)
-            return ammoStacks;
+        if (ammoStacks != null) return ammoStacks;
 
         ammoStacks = new ArrayList<>();
 
@@ -66,7 +69,7 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
 
     @Override
     protected List<Integer> getAmmoList() {
-        return new ArrayList();
+        return new ArrayList<>();
     }
 
     @Override
@@ -217,8 +220,7 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
             proj.setCargo(new ItemStack(cargo));
         }
 
-        if (this.mode != MODE_CANNON)
-            proj.setWhistle(true);
+        if (this.mode != MODE_CANNON) proj.setWhistle(true);
 
         world.spawnEntity(proj);
 
@@ -258,10 +260,10 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
         if (!world.isRemote) {
             // mlbv: this is NOT how 1.7 deals with it, but I had to put it here to make the retraction work
             // I frankly don't know why
-            this.didJustShoot = false;
+            //this.didJustShoot = false;
             if (this.mode == MODE_MANUAL) {
                 if (!this.targetQueue.isEmpty()) {
-                    this.tPos = this.targetQueue.get(0);
+                    this.tPos = this.targetQueue.getFirst();
                 }
             } else {
                 this.targetQueue.clear();
@@ -291,9 +293,7 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
             }
 
             if (isOn() && hasPower()) {
-
-                if (tPos != null)
-                    this.alignTurret();
+                if (tPos != null) this.alignTurret();
             } else {
                 this.target = null;
                 this.tPos = null;
@@ -301,7 +301,7 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
 
             if (!isOn()) this.targetQueue.clear();
 
-            if (this.target != null && !target.isEntityAlive()) {
+            if (this.target != null && (!target.isEntityAlive() || !world.loadedEntityList.contains(target))) {
                 this.target = null;
                 this.tPos = null;
                 this.stattrak++;
@@ -315,8 +315,7 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
                 if (searchTimer <= 0) {
                     searchTimer = this.getDecetorInterval();
 
-                    if (this.target == null && this.mode != MODE_MANUAL)
-                        this.seekNewTarget();
+                    if (this.target == null && this.mode != MODE_MANUAL) this.seekNewTarget();
                 }
             } else {
                 searchTimer = 0;
@@ -329,6 +328,7 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
             this.power = Library.chargeTEFromItems(inventory, 10, this.power, this.getMaxPower());
 
             networkPackNT(250);
+            didJustShoot = false;
 
             if (casingDelay > 0) {
                 casingDelay--;
@@ -341,10 +341,8 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
             //this will fix the interpolation error when the turret crosses the 360° point
             if (Math.abs(this.lastRotationYaw - this.rotationYaw) > Math.PI) {
 
-                if (this.lastRotationYaw < this.rotationYaw)
-                    this.lastRotationYaw += Math.PI * 2;
-                else
-                    this.lastRotationYaw -= Math.PI * 2;
+                if (this.lastRotationYaw < this.rotationYaw) this.lastRotationYaw += Math.PI * 2;
+                else this.lastRotationYaw -= Math.PI * 2;
             }
         }
     }
@@ -395,8 +393,7 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
     public void handleButtonPacket(int value, int meta) {
         if (meta == 5) {
             this.mode++;
-            if (this.mode > 2)
-                this.mode = 0;
+            if (this.mode > 2) this.mode = 0;
 
             this.tPos = null;
             this.targetQueue.clear();
@@ -442,13 +439,7 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
         float yaw = (float) Math.toDegrees(rotationYaw);
         float pitch = (float) -Math.toDegrees(this.rotationPitch);
 
-        CasingCreator.composeEffect(world,
-                spawn,
-                yaw, pitch,
-                -0.6, 0.3, 0,
-                0.01, world.rand.nextFloat() * 20F - 10F, 0,
-                cachedCasingConfig.getName(),
-                true, 200, 1, 20);
+        CasingCreator.composeEffect(world, spawn, yaw, pitch, -0.6, 0.3, 0, 0.01, world.rand.nextFloat() * 20F - 10F, 0, cachedCasingConfig.getName(), true, 200, 1, 20);
 
         cachedCasingConfig = null;
     }
@@ -464,4 +455,41 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
         return new GUITurretArty(player.inventory, this);
     }
 
+    @Callback
+    @Optional.Method(modid = "opencomputers")
+    public Object[] addCoords(Context context, Arguments args) {
+        this.mode = MODE_MANUAL;
+        if (Math.sqrt(Math.pow(getPos().getX() - args.checkDouble(0), 2) + Math.pow(getPos().getY() - args.checkDouble(1), 2) + Math.pow(getPos().getZ() - args.checkDouble(2), 2)) >= this.getDecetorRange()) // check distance against range
+            return new Object[]{false};
+        targetQueue.add(new Vec3d(args.checkDouble(0), args.checkDouble(1), args.checkDouble(2)));
+        return new Object[]{true};
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public String[] methods() { // :vomit:
+        return new String[]{"setActive", "isActive", "getEnergyInfo", "getWhitelisted", "addWhitelist", "removeWhitelist", "setTargeting", "getTargeting", "hasTarget", "getAngle", "isAligned", "getCurrentTarget", "getTargetDistance", "addCoords"};
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public Object[] invoke(String method, Context context, Arguments args) throws Exception {
+        return switch (method) {
+            case "setActive" -> setActive(context, args);
+            case "isActive" -> isActive(context, args);
+            case "getEnergyInfo" -> getEnergyInfo(context, args);
+            case "getWhitelisted" -> getWhitelisted(context, args);
+            case "addWhitelist" -> addWhitelist(context, args);
+            case "removeWhitelist" -> removeWhitelist(context, args);
+            case "setTargeting" -> setTargeting(context, args);
+            case "getTargeting" -> getTargeting(context, args);
+            case "hasTarget" -> hasTarget(context, args);
+            case "getAngle" -> getAngle(context, args);
+            case "isAligned" -> isAligned(context, args);
+            case "getCurrentTarget" -> getCurrentTarget(context, args);
+            case "getTargetDistance" -> getTargetDistance(context, args);
+            case "addCoords" -> addCoords(context, args);
+            default -> throw new NoSuchMethodException();
+        };
+    }
 }

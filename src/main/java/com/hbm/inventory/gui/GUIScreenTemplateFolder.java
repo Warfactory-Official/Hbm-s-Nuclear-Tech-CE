@@ -1,12 +1,8 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.Tags;
-import com.hbm.config.MachineConfig;
-import com.hbm.inventory.recipes.AssemblerRecipes;
-import com.hbm.inventory.recipes.ChemplantRecipes;
 import com.hbm.inventory.recipes.CrucibleRecipes;
 import com.hbm.items.ModItems;
-import com.hbm.items.machine.ItemAssemblyTemplate;
 import com.hbm.items.machine.ItemCassette;
 import com.hbm.items.machine.ItemStamp;
 import com.hbm.packet.PacketDispatcher;
@@ -18,7 +14,6 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Keyboard;
@@ -65,22 +60,14 @@ public class GUIScreenTemplateFolder extends GuiScreen {
 			for(ItemStack i : ItemStamp.stamps.get(ItemStamp.StampType.WIRE)) allStacks.add(i.copy());
 			for(ItemStack i : ItemStamp.stamps.get(ItemStamp.StampType.CIRCUIT)) allStacks.add(i.copy());
 			// Tracks
-			for (int i = 1; i < ItemCassette.TrackType.VALUES.size(); i++) {
-				allStacks.add(new ItemStack(ModItems.siren_track, 1, i));
+			for (ItemCassette.TrackType track : ItemCassette.TrackType.VALUES.values()) {
+				if (track != ItemCassette.TrackType.NULL) {
+					allStacks.add(new ItemStack(ModItems.siren_track, 1, track.getId()));
+				}
 			}
 		}
 
-        if (MachineConfig.enableOldTemplates) {
-            Item heldFolderItem = heldItem.getItem();
-            AssemblerRecipes.recipes.forEach((compStack, recipe) -> {
-                if (recipe.folders.contains(heldFolderItem)) {
-                    allStacks.add(ItemAssemblyTemplate.writeType(new ItemStack(ModItems.assembly_template), compStack));
-                }
-            });
-        }
-
         if (!this.isJournal) {
-            if (MachineConfig.enableOldTemplates) ChemplantRecipes.recipes.forEach(recipe -> allStacks.add(new ItemStack(ModItems.chemistry_template, 1, recipe.getId())));
             // Crucible Templates
             CrucibleRecipes.recipes.forEach(recipe -> {
                 allStacks.add(new ItemStack(ModItems.crucible_template, 1, recipe.getId()));
@@ -284,11 +271,7 @@ public class GUIScreenTemplateFolder extends GuiScreen {
 
 			ItemStack toRender = stack;
 			// Special rendering logic for templates
-			if (stack.getItem() == ModItems.assembly_template) {
-				toRender = AssemblerRecipes.getOutputFromTempate(stack);
-			} else if (stack.getItem() == ModItems.chemistry_template) {
-				toRender = new ItemStack(ModItems.chemistry_icon, 1, stack.getMetadata());
-			} else if (stack.getItem() == ModItems.crucible_template) {
+			if (stack.getItem() == ModItems.crucible_template) {
 				toRender = CrucibleRecipes.indexMapping.get(stack.getMetadata()).icon;
 			}
 

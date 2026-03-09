@@ -1333,7 +1333,7 @@ public class ClientProxy extends ServerProxy {
                         iy += 0.25;
                     }
 
-                    vec.normalize();
+                    vec.normalizeSelf();
                     double mult = 0.025D;
                     double mX = vec.x * mult;
                     double mZ = vec.z * mult;
@@ -1546,7 +1546,6 @@ public class ClientProxy extends ServerProxy {
                             Vec3d offset = normal.scale(0.2F);
                             ParticleHitDebris particle = new ParticleHitDebris(world, x + offset.x, y + offset.y,
                                     z + offset.z, tex, world.rand.nextInt(16), scale, 40 + world.rand.nextInt(20));
-                            offset.scale(1);
                             particle.motion((float) dir.x, (float) dir.y, (float) dir.z);
                             particle.color(r, g, b);
                             ParticleBatchRenderer.addParticle(particle);

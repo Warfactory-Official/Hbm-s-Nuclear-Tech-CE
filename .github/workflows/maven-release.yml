@@ -1,0 +1,46 @@
+name: Publish Maven Release
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: maven-release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: graalvm
+          java-version: '25'
+          cache: gradle
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Resolve modVersion
+        shell: bash
+        run: |
+          set -euo pipefail
+          MOD_VERSION=$(grep -E '^\s*modVersion\s*=' gradle.properties | sed -E 's/^\s*modVersion\s*=\s*//; s/\r$//' | xargs || true)
+          if [[ -z "${MOD_VERSION}" ]]; then
+            echo "::error::modVersion is empty or missing in gradle.properties"; exit 1
+          fi
+          echo "RELEASE_VERSION=${MOD_VERSION}" >> "$GITHUB_ENV"
+
+      - name: Publish to releases
+        env:
+          MAVEN_USER: ${{ secrets.MAVEN_USER }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+          ARTIFACT_ID: ${{ vars.ARTIFACT_ID }}
+        run: |
+          ./gradlew publish --no-daemon --stacktrace

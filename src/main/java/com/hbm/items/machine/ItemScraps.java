@@ -93,7 +93,6 @@ public class ItemScraps extends ItemAutogen {
     @SideOnly(Side.CLIENT)
     public void registerModels() {
         List<ResourceLocation> variants = new ArrayList<>();
-        ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(new ResourceLocation(Tags.MODID, "items/scraps-stone"), "inventory"));
         for (NTMMaterial mat : Mats.orderedList) {
             if (mat.smeltable == NTMMaterial.SmeltingBehavior.SMELTABLE
                     || mat.smeltable == NTMMaterial.SmeltingBehavior.ADDITIVE) {

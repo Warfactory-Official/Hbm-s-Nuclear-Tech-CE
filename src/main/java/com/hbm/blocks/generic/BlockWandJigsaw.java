@@ -116,7 +116,6 @@ public class BlockWandJigsaw extends BlockContainerBakeable implements IBlockSid
         world.setBlockState(pos, state.withProperty(FACING, facing), 2);
     }
 
-    // Порт логики поворотов декоратора
     @Override
     public int getRotationFromSide(IBlockAccess world, BlockPos pos, EnumFacing efside) {
         int side = efside.getIndex();

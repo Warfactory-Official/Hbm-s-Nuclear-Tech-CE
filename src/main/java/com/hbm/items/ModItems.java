@@ -1733,9 +1733,6 @@ public class ModItems {
     public static final Item bobmazon = new ItemCatalog("bobmazon").setMaxStackSize(1).setCreativeTab(MainRegistry.templateTab);
     public static final Item bobmazon_hidden = new ItemCatalog("bobmazon_hidden").setMaxStackSize(1).setCreativeTab(MainRegistry.templateTab);
     public static final Item siren_track = new ItemCassette("siren_track").setMaxStackSize(1).setCreativeTab(MainRegistry.templateTab);
-    public static final Item assembly_template = new ItemAssemblyTemplate("assembly_template").setMaxStackSize(1).setCreativeTab(MainRegistry.templateTab);
-    public static final Item chemistry_template = new ItemChemistryTemplate("chemistry_template").setMaxStackSize(1).setCreativeTab(MainRegistry.templateTab);
-    public static final Item chemistry_icon = new ItemChemistryIcon("chemistry_icon").setMaxStackSize(1).setCreativeTab(null);
     public static final Item crucible_template = new ItemCrucibleTemplate("crucible_template").setMaxStackSize(1).setCreativeTab(MainRegistry.templateTab);
     public static final Item fluid_identifier_multi = new ItemFluidIDMulti("fluid_identifier_multi").setMaxStackSize(1).setCreativeTab(MainRegistry.templateTab);
     public static final Item fluid_duct = new ItemFFFluidDuct("ff_fluid_duct").setCreativeTab(MainRegistry.templateTab);
@@ -1915,6 +1912,7 @@ public class ModItems {
     public static Item gun_double_barrel;
     public static Item gun_double_barrel_sacred_dragon;
 
+    public static Item gun_n_i_4_n_i;
     public static Item gun_charge_thrower;
     public static Item gun_drill;
     public static Item gun_fireext;

@@ -3,11 +3,16 @@ package com.hbm.render.item;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
 import net.minecraft.item.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 public class ItemRenderBase extends TEISRBase {
 
 	@Override
-	public void renderByItem(ItemStack itemStackIn) {
+	public void renderByItem(@NotNull ItemStack itemStackIn) {
+		if (this.type == null) {
+			this.type = TransformType.NONE;
+		}
+
 		GlStateManager.pushMatrix();
 		GlStateManager.enableCull();
 
@@ -62,6 +67,7 @@ public class ItemRenderBase extends TEISRBase {
 
 		renderCommon(itemStackIn);
 		GlStateManager.popMatrix();
+		this.type = null;
 	}
 
 	public void renderNonInv(ItemStack stack) { renderNonInv(); }

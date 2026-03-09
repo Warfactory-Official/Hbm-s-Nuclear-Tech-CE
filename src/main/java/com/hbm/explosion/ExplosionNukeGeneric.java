@@ -17,6 +17,7 @@ import com.hbm.items.ModItems;
 import com.hbm.lib.Library;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.main.MainRegistry;
+import com.hbm.util.Compat;
 import com.hbm.util.MutableVec3d;
 import com.hbm.world.WorldUtil;
 import net.minecraft.block.*;
@@ -453,32 +454,22 @@ public class ExplosionNukeGeneric {
             if (!CompatibilityConfig.isWarDim(world)) {
                 return;
             }
-            Block b = world.getBlockState(pos).getBlock();
             TileEntity te = world.getTileEntity(pos);
-
-            if (te instanceof IEnergyReceiverMK2) {
-
-                ((IEnergyReceiverMK2) te).setPower(0);
-
+            if (te == null) return;
+            if (te instanceof IEnergyReceiverMK2 r) {
+                r.setPower(0);
                 if (random.nextInt(5) < 1) world.setBlockState(pos, ModBlocks.block_electrical_scrap.getDefaultState());
-            }
-            try {
-                if (te instanceof IEnergyProvider) {
-
-                    ((IEnergyProvider) te).extractEnergy(EnumFacing.UP, ((IEnergyProvider) te).getEnergyStored(EnumFacing.UP), false);
-                    ((IEnergyProvider) te).extractEnergy(EnumFacing.DOWN, ((IEnergyProvider) te).getEnergyStored(EnumFacing.DOWN), false);
-                    ((IEnergyProvider) te).extractEnergy(EnumFacing.NORTH, ((IEnergyProvider) te).getEnergyStored(EnumFacing.NORTH), false);
-                    ((IEnergyProvider) te).extractEnergy(EnumFacing.SOUTH, ((IEnergyProvider) te).getEnergyStored(EnumFacing.SOUTH), false);
-                    ((IEnergyProvider) te).extractEnergy(EnumFacing.EAST, ((IEnergyProvider) te).getEnergyStored(EnumFacing.EAST), false);
-                    ((IEnergyProvider) te).extractEnergy(EnumFacing.WEST, ((IEnergyProvider) te).getEnergyStored(EnumFacing.WEST), false);
-
-                    if (random.nextInt(5) <= 1) world.setBlockState(pos, ModBlocks.block_electrical_scrap.getDefaultState());
-                }
-            } catch (NoClassDefFoundError e) {
-            }
-            if (te != null && te.hasCapability(CapabilityEnergy.ENERGY, null)) {
+            } else if (te.hasCapability(CapabilityEnergy.ENERGY, null)) {
                 IEnergyStorage handle = te.getCapability(CapabilityEnergy.ENERGY, null);
                 handle.extractEnergy(handle.getEnergyStored(), false);
+                if (random.nextInt(5) <= 1) world.setBlockState(pos, ModBlocks.block_electrical_scrap.getDefaultState());
+            } else if (Compat.REDSTONE_FLUX_LOADED && te instanceof IEnergyProvider p) {
+                p.extractEnergy(EnumFacing.UP, p.getEnergyStored(EnumFacing.UP), false);
+                p.extractEnergy(EnumFacing.DOWN, p.getEnergyStored(EnumFacing.DOWN), false);
+                p.extractEnergy(EnumFacing.NORTH, p.getEnergyStored(EnumFacing.NORTH), false);
+                p.extractEnergy(EnumFacing.SOUTH, p.getEnergyStored(EnumFacing.SOUTH), false);
+                p.extractEnergy(EnumFacing.EAST, p.getEnergyStored(EnumFacing.EAST), false);
+                p.extractEnergy(EnumFacing.WEST, p.getEnergyStored(EnumFacing.WEST), false);
                 if (random.nextInt(5) <= 1) world.setBlockState(pos, ModBlocks.block_electrical_scrap.getDefaultState());
             }
         }

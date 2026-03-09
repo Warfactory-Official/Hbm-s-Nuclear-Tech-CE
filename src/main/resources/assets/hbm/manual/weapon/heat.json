@@ -1,0 +1,16 @@
+{
+	"name": "Shaped Charges",
+	"icon": ["hbm:ammo_standard", 1, 59],
+	"trigger": [
+		["hbm:ammo_standard", 1, 54],
+		["hbm:ammo_standard", 1, 59]
+	],
+	"title": {
+		"en_us": "Shaped Charges",
+		"zh_cn": "聚能装药"
+	},
+	"content": {
+		"en_us": "Special type of explosive munition with weaker splash damage compared to high-explosives, which deals massive extra damage on direct hit.",
+		"zh_cn": "特殊的爆炸性弹药，爆炸伤害低于高爆弹药，但直接击中目标时会造成高额 额外伤害。"
+	}
+}

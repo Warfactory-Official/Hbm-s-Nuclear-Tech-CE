@@ -228,7 +228,6 @@ public class PowerCableBox extends Block implements ITileEntityProvider, ICustom
 
     @Override
     public void addCollisionBoxToList(IBlockState state, World world, BlockPos pos, AxisAlignedBB entityBox, List<AxisAlignedBB> collidingBoxes, Entity entity, boolean isActualState) {
-        TileEntity te = world.getTileEntity(pos);
         boolean nX = canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.WEST);
         boolean pX = canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.EAST);
         boolean nY = canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.DOWN);

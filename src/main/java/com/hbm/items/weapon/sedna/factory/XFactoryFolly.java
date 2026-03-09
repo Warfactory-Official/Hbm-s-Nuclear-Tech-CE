@@ -119,7 +119,7 @@ public class XFactoryFolly {
         }
     };
 
-    public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_FIRE = (stack, ctx) -> Lego.doStandardFire(stack, ctx, HbmAnimationsSedna.GunAnimation.CYCLE, false);
+    public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_FIRE = (stack, ctx) -> Lego.doStandardFire(stack, ctx, HbmAnimationsSedna.GunAnimation.CYCLE, 0, false);
 
     public static BiFunction<ItemStack, ItemGunBaseNT.LambdaContext, Boolean> LAMBDA_CAN_FIRE = (stack, ctx) -> {
         if(!ItemGunBaseNT.getIsAiming(stack)) return false;

@@ -122,7 +122,7 @@ public class BobmazonOfferFactory {
 				new ItemStack(ModBlocks.plasma_heater),
 				new ItemStack(ModItems.fusion_shield_vaporwave),
 				ItemBattery.getFullBattery(ModItems.battery_spark),
-				new ItemStack(ModBlocks.machine_chemplant, 10),
+				new ItemStack(ModBlocks.machine_chemical_plant, 10),
 				new ItemStack(ModBlocks.machine_fluidtank, 8),
 				new ItemStack(ModBlocks.red_wire_coated, 64),
 				new ItemStack(ModBlocks.red_cable, 64),

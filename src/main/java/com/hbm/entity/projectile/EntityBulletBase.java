@@ -365,7 +365,7 @@ public class EntityBulletBase extends Entity implements IProjectile {
 					if (face != null) {
 
 						Vec3d vel = new Vec3d(motionX, motionY, motionZ);
-						vel.normalize();
+						vel = vel.normalize();
 
 						boolean lRic = rand.nextInt(100) < config.LBRC;
 						double angle = Math.abs(BobMathUtil.getCrossAngle(vel, face) - 90);

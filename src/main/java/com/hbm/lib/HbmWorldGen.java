@@ -236,19 +236,14 @@ public class HbmWorldGen implements IWorldGenerator {
         DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.endTixiteSpawn.get(dimID)), 6, 0, 127, ModBlocks.ore_tikite, Blocks.END_STONE);
 
         if (dimID == 0) {
+            if(GeneralConfig.enable528ColtanSpawn) {
+                DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, GeneralConfig.coltanRate, 4, 15, 40, ModBlocks.ore_coltan);
+            }
+
             Random colRand = new Random(world.getSeed() + 5);
             int colX = (int) (colRand.nextGaussian() * 1500);
             int colZ = (int) (colRand.nextGaussian() * 1500);
             int colRange = 750;
-
-            if ((GeneralConfig.enable528BedrockSpawn || GeneralConfig.enable528BedrockDeposit) && rand.nextInt(GeneralConfig.bedrockRate) == 0) {
-                int x = chunkMinX + rand.nextInt(16) + 8;
-                int z = chunkMinZ + rand.nextInt(16) + 8;
-
-                if (GeneralConfig.enable528BedrockSpawn || (GeneralConfig.enable528BedrockDeposit && x <= colX + colRange && x >= colX - colRange && z <= colZ + colRange && z >= colZ - colRange)) {
-                    BedrockOre.COLTAN.generate(world, rand, new BlockPos(x, 0, z));
-                }
-            }
 
             if (GeneralConfig.enable528ColtanDeposit) {
                 for (int k = 0; k < 2; k++) {

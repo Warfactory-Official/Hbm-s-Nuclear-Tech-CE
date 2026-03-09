@@ -1,6 +1,7 @@
 package com.hbm.capability;
 
 import com.hbm.capability.HbmLivingProps.ContaminationEffect;
+import com.hbm.config.ServerConfig;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -198,6 +199,7 @@ public class HbmLivingCapability {
 
 		@Override
 		public int getContagion(){
+			if(!ServerConfig.ENABLE_MKU.get()) return 0;
 			return contagion;
 		}
 
@@ -241,7 +243,7 @@ public class HbmLivingCapability {
             tag.setInteger("asbestos", getAsbestos());
             tag.setInteger("blacklung", blacklung);
             tag.setInteger("bombtimer", bombTimer);
-            tag.setInteger("contagion", contagion);
+			if(ServerConfig.ENABLE_MKU.get()) tag.setInteger("contagion", contagion);
             tag.setInteger("oil", getOil());
             tag.setInteger("fire", getFire());
             tag.setInteger("phosphorus", getPhosphorus());
@@ -272,7 +274,7 @@ public class HbmLivingCapability {
             setAsbestos(tag.getInteger("asbestos"));
             setBlacklung(tag.getInteger("blacklung"));
             setBombTimer(tag.getInteger("bombtimer"));
-            setContagion(tag.getInteger("contagion"));
+			if(ServerConfig.ENABLE_MKU.get()) setContagion(tag.getInteger("contagion"));
             setOil(tag.getInteger("oil"));
             setFire(tag.getInteger("fire"));
             setPhosphorus(tag.getInteger("phosphorus"));

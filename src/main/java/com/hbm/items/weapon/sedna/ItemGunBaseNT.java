@@ -9,7 +9,8 @@ import com.hbm.items.IKeybindReceiver;
 import com.hbm.items.ModItems;
 import com.hbm.items.weapon.sedna.hud.IHUDComponent;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
-import com.hbm.items.weapon.sedna.mods.WeaponModManager;
+import com.hbm.items.weapon.sedna.mags.MagazineInfinite;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.GunAnimationPacketSedna;
@@ -115,7 +116,7 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
     public GunConfig getConfig(ItemStack stack, int index) {
         GunConfig cfg = configs_DNA[index];
         if(stack == null) return cfg;
-        return WeaponModManager.eval(cfg, stack, O_GUNCONFIG + index, this, index);
+        return XWeaponModManager.eval(cfg, stack, O_GUNCONFIG + index, this, index);
     }
 
     public int getConfigCount() {
@@ -187,7 +188,9 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
             GunConfig config = getConfig(stack, i);
             for (Receiver rec : config.getReceivers(stack)) {
                 IMagazine mag = rec.getMagazine(stack);
-                tooltip.add("Ammo: " + mag.getIconForHUD(stack, player).getDisplayName() + " " + mag.reportAmmoStateForHUD(stack, player));
+                if(!(mag instanceof MagazineInfinite)) {
+                    tooltip.add("Ammo: " + mag.getIconForHUD(stack, player).getDisplayName() + " " + mag.reportAmmoStateForHUD(stack, player));
+                }
                 float dmg = rec.getBaseDamage(stack);
                 tooltip.add("Base Damage: " + FORMAT_DMG.format(dmg));
                 if (mag.getType(stack, player.inventory) instanceof BulletConfig bullet) {
@@ -202,7 +205,7 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
                 tooltip.add("Condition: " + dura + "%");
             }
 
-            for(ItemStack upgrade : WeaponModManager.getUpgradeItems(stack, i)) {
+            for(ItemStack upgrade : XWeaponModManager.getUpgradeItems(stack, i)) {
                 tooltip.add(TextFormatting.YELLOW + upgrade.getDisplayName());
             }
         }

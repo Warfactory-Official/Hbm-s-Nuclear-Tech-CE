@@ -1,8 +1,12 @@
 package com.hbm.blocks.generic;
 
+import com.hbm.blocks.ICustomBlockItem;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.config.ServerConfig;
 import com.hbm.items.ModItems;
+import com.hbm.items.block.ItemBlockStorageCrate;
 import com.hbm.items.tool.ItemLock;
+import com.hbm.lib.InventoryHelper;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.IPersistentNBT;
@@ -11,7 +15,6 @@ import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
@@ -27,11 +30,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Random;
 
-public class BlockStorageCrate extends BlockContainer {
+public class BlockStorageCrate extends BlockContainer implements ICustomBlockItem {
     public static final String CRATE_RAD_KEY = "cRads";
 	public static final PropertyDirection FACING = BlockHorizontal.FACING;
 
@@ -45,7 +50,7 @@ public class BlockStorageCrate extends BlockContainer {
 	}
 
 	@Override
-	public TileEntity createNewTileEntity(World worldIn, int meta){
+	public TileEntity createNewTileEntity(@NotNull World worldIn, int meta){
 		if(this == ModBlocks.crate_iron)
 			return new TileEntityCrateIron();
 		if(this == ModBlocks.crate_steel)
@@ -79,27 +84,41 @@ public class BlockStorageCrate extends BlockContainer {
 
 
 	@Override
-	public boolean canHarvestBlock(IBlockAccess world, BlockPos pos, EntityPlayer player){
+	public boolean canHarvestBlock(@NotNull IBlockAccess world, @NotNull BlockPos pos, @NotNull EntityPlayer player){
 		return true;
 	}
 
 	@Override
-	public void breakBlock(World worldIn, BlockPos pos, IBlockState state){
+	public void breakBlock(World worldIn, @NotNull BlockPos pos, @NotNull IBlockState state){
+		if (!worldIn.isRemote) {
+			TileEntity te = worldIn.getTileEntity(pos);
+
+			if (te instanceof TileEntityCrate crate) {
+				if (!ServerConfig.CRATE_KEEP_CONTENTS.get() && !crate.isLocked()) {
+
+					InventoryHelper.dropInventoryItems(worldIn, pos, crate.inventory);
+					for (int i = 0; i < crate.inventory.getSlots(); i++) {
+						crate.inventory.setStackInSlot(i, ItemStack.EMPTY);
+					}
+				}
+			}
+		}
+
 		IPersistentNBT.breakBlock(worldIn, pos, state);
 		super.breakBlock(worldIn, pos, state);
 	}
 
 	@Override
-	public void dropBlockAsItemWithChance(World worldIn, BlockPos pos, IBlockState state, float chance, int fortune) { }
+	public void dropBlockAsItemWithChance(@NotNull World worldIn, @NotNull BlockPos pos, @NotNull IBlockState state, float chance, int fortune) { }
 
 	@Override
-	public void onBlockHarvested(World worldIn, BlockPos pos, IBlockState state, EntityPlayer player) {
+	public void onBlockHarvested(@NotNull World worldIn, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull EntityPlayer player) {
 		IPersistentNBT.onBlockHarvested(worldIn, pos, player);
 		super.onBlockHarvested(worldIn, pos, state, player);
 	}
 
 	@Override
-	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ){
+	public boolean onBlockActivated(World world, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull EntityPlayer player, @NotNull EnumHand hand, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ){
 		if(world.isRemote) {
 			return true;
 		} else if(!player.getHeldItemMainhand().isEmpty() && (player.getHeldItemMainhand().getItem() instanceof ItemLock || player.getHeldItemMainhand().getItem() == ModItems.key_kit)) {
@@ -132,7 +151,7 @@ public class BlockStorageCrate extends BlockContainer {
 	}
 
 	@Override
-	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack){
+	public void onBlockPlacedBy(@NotNull World world, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull EntityLivingBase placer, @NotNull ItemStack stack){
 
 		IPersistentNBT.onBlockPlacedBy(world, pos, stack);
 		if(this == ModBlocks.safe)
@@ -140,27 +159,27 @@ public class BlockStorageCrate extends BlockContainer {
 	}
 
 	@Override
-	public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, EnumHand hand){
+	public @NotNull IBlockState getStateForPlacement(@NotNull World world, @NotNull BlockPos pos, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, @NotNull EnumHand hand){
 		return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
 	}
 
 	@Override
-	public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+	public Item getItemDropped(@NotNull IBlockState state, @NotNull Random rand, int fortune) {
 		return null;
 	}
 
 	@Override
-	protected BlockStateContainer createBlockState(){
-		return new BlockStateContainer(this, new IProperty[] { FACING });
+	protected @NotNull BlockStateContainer createBlockState(){
+		return new BlockStateContainer(this, FACING);
 	}
 
 	@Override
 	public int getMetaFromState(IBlockState state){
-		return ((EnumFacing)state.getValue(FACING)).getIndex();
+		return state.getValue(FACING).getIndex();
 	}
 
 	@Override
-	public IBlockState getStateFromMeta(int meta){
+	public @NotNull IBlockState getStateFromMeta(int meta){
 		EnumFacing enumfacing = EnumFacing.byIndex(meta);
 
 		if(enumfacing.getAxis() == EnumFacing.Axis.Y) {
@@ -171,22 +190,22 @@ public class BlockStorageCrate extends BlockContainer {
 	}
 
 	@Override
-	public IBlockState withRotation(IBlockState state, Rotation rot){
-		return state.withProperty(FACING, rot.rotate((EnumFacing)state.getValue(FACING)));
+	public @NotNull IBlockState withRotation(IBlockState state, Rotation rot){
+		return state.withProperty(FACING, rot.rotate(state.getValue(FACING)));
 	}
 
 	@Override
-	public IBlockState withMirror(IBlockState state, Mirror mirrorIn){
-		return state.withRotation(mirrorIn.toRotation((EnumFacing)state.getValue(FACING)));
+	public @NotNull IBlockState withMirror(IBlockState state, Mirror mirrorIn){
+		return state.withRotation(mirrorIn.toRotation(state.getValue(FACING)));
 	}
 
 	@Override
-	public EnumBlockRenderType getRenderType(IBlockState state){
+	public @NotNull EnumBlockRenderType getRenderType(@NotNull IBlockState state){
 		return EnumBlockRenderType.MODEL;
 	}
 
 	@Override
-	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
+	public void addInformation(@NotNull ItemStack stack, World worldIn, @NotNull List<String> list, @NotNull ITooltipFlag flagIn) {
 		super.addInformation(stack, worldIn, list, flagIn);
 		int totalSlots = getSlots();
 		if(stack.hasTagCompound()){
@@ -213,5 +232,12 @@ public class BlockStorageCrate extends BlockContainer {
 		}else{
 			list.add("§a0§2/" + totalSlots + " Slots used §a(0.0%)§r");
 		}
+	}
+
+	@Override
+	public void registerItem() {
+		ForgeRegistries.ITEMS.register(
+				new ItemBlockStorageCrate(this, this.getRegistryName())
+		);
 	}
 }

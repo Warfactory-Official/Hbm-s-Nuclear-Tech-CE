@@ -14,7 +14,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Optional;
 import org.jetbrains.annotations.Nullable;
@@ -26,6 +25,8 @@ import static com.hbm.util.Compat.ModIds.*;
 public class Compat {
     private static final boolean MOD_EIDS = Loader.isModLoaded("jeid") || Loader.isModLoaded("neid");
     private static final boolean MOD_OC = Loader.isModLoaded(ModIds.OPEN_COMPUTERS);
+    public static final boolean REDSTONE_FLUX_LOADED = Loader.isModLoaded("redstoneflux");
+    public static final boolean BAUBLES_LOADED = Loader.isModLoaded("baubles");//there are a lot of forks but they all use the same modid as the original
 
     public static boolean isIDExtensionModLoaded() {
         return MOD_EIDS;

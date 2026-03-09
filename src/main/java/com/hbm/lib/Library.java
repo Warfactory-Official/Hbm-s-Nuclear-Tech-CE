@@ -123,6 +123,7 @@ public class Library {
     public static final ForgeDirection NEG_Z = ForgeDirection.NORTH;
 
     public static final IBlockState AIR_DEFAULT_STATE = Blocks.AIR.getDefaultState();
+    public static final AxisAlignedBB EMPTY_AABB = new AxisAlignedBB(0, 0, 0, 0, 0, 0);
 
     public static final int[] powersOfTen = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000};
 
@@ -151,6 +152,11 @@ public class Library {
 
     public static boolean isObstructed(World world, double x, double y, double z, double a, double b, double c) {
         RayTraceResult pos = rayTraceBlocks(world, new Vec3d(x, y, z), new Vec3d(a, b, c), false, true, true);
+        return pos != null && pos.typeOfHit != Type.MISS;
+    }
+
+    public static boolean isObstructedOpaque(World world, double x, double y, double z, double a, double b, double c) {
+        RayTraceResult pos = rayTraceBlocks(world, new Vec3d(x, y, z), new Vec3d(a, b, c), false, true, false);
         return pos != null && pos.typeOfHit != Type.MISS;
     }
 

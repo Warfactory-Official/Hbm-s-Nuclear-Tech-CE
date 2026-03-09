@@ -1,0 +1,16 @@
+{
+	"name": "Buckshot",
+	"icon": ["hbm:ammo_standard", 1, 44],
+	"trigger": [
+		["hbm:ammo_standard", 1, 44],
+		["hbm:ammo_standard", 1, 78]
+	],
+	"title": {
+		"en_us": "Buckshot",
+		"zh_cn": "鹿弹"
+	},
+	"content": {
+		"en_us": "Standard shot, creates many low-damage pellets with considerable spread. Sometimes it's hard to beat the classics.",
+		"zh_cn": "标准霰弹，能够射出多个大范围散布的低伤害弹丸。有时鹿弹打不过经典弹药。"
+	}
+}

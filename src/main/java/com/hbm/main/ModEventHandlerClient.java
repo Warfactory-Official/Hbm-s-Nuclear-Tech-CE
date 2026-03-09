@@ -73,6 +73,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
+import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.model.ModelBiped;
@@ -909,14 +910,36 @@ public class ModEventHandlerClient {
         }
     }
 
-    public boolean hasBauble(EntityPlayer player, Item bauble) {
-        try {
-            if (BaublesApi.isBaubleEquipped(player, bauble) != -1) {
-                return true;
+    @SubscribeEvent
+    public void onOpenGUI(GuiOpenEvent event) {
+
+        if(event.getGui() instanceof GuiMainMenu main && ClientConfig.MAIN_MENU_WACKY_SPLASHES.get()) {
+            int rand = (int)(Math.random() * 150);
+
+            switch(rand) {
+                case 0: main.splashText = "Floppenheimer!"; break;
+                case 1: main.splashText = "i should dip my balls in sulfuric acid"; break;
+                case 2: main.splashText = "All answers are popbob!"; break;
+                case 3: main.splashText = "None may enter The Orb!"; break;
+                case 4: main.splashText = "Wacarb was here"; break;
+                case 5: main.splashText = "SpongeBoy me Bob I am overdosing on ketamine agagagagaga"; break;
+                case 6: main.splashText = TextFormatting.RED + "I know where you live, " + System.getProperty("user.name"); break;
+                case 7: main.splashText = "Nice toes, now hand them over."; break;
+                case 8: main.splashText = "I smell burnt toast!"; break;
+                case 9: main.splashText = "There are bugs under your skin!"; break;
+                case 10: main.splashText = "Fentanyl!"; break;
+                case 11: main.splashText = "Do drugs!"; break;
+                case 12: main.splashText = "Imagine being scared by splash texts!"; break;
+                case 13: main.splashText = "Semantic versioning? More like pedantic versioning."; break;
             }
-        } catch (Throwable t) {
+
+            double d = Math.random();
+            if(d < 0.1) main.splashText = "Redditors aren't people!";
         }
-        return false;
+    }
+
+    public static boolean hasBauble(EntityPlayer player, Item bauble) {
+        return Compat.BAUBLES_LOADED && BaublesApi.isBaubleEquipped(player, bauble) != -1;
     }
 
     @SubscribeEvent
@@ -924,7 +947,7 @@ public class ModEventHandlerClient {
         EntityPlayer player = Minecraft.getMinecraft().player;
 
         /// NUKE FLASH ///
-        if (event.getType() == ElementType.CROSSHAIRS && (flashTimestamp + flashDuration - System.currentTimeMillis()) > 0) {
+        if (event.getType() == ElementType.CROSSHAIRS && (flashTimestamp + flashDuration - System.currentTimeMillis()) > 0 && ClientConfig.NUKE_HUD_FLASH.get()) {
             int width = event.getResolution().getScaledWidth();
             int height = event.getResolution().getScaledHeight();
             int buff = -200; // that's for the shake effect - so the flash won't look like offset
@@ -991,16 +1014,25 @@ public class ModEventHandlerClient {
         }
 
         /// DODD DIAG HOOK FOR RBMK
-        if (event.getType() == ElementType.CROSSHAIRS) {
+        if (event.getType() == ElementType.CROSSHAIRS && ClientConfig.DODD_RBMK_DIAGNOSTIC.get()) {
             Minecraft mc = Minecraft.getMinecraft();
             World world = mc.world;
             RayTraceResult mop = mc.objectMouseOver;
 
             if (mop != null && mop.typeOfHit == mop.typeOfHit.BLOCK) {
                 BlockPos pos = mop.getBlockPos();
-                Block blockHit = world.getBlockState(pos).getBlock();
+                IBlockState stateHit = world.getBlockState(pos);
+                Block blockHit = stateHit.getBlock();
                 if (blockHit instanceof ILookOverlay) {
                     ((ILookOverlay) blockHit).printHook(event, world, pos);
+                }
+
+                if(ClientConfig.SHOW_BLOCK_META_OVERLAY.get()) {
+                    int i = blockHit.getMetaFromState(stateHit);
+                    List<String> text = new ArrayList();
+                    text.add(blockHit.getTranslationKey());
+                    text.add("Meta: " + i);
+                    ILookOverlay.printGeneric(event, "DEBUG", 0xffff00, 0x4040000, text);
                 }
             }
             TileEntityRBMKBase.diagnosticPrintHook(event);
@@ -1093,7 +1125,7 @@ public class ModEventHandlerClient {
         }
 
         // NUKE GUI SHAKE //
-        if (event.getType() == ElementType.HOTBAR && (ModEventHandlerClient.shakeTimestamp + ModEventHandlerClient.shakeDuration - System.currentTimeMillis()) > 0) {
+        if (event.getType() == ElementType.HOTBAR && (ModEventHandlerClient.shakeTimestamp + ModEventHandlerClient.shakeDuration - System.currentTimeMillis()) > 0 && ClientConfig.NUKE_HUD_SHAKE.get()) {
             double mult = (ModEventHandlerClient.shakeTimestamp + ModEventHandlerClient.shakeDuration - System.currentTimeMillis()) / (double) ModEventHandlerClient.shakeDuration * 2;
             double horizontal = MathHelper.clamp(Math.sin(System.currentTimeMillis() * 0.02), -0.7, 0.7) * 15;
             double vertical = MathHelper.clamp(Math.sin(System.currentTimeMillis() * 0.01 + 2), -0.7, 0.7) * 3;
@@ -1112,6 +1144,15 @@ public class ModEventHandlerClient {
                 RenderScreenOverlay.renderDashBar(event.getResolution(), Minecraft.getMinecraft().ingameGUI, props);
 
             }
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void onRenderHUD(RenderGameOverlayEvent.Pre event) {
+
+        //TODO: using ALL doesn't work as anticipated - still hides in F1. need a different event for this
+        if(event.getType() == ElementType.ALL) {
+            if(ClientConfig.BADGES_HUD.get()) RenderScreenOverlay.renderBadges(event.getResolution(), Minecraft.getMinecraft().ingameGUI);
         }
     }
 
@@ -1460,18 +1501,20 @@ public class ModEventHandlerClient {
 
         /// CUSTOM NUKE ///
         ComparableStack comp = new NbtComparableStack(stack).makeSingular();
-        CustomNukeEntry entry = TileEntityNukeCustom.entries.get(comp);
+        if(ClientConfig.ITEM_TOOLTIP_SHOW_CUSTOM_NUKE.get()) {
+            CustomNukeEntry entry = TileEntityNukeCustom.entries.get(comp);
 
-        if (entry != null) {
+            if (entry != null) {
 
-            if (!list.isEmpty())
-                list.add("");
+                if (!list.isEmpty())
+                    list.add("");
 
-            if (entry.entry == EnumEntryType.ADD)
-                list.add(TextFormatting.GOLD + I18nUtil.resolveKey("desc.nstageadd", entry.value, entry.type));
+                if (entry.entry == EnumEntryType.ADD)
+                    list.add(TextFormatting.GOLD + I18nUtil.resolveKey("desc.nstageadd", entry.value, entry.type));
 
-            if (entry.entry == EnumEntryType.MULT)
-                list.add(TextFormatting.GOLD + I18nUtil.resolveKey("desc.nstagemult", entry.value, entry.type));
+                if (entry.entry == EnumEntryType.MULT)
+                    list.add(TextFormatting.GOLD + I18nUtil.resolveKey("desc.nstagemult", entry.value, entry.type));
+            }
         }
 
         /// CREATE-ISH HELP (WIAJ) ///
@@ -1498,9 +1541,9 @@ public class ModEventHandlerClient {
         }
 
         /// NEUTRON RADS ///
-        if (event.getFlags().isAdvanced()) {
+        if (event.getFlags().isAdvanced() && ClientConfig.ITEM_TOOLTIP_SHOW_OREDICT.get()) {
             List<String> names = ItemStackUtil.getOreDictNames(stack);
-            if (names.size() > 0) {
+            if (!names.isEmpty()) {
                 list.add("§bOre Dict:");
                 for (String s : names) {
                     list.add("§3 - " + s);

@@ -29,7 +29,7 @@ public class GUICraneExtractor extends GuiInfoContainer {
         super(new ContainerCraneExtractor(invPlayer, tedf));
         ejector = tedf;
 
-        this.xSize = 176;
+        this.xSize = 212;
         this.ySize = 185;
     }
 
@@ -55,12 +55,28 @@ public class GUICraneExtractor extends GuiInfoContainer {
                 }
             }
         }
+
+        if(guiLeft + 187 <= x && guiLeft + 187 + 18 > x && guiTop + 34 < y && guiTop + 34 + 18 >= y) {
+            this.drawHoveringText(
+                    Arrays.asList("Only take maximum possible: " + (ejector.maxEject ? TextFormatting.GREEN + "ON" : TextFormatting.RED + "OFF")),
+                    x,
+                    y
+            );
+        }
+
         this.renderHoveredToolTip(x, y);
     }
 
     @Override
     protected void mouseClicked(int x, int y, int i) throws IOException {
         super.mouseClicked(x, y, i);
+
+        if(guiLeft + 187 <= x && guiLeft + 187 + 18 > x && guiTop + 34 < y && guiTop + 34 + 18 >= y) {
+            playClickSound();
+            NBTTagCompound data = new NBTTagCompound();
+            data.setBoolean("maxEject", true);
+            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, ejector.getPos()));
+        }
 
         if(guiLeft + 128 <= x && guiLeft + 128 + 14 > x && guiTop + 30 < y && guiTop + 30 + 26 >= y) {
 
@@ -85,10 +101,14 @@ public class GUICraneExtractor extends GuiInfoContainer {
         Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 
+        if(ejector.maxEject) {
+            drawTexturedModalRect(guiLeft + 187, guiTop + 34, 212, 0, 18, 18);
+        }
+
         if(ejector.isWhitelist) {
-            drawTexturedModalRect(guiLeft + 139, guiTop + 33, 176, 0, 3, 6);
+            drawTexturedModalRect(guiLeft + 139, guiTop + 33, 212, 18, 3, 6);
         } else {
-            drawTexturedModalRect(guiLeft + 139, guiTop + 47, 176, 0, 3, 6);
+            drawTexturedModalRect(guiLeft + 139, guiTop + 47, 212, 18, 3, 6);
         }
     }
 }

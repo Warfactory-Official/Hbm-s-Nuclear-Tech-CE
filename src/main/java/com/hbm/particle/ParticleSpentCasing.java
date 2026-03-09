@@ -118,7 +118,7 @@ public class ParticleSpentCasing extends Particle {
             for (Tuple.Pair<Vec3NT, Double> pair : smokeNodes) {
                 Vec3NT node = pair.getKey();
 
-                node.add(rand.nextGaussian() * smokeJitter,
+                node.addSelf(rand.nextGaussian() * smokeJitter,
                         rand.nextGaussian() * smokeJitter,
                         smokeLift * dScale);
 
@@ -289,7 +289,7 @@ public class ParticleSpentCasing extends Particle {
 
             for (Tuple.Pair<Vec3NT, Double> pair : smokeNodes) {
                 Vec3NT pos = pair.getKey();
-                pos.add(deltaX, deltaY, deltaZ);
+                pos.addSelf(deltaX, deltaY, deltaZ);
             }
 
             for (int i = 0; i < smokeNodes.size() - 1; i++) {

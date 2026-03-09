@@ -5,6 +5,7 @@ import com.google.common.cache.CacheBuilder;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.config.GeneralConfig;
 import com.hbm.config.RadiationConfig;
+import com.hbm.config.ServerConfig;
 import com.hbm.hazard.modifier.IHazardModifier;
 import com.hbm.hazard.transformer.IHazardTransformer;
 import com.hbm.hazard.type.IHazardType;
@@ -828,8 +829,11 @@ public class HazardSystem {
         if (entity.world.isRemote || entity.isDead) return;
         ItemStack stack = entity.getItem();
         if (stack.isEmpty()) return;
-        for (HazardEntry entry : getHazardsFromStack(stack)) {
-            entry.type.updateEntity(entity, IHazardModifier.evalAllModifiers(stack, null, entry.baseLevel, entry.mods));
+        int tickrate = Math.max(1, ServerConfig.ITEM_HAZARD_DROP_TICKRATE.get());
+        if(entity.world.getTotalWorldTime() % tickrate == 0) {
+            for (HazardEntry entry : getHazardsFromStack(stack)) {
+                entry.type.updateEntity(entity, IHazardModifier.evalAllModifiers(stack, null, entry.baseLevel, entry.mods));
+            }
         }
     }
 

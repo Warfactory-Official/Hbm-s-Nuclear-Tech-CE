@@ -7,6 +7,7 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.ParticleBurstPacket;
+import com.hbm.util.Compat;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
@@ -91,18 +92,9 @@ public class EntityEMP extends Entity implements IChunkLoader {
 		TileEntity te = world.getTileEntity(pos);
 		if(te == null)
 			return;
-		if(te instanceof IEnergyReceiverMK2) {
-			machines.add(pos);
-		} else {
-			try{
-				if(te instanceof IEnergyProvider) {
-					machines.add(pos);
-				}
-			} catch(NoClassDefFoundError e){}
-		}
-		if(te.hasCapability(CapabilityEnergy.ENERGY, null)){
-			machines.add(pos);
-		}
+		if(te instanceof IEnergyReceiverMK2 || te.hasCapability(CapabilityEnergy.ENERGY, null) || Compat.REDSTONE_FLUX_LOADED && te instanceof IEnergyProvider){
+            machines.add(pos);
+        }
 	}
 	
 	private void emp(BlockPos pos) {
@@ -113,34 +105,24 @@ public class EntityEMP extends Entity implements IChunkLoader {
 		boolean flag = false;
 		
 		if (te instanceof IEnergyReceiverMK2) {
-			
 			((IEnergyReceiverMK2)te).setPower(0);
 			flag = true;
-		}
-		try{
-			if (te instanceof IEnergyProvider) {
-
-				((IEnergyProvider)te).extractEnergy(EnumFacing.UP, ((IEnergyProvider)te).getEnergyStored(EnumFacing.UP), false);
-				((IEnergyProvider)te).extractEnergy(EnumFacing.DOWN, ((IEnergyProvider)te).getEnergyStored(EnumFacing.DOWN), false);
-				((IEnergyProvider)te).extractEnergy(EnumFacing.NORTH, ((IEnergyProvider)te).getEnergyStored(EnumFacing.NORTH), false);
-				((IEnergyProvider)te).extractEnergy(EnumFacing.SOUTH, ((IEnergyProvider)te).getEnergyStored(EnumFacing.SOUTH), false);
-				((IEnergyProvider)te).extractEnergy(EnumFacing.EAST, ((IEnergyProvider)te).getEnergyStored(EnumFacing.EAST), false);
-				((IEnergyProvider)te).extractEnergy(EnumFacing.WEST, ((IEnergyProvider)te).getEnergyStored(EnumFacing.WEST), false);
-				flag = true;
-			}
-		} catch(NoClassDefFoundError e){}
-		if(te != null && te.hasCapability(CapabilityEnergy.ENERGY, null)){
-			IEnergyStorage handle = te.getCapability(CapabilityEnergy.ENERGY, null);
-			handle.extractEnergy(handle.getEnergyStored(), false);
-			flag = true;
-		}
-		
+		} else if(te.hasCapability(CapabilityEnergy.ENERGY, null)){
+            IEnergyStorage handle = te.getCapability(CapabilityEnergy.ENERGY, null);
+            handle.extractEnergy(handle.getEnergyStored(), false);
+            flag = true;
+        } else if (Compat.REDSTONE_FLUX_LOADED && te instanceof IEnergyProvider p) {
+            p.extractEnergy(EnumFacing.UP, p.getEnergyStored(EnumFacing.UP), false);
+            p.extractEnergy(EnumFacing.DOWN, p.getEnergyStored(EnumFacing.DOWN), false);
+            p.extractEnergy(EnumFacing.NORTH, p.getEnergyStored(EnumFacing.NORTH), false);
+            p.extractEnergy(EnumFacing.SOUTH, p.getEnergyStored(EnumFacing.SOUTH), false);
+            p.extractEnergy(EnumFacing.EAST, p.getEnergyStored(EnumFacing.EAST), false);
+            p.extractEnergy(EnumFacing.WEST, p.getEnergyStored(EnumFacing.WEST), false);
+            flag = true;
+        }
 		if(flag && rand.nextInt(20) == 0) {
-			
 			PacketDispatcher.wrapper.sendToAll(new ParticleBurstPacket(pos.getX(), pos.getY(), pos.getZ(), Block.getIdFromBlock(Blocks.STAINED_GLASS), 3));
-	        
 		}
-		
 	}
 
 	@Override

@@ -9,9 +9,11 @@ import com.hbm.api.item.IDepthRockTool;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.BlockBedrockOre;
 import com.hbm.blocks.generic.BlockBedrockOreTE;
+import com.hbm.config.ClientConfig;
 import com.hbm.handler.HbmKeybinds;
 import com.hbm.handler.ability.*;
 import com.hbm.inventory.gui.GUIScreenToolAbility;
+import com.hbm.interfaces.IItemHUD;
 import com.hbm.items.IDynamicModels;
 import com.hbm.items.IItemControlReceiver;
 import com.hbm.items.IKeybindReceiver;
@@ -21,10 +23,16 @@ import com.hbm.main.MainRegistry;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.PlayerInformPacketLegacy;
 import com.hbm.tileentity.IGUIProvider;
+import com.hbm.util.Tuple;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.model.ModelRotation;
@@ -54,6 +62,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
@@ -61,6 +70,7 @@ import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.IShearable;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
@@ -68,7 +78,7 @@ import java.util.*;
 
 import static com.hbm.items.ItemEnumMulti.ROOT_PATH;
 
-public class ItemToolAbility extends ItemTool implements IDepthRockTool, IGUIProvider, IItemControlReceiver, IKeybindReceiver, IDynamicModels {
+public class ItemToolAbility extends ItemTool implements IDepthRockTool, IGUIProvider, IItemControlReceiver, IKeybindReceiver, IItemHUD, IDynamicModels {
 
 	protected boolean isShears = false;
 
@@ -618,5 +628,40 @@ public class ItemToolAbility extends ItemTool implements IDepthRockTool, IGUIPro
 	@Override
 	public void handleKeybindClient(EntityPlayer player, ItemStack stack, HbmKeybinds.EnumKeybind keybind, boolean state) {
 		if(state) player.openGui(MainRegistry.instance, 0, player.world, 0, 0, 0);
+	}
+
+	private static final Map<IBaseAbility, Tuple.Pair<Integer, Integer>> abilityGui = new HashMap<>();
+
+	static {
+		abilityGui.put(IToolAreaAbility.RECURSION, new Tuple.Pair<Integer,Integer>(0, 138));
+		abilityGui.put(IToolAreaAbility.HAMMER, new Tuple.Pair<Integer,Integer>(16, 138));
+		abilityGui.put(IToolAreaAbility.HAMMER_FLAT, new Tuple.Pair<Integer,Integer>(32, 138));
+		abilityGui.put(IToolAreaAbility.EXPLOSION, new Tuple.Pair<Integer,Integer>(48, 138));
+	}
+
+	@Override
+	public void renderHUD(RenderGameOverlayEvent.Pre event, RenderGameOverlayEvent.ElementType type, EntityPlayer player, ItemStack stack, EnumHand hand) {
+		if(type != RenderGameOverlayEvent.ElementType.CROSSHAIRS) return;
+
+		Configuration config = getConfiguration(stack);
+		ToolPreset preset = config.getActivePreset();
+		Tuple.Pair<Integer, Integer> uv = abilityGui.get(preset.areaAbility);
+
+		if(uv == null) return;
+
+		GuiIngame gui = Minecraft.getMinecraft().ingameGUI;
+		int size = 16;
+		int ox = ClientConfig.TOOL_HUD_INDICATOR_X.get();
+		int oy = ClientConfig.TOOL_HUD_INDICATOR_Y.get();
+
+		GlStateManager.pushMatrix();
+		Minecraft.getMinecraft().renderEngine.bindTexture(GUIScreenToolAbility.texture);
+		GlStateManager.enableBlend();
+		OpenGlHelper.glBlendFunc(GL11.GL_ONE_MINUS_DST_COLOR, GL11.GL_ONE_MINUS_SRC_COLOR, 1, 0);
+		gui.drawTexturedModalRect(event.getResolution().getScaledWidth() / 2 - size - 8 + ox, event.getResolution().getScaledHeight() / 2 + 8 + oy, uv.key, uv.value, size, size);
+		OpenGlHelper.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
+		GlStateManager.disableBlend();
+		GlStateManager.popMatrix();
+		Minecraft.getMinecraft().renderEngine.bindTexture(Gui.ICONS);
 	}
 }

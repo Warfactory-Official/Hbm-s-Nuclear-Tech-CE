@@ -64,9 +64,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -112,7 +110,7 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
     AxisAlignedBB bb = null;
 
     public TileEntityMachineRadarNT() {
-        super(10);
+        super(10, false, true);
     }
 
     /**
@@ -160,8 +158,7 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
         //IRadarDetectableNT
         converters.add(x -> {
             Entity e = x.getX();
-            if (e instanceof IRadarDetectableNT) {
-                IRadarDetectableNT detectable = (IRadarDetectableNT) e;
+            if (e instanceof IRadarDetectableNT detectable) {
                 if (detectable.canBeSeenBy(x.getY()) && detectable.paramsApplicable(x.getZ()))
                     return new RadarEntry(detectable, e, detectable.suppliesRedstone(x.getZ()));
             }

@@ -1,5 +1,6 @@
 package com.hbm.util;
 
+import com.hbm.config.ServerConfig;
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.interfaces.Untested;
 import com.hbm.items.ModItems;
@@ -166,6 +167,48 @@ public class EntityDamageUtil {
     }
 
     private static boolean attackEntityFromNTInternal(EntityLivingBase living, DamageSource source, float amount, boolean ignoreIFrame, boolean allowSpecialCancel, double knockbackMultiplier) {
+        boolean superCompatibility = ServerConfig.DAMAGE_COMPATIBILITY_MODE.get();
+        return superCompatibility
+                ? attackEntitySuperCompatibility(living, source, amount, ignoreIFrame, allowSpecialCancel, knockbackMultiplier)
+                : attackEntitySEDNAPatch(living, source, amount, ignoreIFrame, allowSpecialCancel, knockbackMultiplier);
+    }
+
+    /**
+     * MK2 SEDNA damage system, currently untested. An even hackier, yet more compatible solution using the vanilla damage calc directly but tweaking certain apsects.
+     * Limitation: Does not apply DR piercing to vanilla armor
+     */
+    private static boolean attackEntitySuperCompatibility(EntityLivingBase living, DamageSource source, float amount, boolean ignoreIFrame, boolean allowSpecialCancel, double knockbackMultiplier) {
+        //disable iframes
+        if(ignoreIFrame) { living.lastDamage = 0F; living.hurtResistantTime = 0; }
+        //cache last velocity
+        double motionX = living.motionX;
+        double motionY = living.motionX;
+        double motionZ = living.motionX;
+        //bam!
+        boolean ret = living.attackEntityFrom(source, amount);
+        //restore last velocity
+        living.motionX = motionX;
+        living.motionY = motionY;
+        living.motionZ = motionZ;
+        //apply own knockback
+        Entity entity = source.getTrueSource();
+        if(entity != null) {
+            double deltaX = entity.posX - living.posX;
+            double deltaZ;
+
+            for(deltaZ = entity.posZ - living.posZ; deltaX * deltaX + deltaZ * deltaZ < 1.0E-4D; deltaZ = (Math.random() - Math.random()) * 0.01D) {
+                deltaX = (Math.random() - Math.random()) * 0.01D;
+            }
+
+            living.attackedAtYaw = (float) (Math.atan2(deltaZ, deltaX) * 180.0D / Math.PI) - living.rotationYaw;
+            if(knockbackMultiplier > 0) knockBack(living, entity, amount, deltaX, deltaZ, knockbackMultiplier);
+        }
+        return ret;
+    }
+
+    /** MK1 SEDNA damage system, basically re-implements the vanilla code (only from Entity, child class code is effectively ignored) with some adjustments */
+    private static boolean attackEntitySEDNAPatch(EntityLivingBase living, DamageSource source, float amount, boolean ignoreIFrame, boolean allowSpecialCancel, double knockbackMultiplier) {
+        if(ignoreIFrame) living.lastDamage = 0F;
         if (MinecraftForge.EVENT_BUS.post(new LivingAttackEvent(living, source, amount)) && allowSpecialCancel) return false;
         if (living.isEntityInvulnerable(source)) return false;
         if (living.world.isRemote) return false;

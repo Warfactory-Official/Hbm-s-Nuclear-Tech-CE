@@ -21,7 +21,6 @@ import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockDirectional;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
@@ -41,6 +40,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.input.Keyboard;
 
 import java.util.ArrayList;
@@ -64,15 +64,14 @@ public class MachineCapacitor extends BlockContainer implements ILookOverlay, IP
         ModBlocks.ALL_BLOCKS.add(this);
     }
 
-
     @Override
     protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, new IProperty[]{FACING});
+        return new BlockStateContainer(this, FACING);
     }
 
     @Override
     public int getMetaFromState(IBlockState state) {
-        return ((EnumFacing)state.getValue(FACING)).getIndex();
+        return state.getValue(FACING).getIndex();
     }
 
     @Override
@@ -83,15 +82,13 @@ public class MachineCapacitor extends BlockContainer implements ILookOverlay, IP
 
     @Override
     public IBlockState withRotation(IBlockState state, Rotation rot) {
-        return state.withProperty(FACING, rot.rotate((EnumFacing)state.getValue(FACING)));
+        return state.withProperty(FACING, rot.rotate(state.getValue(FACING)));
     }
 
     @Override
-    public IBlockState withMirror(IBlockState state, Mirror mirrorIn)
-    {
-        return state.withRotation(mirrorIn.toRotation((EnumFacing)state.getValue(FACING)));
+    public IBlockState withMirror(IBlockState state, Mirror mirrorIn) {
+        return state.withRotation(mirrorIn.toRotation(state.getValue(FACING)));
     }
-
 
     @Override
     public EnumBlockRenderType getRenderType(IBlockState state) {
@@ -113,16 +110,14 @@ public class MachineCapacitor extends BlockContainer implements ILookOverlay, IP
     public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
         TileEntity te = world.getTileEntity(pos);
 
-        if(!(te instanceof TileEntityCapacitor))
-            return;
+        if (!(te instanceof TileEntityCapacitor battery)) return;
 
-        TileEntityCapacitor battery = (TileEntityCapacitor) te;
         List<String> text = new ArrayList<>();
         text.add(BobMathUtil.getShortNumber(battery.getPower()) + " / " + BobMathUtil.getShortNumber(battery.getMaxPower()) + "HE");
 
         double percent = (double) battery.getPower() / (double) battery.getMaxPower();
         int charge = (int) Math.floor(percent * 10_000D);
-        int color = ((int) (0xFF - 0xFF * percent)) << 16 | ((int)(0xFF * percent) << 8);
+        int color = ((int) (0xFF - 0xFF * percent)) << 16 | ((int) (0xFF * percent) << 8);
         text.add("&[" + color + "&]" + (charge / 100D) + "%");
         text.add(TextFormatting.GREEN + "-> " + TextFormatting.RESET + "+" + BobMathUtil.getShortNumber(battery.powerReceived) + "HE/t");
         text.add(TextFormatting.RED + "<- " + TextFormatting.RESET + "-" + BobMathUtil.getShortNumber(battery.powerSent) + "HE/t");
@@ -132,21 +127,19 @@ public class MachineCapacitor extends BlockContainer implements ILookOverlay, IP
 
     @Override
     public void addInformation(ItemStack stack, NBTTagCompound persistentTag, EntityPlayer player, List<String> list, boolean ext) {
-        list.add(TextFormatting.GOLD + "Stores up to "+ BobMathUtil.getShortNumber(this.power) + "HE");
-        list.add(TextFormatting.GOLD + "Charge speed: "+ BobMathUtil.getShortNumber(this.power / 200) + "HE");
-        list.add(TextFormatting.GOLD + "Discharge speed: "+ BobMathUtil.getShortNumber(this.power / 600) + "HE");
-        list.add(TextFormatting.YELLOW + "" + BobMathUtil.getShortNumber(persistentTag.getLong("power")) + "/" + BobMathUtil.getShortNumber(persistentTag.getLong("maxPower")) + "HE");
+        list.add(TextFormatting.GOLD + "Stores up to " + BobMathUtil.getShortNumber(this.power) + "HE");
+        list.add(TextFormatting.GOLD + "Charge speed: " + BobMathUtil.getShortNumber(this.power / 200) + "HE");
+        list.add(TextFormatting.GOLD + "Discharge speed: " + BobMathUtil.getShortNumber(this.power / 600) + "HE");
+        list.add(TextFormatting.YELLOW + BobMathUtil.getShortNumber(persistentTag.getLong("power")) + "/" + BobMathUtil.getShortNumber(persistentTag.getLong("maxPower")) + "HE");
     }
 
     @Override
     public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
 
-        if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
-            for(String s : I18nUtil.resolveKeyArray("tile.capacitor.desc")) tooltip.add(TextFormatting.YELLOW + s);
+        if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
+            for (String s : I18nUtil.resolveKeyArray("tile.capacitor.desc")) tooltip.add(TextFormatting.YELLOW + s);
         } else {
-            tooltip.add(TextFormatting.DARK_GRAY + "" + TextFormatting.ITALIC +"Hold <" +
-                    TextFormatting.YELLOW + "" + TextFormatting.ITALIC + "LSHIFT" +
-                    TextFormatting.DARK_GRAY + "" + TextFormatting.ITALIC + "> to display more info");
+            tooltip.add(TextFormatting.DARK_GRAY + "" + TextFormatting.ITALIC + "Hold <" + TextFormatting.YELLOW + TextFormatting.ITALIC + "LSHIFT" + TextFormatting.DARK_GRAY + TextFormatting.ITALIC + "> to display more info");
         }
     }
 
@@ -163,10 +156,9 @@ public class MachineCapacitor extends BlockContainer implements ILookOverlay, IP
     public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
         IPersistentNBT.onBlockPlacedBy(world, pos, stack);
     }
+
     @Override
-    public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing,
-                                            float hitX, float hitY, float hitZ,
-                                            int meta, EntityLivingBase placer) {
+    public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
         return this.getDefaultState().withProperty(FACING, facing);
     }
 
@@ -193,6 +185,7 @@ public class MachineCapacitor extends BlockContainer implements ILookOverlay, IP
         player.addExhaustion(0.025F);
     }
 
+    @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
     @AutoRegister
     public static class TileEntityCapacitor extends TileEntityLoadedBase implements IEnergyProviderMK2, IEnergyReceiverMK2, IPersistentNBT, ITickable, CompatHandler.OCComponent {
 
@@ -204,15 +197,13 @@ public class MachineCapacitor extends BlockContainer implements ILookOverlay, IP
         public long lastPowerSent;
         private boolean destroyedByCreativePlayer = false;
 
-        public TileEntityCapacitor() { }
-
         public TileEntityCapacitor(long maxPower) {
             this.maxPower = maxPower;
         }
 
         @Override
         public void update() {
-            if(!world.isRemote) {
+            if (!world.isRemote) {
 
                 ForgeDirection opp = ForgeDirection.getOrientation(this.getBlockMetadata());
                 ForgeDirection dir = opp.getOpposite();
@@ -222,12 +213,12 @@ public class MachineCapacitor extends BlockContainer implements ILookOverlay, IP
                 boolean didStep = false;
                 ForgeDirection last = null;
 
-                while(world.getBlockState(pos).getBlock() == ModBlocks.capacitor_bus) {
+                while (world.getBlockState(pos).getBlock() == ModBlocks.capacitor_bus) {
                     ForgeDirection current = ForgeDirection.getOrientation(world.getBlockState(pos).getValue(FACING).getIndex());
-                    if(!didStep) last = current;
+                    if (!didStep) last = current;
                     didStep = true;
 
-                    if(last != current) {
+                    if (last != current) {
                         pos = null;
                         break;
                     }
@@ -235,7 +226,7 @@ public class MachineCapacitor extends BlockContainer implements ILookOverlay, IP
                     pos = pos.offset(current.toEnumFacing());
                 }
 
-                if(pos != null && last != null) {
+                if (pos != null && last != null) {
                     this.tryUnsubscribe(world, pos.getX(), pos.getY(), pos.getZ());
                     this.tryProvide(world, pos.getX(), pos.getY(), pos.getZ(), last);
                 }
@@ -269,22 +260,26 @@ public class MachineCapacitor extends BlockContainer implements ILookOverlay, IP
 
         @Override
         public long transferPower(long power, boolean simulate) {
-            if(power + this.getPower() <= this.getMaxPower()) {
-                this.setPower(power + this.getPower());
-                this.powerReceived += power;
-                return 0;
+            if (power <= 0) return power;
+
+            long currentPower = getPower();
+            long capacity = Math.max(getMaxPower() - currentPower, 0L);
+            if (capacity <= 0) return power;
+            long accepted = Math.min(power, capacity);
+            if (!simulate) {
+                setPower(currentPower + accepted);
+                powerReceived += accepted;
             }
-            long capacity = this.getMaxPower() - this.getPower();
-            long overshoot = power - capacity;
-            this.powerReceived += (this.getMaxPower() - this.getPower());
-            this.setPower(this.getMaxPower());
-            return overshoot;
+            return power - accepted;
         }
 
         @Override
         public void usePower(long power) {
-            this.powerSent += Math.min(this.getPower(), power);
-            this.setPower(this.getPower() - power);
+            if (power <= 0) return;
+            long used = Math.min(getPower(), power);
+            if (used <= 0) return;
+            powerSent += used;
+            setPower(getPower() - used);
         }
 
         @Override
@@ -297,11 +292,13 @@ public class MachineCapacitor extends BlockContainer implements ILookOverlay, IP
             return maxPower;
         }
 
-        @Override public long getProviderSpeed() {
+        @Override
+        public long getProviderSpeed() {
             return this.getMaxPower() / 300;
         }
 
-        @Override public long getReceiverSpeed() {
+        @Override
+        public long getReceiverSpeed() {
             return this.getMaxPower() / 100;
         }
 
@@ -312,7 +309,11 @@ public class MachineCapacitor extends BlockContainer implements ILookOverlay, IP
 
         @Override
         public void setPower(long power) {
-            this.power = power;
+            if (this.maxPower > 0) {
+                this.power = Math.max(0L, Math.min(power, this.maxPower));
+            } else {
+                this.power = Math.max(0L, power);
+            }
         }
 
         @Override
@@ -353,13 +354,12 @@ public class MachineCapacitor extends BlockContainer implements ILookOverlay, IP
         }
 
         @Override
-        public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+        public @NotNull NBTTagCompound writeToNBT(NBTTagCompound nbt) {
             nbt.setLong("power", power);
             nbt.setLong("maxPower", maxPower);
             return super.writeToNBT(nbt);
         }
 
-        // opencomputer
         @Override
         @Optional.Method(modid = "opencomputers")
         public String getComponentName() {
@@ -369,58 +369,50 @@ public class MachineCapacitor extends BlockContainer implements ILookOverlay, IP
         @Callback(direct = true)
         @Optional.Method(modid = "opencomputers")
         public Object[] getEnergy(Context context, Arguments args) {
-            return new Object[] {power};
+            return new Object[]{power};
         }
 
         @Callback(direct = true)
         @Optional.Method(modid = "opencomputers")
         public Object[] getMaxEnergy(Context context, Arguments args) {
-            return new Object[] {maxPower};
+            return new Object[]{maxPower};
         }
 
         @Callback(direct = true)
         @Optional.Method(modid = "opencomputers")
         public Object[] getEnergySent(Context context, Arguments args) {
-            return new Object[] {lastPowerReceived};
+            return new Object[]{lastPowerReceived};
         }
 
         @Callback(direct = true)
         @Optional.Method(modid = "opencomputers")
-        public Object[] getEnergyReceived(Context context, Arguments args) { return new Object[] {lastPowerSent}; }
+        public Object[] getEnergyReceived(Context context, Arguments args) {
+            return new Object[]{lastPowerSent};
+        }
 
         @Callback(direct = true)
         @Optional.Method(modid = "opencomputers")
         public Object[] getInfo(Context context, Arguments args) {
-            return new Object[] {power, maxPower, lastPowerReceived, lastPowerSent};
+            return new Object[]{power, maxPower, lastPowerReceived, lastPowerSent};
         }
 
         @Override
         @Optional.Method(modid = "opencomputers")
         public String[] methods() {
-            return new String[] {
-                    "getEnergy",
-                    "getMaxEnergy",
-                    "getEnergySent",
-                    "getEnergyReceived",
-                    "getInfo"
-            };
+            return new String[]{"getEnergy", "getMaxEnergy", "getEnergySent", "getEnergyReceived", "getInfo"};
         }
+
         @Override
         @Optional.Method(modid = "opencomputers")
         public Object[] invoke(String method, Context context, Arguments args) throws Exception {
-            switch(method) {
-                case ("getEnergy"):
-                    return getEnergy(context, args);
-                case ("getMaxEnergy"):
-                    return getMaxEnergy(context, args);
-                case ("getEnergySent"):
-                    return getEnergySent(context, args);
-                case ("getEnergyReceived"):
-                    return getEnergyReceived(context, args);
-                case ("getInfo"):
-                    return getEnergyReceived(context, args);
-            }
-            throw new NoSuchMethodException();
+            return switch (method) {
+                case ("getEnergy") -> getEnergy(context, args);
+                case ("getMaxEnergy") -> getMaxEnergy(context, args);
+                case ("getEnergySent") -> getEnergySent(context, args);
+                case ("getEnergyReceived") -> getEnergyReceived(context, args);
+                case ("getInfo") -> getEnergyReceived(context, args);
+                default -> throw new NoSuchMethodException();
+            };
         }
     }
 

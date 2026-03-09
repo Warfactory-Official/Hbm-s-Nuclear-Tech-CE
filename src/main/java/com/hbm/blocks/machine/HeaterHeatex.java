@@ -72,7 +72,9 @@ public class HeaterHeatex extends BlockDummyable implements ITooltipProvider, IL
             boiler.markDirty();
             player.sendMessage(new TextComponentString("Changed type to ").setStyle(new Style().setColor(TextFormatting.YELLOW)).appendSibling(new TextComponentTranslation(type.getConditionalName())).appendSibling(new TextComponentString("!")));
         } else {
-            FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
+            int[] core = findCore(world, pos.getX(), pos.getY(), pos.getZ());
+            if (core == null) return false;
+            FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, core[0], core[1], core[2]);
         }
         return true;
     }

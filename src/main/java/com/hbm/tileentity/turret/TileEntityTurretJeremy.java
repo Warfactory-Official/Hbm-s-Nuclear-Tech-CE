@@ -126,8 +126,8 @@ public class TileEntityTurretJeremy extends TileEntityTurretBaseNT implements IG
     protected Vec3d getCasingSpawnPos() {
         Vec3d pos = this.getTurretPos();
         Vec3d vec = new Vec3d(-2, 0, 0);
-        Vec3dUtil.rotateRoll(vec, (float) -this.rotationPitch);
-        vec.rotateYaw((float) -(this.rotationYaw + Math.PI * 0.5));
+        vec = Vec3dUtil.rotateRoll(vec, (float) -this.rotationPitch);
+        vec = vec.rotateYaw((float) -(this.rotationYaw + Math.PI * 0.5));
         return pos.add(vec);
     }
 

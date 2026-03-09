@@ -34,7 +34,7 @@ plugins {
     id 'eclipse'
     id 'maven-publish'
     id 'org.jetbrains.gradle.plugin.idea-ext' version '1.2'
-    id 'com.gtnewhorizons.retrofuturagradle' version '2.0.0'
+    id 'com.gtnewhorizons.retrofuturagradle' version '2.0.2'
     id 'net.darkhax.curseforgegradle' version '1.1.24' apply false
     id 'com.modrinth.minotaur' version '2.8.7' apply false
     id 'com.diffplug.spotless' version '6.13.0' apply false
@@ -44,7 +44,7 @@ plugins {
     id 'org.jetbrains.kotlin.kapt' version '1.8.0' apply false
     id 'com.google.devtools.ksp' version '1.8.0-1.0.9' apply false
     id 'de.undercouch.download' version '5.6.0' apply false
-    id 'xyz.wagyourtail.jvmdowngrader' version '1.3.4' apply false
+    id 'xyz.wagyourtail.jvmdowngrader' version '1.3.6' apply false
 }
 
 def out = services.get(StyledTextOutputFactory).create('an-output')
@@ -576,7 +576,7 @@ dependencies {
 
     compileOnlyApi 'org.jetbrains:annotations:26.0.2'
     annotationProcessor 'org.jetbrains:annotations:26.0.2'
-    patchedMinecraft('net.minecraft:launchwrapper:1.17.2') {
+    patchedMinecraft('net.minecraft:launchwrapper:1.12') {
         transitive = false
     }
 
@@ -750,7 +750,7 @@ jar {
         }
     }
 
-    if (useSrcApiPath && apiPackage) {
+    if (useSrcApiPath.toBoolean() && apiPackage) {
         from sourceSets.api.output
         dependsOn apiClasses
 
@@ -796,22 +796,45 @@ if (separateRunDirectories.toBoolean()) {
 }
 
 // Create API library jar
-tasks.register('apiJar', Jar) {
-    archiveClassifier.set 'api'
-    if (useSrcApiPath) {
-        from(sourceSets.api.java) {
+def apiJavaSources = useSrcApiPath.toBoolean() ? sourceSets.api.java : sourceSets.main.java
+def apiClassOutput = useSrcApiPath.toBoolean() ? sourceSets.api.output : sourceSets.main.output
+
+if (enableModernJavaSyntax.toBoolean()) {
+    tasks.register('apiJarJava25', Jar) {
+        archiveClassifier.set('api-java25')
+        from(apiJavaSources) {
             include "${modGroupPath}/${apiPackagePath}/**"
         }
-        from(sourceSets.api.output) {
+        from(apiClassOutput) {
+            include "${modGroupPath}/${apiPackagePath}/**"
+        }
+    }
+}
+
+tasks.register('apiJar', Jar) {
+    archiveClassifier.set('api')
+    from(apiJavaSources) {
+        include "${modGroupPath}/${apiPackagePath}/**"
+    }
+    if (enableModernJavaSyntax.toBoolean()) {
+        dependsOn('shadeDowngradedApi')
+        from(provider {
+            zipTree(tasks.named('shadeDowngradedApi', Jar).get().archiveFile.get().asFile)
+        }) {
             include "${modGroupPath}/${apiPackagePath}/**"
         }
     } else {
-        from(sourceSets.main.java) {
+        from(apiClassOutput) {
             include "${modGroupPath}/${apiPackagePath}/**"
         }
+    }
+}
 
-        from(sourceSets.main.output) {
-            include "${modGroupPath}/${apiPackagePath}/**"
+if (apiPackage) {
+    tasks.named('build').configure {
+        dependsOn('apiJar')
+        if (enableModernJavaSyntax.toBoolean()) {
+            dependsOn('apiJarJava25')
         }
     }
 }
@@ -830,22 +853,28 @@ if (usesShadowedDependencies.toBoolean()) {
                 project.configurations.shadowImplementation,
                 project.configurations.shadowCompile
         ]
-        archiveClassifier.set('dev')
+        // When modern syntax downgrading is enabled, shadeDowngradedApi produces the final dev jar.
+        // Keep shadowJar as an intermediate artifact to avoid both tasks writing the same output file.
+        // This fixes gradle UP-TO-DATE detection
+        archiveClassifier.set(enableModernJavaSyntax.toBoolean() ? 'dev-shadow' : 'dev')
         if (relocateShadowedDependencies.toBoolean()) {
             relocationPrefix = modGroup + '.shadow'
             enableRelocation = true
         }
     }
+    def publishedDevTask = enableModernJavaSyntax.toBoolean()
+            ? tasks.named('shadeDowngradedApi', Jar)
+            : tasks.named('shadowJar', ShadowJar)
     configurations.runtimeElements.outgoing.artifacts.clear()
     configurations.apiElements.outgoing.artifacts.clear()
-    configurations.runtimeElements.outgoing.artifact(tasks.named('shadowJar', ShadowJar))
-    configurations.apiElements.outgoing.artifact(tasks.named('shadowJar', ShadowJar))
+    configurations.runtimeElements.outgoing.artifact(publishedDevTask)
+    configurations.apiElements.outgoing.artifact(publishedDevTask)
     tasks.named('jar', Jar) {
         enabled = false
         finalizedBy(tasks.shadowJar)
     }
     tasks.named('reobfJar', ReobfuscatedJar) {
-        inputJar.set(tasks.named('shadowJar', ShadowJar).flatMap({it.archiveFile}))
+        inputJar.set(publishedDevTask.flatMap({it.archiveFile}))
     }
     AdhocComponentWithVariants javaComponent = (AdhocComponentWithVariants) project.components.findByName('java')
     javaComponent.withVariantsFromConfiguration(configurations.shadowRuntimeElements) {
@@ -1184,6 +1213,9 @@ if (isCIEnv || deploymentDebug.toBoolean()) {
         }
         if (apiPackage) {
             archives apiJar
+            if (enableModernJavaSyntax.toBoolean()) {
+                archives apiJarJava25
+            }
         }
     }
 }
@@ -1356,32 +1388,43 @@ def addModrinthDep(String scope, String type, String name) {
 }
 
 if (customMavenPublishUrl) {
-    String publishedVersion = modVersion
+    afterEvaluate {
+        String publishedVersion = modVersion
+        String baseVersion = System.getenv('RELEASE_VERSION') ?: publishedVersion
+        def java25DevJarTask = tasks.named(usesShadowedDependencies.toBoolean() ? "shadowJarJava25" : "jarJava25")
+        def java25ReobfJarTask = tasks.named("reobfJarJava25")
 
-    publishing {
-        publications {
-            create('maven', MavenPublication) {
-                //noinspection GroovyAssignabilityCheck
-                from components.java
+        publishing {
+            publications {
+                create('maven', MavenPublication) {
+                    //noinspection GroovyAssignabilityCheck
+                    from components.java
 
-                if (apiPackage) {
-                    artifact apiJar
+                    if (apiPackage) {
+                        artifact apiJar
+                        if (enableModernJavaSyntax.toBoolean()) {
+                            artifact apiJarJava25
+                        }
+                    }
+                    artifact(java25DevJarTask)
+                    artifact(java25ReobfJarTask)
+
+                    // providers is not available here, use System for getting env vars
+                    groupId = System.getenv('ARTIFACT_GROUP_ID') ?: project.mavenArtifactGroup
+                    artifactId = System.getenv('ARTIFACT_ID') ?: project.modArchivesBaseName
+                    version = baseVersion
                 }
-
-                // providers is not available here, use System for getting env vars
-                groupId = System.getenv('ARTIFACT_GROUP_ID') ?: project.mavenArtifactGroup
-                artifactId = System.getenv('ARTIFACT_ID') ?: project.modArchivesBaseName
-                version = System.getenv('RELEASE_VERSION') ?: publishedVersion
             }
-        }
 
-        repositories {
-            maven {
-                url = customMavenPublishUrl
-                allowInsecureProtocol = !customMavenPublishUrl.startsWith('https')
-                credentials {
-                    username = providers.environmentVariable('MAVEN_USER').getOrElse('NONE')
-                    password = providers.environmentVariable('MAVEN_PASSWORD').getOrElse('NONE')
+            repositories {
+                maven {
+                    def mvnurl = System.getenv('MAVEN_URL') ?: customMavenPublishUrl
+                    url = mvnurl
+                    allowInsecureProtocol = !mvnurl.startsWith('https')
+                    credentials {
+                        username = providers.environmentVariable('MAVEN_USER').getOrElse('NONE')
+                        password = providers.environmentVariable('MAVEN_PASSWORD').getOrElse('NONE')
+                    }
                 }
             }
         }
@@ -1593,7 +1636,7 @@ tasks.register('jarJava25', Jar) {
     destinationDirectory.set(layout.buildDirectory.dir("libs"))
     archiveClassifier.set('dev-java25')
     from sourceSets.main.output
-    if (useSrcApiPath && apiPackage) {
+    if (useSrcApiPath.toBoolean() && apiPackage) {
         from sourceSets.api.output
         dependsOn apiClasses
 
@@ -1622,7 +1665,7 @@ if (usesShadowedDependencies.toBoolean()) {
         archiveClassifier.set('dev-java25')
 
         from sourceSets.main.output
-        if (useSrcApiPath && apiPackage) {
+        if (useSrcApiPath.toBoolean() && apiPackage) {
             from sourceSets.api.output
         }
         configurations = [
@@ -1755,18 +1798,6 @@ tasks.named('build').configure {it.finalizedBy(tasks.named('repatchSourcesForIDE
 
 // JVMDG configuration
 jvmdg {
-    // mlbv: my fork with proper switch bootstrap and Runtime.version()
-    def fileName = 'jvmdowngrader-java-api-1.3.4-downgraded-8.jar'
-    def src  = file("libs/$fileName")
-    if (!src.exists()) {
-        throw new GradleException("Missing source api jar: $src")
-    }
-    def dest = layout.buildDirectory.file("jvmdg/$fileName").get().asFile
-    copy {
-        from src
-        into dest.parentFile
-    }
-    apiJar = [dest]
     ignoreWarningsIn = ["com/hbm/lib/internal/TrustedLookupAccessor"] as Set
     shadeInlining = false
 }

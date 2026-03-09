@@ -6,17 +6,19 @@ import com.hbm.tileentity.machine.TileEntitySafe;
 import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.items.SlotItemHandler;
+import org.jetbrains.annotations.NotNull;
 
 // see comments at ContainerCrateTemplate
 @Optional.Interface(iface = "com.cleanroommc.bogosorter.api.ISortableContainer", modid = "bogosorter")
 public class ContainerSafe extends Container implements ISortableContainer {
 	
-	private TileEntitySafe safe;
+	private final TileEntitySafe safe;
 	
 	public ContainerSafe(InventoryPlayer invPlayer, TileEntitySafe tedf) {
 		safe = tedf;
@@ -44,13 +46,13 @@ public class ContainerSafe extends Container implements ISortableContainer {
 	}
 	
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer player, int index)
+    public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index)
     {
 		return InventoryUtil.transferStack(this.inventorySlots, index, safe.inventory.getSlots());
     }
 
 	@Override
-	public boolean canInteractWith(EntityPlayer player) {
+	public boolean canInteractWith(@NotNull EntityPlayer player) {
 		return safe.isUseableByPlayer(player);
 	}
 
@@ -58,5 +60,23 @@ public class ContainerSafe extends Container implements ISortableContainer {
 	@Optional.Method(modid = "bogosorter")
 	public void buildSortingContext(ISortingContextBuilder builder) {
 		builder.addSlotGroup(0, safe.inventory.getSlots(), 5);
+	}
+
+	@Override
+	public @NotNull ItemStack slotClick(int slotId, int dragType, @NotNull ClickType clickTypeIn, @NotNull EntityPlayer player) {
+		if (this.safe != null && !this.safe.boundItem.isEmpty()) {
+			if (slotId >= 0 && slotId < this.inventorySlots.size()) {
+				Slot slot = this.inventorySlots.get(slotId);
+				if (slot != null && slot.inventory == player.inventory && slot.getSlotIndex() == player.inventory.currentItem) {
+					return ItemStack.EMPTY;
+				}
+			}
+
+			if (clickTypeIn == ClickType.SWAP && dragType == player.inventory.currentItem) {
+				return ItemStack.EMPTY;
+			}
+		}
+
+		return super.slotClick(slotId, dragType, clickTypeIn, player);
 	}
 }

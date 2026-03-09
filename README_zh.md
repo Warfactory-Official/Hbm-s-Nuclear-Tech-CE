@@ -101,3 +101,52 @@ Alcater 在 CurseForge 上的版本已**超过 1.5 年**没有更新。他的版
        （已用 JVM 的路径可在 `/run/logs/latest.log` 中找到，如：  
        `Java is OpenJDK 64-Bit Server VM, version 1.8.0_442, running on Mac OS X:x86_64:15.3.2, installed at /this/is/the/path`）
     4) 重新执行“快速上手”步骤。
+
+## Maven
+
+### 快照 / Snapshots
+表示某个版本的最新提交构建。
+
+```groovy
+repositories {
+    maven {
+        name "Warfactory Snapshots"
+        url "https://repo.warfactory.co/snapshots"
+    }
+}
+dependencies {
+    // Java 8, 未混淆
+    implementation "com.hbm:ntm-ce:2.1.1.0-SNAPSHOT:dev"
+    // Java 25, 未混淆
+    implementation "com.hbm:ntm-ce:2.1.1.0-SNAPSHOT:dev-java25"
+    // Java 8, 混淆
+    implementation "com.hbm:ntm-ce:2.1.1.0-SNAPSHOT"
+    // Java 25, 混淆
+    implementation "com.hbm:ntm-ce:2.1.1.0-SNAPSHOT:java25"
+}
+```
+
+### 正式版本 / Releases
+对应 CurseForge / Modrinth 的正式发布版本。
+
+```groovy
+repositories {
+    maven {
+        name "Warfactory Releases"
+        url "https://repo.warfactory.co/releases"
+    }
+}
+dependencies {
+    // Java 8, 未混淆
+    implementation "com.hbm:ntm-ce:2.1.1.0:dev"
+    // Java 25, 未混淆
+    implementation "com.hbm:ntm-ce:2.1.1.0:dev-java25"
+    // Java 8, 混淆
+    implementation "com.hbm:ntm-ce:2.1.1.0"
+    // Java 25, 混淆
+    implementation "com.hbm:ntm-ce:2.1.1.0:java25"
+}
+```
+
+一般情况下在开发环境中应使用未混淆 jar（`:dev` / `:dev-java25`）。  
+在 Cleanroom + JDK 25 开发环境下 Java 8 和 Java 25 版本都能用；其他情况下建议使用 Java 8 版本。

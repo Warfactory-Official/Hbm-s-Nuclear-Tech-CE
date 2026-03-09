@@ -13,7 +13,6 @@ public final class HBMSoundHandler {
 
     public static List<SoundEvent> ALL_SOUNDS = new ArrayList<>();
 
-    public static SoundEvent assemblerOperate;
     public static SoundEvent fel;
     public static SoundEvent fensuHum;
     public static SoundEvent hephaestusRunning;
@@ -37,7 +36,6 @@ public final class HBMSoundHandler {
     public static SoundEvent reactorLoop;
     public static SoundEvent reactorStart;
     public static SoundEvent reactorStop;
-    public static SoundEvent chemplantOperate;
     public static SoundEvent chemicalPlant;
     public static SoundEvent potatOSRandom;
     public static SoundEvent weaponSpinDown;
@@ -327,6 +325,7 @@ public final class HBMSoundHandler {
     public static SoundEvent coilgunReload;
     public static SoundEvent smack;
     public static SoundEvent squeakyToy;
+    public static SoundEvent hundunsMagnificentHowl;
     public static SoundEvent fireSilenced;
     public static SoundEvent fireGreaseGun;
     public static SoundEvent firePistol;
@@ -418,7 +417,6 @@ public final class HBMSoundHandler {
         explosionSmallFar = register("weapon.explosion_small_far");
         explosionLargeNear = register("weapon.explosion_large_near");
         explosionLargeFar = register("weapon.explosion_large_far");
-        assemblerOperate = register("block.assembleroperate");
         fel = register("block.fel");
         fensuHum = register("block.fensuHum");
         hephaestusRunning = register("block.hephaestusRunning");
@@ -441,7 +439,6 @@ public final class HBMSoundHandler {
         reactorLoop = register("block.reactorLoop");
         reactorStart = register("block.reactorStart");
         reactorStop = register("block.reactorStop");
-        chemplantOperate = register("block.chemplantOperate");
         chemicalPlant = register("block.chemicalPlant");
         potatOSRandom = register("potatos.random");
         weaponSpinDown = register("weapon.spindown");
@@ -725,6 +722,7 @@ public final class HBMSoundHandler {
         coilgunReload = register("weapon.coilgunReload");
         smack = register("weapon.fire.smack");
         squeakyToy = register("block.squeakyToy");
+        hundunsMagnificentHowl = register("block.hundunsMagnificentHowl");
         motor = register("block.motor");
         fireSilenced = register("weapon.fire.silenced");
         firePistol = register("weapon.fire.pistol");

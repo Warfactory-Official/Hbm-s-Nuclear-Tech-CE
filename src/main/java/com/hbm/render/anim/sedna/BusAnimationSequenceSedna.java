@@ -90,7 +90,7 @@ public class BusAnimationSequenceSedna {
 
         for(Dimension dim : Dimension.VALUES) {
             List<BusAnimationKeyframeSedna> keyframes = transformKeyframes.get(dim.ordinal());
-            for(BusAnimationKeyframeSedna keyframe : keyframes) keyframe.duration *= mult;
+            for(BusAnimationKeyframeSedna keyframe : keyframes) keyframe.duration = (int) (keyframe.originalDuration * mult);
         }
         return this;
     }

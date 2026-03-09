@@ -1167,7 +1167,7 @@ public abstract class DoorDecl {
 	}
 	
 	public AxisAlignedBB getBlockBound(BlockPos relPos, boolean open){
-		return open ? new AxisAlignedBB(0, 0, 0, 0, 0, 0) : Block.FULL_BLOCK_AABB;
+		return open ? Library.EMPTY_AABB : Block.FULL_BLOCK_AABB;
 	}
 	
 	public boolean isLadder(boolean open){

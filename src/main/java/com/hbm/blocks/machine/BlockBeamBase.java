@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.lib.Library;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -85,7 +86,8 @@ public abstract class BlockBeamBase extends BlockContainer {
 
     @Override
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
-        return NULL_AABB;
+        //mlbv: this method is expected to return a nonnull aabb!
+        return Library.EMPTY_AABB;
     }
 
     @Nullable

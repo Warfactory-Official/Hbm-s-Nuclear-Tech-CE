@@ -99,7 +99,7 @@ public class EntityChemical extends EntityThrowableNT{
                 List<Entity> affected = world.getEntitiesWithinAABB(
                         Entity.class,
                         this.getEntityBoundingBox().grow(intensity * 2.5),
-                        e -> e != this.thrower
+                        e -> e != this.thrower && !(e instanceof EntityPlayer player && (player.isSpectator() || player.isCreative()))
                 );
                 for(Entity e : affected) {
                     this.affect(e, intensity);
@@ -149,6 +149,9 @@ public class EntityChemical extends EntityThrowableNT{
     }
 
     protected void affect(Entity e, double intensity) {
+        if (e instanceof EntityPlayer player && (player.isSpectator() || player.isCreative())) {
+            return;
+        }
 
         ChemicalStyle style = getStyle();
         FluidType type = getType();

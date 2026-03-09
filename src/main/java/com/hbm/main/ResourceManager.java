@@ -47,29 +47,22 @@ public class ResourceManager {
     public static final IModelCustom conveyor_press = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/conveyor_press.obj")).asVBO();
     public static final IModelCustom ammo_press = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/ammo_press.obj")).asVBO();
 
+    //Annihilator
+    public static final IModelCustom annihilator = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/annihilator.obj")).asVBO();
+
     public static final IModelCustom bm_box_lever = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/bm_box_lever.obj")).asVBO();
 
+    public static final IModelCustom coin = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/trinkets/chip.obj")).asVBO();
+
     //Assembler
-    public static final IModelCustom assembler_body = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/assembler_new_body.obj")).asVBO();
-    public static final IModelCustom assembler_cog = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/assembler_new_cog.obj")).asVBO();
-    public static final IModelCustom assembler_slider = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/assembler_new_slider.obj")).asVBO();
-    public static final IModelCustom assembler_arm = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/assembler_new_arm.obj")).asVBO();
     public static final IModelCustom assembly_machine = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/assembly_machine.obj")).asVBO();
-    public static final IModelCustom assemfac = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/assemfac.obj")).asVBO();
     public static final IModelCustom assembly_factory = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/assembly_factory.obj")).asVBO();
 
     //Chemplant
-    public static final IModelCustom chemplant_new = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/chemplant_main_new.obj")).asVBO();
-    public static final IModelCustom chemplant_body = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/chemplant_new_body.obj")).asVBO();
-    public static final IModelCustom chemplant_spinner = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/chemplant_new_spinner.obj")).asVBO();
-    public static final IModelCustom chemplant_piston = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/chemplant_new_piston.obj")).asVBO();
-    public static final IModelCustom chemplant_fluid = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/chemplant_new_fluid.hmf")).asVBO();
-    public static final IModelCustom chemplant_fluidcap = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/chemplant_new_fluidcap.hmf")).asVBO();
     public static final IModelCustom chemical_plant = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/chemical_plant.obj")).asVBO();
 
     public static final IModelCustom chemical_factory = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/chemical_factory.obj")).asVBO();
     public static final IModelCustom purex = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/purex.obj")).asVBO();
-    public static final IModelCustom chemfac = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/chemfac.obj")).asVBO();
 
     //Mixer
     public static final IModelCustom mixer = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/mixer.obj")).asVBO();
@@ -887,24 +880,21 @@ public class ResourceManager {
     public static final ResourceLocation conveyor_press_belt_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/conveyor_press_belt.png");
     public static final ResourceLocation ammo_press_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/ammo_press.png");
     public static final ResourceLocation bm_box_lever_tex = new ResourceLocation(Tags.MODID, "textures/models/turrets/bm_box_lever.png");
+
+    //Annihilator
+    public static final ResourceLocation annihilator_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/annihilator.png");
+    public static final ResourceLocation annihilator_belt_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/annihilator_belt.png");
+
+    public static final ResourceLocation coin_tex = new ResourceLocation(Tags.MODID, "textures/models/trinkets/chip_gold.png");
+
     //Assembler
-    public static final ResourceLocation assembler_body_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/assembler_base_new.png");
-    public static final ResourceLocation assembler_cog_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/assembler_cog_new.png");
-    public static final ResourceLocation assembler_slider_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/assembler_slider_new.png");
-    public static final ResourceLocation assembler_arm_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/assembler_arm_new.png");
     public static final ResourceLocation assembly_machine_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/assembly_machine.png");
-    public static final ResourceLocation assemfac_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/assemfac.png");
     public static final ResourceLocation assembly_factory_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/assembly_factory.png");
     public static final ResourceLocation assembly_factory_sparks_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/assembly_factory_sparks.png");
     public static final ResourceLocation precass_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/precass.png");
     //Chemplant
-    public static final ResourceLocation chemplant_body_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/chemplant_base_new.png");
-    public static final ResourceLocation chemplant_spinner_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/chemplant_spinner_new.png");
-    public static final ResourceLocation chemplant_piston_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/chemplant_piston_new.png");
-    public static final ResourceLocation chemplant_fluid_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/lavabase_small.png");
     public static final ResourceLocation chemical_plant_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/chemical_plant.png");
     public static final ResourceLocation chemical_plant_fluid_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/chemical_plant_fluid.png");
-    public static final ResourceLocation chemfac_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/chemfac.png");
     public static final ResourceLocation chemical_factory_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/chemical_factory.png");
     public static final ResourceLocation purex_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/purex.png");
     //Arc Welder
@@ -1313,6 +1303,8 @@ public class ResourceManager {
     public static final ResourceLocation spinny_light_tex = new ResourceLocation(Tags.MODID, "textures/blocks/spinnylight.png");
     //Drones
     public static final IModelCustom delivery_drone = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/drone.obj"));
+    //Scaffold
+    public static final IModelCustom scaffold = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/blocks/scaffold.obj"));
     //Blast
     public static final ResourceLocation tomblast = new ResourceLocation(Tags.MODID, "textures/models/explosion/tomblast.png");
     public static final ResourceLocation dust = new ResourceLocation(Tags.MODID, "textures/models/explosion/dust.png");

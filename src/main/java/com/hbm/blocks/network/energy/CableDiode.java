@@ -311,8 +311,9 @@ public class CableDiode extends BlockContainer implements IEnergyConnectorBlock,
 
             if (recursionBrake) return power;
 
-            pulses++;
-            if (this.getPower() >= this.getMaxPower() || pulses > 10) return power; // if we have already maxed out transfer or max pulses, abort
+            int effectivePulses = pulses + 1;
+            if (this.getPower() >= this.getMaxPower() || effectivePulses > 10) return power; // if we have already maxed out transfer or max pulses, abort
+            if (!simulate) pulses = effectivePulses;
 
             recursionBrake = true;
 

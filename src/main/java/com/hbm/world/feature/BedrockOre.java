@@ -23,7 +23,6 @@ import java.util.Random;
 
 public class BedrockOre extends AbstractPhasedStructure {
     public static final BedrockOre OVERWORLD = new BedrockOre(new ItemStack(ModItems.bedrock_ore_base), null, 0xD78A16, 1, ModBlocks.stone_depth);
-    public static final BedrockOre COLTAN = new BedrockOre(new ItemStack(ModItems.fragment_coltan), null, 0xD78A16, 1, ModBlocks.stone_depth);
     public static final BedrockOre NETHER_GLOWSTONE = new BedrockOre(new ItemStack(Items.GLOWSTONE_DUST, 4), null, 0xF9FF4D, 1, ModBlocks.stone_depth_nether);
     public static final BedrockOre NETHER_POWDER_FIRE = new BedrockOre(new ItemStack(ModItems.powder_fire, 4), null, 0xD7341F, 1, ModBlocks.stone_depth_nether);
     public static final BedrockOre NETHER_QUARTZ = new BedrockOre(new ItemStack(Items.QUARTZ, 4), null, 0xF0EFDD, 1, ModBlocks.stone_depth_nether);

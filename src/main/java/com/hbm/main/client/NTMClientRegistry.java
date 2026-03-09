@@ -13,7 +13,6 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
-import com.hbm.inventory.recipes.ChemplantRecipes;
 import com.hbm.items.IDynamicModels;
 import com.hbm.items.IModelRegister;
 import com.hbm.items.ModItems;
@@ -334,13 +333,6 @@ public class NTMClientRegistry {
         if (item == Items.AIR)
             return;
 
-        //Drillgon200: I hate myself for making this
-        //Th3_Sl1ze: Don't worry, I hate myself too
-        if (item == ModItems.chemistry_template) {
-            ChemplantRecipes.register();
-        }
-
-
         if (item instanceof ItemDepletedFuel) {
             for (int i = 0; i <= 1; i++) {
                 ModelLoader.setCustomModelResourceLocation(item, i,
@@ -353,21 +345,13 @@ public class NTMClientRegistry {
             return;
         }
 
-        if (item == ModItems.chemistry_icon) {
-            for (int i : ChemplantRecipes.recipeNames.keySet()) {
-                ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(Tags.MODID + ":chem_icon_" + ChemplantRecipes.getName(i).toLowerCase(), "inventory"));
-            }
-        } else if (item == ModItems.chemistry_template) {
-            for (int i : ChemplantRecipes.recipeNames.keySet()) {
-                ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(item.getRegistryName(), "inventory"));
-            }
-        } else if (item == ModItems.crucible_template) {
+        if (item == ModItems.crucible_template) {
             for (int i = 0; i < 32; i++) { // FIXME: figure out a better way of doing this
                 ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(item.getRegistryName(), "inventory"));
             }
         } else if (item == ModItems.siren_track) {
-            for (int i = 0; i < ItemCassette.TrackType.VALUES.size(); i++) {
-                ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(item.getRegistryName(), "inventory"));
+            for (ItemCassette.TrackType track : ItemCassette.TrackType.VALUES.values()) {
+                ModelLoader.setCustomModelResourceLocation(item, track.getId(), new ModelResourceLocation(item.getRegistryName(), "inventory"));
             }
         } else if (item == ModItems.ingot_u238m2) {
             ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(item.getRegistryName(), "inventory"));
@@ -457,8 +441,6 @@ public class NTMClientRegistry {
             ItemRedstoneSwordRender.INSTANCE.itemModel = model;
             evt.getModelRegistry().putObject(RedstoneSword.rsModel, new ItemRenderRedstoneSword());
         }
-        wrapModel(evt, ItemAssemblyTemplate.location);
-        wrapModel(evt, ItemChemistryTemplate.location);
         wrapModel(evt, ItemCrucibleTemplate.location);
         Object object3 = evt.getModelRegistry().getObject(GunB92.b92Model);
         if (object3 instanceof IBakedModel) {

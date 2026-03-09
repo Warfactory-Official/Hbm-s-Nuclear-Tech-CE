@@ -63,7 +63,7 @@ jobs:
       - name: Find mod jar (non-dev/non-sources/non-api)
         run: |
           set -euo pipefail
-          FILE=$(ls -t build/libs/*.jar 2>/dev/null | grep -vE '(-dev|-sources|-api)\.jar$' | head -n1 || true)
+          FILE=$(ls -t build/libs/*.jar 2>/dev/null | grep -vE '(-dev|-dev-shadow|-dev-java25|-java25|-sources|-api)\.jar$' | head -n1 || true)
           if [[ -z "${FILE}" ]]; then
             echo "::error::No release jar found in build/libs"; ls -al build/libs || true; exit 1
           fi

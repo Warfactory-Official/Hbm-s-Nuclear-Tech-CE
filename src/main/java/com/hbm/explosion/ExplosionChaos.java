@@ -192,10 +192,10 @@ public class ExplosionChaos {
 		int i2 = MathHelper.floor(y + wat + 1.0D);
 		int l = MathHelper.floor(z - wat - 1.0D);
 		int j2 = MathHelper.floor(z + wat + 1.0D);
-		List<Entity> list = world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(i, k, l, j, i2, j2));
+		List<Entity> list = world.getEntitiesInAABBexcluding(null, new AxisAlignedBB(i, k, l, j, i2, j2), e -> !(e instanceof EntityPlayer p && (p.isSpectator() || p.isCreative())));
 
 		for(int i1 = 0; i1 < list.size(); ++i1) {
-			Entity entity = (Entity) list.get(i1);
+			Entity entity = list.get(i1);
 			double d4 = entity.getDistance(x, y, z) / bombStartStrength;
 
 			if(d4 <= 1.0D) {
@@ -317,10 +317,10 @@ public class ExplosionChaos {
 		int i2 = MathHelper.floor(y + wat + 1.0D);
 		int l = MathHelper.floor(z - wat - 1.0D);
 		int j2 = MathHelper.floor(z + wat + 1.0D);
-		List<Entity> list = world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(i, k, l, j, i2, j2));
+		List<Entity> list = world.getEntitiesInAABBexcluding(null, new AxisAlignedBB(i, k, l, j, i2, j2), e -> !(e instanceof EntityPlayer p && (p.isSpectator() || p.isCreative())));
 
 		for(int i1 = 0; i1 < list.size(); ++i1) {
-			Entity entity = (Entity) list.get(i1);
+			Entity entity = list.get(i1);
 			double d4 = entity.getDistance(x, y, z) / bombStartStrength;
 
 			if(d4 <= 1.0D) {
@@ -373,10 +373,10 @@ public class ExplosionChaos {
 		int i2 = MathHelper.floor(y + wat + 1.0D);
 		int l = MathHelper.floor(z - wat - 1.0D);
 		int j2 = MathHelper.floor(z + wat + 1.0D);
-		List<Entity> list = world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(i, k, l, j, i2, j2));
+		List<EntityLivingBase> list = world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(i, k, l, j, i2, j2), e -> !(e instanceof EntityPlayer p && (p.isSpectator() || p.isCreative())));
 
 		for(int i1 = 0; i1 < list.size(); ++i1) {
-			Entity entity = (Entity) list.get(i1);
+			EntityLivingBase entity = list.get(i1);
 			double d4 = entity.getDistance(x, y, z) / bombStartStrength;
 
 			if(d4 <= 1.0D) {
@@ -385,18 +385,14 @@ public class ExplosionChaos {
 				d7 = entity.posZ - z;
 				double d9 = MathHelper.sqrt(d5 * d5 + d6 * d6 + d7 * d7);
 				if(d9 < wat) {
-					if(!(entity instanceof EntityLivingBase))
-						continue;
-					
-					EntityLivingBase entityLiving = (EntityLivingBase) entity;
-					if(ArmorRegistry.hasAllProtection(entityLiving, EntityEquipmentSlot.HEAD, HazardClass.NERVE_AGENT)) {
-						ArmorUtil.damageGasMaskFilter(entityLiving, 1);
+                    if(ArmorRegistry.hasAllProtection(entity, EntityEquipmentSlot.HEAD, HazardClass.NERVE_AGENT)) {
+						ArmorUtil.damageGasMaskFilter(entity, 1);
 					} else {
-						entityLiving.addPotionEffect(new PotionEffect(MobEffects.BLINDNESS, 5 * 20, 0));
-						entityLiving.addPotionEffect(new PotionEffect(MobEffects.POISON, 20 * 20, 2));
-						entityLiving.addPotionEffect(new PotionEffect(MobEffects.WITHER, 1 * 20, 1));
-						entityLiving.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 30 * 20, 1));
-						entityLiving.addPotionEffect(new PotionEffect(MobEffects.MINING_FATIGUE, 30 * 20, 2));
+						entity.addPotionEffect(new PotionEffect(MobEffects.BLINDNESS, 5 * 20, 0));
+						entity.addPotionEffect(new PotionEffect(MobEffects.POISON, 20 * 20, 2));
+						entity.addPotionEffect(new PotionEffect(MobEffects.WITHER, 1 * 20, 1));
+						entity.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 30 * 20, 1));
+						entity.addPotionEffect(new PotionEffect(MobEffects.MINING_FATIGUE, 30 * 20, 2));
 					}
 				}
 			}
@@ -602,7 +598,9 @@ public class ExplosionChaos {
 	public static void pDestruction(World world, int x, int y, int z) {
 		BlockPos pos = new BlockPos(x, y, z);
 		IBlockState state = world.getBlockState(pos);
-		EntityFallingBlock entityfallingblock = new EntityFallingBlock(world, (double) ((float) x + 0.5F), (double) ((float) y + 0.5F), (double) ((float) z + 0.5F), state);
+		EntityFallingBlock entityfallingblock = new EntityFallingBlock(world, (float) x + 0.5F,
+                (float) y + 0.5F,
+                (float) z + 0.5F, state);
 		world.spawnEntity(entityfallingblock);
 	}
 
@@ -762,7 +760,7 @@ public class ExplosionChaos {
 		List<Entity> list = world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(i, k, l, j, i2, j2));
 
 		for(int i1 = 0; i1 < list.size(); ++i1) {
-			Entity entity = (Entity) list.get(i1);
+			Entity entity = list.get(i1);
 			double d4 = entity.getDistance(x, y, z) / radius;
 
 			if(d4 <= 1.0D) {
@@ -772,14 +770,14 @@ public class ExplosionChaos {
 				if(entity instanceof EntityLiving && !(entity instanceof EntitySheep)) {
 					rand = random.nextInt(2);
 					if(rand == 0) {
-						((EntityLiving) entity).setCustomNameTag("Dinnerbone");
+						entity.setCustomNameTag("Dinnerbone");
 					} else {
-						((EntityLiving) entity).setCustomNameTag("Grumm");
+						entity.setCustomNameTag("Grumm");
 					}
 				}
 
 				if(entity instanceof EntitySheep) {
-					((EntityLiving) entity).setCustomNameTag("jeb_");
+					entity.setCustomNameTag("jeb_");
 				}
 
 				double d9 = MathHelper.sqrt(d5 * d5 + d6 * d6 + d7 * d7);

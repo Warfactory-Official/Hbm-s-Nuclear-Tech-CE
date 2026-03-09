@@ -67,6 +67,9 @@ public class MobConfig {
 	public static double rampantSmokeStackOverride = 0.4;
 	public static double pollutionMult = 3;
 
+	public static boolean trueRam() {
+		return rampantMode && rampantNaturalScoutSpawn && scoutThreshold <= 0.1 && rampantExtendedTargetting && rampantDig && rampantGlyphidGuidance;
+	}
 
 	public static void loadFromConfig(Configuration config) {
 		enableMaskman = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_MOBS, "12.M00_enableMaskman", "Whether mask man should spawn", true);

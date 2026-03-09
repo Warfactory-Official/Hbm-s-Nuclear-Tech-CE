@@ -7,7 +7,7 @@ import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.mags.MagazineFullReload;
-import com.hbm.items.weapon.sedna.mods.WeaponModManager;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
@@ -95,12 +95,12 @@ public class XFactory9mm {
     }
 
     public static Function<ItemStack, String> LAMBDA_NAME_GREASEGUN = (stack) -> {
-        if(WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_GREASEGUN_CLEAN)) return stack.getTranslationKey() + "_m3";
+        if(XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_GREASEGUN_CLEAN)) return stack.getTranslationKey() + "_m3";
         return null;
     };
 
     public static Function<ItemStack, String> LAMBDA_NAME_UZI = (stack) -> {
-        if(WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_SILENCER)) return stack.getTranslationKey() + "_richter";
+        if(XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_SILENCER)) return stack.getTranslationKey() + "_richter";
         return null;
     };
 

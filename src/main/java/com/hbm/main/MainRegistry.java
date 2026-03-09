@@ -10,10 +10,7 @@ import com.hbm.blocks.generic.BlockCrate;
 import com.hbm.capability.HbmCapability;
 import com.hbm.capability.HbmLivingCapability;
 import com.hbm.capability.NTMBatteryCapabilityHandler;
-import com.hbm.command.CommandHbm;
-import com.hbm.command.CommandLocate;
-import com.hbm.command.CommandPacketInfo;
-import com.hbm.command.CommandRadiation;
+import com.hbm.command.*;
 import com.hbm.config.*;
 import com.hbm.creativetabs.*;
 import com.hbm.datagen.AdvGen;
@@ -43,7 +40,7 @@ import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.inventory.recipes.loader.SerializableRecipe;
 import com.hbm.items.ModItems;
 import com.hbm.items.weapon.GrenadeDispenserRegistry;
-import com.hbm.items.weapon.sedna.mods.WeaponModManager;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.HbmWorld;
 import com.hbm.packet.PacketDispatcher;
@@ -246,7 +243,7 @@ public class MainRegistry {
         SiegeTier.registerTiers();
         HazardRegistry.registerItems();
         HazardRegistry.registerTrafos();
-        WeaponModManager.init();
+        XWeaponModManager.init();
 
         proxy.registerRenderInfo();
         HbmWorld.mainRegistry();
@@ -322,6 +319,7 @@ public class MainRegistry {
         SerializableRecipe.initialize();
         AnvilRecipes.register();
         ClientConfig.initConfig();
+        ServerConfig.initConfig();
         RefineryRecipes.registerRefinery();
         ModFluids.setFromRegistry();
         FluidContainerRegistry.register();
@@ -363,6 +361,8 @@ public class MainRegistry {
         }
         proxy.postInit(event);
         AdvGen.generate();
+
+        CommandReloadClient.register();
     }
 
     /**
@@ -375,6 +375,7 @@ public class MainRegistry {
         evt.registerServerCommand(new CommandHbm());
         evt.registerServerCommand(new CommandLocate());
         evt.registerServerCommand(new CommandPacketInfo());
+        evt.registerServerCommand(new CommandReloadServer());
         AdvancementManager.init(evt.getServer());
         //MUST be initialized AFTER achievements!!
         BobmazonOfferFactory.init();

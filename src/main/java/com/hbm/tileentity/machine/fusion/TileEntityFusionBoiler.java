@@ -1,10 +1,13 @@
 package com.hbm.tileentity.machine.fusion;
 
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.capability.NTMEnergyCapabilityWrapper;
+import com.hbm.capability.NTMFluidHandlerWrapper;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FT_Heatable;
+import com.hbm.lib.CapabilityContextProvider;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
@@ -13,10 +16,14 @@ import com.hbm.uninos.UniNodespace;
 import com.hbm.uninos.networkproviders.PlasmaNetwork;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.energy.CapabilityEnergy;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
@@ -172,6 +179,21 @@ public class TileEntityFusionBoiler extends TileEntityLoadedBase implements ITic
     @SideOnly(Side.CLIENT)
     public double getMaxRenderDistanceSquared() {
         return 65536.0D;
+    }
+
+    @Override
+    public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+        if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY) return true;
+        return super.hasCapability(capability, facing);
+    }
+
+    @Override
+    public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+        if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY) {
+            BlockPos accessorPos = facing == null ? null : CapabilityContextProvider.getAccessor(pos);
+            return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(new NTMFluidHandlerWrapper(this, accessorPos));
+        }
+        return super.getCapability(capability, facing);
     }
 }
 

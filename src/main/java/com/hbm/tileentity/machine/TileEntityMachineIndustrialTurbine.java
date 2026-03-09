@@ -144,7 +144,7 @@ public class TileEntityMachineIndustrialTurbine extends TileEntityTurbineBase im
 
     @Override
     public boolean canConnect(FluidType type, ForgeDirection dir) {
-        if(!type.hasTrait(FT_Coolable.class) || type == Fluids.SPENTSTEAM) return false;
+        if(!type.hasTrait(FT_Coolable.class) && type != Fluids.SPENTSTEAM) return false;
         ForgeDirection myDir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
         return dir != myDir && dir != myDir.getOpposite();
     }

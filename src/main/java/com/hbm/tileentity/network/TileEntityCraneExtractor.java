@@ -30,7 +30,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -42,6 +41,7 @@ import org.jetbrains.annotations.NotNull;
 @AutoRegister
 public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGUIProvider, IControlReceiver {
     public boolean isWhitelist = false;
+    public boolean maxEject = false;
     protected SideConfig sideConfig;
     protected SlotConfig slotConfig;
     public byte[] sideCache;
@@ -66,7 +66,7 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGU
             }
 
             @Override
-            public void setStackInSlot(int slot, ItemStack stack) {
+            public void setStackInSlot(int slot, @NotNull ItemStack stack) {
                 super.setStackInSlot(slot, stack);
                 if (Library.isMachineUpgrade(stack) && slot >= 18 && slot <= 19)
                     world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.upgradePlug, SoundCategory.BLOCKS, 1.0F, 1.0F);
@@ -139,8 +139,9 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGU
                     }
                 }
 
-                EnumFacing inputSide = getInputSide(); // note the switcheroo!
-                EnumFacing outputSide = getOutputSide();
+                EnumFacing inputSide = getOutputSide(); // note the switcheroo!
+                EnumFacing outputSide = getInputSide();
+                EnumFacing inputAccessSide = inputSide.getOpposite();
                 TileEntity te = world.getTileEntity(pos.offset(inputSide));
                 Block b = world.getBlockState(pos.offset(outputSide)).getBlock();
 
@@ -149,15 +150,15 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGU
 
                 if(te instanceof ISidedInventory && !(te instanceof TileEntityCraneExtractor)) {
                     sided = (ISidedInventory) te;
-                    access = masquerade(sided, EnumFacing.byIndex(inputSide.getOpposite().ordinal()));
+                    access = masquerade(sided, inputAccessSide);
                 }
 
                 //collect matching items
                 if(te != null) {
 
                     /* try to send items from a connected inv, if present */
-                    if(((ICapabilityProvider) te).hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, inputSide)) {
-                        IItemHandler inv = ((ICapabilityProvider) te).getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, inputSide);
+                    if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, inputAccessSide)) {
+                        IItemHandler inv = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, inputAccessSide);
 
                         int size = access == null ? inv.getSlots() : access.length;
 
@@ -165,11 +166,16 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGU
                             int index = access == null ? i : access[i];
                             ItemStack stack = inv.getStackInSlot(index);
 
-                            if(!stack.isEmpty() && (sided == null || canExtractItemCE(index, stack, EnumFacing.byIndex(inputSide.getOpposite().ordinal()), sided))){
+                            if(!stack.isEmpty() && (sided == null || canExtractItemCE(index, stack, inputAccessSide, sided))){
 
                                 boolean match = this.matchesFilter(stack);
 
                                 if((isWhitelist && match) || (!isWhitelist && !match)) {
+                                    int maxTarget = Math.min(amount, stack.getMaxStackSize());
+                                    if(maxEject && stack.getCount() < maxTarget) {
+                                        continue;
+                                    }
+
                                     int toSend = stack.getCount();
 
                                     ItemStack excrated = inv.extractItem(index, toSend, true);
@@ -189,11 +195,16 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGU
                     for(int index : allowed_slots) {
                         ItemStack stack = inventory.getStackInSlot(index);
                     try {
-                        if (!stack.isEmpty() && (sided == null || canExtractItemCE(index, stack, EnumFacing.byIndex(inputSide.getOpposite().ordinal()), sided))) {
+                        if (!stack.isEmpty() && (sided == null || canExtractItemCE(index, stack, inputAccessSide, sided))) {
 
                             boolean match = this.matchesFilter(stack);
 
                             if ((isWhitelist && match) || (!isWhitelist && !match)) {
+                                int maxTarget = Math.min(amount, stack.getMaxStackSize());
+                                if(maxEject && stack.getCount() < maxTarget) {
+                                    continue;
+                                }
+
                                 int toSend = Math.min(amount, stack.getCount());
                                 ItemStack cStack = stack.copy();
                                 stack.shrink(toSend);
@@ -261,12 +272,14 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGU
     @Override
     public void serialize(ByteBuf buf) {
         buf.writeBoolean(isWhitelist);
+        buf.writeBoolean(maxEject);
         this.matcher.serialize(buf);
     }
 
     @Override
     public void deserialize(ByteBuf buf) {
         this.isWhitelist = buf.readBoolean();
+        this.maxEject = buf.readBoolean();
         this.matcher.modes = new String[this.matcher.modes.length];
         this.matcher.deserialize(buf);
     }
@@ -288,7 +301,7 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGU
     }
 
     public void initPattern(ItemStack stack, int index) {
-        this.matcher.initPatternSmart(world, stack, index);
+        this.matcher.initPatternStandard(world, stack, index);
     }
 
     @Override
@@ -312,6 +325,7 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGU
     public void readFromNBT(NBTTagCompound nbt) {
         super.readFromNBT(nbt);
         this.isWhitelist = nbt.getBoolean("isWhitelist");
+        this.maxEject = nbt.getBoolean("maxEject");
         this.matcher.readFromNBT(nbt);
     }
 
@@ -319,6 +333,7 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGU
     public @NotNull NBTTagCompound writeToNBT(NBTTagCompound nbt) {
         super.writeToNBT(nbt);
         nbt.setBoolean("isWhitelist", this.isWhitelist);
+        nbt.setBoolean("maxEject", this.maxEject);
         this.matcher.writeToNBT(nbt);
         return nbt;
     }
@@ -333,8 +348,11 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGU
 
     @Override
     public void receiveControl(NBTTagCompound data) {
-        if(data.hasKey("isWhitelist")) {
+        if(data.hasKey("isWhitelist") || data.hasKey("whitelist")) {
             this.isWhitelist = !this.isWhitelist;
+        }
+        if(data.hasKey("maxEject")) {
+            this.maxEject = !this.maxEject;
         }
     }
 
@@ -356,7 +374,7 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGU
     @Override
     public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY && inventory != null) {
-            return true; // всегда есть item-cap
+            return true;
         }
         return super.hasCapability(capability, facing);
     }
@@ -365,12 +383,10 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGU
     public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY && inventory != null) {
             if (facing == null) {
-                // ВАЖНО: наружу при null-стороне показываем только буфер 9..17.
                 if (nullInsertHandler == null) {
                     nullInsertHandler = new ItemStackHandlerWrapper(inventory, allowed_slots) {
                         @Override
-                        public boolean isItemValid(int slot, ItemStack stack) {
-                            // не даем класть что-либо в фильтр снаружи — но мы уже отрезали фильтр
+                        public boolean isItemValid(int slot, @NotNull ItemStack stack) {
                             return isItemValidForSlot(slot, stack);
                         }
                     };
