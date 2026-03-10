@@ -44,6 +44,7 @@ import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.property.ExtendedBlockState;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -59,7 +60,7 @@ public class BlockReeds extends Block implements ICustomBlockItem, IDynamicModel
     public static final IUnlistedProperty<Integer> DEPTH = new UnlistedPropertyInteger("depth");
 
     @SideOnly(Side.CLIENT)
-    private final TextureAtlasSprite[] sprites = new TextureAtlasSprite[TEXTURES.length];
+    private TextureAtlasSprite[] sprites;
 
     public BlockReeds(String regName) {
         super(Material.PLANTS);
@@ -70,6 +71,10 @@ public class BlockReeds extends Block implements ICustomBlockItem, IDynamicModel
 
         IDynamicModels.INSTANCES.add(this);
         ModBlocks.ALL_BLOCKS.add(this);
+
+        if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+            sprites = new TextureAtlasSprite[TEXTURES.length];
+        }
 
         setDefaultState(blockState.getBaseState());
     }
@@ -199,8 +204,8 @@ public class BlockReeds extends Block implements ICustomBlockItem, IDynamicModel
         ForgeRegistries.ITEMS.register(itemBlock);
     }
 
-    @SideOnly(Side.CLIENT)
     @Override
+    @SideOnly(Side.CLIENT)
     public void bakeModel(ModelBakeEvent event) {
         try {
             ModelResourceLocation loc = new ModelResourceLocation(getRegistryName(), "normal");
