@@ -8,7 +8,7 @@ import com.hbm.config.ClientConfig;
 import com.hbm.items.IDynamicModels;
 import com.hbm.items.IModelRegister;
 import com.hbm.render.model.BlockReedsBakedModel;
-import com.hbm.util.UnlistedPropertyBoolean;
+import com.hbm.tileentity.TileEntityReeds;
 import com.hbm.util.UnlistedPropertyInteger;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
@@ -28,6 +28,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
@@ -56,7 +57,6 @@ public class BlockReeds extends Block implements ICustomBlockItem, IDynamicModel
     private static final String[] TEXTURES = new String[]{"bottom", "mid", "top"};
 
     public static final IUnlistedProperty<Integer> DEPTH = new UnlistedPropertyInteger("depth");
-    public static final IUnlistedProperty<Boolean> IS_TOP = new UnlistedPropertyBoolean("is_top");
 
     @SideOnly(Side.CLIENT)
     private final TextureAtlasSprite[] sprites = new TextureAtlasSprite[TEXTURES.length];
@@ -75,8 +75,18 @@ public class BlockReeds extends Block implements ICustomBlockItem, IDynamicModel
     }
 
     @Override
+    public boolean hasTileEntity(@NotNull IBlockState state) {
+        return true;
+    }
+
+    @Override
+    public TileEntity createTileEntity(@NotNull World world, @NotNull IBlockState state) {
+        return new TileEntityReeds();
+    }
+
+    @Override
     protected @NotNull BlockStateContainer createBlockState() {
-        return new ExtendedBlockState(this, new IProperty[0], new IUnlistedProperty[]{DEPTH, IS_TOP});
+        return new ExtendedBlockState(this, new IProperty[0], new IUnlistedProperty[]{DEPTH});
     }
 
     @Override
@@ -90,17 +100,15 @@ public class BlockReeds extends Block implements ICustomBlockItem, IDynamicModel
         } else {
             for (int i = pos.getY() - 1; i > 0; i--) {
                 Block depthBlock = world.getBlockState(new BlockPos(pos.getX(), i, pos.getZ())).getBlock();
+
+                depth = pos.getY() - i;
                 if (depthBlock != Blocks.WATER && depthBlock != Blocks.FLOWING_WATER) {
                     break;
                 }
-
-                depth = pos.getY() - i;
             }
         }
 
-        boolean isTop = world.getBlockState(pos.up()).getBlock() != this;
-
-        return ex.withProperty(DEPTH, depth).withProperty(IS_TOP, isTop);
+        return ex.withProperty(DEPTH, depth);
     }
 
     @Override
@@ -150,7 +158,7 @@ public class BlockReeds extends Block implements ICustomBlockItem, IDynamicModel
     @SuppressWarnings("deprecation")
     @Override
     public @NotNull EnumBlockRenderType getRenderType(@NotNull IBlockState state) {
-        return EnumBlockRenderType.MODEL;
+        return EnumBlockRenderType.INVISIBLE;
     }
 
     @SideOnly(Side.CLIENT)
