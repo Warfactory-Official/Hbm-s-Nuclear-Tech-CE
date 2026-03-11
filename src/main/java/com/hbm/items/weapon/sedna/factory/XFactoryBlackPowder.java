@@ -34,7 +34,7 @@ public class XFactoryBlackPowder {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_PEPPERBOX))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_PEPPERBOX_ANIMS).orchestra(Orchestras.ORCHESTRA_PEPPERBOX)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.STONE, 12);
     }
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_RECOIL_PEPPERBOX = (stack, ctx) -> ItemGunBaseNT.setupRecoil(10, (float) (ctx.getPlayer().getRNG().nextGaussian() * 1.5));

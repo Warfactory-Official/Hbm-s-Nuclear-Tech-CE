@@ -59,7 +59,7 @@ public class XFactory556mm {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_G3))
                 .setupStandardConfiguration().ps(Lego.LAMBDA_STANDARD_CLICK_SECONDARY)
                 .anim(LAMBDA_G3_ANIMS).orchestra(Orchestras.ORCHESTRA_G3)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.R556_SP, 30);
         ModItems.gun_g3_zebra = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.B_SIDE, "gun_g3_zebra", new GunConfig()
                 .dura(6_000).draw(10).inspect(33).crosshair(Crosshair.CIRCLE).smoke(LAMBDA_SMOKE).scopeTexture(scope)
                 .rec(new Receiver(0)
@@ -69,7 +69,7 @@ public class XFactory556mm {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_ZEBRA))
                 .setupStandardConfiguration().ps(Lego.LAMBDA_STANDARD_CLICK_SECONDARY)
                 .anim(LAMBDA_G3_ANIMS).orchestra(Orchestras.ORCHESTRA_G3)
-        ).setNameMutator(LAMBDA_NAME_G3);
+        ).setNameMutator(LAMBDA_NAME_G3).setDefaultAmmo(GunFactory.EnumAmmo.R556_JHP, 30);
 
         ModItems.gun_stg77 = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_stg77", new GunConfig()
                 .dura(3_000).draw(10).inspect(125).crosshair(Crosshair.CIRCLE).scopeTexture(scope).smoke(LAMBDA_SMOKE)
@@ -81,7 +81,7 @@ public class XFactory556mm {
                 .pp(Lego.LAMBDA_STANDARD_CLICK_PRIMARY).ps(Lego.LAMBDA_STANDARD_CLICK_PRIMARY).pr(Lego.LAMBDA_STANDARD_RELOAD).pt(Lego.LAMBDA_TOGGLE_AIM)
                 .decider(LAMBDA_STG77_DECIDER)
                 .anim(LAMBDA_STG77_ANIMS).orchestra(Orchestras.ORCHESTRA_STG77)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.R556_FMJ, 30);
     }
 
     public static Function<ItemStack, String> LAMBDA_NAME_G3 = (stack) -> {

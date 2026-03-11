@@ -7,6 +7,7 @@ import com.hbm.inventory.gui.GUIWeaponTable;
 import com.hbm.items.IEquipReceiver;
 import com.hbm.items.IKeybindReceiver;
 import com.hbm.items.ModItems;
+import com.hbm.items.weapon.sedna.factory.GunFactory;
 import com.hbm.items.weapon.sedna.hud.IHUDComponent;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
 import com.hbm.items.weapon.sedna.mags.MagazineInfinite;
@@ -64,6 +65,9 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
     public List<RecipesCommon.ComparableStack> recognizedMods = new ArrayList<>();
     public static final DecimalFormatSymbols SYMBOLS_US = new DecimalFormatSymbols(Locale.US);
     public static final DecimalFormat FORMAT_DMG = new DecimalFormat("#.##", SYMBOLS_US);
+
+    public ItemStack defaultAmmo;
+    public boolean isDefaultExpensive = false;
 
     public static float recoilVertical = 0;
     public static float recoilHorizontal = 0;
@@ -156,6 +160,16 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
         JAMMED;		//forced delay due to jamming
 
         public static final GunState[] VALUES = values();
+    }
+
+    public ItemGunBaseNT setDefaultAmmo(GunFactory.EnumAmmo ammo, int amount) {
+        this.defaultAmmo = new ItemStack(ModItems.ammo_standard, amount, ammo.ordinal());
+        return this;
+    }
+
+    public ItemGunBaseNT setDefaultAmmoExpensive(GunFactory.EnumAmmo ammo, int amount) {
+        this.isDefaultExpensive = true;
+        return setDefaultAmmo(ammo, amount);
     }
 
     public ItemGunBaseNT setNameMutator(Function<ItemStack, String> lambda) {

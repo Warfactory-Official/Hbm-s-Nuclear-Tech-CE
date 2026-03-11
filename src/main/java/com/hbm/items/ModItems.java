@@ -1938,7 +1938,7 @@ public class ModItems {
     public static final Item gun_b92_ammo = new GunB92Cell("gun_b92_ammo").setMaxStackSize(1).setCreativeTab(MainRegistry.weaponTab);
     //Drillgon200: screw organization, porting takes less time if I don't have to search for each individual spot.
     public static final Item charge_railgun = new ItemCustomLore("charge_railgun").setMaxStackSize(1).setCreativeTab(MainRegistry.weaponTab);
-    public static final Item ammo_container = new ItemClip("ammo_container").setCreativeTab(MainRegistry.weaponTab);
+    public static final Item ammo_container = new ItemAmmoContainer("ammo_container").setCreativeTab(MainRegistry.weaponTab);
     //Grenade
     public static final Item grenade_generic = new ItemGrenade(4, "grenade_generic").setCreativeTab(MainRegistry.weaponTab);
     public static final Item grenade_strong = new ItemGrenade(5, "grenade_strong").setCreativeTab(MainRegistry.weaponTab);

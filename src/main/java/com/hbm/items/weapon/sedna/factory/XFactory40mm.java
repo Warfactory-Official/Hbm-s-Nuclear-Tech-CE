@@ -158,7 +158,7 @@ public class XFactory40mm {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_GL))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_FLAREGUN_ANIMS).orchestra(Orchestras.ORCHESTRA_FLAREGUN)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.G26_FLARE, 3);
 
         ModItems.gun_congolake = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_congolake", new GunConfig()
                 .dura(400).draw(7).inspect(39).reloadSequential(true).crosshair(RenderScreenOverlay.Crosshair.L_CIRCUMFLEX).smoke(LAMBDA_SMOKE)
@@ -169,7 +169,7 @@ public class XFactory40mm {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_GL))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_CONGOLAKE_ANIMS).orchestra(Orchestras.ORCHESTRA_CONGOLAKE)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.G40_HE, 8);
     }
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_SMOKE = (stack, ctx) -> Lego.handleStandardSmoke(ctx.entity, stack, 1500, 0.025D, 1.05D, 0);

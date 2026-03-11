@@ -117,7 +117,7 @@ public class XFactoryAccelerator {
                 .pr(Lego.LAMBDA_STANDARD_RELOAD)
                 .decider(GunStateDecider.LAMBDA_STANDARD_DECIDER)
                 .anim(LAMBDA_TAU_ANIMS).orchestra(Orchestras.ORCHESTRA_TAU)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.TAU_URANIUM, 15);
 
         ModItems.gun_coilgun = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.SPECIAL, "gun_coilgun", new GunConfig()
                 .dura(400).draw(5).inspect(39).crosshair(Crosshair.L_CIRCUMFLEX)
@@ -128,7 +128,7 @@ public class XFactoryAccelerator {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_COILGUN))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_COILGUN_ANIMS).orchestra(Orchestras.ORCHESTRA_COILGUN)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.COIL_TUNGSTEN, 5);
 
         ModItems.gun_n_i_4_n_i = new ItemGunNI4NI(ItemGunBaseNT.WeaponQuality.SPECIAL, "gun_n_i_4_n_i", new GunConfig()
                 .dura(0).draw(5).inspect(39).crosshair(Crosshair.CIRCLE)

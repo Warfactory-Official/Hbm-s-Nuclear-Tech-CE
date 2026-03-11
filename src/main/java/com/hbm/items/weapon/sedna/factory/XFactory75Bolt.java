@@ -41,7 +41,7 @@ public class XFactory75Bolt {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_BOLT))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_BOLTER_ANIMS).orchestra(Orchestras.ORCHESTRA_BOLTER)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.B75, 15);
     }
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_SMOKE = (stack, ctx) -> Lego.handleStandardSmoke(ctx.entity, stack, 2000, 0.05D, 1.1D, 0);

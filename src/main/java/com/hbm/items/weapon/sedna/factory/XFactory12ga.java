@@ -287,7 +287,7 @@ public class XFactory12ga {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_MARESLEG))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_MARESLEG_ANIMS).orchestra(Orchestras.ORCHESTRA_MARESLEG)
-        ).setNameMutator(LAMBDA_NAME_MARESLEG);
+        ).setNameMutator(LAMBDA_NAME_MARESLEG).setDefaultAmmo(GunFactory.EnumAmmo.G12, 12);
         ModItems.gun_maresleg_akimbo = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.B_SIDE, "gun_maresleg_akimbo",
                 new GunConfig().dura(600).draw(5).inspect(39).reloadSequential(true).crosshair(Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
                         .rec(new Receiver(0)
@@ -307,7 +307,7 @@ public class XFactory12ga {
                         .ps(Lego.LAMBDA_STANDARD_CLICK_PRIMARY).pr(Lego.LAMBDA_STANDARD_RELOAD)
                         .decider(GunStateDecider.LAMBDA_STANDARD_DECIDER)
                         .anim(LAMBDA_MARESLEG_SHORT_ANIMS).orchestra(Orchestras.ORCHESTRA_MARESLEG_AKIMBO)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.G12, 24);
         ModItems.gun_maresleg_broken = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.LEGENDARY, "gun_maresleg_broken", new GunConfig()
                 .dura(0).draw(5).inspect(39).reloadSequential(true).crosshair(Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
                 .rec(new Receiver(0)
@@ -317,7 +317,7 @@ public class XFactory12ga {
                         .canFire(Lego.LAMBDA_STANDARD_CAN_FIRE).fire(Lego.LAMBDA_NOWEAR_FIRE).recoil(LAMBDA_RECOIL_MARESLEG))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_MARESLEG_SHORT_ANIMS).orchestra(Orchestras.ORCHESTRA_MARESLEG_SHORT)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.G12_MAGNUM, 24);
 
         ModItems.gun_liberator = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_liberator", new GunConfig()
                 .dura(200).draw(20).inspect(21).reloadSequential(true).crosshair(Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -328,7 +328,7 @@ public class XFactory12ga {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_LIBERATOR))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_LIBERATOR_ANIMS).orchestra(Orchestras.ORCHESTRA_LIBERATOR)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.G12, 12);
 
         ModItems.gun_spas12 = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_spas12", new GunConfig()
                 .dura(600).draw(20).inspect(39).reloadSequential(true).crosshair(Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -339,7 +339,7 @@ public class XFactory12ga {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_MARESLEG))
                 .setupStandardConfiguration().ps(LAMBDA_SPAS_SECONDARY).pt(null)
                 .anim(LAMBDA_SPAS_ANIMS).orchestra(Orchestras.ORCHESTRA_SPAS)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.G12, 16);
 
         ModItems.gun_autoshotgun = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_autoshotgun", new GunConfig()
                 .dura(2_000).draw(10).inspect(33).reloadSequential(true).crosshair(Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -350,7 +350,7 @@ public class XFactory12ga {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_AUTOSHOTGUN))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_SHREDDER_ANIMS).orchestra(Orchestras.ORCHESTRA_SHREDDER)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.G12, 20);
         ModItems.gun_autoshotgun_shredder = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.B_SIDE, "gun_autoshotgun_shredder", new GunConfig()
                 .dura(2_000).draw(10).inspect(33).reloadSequential(true).crosshair(Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
                 .rec(new Receiver(0)
@@ -360,7 +360,7 @@ public class XFactory12ga {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_AUTOSHOTGUN))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_SHREDDER_ANIMS).orchestra(Orchestras.ORCHESTRA_SHREDDER)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.G12, 20);
         ModItems.gun_autoshotgun_sexy = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.LEGENDARY, "gun_autoshotgun_sexy", new GunConfig()
                 .dura(5_000).draw(20).inspect(65).reloadSequential(true).inspectCancel(false).crosshair(Crosshair.L_CIRCLE).hideCrosshair(false).smoke(Lego.LAMBDA_STANDARD_SMOKE)
                 .rec(new Receiver(0)
@@ -370,7 +370,7 @@ public class XFactory12ga {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_SEXY))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_SEXY_ANIMS).orchestra(Orchestras.ORCHESTRA_SHREDDER_SEXY)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.G12_MAGNUM, 50);
     }
 
     public static Function<ItemStack, String> LAMBDA_NAME_MARESLEG = (stack) -> {

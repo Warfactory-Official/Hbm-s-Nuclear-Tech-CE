@@ -145,7 +145,7 @@ public class XFactoryFlamer {
                         .setupStandardFire())
                 .setupStandardConfiguration()
                 .anim(LAMBDA_FLAMER_ANIMS).orchestra(Orchestras.ORCHESTRA_FLAMER)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.FLAME_DIESEL, 1);
         ModItems.gun_flamer_topaz = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.B_SIDE, "gun_flamer_topaz", new GunConfig()
                 .dura(20_000).draw(10).inspect(17).crosshair(Crosshair.L_CIRCLE)
                 .rec(new Receiver(0)
@@ -155,7 +155,7 @@ public class XFactoryFlamer {
                         .setupStandardFire())
                 .setupStandardConfiguration()
                 .anim(LAMBDA_FLAMER_ANIMS).orchestra(Orchestras.ORCHESTRA_FLAMER)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.FLAME_DIESEL, 1);
         ModItems.gun_flamer_daybreaker = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.LEGENDARY, "gun_flamer_daybreaker", new GunConfig()
                 .dura(20_000).draw(10).inspect(17).crosshair(Crosshair.L_CIRCLE)
                 .rec(new Receiver(0)
@@ -165,7 +165,7 @@ public class XFactoryFlamer {
                         .setupStandardFire())
                 .setupStandardConfiguration()
                 .anim(LAMBDA_FLAMER_ANIMS).orchestra(Orchestras.ORCHESTRA_FLAMER_DAYBREAKER)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.FLAME_DIESEL, 1);
 
         ModItems.gun_chemthrower = new ItemGunChemthrower(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_chemthrower", new GunConfig()
                 .dura(90_000).draw(10).inspect(17).crosshair(Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)

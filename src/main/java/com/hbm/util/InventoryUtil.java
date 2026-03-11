@@ -43,6 +43,17 @@ public class InventoryUtil {
 			return rem;
 	}
 
+    public static ItemStack tryAddItemToInventory(NonNullList<ItemStack> inv, ItemStack stack) {
+        ItemStack[] arr = inv.toArray(new ItemStack[0]);
+        ItemStack result = tryAddItemToInventory(arr, 0, inv.size() - 1, stack);
+
+        for (int i = 0; i < arr.length; i++) {
+            inv.set(i, arr[i]);
+        }
+
+        return result;
+    }
+
 	/**
 	 * Functionally equal to tryAddItemToInventory, but will not try to create new stacks in empty slots
 	 */

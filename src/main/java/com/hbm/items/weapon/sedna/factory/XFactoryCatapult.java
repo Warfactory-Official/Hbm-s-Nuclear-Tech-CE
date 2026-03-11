@@ -162,7 +162,7 @@ public class XFactoryCatapult {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_FATMAN))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_FATMAN_ANIMS).orchestra(Orchestras.ORCHESTRA_FATMAN)
-        );
+        ).setDefaultAmmoExpensive(GunFactory.EnumAmmo.NUKE_STANDARD, 1);
     }
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_RECOIL_FATMAN = (stack, ctx) -> { };

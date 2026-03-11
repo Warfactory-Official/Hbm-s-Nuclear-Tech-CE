@@ -49,7 +49,7 @@ public class XFactory22lr {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_AM180))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_AM180_ANIMS).orchestra(Orchestras.ORCHESTRA_AM180)
-        ).setNameMutator(LAMBDA_NAME_AM180);
+        ).setNameMutator(LAMBDA_NAME_AM180).setDefaultAmmo(GunFactory.EnumAmmo.P22_SP, 35);
     }
 
     public static Function<ItemStack, String> LAMBDA_NAME_AM180 = (stack) -> {

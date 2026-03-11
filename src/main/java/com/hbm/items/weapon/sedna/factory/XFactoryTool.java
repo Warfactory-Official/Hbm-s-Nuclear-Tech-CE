@@ -315,7 +315,7 @@ public class XFactoryTool {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_CT))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_CT_ANIMS).orchestra(Orchestras.ORCHESTRA_CHARGE_THROWER)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.CT_MORTAR, 3);
     }
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_RECOIL_CT = (stack, ctx) -> ItemGunBaseNT.setupRecoil(10, (float) (ctx.getPlayer().getRNG().nextGaussian() * 1.5));

@@ -179,7 +179,7 @@ public class XFactoryRocket {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_ROCKET))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_PANZERSCHRECK_ANIMS).orchestra(Orchestras.ORCHESTRA_PANERSCHRECK)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.ROCKET_HE, 3);
 
         ModItems.gun_stinger = new ItemGunStinger(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_stinger", new GunConfig()
                 .dura(300).draw(7).inspect(40).crosshair(Crosshair.L_BOX_OUTLINE)
@@ -190,7 +190,7 @@ public class XFactoryRocket {
                         .setupLockonFire().recoil(LAMBDA_RECOIL_ROCKET))
                 .setupStandardConfiguration().ps(LAMBDA_STINGER_SECONDARY_PRESS).rs(LAMBDA_STINGER_SECONDARY_RELEASE)
                 .anim(LAMBDA_PANZERSCHRECK_ANIMS).orchestra(Orchestras.ORCHESTRA_STINGER)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.ROCKET_HEAT, 3);
 
         ModItems.gun_quadro = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_quadro", new GunConfig()
                 .dura(400).draw(7).inspect(40).crosshair(Crosshair.L_CIRCUMFLEX).hideCrosshair(false)
@@ -201,7 +201,7 @@ public class XFactoryRocket {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_ROCKET))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_QUADRO_ANIMS).orchestra(Orchestras.ORCHESTRA_QUADRO)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.ROCKET_HE, 4);
 
         ModItems.gun_missile_launcher = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_missile_launcher", new GunConfig()
                 .dura(500).draw(20).inspect(40).crosshair(Crosshair.L_CIRCUMFLEX).hideCrosshair(false)
@@ -212,7 +212,7 @@ public class XFactoryRocket {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_ROCKET))
                 .setupStandardConfiguration().pp(LAMBDA_MISSILE_LAUNCHER_PRIMARY_PRESS)
                 .anim(LAMBDA_MISSILE_LAUNCHER_ANIMS).orchestra(Orchestras.ORCHESTRA_MISSILE_LAUNCHER)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.ROCKET_HEAT, 5);
     }
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_STINGER_SECONDARY_PRESS = (stack, ctx) -> ItemGunStinger.setIsLockingOn(stack, true);

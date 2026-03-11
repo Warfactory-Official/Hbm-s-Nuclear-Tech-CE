@@ -144,7 +144,7 @@ public class XFactoryEnergy {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_ENERGY))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_TESLA_ANIMS).orchestra(Orchestras.ORCHESTRA_TESLA)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.CAPACITOR, 15);
 
         ModItems.gun_laser_pistol = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_laser_pistol", new GunConfig()
                 .dura(500).draw(10).inspect(26).crosshair(Crosshair.CIRCLE)
@@ -155,7 +155,7 @@ public class XFactoryEnergy {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_ENERGY))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_LASER_PISTOL).orchestra(Orchestras.ORCHESTRA_LASER_PISTOL)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.CAPACITOR, 15);
         ModItems.gun_laser_pistol_pew_pew = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.B_SIDE, "gun_laser_pistol_pew_pew", new GunConfig()
                 .dura(500).draw(10).inspect(26).crosshair(Crosshair.CIRCLE)
                 .rec(new Receiver(0)
@@ -165,7 +165,7 @@ public class XFactoryEnergy {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_ENERGY))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_LASER_PISTOL).orchestra(Orchestras.ORCHESTRA_LASER_PISTOL)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.CAPACITOR_OVERCHARGE, 10);
         ModItems.gun_laser_pistol_morning_glory = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.LEGENDARY, "gun_laser_pistol_morning_glory", new GunConfig()
                 .dura(1_500).draw(10).inspect(26).crosshair(Crosshair.CIRCLE)
                 .rec(new Receiver(0)
@@ -175,7 +175,7 @@ public class XFactoryEnergy {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_ENERGY))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_LASER_PISTOL).orchestra(Orchestras.ORCHESTRA_LASER_PISTOL)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.CAPACITOR_OVERCHARGE, 20);
 
         ModItems.gun_lasrifle = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_lasrifle", new GunConfig()
                 .dura(2_000).draw(10).inspect(26).reloadSequential(true).crosshair(Crosshair.CIRCLE).scopeTexture(scope_luna)
@@ -186,7 +186,7 @@ public class XFactoryEnergy {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_ENERGY))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_LASRIFLE).orchestra(Orchestras.ORCHESTRA_LASRIFLE)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.CAPACITOR, 24);
     }
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_RECOIL_ENERGY = (stack, ctx) -> { };
