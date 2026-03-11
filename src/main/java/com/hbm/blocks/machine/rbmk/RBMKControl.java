@@ -1,18 +1,29 @@
 package com.hbm.blocks.machine.rbmk;
 
+import com.hbm.blocks.ModBlocks;
+import com.hbm.render.model.RBMKControlBakedModel;
+import com.hbm.tileentity.TileEntityProxyCombo;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKControlManual;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
-public class RBMKControl extends RBMKBase {
+public class RBMKControl extends RBMKPipedBase {
 
-	public boolean moderated = false;
+	public boolean moderated;
+	@SideOnly(Side.CLIENT) private TextureAtlasSprite bottomSprite;
 	
 	public RBMKControl(boolean moderated, String s, String c) {
 		super(s, c);
@@ -20,20 +31,30 @@ public class RBMKControl extends RBMKBase {
 	}
 
 	@Override
-	public TileEntity createNewTileEntity(World world, int meta) {
-
-		if(meta >= offset)
-			return new TileEntityRBMKControlManual();
+	public TileEntity createNewTileEntity(@NotNull World world, int meta) {
+		if(meta >= offset) return new TileEntityRBMKControlManual();
+		if(meta >= extra) return new TileEntityProxyCombo();
 		return null;
 	}
 	
 	@Override
-	public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ){
+	public boolean onBlockActivated(@NotNull World worldIn, BlockPos pos, @NotNull IBlockState state, @NotNull EntityPlayer playerIn, @NotNull EnumHand hand, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ){
 		return openInv(worldIn, pos.getX(), pos.getY(), pos.getZ(), playerIn, hand);
 	}
-	
+
+    @Override
+	public void registerSprite(TextureMap map) {
+		super.registerSprite(map);
+		if(this == ModBlocks.rbmk_control_reasim) this.bottomSprite = map.registerSprite(new ResourceLocation("hbm", "blocks/rbmk/" + columnTexture + "_bottom"));
+		else this.bottomSprite = topSprite;
+	}
+
 	@Override
-	public EnumBlockRenderType getRenderType(IBlockState state){
-		return EnumBlockRenderType.MODEL;
+	public void bakeModel(ModelBakeEvent event) {
+		event.getModelRegistry().putObject(new ModelResourceLocation(getRegistryName(), "inventory"),
+				new RBMKControlBakedModel(topSprite, sideSprite, pipeTop, pipeSide, null, null, null, null, topSprite, true).setBottomSprite(bottomSprite));
+
+		event.getModelRegistry().putObject(new ModelResourceLocation(getRegistryName(), "normal"),
+				new RBMKControlBakedModel(topSprite, sideSprite, pipeTop, pipeSide, null, null, null, null, topSprite, false).setBottomSprite(bottomSprite));
 	}
 }

@@ -5,6 +5,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumBlockRenderType;
+import org.jetbrains.annotations.NotNull;
 
 public class RBMKDebris extends Block {
 
@@ -18,22 +19,22 @@ public class RBMKDebris extends Block {
 
 
 	@Override
-	public EnumBlockRenderType getRenderType(IBlockState state){
+	public @NotNull EnumBlockRenderType getRenderType(@NotNull IBlockState state){
 		return EnumBlockRenderType.MODEL;
 	}
 	
 	@Override
-	public boolean isOpaqueCube(IBlockState state){
+	public boolean isOpaqueCube(@NotNull IBlockState state){
 		return false;
 	}
 	
 	@Override
-	public boolean isNormalCube(IBlockState state){
+	public boolean isNormalCube(@NotNull IBlockState state){
 		return false;
 	}
 	
 	@Override
-	public boolean isBlockNormalCube(IBlockState state){
+	public boolean isBlockNormalCube(@NotNull IBlockState state){
 		return false;
 	}
 }

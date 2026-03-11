@@ -274,6 +274,16 @@ public class RBMKDials {
     }
 
     /**
+     * How many °C are generated per one flux that hits an absorber.
+     * @param world
+     * @return
+     */
+    public static double getAbsorberHeatConversion(World world) {
+        return MathHelper.clamp(shittyWorkaroundParseDouble(world.getGameRules().getString(RBMKKeys.KEY_ABSORBER_HEAT_CONVERSION.keyString),
+                (double) RBMKKeys.KEY_ABSORBER_HEAT_CONVERSION.defValue), 0.0D, 1.0D);
+    }
+
+    /**
      * The percentage of neutron to reflect when a stream hits a reflector column.
      *
      * @param world
@@ -330,7 +340,8 @@ public class RBMKDials {
         KEY_ABSORBER_EFFICIENCY("dialAbsorberEfficiency", 1.0),
         KEY_REFLECTOR_EFFICIENCY("dialReflectorEfficiency", 1.0),
         KEY_DISABLE_DEPLETION("dialDisableDepletion", false),
-        KEY_DISABLE_XENON("dialDisableXenon", false);
+        KEY_DISABLE_XENON("dialDisableXenon", false),
+        KEY_ABSORBER_HEAT_CONVERSION("dialAbsorberHeatConversion", 0.05);
 
         public static final RBMKKeys[] VALUES = values();
 

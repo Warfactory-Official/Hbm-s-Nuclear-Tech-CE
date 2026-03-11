@@ -22,7 +22,6 @@ import com.hbm.handler.*;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.items.IAnimatedItem;
 import com.hbm.items.ModItems;
-import com.hbm.items.RBMKItemRenderers;
 import com.hbm.items.weapon.sedna.factory.GunFactoryClient;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.RecoilHandler;
@@ -58,6 +57,7 @@ import com.hbm.render.item.ItemRenderMissileGeneric.RenderMissileType;
 import com.hbm.render.item.ItemRenderMissilePart;
 import com.hbm.render.item.weapon.ItemRenderGunAnim;
 import com.hbm.render.item.weapon.sedna.*;
+import com.hbm.render.loader.HFRModelReloader;
 import com.hbm.render.misc.MissilePart;
 import com.hbm.render.modelrenderer.EgonBackpackRenderer;
 import com.hbm.render.tileentity.IItemRendererProvider;
@@ -135,7 +135,6 @@ import java.io.File;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 public class ClientProxy extends ServerProxy {
@@ -203,6 +202,7 @@ public class ClientProxy extends ServerProxy {
         Jars.initJars();
 
         ((IReloadableResourceManager) Minecraft.getMinecraft().getResourceManager()).registerReloadListener(new QMAWLoader());
+        ((IReloadableResourceManager) Minecraft.getMinecraft().getResourceManager()).registerReloadListener(new HFRModelReloader());
 
 //        ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineAssembler.class, new RenderAssembler());
         // TODO: replace it with EntityCombineBallNT
@@ -1979,9 +1979,6 @@ public class ClientProxy extends ServerProxy {
         OBJLoader.INSTANCE.addDomain(Tags.MODID);
 
         AutoRegistry.preInitClient();
-        for (Map.Entry<Item, TileEntityItemStackRenderer> entry : RBMKItemRenderers.itemRenderers.entrySet()) {
-            entry.getKey().setTileEntityItemStackRenderer(entry.getValue());
-        }
 
         for (TileEntitySpecialRenderer<? extends TileEntity> renderer : TileEntityRendererDispatcher.instance.renderers.values()) {
             if (renderer instanceof IItemRendererProvider prov) {

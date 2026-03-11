@@ -28,7 +28,7 @@ public class TileEntityRBMKRodReaSim extends TileEntityRBMKRod {
 	@Override
 	protected void spreadFlux(double flux, double ratio) {
 
-		if(posReasimRod == null) posReasimRod = new BlockPos(this);
+		if(posReasimRod == null) posReasimRod = new BlockPos(pos);
 
 		if(flux == 0) {
 			// simple way to remove the node from the cache when no flux is going into it!
@@ -46,7 +46,7 @@ public class TileEntityRBMKRodReaSim extends TileEntityRBMKRod {
 		Vec3NT vec = new Vec3NT(1, 0, 0);
 		vec.rotateAroundYDeg(world.rand.nextInt(4) * 9D);
 		for(int i = 0; i < 8; i++) {
-			new RBMKNeutronHandler.RBMKNeutronStream(node, vec, flux * 0.5, ratio);
+			new RBMKNeutronHandler.RBMKNeutronStream(node, new Vec3NT(vec), flux * 0.75, ratio);
 			vec.rotateAroundYDeg(45D);
 		}
 	}

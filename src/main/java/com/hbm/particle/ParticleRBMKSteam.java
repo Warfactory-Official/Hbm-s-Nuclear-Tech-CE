@@ -21,7 +21,7 @@ public class ParticleRBMKSteam extends Particle {
 
     public ParticleRBMKSteam(World world, double x, double y, double z) {
         super(world, x, y, z);
-        this.particleMaxAge = 30;
+        this.particleMaxAge = 10;
         this.particleAlpha = 0.25F;
         this.particleScale = 4F;
     }

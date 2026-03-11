@@ -238,15 +238,16 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITicka
             if(trait.getEfficiency(FT_Heatable.HeatingType.BOILER) > 0) {
 
                 FT_Heatable.HeatingStep entry = trait.getFirstStep();
+                int heatReq = (int) Math.max(entry.heatReq / trait.getEfficiency(FT_Heatable.HeatingType.BOILER), 1);
                 int inputOps = this.tanks[0].getFill() / entry.amountReq;
                 int outputOps = (this.tanks[1].getMaxFill() - this.tanks[1].getFill()) / entry.amountProduced;
-                int heatOps = this.heat / entry.heatReq;
+                int heatOps = this.heat / heatReq;
 
                 int ops = Math.min(inputOps, Math.min(outputOps, heatOps));
 
                 this.tanks[0].setFill(this.tanks[0].getFill() - entry.amountReq * ops);
                 this.tanks[1].setFill(this.tanks[1].getFill() + entry.amountProduced * ops);
-                this.heat -= entry.heatReq * ops;
+                this.heat -= heatReq * ops;
 
                 if(ops > 0 && world.rand.nextInt(400) == 0) {
                     world.playSound(null, pos.getX() + 0.5, pos.getY() + 2, pos.getZ() + 0.5, new SoundEvent(new ResourceLocation("hbm:block.boilerGroan")), SoundCategory.BLOCKS, 0.5F, 1.0F);

@@ -70,7 +70,7 @@ public class RBMKNeutronHandler {
             x = -fluxRange;
             z = -fluxRange;
 
-            return new Iterator<BlockPos>() {
+            return new Iterator<>() {
                 @Override
                 public boolean hasNext() {
                     return (fluxRange + x) * (fluxRange * 2 + 1) + z + fluxRange + 1 < (fluxRange * 2 + 1) * (fluxRange * 2 + 1);
@@ -78,16 +78,16 @@ public class RBMKNeutronHandler {
 
                 @Override
                 public BlockPos next() {
-                    if(Math.pow(x, 2) + Math.pow(z, 2) <= fluxRange * fluxRange) {
+                    if (Math.pow(x, 2) + Math.pow(z, 2) <= fluxRange * fluxRange) {
                         z++;
-                        if(z > fluxRange) {
+                        if (z > fluxRange) {
                             z = -fluxRange;
                             x++;
                         }
                         return posInstance.setPos(tile.getPos().add(x, 0, z));
                     } else {
                         z++;
-                        if(z > fluxRange) {
+                        if (z > fluxRange) {
                             z = -fluxRange;
                             x++;
                         }
@@ -128,8 +128,7 @@ public class RBMKNeutronHandler {
                 Iterator<BlockPos> reaSimNodes = getReaSimNodes();
 
                 // Check if the ReaSim rod should be culled from the cache due to no rod or no flux.
-                if(tile instanceof TileEntityRBMKRodReaSim) { // fuckkkkkkk
-                    TileEntityRBMKRodReaSim rod = (TileEntityRBMKRodReaSim) tile;
+                if(tile instanceof TileEntityRBMKRodReaSim rod) { // fuckkkkkkk
                     if(!rod.hasRod || rod.lastFluxQuantity == 0) {
                         reaSimNodes.forEachRemaining(a -> {
                             if(a != null)
@@ -155,9 +154,7 @@ public class RBMKNeutronHandler {
 
                     NeutronNode node = streamWorld.getNode(nodePos);
 
-                    if(node != null && node.tile instanceof TileEntityRBMKRod) {
-
-                        TileEntityRBMKRod rod = (TileEntityRBMKRod) node.tile;
+                    if(node != null && node.tile instanceof TileEntityRBMKRod rod) {
 
                         if(rod.hasRod && rod.lastFluxQuantity > 0) {
                             hasRod = true;
@@ -220,12 +217,11 @@ public class RBMKNeutronHandler {
                 pos.setPos(origin.tile.getPos().add(x, 0,  z));
 
                 NeutronNode node = streamWorld.getNode(pos);
-                if(node != null && node instanceof RBMKNeutronNode) {
+                if(node instanceof RBMKNeutronNode) {
                     positions[i - 1] = node;
                 } else if(this.origin.tile.getBlockType() instanceof RBMKBase) {
                     TileEntity te = blockPosToTE(world, pos);
-                    if(te instanceof TileEntityRBMKBase) {
-                        TileEntityRBMKBase rbmkBase = (TileEntityRBMKBase) te;
+                    if(te instanceof TileEntityRBMKBase rbmkBase) {
                         node = makeNode(streamWorld, rbmkBase);
                         positions[i - 1] = node;
                         if(addNode) streamWorld.addNode(node);
@@ -305,8 +301,7 @@ public class RBMKNeutronHandler {
                     moderateStream();
                 }
 
-                if(nodeTE instanceof IRBMKFluxReceiver) {
-                    IRBMKFluxReceiver column = (IRBMKFluxReceiver) nodeTE;
+                if(nodeTE instanceof IRBMKFluxReceiver column) {
 
                     if(type == RBMKType.ROD) {
                         TileEntityRBMKRod rod = (TileEntityRBMKRod) column;
@@ -351,6 +346,8 @@ public class RBMKNeutronHandler {
                     ((TileEntityRBMKRod) originTE).receiveFlux(this);
                     return;
                 } else if(type == RBMKType.ABSORBER) {
+                    nodeTE.heat += RBMKDials.getAbsorberHeatConversion(worldObj) * this.fluxQuantity;
+
                     if(absorberEfficiency == 1)
                         return;
 

@@ -131,9 +131,13 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 				boilWater();
 			}
 
-            networkPackNT(15);
+            networkPackNT(trackingRange());
         }
     }
+
+	public int trackingRange() {
+		return 15;
+	}
 
     // mlbv: the side effect of TileEntity#markDirty() is to update the block metadata and update comparator outputs,
     // which we don't really need for rbmk columns

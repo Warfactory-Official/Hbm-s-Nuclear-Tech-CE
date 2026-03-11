@@ -18,6 +18,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.gui.GUIRBMKBoiler;
 import com.hbm.lib.DirPos;
+import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
@@ -35,6 +36,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
@@ -120,7 +122,8 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
                         data.setString("type", "rbmksteam");
                         PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.getX() + 0.25 + world.rand.nextInt(2) * 0.5, pos.getY() + RBMKDials.getColumnHeight(world), pos.getZ() + 0.25 + world.rand.nextInt(2) * 0.5), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 100));
                         MainRegistry.proxy.effectNT(data);
-                        this.ventDelay = 20;
+                        this.ventDelay = 20 + world.rand.nextInt(10);
+                        this.world.playSound(null, pos.getX(), pos.getY() + RBMKDials.getColumnHeight(world), pos.getZ(), HBMSoundHandler.steamEngineOperate, SoundCategory.BLOCKS, 2F, 1F + world.rand.nextFloat() * 0.25F);
                     }
                 }
 
@@ -130,7 +133,7 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
             this.trySubscribe(feed.getTankType(), world, pos.getX(), pos.getY() - 1, pos.getZ(), Library.NEG_Y);
             for (DirPos pos : getOutputPos()) {
                 if (this.steam.getFill() > 0)
-                    this.sendFluid(steam, world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
+                    this.tryProvide(steam, world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
             }
         }
 

@@ -11,7 +11,7 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.client.renderer.GlStateManager;
 
-public class GUIRBMKRod extends GuiContainer {
+public class GUIRBMKRod extends GuiInfoContainer {
 	
 	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/reactors/gui_rbmk_element.png");
 	private TileEntityRBMKRod rod;
@@ -36,6 +36,11 @@ public class GUIRBMKRod extends GuiContainer {
 	public void drawScreen(int mouseX, int mouseY, float partialTicks){
 		super.drawScreen(mouseX, mouseY, partialTicks);
 		super.renderHoveredToolTip(mouseX, mouseY);
+
+		if(!rod.coldEnoughForAutoloader())
+			this.drawCustomInfoStat(mouseX, mouseY, guiLeft - 16, guiTop + 20, 16, 16, guiLeft - 8, guiTop + 20 + 16, new String[]{"Fuel skin temperature has exceeded 1,000°C,", "autoloaders can no longer cycle fuel!"});
+		if(!rod.coldEnoughForManual())
+			this.drawCustomInfoStat(mouseX, mouseY, guiLeft - 16, guiTop + 36, 16, 16, guiLeft - 8, guiTop + 36 + 16, new String[]{"Fuel skin temperature has exceeded 200°C,", "fuel can no longer be removed by hand!"});
 	}
 
 	@Override
@@ -56,5 +61,8 @@ public class GUIRBMKRod extends GuiContainer {
 			int x = (int)(xenon * 58);
 			drawTexturedModalRect(guiLeft + 126, guiTop + 82 - x, 212, 58 - x, 14, x);
 		}
+
+		if(!rod.coldEnoughForAutoloader()) this.drawInfoPanel(guiLeft - 16, guiTop + 20, 16, 16, 6);
+		if(!rod.coldEnoughForManual()) this.drawInfoPanel(guiLeft - 16, guiTop + 36, 16, 16, 7);
 	}
 }

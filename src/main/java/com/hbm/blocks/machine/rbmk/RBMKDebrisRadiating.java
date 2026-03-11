@@ -7,7 +7,6 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.util.ContaminationUtil;
-import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
@@ -17,6 +16,7 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
 
@@ -35,7 +35,7 @@ public class RBMKDebrisRadiating extends RBMKDebrisBurning {
 	}
 
 	@Override
-	public void updateTick(World world, BlockPos pos, IBlockState state, Random rand) {
+	public void updateTick(World world, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull Random rand) {
 		
 		if(!world.isRemote) {
 
@@ -74,8 +74,8 @@ public class RBMKDebrisRadiating extends RBMKDebrisBurning {
 	}
 	
 	@Override
-	protected BlockStateContainer createBlockState() {
-		return new BlockStateContainer(this, new IProperty[]{META});
+	protected @NotNull BlockStateContainer createBlockState() {
+		return new BlockStateContainer(this, META);
 	}
 	
 	@Override
@@ -84,7 +84,7 @@ public class RBMKDebrisRadiating extends RBMKDebrisBurning {
 	}
 	
 	@Override
-	public IBlockState getStateFromMeta(int meta) {
+	public @NotNull IBlockState getStateFromMeta(int meta) {
 		return this.getDefaultState().withProperty(META, meta);
 	}
 }

@@ -31,8 +31,8 @@ public abstract class TileEntityRBMKControl extends TileEntityRBMKSlottedBase im
 	public static final double speed = 0.00277D; // it takes around 18 seconds for the thing to fully extend
 	public double targetLevel;
 
-	public boolean hasPower = false;;
-	public long power;
+	public boolean hasPower = false;
+    public long power;
 	public static final long consumption = 5_000;
 	public static final long maxPower = consumption * 10; // enough buffer for half a second of movement
 
@@ -46,10 +46,10 @@ public abstract class TileEntityRBMKControl extends TileEntityRBMKSlottedBase im
 
 	@Override public long getPower() { return power; }
 	@Override public void setPower(long power) { this.power = power; }
-	@Override public long getMaxPower() { return isPowered() ? this.maxPower : 0; }
+	@Override public long getMaxPower() { return isPowered() ? maxPower : 0; }
 
 	@Override public boolean canConnect(ForgeDirection dir) {
-		return isPowered() ? dir == ForgeDirection.DOWN : false;
+		return isPowered() && dir == ForgeDirection.DOWN;
 	}
 
 	@Override public ConnectionPriority getPriority() {
@@ -91,7 +91,7 @@ public abstract class TileEntityRBMKControl extends TileEntityRBMKSlottedBase im
 				}
 
 				if(this.isPowered() && level != lastLevel) {
-					this.power -= this.consumption;
+					this.power -= consumption;
 				}
 			}
 		}

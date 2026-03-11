@@ -16,7 +16,6 @@ import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.items.IDynamicModels;
 import com.hbm.items.IModelRegister;
 import com.hbm.items.ModItems;
-import com.hbm.items.RBMKItemRenderers;
 import com.hbm.items.gear.RedstoneSword;
 import com.hbm.items.machine.*;
 import com.hbm.items.special.*;
@@ -517,10 +516,6 @@ public class NTMClientRegistry {
 
         for (Item item : ItemGunBaseNT.INSTANCES) {
             swapModelsNoFPV(item, reg);
-        }
-
-        for (Item item : RBMKItemRenderers.itemRenderers.keySet()) {
-            swapModels(item, reg);
         }
 
         for (TileEntitySpecialRenderer<? extends TileEntity> renderer : TileEntityRendererDispatcher.instance.renderers.values()) {

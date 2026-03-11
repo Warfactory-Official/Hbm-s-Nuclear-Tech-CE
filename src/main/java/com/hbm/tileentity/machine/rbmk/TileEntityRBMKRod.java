@@ -96,6 +96,28 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 		this.fluxQuantity += stream.fluxQuantity;
 		fluxFastRatio = (fastFlux + fastFluxIn) / fluxQuantity;
 	}
+
+	public boolean coldEnoughForAutoloader() {
+		if(!inventory.getStackInSlot(0).isEmpty() && inventory.getStackInSlot(0).getItem() instanceof ItemRBMKRod) {
+			return ItemRBMKRod.getHullHeat(inventory.getStackInSlot(0)) <= 1_000;
+		}
+		return true;
+	}
+	public boolean coldEnoughForManual() {
+		if(!inventory.getStackInSlot(0).isEmpty() && inventory.getStackInSlot(0).getItem() instanceof ItemRBMKRod) {
+			return ItemRBMKRod.getHullHeat(inventory.getStackInSlot(0)) <= 200;
+		}
+		return true;
+	}
+
+	@Override
+	public void invalidate() {
+		super.invalidate();
+
+		if(!inventory.getStackInSlot(0).isEmpty() && inventory.getStackInSlot(0).getItem() instanceof ItemRBMKRod && ItemRBMKRod.getHullHeat(inventory.getStackInSlot(0)) >= 150) {
+			this.meltdown();
+		}
+	}
 	
 	@Override
 	public void update() {
@@ -109,13 +131,8 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 				// Experimental flux ratio curve rods!
 				// Again, nothing really uses this so its just idle code at the moment.
 				if(rod.specialFluxCurve) {
-
 					fluxRatioOut = rod.fluxRatioOut(this.fluxFastRatio, ItemRBMKRod.getEnrichment(stack));
-
-					double fluxIn;
-
-					fluxIn = rod.fluxFromRatio(this.fluxQuantity, this.fluxFastRatio);
-
+					double fluxIn = rod.fluxFromRatio(this.fluxQuantity, this.fluxFastRatio);
 					fluxQuantityOut = rod.burn(world, stack, fluxIn);
 				} else {
 					NType rType = rod.rType;
@@ -231,7 +248,6 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 		this.fluxQuantity = nbt.getDouble("fluxQuantity");
 		this.fluxFastRatio = nbt.getDouble("fluxMod");
 		this.hasRod = nbt.getBoolean("hasRod");
-        this.cherenkovVisualTimer = nbt.getInteger("cherenkovTimer");
 	}
 	
 	@Override
@@ -244,7 +260,6 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 			nbt.setDouble("fluxSlow", this.fluxQuantity * (1 - fluxFastRatio));
 			nbt.setDouble("fluxFast", this.fluxQuantity * fluxFastRatio);
 		}
-        nbt.setInteger("cherenkovTimer", this.cherenkovVisualTimer);
 		return nbt;
 	}
 

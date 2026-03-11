@@ -7,6 +7,7 @@ import com.hbm.blocks.machine.rbmk.RBMKBase;
 import com.hbm.items.ModItems;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKCraneConsole;
+import com.hbm.tileentity.machine.rbmk.TileEntityRBMKDisplay;
 import com.hbm.util.I18nUtil;
 import net.minecraft.block.Block;
 import net.minecraft.client.util.ITooltipFlag;
@@ -25,6 +26,7 @@ import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -38,7 +40,7 @@ public class ItemRBMKTool extends Item {
 	}
 	
 	@Override
-	public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos bpos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ){
+	public @NotNull EnumActionResult onItemUse(EntityPlayer player, World world, @NotNull BlockPos bpos, @NotNull EnumHand hand, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ){
 		Block b = world.getBlockState(bpos).getBlock();
 		ItemStack stack = player.getHeldItem(hand);
 		if(b instanceof RBMKBase) {
@@ -93,18 +95,33 @@ public class ItemRBMKTool extends Item {
 			
 			return EnumActionResult.SUCCESS;
 		}
+
+		if(b == ModBlocks.rbmk_display && stack.hasTagCompound()) {
+
+			if(!world.isRemote) {
+
+				TileEntityRBMKDisplay console = (TileEntityRBMKDisplay) world.getTileEntity(bpos);
+				int tx = stack.getTagCompound().getInteger("posX");
+				int ty = stack.getTagCompound().getInteger("posY");
+				int tz = stack.getTagCompound().getInteger("posZ");
+				console.setTarget(tx, ty, tz);
+				player.sendMessage(new TextComponentTranslation(this.getTranslationKey() + ".set").setStyle(new Style().setColor(TextFormatting.YELLOW)));
+			}
+
+			return EnumActionResult.SUCCESS;
+		}
 		
 		return EnumActionResult.PASS;
 	}
 	
 	@Override
-	public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn){
+	public void addInformation(@NotNull ItemStack stack, World worldIn, @NotNull List<String> tooltip, @NotNull ITooltipFlag flagIn){
 		for(String s : I18nUtil.resolveKeyArray(this.getTranslationKey() + ".desc"))
 			tooltip.add(TextFormatting.YELLOW + s);
 	}
 	
 	@Override
-	public Multimap<String, AttributeModifier> getAttributeModifiers(EntityEquipmentSlot slot, ItemStack stack){
+	public @NotNull Multimap<String, AttributeModifier> getAttributeModifiers(@NotNull EntityEquipmentSlot slot, @NotNull ItemStack stack){
 		Multimap<String, AttributeModifier> multimap = super.getAttributeModifiers(slot, stack);
 		multimap.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(), new AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Weapon modifier", 2, 0));
 		return super.getAttributeModifiers(slot, stack);

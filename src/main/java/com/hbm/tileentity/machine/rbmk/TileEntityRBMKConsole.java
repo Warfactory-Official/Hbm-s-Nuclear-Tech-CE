@@ -48,7 +48,7 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
     private byte rotation;
 
     public TileEntityRBMKConsole() {
-        super(0);
+        super(0, false, false);
         for (int i = 0; i < screens.length; i++) {
             screens[i] = new RBMKScreen();
         }
@@ -301,7 +301,7 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
     }
 
     @Override
-    public AxisAlignedBB getRenderBoundingBox() {
+    public @NotNull AxisAlignedBB getRenderBoundingBox() {
         return new AxisAlignedBB(pos.getX() - 2, pos.getY(), pos.getZ() - 2, pos.getX() + 3, pos.getY() + 4, pos.getZ() + 3);
     }
 
@@ -477,8 +477,7 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
                 data_table.put("requiredFlux", irradiationChannel.duration);
             }
             if(te instanceof TileEntityRBMKCooler coolingChannel){
-                data_table.put("degreesCooledPerTick", coolingChannel.lastCooled);
-                data_table.put("cryogel", coolingChannel.tank.getFluidAmount());
+                data_table.put("cryogel", coolingChannel.getAllTanks()[0].getFill());
             }
             if (te instanceof TileEntityRBMKHeater heaterChannel) {
                 data_table.put("coolant", heaterChannel.feed.getFill());
