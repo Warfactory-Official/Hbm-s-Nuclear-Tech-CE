@@ -19,6 +19,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
 public class TileEntityCraneInserter extends TileEntityCraneBase implements IGUIProvider, IControlReceiver {
@@ -153,7 +154,7 @@ public class TileEntityCraneInserter extends TileEntityCraneBase implements IGUI
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+    public @NotNull NBTTagCompound writeToNBT(NBTTagCompound nbt) {
         super.writeToNBT(nbt);
         nbt.setBoolean("destroyer", this.destroyer);
         return nbt;
@@ -171,6 +172,7 @@ public class TileEntityCraneInserter extends TileEntityCraneBase implements IGUI
     public void receiveControl(NBTTagCompound data) {
         if(data.hasKey("destroyer")) {
             this.destroyer = !this.destroyer;
+            this.markDirty();
         }
     }
 

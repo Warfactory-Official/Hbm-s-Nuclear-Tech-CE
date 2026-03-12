@@ -14,13 +14,13 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.text.TextFormatting;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.List;
 
 import static com.hbm.util.SoundUtil.playClickSound;
 
 public class GUICraneInserter extends GuiInfoContainer {
-    private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/storage/gui_crane_inserter.png");
-    private TileEntityCraneInserter inserter;
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/storage/gui_crane_inserter.png");
+    private final TileEntityCraneInserter inserter;
 
     public GUICraneInserter(InventoryPlayer invPlayer, TileEntityCraneInserter tedf) {
         super(new ContainerCraneInserter(invPlayer, tedf));
@@ -43,7 +43,7 @@ public class GUICraneInserter extends GuiInfoContainer {
 
         if(guiLeft + 151 <= x && guiLeft + 151 + 18 > x && guiTop + 34 < y && guiTop + 34 + 18 >= y) {
             this.drawHoveringText(
-                    Arrays.asList("Destroy overflow: " + (inserter.destroyer ? TextFormatting.GREEN + "ON" : TextFormatting.RED + "OFF")),
+                    List.of("Destroy overflow: " + (inserter.destroyer ? TextFormatting.GREEN + "ON" : TextFormatting.RED + "OFF")),
                     x,
                     y
             );

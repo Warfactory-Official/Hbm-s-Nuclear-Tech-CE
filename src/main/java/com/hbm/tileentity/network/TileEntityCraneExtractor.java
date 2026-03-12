@@ -81,7 +81,7 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGU
         return "container.craneExtractor";
     }
 
-    public boolean canExtractItemExtended(int slot, ItemStack stack, EnumFacing side) {
+    public boolean canExtractItemExtended(int slot, EnumFacing side) {
         if (side == null) {
             return true;
         } else {
@@ -98,7 +98,7 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements IGU
 
     public boolean canExtractItemCE(int slot, ItemStack stack, EnumFacing side, ISidedInventory sided) {
         if(isCofhCoreLoaded()) {
-            return canExtractItemExtended(slot, stack, side);
+            return canExtractItemExtended(slot, side);
         } else {
             return sided.canExtractItem(slot, stack, side);
         }

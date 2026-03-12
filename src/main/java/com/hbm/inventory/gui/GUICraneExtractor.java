@@ -17,12 +17,13 @@ import net.minecraft.util.text.TextFormatting;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 import static com.hbm.util.SoundUtil.playClickSound;
 
 public class GUICraneExtractor extends GuiInfoContainer {
 
-    private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/storage/gui_crane_ejector.png");
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/storage/gui_crane_ejector.png");
     public TileEntityCraneExtractor ejector;
 
     public GUICraneExtractor(InventoryPlayer invPlayer, TileEntityCraneExtractor tedf) {
@@ -39,7 +40,7 @@ public class GUICraneExtractor extends GuiInfoContainer {
         
         if(this.mc.player.getHeldItemMainhand().isEmpty()) {
             for(int i = 0; i < 9; ++i) {
-                Slot slot = (Slot) this.inventorySlots.inventorySlots.get(i);
+                Slot slot = this.inventorySlots.inventorySlots.get(i);
 
                 if(this.isMouseOverSlot(slot, x, y) && ejector.matcher.modes[i] != null) {
 
@@ -51,14 +52,14 @@ public class GUICraneExtractor extends GuiInfoContainer {
                         default: label += I18nUtil.resolveKey("desc.oredictmatch")+" " + ejector.matcher.modes[i]; break;
                     }
 
-                    this.drawHoveringText(Arrays.asList(new String[] { TextFormatting.RED + I18nUtil.resolveKey("desc.rcchange"), label }), x, y - 30);
+                    this.drawHoveringText(Arrays.asList(TextFormatting.RED + I18nUtil.resolveKey("desc.rcchange"), label), x, y - 30);
                 }
             }
         }
 
         if(guiLeft + 187 <= x && guiLeft + 187 + 18 > x && guiTop + 34 < y && guiTop + 34 + 18 >= y) {
             this.drawHoveringText(
-                    Arrays.asList("Only take maximum possible: " + (ejector.maxEject ? TextFormatting.GREEN + "ON" : TextFormatting.RED + "OFF")),
+                    List.of("Only take maximum possible: " + (ejector.maxEject ? TextFormatting.GREEN + "ON" : TextFormatting.RED + "OFF")),
                     x,
                     y
             );
@@ -91,7 +92,7 @@ public class GUICraneExtractor extends GuiInfoContainer {
     protected void drawGuiContainerForegroundLayer(int i, int j) {
         String name = this.ejector.hasCustomName() ? this.ejector.getName() : I18n.format(this.ejector.getName());
         this.fontRenderer.drawString(name, this.xSize / 2 - this.fontRenderer.getStringWidth(name) / 2, 6, 4210752);
-        this.fontRenderer.drawString(I18n.format("container.inventory"), 8, this.ySize - 96 + 2, 4210752);
+        this.fontRenderer.drawString(I18n.format("container.inventory"), 26, this.ySize - 96 + 2, 4210752);
     }
 
     @Override
