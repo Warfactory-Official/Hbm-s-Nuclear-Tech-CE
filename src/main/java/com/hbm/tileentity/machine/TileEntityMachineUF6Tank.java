@@ -23,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 @AutoRegister
 public class TileEntityMachineUF6Tank extends TileEntityMachineBase implements ITickable, IFluidStandardTransceiver, IGUIProvider {
 	public FluidTankNTM tank;
+	public byte lastRedstone = 0;
 
 	//private static final int[] slots_top = new int[] {0};
 	//private static final int[] slots_bottom = new int[] {1, 3};
@@ -65,6 +66,15 @@ public class TileEntityMachineUF6Tank extends TileEntityMachineBase implements I
 		if(!world.isRemote) {
 			tank.loadTank(0, 1, inventory);
 			tank.unloadTank(2, 3, inventory);
+
+			// Redstone Comparator Check
+			byte comp = tank.getRedstoneComparatorPower();
+			if(comp != this.lastRedstone) {
+				this.markDirty();
+				world.updateComparatorOutputLevel(pos, getBlockType());
+				world.notifyNeighborsOfStateChange(pos, getBlockType(), false);
+			}
+			this.lastRedstone = comp;
 		}
 	}
 
