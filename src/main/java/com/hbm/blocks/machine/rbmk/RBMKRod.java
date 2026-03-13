@@ -32,6 +32,8 @@ public class RBMKRod extends RBMKBase {
 		this.moderated = moderated;
 	}
 
+	@Override public boolean isFullCube(@NotNull IBlockState state) { return false; }
+
 	@Override
 	public TileEntity createNewTileEntity(@NotNull World world, int meta) {
 

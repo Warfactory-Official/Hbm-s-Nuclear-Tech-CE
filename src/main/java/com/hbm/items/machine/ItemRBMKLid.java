@@ -39,7 +39,6 @@ public class ItemRBMKLid extends Item {
 			TileEntity te = world.getTileEntity(corePos);
 			if(!(te instanceof TileEntityRBMKBase tile)) return EnumActionResult.FAIL;
 
-            // Читаем мету прямо из мира, чтобы избежать рассинхрона
 			IBlockState coreState = world.getBlockState(corePos);
 			int currentMeta = coreState.getBlock().getMetaFromState(coreState);
 			if (RBMKBase.metaToLid(currentMeta) != RBMKBase.LID_NONE) return EnumActionResult.FAIL;
@@ -51,14 +50,11 @@ public class ItemRBMKLid extends Item {
 			} else {
 				world.playSound(null, bpos.getX() + 0.5, bpos.getY() + 0.5, bpos.getZ() + 0.5, SoundEvents.BLOCK_STONE_PLACE, SoundCategory.BLOCKS, 1, 0.8F);
 			}
-			// Сохраняем данные ДО смены стейта
 			NBTTagCompound nbt = tile.writeToNBT(new NBTTagCompound());
 
-			// Обновляем блок (удалит старый TE)
 			IBlockState newState = b.getStateFromMeta(metaOffset + RBMKBase.offset);
 			world.setBlockState(new BlockPos(pos[0], pos[1], pos[2]), newState, 3);
 
-			// Восстанавливаем новый TE и СИНХРОНИЗИРУЕМ с клиентом!
 			TileEntity newTe = world.getTileEntity(new BlockPos(pos[0], pos[1], pos[2]));
 			if (newTe != null) {
 				newTe.readFromNBT(nbt);

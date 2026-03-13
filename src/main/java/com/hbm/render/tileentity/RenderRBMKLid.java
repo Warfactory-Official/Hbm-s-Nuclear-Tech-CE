@@ -1,14 +1,8 @@
 package com.hbm.render.tileentity;
 
 import com.hbm.Tags;
-import com.hbm.blocks.machine.rbmk.RBMKBase;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.items.machine.ItemRBMKRod;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.loader.Face;
-import com.hbm.render.loader.GroupObject;
-import com.hbm.render.loader.HFRWavefrontObject;
-import com.hbm.render.loader.Vertex;
 import com.hbm.tileentity.machine.rbmk.*;
 import com.hbm.util.ColorUtil;
 import net.minecraft.block.state.IBlockState;
@@ -26,7 +20,6 @@ public class RenderRBMKLid extends TileEntitySpecialRenderer<TileEntityRBMKBase>
 
 	private static final ResourceLocation TEX_FUEL = new ResourceLocation(Tags.MODID, "textures/blocks/rbmk/rbmk_element_fuel.png");
 	private static final ResourceLocation TEX_CONTROL = new ResourceLocation(Tags.MODID, "textures/blocks/rbmk/rbmk_element_control.png");
-	private static final ResourceLocation TEX_GLASS = new ResourceLocation(Tags.MODID, "textures/blocks/rbmk/rbmk_blank_glass.png");
 
 	@Override
 	public boolean isGlobalRenderer(@NotNull TileEntityRBMKBase te) {
@@ -49,7 +42,7 @@ public class RenderRBMKLid extends TileEntitySpecialRenderer<TileEntityRBMKBase>
 		GlStateManager.translate(x + 0.5, y, z + 0.5);
 
 		if (te instanceof TileEntityRBMKRod rodTe) {
-			boolean hasRod = rodTe.inventory != null && !rodTe.inventory.getStackInSlot(0).isEmpty() && rodTe.inventory.getStackInSlot(0).getItem() instanceof ItemRBMKRod;
+			boolean hasRod = rodTe.hasRod;
 
 			if (hasRod) {
 				GlStateManager.pushMatrix();
@@ -57,7 +50,7 @@ public class RenderRBMKLid extends TileEntitySpecialRenderer<TileEntityRBMKBase>
 				GlStateManager.color(ColorUtil.fr(rodTe.rodColor), ColorUtil.fg(rodTe.rodColor), ColorUtil.fb(rodTe.rodColor), 1.0F);
 
 				for (int i = 0; i <= offset; i++) {
-					ResourceManager.rbmk_element_rods.renderPart("Rods");
+					ResourceManager.rbmk_element_rods_vbo.renderPart("Rods");
 					GlStateManager.translate(0, 1, 0);
 				}
 
@@ -70,7 +63,7 @@ public class RenderRBMKLid extends TileEntitySpecialRenderer<TileEntityRBMKBase>
 			}
 		}
 
-		if (te instanceof TileEntityRBMKControl controlTe) {
+		if (te instanceof TileEntityRBMKControl) {
 			this.bindTexture(TEX_CONTROL);
 			GlStateManager.pushMatrix();
 			ResourceManager.rbmk_element_rods.renderPart("Control");

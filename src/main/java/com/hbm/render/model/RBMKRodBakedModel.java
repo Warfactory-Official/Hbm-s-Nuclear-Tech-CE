@@ -72,12 +72,11 @@ public class RBMKRodBakedModel extends AbstractWavefrontBakedModel {
                 cacheNullSideGlassLid = Collections.unmodifiableList(buildNullSideQuads(RBMKBase.LID_GLASS));
             }
             return cacheNullSideGlassLid;
+        } else if(lidType == RBMKBase.LID_NONE) {
+            if (cacheNullSideNoLid == null) cacheNullSideNoLid = Collections.unmodifiableList(buildNullSideQuads(RBMKBase.LID_NONE));
+            return cacheNullSideNoLid;
         }
-
-        if (cacheNullSideNoLid == null) {
-            cacheNullSideNoLid = Collections.unmodifiableList(buildNullSideQuads(RBMKBase.LID_NONE));
-        }
-        return cacheNullSideNoLid;
+        return Collections.unmodifiableList(buildNullSideQuads(RBMKBase.LID_NULL));
     }
 
     private List<BakedQuad> buildNullSideQuads(int lidType) {
@@ -103,7 +102,7 @@ public class RBMKRodBakedModel extends AbstractWavefrontBakedModel {
             quads.add(quad);
         }
 
-        if (lidType != RBMKBase.LID_NONE) {
+        if (lidType != RBMKBase.LID_NONE && lidType != RBMKBase.LID_NULL) {
             TextureAtlasSprite lidTop = (lidType == RBMKBase.LID_GLASS) ? glassTopSprite : coverTopSprite;
             TextureAtlasSprite lidSide = (lidType == RBMKBase.LID_GLASS) ? glassSideSprite : coverSideSprite;
             RBMKColumnBakedModel.addTexturedBox(quads, 0.0F, RBMKColumnBakedModel.getColumnHeight(), 0.0F, 1.0F, RBMKColumnBakedModel.getColumnHeight() + 0.25F, 1.0F, lidTop, lidSide, lidTop);

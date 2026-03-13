@@ -92,10 +92,11 @@ public class RBMKControlBakedModel extends AbstractWavefrontBakedModel {
         } else if (lidType == RBMKBase.LID_GLASS) {
             if (cacheWorldGlassLid == null) cacheWorldGlassLid = Collections.unmodifiableList(buildWorldQuads(RBMKBase.LID_GLASS));
             return cacheWorldGlassLid;
+        } else if (lidType == RBMKBase.LID_NONE) {
+            if (cacheWorldNoLid == null) cacheWorldNoLid = Collections.unmodifiableList(buildWorldQuads(RBMKBase.LID_NONE));
+            return cacheWorldNoLid;
         }
-
-        if (cacheWorldNoLid == null) cacheWorldNoLid = Collections.unmodifiableList(buildWorldQuads(RBMKBase.LID_NONE));
-        return cacheWorldNoLid;
+        return Collections.unmodifiableList(buildWorldQuads(RBMKBase.LID_NULL));
     }
 
     private List<BakedQuad> buildInventoryQuads() {
@@ -121,13 +122,13 @@ public class RBMKControlBakedModel extends AbstractWavefrontBakedModel {
 
         float height = RBMKColumnBakedModel.getColumnHeight();
 
-        if (lidType != RBMKBase.LID_NONE) {
+        if (lidType != RBMKBase.LID_NONE && lidType != RBMKBase.LID_NULL) {
             if (coverTopSprite != null) {
                 TextureAtlasSprite lidTop = (lidType == RBMKBase.LID_GLASS) ? glassTopSprite : coverTopSprite;
                 TextureAtlasSprite lidSide = (lidType == RBMKBase.LID_GLASS) ? glassSideSprite : coverSideSprite;
                 RBMKColumnBakedModel.addTexturedBox(quads, 0.0F, height, 0.0F, 1.0F, height + 0.25F, 1.0F, lidTop, lidSide, lidTop);
             }
-        } else {
+        } else if(lidType != RBMKBase.LID_NULL) {
             addPipes(quads, height);
         }
 

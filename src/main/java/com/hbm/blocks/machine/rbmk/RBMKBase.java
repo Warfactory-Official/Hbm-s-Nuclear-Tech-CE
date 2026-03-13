@@ -42,6 +42,7 @@ public abstract class RBMKBase extends BlockDummyable implements IToolable, ILoo
 	public static boolean dropLids = true;
 	public static boolean digamma = false;
 
+	public static final int LID_NULL = -1; // that's meant for dummy blocks which shouldn't have any lid state at all
 	public static final int LID_NONE = 0;
 	public static final int LID_STANDARD = 1;
 	public static final int LID_GLASS = 2;
@@ -63,8 +64,7 @@ public abstract class RBMKBase extends BlockDummyable implements IToolable, ILoo
 		this.setResistance(30F);
 	}
 
-	@Override public boolean isOpaqueCube(@NotNull IBlockState state) { return true; }
-	@Override public boolean isFullCube(@NotNull IBlockState state) { return true; }
+    @Override public boolean isFullCube(@NotNull IBlockState state) { return true; }
 
 	@Override
 	public @NotNull EnumBlockRenderType getRenderType(@NotNull IBlockState state) {
@@ -155,7 +155,8 @@ public abstract class RBMKBase extends BlockDummyable implements IToolable, ILoo
 	public static int metaToLid(int meta) {
 		if(meta - offset == DIR_NORMAL_LID.getIndex()) return LID_STANDARD;
 		if(meta - offset == DIR_GLASS_LID.getIndex()) return LID_GLASS;
-		return LID_NONE;
+		if(meta - offset == DIR_NO_LID.getIndex()) return LID_NONE;
+		return LID_NULL;
 	}
 
 	@Override
