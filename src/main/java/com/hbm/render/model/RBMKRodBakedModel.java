@@ -30,14 +30,18 @@ public class RBMKRodBakedModel extends AbstractWavefrontBakedModel {
     private final TextureAtlasSprite glassTopSprite;
     private final TextureAtlasSprite glassSideSprite;
 
+    private final boolean isInventory;
+
     private List<BakedQuad> cacheNullSideNoLid;
     private List<BakedQuad> cacheNullSideNormalLid;
     private List<BakedQuad> cacheNullSideGlassLid;
+    private List<BakedQuad> cacheInventory;
 
     public RBMKRodBakedModel(TextureAtlasSprite side,
                              TextureAtlasSprite inner, TextureAtlasSprite cap,
                              TextureAtlasSprite coverTop, TextureAtlasSprite coverSide,
-                             TextureAtlasSprite glassTop, TextureAtlasSprite glassSide) {
+                             TextureAtlasSprite glassTop, TextureAtlasSprite glassSide,
+                             boolean isInventory) {
         super(ResourceManager.rbmk_element, DefaultVertexFormats.BLOCK,
                 1.0F, 0.5F, 0.0F, 0.5F, BakedModelTransforms.rbmkColumn());
         this.sideSprite = side;
@@ -47,15 +51,21 @@ public class RBMKRodBakedModel extends AbstractWavefrontBakedModel {
         this.coverSideSprite = coverSide;
         this.glassTopSprite = glassTop;
         this.glassSideSprite = glassSide;
+        this.isInventory = isInventory;
     }
 
     @Override
     public @NotNull List<BakedQuad> getQuads(@Nullable IBlockState state,
                                              @Nullable EnumFacing side, long rand) {
-        // Because isOpaqueCube is false, put all geometry into the unculled (side == null) list to ensure it renders
         if (side != null) {
             return Collections.emptyList();
         }
+
+        if (isInventory) {
+            if (cacheInventory == null) cacheInventory = Collections.unmodifiableList(buildInventoryQuads());
+            return cacheInventory;
+        }
+
         int lidType = RBMKBase.LID_NONE;
         if (state != null) {
             int meta = state.getBlock().getMetaFromState(state);
@@ -77,6 +87,32 @@ public class RBMKRodBakedModel extends AbstractWavefrontBakedModel {
             return cacheNullSideNoLid;
         }
         return Collections.unmodifiableList(buildNullSideQuads(RBMKBase.LID_NULL));
+    }
+
+    private List<BakedQuad> buildInventoryQuads() {
+        List<BakedQuad> quads = new ArrayList<>();
+        FaceBakery bakery = new FaceBakery();
+        EnumFacing[] baseFaces = {
+                EnumFacing.NORTH, EnumFacing.SOUTH,
+                EnumFacing.EAST, EnumFacing.WEST
+        };
+
+        for (int i = 0; i < 4; i++) {
+            quads.addAll(bakeWavefrontAtYOffset(Collections.singletonList("Inner"), i, innerSprite));
+            quads.addAll(bakeWavefrontAtYOffset(Collections.singletonList("Cap"), i, capSprite));
+
+            Vector3f from = new Vector3f(0, i * 16.0f, 0);
+            Vector3f to = new Vector3f(16.0f, (i + 1) * 16.0f, 16.0f);
+
+            for (EnumFacing face : baseFaces) {
+                BlockFaceUV uv = AbstractBakedModel.makeFaceUV(face, new Vector3f(0, 0, 0), new Vector3f(16.0f, 16.0f, 16.0f));
+                BlockPartFace partFace = new BlockPartFace(face, -1, "", uv);
+                BakedQuad quad = bakery.makeBakedQuad(from, to, partFace, sideSprite, face,
+                        TRSRTransformation.identity(), null, true, true);
+                quads.add(quad);
+            }
+        }
+        return quads;
     }
 
     private List<BakedQuad> buildNullSideQuads(int lidType) {
@@ -109,6 +145,16 @@ public class RBMKRodBakedModel extends AbstractWavefrontBakedModel {
         }
 
         return quads;
+    }
+
+    private List<BakedQuad> bakeWavefrontAtYOffset(Collection<String> parts, float yOffsetBlocks, TextureAtlasSprite sprite) {
+        float oldTy = this.ty;
+        try {
+            this.ty = oldTy + yOffsetBlocks;
+            return bakeSimpleQuads(parts, 0, 0, 0, true, false, sprite);
+        } finally {
+            this.ty = oldTy;
+        }
     }
 
     @Override

@@ -72,8 +72,8 @@ public final class BakedModelTransforms {
     private static ItemCameraTransforms buildColumn() {
         ItemTransformVec3f gui = new ItemTransformVec3f(
                 new Vector3f(30, -135, 0),
-                new Vector3f(0, -0.25f, 0),
-                new Vector3f(0.25f, 0.25f, 0.25f)
+                new Vector3f(0, -0.27f, 0),
+                new Vector3f(0.2f, 0.2f, 0.2f)
         );
         ItemTransformVec3f thirdPerson = new ItemTransformVec3f(
                 new Vector3f(75, 45, 0),
