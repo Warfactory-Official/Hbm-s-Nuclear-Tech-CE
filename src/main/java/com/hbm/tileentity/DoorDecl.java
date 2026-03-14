@@ -38,7 +38,7 @@ public abstract class DoorDecl {
 		public static final ResourceLocation pheo_fire_door_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/fire_door.png");
 		public static final ResourceLocation pheo_fire_door_black_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/fire_door_black.png");
 		public static final ResourceLocation pheo_fire_door_orange_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/fire_door_orange.png");
-		public static final ResourceLocation Pheo_fire_door_yellow_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/fire_door_yellow.png");
+		public static final ResourceLocation pheo_fire_door_yellow_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/fire_door_yellow.png");
 		public static final ResourceLocation pheo_fire_door_trefoil_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/fire_door_trefoil.png");
 		public static final ResourceLocation pheo_airlock_door_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/airlock_door.png");
 		public static final ResourceLocation pheo_airlock_door_clean_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/airlock_door_clean.png");
