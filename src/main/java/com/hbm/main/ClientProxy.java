@@ -73,6 +73,7 @@ import com.hbm.wiaj.cannery.Jars;
 import it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDirt;
+import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.BlockStainedHardenedClay;
 import net.minecraft.block.BlockStone;
 import net.minecraft.block.material.Material;
@@ -84,6 +85,7 @@ import net.minecraft.client.particle.ParticleFirework.Spark;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.client.renderer.block.statemap.StateMap;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.RenderSnowball;
@@ -280,6 +282,9 @@ public class ClientProxy extends ServerProxy {
         ModelLoader.setCustomStateMapper(ModBlocks.frozen_grass, new StateMap.Builder().ignore(com.hbm.blocks.generic.WasteEarth.META).build());
         ModelLoader.setCustomStateMapper(ModBlocks.red_connector, new StateMap.Builder().ignore(com.hbm.blocks.network.ConnectorRedWire.FACING).build());
         ModelLoader.setCustomStateMapper(ModBlocks.silo_hatch_drillgon, new StateMap.Builder().ignore(com.hbm.blocks.machine.BlockSiloHatch.FACING).build());
+        ModelLoader.setCustomStateMapper(ModBlocks.machine_diesel, new StateMap.Builder().ignore(BlockHorizontal.FACING).build());
+        ModelLoader.setCustomStateMapper(ModBlocks.turret_sentry, fixedModelStateMapper(new ModelResourceLocation(ModBlocks.machine_autosaw.getRegistryName(), "normal")));
+        ModelLoader.setCustomStateMapper(ModBlocks.turret_sentry_damaged, fixedModelStateMapper(new ModelResourceLocation(ModBlocks.machine_autosaw.getRegistryName(), "normal")));
         //Drillgon200: This can't be efficient, but eh.
         for (Block b : ModBlocks.ALL_BLOCKS) {
             if (b instanceof BlockDummyable || b instanceof RBMKDebrisRadiating || b instanceof DigammaMatter)
@@ -288,14 +293,22 @@ public class ClientProxy extends ServerProxy {
     }
 
     private <E extends Entity> void registerGrenadeRenderer(Class<E> clazz, Item grenade) {
-        RenderingRegistry.registerEntityRenderingHandler(clazz, (RenderManager man) -> {
-            return new RenderSnowball<E>(man, grenade, Minecraft.getMinecraft().getRenderItem());
-        });
+        RenderingRegistry.registerEntityRenderingHandler(clazz, (RenderManager man) -> new RenderSnowball<>(man,
+                grenade, Minecraft.getMinecraft().getRenderItem()));
     }
 
     private <E extends Entity & RenderMetaSensitiveItem.IHasMetaSensitiveRenderer<E>> void registerMetaSensitiveGrenade(Class<E> clazz, Item grenade) {
         RenderingRegistry.registerEntityRenderingHandler(clazz, (RenderManager man) ->
                 new RenderMetaSensitiveItem<>(man, grenade, Minecraft.getMinecraft().getRenderItem()));
+    }
+
+    private static StateMapperBase fixedModelStateMapper(ModelResourceLocation location) {
+        return new StateMapperBase() {
+            @Override
+            protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
+                return location;
+            }
+        };
     }
 
     @Override
