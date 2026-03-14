@@ -6,6 +6,7 @@ import com.hbm.api.conveyor.IConveyorBelt;
 import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.energymk2.IEnergyConnectorMK2;
+import com.hbm.blocks.BlockDummyable;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.api.fluidmk2.IFluidConnectorMK2;
 import com.hbm.blocks.ModBlocks;
@@ -926,7 +927,31 @@ public class Library {
         if (te instanceof IEnergyConnectorMK2) {
             IEnergyConnectorMK2 con = (IEnergyConnectorMK2) te;
 
-            if (con.canConnect(dir.getOpposite() /* machine's connecting side */)) return true;
+            if (con.canConnect(dir.getOpposite())) return true;
+        }
+
+        if (te == null && b instanceof BlockDummyable) {
+            BlockDummyable dummyable = (BlockDummyable) b;
+            BlockPos corePos = dummyable.findCore(world, pos);
+            if (corePos != null) {
+                TileEntity coreTe = world.getTileEntity(corePos);
+                if (coreTe instanceof IEnergyConnectorMK2) {
+                    int dx = pos.getX() - corePos.getX();
+                    int dy = pos.getY() - corePos.getY();
+                    int dz = pos.getZ() - corePos.getZ();
+                    int nx = dx != 0 ? Integer.signum(dx) : 0;
+                    int ny = dy != 0 ? Integer.signum(dy) : 0;
+                    int nz = dz != 0 ? Integer.signum(dz) : 0;
+                    ForgeDirection coreToPos = null;
+                    for (ForgeDirection d : ForgeDirection.VALID_DIRECTIONS) {
+                        if (d.offsetX == nx && d.offsetY == ny && d.offsetZ == nz) {
+                            coreToPos = d;
+                            break;
+                        }
+                    }
+                    if (coreToPos != null && ((IEnergyConnectorMK2) coreTe).canConnect(coreToPos)) return true;
+                }
+            }
         }
 
         return false;
