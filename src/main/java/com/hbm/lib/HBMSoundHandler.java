@@ -190,7 +190,6 @@ public final class HBMSoundHandler {
     public static SoundEvent soyuzReady;
     public static SoundEvent soyuzTakeOff;
     public static SoundEvent chime;
-    public static SoundEvent deagleShoot;
     public static SoundEvent tauChargeLoop;
     public static SoundEvent tauChargeLoop2;
     public static SoundEvent chopperFlyingLoop;
@@ -199,7 +198,6 @@ public final class HBMSoundHandler {
     public static SoundEvent lacunaeSpinup;
     public static SoundEvent lacunaeSpindown;
     public static SoundEvent teslaShoot;
-    public static SoundEvent flamerReload;
     public static SoundEvent stop;
     public static SoundEvent bonk;
     public static SoundEvent glauncher;
@@ -210,7 +208,6 @@ public final class HBMSoundHandler {
     public static SoundEvent quadroReload;
     public static SoundEvent fstbmbStart;
     public static SoundEvent fstbmbPing;
-    public static SoundEvent sauerGun;
     public static SoundEvent ducc;
     public static SoundEvent whack;
     public static SoundEvent turbofanOperate;
@@ -589,7 +586,6 @@ public final class HBMSoundHandler {
         soyuzReady = register("block.soyuzReady");
         soyuzTakeOff = register("entity.soyuzTakeoff");
         chime = register("alarm.chime");
-        deagleShoot = register("weapon.deagleShoot");
         tauChargeLoop2 = register("weapon.tauChargeLoop2");
         chopperFlyingLoop = register("entity.chopperFlyingLoop");
         chopperCrashingLoop = register("entity.chopperCrashingLoop");
@@ -597,7 +593,6 @@ public final class HBMSoundHandler {
         lacunaeSpinup = register("weapon.lacunaeSpinup");
         lacunaeSpindown = register("weapon.lacunaeSpindown");
         teslaShoot = register("weapon.teslaShoot");
-        flamerReload = register("weapon.flamerReload");
         stop = register("weapon.stop");
         bonk = register("weapon.bonk");
         glauncher = register("weapon.glauncher");
@@ -609,7 +604,6 @@ public final class HBMSoundHandler {
         quadroReload = register("weapon.quadroReload");
         fstbmbStart = register("weapon.fstbmbStart");
         fstbmbPing = register("weapon.fstbmbPing");
-        sauerGun = register("weapon.sauergun");
         ducc = register("entity.ducc");
         whack = register("weapon.whack");
         turbofanOperate = register("block.turbofanOperate");

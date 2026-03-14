@@ -72,7 +72,6 @@ public class NTMClientRegistry {
     public static TextureAtlasSprite contrail;
     public static TextureAtlasSprite particle_base;
     public static TextureAtlasSprite fog;
-    public static TextureAtlasSprite uv_debug;
     public static TextureAtlasSprite debugPower;
     public static TextureAtlasSprite debugFluid;
     //Lazy, I know
@@ -244,7 +243,6 @@ public class NTMClientRegistry {
         //Debug stuff
         debugPower = map.registerSprite(new ResourceLocation(Tags.MODID, "particle/debug_power"));
         debugFluid = map.registerSprite(new ResourceLocation(Tags.MODID, "particle/debug_fluid"));
-        uv_debug = map.registerSprite(new ResourceLocation(Tags.MODID, "misc/uv_debug"));
         contrail = map.registerSprite(new ResourceLocation(Tags.MODID, "particle/contrail"));
         particle_base = map.registerSprite(new ResourceLocation(Tags.MODID, "particle/particle_base"));
         fog = map.registerSprite(new ResourceLocation(Tags.MODID, "particle/fog"));
