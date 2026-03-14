@@ -2,6 +2,7 @@ package com.hbm.items.machine;
 
 import com.google.common.collect.ImmutableMap;
 import com.hbm.Tags;
+import com.hbm.capability.NTMFluidCapabilityHandler;
 import com.hbm.config.GeneralConfig;
 import com.hbm.handler.FluidTankV2Handler;
 import com.hbm.inventory.FluidContainerRegistry;
@@ -29,10 +30,12 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -103,14 +106,14 @@ public class ItemFluidTankV2 extends ItemBakedBase {
 	@Override
 	public boolean showDurabilityBar(ItemStack stack) {
 		FluidType type = Fluids.fromID(stack.getMetadata());
-		int amount = FluidContainerRegistry.getFluidContent(stack, type);
+		int amount = getFluidContent(stack, type);
         return amount != cap && amount != 0;
     }
 
 	@Override
 	public double getDurabilityForDisplay(ItemStack stack) {
 		FluidType type = Fluids.fromID(stack.getMetadata());
-		int amount = FluidContainerRegistry.getFluidContent(stack, type);
+		int amount = getFluidContent(stack, type);
 
 		double fillRatio = (double) amount / (double) cap;
 		return Math.min(Math.max(1.0 - fillRatio, 0), 1.0);
@@ -168,7 +171,7 @@ public class ItemFluidTankV2 extends ItemBakedBase {
 	@SideOnly(Side.CLIENT)
 	public String getItemStackDisplayName(ItemStack stack) {
 		FluidType type = Fluids.fromID(stack.getMetadata());
-		int amount = FluidContainerRegistry.getFluidContent(stack, type);
+		int amount = getFluidContent(stack, type);
 		if (amount == 0) return I18nUtil.resolveKey(getTranslationKey() + ".empty");
 		else return I18nUtil.resolveKey(getTranslationKey() + ".not_empty", type.getLocalizedName());
 	}
@@ -178,7 +181,7 @@ public class ItemFluidTankV2 extends ItemBakedBase {
 		if(stack.getItem() == ModItems.fluid_pack_full) tooltip.add(stack.getCount() + "x " + "32000 mB");
 		else {
 			FluidType f = Fluids.fromID(stack.getMetadata());
-			int fill = FluidContainerRegistry.getFluidContent(stack, f);
+			int fill = getFluidContent(stack, f);
 			String s = (f == null ? "0" : fill) + "/" + cap + " mB";
 			if (stack.getCount() > 1)
 				s = stack.getCount() + "x " + s;
@@ -196,4 +199,27 @@ public class ItemFluidTankV2 extends ItemBakedBase {
     public @NotNull ItemStack getContainerItem(@NotNull ItemStack item) {
         return FluidContainerRegistry.getEmptyContainer(item);
     }
+
+	// FluidContainerRegistry Helpers
+	/**
+	 * @return amount of a specific fluid in the given full container stack.
+	 */
+	@Contract(pure = true)
+	public static int getFluidContent(ItemStack stack, FluidType type) {
+		if (stack == null || stack.isEmpty() || type == null) return 0;
+		if (stack.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
+			IFluidHandlerItem handler = stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
+			if (handler != null) {
+				FluidStack fs = FluidUtil.getFluidContained(stack);
+				if (fs != null) {
+					FluidType t = NTMFluidCapabilityHandler.getFluidType(fs.getFluid());
+					if (t == type) {
+						return fs.amount;
+					}
+				}
+			}
+		}
+		FluidContainerRegistry.FluidContainer recipe = FluidContainerRegistry.getFluidContainer(stack);
+		return (recipe != null && recipe.type() == type) ? recipe.content() : 0;
+	}
 }
