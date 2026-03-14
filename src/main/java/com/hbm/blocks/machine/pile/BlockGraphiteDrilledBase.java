@@ -56,7 +56,7 @@ public class BlockGraphiteDrilledBase extends BlockFlammable implements IToolabl
 		for (int meta = 0; meta < 16; meta++) {
 			boolean isAluminum = (meta & 4) != 0;
 			String front = isAluminum ? aluminumTexture : sideTexture;
-			this.blockFrames[meta] = new BlockBakeFrame(front, "block_graphite", front);
+			this.blockFrames[meta] = BlockBakeFrame.cubeBottomTop(front, "block_graphite", front);
 		}
 	}
 

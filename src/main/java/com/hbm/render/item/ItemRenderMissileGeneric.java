@@ -6,10 +6,11 @@ import com.hbm.main.ResourceManager;
 import com.hbm.render.loader.IModelCustom;
 import com.hbm.util.RenderUtil;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 import java.util.HashMap;
 import java.util.function.Consumer;
@@ -57,6 +58,7 @@ public class ItemRenderMissileGeneric extends TEISRBase {
 			case TYPE_STEALTH: guiScale = 1.75D; guiOffset = 1.5D; break;
 			case TYPE_ABM: guiScale = 2.25D; guiOffset = 0.5D; break;
 			case TYPE_NUCLEAR: guiScale = 1.375D; guiOffset = 0D; break;
+			case TYPE_DOOMSDAY: guiScale = 1.375D; guiOffset = 0D; break;
 			case TYPE_THERMAL: guiScale = 1.75D; guiOffset = 1D; break;
 			case TYPE_ROBIN: guiScale = 1.25D; guiOffset = 2D; break;
 			case TYPE_CARRIER: guiScale = 0.625D; break;

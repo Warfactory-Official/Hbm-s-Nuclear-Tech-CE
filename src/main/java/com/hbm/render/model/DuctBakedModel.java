@@ -2,26 +2,27 @@ package com.hbm.render.model;
 
 import com.hbm.blocks.network.FluidDuctBox;
 import com.hbm.blocks.network.FluidDuctBoxExhaust;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.block.model.*;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.util.vector.Vector3f;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.locks.StampedLock;
 
 @SideOnly(Side.CLIENT)
 public class DuctBakedModel extends AbstractBakedModel {
 
+    private static final int INVENTORY_INDEX = 1024;
+
     private final int meta;
-    private final boolean isExhaust;  // note: I'd do it in an enum but there are only 2 blocks using this model, so it's redundant for now I guess?..
-    @SuppressWarnings("unchecked")
-    private final List<BakedQuad>[] cache = new List[1024]; // 16 metas * 64 connection states
+    private final boolean isExhaust;
+    private final StampedLock lock = new StampedLock();
+    private final Int2ObjectOpenHashMap<List<BakedQuad>> cache = new Int2ObjectOpenHashMap<>();
 
     public DuctBakedModel(int meta, boolean isExhaust) {
         super(BakedModelTransforms.standardBlock());
@@ -73,18 +74,18 @@ public class DuctBakedModel extends AbstractBakedModel {
 
         return junction[m][meta / 3];
     }
-    // Th3_Sl1ze: okay, so half of this clusterfuck is made by me, and half of it by llm
-    // It's still quite a big method but it's as debloated as I can do rn (considering that you need to rotate uv fucking manually)
-    // UV's not perfect, but I'm NOT going to try finding where it fucks itself
+
     @Override
     public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
         if (side != null) return Collections.emptyList();
 
-        boolean pX, nX, pY, nY, pZ, nZ;
+        boolean inventory = state == null, pX, nX, pY, nY, pZ, nZ;
         int useMeta = this.meta;
+        int cacheIndex;
 
-        if (state == null) {
-            pX = true; nX = true; pY = false; nY = false; pZ = false; nZ = false;
+        if (inventory) {
+            pX = nX = pY = nY = pZ = nZ = false;
+            cacheIndex = INVENTORY_INDEX;
         } else {
             try {
                 IExtendedBlockState ext = (IExtendedBlockState) state;
@@ -95,16 +96,60 @@ public class DuctBakedModel extends AbstractBakedModel {
                 nY = ext.getValue(FluidDuctBox.CONN_DOWN);
                 pY = ext.getValue(FluidDuctBox.CONN_UP);
                 useMeta = ext.getValue(FluidDuctBox.META);
-            } catch (Exception _) {
-                pX = true; nX = true; pY = false; nY = false; pZ = false; nZ = false;
+            } catch (Exception _) { pX = true; nX = true; pY = false; nY = false; pZ = false; nZ = false; }
+
+            int mask = (pX ? 32 : 0) + (nX ? 16 : 0) + (pY ? 8 : 0) + (nY ? 4 : 0) + (pZ ? 2 : 0) + (nZ ? 1 : 0);
+            cacheIndex = ((useMeta & 0xF) << 6) | mask;
+        }
+
+        List<BakedQuad> quads;
+        long stamp = lock.tryOptimisticRead();
+        quads = cache.get(cacheIndex);
+
+        if (!lock.validate(stamp)) {
+            stamp = lock.readLock();
+            try {
+                quads = cache.get(cacheIndex);
+            } finally {
+                lock.unlockRead(stamp);
             }
         }
 
-        int mask = (pX ? 32 : 0) + (nX ? 16 : 0) + (pY ? 8 : 0) + (nY ? 4 : 0) + (pZ ? 2 : 0) + (nZ ? 1 : 0);
-        int cacheIndex = ((useMeta & 0xF) << 6) | mask;
+        if (quads != null) return quads;
 
-        if (cache[cacheIndex] != null) return cache[cacheIndex];
+        stamp = lock.writeLock();
+        try {
+            quads = cache.get(cacheIndex);
+            if (quads == null) {
+                quads = buildQuads(inventory, useMeta, pX, nX, pY, nY, pZ, nZ);
+                cache.put(cacheIndex, quads);
+            }
+        } finally {
+            lock.unlockWrite(stamp);
+        }
 
+        return quads;
+    }
+
+    private void addPart(List<BakedQuad> quads, float x1, float y1, float z1, float x2, float y2, float z2,
+                         int meta, boolean pX, boolean nX, boolean pY, boolean nY, boolean pZ, boolean nZ,
+                         int[] rotations) {
+        TextureAtlasSprite[] sprites = new TextureAtlasSprite[6];
+        for (EnumFacing face : EnumFacing.VALUES) {
+            sprites[face.getIndex()] = getPipeIcon(meta, face.ordinal(), pX, nX, pY, nY, pZ, nZ, isExhaust);
+        }
+        addLegacyBox(quads, x1 * 16.0f, y1 * 16.0f, z1 * 16.0f, x2 * 16.0f, y2 * 16.0f, z2 * 16.0f, sprites, LEGACY_ALL_FACES, rotations);
+    }
+
+    private TextureAtlasSprite getStraightSprite(int meta) {
+        return isExhaust ? FluidDuctBoxExhaust.iconStraight[0] : FluidDuctBox.iconStraight[meta % 3];
+    }
+
+    private TextureAtlasSprite getEndSprite(int meta) {
+        return isExhaust ? FluidDuctBoxExhaust.iconEnd[0] : FluidDuctBox.iconEnd[meta % 3];
+    }
+
+    private List<BakedQuad> buildQuads(boolean inventory, int useMeta, boolean pX, boolean nX, boolean pY, boolean nY, boolean pZ, boolean nZ) {
         List<BakedQuad> quads = new ArrayList<>();
         int sizeLevel = Math.min(useMeta / 3, 4);
         float lower = 0.125f + sizeLevel * 0.0625f;
@@ -112,109 +157,52 @@ public class DuctBakedModel extends AbstractBakedModel {
         float jLower = 0.0625f + sizeLevel * 0.0625f;
         float jUpper = 0.9375f - sizeLevel * 0.0625f;
 
+        if (inventory) {
+            TextureAtlasSprite[] inventorySprites = new TextureAtlasSprite[]{
+                    getStraightSprite(useMeta),
+                    getStraightSprite(useMeta),
+                    getEndSprite(useMeta),
+                    getEndSprite(useMeta),
+                    getStraightSprite(useMeta),
+                    getStraightSprite(useMeta)
+            };
+            addLegacyBox(quads, lower * 16.0f, lower * 16.0f, 0.0f, upper * 16.0f, upper * 16.0f, 16.0f, inventorySprites, LEGACY_ALL_FACES, new int[]{0, 0, 0, 0, 1, 2});
+            return Collections.unmodifiableList(quads);
+        }
+
+        int mask = (pX ? 32 : 0) + (nX ? 16 : 0) + (pY ? 8 : 0) + (nY ? 4 : 0) + (pZ ? 2 : 0) + (nZ ? 1 : 0);
         int count = Integer.bitCount(mask);
         boolean straightX = (mask & 0b001111) == 0 && mask > 0;
         boolean straightY = (mask & 0b110011) == 0 && mask > 0;
         boolean straightZ = (mask & 0b111100) == 0 && mask > 0;
 
-        int[] uvRotate = new int[6];
-
-        List<float[]> boundsList = new ArrayList<>();
-        if (straightX) boundsList.add(new float[]{0, lower, lower, 1, upper, upper});
-        else if (straightZ) boundsList.add(new float[]{lower, lower, 0, upper, upper, 1});
-        else if (straightY) boundsList.add(new float[]{lower, 0, lower, upper, 1, upper});
-        else if (count == 2) {
-            boundsList.add(new float[]{lower, lower, lower, upper, upper, upper});
-            if (nY) boundsList.add(new float[]{lower, 0, lower, upper, lower, upper});
-            if (pY) boundsList.add(new float[]{lower, upper, lower, upper, 1, upper});
-            if (nX) boundsList.add(new float[]{0, lower, lower, lower, upper, upper});
-            if (pX) boundsList.add(new float[]{upper, lower, lower, 1, upper, upper});
-            if (nZ) boundsList.add(new float[]{lower, lower, 0, upper, upper, lower});
-            if (pZ) boundsList.add(new float[]{lower, lower, upper, upper, upper, 1});
+        if (straightX) {
+            addPart(quads, 0, lower, lower, 1, upper, upper, useMeta, pX, nX, pY, nY, pZ, nZ, new int[]{1, 1, 2, 1, 0, 0});
+        } else if (straightZ) {
+            addPart(quads, lower, lower, 0, upper, upper, 1, useMeta, pX, nX, pY, nY, pZ, nZ, new int[]{0, 0, 0, 0, 1, 2});
+        } else if (straightY) {
+            addPart(quads, lower, 0, lower, upper, 1, upper, useMeta, pX, nX, pY, nY, pZ, nZ, LEGACY_NO_ROTATION);
+        } else if (count == 2) {
+            int[] rotations = (nY || pY) && (nX || pX) ? new int[]{1, 1, 0, 0, 0, 0}
+                    : (!nY && !pY ? new int[]{0, 0, 2, 1, 1, 2} : LEGACY_NO_ROTATION);
+            addPart(quads, lower, lower, lower, upper, upper, upper, useMeta, pX, nX, pY, nY, pZ, nZ, rotations);
+            if (nY) addPart(quads, lower, 0, lower, upper, lower, upper, useMeta, pX, nX, pY, nY, pZ, nZ, rotations);
+            if (pY) addPart(quads, lower, upper, lower, upper, 1, upper, useMeta, pX, nX, pY, nY, pZ, nZ, rotations);
+            if (nX) addPart(quads, 0, lower, lower, lower, upper, upper, useMeta, pX, nX, pY, nY, pZ, nZ, rotations);
+            if (pX) addPart(quads, upper, lower, lower, 1, upper, upper, useMeta, pX, nX, pY, nY, pZ, nZ, rotations);
+            if (nZ) addPart(quads, lower, lower, 0, upper, upper, lower, useMeta, pX, nX, pY, nY, pZ, nZ, rotations);
+            if (pZ) addPart(quads, lower, lower, upper, upper, upper, 1, useMeta, pX, nX, pY, nY, pZ, nZ, rotations);
         } else {
-            boundsList.add(new float[]{jLower, jLower, jLower, jUpper, jUpper, jUpper});
-            if (nY) boundsList.add(new float[]{lower, 0, lower, upper, jLower, upper});
-            if (pY) boundsList.add(new float[]{lower, jUpper, lower, upper, 1, upper});
-            if (nX) boundsList.add(new float[]{0, lower, lower, jLower, upper, upper});
-            if (pX) boundsList.add(new float[]{jUpper, lower, lower, 1, upper, upper});
-            if (nZ) boundsList.add(new float[]{lower, lower, 0, upper, upper, jLower});
-            if (pZ) boundsList.add(new float[]{lower, lower, jUpper, upper, upper, 1});
+            addPart(quads, jLower, jLower, jLower, jUpper, jUpper, jUpper, useMeta, pX, nX, pY, nY, pZ, nZ, LEGACY_NO_ROTATION);
+            if (nY) addPart(quads, lower, 0, lower, upper, jLower, upper, useMeta, pX, nX, pY, nY, pZ, nZ, LEGACY_NO_ROTATION);
+            if (pY) addPart(quads, lower, jUpper, lower, upper, 1, upper, useMeta, pX, nX, pY, nY, pZ, nZ, LEGACY_NO_ROTATION);
+            if (nX) addPart(quads, 0, lower, lower, jLower, upper, upper, useMeta, pX, nX, pY, nY, pZ, nZ, LEGACY_NO_ROTATION);
+            if (pX) addPart(quads, jUpper, lower, lower, 1, upper, upper, useMeta, pX, nX, pY, nY, pZ, nZ, LEGACY_NO_ROTATION);
+            if (nZ) addPart(quads, lower, lower, 0, upper, upper, jLower, useMeta, pX, nX, pY, nY, pZ, nZ, LEGACY_NO_ROTATION);
+            if (pZ) addPart(quads, lower, lower, jUpper, upper, upper, 1, useMeta, pX, nX, pY, nY, pZ, nZ, LEGACY_NO_ROTATION);
         }
 
-        FaceBakery faceBakery = new FaceBakery();
-
-        for (float[] b : boundsList) {
-            float minX = b[0] * 16f, minY = b[1] * 16f, minZ = b[2] * 16f;
-            float maxX = b[3] * 16f, maxY = b[4] * 16f, maxZ = b[5] * 16f;
-            if (minX == maxX || minY == maxY || minZ == maxZ) continue;
-
-            for (EnumFacing face : EnumFacing.VALUES) {
-                int s = face.ordinal();
-                TextureAtlasSprite sprite = getPipeIcon(useMeta, s, pX, nX, pY, nY, pZ, nZ, isExhaust);
-                if (sprite == null) continue;
-
-                float uMin = 0, uMax = 0, vMin = 0, vMax = 0;
-                switch (face) {
-                    case UP:
-                        boolean swapUV = !straightZ && (straightX || ((nY || pY) && (nX || pX)));
-                        uMin = swapUV ? minZ : minX; uMax = swapUV ? maxZ : maxX;
-                        vMin = swapUV ? minX : minZ; vMax = swapUV ? maxX : maxZ;
-                        uvRotate[s] = swapUV ? 90 : 0;
-                        break;
-                    case DOWN:
-                        uMin = minX; uMax = maxX; vMin = minZ; vMax = maxZ; uvRotate[s] = 0;
-                        if (straightX || (pZ && nX) || (pX && nZ)) {
-                            uMin = minZ; uMax = maxZ; vMin = minX; vMax = maxX; uvRotate[s] = 90;
-                        } else if (nZ && nX) {
-                            uMin = maxZ; uMax = minZ; vMin = maxX; vMax = minX; uvRotate[s] = 270;
-                        } else if (pX && pZ) {
-                            uMin = maxZ; uMax = minZ; vMin = maxX; vMax = minX; uvRotate[s] = 270;
-                        }
-                        break;
-                    case SOUTH:
-                        vMin = minY; vMax = maxY; uMin = 16f - maxZ; uMax = 16f - minZ; uvRotate[s] = 90;
-                        if (straightY || (count == 2 && !straightX)) { uMin = minX; uMax = maxX; uvRotate[s] = 0; }
-                        if ((nZ && nX) || (nZ && pX)) { uMin = 16f - maxZ; uMax = 16f - minZ; uvRotate[s] = 90; }
-                        break;
-                    case NORTH:
-                        vMin = minY; vMax = maxY; uMin = minZ; uMax = maxZ; uvRotate[s] = 90;
-                        if (straightY || (count == 2 && !straightX)) { uMin = 16f - maxX; uMax = 16f - minX; uvRotate[s] = 0; }
-                        if ((pZ && nX) || (pZ && pX)) { uMin = minZ; uMax = maxZ; uvRotate[s] = 90; }
-                        break;
-                    case EAST:
-                        vMin = minY; vMax = maxY; uMin = 16f - maxX; uMax = 16f - minX; uvRotate[s] = 90;
-                        if (straightY || (count == 2 && !straightZ)) { uMin = minZ; uMax = maxZ; uvRotate[s] = 0; }
-                        if ((nX && nZ) || (nX && pZ)) { uMin = 16f - maxX; uMax = 16f - minX; uvRotate[s] = 90; }
-                        break;
-                    case WEST:
-                        vMin = minY; vMax = maxY; uMin = 16f - maxX; uMax = 16f - minX; uvRotate[s] = 90;
-                        if (straightY || (count == 2 && !straightZ)) { uMin = minZ; uMax = maxZ; uvRotate[s] = 0; }
-                        if ((pX && nZ) || (pX && pZ)) { uMin = 16f - maxX; uMax = 16f - minX; uvRotate[s] = 90; }
-                        break;
-                }
-
-                if (uMin > uMax) { float temp = uMin; uMin = uMax; uMax = temp; }
-                if (vMin > vMax) { float temp = vMin; vMin = vMax; vMax = temp; }
-
-                float[] uvs = new float[]{uMin, vMin, uMax, vMax};
-                BlockPartFace bpf = new BlockPartFace(null, 0, "", new BlockFaceUV(uvs, uvRotate[s]));
-
-                Vector3f from = new Vector3f(), to = new Vector3f();
-                switch (face) {
-                    case DOWN: from.set(minX, minY, minZ); to.set(maxX, minY, maxZ); break;
-                    case UP: from.set(minX, maxY, minZ); to.set(maxX, maxY, maxZ); break;
-                    case NORTH: from.set(minX, minY, minZ); to.set(maxX, maxY, minZ); break;
-                    case SOUTH: from.set(minX, minY, maxZ); to.set(maxX, maxY, maxZ); break;
-                    case WEST: from.set(minX, minY, minZ); to.set(minX, maxY, maxZ); break;
-                    case EAST: from.set(maxX, minY, minZ); to.set(maxX, maxY, maxZ); break;
-                }
-
-                BakedQuad quad = faceBakery.makeBakedQuad(from, to, bpf, sprite, face, ModelRotation.X0_Y0, null, false, true);
-                quads.add(quad);
-            }
-        }
-
-        return cache[cacheIndex] = Collections.unmodifiableList(quads);
+        return Collections.unmodifiableList(quads);
     }
 
     @Override

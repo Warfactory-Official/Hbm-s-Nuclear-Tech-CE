@@ -23,6 +23,10 @@ public class WaveFrontObjectVAO implements IModelCustomNamed {
     List<VBOBufferData> groups = new ArrayList<>();
 
     public WaveFrontObjectVAO(HFRWavefrontObject obj) {
+        load(obj);
+    }
+
+    public void load(HFRWavefrontObject obj) {
         for (GroupObject g : obj.groupObjects) {
 
             VBOBufferData data = new VBOBufferData();
@@ -117,6 +121,19 @@ public class WaveFrontObjectVAO implements IModelCustomNamed {
         }
     }
 
+    // truth be told, i have no fucking idea what i'm doing
+    // i know the VBO sends data to the GPU to be saved there directly which is where the optimization comes from in the first place
+    // so logically, if we want to get rid of this, we need to blow the data up
+    // documentation on GL15 functions seems nonexistant so fuck it we ball i guess
+    public void destroy() {
+        for(VBOBufferData data : groups) {
+            GL15.glDeleteBuffers(data.vboHandle);
+            GL15.glDeleteBuffers(data.vaoHandle);
+            GL15.glDeleteBuffers(data.vertices);
+        }
+        groups.clear();
+    }
+
     @Override
     public String getType() {
         return "obj_vao";
@@ -192,7 +209,7 @@ public class WaveFrontObjectVAO implements IModelCustomNamed {
 
     @Override
     public List<String> getPartNames() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         for (VBOBufferData data : groups) {
             names.add(data.name);
         }

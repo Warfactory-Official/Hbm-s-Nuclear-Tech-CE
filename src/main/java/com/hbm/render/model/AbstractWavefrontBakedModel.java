@@ -25,9 +25,9 @@ public abstract class AbstractWavefrontBakedModel extends AbstractBakedModel {
     protected final HFRWavefrontObject model;
     protected final VertexFormat format;
     protected final float baseScale;
-    protected final float tx;
-    protected final float ty;
-    protected final float tz;
+    protected float tx;
+    protected float ty;
+    protected float tz;
 
     protected AbstractWavefrontBakedModel(HFRWavefrontObject model, VertexFormat format, float baseScale, float tx, float ty, float tz, ItemCameraTransforms transforms) {
         super(transforms);
@@ -50,16 +50,12 @@ public abstract class AbstractWavefrontBakedModel extends AbstractBakedModel {
         return Math.min(Math.max(value, 0), 255);
     }
 
-    protected static @NotNull EnumFacing facingFromNormal(float nx, float ny, float nz) {
-        return EnumFacing.getFacingFromVector(nx, ny, nz);
-    }
-
     @Contract("_, _, _, _ -> new")
     protected static double @NotNull [] rotateX(double x, double y, double z, float angle) {
         double cos = Math.cos(angle);
         double sin = Math.sin(angle);
-        double ny = y * cos - z * sin;
-        double nz = y * sin + z * cos;
+        double ny = y * cos + z * sin;
+        double nz = z * cos - y * sin;
         return new double[]{x, ny, nz};
     }
 
@@ -76,16 +72,16 @@ public abstract class AbstractWavefrontBakedModel extends AbstractBakedModel {
     protected static double @NotNull [] rotateZ(double x, double y, double z, float angle) {
         double cos = Math.cos(angle);
         double sin = Math.sin(angle);
-        double nx = x * cos - y * sin;
-        double ny = x * sin + y * cos;
+        double nx = x * cos + y * sin;
+        double ny = y * cos - x * sin;
         return new double[]{nx, ny, z};
     }
 
-    protected List<BakedQuad> bakeSimpleQuads(Collection<String> partNames, float roll, float pitch, float yaw, boolean applyShading, boolean centerToBlock, TextureAtlasSprite sprite) {
+    protected List<BakedQuad> bakeSimpleQuads(Set<String> partNames, float roll, float pitch, float yaw, boolean applyShading, boolean centerToBlock, TextureAtlasSprite sprite) {
         return bakeSimpleQuads(partNames, roll, pitch, yaw, applyShading, centerToBlock, sprite, -1);
     }
 
-    protected List<BakedQuad> bakeSimpleQuads(Collection<String> partNames, float roll, float pitch, float yaw, boolean applyShading, boolean centerToBlock, TextureAtlasSprite sprite, int tintIndex) {
+    protected List<BakedQuad> bakeSimpleQuads(Set<String> partNames, float roll, float pitch, float yaw, boolean applyShading, boolean centerToBlock, TextureAtlasSprite sprite, int tintIndex) {
         List<FaceGeometry> geometries = buildGeometry(partNames, roll, pitch, yaw, applyShading, centerToBlock);
         List<BakedQuad> quads = new ArrayList<>(geometries.size());
         for (FaceGeometry geometry : geometries) {
@@ -94,12 +90,11 @@ public abstract class AbstractWavefrontBakedModel extends AbstractBakedModel {
         return quads;
     }
 
-    protected List<FaceGeometry> buildGeometry(Collection<String> partNames, float roll, float pitch, float yaw, boolean applyShading, boolean centerToBlock) {
+    protected List<FaceGeometry> buildGeometry(Set<String> partNames, float roll, float pitch, float yaw, boolean applyShading, boolean centerToBlock) {
         List<FaceGeometry> geometries = new ArrayList<>();
-        Set<String> filter = prepareFilter(partNames);
 
         for (GroupObject group : model.groupObjects) {
-            if (filter != null && !filter.contains(group.name)) {
+            if (partNames != null && !partNames.contains(group.name)) {
                 continue;
             }
 
@@ -160,7 +155,7 @@ public abstract class AbstractWavefrontBakedModel extends AbstractBakedModel {
                     pz[v] = z;
                 }
 
-                EnumFacing facing = facingFromNormal(fnx, fny, fnz);
+                EnumFacing facing = EnumFacing.getFacingFromVector(fnx, fny, fnz);
                 Vector3f vectorNormal = new Vector3f(fnx, fny, fnz);
                 vectorNormal.normalize();
 
@@ -169,15 +164,6 @@ public abstract class AbstractWavefrontBakedModel extends AbstractBakedModel {
         }
 
         return geometries;
-    }
-
-    private static Set<String> prepareFilter(Collection<String> partNames) {
-        if (partNames == null) return null;
-        if (partNames instanceof Set<?>) {
-            // unfortunately instanceof Set<String> stringSet is only available in Java 16+
-            return (Set<String>) partNames;
-        }
-        return new HashSet<>(partNames);
     }
 
     protected void putVertex(UnpackedBakedQuad.Builder builder, float x, float y, float z, float u16, float v16, int cr, int cg, int cb, Vector3f normal, TextureAtlasSprite sprite) {

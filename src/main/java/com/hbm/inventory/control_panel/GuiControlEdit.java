@@ -11,6 +11,7 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.ClickType;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Mouse;
@@ -117,6 +118,12 @@ public class GuiControlEdit extends GuiContainer {
 	
 	public List<GuiButton> getButtons(){
 		return buttonList;
+	}
+
+	public void returnControlInputToPlayerInventory() {
+		if(container.input.getHasStack()) {
+			handleMouseClick(container.input, container.input.slotNumber, 0, ClickType.QUICK_MOVE);
+		}
 	}
 	
 	@Override

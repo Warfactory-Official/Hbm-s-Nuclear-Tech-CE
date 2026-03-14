@@ -1,6 +1,9 @@
 package com.hbm.inventory.control_panel;
 
+import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.ControlPanelUpdatePacket.VarUpdate;
+import com.hbm.tileentity.machine.TileEntityControlPanel;
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -23,8 +26,8 @@ public class ControlPanel {
 	//Variables that were changed in the last tick
 	public List<VarUpdate> changedVars = new ArrayList<>();
 	//Global variables, accessible by every control as well as the owner tile entity for state like redstone
-	public Map<String, DataValue> globalVars = new LinkedHashMap<>();
-	public Map<String, DataValue> globalVarsPrev = new LinkedHashMap<>();
+	public Map<String, DataValue> globalVars = new Object2ObjectLinkedOpenHashMap<>();
+	public Map<String, DataValue> globalVarsPrev = new Object2ObjectLinkedOpenHashMap<>();
 	//Client only transform for getting from panel local space to block space. Used for both rendering and figuring out which control a player clicks
 	@SideOnly(Side.CLIENT)
 	public Matrix4f transform;
@@ -82,18 +85,20 @@ public class ControlPanel {
 	public void crossCheckVars(int idx, Map<String, DataValue> vars, Map<String, DataValue> varsPrev){
 		for(String s : vars.keySet()){
 			if(!varsPrev.containsKey(s)){
-				changedVars.add(new VarUpdate(idx, s, vars.get(s)));
+				changedVars.add(new VarUpdate(idx, s, vars.get(s).copy()));
 			}
 		}
 		for(String s : varsPrev.keySet()) {
 			if(!vars.containsKey(s)){
 				changedVars.add(new VarUpdate(idx, s, null));
 			} else if(!varsPrev.get(s).equals(vars.get(s))){
-				changedVars.add(new VarUpdate(idx, s, vars.get(s)));
+				changedVars.add(new VarUpdate(idx, s, vars.get(s).copy()));
 			}
 		}
 		varsPrev.clear();
-		varsPrev.putAll(vars);
+		for(Entry<String, DataValue> entry : vars.entrySet()) {
+			varsPrev.put(entry.getKey(), entry.getValue().copy());
+		}
 	}
 
 	public NBTTagCompound writeToNBT(NBTTagCompound nbt){
@@ -133,17 +138,7 @@ public class ControlPanel {
 		NBTTagCompound controls = tag.getCompoundTag("controls");
 		for(int i = 0; i < controls.getKeySet().size(); i ++){
 			NBTTagCompound ct = controls.getCompoundTag("control" + i);
-			Control c = ControlRegistry.getNew(ct.getString("name"), this);
-
-			Map<String, DataValue> configs = new HashMap<>();
-			NBTTagCompound config_tag = ct.getCompoundTag("configs");
-			for (String s : config_tag.getKeySet()) {
-				configs.put(s, DataValue.newFromNBT(config_tag.getTag(s)));
-			}
-			c.applyConfigs(configs);
-
-			this.controls.add(c);
-			c.readFromNBT(ct);
+			this.controls.add(readControl(ct));
 		}
 
 		height = tag.getFloat("height");
@@ -154,12 +149,72 @@ public class ControlPanel {
 		d_off = tag.getFloat("d_offset");
 	}
 
+	public Control readControl(NBTTagCompound tag) {
+		String registryName = tag.getString("name");
+		Control control = ControlRegistry.getNew(registryName, this);
+		if(control == null) {
+			return new UnknownControl(this, tag);
+		}
+
+		try {
+			control.applyConfigs(readControlDataMap(tag.getCompoundTag("configs"), "config", registryName));
+			control.readFromNBT(tag);
+		} catch (Exception x) {
+			MainRegistry.logger.error("Failed to deserialize control '{}', preserving raw NBT placeholder", registryName, x);
+			return new UnknownControl(this, tag);
+		}
+		return control;
+	}
+
+	private static Map<String, DataValue> readControlDataMap(NBTTagCompound tag, String kind, String registryName) {
+		Map<String, DataValue> values = new Object2ObjectLinkedOpenHashMap<>();
+		for (String key : tag.getKeySet()) {
+			DataValue value = DataValue.newFromNBT(tag.getTag(key));
+			if(value == null) {
+				throw new IllegalStateException("Failed to deserialize " + kind + " '" + key + "' for control '" + registryName + "'");
+			}
+			values.put(key, value);
+		}
+		return values;
+	}
+
+	public Control cloneControl(Control source) {
+		return readControl(source.writeToNBT(new NBTTagCompound()));
+	}
+
 	public void receiveEvent(BlockPos from, ControlEvent evt){
-		for(Control c : controls) {
-			int idx = c.connectedSet.indexOf(from);
-			if(idx != -1 || parent.getControlPos().equals(from)) {
-				evt.setVar("from index", idx);
-				c.receiveEvent(evt);
+		TileEntityControlPanel redstonePanel = parent instanceof TileEntityControlPanel ? (TileEntityControlPanel) parent : null;
+		if(redstonePanel != null) {
+			redstonePanel.beginRedstoneOutputCollection();
+		}
+		try {
+			for(Control c : controls) {
+				int idx = c.connectedSet.indexOf(from);
+				if(idx != -1 || parent.getControlPos().equals(from)) {
+					evt.setVar("from index", idx);
+					c.receiveEvent(evt);
+				}
+			}
+		} finally {
+			if(redstonePanel != null) {
+				redstonePanel.finishRedstoneOutputCollection();
+			}
+		}
+	}
+
+	public void receiveDirectEvent(Control control, ControlEvent evt) {
+		if(control == null) {
+			return;
+		}
+		TileEntityControlPanel redstonePanel = parent instanceof TileEntityControlPanel ? (TileEntityControlPanel) parent : null;
+		if(redstonePanel != null) {
+			redstonePanel.beginRedstoneOutputCollection();
+		}
+		try {
+			control.receiveEvent(evt);
+		} finally {
+			if(redstonePanel != null) {
+				redstonePanel.finishRedstoneOutputCollection();
 			}
 		}
 	}

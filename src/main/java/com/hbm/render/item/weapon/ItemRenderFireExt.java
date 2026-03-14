@@ -11,6 +11,7 @@ import com.hbm.util.RenderUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -20,6 +21,16 @@ import org.lwjgl.opengl.GL11;
 public class ItemRenderFireExt extends TEISRBase {
 
     protected ViewModelPositonDebugger offsets = new ViewModelPositonDebugger().get(ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND).setScale(1.00f).setPosition(-0.75, 0.95, -1.05).setRotation(0, 170, 30).getHelper().get(ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND).setPosition(-0.3, -0.55, 0).getHelper().get(ItemCameraTransforms.TransformType.THIRD_PERSON_RIGHT_HAND).setScale(0.55f).setPosition(-1.15, 1, -1.3).setRotation(-15, 95, 15).getHelper().get(ItemCameraTransforms.TransformType.GROUND).setScale(0.9f).setPosition(-0.55, 0.15, -0.75).getHelper().get(ItemCameraTransforms.TransformType.GUI).setScale(0.06f).setPosition(0, 15.95, -1.6).setRotation(190, -110, 0).getHelper();
+
+    @Override
+    public ModelBinding createModelBinding(Item item) {
+        return ModelBinding.of(new ModelResourceLocation(item.getRegistryName(), "inventory"), ItemCameraTransforms.DEFAULT, false);
+    }
+
+    @Override
+    public boolean useIdentityTransform(Item item) {
+        return true;
+    }
 
     @Override
     public void renderByItem(ItemStack stack, float partialTicks) {

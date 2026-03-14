@@ -15,7 +15,6 @@ public class MachineConfig {
     //mlbv: 1.7 hardcodes it to 6kB
     public static int crateByteSize = 8192;
     public static int rbmkJumpTemp = 1250;
-    public static boolean enableOldTemplates = false;
     public static HashMap<String, IDoor.Mode> doorConf = new HashMap<>();
 
     public static void loadFromConfig(Configuration config) {
@@ -25,7 +24,6 @@ public class MachineConfig {
         scaleRTGPower = CommonConfig.createConfigBool(config, CATEGORY_MACHINE, "9.01_scaleRTGPower", "Should RTG/Betavoltaic fuel power scale down as it decays?", false);
         doRTGsDecay = CommonConfig.createConfigBool(config, CATEGORY_MACHINE, "9.02_doRTGsDecay", "Should RTG/Betavoltaic fuel decay at all?", true);
         disableMachines = CommonConfig.createConfigBool(config, CATEGORY_MACHINE, "9.00_disableMachines", "Prevent mod from registering any Machines? (WARNING: THIS WILL BREAK PREEXISTING WORLDS)", false);
-        enableOldTemplates = CommonConfig.createConfigBool(config, CATEGORY_MACHINE, "9.99_CE_01_enableOldTemplates", "Add deprecated assembler and chemfac templates to template folder.", false);
 
         doorConf.clear();
         String[] doorConfStr = config.get(CATEGORY_MACHINE, "9.99_CE_02_doorConf", new String[]{},

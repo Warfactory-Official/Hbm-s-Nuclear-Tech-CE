@@ -1,73 +1,77 @@
 package com.hbm.render.tileentity;
 
 import com.hbm.Tags;
-import com.hbm.blocks.machine.rbmk.RBMKBase;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.ResourceManager;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKControl;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKControlAuto;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKControlManual;
-import net.minecraft.client.Minecraft;
+
+import net.minecraft.block.Block;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+
 @AutoRegister(tileentity = TileEntityRBMKControlManual.class)
 @AutoRegister(tileentity = TileEntityRBMKControlAuto.class)
-public class RenderRBMKControlRod extends TileEntitySpecialRenderer<TileEntityRBMKControl>{
+public class RenderRBMKControlRod extends TileEntitySpecialRenderer<TileEntityRBMKControl> {
 
-	private ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_control.png");
-	
-	@Override
-	public boolean isGlobalRenderer(TileEntityRBMKControl te){
-		return true;
-	}
+	private final ResourceLocation[] textures = new ResourceLocation[] {
+			new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_control_red.png"),
+			new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_control_yellow.png"),
+			new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_control_green.png"),
+			new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_control_blue.png"),
+			new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_control_purple.png")
+	};
+	private final ResourceLocation textureStandard = new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_control.png");
+	private final ResourceLocation textureAuto = new ResourceLocation(Tags.MODID + ":textures/blocks/rbmk/rbmk_control_auto.png");
 
 	@Override
-	public void render(TileEntityRBMKControl control, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
+	public void render(TileEntityRBMKControl te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
+
 		GlStateManager.pushMatrix();
+
 		int offset = 1;
-		for (int o = 1; o < 16; o++){
-			if (control.getWorld().getBlockState(control.getPos().up(o)).getBlock() == control.getBlockType()){
+		BlockPos pos = te.getPos();
+		Block blockType = te.getBlockType();
+
+		for(int o = 1; o < 16; o++) {
+			BlockPos checkPos = pos.up(o);
+			if(te.getWorld().getBlockState(checkPos).getBlock() == blockType) {
 				offset = o;
-			} else break;
+			} else {
+				break;
+			}
 		}
-		GlStateManager.translate(x + 0.5, y, z + 0.5);
-		// Render column stack
-		renderControlColumn(control, offset + 1);
 
-		// Render animated lid
-		renderControlLid(control, partialTicks, offset);
+		GlStateManager.translate(x + 0.5, y + offset, z + 0.5);
 
-		GlStateManager.popMatrix();
-	}
+		GlStateManager.enableLighting();
+		GlStateManager.enableCull();
 
-	private void renderControlColumn(TileEntityRBMKControl control, int offset) {
-		Minecraft.getMinecraft().getTextureManager().bindTexture(((RBMKBase) control.getBlockType()).columnTexture);
+		BlockPos lightPos = pos.up(offset + 1);
+		int brightness = te.getWorld().getCombinedLight(lightPos, 0);
+		int lX = brightness % 65536;
+		int lY = brightness / 65536;
+		OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (float)lX, (float)lY);
 
-		GlStateManager.pushMatrix();
-		for(int i = 0; i < offset; i++) {
-			ResourceManager.rbmk_rods.renderPart("Column");
-			GlStateManager.translate(0, 1, 0);
+		ResourceLocation texture = textureAuto;
+
+		if(te instanceof TileEntityRBMKControlManual crm) {
+            if(crm.color == null) texture = textureStandard;
+			else texture = textures[crm.color.ordinal()];
 		}
-		GlStateManager.popMatrix();
-	}
 
-	private void renderControlLid(TileEntityRBMKControl control, float partialTicks, int offset) {
-		GlStateManager.pushMatrix();
+		this.bindTexture(texture);
 
-		// Calculate animated lid position
-		double level = control.lastLevel + (control.level - control.lastLevel) * partialTicks;
-		GlStateManager.translate(0, offset + level, 0);
+		double level = te.lastLevel + (te.level - te.lastLevel) * partialTicks;
 
-		// Bind lid texture
-		ResourceLocation lidTexture = (control.getBlockType() instanceof RBMKBase)
-				? ((RBMKBase) control.getBlockType()).coverTexture
-				: texture;
-		Minecraft.getMinecraft().getTextureManager().bindTexture(lidTexture);
-
-		// Render lid
-		ResourceManager.rbmk_rods.renderPart("Lid");
+		GlStateManager.translate(0.0, level, 0.0);
+		ResourceManager.rbmk_rods_vbo.renderPart("Lid");
 
 		GlStateManager.popMatrix();
 	}
 }
+

@@ -7,9 +7,11 @@ import com.hbm.inventory.gui.GUIWeaponTable;
 import com.hbm.items.IEquipReceiver;
 import com.hbm.items.IKeybindReceiver;
 import com.hbm.items.ModItems;
+import com.hbm.items.weapon.sedna.factory.GunFactory;
 import com.hbm.items.weapon.sedna.hud.IHUDComponent;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
-import com.hbm.items.weapon.sedna.mods.WeaponModManager;
+import com.hbm.items.weapon.sedna.mags.MagazineInfinite;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.GunAnimationPacketSedna;
@@ -64,6 +66,9 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
     public static final DecimalFormatSymbols SYMBOLS_US = new DecimalFormatSymbols(Locale.US);
     public static final DecimalFormat FORMAT_DMG = new DecimalFormat("#.##", SYMBOLS_US);
 
+    public ItemStack defaultAmmo;
+    public boolean isDefaultExpensive = false;
+
     public static float recoilVertical = 0;
     public static float recoilHorizontal = 0;
     public static float recoilDecay = 0.75F;
@@ -115,7 +120,7 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
     public GunConfig getConfig(ItemStack stack, int index) {
         GunConfig cfg = configs_DNA[index];
         if(stack == null) return cfg;
-        return WeaponModManager.eval(cfg, stack, O_GUNCONFIG + index, this, index);
+        return XWeaponModManager.eval(cfg, stack, O_GUNCONFIG + index, this, index);
     }
 
     public int getConfigCount() {
@@ -157,6 +162,16 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
         public static final GunState[] VALUES = values();
     }
 
+    public ItemGunBaseNT setDefaultAmmo(GunFactory.EnumAmmo ammo, int amount) {
+        this.defaultAmmo = new ItemStack(ModItems.ammo_standard, amount, ammo.ordinal());
+        return this;
+    }
+
+    public ItemGunBaseNT setDefaultAmmoExpensive(GunFactory.EnumAmmo ammo, int amount) {
+        this.isDefaultExpensive = true;
+        return setDefaultAmmo(ammo, amount);
+    }
+
     public ItemGunBaseNT setNameMutator(Function<ItemStack, String> lambda) {
         this.LAMBDA_NAME_MUTATOR = lambda;
         return this;
@@ -187,7 +202,9 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
             GunConfig config = getConfig(stack, i);
             for (Receiver rec : config.getReceivers(stack)) {
                 IMagazine mag = rec.getMagazine(stack);
-                tooltip.add("Ammo: " + mag.getIconForHUD(stack, player).getDisplayName() + " " + mag.reportAmmoStateForHUD(stack, player));
+                if(!(mag instanceof MagazineInfinite)) {
+                    tooltip.add("Ammo: " + mag.getIconForHUD(stack, player).getDisplayName() + " " + mag.reportAmmoStateForHUD(stack, player));
+                }
                 float dmg = rec.getBaseDamage(stack);
                 tooltip.add("Base Damage: " + FORMAT_DMG.format(dmg));
                 if (mag.getType(stack, player.inventory) instanceof BulletConfig bullet) {
@@ -202,7 +219,7 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
                 tooltip.add("Condition: " + dura + "%");
             }
 
-            for(ItemStack upgrade : WeaponModManager.getUpgradeItems(stack, i)) {
+            for(ItemStack upgrade : XWeaponModManager.getUpgradeItems(stack, i)) {
                 tooltip.add(TextFormatting.YELLOW + upgrade.getDisplayName());
             }
         }
@@ -262,7 +279,7 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
     @Override
     public void onEquip(EntityPlayer player, ItemStack stack) {
         for(int i = 0; i < this.configs_DNA.length; i++) {
-            playAnimation(player, stack, HbmAnimationsSedna.AnimType.EQUIP, i);
+            playAnimation(player, stack, HbmAnimationsSedna.GunAnimation.EQUIP, i);
             setPrimary(stack, i, false);
             setSecondary(stack, i, false);
             setTertiary(stack, i, false);
@@ -270,7 +287,7 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
         }
     }
 
-    public static void playAnimation(EntityPlayer player, ItemStack stack, HbmAnimationsSedna.AnimType type, int index) {
+    public static void playAnimation(EntityPlayer player, ItemStack stack, HbmAnimationsSedna.GunAnimation type, int index) {
         if(player instanceof EntityPlayerMP) {
             PacketDispatcher.wrapper.sendTo(new GunAnimationPacketSedna(type.ordinal(), 0, index), (EntityPlayerMP) player);
             setLastAnim(stack, index, type);
@@ -339,7 +356,7 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
                     setState(stack, i, GunState.DRAWING);
                     setTimer(stack, i, configs[i].getDrawDuration(stack));
                 }
-                setLastAnim(stack, i, HbmAnimationsSedna.AnimType.CYCLE); //prevents new guns from initializing with DRAWING, 0
+                setLastAnim(stack, i, HbmAnimationsSedna.GunAnimation.CYCLE); //prevents new guns from initializing with DRAWING, 0
             }
             setIsAiming(stack, false);
             setReloadCancel(stack, false);
@@ -383,8 +400,8 @@ public class ItemGunBaseNT extends Item implements IKeybindReceiver, IEquipRecei
     public static boolean getIsLockedOn(ItemStack stack) { return getValueBool(stack, KEY_LOCKEDON); }
     public static void setIsLockedOn(ItemStack stack, boolean value) { setValueBool(stack, KEY_LOCKEDON, value); }
     // ANIM TRACKING //
-    public static HbmAnimationsSedna.AnimType getLastAnim(ItemStack stack, int index) { return EnumUtil.grabEnumSafely(HbmAnimationsSedna.AnimType.VALUES, getValueInt(stack, KEY_LASTANIM + index)); }
-    public static void setLastAnim(ItemStack stack, int index, HbmAnimationsSedna.AnimType value) { setValueInt(stack, KEY_LASTANIM + index, value.ordinal()); }
+    public static HbmAnimationsSedna.GunAnimation getLastAnim(ItemStack stack, int index) { return EnumUtil.grabEnumSafely(HbmAnimationsSedna.GunAnimation.VALUES, getValueInt(stack, KEY_LASTANIM + index)); }
+    public static void setLastAnim(ItemStack stack, int index, HbmAnimationsSedna.GunAnimation value) { setValueInt(stack, KEY_LASTANIM + index, value.ordinal()); }
     public static int getAnimTimer(ItemStack stack, int index) { return getValueInt(stack, KEY_ANIMTIMER + index); }
     public static void setAnimTimer(ItemStack stack, int index, int value) { setValueInt(stack, KEY_ANIMTIMER + index, value); }
 

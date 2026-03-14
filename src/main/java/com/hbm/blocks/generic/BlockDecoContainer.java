@@ -1,10 +1,12 @@
 package com.hbm.blocks.generic;
 
 import com.google.common.collect.ImmutableMap;
+import com.hbm.items.ClaimedModelLocationRegistry;
 import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemLock;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
+import com.hbm.main.client.NTMClientRegistry;
 import com.hbm.tileentity.machine.TileEntityLockableBase;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.SoundType;
@@ -165,16 +167,18 @@ public class BlockDecoContainer<E extends Enum<E>, T extends TileEntity> extends
             );
             ModelResourceLocation worldLocation = new ModelResourceLocation(getRegistryName(), "normal");
             event.getModelRegistry().putObject(worldLocation, blockBaked);
-            IModel itemBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
-            ImmutableMap<String, String> itemTextures = ImmutableMap.of("layer0", "hbm:blocks/" + getRegistryName().getPath());
-            IModel itemRetextured = itemBaseModel.retexture(itemTextures);
-            IBakedModel itemBaked = itemRetextured.bake(
-                    ModelRotation.X0_Y0,
-                    DefaultVertexFormats.ITEM,
-                    ModelLoader.defaultTextureGetter()
-            );
-            ModelResourceLocation inventoryLocation = new ModelResourceLocation(getRegistryName(), "inventory");
-            event.getModelRegistry().putObject(inventoryLocation, itemBaked);
+            if (!ClaimedModelLocationRegistry.hasSyntheticTeisrBinding(Item.getItemFromBlock(this))) {
+                IModel itemBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
+                ImmutableMap<String, String> itemTextures = ImmutableMap.of("layer0", "hbm:blocks/" + getRegistryName().getPath());
+                IModel itemRetextured = itemBaseModel.retexture(itemTextures);
+                IBakedModel itemBaked = itemRetextured.bake(
+                        ModelRotation.X0_Y0,
+                        DefaultVertexFormats.ITEM,
+                        ModelLoader.defaultTextureGetter()
+                );
+                ModelResourceLocation inventoryLocation = new ModelResourceLocation(getRegistryName(), "inventory");
+                event.getModelRegistry().putObject(inventoryLocation, itemBaked);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -186,7 +190,10 @@ public class BlockDecoContainer<E extends Enum<E>, T extends TileEntity> extends
     @SideOnly(Side.CLIENT)
     public void registerModel() {
         Item item = Item.getItemFromBlock(this);
-        ModelResourceLocation inv = new ModelResourceLocation(this.getRegistryName(), "inventory");
+        ModelResourceLocation inv = NTMClientRegistry.getSyntheticTeisrModelLocation(item);
+        if (inv == null) {
+            inv = new ModelResourceLocation(this.getRegistryName(), "inventory");
+        }
         ModelLoader.setCustomModelResourceLocation(item, 0, inv);
         ModelLoader.setCustomModelResourceLocation(item, 1, inv);
     }

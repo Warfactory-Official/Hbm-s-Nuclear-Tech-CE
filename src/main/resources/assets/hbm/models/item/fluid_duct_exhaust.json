@@ -1,6 +1,6 @@
 {
 	"parent": "item/generated",
 	"textures": {
-		"layer0": "hbm:items/fluid_duct_exhaust"
+		"layer0": "hbm:blocks/boxduct_exhaust_straight"
 	}
 }

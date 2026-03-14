@@ -105,33 +105,24 @@ public class ItemHot extends ItemBakedBase {
 			ResourceLocation baseSpriteLoc = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath);
 			ResourceLocation overlaySpriteLoc = new ResourceLocation(Tags.MODID, ROOT_PATH + overlayTexturePath);
 
-			IModel twoLayerModel = baseModel.retexture(
+			IModel baseOnlyModel = baseModel.retexture(
 					ImmutableMap.of(
-							"layer0", baseSpriteLoc.toString(),
-							"layer1", overlaySpriteLoc.toString()
+							"layer0", baseSpriteLoc.toString()
+					)
+			);
+			IModel overlayOnlyModel = baseModel.retexture(
+					ImmutableMap.of(
+							"layer0", overlaySpriteLoc.toString()
 					)
 			);
 
-			IBakedModel bakedTwoLayer = twoLayerModel.bake(ModelRotation.X0_Y0, DefaultVertexFormats.ITEM, ModelLoader.defaultTextureGetter());
+			IBakedModel bakedBase = baseOnlyModel.bake(ModelRotation.X0_Y0, DefaultVertexFormats.ITEM, ModelLoader.defaultTextureGetter());
+			IBakedModel bakedOverlay = overlayOnlyModel.bake(ModelRotation.X0_Y0, DefaultVertexFormats.ITEM, ModelLoader.defaultTextureGetter());
 
-			TextureAtlasSprite baseSprite = ModelLoader.defaultTextureGetter().apply(baseSpriteLoc);
-			TextureAtlasSprite overlaySprite = ModelLoader.defaultTextureGetter().apply(overlaySpriteLoc);
+			List<BakedQuad> baseQuads = new ArrayList<>(bakedBase.getQuads(null, null, 0L));
+			List<BakedQuad> overlayQuadsTemplate = new ArrayList<>(bakedOverlay.getQuads(null, null, 0L));
 
-			List<BakedQuad> baseQuads = new ArrayList<>();
-			List<BakedQuad> overlayQuadsTemplate = new ArrayList<>();
-
-			for (BakedQuad q : bakedTwoLayer.getQuads(null, null, 0L)) {
-				if (q.getSprite() == overlaySprite) {
-					overlayQuadsTemplate.add(q);
-				} else if (q.getSprite() == baseSprite) {
-					baseQuads.add(q);
-				} else {
-					// Fallback: if sprite doesn't match, include in base
-					baseQuads.add(q);
-				}
-			}
-
-			TextureAtlasSprite particle = baseSprite;
+			TextureAtlasSprite particle = ModelLoader.defaultTextureGetter().apply(baseSpriteLoc);
 			ModelHotBaked model = new ModelHotBaked(baseQuads, overlayQuadsTemplate, particle);
 			ModelResourceLocation bakedModelLocation = new ModelResourceLocation(baseSpriteLoc, "inventory");
 			event.getModelRegistry().putObject(bakedModelLocation, model);

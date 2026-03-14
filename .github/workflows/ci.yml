@@ -10,6 +10,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Build Mod
@@ -36,7 +39,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build with Gradle
-        run: ./gradlew build --no-daemon
+        run: ./gradlew build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -45,6 +48,7 @@ jobs:
           path: |
             build/libs/**
             !build/libs/**/*-downgraded.jar
+            !build/libs/**/*-dev-shadow.jar
           if-no-files-found: error
 
       - name: Run server
@@ -59,7 +63,7 @@ jobs:
 
           echo "stop" > run/server/stop.txt
           set +e
-          timeout 120s ./gradlew runServer --no-daemon --stacktrace < run/server/stop.txt 2>&1 | tee server.log
+          timeout 120s ./gradlew runServer --stacktrace < run/server/stop.txt 2>&1 | tee server.log
           code=${PIPESTATUS[0]}
           set -e
 
@@ -127,3 +131,22 @@ jobs:
           fi
 
           echo 'No crash reports detected'
+
+      - name: Resolve snapshot version
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master' && github.repository == 'Warfactory-Official/Hbm-s-Nuclear-Tech-CE'
+        shell: bash
+        run: |
+          set -euo pipefail
+          MOD_VERSION=$(grep -E '^\s*modVersion\s*=' gradle.properties | sed -E 's/^\s*modVersion\s*=\s*//; s/\r$//' | xargs || true)
+          test -n "$MOD_VERSION"
+          echo "RELEASE_VERSION=${MOD_VERSION}-SNAPSHOT" >> "$GITHUB_ENV"
+
+      - name: Publish
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master' && github.repository == 'Warfactory-Official/Hbm-s-Nuclear-Tech-CE'
+        env:
+          MAVEN_USER: ${{ secrets.MAVEN_USER }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+          ARTIFACT_ID: ${{ vars.ARTIFACT_ID }}
+          MAVEN_URL: https://repo.warfactory.co/snapshots
+        run: |
+          ./gradlew publish --stacktrace

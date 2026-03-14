@@ -210,7 +210,9 @@ public class TileEntityBatteryREDD extends TileEntityBatteryBase implements IPer
 
     @Override
     public long transferPower(long power, boolean simulate) {
-        this.power = this.power.add(BigInteger.valueOf(power));
+        if (!simulate && power > 0) {
+            this.power = this.power.add(BigInteger.valueOf(power));
+        }
         return 0L;
     }
 

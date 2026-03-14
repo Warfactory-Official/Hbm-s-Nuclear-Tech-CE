@@ -7,7 +7,7 @@ import net.minecraft.world.World;
 
 public class BlockDynamite extends BlockTNTBase {
 
-    private static final BlockBakeFrame frame = BlockBakeFrame.bottomTop("dynamite_side", "dynamite_top", "dynamite_bottom");
+    private static final BlockBakeFrame frame = BlockBakeFrame.sideTopBottom("dynamite_side", "dynamite_top", "dynamite_bottom");
 
     public BlockDynamite(String s) {
         super(s, frame, frame);

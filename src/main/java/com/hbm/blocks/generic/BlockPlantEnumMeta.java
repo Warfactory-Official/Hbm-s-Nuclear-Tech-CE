@@ -52,7 +52,7 @@ public abstract class BlockPlantEnumMeta<E extends Enum<E>> extends BlockEnumMet
                 .sorted(Comparator.comparing(Enum::ordinal))
                 .map(Enum::name)
                 .map(name -> registryName + "_" + name.toLowerCase(Locale.US))
-                .map(texture -> new BlockBakeFrame(BlockBakeFrame.BlockForm.CROSS, texture))
+                .map(BlockBakeFrame::cross)
                 .toArray(BlockBakeFrame[]::new);
     }
 
@@ -155,7 +155,7 @@ public abstract class BlockPlantEnumMeta<E extends Enum<E>> extends BlockEnumMet
         for (int meta = 0; meta <= META_COUNT - 1; meta++) {
             BlockBakeFrame blockFrame = blockFrames[meta % blockFrames.length];
             try {
-                IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation(blockFrame.getBaseModel()));
+                IModel baseModel = ModelLoaderRegistry.getModel(blockFrame.getBaseModelLocation());
                 ImmutableMap.Builder<String, String> textureMap = ImmutableMap.builder();
 
                 blockFrame.putTextures(textureMap);
@@ -169,7 +169,7 @@ public abstract class BlockPlantEnumMeta<E extends Enum<E>> extends BlockEnumMet
 
                 IModel itemModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/generated"));
                 ImmutableMap.Builder<String, String> itemTextureMap = ImmutableMap.builder();
-                ResourceLocation itemTexture = new ResourceLocation(Tags.MODID, BlockBakeFrame.ROOT_PATH + blockFrame.textureArray[0]);
+                ResourceLocation itemTexture = blockFrame.getTextureLocation(0);
                 itemTextureMap.put("layer0", itemTexture.toString());
                 IModel retexturedItemModel = itemModel.retexture(itemTextureMap.build());
                 IBakedModel bakedItemModel = retexturedItemModel.bake(
@@ -188,7 +188,7 @@ public abstract class BlockPlantEnumMeta<E extends Enum<E>> extends BlockEnumMet
     @Override
     @SideOnly(Side.CLIENT)
     public void registerModel() {
-        for (int meta = 0; meta <= this.META_COUNT; meta++) {
+        for (int meta = 0; meta < this.META_COUNT; meta++) {
             ModelLoader.setCustomModelResourceLocation(
                     Item.getItemFromBlock(this),
                     meta,

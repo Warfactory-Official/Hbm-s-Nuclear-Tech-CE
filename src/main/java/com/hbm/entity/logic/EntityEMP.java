@@ -7,6 +7,7 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.ParticleBurstPacket;
+import com.hbm.util.Compat;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
@@ -30,6 +31,7 @@ public class EntityEMP extends Entity implements IChunkLoader {
 	List<BlockPos> machines;
 	int life = 10 * 60 * 20;
 	private Ticket loaderTicket;
+	private boolean awaitingTicketRestore;
 
 	public EntityEMP(World p_i1582_1_) {
 		super(p_i1582_1_);
@@ -39,6 +41,7 @@ public class EntityEMP extends Entity implements IChunkLoader {
 	public void onUpdate() {
 		
 		if(!world.isRemote) {
+			requestChunkLoaderTicketIfNeeded();
 			if(!CompatibilityConfig.isWarDim(world)){
 				this.setDead();
 				return;
@@ -91,18 +94,9 @@ public class EntityEMP extends Entity implements IChunkLoader {
 		TileEntity te = world.getTileEntity(pos);
 		if(te == null)
 			return;
-		if(te instanceof IEnergyReceiverMK2) {
-			machines.add(pos);
-		} else {
-			try{
-				if(te instanceof IEnergyProvider) {
-					machines.add(pos);
-				}
-			} catch(NoClassDefFoundError e){}
-		}
-		if(te.hasCapability(CapabilityEnergy.ENERGY, null)){
-			machines.add(pos);
-		}
+		if(te instanceof IEnergyReceiverMK2 || te.hasCapability(CapabilityEnergy.ENERGY, null) || Compat.REDSTONE_FLUX_LOADED && te instanceof IEnergyProvider){
+            machines.add(pos);
+        }
 	}
 	
 	private void emp(BlockPos pos) {
@@ -113,39 +107,28 @@ public class EntityEMP extends Entity implements IChunkLoader {
 		boolean flag = false;
 		
 		if (te instanceof IEnergyReceiverMK2) {
-			
 			((IEnergyReceiverMK2)te).setPower(0);
 			flag = true;
-		}
-		try{
-			if (te instanceof IEnergyProvider) {
-
-				((IEnergyProvider)te).extractEnergy(EnumFacing.UP, ((IEnergyProvider)te).getEnergyStored(EnumFacing.UP), false);
-				((IEnergyProvider)te).extractEnergy(EnumFacing.DOWN, ((IEnergyProvider)te).getEnergyStored(EnumFacing.DOWN), false);
-				((IEnergyProvider)te).extractEnergy(EnumFacing.NORTH, ((IEnergyProvider)te).getEnergyStored(EnumFacing.NORTH), false);
-				((IEnergyProvider)te).extractEnergy(EnumFacing.SOUTH, ((IEnergyProvider)te).getEnergyStored(EnumFacing.SOUTH), false);
-				((IEnergyProvider)te).extractEnergy(EnumFacing.EAST, ((IEnergyProvider)te).getEnergyStored(EnumFacing.EAST), false);
-				((IEnergyProvider)te).extractEnergy(EnumFacing.WEST, ((IEnergyProvider)te).getEnergyStored(EnumFacing.WEST), false);
-				flag = true;
-			}
-		} catch(NoClassDefFoundError e){}
-		if(te != null && te.hasCapability(CapabilityEnergy.ENERGY, null)){
-			IEnergyStorage handle = te.getCapability(CapabilityEnergy.ENERGY, null);
-			handle.extractEnergy(handle.getEnergyStored(), false);
-			flag = true;
-		}
-		
+		} else if(te.hasCapability(CapabilityEnergy.ENERGY, null)){
+            IEnergyStorage handle = te.getCapability(CapabilityEnergy.ENERGY, null);
+            handle.extractEnergy(handle.getEnergyStored(), false);
+            flag = true;
+        } else if (Compat.REDSTONE_FLUX_LOADED && te instanceof IEnergyProvider p) {
+            p.extractEnergy(EnumFacing.UP, p.getEnergyStored(EnumFacing.UP), false);
+            p.extractEnergy(EnumFacing.DOWN, p.getEnergyStored(EnumFacing.DOWN), false);
+            p.extractEnergy(EnumFacing.NORTH, p.getEnergyStored(EnumFacing.NORTH), false);
+            p.extractEnergy(EnumFacing.SOUTH, p.getEnergyStored(EnumFacing.SOUTH), false);
+            p.extractEnergy(EnumFacing.EAST, p.getEnergyStored(EnumFacing.EAST), false);
+            p.extractEnergy(EnumFacing.WEST, p.getEnergyStored(EnumFacing.WEST), false);
+            flag = true;
+        }
 		if(flag && rand.nextInt(20) == 0) {
-			
 			PacketDispatcher.wrapper.sendToAll(new ParticleBurstPacket(pos.getX(), pos.getY(), pos.getZ(), Block.getIdFromBlock(Blocks.STAINED_GLASS), 3));
-	        
 		}
-		
 	}
 
 	@Override
 	protected void entityInit() {
-		init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, Type.ENTITY));
 	}
 
 	@Override
@@ -159,9 +142,10 @@ public class EntityEMP extends Entity implements IChunkLoader {
                 	loaderTicket = ticket;
                 	loaderTicket.bindEntity(this);
                 	loaderTicket.getModData();
+                } else if(loaderTicket != ticket) {
+                    ForgeChunkManager.releaseTicket(ticket);
                 }
-
-                ForgeChunkManager.forceChunk(loaderTicket, new ChunkPos(chunkCoordX, chunkCoordZ));
+                loadNeighboringChunks(chunkCoordX, chunkCoordZ);
             }
         }
 	}
@@ -195,8 +179,36 @@ public class EntityEMP extends Entity implements IChunkLoader {
 	}
 
 	@Override
-	protected void readEntityFromNBT(NBTTagCompound nbt) { }
+	protected void readEntityFromNBT(NBTTagCompound nbt) {
+		awaitingTicketRestore = true;
+	}
 
 	@Override
 	protected void writeEntityToNBT(NBTTagCompound nbt) { }
+
+	@Override
+	public void setDead() {
+		super.setDead();
+		this.clearChunkLoader();
+	}
+
+	private void clearChunkLoader() {
+		if(!world.isRemote && loaderTicket != null) {
+			for(ChunkPos chunk : loadedChunks) {
+				ForgeChunkManager.unforceChunk(loaderTicket, chunk);
+			}
+			loadedChunks.clear();
+			ForgeChunkManager.releaseTicket(loaderTicket);
+			loaderTicket = null;
+		}
+	}
+
+	private void requestChunkLoaderTicketIfNeeded() {
+		if(world.isRemote || loaderTicket != null) return;
+		if(awaitingTicketRestore) {
+			awaitingTicketRestore = false;
+			return;
+		}
+		init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, Type.ENTITY));
+	}
 }

@@ -19,8 +19,8 @@ import java.util.List;
 
 public class SwitchRotaryToggle extends Control {
 
-    public SwitchRotaryToggle(String name, ControlPanel panel) {
-        super(name, panel);
+    public SwitchRotaryToggle(String name,String registryName,ControlPanel panel) {
+        super(name,registryName, panel);
         vars.put("isOn", new DataValueFloat(0));
     }
 
@@ -98,6 +98,6 @@ public class SwitchRotaryToggle extends Control {
 
     @Override
     public Control newControl(ControlPanel panel) {
-        return new SwitchRotaryToggle(name, panel);
+        return new SwitchRotaryToggle(name,registryName,panel);
     }
 }

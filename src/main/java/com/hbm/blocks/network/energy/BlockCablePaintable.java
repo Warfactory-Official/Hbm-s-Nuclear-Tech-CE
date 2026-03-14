@@ -57,7 +57,7 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable {
     private static TextureAtlasSprite overlaySprite;
 
     public BlockCablePaintable(String name) {
-        super(Material.IRON, name, new BlockBakeFrame("red_cable_base"));
+        super(Material.IRON, name, BlockBakeFrame.cubeAll("red_cable_base"));
         this.setDefaultState(this.blockState.getBaseState());
         this.useNeighborBrightness = true;
     }

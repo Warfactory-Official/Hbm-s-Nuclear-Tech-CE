@@ -36,6 +36,7 @@ public class EntityArtilleryRocket extends EntityThrowableNT
 
   public IRocketTargetingBehavior targeting;
   public IRocketSteeringBehavior steering;
+  private boolean awaitingTicketRestore;
 
   private static final DataParameter<Integer> TYPE =
       EntityDataManager.createKey(EntityArtilleryRocket.class, DataSerializers.VARINT);
@@ -51,9 +52,6 @@ public class EntityArtilleryRocket extends EntityThrowableNT
   @Override
   protected void entityInit() {
     super.entityInit();
-    init(
-        ForgeChunkManager.requestTicket(
-            MainRegistry.instance, world, ForgeChunkManager.Type.ENTITY));
     this.dataManager.register(TYPE, 0);
   }
 
@@ -103,6 +101,7 @@ public class EntityArtilleryRocket extends EntityThrowableNT
     super.onUpdate();
 
     if (!world.isRemote) {
+      requestChunkLoaderTicketIfNeeded();
 
       if (this.targeting == null) {
         this.targeting = new RocketTargetingPredictive();
@@ -163,6 +162,8 @@ public class EntityArtilleryRocket extends EntityThrowableNT
         loaderTicket = ticket;
         loaderTicket.bindEntity(this);
         loaderTicket.getModData();
+      } else if(loaderTicket != ticket) {
+        ForgeChunkManager.releaseTicket(ticket);
       }
       ForgeChunkManager.forceChunk(loaderTicket, new ChunkPos(chunkCoordX, chunkCoordZ));
     }
@@ -193,10 +194,21 @@ public class EntityArtilleryRocket extends EntityThrowableNT
     this.clearChunkLoader();
   }
 
+  @Override
+  public void setDead() {
+    super.setDead();
+    this.clearChunkLoader();
+  }
+
   public void clearChunkLoader() {
     if (!world.isRemote && loaderTicket != null) {
       for (ChunkPos chunk : loadedChunks) {
         ForgeChunkManager.unforceChunk(loaderTicket, chunk);
+      }
+      loadedChunks.clear();
+      if(this.isDead) {
+        ForgeChunkManager.releaseTicket(loaderTicket);
+        loaderTicket = null;
       }
     }
   }
@@ -219,6 +231,7 @@ public class EntityArtilleryRocket extends EntityThrowableNT
   @Override
   public void readEntityFromNBT(NBTTagCompound nbt) {
     super.readEntityFromNBT(nbt);
+    awaitingTicketRestore = true;
 
     this.lastTargetPos = new Vec3d(nbt.getDouble("targetX"), nbt.getDouble("targetY"), nbt.getDouble("targetZ"));
     this.setType(nbt.getInteger("type"));
@@ -237,5 +250,14 @@ public class EntityArtilleryRocket extends EntityThrowableNT
   @Override
   public RadarTargetType getTargetType() {
     return RadarTargetType.ARTILLERY;
+  }
+
+  private void requestChunkLoaderTicketIfNeeded() {
+    if(world.isRemote || loaderTicket != null) return;
+    if(awaitingTicketRestore) {
+      awaitingTicketRestore = false;
+      return;
+    }
+    init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, ForgeChunkManager.Type.ENTITY));
   }
 }

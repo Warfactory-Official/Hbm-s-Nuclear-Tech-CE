@@ -158,7 +158,7 @@ public class XFactory40mm {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_GL))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_FLAREGUN_ANIMS).orchestra(Orchestras.ORCHESTRA_FLAREGUN)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.G26_FLARE, 3);
 
         ModItems.gun_congolake = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_congolake", new GunConfig()
                 .dura(400).draw(7).inspect(39).reloadSequential(true).crosshair(RenderScreenOverlay.Crosshair.L_CIRCUMFLEX).smoke(LAMBDA_SMOKE)
@@ -169,14 +169,14 @@ public class XFactory40mm {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_GL))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_CONGOLAKE_ANIMS).orchestra(Orchestras.ORCHESTRA_CONGOLAKE)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.G40_HE, 8);
     }
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_SMOKE = (stack, ctx) -> Lego.handleStandardSmoke(ctx.entity, stack, 1500, 0.025D, 1.05D, 0);
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_RECOIL_GL = (stack, ctx) -> ItemGunBaseNT.setupRecoil(10, (float) (ctx.getPlayer().getRNG().nextGaussian() * 1.5));
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_FLAREGUN_ANIMS = (stack, type) -> switch (type) {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_FLAREGUN_ANIMS = (stack, type) -> switch (type) {
         case EQUIP -> new BusAnimationSedna()
                 .addBus("EQUIP", new BusAnimationSequenceSedna().addPos(-90, 0, 0, 0).addPos(0, 0, 0, 350, IType.SIN_DOWN));
         case CYCLE -> new BusAnimationSedna()
@@ -196,7 +196,7 @@ public class XFactory40mm {
         default -> null;
     };
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_CONGOLAKE_ANIMS = (stack, type) -> {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_CONGOLAKE_ANIMS = (stack, type) -> {
         int ammo = ((ItemGunBaseNT) stack.getItem()).getConfig(stack, 0).getReceivers(stack)[0].getMagazine(stack).getAmount(stack, MainRegistry.proxy.me().inventory);
         return switch (type) {
             case EQUIP -> ResourceManager.congolake_anim.get("Equip");

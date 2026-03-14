@@ -156,6 +156,13 @@ public class DamageResistanceHandler {
                 new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 4F, 0.15F).addCategory(CATEGORY_FIRE, 0.5F, 0.35F).addCategory(CATEGORY_EXPLOSION, 7.5F, 0.25F).addExact(DamageSource.FALL.getDamageType(), 0F, 1F).setOther(0F, 0.15F));
         registerSet(ModItems.rpa_helmet, ModItems.rpa_plate, ModItems.rpa_legs, ModItems.rpa_boots,
                 new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 25F, 0.65F).addCategory(CATEGORY_FIRE, 10F, 0.9F).addCategory(CATEGORY_EXPLOSION, 15F, 0.25F).addCategory(CATEGORY_ENERGY, 25F, 0.75F).addExact(DamageSource.FALL.getDamageType(), 0F, 1F).addExact(DamageClass.LASER.name(), 10F, 0.75F).setOther(15F, 0.3F));
+        registerSet(ModItems.ncrpa_helmet, ModItems.ncrpa_plate, ModItems.ncrpa_legs, ModItems.ncrpa_boots, new ResistanceStats()
+                .addCategory(CATEGORY_PHYSICAL, 25F, 0.65F)
+                .addCategory(CATEGORY_FIRE, 10F, 0.9F)
+                .addCategory(CATEGORY_EXPLOSION, 15F, 0.25F)
+                .addCategory(CATEGORY_ENERGY, 10F, 0.5F)
+                .addExact(DamageSource.FALL.damageType, 0F, 1F)
+                .setOther(15F, 0.25F));
         ResistanceStats bj =
                 new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 5F, 0.5F).addCategory(CATEGORY_FIRE, 2.5F, 0.5F).addCategory(CATEGORY_EXPLOSION, 10F, 0.25F).addExact(DamageSource.FALL.getDamageType(), 0F, 1F).setOther(2F, 0.15F);
         registerSet(ModItems.bj_helmet, ModItems.bj_plate, ModItems.bj_legs, ModItems.bj_boots, bj);

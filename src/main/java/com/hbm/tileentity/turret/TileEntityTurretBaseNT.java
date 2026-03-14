@@ -25,10 +25,10 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.particle.SpentCasing;
-import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.BufferUtil;
 import com.hbm.util.CompatExternal;
+import com.hbm.util.Vec3NT;
 import io.netty.buffer.ByteBuf;
 import li.cil.oc.api.machine.Arguments;
 import li.cil.oc.api.machine.Callback;
@@ -72,17 +72,17 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 	public boolean hasPermission(EntityPlayer player){
 		return this.isUseableByPlayer(player);
 	}
-	
+
 	@Override
 	public void receiveControl(NBTTagCompound data){
 		if(data.hasKey("del")) {
 			this.removeName(data.getInteger("del"));
-			
+
 		} else if(data.hasKey("name")) {
 			this.addName(data.getString("name"));
 		}
 	}
-	
+
 	//this time we do all rotations in radians
 	//what way are we facing?
 	public double rotationYaw;
@@ -120,16 +120,16 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 
 	/**
 	 * X
-	 * 
+	 *
 	 * YYY YYY YYY Z
-	 * 
+	 *
 	 * X -> ai slot (0) Y -> ammo slots (1 - 9) Z -> battery slot (10)
 	 */
-	
+
 	public TileEntityTurretBaseNT(){
-		super(11);
+		super(11, false, true);
 	}
-	
+
 	@Override
 	public void readFromNBT(NBTTagCompound nbt){
 		this.power = nbt.getLong("power");
@@ -141,7 +141,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 		this.stattrak = nbt.getInteger("stattrak");
 		super.readFromNBT(nbt);
 	}
-	
+
 	@Override
 	public @NotNull NBTTagCompound writeToNBT(NBTTagCompound nbt){
 		nbt.setLong("power", this.power);
@@ -153,9 +153,9 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 		nbt.setInteger("stattrak", this.stattrak);
 		return super.writeToNBT(nbt);
 	}
-	
+
 	public void manualSetup() { }
-	
+
 	@Override
 	public void update(){
 		if(world.isRemote) {
@@ -166,7 +166,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 		}
 
 		this.aligned = false;
-		
+
 		if(!world.isRemote) {
 			this.updateConnections();
 			//Target is dead - start searching
@@ -175,25 +175,25 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 				this.stattrak++;
 			}
 		}
-		
+
 		//check if we can see target
 		if(target != null) {
 			if(!this.entityInLOS(this.target)) {
 				this.target = null;
 			}
 		}
-		
+
 		if(!world.isRemote) {
-			
+
 			if(target != null) {
 				this.tPos = this.getEntityPos(target);
 			} else if(!manualOverride){
 				this.tPos = null;
 			}
 		}
-		
+
 		if(isOn() && hasPower()) {
-			
+
 			if(tPos != null)
 				this.alignTurret();
 		} else {
@@ -201,34 +201,34 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 			this.target = null;
 			this.tPos = null;
 		}
-		
+
 		if(!world.isRemote) {
-			
+
 			if(this.target != null && !target.isEntityAlive() && !manualOverride) {
 				this.target = null;
 				this.tPos = null;
 				this.stattrak++;
 			}
-			
+
 			if(isOn() && hasPower()) {
 				searchTimer--;
-				
+
 				this.setPower(this.getPower() - this.getConsumption());
-				
+
 				if(searchTimer <= 0) {
 					searchTimer = this.getDecetorInterval();
-					
+
 					if(this.target == null && !manualOverride)
 						this.seekNewTarget();
 				}
 			} else {
 				searchTimer = 0;
 			}
-			
+
 			if(this.aligned) {
 				this.updateFiringTick();
 			}
-			
+
 			this.power = Library.chargeTEFromItems(inventory, 10, this.power, this.getMaxPower());
 			manualOverride = false;
 			networkPackNT(250);
@@ -240,12 +240,12 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 					spawnCasing();
 				}
 			}
-			
+
 		} else {
 
             //this will fix the interpolation error when the turret crosses the 360° point
 			if(Math.abs(this.lastRotationYaw - this.rotationYaw) > Math.PI) {
-				
+
 				if(this.lastRotationYaw < this.rotationYaw)
 					this.lastRotationYaw += Math.PI * 2;
 				else
@@ -283,7 +283,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 		this.stattrak = buf.readInt();
 
 	}
-	
+
 	@Override
 	public void handleButtonPacket(int value, int meta){
 		switch(meta) {
@@ -304,36 +304,36 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 		this.trySubscribe(world, pos.getX() + dir.offsetX * -1 + rot.offsetX * -1, pos.getY(), pos.getZ() + dir.offsetZ * -1 + rot.offsetZ * -1, dir.getOpposite());
 
 		this.trySubscribe(world, pos.getX() + rot.offsetX * -2, pos.getY(), pos.getZ() + rot.offsetZ * -2, rot.getOpposite());
-		this.trySubscribe(world, pos.getX() + dir.offsetX * 1 + rot.offsetX * -2, pos.getY(), pos.getZ() + dir.offsetZ * 1 + rot.offsetZ * -2, rot.getOpposite());
+		this.trySubscribe(world, pos.getX() + dir.offsetX + rot.offsetX * -2, pos.getY(), pos.getZ() + dir.offsetZ + rot.offsetZ * -2, rot.getOpposite());
 
-		this.trySubscribe(world, pos.getX() + rot.offsetX * 1, pos.getY(), pos.getZ() + rot.offsetZ * 1, rot);
-		this.trySubscribe(world, pos.getX() + dir.offsetX * 1 + rot.offsetX * 1, pos.getY(), pos.getZ() + dir.offsetZ * 1 + rot.offsetZ * 1, rot);
+		this.trySubscribe(world, pos.getX() + rot.offsetX, pos.getY(), pos.getZ() + rot.offsetZ, rot);
+		this.trySubscribe(world, pos.getX() + dir.offsetX + rot.offsetX, pos.getY(), pos.getZ() + dir.offsetZ + rot.offsetZ, rot);
 
 		this.trySubscribe(world, pos.getX() + dir.offsetX * 2, pos.getY(), pos.getZ() + dir.offsetZ * 2, dir);
 		this.trySubscribe(world, pos.getX() + dir.offsetX * 2 + rot.offsetX * -1, pos.getY(), pos.getZ() + dir.offsetZ * 2 + rot.offsetZ * -1, dir);
 
 		//Down
-		this.trySubscribe(world, pos.getX() + 0, pos.getY() - 1, pos.getZ(), ForgeDirection.DOWN);
-		this.trySubscribe(world, pos.getX() + 0, pos.getY() - 1, pos.getZ() + dir.offsetZ-rot.offsetZ, ForgeDirection.DOWN);
+		this.trySubscribe(world, pos.getX(), pos.getY() - 1, pos.getZ(), ForgeDirection.DOWN);
+		this.trySubscribe(world, pos.getX(), pos.getY() - 1, pos.getZ() + dir.offsetZ-rot.offsetZ, ForgeDirection.DOWN);
 		this.trySubscribe(world, pos.getX() + dir.offsetX-rot.offsetX, pos.getY() - 1, pos.getZ(), ForgeDirection.DOWN);
 		this.trySubscribe(world, pos.getX() + dir.offsetX-rot.offsetX, pos.getY() - 1, pos.getZ() + dir.offsetZ-rot.offsetZ, ForgeDirection.DOWN);
 	}
-	
+
 	public abstract void updateFiringTick();
-	
+
 	public BulletConfig getFirstConfigLoaded() {
-		
+
 		List<Integer> list = getAmmoList();
-		
+
 		if(list == null || list.isEmpty())
 			return null;
-		
+
 		//doing it like this will fire slots in the right order, not in the order of the configs
 		//you know, the weird thing the IItemGunBase does
 		for(int i = 1; i < 10; i++) {
-			
+
 			if(!inventory.getStackInSlot(i).isEmpty()) {
-				
+
 				for(Integer c : list) { //we can afford all this extra iteration trash on the count that a turret has at most like 4 bullet configs
 
 					BulletConfig conf = BulletConfig.configs.get(c);
@@ -341,19 +341,19 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 				}
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	public void spawnBullet(BulletConfig bullet, float baseDamage) {
-		
-		Vec3 pos = new Vec3(this.getTurretPos());
-		Vec3 vec = Vec3.createVectorHelper(this.getBarrelLength(), 0, 0);
-		vec.rotateAroundZ((float) -this.rotationPitch);
-		vec.rotateAroundY((float) -(this.rotationYaw + Math.PI * 0.5));
+
+		Vec3d pos = this.getTurretPos();
+		Vec3NT vec = new Vec3NT(this.getBarrelLength(), 0, 0);
+		vec.rotateRollSelf((float) -this.rotationPitch);
+		vec.rotateYawSelf((float) -(this.rotationYaw + Math.PI * 0.5));
 
 		EntityBulletBaseMK4 proj = new EntityBulletBaseMK4(world, bullet, baseDamage, bullet.spread, (float) rotationYaw, (float) rotationPitch);
-		proj.setPositionAndRotation(pos.xCoord + vec.xCoord, pos.yCoord + vec.yCoord, pos.zCoord + vec.zCoord, proj.rotationYaw, proj.rotationPitch);
+		proj.setPositionAndRotation(pos.x + vec.x, pos.y + vec.y, pos.z + vec.z, proj.rotationYaw, proj.rotationPitch);
 		world.spawnEntity(proj);
 
 		if(usesCasings()) {
@@ -379,65 +379,65 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 		this.markDirty();
 	}
 
-	
+
 	/**
 	 * Reads the namelist from the AI chip in slot 0
 	 * @return null if there is either no chip to be found or if the name list is empty, otherwise it just reads the strings from the chip's NBT
 	 */
 	public List<String> getWhitelist() {
-		
+
 		if(inventory.getStackInSlot(0).getItem() == ModItems.turret_chip) {
-			
+
 			String[] array = ItemTurretBiometry.getNames(inventory.getStackInSlot(0));
-			
+
 			if(array == null)
 				return null;
-			
+
 			return Arrays.asList(ItemTurretBiometry.getNames(inventory.getStackInSlot(0)));
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Appends a new name to the chip
 	 * @param name
 	 */
 	public void addName(String name) {
-		
+
 		if(inventory.getStackInSlot(0).getItem() == ModItems.turret_chip) {
 			ItemTurretBiometry.addName(inventory.getStackInSlot(0), name);
 		}
 	}
-	
+
 	/**
-	 * Removes the chip's entry at a given 
+	 * Removes the chip's entry at a given
 	 * @param index
 	 */
 	public void removeName(int index) {
-		
+
 		if(inventory.getStackInSlot(0).getItem() == ModItems.turret_chip) {
-			
+
 			String[] array = ItemTurretBiometry.getNames(inventory.getStackInSlot(0));
-			
+
 			if(array == null)
 				return;
-			
+
 			List<String> names = new ArrayList<>(Arrays.asList(array));
 			ItemTurretBiometry.clearNames(inventory.getStackInSlot(0));
-			
+
 			names.remove(index);
-			
+
 			for(String name : names)
 				ItemTurretBiometry.addName(inventory.getStackInSlot(0), name);
 		}
 	}
-	
+
 	/**
 	 * Finds the nearest acceptable target within range and in line of sight
 	 */
 	protected void seekNewTarget() {
-		
+
 		Vec3d pos = this.getTurretPos();
 		double range = this.getDecetorRange();
 		List<Entity> allEntities = world.getEntitiesWithinAABB(Entity.class,
@@ -451,39 +451,39 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 		}
 		Entity target = null;
 		double closest = range;
-		
+
 		for(Entity entity : entities) {
 
 			Vec3d ent = this.getEntityPos(entity);
 			Vec3d delta = new Vec3d(ent.x - pos.x, ent.y - pos.y, ent.z - pos.z);
-			
+
 			double dist = delta.length();
-			
+
 			//check if it's in range
 			if(dist > range)
 				continue;
-			
+
 			//check if we should even fire at this entity
 			if(!entityAcceptableTarget(entity))
 				continue;
-			
+
 			//check for visibility
 			if(!entityInLOS(entity))
 				continue;
-			
+
 			//replace current target if this one is closer
 			if(dist < closest) {
 				closest = dist;
 				target = entity;
 			}
 		}
-		
+
 		this.target = target;
-		
+
 		if(target != null)
 			this.tPos = this.getEntityPos(this.target);
 	}
-	
+
 	/**
 	 * Turns the turret by a specific amount of degrees towards the target
 	 * Assumes that the target is not null
@@ -491,7 +491,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 	protected void alignTurret() {
 		this.turnTowards(tPos);
 	}
-	
+
 	/**
 	 * Turns the turret towards the specified position
 	 */
@@ -557,44 +557,44 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 			this.aligned = true;
 		}
 	}
-	
+
 	/**
 	 * Checks line of sight to the passed entity along with whether the angle falls within swivel range
 	 * @return
 	 */
 	public boolean entityInLOS(Entity e) {
-		
+
 		if(e.isDead || !e.isEntityAlive())
 			return false;
-		
+
 		if(!hasThermalVision() && e instanceof EntityLivingBase && ((EntityLivingBase)e).isPotionActive(MobEffects.INVISIBILITY))
 			return false;
-		
+
 		Vec3d pos = this.getTurretPos();
 		Vec3d ent = this.getEntityPos(e);
 		Vec3d delta = new Vec3d(ent.x - pos.x, ent.y - pos.y, ent.z - pos.z);
 		double length = delta.length();
-		
+
 		if(length < this.getDecetorGrace() || length > this.getDecetorRange() * 1.1) //the latter statement is only relevant for entities that have already been detected
 			return false;
-		
+
 		delta = delta.normalize();
 		double pitch = Math.asin(delta.y / delta.length());
 		double pitchDeg = Math.toDegrees(pitch);
-		
+
 		//check if the entity is within swivel range
 		if(pitchDeg < -this.getTurretDepression() || pitchDeg > this.getTurretElevation())
 			return false;
-		
-		return !Library.isObstructed(world, ent.x, ent.y, ent.z, pos.x, pos.y, pos.z);
+
+		return !Library.isObstructedOpaque(world, ent.x, ent.y, ent.z, pos.x, pos.y, pos.z);
 	}
-	
+
 	/**
 	 * Returns true if the entity is considered for targeting
 	 * @return
 	 */
 	public boolean entityAcceptableTarget(Entity e) {
-		
+
 		if(e.isDead || !e.isEntityAlive())
 			return false;
 
@@ -626,14 +626,14 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 			}
 		}
 		if(targetAnimals) {
-			
+
 			if(e instanceof IAnimals)
 				return true;
 			if(e instanceof INpc)
 				return true;
 			for(Class c : CompatExternal.turretTargetFriendly) if(c.isAssignableFrom(e.getClass())) return true;
 		}
-		
+
 		if(targetMobs) {
 
 			//never target the ender dragon directly
@@ -645,7 +645,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 				return true;
 			for(Class c : CompatExternal.turretTargetHostile) if(c.isAssignableFrom(e.getClass())) return true;
 		}
-		
+
 		if(targetMachines) {
 
 			if(e instanceof IRadarDetectableNT && !((IRadarDetectableNT)e).canBeSeenBy(this)) return false;
@@ -667,7 +667,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 		}
 		return false;
 	}
-	
+
 	/**
 	 * How many degrees the turret can deviate from the target to be acceptable to fire at
 	 * @return
@@ -675,7 +675,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 	public double getAcceptableInaccuracy() {
 		return 5;
 	}
-	
+
 	/**
 	 * How many degrees the turret can rotate per tick (4.5°/t = 90°/s or a half turn in two seconds)
 	 * @return
@@ -683,7 +683,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 	public double getTurretYawSpeed() {
 		return 4.5D;
 	}
-	
+
 	/**
 	 * How many degrees the turret can lift per tick (3°/t = 60°/s or roughly the lowest to the highest point of an average turret in one second)
 	 * @return
@@ -707,7 +707,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 	public double getTurretElevation() {
 		return 30D;
 	}
-	
+
 	/**
 	 * How many ticks until a target rescan is required
 	 * @return
@@ -715,7 +715,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 	public int getDecetorInterval() {
 		return 10;
 	}
-	
+
 	/**
 	 * How far away an entity can be to be picked up
 	 * @return
@@ -723,7 +723,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 	public double getDecetorRange() {
 		return 32D;
 	}
-	
+
 	/**
 	 * How far away an entity needs to be to be picked up
 	 * @return
@@ -731,7 +731,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 	public double getDecetorGrace() {
 		return 3D;
 	}
-	
+
 	/**
 	 * The pivot point of the turret, larger models have a default of 1.5
 	 * @return
@@ -739,7 +739,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 	public double getHeightOffset() {
 		return 1.5D;
 	}
-	
+
 	/**
 	 * Horizontal offset for the spawn point of bullets
 	 * @return
@@ -755,7 +755,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 	public boolean hasThermalVision() {
 		return true;
 	}
-	
+
 	/**
 	 * The pivot point of the turret, this position is used for LOS calculation and more
 	 * @return
@@ -764,7 +764,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 		Vec3d offset = byHorizontalIndexOffset();
 		return new Vec3d(pos.getX() + offset.x, pos.getY() + getHeightOffset(), pos.getZ() + offset.z);
 	}
-	
+
 	/**
 	 * The XZ offset for a standard 2x2 turret base
 	 * @return
@@ -778,10 +778,10 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 			return new Vec3d(1, 0, 0);
 		if(meta == 5)
 			return new Vec3d(0, 0, 1);
-		
+
 		return new Vec3d(0, 0, 0);
 	}
-	
+
 	/**
 	 * The pivot point of the turret, this position is used for LOS calculation and more
 	 * @return
@@ -789,32 +789,32 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 	public Vec3d getEntityPos(Entity e) {
 		return new Vec3d(e.posX, e.posY + e.height * 0.5 - e.getYOffset(), e.posZ);
 	}
-	
+
 	/**
 	 * Yes, new turrets fire BulletNTs.
 	 * @return
 	 */
 	protected abstract List<Integer> getAmmoList();
-	
+
 	@SideOnly(Side.CLIENT)
 	protected List<ItemStack> ammoStacks;
 
 	@SideOnly(Side.CLIENT)
 	public List<ItemStack> getAmmoTypesForDisplay() {
-		
+
 		if(ammoStacks != null)
 			return ammoStacks;
-		
+
 		ammoStacks = new ArrayList();
-		
+
 		for(Integer i : getAmmoList()) {
 			BulletConfig config = BulletConfig.configs.get(i);
-			
+
 			if(config != null && !config.ammo.getStack().isEmpty()) {
 				ammoStacks.add(config.ammo.getStack());
 			}
 		}
-		
+
 		return ammoStacks;
 	}
 
@@ -822,16 +822,16 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 	public int[] getAccessibleSlotsFromSide(EnumFacing e){
 		return new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 	}
-	
+
 	@Override
 	public boolean isItemValidForSlot(int i, ItemStack stack){
 		return true;
 	}
-	
+
 	public boolean hasPower() {
 		return this.getPower() >= this.getConsumption();
 	}
-	
+
 	public boolean isOn() {
 		return this.isOn;
 	}
@@ -840,37 +840,37 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 	public void setPower(long newPower) {
 		this.power = Math.max(0, Math.min(newPower, this.getMaxPower()));
 	}
-	
+
 	@Override
 	public long getPower() {
 		return this.power;
 	}
-	
+
 	public int getPowerScaled(int scale) {
 		return (int)(power * scale / this.getMaxPower());
 	}
-	
+
 	public long getConsumption() {
 		return 100;
 	}
-	
+
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
 		return TileEntity.INFINITE_EXTENT_AABB;
 	}
-	
+
 	@Override
 	@SideOnly(Side.CLIENT)
 	public double getMaxRenderDistanceSquared()
 	{
 		return 65536.0D;
 	}
-	
+
 	@Override
 	public BlockPos getControlPos(){
 		return getPos();
 	}
-	
+
 	@Override
 	public World getControlWorld(){
 		return getWorld();
@@ -915,7 +915,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 
 		cachedCasingConfig = null;
 	}
-	
+
 	@Override
 	public void receiveEvent(BlockPos from, ControlEvent e){
 		if(e.name.equals("turret_set_target")){
@@ -927,18 +927,18 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 			this.isOn = e.vars.get("isOn").getBoolean();
 		}
 	}
-	
+
 	@Override
 	public List<String> getInEvents(){
 		return Arrays.asList("turret_set_target", "turret_switch");
 	}
-	
+
 	@Override
 	public void validate(){
 		super.validate();
 		ControlEventSystem.get(world).addControllable(this);
 	}
-	
+
 	@Override
 	public void invalidate(){
 		super.invalidate();

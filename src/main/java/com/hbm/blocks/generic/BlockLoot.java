@@ -45,7 +45,7 @@ import java.util.Objects;
 
 public class BlockLoot extends BlockContainer implements IDynamicModels {
 
-    private final BlockBakeFrame blockFrame = new BlockBakeFrame("block_steel");
+    private final BlockBakeFrame blockFrame = BlockBakeFrame.cubeAll("block_steel");
 
     private static final AxisAlignedBB SLAB_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 1.0D, 0.0625D, 1.0D);
 
@@ -209,7 +209,7 @@ public class BlockLoot extends BlockContainer implements IDynamicModels {
     @Override
     public void bakeModel(ModelBakeEvent event) {
         try {
-            IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation(blockFrame.getBaseModel()));
+            IModel baseModel = ModelLoaderRegistry.getModel(blockFrame.getBaseModelLocation());
             ImmutableMap.Builder<String, String> textureMap = ImmutableMap.builder();
             blockFrame.putTextures(textureMap);
             IModel retexturedModel = baseModel.retexture(textureMap.build());

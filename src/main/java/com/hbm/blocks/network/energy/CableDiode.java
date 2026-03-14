@@ -1,5 +1,6 @@
 package com.hbm.blocks.network.energy;
 
+import com.hbm.Tags;
 import com.hbm.api.block.IToolable;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.energymk2.IEnergyConnectorMK2;
@@ -13,15 +14,18 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.IDynamicModels;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.lib.Library;
 import com.hbm.render.model.CableDiodeBakedModel;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.Compat;
 import com.hbm.util.I18nUtil;
+import com.hbm.util.UnlistedPropertyInteger;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockDirectional;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyDirection;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -46,6 +50,9 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.Pre;
 import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.common.property.ExtendedBlockState;
+import net.minecraftforge.common.property.IExtendedBlockState;
+import net.minecraftforge.common.property.IUnlistedProperty;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
@@ -56,23 +63,26 @@ import java.util.List;
 
 public class CableDiode extends BlockContainer implements IEnergyConnectorBlock, ILookOverlay, IToolable, ITooltipProvider, IDynamicModels {
     public static final PropertyDirection FACING = BlockDirectional.FACING;
+    public static final IUnlistedProperty<Integer> CONNECTION_MASK = new UnlistedPropertyInteger("connection_mask");
 
     @SideOnly(Side.CLIENT)
     private TextureAtlasSprite sprite;
+    @SideOnly(Side.CLIENT)
+    private TextureAtlasSprite cableSprite;
 
     public CableDiode(Material materialIn, String s) {
         super(materialIn);
 
         this.setTranslationKey(s);
         this.setRegistryName(s);
-
+        this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
         ModBlocks.ALL_BLOCKS.add(this);
         IDynamicModels.INSTANCES.add(this);
     }
 
     @Override
     protected @NotNull BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, FACING);
+        return new ExtendedBlockState(this, new IProperty[]{FACING}, new IUnlistedProperty[]{CONNECTION_MASK});
     }
 
     @Override
@@ -95,6 +105,18 @@ public class CableDiode extends BlockContainer implements IEnergyConnectorBlock,
     @Override
     public IBlockState withMirror(IBlockState state, Mirror mirrorIn) {
         return state.withRotation(mirrorIn.toRotation(state.getValue(FACING)));
+    }
+
+    @Override
+    public @NotNull IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos) {
+        int mask = 0;
+        if (Library.canConnect(world, pos.offset(EnumFacing.EAST), ForgeDirection.getOrientation(EnumFacing.EAST))) mask |= 1;
+        if (Library.canConnect(world, pos.offset(EnumFacing.WEST), ForgeDirection.getOrientation(EnumFacing.WEST))) mask |= 1 << 1;
+        if (Library.canConnect(world, pos.offset(EnumFacing.UP), ForgeDirection.getOrientation(EnumFacing.UP))) mask |= 1 << 2;
+        if (Library.canConnect(world, pos.offset(EnumFacing.DOWN), ForgeDirection.getOrientation(EnumFacing.DOWN))) mask |= 1 << 3;
+        if (Library.canConnect(world, pos.offset(EnumFacing.SOUTH), ForgeDirection.getOrientation(EnumFacing.SOUTH))) mask |= 1 << 4;
+        if (Library.canConnect(world, pos.offset(EnumFacing.NORTH), ForgeDirection.getOrientation(EnumFacing.NORTH))) mask |= 1 << 5;
+        return ((IExtendedBlockState) state).withProperty(CONNECTION_MASK, mask);
     }
 
     @Override
@@ -210,10 +232,8 @@ public class CableDiode extends BlockContainer implements IEnergyConnectorBlock,
     @Override
     @SideOnly(Side.CLIENT)
     public void registerSprite(TextureMap map) {
-        ResourceLocation rl = getRegistryName();
-        if (rl != null) {
-            this.sprite = map.registerSprite(new ResourceLocation(rl.getNamespace(), "blocks/" + rl.getPath()));
-        }
+        this.sprite = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/" + getRegistryName().getPath()));
+        this.cableSprite = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/cable_neo"));
     }
 
     @Override
@@ -222,8 +242,8 @@ public class CableDiode extends BlockContainer implements IEnergyConnectorBlock,
         ModelResourceLocation worldLoc = new ModelResourceLocation(getRegistryName(), "normal");
         ModelResourceLocation invLoc = new ModelResourceLocation(getRegistryName(), "inventory");
 
-        IBakedModel worldModel = new CableDiodeBakedModel(sprite, false);
-        IBakedModel itemModel = new CableDiodeBakedModel(sprite, true);
+        IBakedModel worldModel = new CableDiodeBakedModel(sprite, cableSprite, false);
+        IBakedModel itemModel = new CableDiodeBakedModel(sprite, cableSprite, true);
 
         event.getModelRegistry().putObject(worldLoc, worldModel);
         event.getModelRegistry().putObject(invLoc, itemModel);
@@ -311,8 +331,9 @@ public class CableDiode extends BlockContainer implements IEnergyConnectorBlock,
 
             if (recursionBrake) return power;
 
-            pulses++;
-            if (this.getPower() >= this.getMaxPower() || pulses > 10) return power; // if we have already maxed out transfer or max pulses, abort
+            int effectivePulses = pulses + 1;
+            if (this.getPower() >= this.getMaxPower() || effectivePulses > 10) return power; // if we have already maxed out transfer or max pulses, abort
+            if (!simulate) pulses = effectivePulses;
 
             recursionBrake = true;
 

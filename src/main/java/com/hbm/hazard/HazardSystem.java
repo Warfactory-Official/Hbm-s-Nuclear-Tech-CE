@@ -5,6 +5,7 @@ import com.google.common.cache.CacheBuilder;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.config.GeneralConfig;
 import com.hbm.config.RadiationConfig;
+import com.hbm.config.ServerConfig;
 import com.hbm.hazard.modifier.IHazardModifier;
 import com.hbm.hazard.transformer.IHazardTransformer;
 import com.hbm.hazard.type.IHazardType;
@@ -828,8 +829,11 @@ public class HazardSystem {
         if (entity.world.isRemote || entity.isDead) return;
         ItemStack stack = entity.getItem();
         if (stack.isEmpty()) return;
-        for (HazardEntry entry : getHazardsFromStack(stack)) {
-            entry.type.updateEntity(entity, IHazardModifier.evalAllModifiers(stack, null, entry.baseLevel, entry.mods));
+        int tickrate = Math.max(1, ServerConfig.ITEM_HAZARD_DROP_TICKRATE.get());
+        if(entity.world.getTotalWorldTime() % tickrate == 0) {
+            for (HazardEntry entry : getHazardsFromStack(stack)) {
+                entry.type.updateEntity(entity, IHazardModifier.evalAllModifiers(stack, null, entry.baseLevel, entry.mods));
+            }
         }
     }
 
@@ -917,9 +921,11 @@ public class HazardSystem {
 
         void applyActiveHazards() {
             if (player.isDead) return;
+            boolean sync = false;
 
             if (!activeApplicators.isEmpty()) {
                 activeApplicators.values().forEach(applier -> applier.accept(this.player));
+                sync = true;
             }
             HbmLivingProps.setNeutron(player, 0);
 
@@ -936,12 +942,13 @@ public class HazardSystem {
                         float totalActivationAmount = (float) activationRate * RadiationConfig.hazardRate;
                         if (ContaminationUtil.neutronActivateInventory(player, totalActivationAmount, 1.0F)) {
                             schedulePlayerUpdate(this.player);
+                            sync = true;
                         }
                     }
                 }
             }
 
-            if (this.player.inventoryContainer != null) {
+            if (sync && this.player.inventoryContainer != null) {
                 this.player.inventoryContainer.detectAndSendChanges();
             }
         }

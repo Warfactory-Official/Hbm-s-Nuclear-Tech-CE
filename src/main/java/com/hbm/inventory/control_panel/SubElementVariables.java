@@ -65,7 +65,6 @@ public class SubElementVariables extends SubElement {
         btn_nextPage = gui.addButton(new GuiButton(gui.currentButtonId(), gLeft+231, gTop+17, 15, 20, ">"));
         btn_confirmNewVar = gui.addButton(new GuiButton(gui.currentButtonId(), gLeft+223, cY-80, 20, 20, "+"));
         btn_confirmNewVar.packedFGColour = 0x5dac5d;
-        Keyboard.enableRepeatEvents(true);
         txt_newVarName = new GuiTextField(gui.currentButtonId(), gui.getFontRenderer(), gLeft+77, cY-80, 60, 20);
         txt_newVarName.setText("name");
         txt_newVarData = new GuiTextField(gui.currentButtonId(), gui.getFontRenderer(), gLeft+152, cY-80, 65, 20);
@@ -117,6 +116,11 @@ public class SubElementVariables extends SubElement {
             btn_local.enabled = false;
             btn_local.visible = false;
         }
+
+        btn_prevPage.visible = numPages > 1 && currentPage > 1;
+        btn_prevPage.enabled = btn_prevPage.visible;
+        btn_nextPage.visible = numPages > 1 && currentPage < numPages;
+        btn_nextPage.enabled = btn_nextPage.visible;
     }
 
     protected void drawVarList(Map<String, DataValue> varList) {
@@ -156,7 +160,13 @@ public class SubElementVariables extends SubElement {
                     if (txts_var_data.get(e.getKey()).isFocused()) {
                         DataValue.DataType type = varList.get(e.getKey()).getType();
                         switch (type) {
-                            case NUMBER: varList.put(e.getKey(), new DataValueFloat(Float.parseFloat((txts_var_data.get(e.getKey()).getText().isEmpty())? "0" : txts_var_data.get(e.getKey()).getText()))); break;
+                            case NUMBER: {
+                                Float parsed = tryParseFloat(txts_var_data.get(e.getKey()).getText());
+                                if (parsed != null) {
+                                    varList.put(e.getKey(), new DataValueFloat(parsed));
+                                }
+                                break;
+                            }
                             case STRING: varList.put(e.getKey(), new DataValueString(txts_var_data.get(e.getKey()).getText())); break;
                         }
                     }
@@ -214,13 +224,16 @@ public class SubElementVariables extends SubElement {
         this.txt_newVarName.textboxKeyTyped(typedChar, keyCode);
         this.txt_newVarData.textboxKeyTyped(typedChar, keyCode);
 
-        final boolean isDigitOrControlChar = Character.isDigit(typedChar) || Character.getType(typedChar) == Character.CONTROL;
+        final boolean isNumericInputChar = Character.isDigit(typedChar)
+                || Character.getType(typedChar) == Character.CONTROL
+                || typedChar == '-'
+                || typedChar == '.';
 
         for (Map.Entry<String, GuiTextField> field : txts_var_data.entrySet()) {
             final boolean isNumberType = (isGlobalScope && gui.control.panel.globalVars.get(field.getKey()).getType() == NUMBER)
                     || (!isGlobalScope && gui.currentEditControl.vars.get(field.getKey()).getType() == NUMBER);
 
-            if (!isNumberType || isDigitOrControlChar) {
+            if (!isNumberType || isNumericInputChar) {
                 field.getValue().textboxKeyTyped(typedChar, keyCode);
             }
         }
@@ -261,8 +274,7 @@ public class SubElementVariables extends SubElement {
             txts_var_data.clear();
         }
         else if (button == btn_back) {
-            // hack to unfuck another hack, see: SubElementPlacement:242
-            if (!gui.subElementStack.contains(gui.linker)) {
+            if (getPreviousElement() == gui.placement) {
                 gui.currentEditControl = null;
             }
             gui.popElement();
@@ -275,7 +287,12 @@ public class SubElementVariables extends SubElement {
             if (isGlobalScope) {
                 switch (newVarData.getType()) {
                     case NUMBER: {
-                        gui.control.panel.globalVars.put(txt_newVarName.getText(), new DataValueFloat(Float.parseFloat(txt_newVarData.getText())));
+                        Float parsed = tryParseFloat(txt_newVarData.getText());
+                        if (parsed == null) {
+                            isCreatingNewVar = true;
+                            return;
+                        }
+                        gui.control.panel.globalVars.put(txt_newVarName.getText(), new DataValueFloat(parsed));
                         break;
                     }
                     case STRING: {
@@ -286,7 +303,12 @@ public class SubElementVariables extends SubElement {
             } else {
                 switch (newVarData.getType()) {
                     case NUMBER: {
-                        gui.currentEditControl.vars.put(txt_newVarName.getText(), new DataValueFloat(Float.parseFloat(txt_newVarData.getText())));
+                        Float parsed = tryParseFloat(txt_newVarData.getText());
+                        if (parsed == null) {
+                            isCreatingNewVar = true;
+                            return;
+                        }
+                        gui.currentEditControl.vars.put(txt_newVarName.getText(), new DataValueFloat(parsed));
                         gui.currentEditControl.customVarNames.add(txt_newVarName.getText());
                         break;
                     }
@@ -315,16 +337,45 @@ public class SubElementVariables extends SubElement {
         }
     }
 
+    private Float tryParseFloat(String text) {
+        String normalized = text == null ? "" : text.trim();
+        if (normalized.isEmpty() || "-".equals(normalized) || ".".equals(normalized) || "-.".equals(normalized)) {
+            return null;
+        }
+
+        try {
+            return Float.parseFloat(normalized);
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    private SubElement getPreviousElement() {
+        java.util.Iterator<SubElement> iterator = gui.subElementStack.iterator();
+        if (iterator.hasNext()) {
+            iterator.next();
+        }
+        return iterator.hasNext() ? iterator.next() : null;
+    }
+
     @Override
     protected void enableButtons(boolean enable) {
+        Keyboard.enableRepeatEvents(enable);
         btn_clearAll.enabled = enable;
         btn_clearAll.visible = enable;
         btn_back.enabled = enable;
         btn_back.visible = enable;
-        btn_nextPage.enabled = enable;
-        btn_nextPage.visible = enable;
-        btn_prevPage.enabled = enable;
-        btn_prevPage.visible = enable;
+        if (enable) {
+            btn_prevPage.visible = numPages > 1 && currentPage > 1;
+            btn_prevPage.enabled = btn_prevPage.visible;
+            btn_nextPage.visible = numPages > 1 && currentPage < numPages;
+            btn_nextPage.enabled = btn_nextPage.visible;
+        } else {
+            btn_nextPage.enabled = false;
+            btn_nextPage.visible = false;
+            btn_prevPage.enabled = false;
+            btn_prevPage.visible = false;
+        }
         btn_newNumber.enabled = enable;
         btn_newNumber.visible = enable;
         btn_newString.enabled = enable;
@@ -350,5 +401,10 @@ public class SubElementVariables extends SubElement {
             b.getValue().enabled = enable;
             b.getValue().visible = enable;
         }
+    }
+
+    @Override
+    public void onClose() {
+        Keyboard.enableRepeatEvents(false);
     }
 }

@@ -63,6 +63,7 @@ import static com.hbm.items.machine.ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted
 public class TileEntityReactorZirnox extends TileEntityMachineBase implements ITickable, IControlReceiver, IFluidStandardTransceiver, SimpleComponent, IGUIProvider, CompatHandler.OCComponent {
 
     public static final int maxHeat = 100000;
+    private boolean redstonePowered = false;
     public static final int maxPressure = 100000;
     public static final HashMap<RecipesCommon.ComparableStack, ItemStack> fuelMap = new HashMap<RecipesCommon.ComparableStack, ItemStack>();
     private static final int[] slots_io = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
@@ -95,6 +96,12 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
         carbonDioxide = new FluidTankNTM(Fluids.CARBONDIOXIDE, 16000);
         water = new FluidTankNTM(Fluids.WATER, 32000);
     }
+    public void setRedstonePowered(boolean powered) {
+        if (!powered && this.redstonePowered) {
+            isOn = false;
+        }
+        this.redstonePowered = powered;
+    }
 
     @Override
     public String getDefaultName() {
@@ -125,6 +132,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
         steam.readFromNBT(nbt, "steam");
         carbonDioxide.readFromNBT(nbt, "carbondioxide");
         water.readFromNBT(nbt, "water");
+        redstonePowered = nbt.getBoolean("redstonePowered");
     }
 
     @Override
@@ -133,6 +141,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
         buf.writeInt(this.heat);
         buf.writeInt(this.pressure);
         buf.writeBoolean(this.isOn);
+        buf.writeBoolean(this.redstonePowered);
         steam.serialize(buf);
         carbonDioxide.serialize(buf);
         water.serialize(buf);
@@ -144,6 +153,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
         this.heat = buf.readInt();
         this.pressure = buf.readInt();
         this.isOn = buf.readBoolean();
+        this.redstonePowered = buf.readBoolean();
         steam.deserialize(buf);
         carbonDioxide.deserialize(buf);
         water.deserialize(buf);
@@ -157,6 +167,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
         steam.writeToNBT(nbt, "steam");
         carbonDioxide.writeToNBT(nbt, "carbondioxide");
         water.writeToNBT(nbt, "water");
+        nbt.setBoolean("redstonePowered", redstonePowered);
         return super.writeToNBT(nbt);
     }
 
@@ -237,7 +248,9 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
     public void update() {
 
         if (!world.isRemote) {
-
+            if (redstonePowered) {
+                isOn = true;
+            }
             this.output = 0;
 
             if (world.getTotalWorldTime() % 20 == 0) {
@@ -481,7 +494,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
 
     @Override
     public void receiveControl(NBTTagCompound data) {
-        if (data.hasKey("control")) {
+        if (data.hasKey("control") && !redstonePowered) {
             this.isOn = !this.isOn;
         }
 

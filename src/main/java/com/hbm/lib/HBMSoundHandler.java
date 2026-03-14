@@ -13,7 +13,6 @@ public final class HBMSoundHandler {
 
     public static List<SoundEvent> ALL_SOUNDS = new ArrayList<>();
 
-    public static SoundEvent assemblerOperate;
     public static SoundEvent fel;
     public static SoundEvent fensuHum;
     public static SoundEvent hephaestusRunning;
@@ -37,7 +36,6 @@ public final class HBMSoundHandler {
     public static SoundEvent reactorLoop;
     public static SoundEvent reactorStart;
     public static SoundEvent reactorStop;
-    public static SoundEvent chemplantOperate;
     public static SoundEvent chemicalPlant;
     public static SoundEvent potatOSRandom;
     public static SoundEvent weaponSpinDown;
@@ -192,7 +190,6 @@ public final class HBMSoundHandler {
     public static SoundEvent soyuzReady;
     public static SoundEvent soyuzTakeOff;
     public static SoundEvent chime;
-    public static SoundEvent deagleShoot;
     public static SoundEvent tauChargeLoop;
     public static SoundEvent tauChargeLoop2;
     public static SoundEvent chopperFlyingLoop;
@@ -201,7 +198,6 @@ public final class HBMSoundHandler {
     public static SoundEvent lacunaeSpinup;
     public static SoundEvent lacunaeSpindown;
     public static SoundEvent teslaShoot;
-    public static SoundEvent flamerReload;
     public static SoundEvent stop;
     public static SoundEvent bonk;
     public static SoundEvent glauncher;
@@ -212,7 +208,6 @@ public final class HBMSoundHandler {
     public static SoundEvent quadroReload;
     public static SoundEvent fstbmbStart;
     public static SoundEvent fstbmbPing;
-    public static SoundEvent sauerGun;
     public static SoundEvent ducc;
     public static SoundEvent whack;
     public static SoundEvent turbofanOperate;
@@ -327,6 +322,7 @@ public final class HBMSoundHandler {
     public static SoundEvent coilgunReload;
     public static SoundEvent smack;
     public static SoundEvent squeakyToy;
+    public static SoundEvent hundunsMagnificentHowl;
     public static SoundEvent fireSilenced;
     public static SoundEvent fireGreaseGun;
     public static SoundEvent firePistol;
@@ -418,7 +414,6 @@ public final class HBMSoundHandler {
         explosionSmallFar = register("weapon.explosion_small_far");
         explosionLargeNear = register("weapon.explosion_large_near");
         explosionLargeFar = register("weapon.explosion_large_far");
-        assemblerOperate = register("block.assembleroperate");
         fel = register("block.fel");
         fensuHum = register("block.fensuHum");
         hephaestusRunning = register("block.hephaestusRunning");
@@ -441,7 +436,6 @@ public final class HBMSoundHandler {
         reactorLoop = register("block.reactorLoop");
         reactorStart = register("block.reactorStart");
         reactorStop = register("block.reactorStop");
-        chemplantOperate = register("block.chemplantOperate");
         chemicalPlant = register("block.chemicalPlant");
         potatOSRandom = register("potatos.random");
         weaponSpinDown = register("weapon.spindown");
@@ -592,7 +586,6 @@ public final class HBMSoundHandler {
         soyuzReady = register("block.soyuzReady");
         soyuzTakeOff = register("entity.soyuzTakeoff");
         chime = register("alarm.chime");
-        deagleShoot = register("weapon.deagleShoot");
         tauChargeLoop2 = register("weapon.tauChargeLoop2");
         chopperFlyingLoop = register("entity.chopperFlyingLoop");
         chopperCrashingLoop = register("entity.chopperCrashingLoop");
@@ -600,7 +593,6 @@ public final class HBMSoundHandler {
         lacunaeSpinup = register("weapon.lacunaeSpinup");
         lacunaeSpindown = register("weapon.lacunaeSpindown");
         teslaShoot = register("weapon.teslaShoot");
-        flamerReload = register("weapon.flamerReload");
         stop = register("weapon.stop");
         bonk = register("weapon.bonk");
         glauncher = register("weapon.glauncher");
@@ -612,7 +604,6 @@ public final class HBMSoundHandler {
         quadroReload = register("weapon.quadroReload");
         fstbmbStart = register("weapon.fstbmbStart");
         fstbmbPing = register("weapon.fstbmbPing");
-        sauerGun = register("weapon.sauergun");
         ducc = register("entity.ducc");
         whack = register("weapon.whack");
         turbofanOperate = register("block.turbofanOperate");
@@ -725,6 +716,7 @@ public final class HBMSoundHandler {
         coilgunReload = register("weapon.coilgunReload");
         smack = register("weapon.fire.smack");
         squeakyToy = register("block.squeakyToy");
+        hundunsMagnificentHowl = register("block.hundunsMagnificentHowl");
         motor = register("block.motor");
         fireSilenced = register("weapon.fire.silenced");
         firePistol = register("weapon.fire.pistol");

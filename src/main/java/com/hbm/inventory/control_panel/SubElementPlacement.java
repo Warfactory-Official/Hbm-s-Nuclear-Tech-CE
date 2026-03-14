@@ -17,6 +17,7 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
@@ -46,6 +47,7 @@ public class SubElementPlacement extends SubElement {
 	protected float gridScale = 0.1F;
 	private float prevMouseX;
 	private float prevMouseY;
+	private final float[] renderBox = new float[4];
 
 	private int ctrl_index = 0;
 	
@@ -91,7 +93,7 @@ public class SubElementPlacement extends SubElement {
 		float dWheel = Mouse.getDWheel();
 		float dScale = dWheel*gridScale*0.00075F;
 
-		btn_editControl.enabled = selectedControl != null;
+		btn_editControl.enabled = isEditableControl(selectedControl);
 		btn_deleteControl.enabled = selectedControl != null;
 
 		//Correction so we scale around mouse position
@@ -210,19 +212,25 @@ public class SubElementPlacement extends SubElement {
 		Tessellator tes = Tessellator.getInstance();
 		BufferBuilder buf = tes.getBuffer();
 		Minecraft.getMinecraft().getTextureManager().bindTexture(c.getGuiTexture());
+		c.fillBox(renderBox);
 
 		if (c instanceof DisplaySevenSeg) {
+			float boxMinX = renderBox[0];
+			float boxMinY = renderBox[1];
+			float boxMaxX = renderBox[2];
+			float boxMaxY = renderBox[3];
+			float digitWidth = (boxMaxX - boxMinX) / c.getConfigs().get("digitCount").getNumber();
+			float red = 1F;
+			float green = (c == selectedControl) ? .8F : 1F;
+			float blue = 1F;
 			for (int i = 0; i < c.getConfigs().get("digitCount").getNumber(); i++) {
+				float digitMinX = boxMinX + digitWidth * i;
+				float digitMaxX = digitMinX + digitWidth;
 				buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
-				float[] box = c.getBox();
-				float cock = (box[2] - box[0]) / c.getConfigs().get("digitCount").getNumber();
-				box[0] += cock * i;
-				box[2] = box[0] + cock;
-				float[] rgb = new float[]{1, (c == selectedControl) ? .8F : 1F, 1F};
-				buf.pos(box[0], box[1], 0).tex(0, 0).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-				buf.pos(box[0], box[3], 0).tex(0, 1).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-				buf.pos(box[2], box[3], 0).tex(1, 1).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-				buf.pos(box[2], box[1], 0).tex(1, 0).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
+				buf.pos(digitMinX, boxMinY, 0).tex(0, 0).color(red, green, blue, 1).endVertex();
+				buf.pos(digitMinX, boxMaxY, 0).tex(0, 1).color(red, green, blue, 1).endVertex();
+				buf.pos(digitMaxX, boxMaxY, 0).tex(1, 1).color(red, green, blue, 1).endVertex();
+				buf.pos(digitMaxX, boxMinY, 0).tex(1, 0).color(red, green, blue, 1).endVertex();
 				tes.draw();
 			}
 		}
@@ -251,12 +259,13 @@ public class SubElementPlacement extends SubElement {
 
 			Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.white);
 			buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
-			float[] box = c.getBox();
-			float[] rgb = new float[]{.2F, (c == selectedControl) ? .1F : .2F, .2F};
-			buf.pos(box[0], box[1], 0).tex(0, 0).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-			buf.pos(box[0], box[3], 0).tex(0, 1).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-			buf.pos(box[2], box[3], 0).tex(1, 1).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-			buf.pos(box[2], box[1], 0).tex(1, 0).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
+			float red = .2F;
+			float green = (c == selectedControl) ? .1F : .2F;
+			float blue = .2F;
+			buf.pos(renderBox[0], renderBox[1], 0).tex(0, 0).color(red, green, blue, 1).endVertex();
+			buf.pos(renderBox[0], renderBox[3], 0).tex(0, 1).color(red, green, blue, 1).endVertex();
+			buf.pos(renderBox[2], renderBox[3], 0).tex(1, 1).color(red, green, blue, 1).endVertex();
+			buf.pos(renderBox[2], renderBox[1], 0).tex(1, 0).color(red, green, blue, 1).endVertex();
 			tes.draw();
 
 			EnumDyeColor dyeColor = thing.getVar("color").getEnum(EnumDyeColor.class);
@@ -271,22 +280,24 @@ public class SubElementPlacement extends SubElement {
 		}
 		else if (c instanceof DialLarge) {
 			buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
-			float[] box = c.getBox();
-			float[] rgb = new float[]{1, (c == selectedControl) ? .8F : 1F, 1F};
-			buf.pos(box[0], box[1], 0).tex(0, 0).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-			buf.pos(box[0], box[3], 0).tex(0, .5).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-			buf.pos(box[2], box[3], 0).tex(1, .5).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-			buf.pos(box[2], box[1], 0).tex(1, 0).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
+			float red = 1F;
+			float green = (c == selectedControl) ? .8F : 1F;
+			float blue = 1F;
+			buf.pos(renderBox[0], renderBox[1], 0).tex(0, 0).color(red, green, blue, 1).endVertex();
+			buf.pos(renderBox[0], renderBox[3], 0).tex(0, .5).color(red, green, blue, 1).endVertex();
+			buf.pos(renderBox[2], renderBox[3], 0).tex(1, .5).color(red, green, blue, 1).endVertex();
+			buf.pos(renderBox[2], renderBox[1], 0).tex(1, 0).color(red, green, blue, 1).endVertex();
 			tes.draw();
 		}
 		else {
 			buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
-			float[] box = c.getBox();
-			float[] rgb = new float[]{1, (c == selectedControl) ? .8F : 1F, 1F};
-			buf.pos(box[0], box[1], 0).tex(0, 0).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-			buf.pos(box[0], box[3], 0).tex(0, 1).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-			buf.pos(box[2], box[3], 0).tex(1, 1).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-			buf.pos(box[2], box[1], 0).tex(1, 0).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
+			float red = 1F;
+			float green = (c == selectedControl) ? .8F : 1F;
+			float blue = 1F;
+			buf.pos(renderBox[0], renderBox[1], 0).tex(0, 0).color(red, green, blue, 1).endVertex();
+			buf.pos(renderBox[0], renderBox[3], 0).tex(0, 1).color(red, green, blue, 1).endVertex();
+			buf.pos(renderBox[2], renderBox[3], 0).tex(1, 1).color(red, green, blue, 1).endVertex();
+			buf.pos(renderBox[2], renderBox[1], 0).tex(1, 0).color(red, green, blue, 1).endVertex();
 			tes.draw();
 		}
 	}
@@ -304,7 +315,7 @@ public class SubElementPlacement extends SubElement {
 			gui.pushElement(gui.panelResize);
 		}
 		else if (button == btn_variables) {
-			gui.currentEditControl = selectedControl; // allows access to a selected control's local vars
+			gui.currentEditControl = isEditableControl(selectedControl) ? selectedControl : null; // allows access to a selected control's local vars
 			gui.variables.isGlobalScope = true;
 			gui.pushElement(gui.variables);
 		}
@@ -313,7 +324,7 @@ public class SubElementPlacement extends SubElement {
 			gui.pushElement(gui.choice);
 		}
 		else if (button == btn_editControl) {
-			if (selectedControl != null) {
+			if (isEditableControl(selectedControl)) {
 				gui.currentEditControl = selectedControl;
 				gui.itemConfig.last_control = null;
 				gui.itemConfig.variants = ControlRegistry.getAllControlsOfType(gui.currentEditControl.getControlType());
@@ -327,6 +338,33 @@ public class SubElementPlacement extends SubElement {
 			gui.control.panel.controls.remove(selectedControl);
 			selectedControl = null;
 		}
+	}
+
+	@Override
+	protected void keyTyped(char typedChar,int code) {
+		if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
+			if (gui.currentEditControl != null) return;
+			if (code == Keyboard.KEY_A) { // Add new
+				gui.isEditMode = false;
+				gui.pushElement(gui.choice);
+			} else if (code == Keyboard.KEY_D && isEditableControl(selectedControl)) { // Duplicate
+				Control duplicate = duplicateControl(selectedControl);
+				if(duplicate == null)
+					return;
+				gui.currentEditControl = duplicate;
+				float[] gridMouse = gui.placement.convertToGridSpace(gui.mouseX, gui.mouseY);
+				gui.currentEditControl.posX = gridMouse[0];
+				gui.currentEditControl.posY = gridMouse[1];
+				gui.placement.resetPrevPos();
+				controlGrabbed = false;
+				selectedControl = null;
+			}
+		}
+	}
+
+	private @Nullable Control duplicateControl(Control source) {
+		Control duplicate = gui.control.panel.cloneControl(source);
+		return isEditableControl(duplicate) ? duplicate : null;
 	}
 
 	protected boolean canPlace(){
@@ -365,7 +403,7 @@ public class SubElementPlacement extends SubElement {
 				for(Control c : gui.control.panel.controls){
 					if(NTMRenderHelper.intersects2DBox(gridMX, gridMY, c.getBox())){
 						selectedControl = c;
-						controlGrabbed = true;
+						controlGrabbed = isEditableControl(c);
 						return;
 					}
 				}
@@ -426,5 +464,9 @@ public class SubElementPlacement extends SubElement {
 		float x = ((gridMX-gridX)-gui.getGuiLeft())/gridScale+gui.getGuiLeft();
 		float y = ((gridMY+gridY)-gui.getGuiTop())/gridScale+gui.getGuiTop();
 		return new float[]{x, y};
+	}
+
+	private static boolean isEditableControl(Control control) {
+		return control != null && ControlRegistry.isRegistered(control.registryName) && !(control instanceof UnknownControl);
 	}
 }

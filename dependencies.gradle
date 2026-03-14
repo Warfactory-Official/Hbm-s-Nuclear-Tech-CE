@@ -43,15 +43,16 @@ dependencies {
     testImplementation project(':processor')
     testAnnotationProcessor project(':processor')
     //compileOnly rfg.deobf("dev.galacticraft:galacticraft-legacy:${version_gc}")
-    compileOnly rfg.deobf("curse.maven:galacticraft-legacy-564236:6364107")
-    compileOnly rfg.deobf("com.azanor.baubles:Baubles:${version_baubles}")
-    compileOnly rfg.deobf("cofh:RedstoneFlux:1.12-${version_redstoneflux}:universal")
-    compileOnly rfg.deobf("cofh:CoFHCore:1.12.2-${version_cofhcore}:universal")
-    compileOnly('appeng:ae2-uel:v0.56.7') { transitive false } // use devOnlyNonPublishable/implementation if need to test in dev env
+//    compileOnly rfg.deobf("curse.maven:galacticraft-legacy-564236:6364107")
+    compileOnly rfg.deobf("com.azanor.baubles:Baubles:${version_baubles}:api")
+//    compileOnly rfg.deobf("cofh:RedstoneFlux:1.12-${version_redstoneflux}:universal")
+//    compileOnly rfg.deobf("cofh:CoFHCore:1.12.2-${version_cofhcore}:universal")
+    compileOnly('appeng:ae2-uel:v0.56.7:api')
+//    devOnlyNonPublishable('appeng:ae2-uel:v0.56.7') { transitive false } // use this if need to test in dev env
     shadowImplementation 'org.jctools:jctools-core:4.0.5'
 
     implementation rfg.deobf("curse.maven:opencomputers-223008:6608365")
-    implementation 'mezz:jei:4.29.14'
+    implementation 'mezz:jei:[4.29.14,)'
     implementation 'com.google.guava:guava:31.0.1-jre'
     devOnlyNonPublishable rfg.deobf("curse.maven:inventory-bogosorter-632327:7102721")
     devOnlyNonPublishable rfg.deobf("curse.maven:key-binding-patch-928895:5951859")//required for bogosorter to launch

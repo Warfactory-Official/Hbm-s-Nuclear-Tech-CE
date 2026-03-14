@@ -169,17 +169,12 @@ public class ArmorUtil {
 		return ArmorUtil.checkArmorPiece(player, ModItems.jackt, 2) && Library.checkForHeld(player, ModItems.shimmer_sledge);
 	}
 
-	public static boolean checkPAA(EntityLivingBase player){
-		return checkArmor(player, ModItems.paa_helmet, ModItems.paa_plate, ModItems.paa_legs, ModItems.paa_boots);
-	}
-
 	// Drillgon200: Is there a reason for this method? I don't know and I don't
 	// care to find out.
 	// Alcater: Looks like some kind of hazmat tier 2 check
 	public static boolean checkForHaz2(EntityLivingBase player) {
 	
 		if(checkArmor(player, ModItems.hazmat_paa_helmet, ModItems.hazmat_paa_plate, ModItems.hazmat_paa_legs, ModItems.hazmat_paa_boots) ||
-			checkArmor(player, ModItems.paa_helmet, ModItems.paa_plate, ModItems.paa_legs, ModItems.paa_boots) ||
 			checkArmor(player, ModItems.liquidator_helmet, ModItems.liquidator_plate, ModItems.liquidator_legs, ModItems.liquidator_boots) || 
 			checkArmor(player, ModItems.euphemium_helmet, ModItems.euphemium_plate, ModItems.euphemium_legs, ModItems.euphemium_boots) ||
 			checkArmor(player, ModItems.hev_helmet, ModItems.hev_plate, ModItems.hev_legs, ModItems.hev_boots) || 
@@ -199,7 +194,6 @@ public class ArmorUtil {
 			checkArmor(player, ModItems.hazmat_helmet_red, ModItems.hazmat_plate_red, ModItems.hazmat_legs_red, ModItems.hazmat_boots_red) || 
 			checkArmor(player, ModItems.hazmat_helmet_grey, ModItems.hazmat_plate_grey, ModItems.hazmat_legs_grey, ModItems.hazmat_boots_grey) || 
 			checkArmor(player, ModItems.hazmat_paa_helmet, ModItems.hazmat_paa_plate, ModItems.hazmat_paa_legs, ModItems.hazmat_paa_boots) ||
-			checkArmor(player, ModItems.paa_helmet, ModItems.paa_plate, ModItems.paa_legs, ModItems.paa_boots) ||
 			checkArmor(player, ModItems.liquidator_helmet, ModItems.liquidator_plate, ModItems.liquidator_legs, ModItems.liquidator_boots)){
 			return true;
 		}
@@ -421,10 +415,6 @@ public class ArmorUtil {
 			return true;
 		}
 		if(checkArmorPiece(player, ModItems.hazmat_paa_helmet, 3))
-		{
-			return true;
-		}
-		if(checkArmorPiece(player, ModItems.paa_helmet, 3))
 		{
 			return true;
 		}

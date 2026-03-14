@@ -25,22 +25,11 @@
           }
         ]
       }
-    },
-    "crafting_hbm_machine_assembler": {
-      "trigger": "minecraft:inventory_changed",
-      "conditions": {
-        "items": [
-          {
-            "item": "hbm:machine_assembler"
-          }
-        ]
-      }
     }
   },
   "requirements": [
     [
-      "crafting_hbm_machine_assembly_machine",
-      "crafting_hbm_machine_assembler"
+      "crafting_hbm_machine_assembly_machine"
     ]
   ]
 }

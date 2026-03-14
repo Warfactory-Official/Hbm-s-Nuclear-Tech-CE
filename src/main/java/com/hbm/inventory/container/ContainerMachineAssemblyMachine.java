@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
-import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotCraftingOutput;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.slot.SlotNonRetarded;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemMachineUpgrade;
@@ -13,13 +13,16 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 
+import java.util.function.Predicate;
+
 public class ContainerMachineAssemblyMachine extends ContainerBase {
+    Predicate<ItemStack> INPUT_FILTER = itemStack -> Library.isBattery(itemStack) || itemStack.getItem() == ModItems.meteorite_sword_alloyed;
 
     public ContainerMachineAssemblyMachine(InventoryPlayer invPlayer, IItemHandler assembler) {
         super(invPlayer, assembler);
 
         // Battery
-        this.addSlotToContainer(new SlotBattery(assembler, 0, 152, 81));
+        this.addSlotToContainer(SlotFiltered.withWhitelist(assembler, 0, 152, 81, INPUT_FILTER));
         // Schematic
         this.addSlotToContainer(new SlotNonRetarded(assembler, 1, 35, 126));
         // Upgrades

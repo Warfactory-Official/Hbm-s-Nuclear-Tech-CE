@@ -7,7 +7,7 @@ import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.mags.MagazineFullReload;
-import com.hbm.items.weapon.sedna.mods.WeaponModManager;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
@@ -49,7 +49,7 @@ public class XFactory9mm {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_GREASEGUN))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_GREASEGUN_ANIMS).orchestra(Orchestras.ORCHESTRA_GREASEGUN)
-        ).setNameMutator(LAMBDA_NAME_GREASEGUN);
+        ).setDefaultAmmo(GunFactory.EnumAmmo.P9_SP, 30).setNameMutator(LAMBDA_NAME_GREASEGUN);
 
         ModItems.gun_lag = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_lag", new GunConfig()
                 .dura(1_700).draw(7).inspect(31).crosshair(RenderScreenOverlay.Crosshair.CIRCLE).smoke(LAMBDA_SMOKE)
@@ -60,7 +60,7 @@ public class XFactory9mm {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_LAG))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_LAG_ANIMS).orchestra(Orchestras.ORCHESTRA_LAG)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.P9_JHP, 17);
 
         ModItems.gun_uzi = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_uzi", new GunConfig()
                 .dura(3_000).draw(15).inspect(31).crosshair(RenderScreenOverlay.Crosshair.CIRCLE).smoke(LAMBDA_SMOKE)
@@ -71,7 +71,7 @@ public class XFactory9mm {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_UZI))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_UZI_ANIMS).orchestra(Orchestras.ORCHESTRA_UZI)
-        ).setNameMutator(LAMBDA_NAME_UZI);
+        ).setNameMutator(LAMBDA_NAME_UZI).setDefaultAmmo(GunFactory.EnumAmmo.P9_SP, 30);
         ModItems.gun_uzi_akimbo = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.B_SIDE, "gun_uzi_akimbo",
                 new GunConfig().dura(3_000).draw(15).inspect(31).crosshair(RenderScreenOverlay.Crosshair.CIRCLE).smoke(LAMBDA_SMOKE)
                         .rec(new Receiver(0)
@@ -91,16 +91,18 @@ public class XFactory9mm {
                         .ps(Lego.LAMBDA_STANDARD_CLICK_PRIMARY).pr(Lego.LAMBDA_STANDARD_RELOAD)
                         .decider(LAMBDA_SECOND_UZI)
                         .anim(LAMBDA_UZI_ANIMS).orchestra(Orchestras.ORCHESTRA_UZI_AKIMBO)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.P9_SP, 60);
     }
 
     public static Function<ItemStack, String> LAMBDA_NAME_GREASEGUN = (stack) -> {
-        if(WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_GREASEGUN_CLEAN)) return stack.getTranslationKey() + "_m3";
+        if (XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_GREASEGUN_CLEAN))
+            return stack.getTranslationKey() + "_m3";
         return null;
     };
 
     public static Function<ItemStack, String> LAMBDA_NAME_UZI = (stack) -> {
-        if(WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_SILENCER)) return stack.getTranslationKey() + "_richter";
+        if (XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_SILENCER))
+            return stack.getTranslationKey() + "_richter";
         return null;
     };
 
@@ -121,7 +123,8 @@ public class XFactory9mm {
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_SMOKE = (stack, ctx) -> Lego.handleStandardSmoke(ctx.entity, stack, 2000, 0.05D, 1.1D, ctx.configIndex);
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_GREASEGUN_ANIMS = (stack, type) -> {
+    @SuppressWarnings("incomplete-switch")
+    public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_GREASEGUN_ANIMS = (stack, type) -> {
         switch (type) {
             case EQUIP -> {
                 return new BusAnimationSedna()
@@ -164,7 +167,8 @@ public class XFactory9mm {
         return null;
     };
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_LAG_ANIMS = (stack, type) -> switch (type) {
+    @SuppressWarnings("incomplete-switch")
+    public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_LAG_ANIMS = (stack, type) -> switch (type) {
         case EQUIP -> new BusAnimationSedna()
                 .addBus("EQUIP", new BusAnimationSequenceSedna().addPos(-90, 0, 0, 0).addPos(0, 0, 0, 350, IType.SIN_DOWN));
         case CYCLE -> ResourceManager.lag_anim.get("Firing");
@@ -178,7 +182,8 @@ public class XFactory9mm {
         default -> null;
     };
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_UZI_ANIMS = (stack, type) -> {
+    @SuppressWarnings("incomplete-switch")
+    public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_UZI_ANIMS = (stack, type) -> {
         switch (type) {
             case EQUIP -> {
                 return new BusAnimationSedna()

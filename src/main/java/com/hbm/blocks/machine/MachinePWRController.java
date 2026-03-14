@@ -51,7 +51,7 @@ public class MachinePWRController extends BlockContainerBakeable implements IToo
     private static final int MAX_SIZE = 4096;
 
     public MachinePWRController(String name) {
-        super(Material.IRON, name, BlockBakeFrame.simpleSouthRotatable("pwr_casing_blank", "pwr_controller"));
+        super(Material.IRON, name, BlockBakeFrame.southFacingCube("pwr_casing_blank", "pwr_controller"));
         this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
     }
 

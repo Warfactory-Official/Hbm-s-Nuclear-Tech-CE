@@ -17,10 +17,10 @@ public class BlockBase extends Block {
 
     public BlockBase(Material m, String s) {
         super(m);
-        this.setTranslationKey(s);
-        this.setRegistryName(s);
-        this.setHarvestLevel("pickaxe", 0);
-        this.setCreativeTab(MainRegistry.controlTab);
+        setTranslationKey(s);
+        setRegistryName(s);
+        setHarvestLevel("pickaxe", 0);
+        setCreativeTab(MainRegistry.controlTab);
         ModBlocks.ALL_BLOCKS.add(this);
     }
 
@@ -35,13 +35,9 @@ public class BlockBase extends Block {
     }
 
     public BlockBase(Material m, SoundType sound, String s) {
-        super(m);
-        this.setTranslationKey(s);
-        this.setRegistryName(s);
-        this.setSoundType(sound);
-        this.setHarvestLevel("pickaxe", 0);
-        this.setCreativeTab(MainRegistry.controlTab);
-        ModBlocks.ALL_BLOCKS.add(this);
+        this(m, s);
+
+        setSoundType(sound);
     }
 
     @Override
@@ -50,7 +46,7 @@ public class BlockBase extends Block {
             list.add(I18nUtil.resolveKey("desc.teslacoils"));
         }
 
-        float hardness = this.getExplosionResistance(null);
+        float hardness = getExplosionResistance(null);
         if (hardness > 50) {
             list.add(TextFormatting.GOLD + I18nUtil.resolveKey("trait.blastres", hardness));
         }

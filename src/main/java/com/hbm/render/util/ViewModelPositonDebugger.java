@@ -21,6 +21,7 @@ import java.util.Map;
 public class ViewModelPositonDebugger {
     static boolean debug = false;
     static boolean blockInput = false;
+
     public Map<TransformType, offset> offsetMap;
     protected int debugIndex = 0;
     public static class offset {
@@ -94,6 +95,7 @@ public class ViewModelPositonDebugger {
         if (debug)
             tickDebug();
     }
+
     protected void tickDebug() {
         boolean[] inputs = new boolean[]{
                 Keyboard.isKeyDown(Keyboard.KEY_UP),Keyboard.isKeyDown(Keyboard.KEY_LEFT),Keyboard.isKeyDown(Keyboard.KEY_DOWN),

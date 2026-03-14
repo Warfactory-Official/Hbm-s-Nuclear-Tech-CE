@@ -2,8 +2,9 @@ package com.hbm.blocks.machine;
 
 import com.google.common.collect.ImmutableMap;
 import com.hbm.inventory.fluid.FluidType;
-import com.hbm.items.IDynamicModels;
+import com.hbm.items.ClaimedModelLocationRegistry;
 import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.main.client.NTMClientRegistry;
 import com.hbm.render.block.BlockBakeFrame;
 import com.hbm.tileentity.machine.TileEntityRefueler;
 import net.minecraft.block.material.Material;
@@ -27,7 +28,6 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.*;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
@@ -52,7 +52,7 @@ public class BlockRefueler extends BlockContainerBakeable {
     private static final AxisAlignedBB AABB_EAST   = new AxisAlignedBB(0.0D,  0.0D, 0.0D, 4 * f, 1.0D, 1.0D);
 
     public BlockRefueler(Material mat, String name) {
-        super(mat, name, new BlockBakeFrame("block_steel"));
+        super(mat, name, BlockBakeFrame.cubeAll("block_steel"));
         this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
     }
 
@@ -158,16 +158,18 @@ public class BlockRefueler extends BlockContainerBakeable {
             );
             ModelResourceLocation worldLocation = new ModelResourceLocation(getRegistryName(), "normal");
             event.getModelRegistry().putObject(worldLocation, blockBaked);
-            IModel itemBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
-            ImmutableMap<String, String> itemTextures = ImmutableMap.of("layer0", "hbm:blocks/" + getRegistryName().getPath());
-            IModel itemRetextured = itemBaseModel.retexture(itemTextures);
-            IBakedModel itemBaked = itemRetextured.bake(
-                    ModelRotation.X0_Y0,
-                    DefaultVertexFormats.ITEM,
-                    ModelLoader.defaultTextureGetter()
-            );
-            ModelResourceLocation inventoryLocation = new ModelResourceLocation(getRegistryName(), "inventory");
-            event.getModelRegistry().putObject(inventoryLocation, itemBaked);
+            if (!ClaimedModelLocationRegistry.hasSyntheticTeisrBinding(Item.getItemFromBlock(this))) {
+                IModel itemBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
+                ImmutableMap<String, String> itemTextures = ImmutableMap.of("layer0", "hbm:blocks/" + getRegistryName().getPath());
+                IModel itemRetextured = itemBaseModel.retexture(itemTextures);
+                IBakedModel itemBaked = itemRetextured.bake(
+                        ModelRotation.X0_Y0,
+                        DefaultVertexFormats.ITEM,
+                        ModelLoader.defaultTextureGetter()
+                );
+                ModelResourceLocation inventoryLocation = new ModelResourceLocation(getRegistryName(), "inventory");
+                event.getModelRegistry().putObject(inventoryLocation, itemBaked);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -178,7 +180,9 @@ public class BlockRefueler extends BlockContainerBakeable {
     @Override
     @SideOnly(Side.CLIENT)
     public void registerModel() {
-        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0, new ModelResourceLocation(this.getRegistryName(), "inventory"));
+        Item item = Item.getItemFromBlock(this);
+        ModelResourceLocation syntheticLocation = NTMClientRegistry.getSyntheticTeisrModelLocation(item);
+        ModelLoader.setCustomModelResourceLocation(item, 0, syntheticLocation != null ? syntheticLocation : new ModelResourceLocation(this.getRegistryName(), "inventory"));
     }
 
     @Override

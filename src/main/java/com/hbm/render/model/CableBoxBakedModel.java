@@ -1,25 +1,26 @@
 package com.hbm.render.model;
 
 import com.hbm.blocks.network.energy.PowerCableBox;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.block.model.*;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.util.vector.Vector3f;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.locks.StampedLock;
 
 @SideOnly(Side.CLIENT)
 public class CableBoxBakedModel extends AbstractBakedModel {
 
+    private static final int INVENTORY_INDEX = 1024;
+
     private final int meta;
-    @SuppressWarnings("unchecked")
-    private final List<BakedQuad>[] cache = new List[64];
+    private final StampedLock lock = new StampedLock();
+    private final Int2ObjectOpenHashMap<List<BakedQuad>> cache = new Int2ObjectOpenHashMap<>();
 
     public CableBoxBakedModel(int meta) {
         super(BakedModelTransforms.standardBlock());
@@ -29,12 +30,14 @@ public class CableBoxBakedModel extends AbstractBakedModel {
     @Override
     public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
         if (side != null) return Collections.emptyList();
-        boolean pX, nX, pY, nY, pZ, nZ;
-        int useMeta = this.meta;
 
-        if (state == null) {
-            pX = nX = true;
-            pY = nY = pZ = nZ = false;
+        boolean inventory = state == null, pX, nX, pY, nY, pZ, nZ;
+        int useMeta = this.meta;
+        int cacheIndex;
+
+        if (inventory) {
+            pX = nX = pY = nY = pZ = nZ = false;
+            cacheIndex = INVENTORY_INDEX;
         } else {
             try {
                 IExtendedBlockState ext = (IExtendedBlockState) state;
@@ -45,94 +48,50 @@ public class CableBoxBakedModel extends AbstractBakedModel {
                 nY = ext.getValue(PowerCableBox.CONN_DOWN);
                 pY = ext.getValue(PowerCableBox.CONN_UP);
                 useMeta = ext.getValue(PowerCableBox.META);
-            } catch (Exception ignored) {
-                pX = nX = true;
-                pY = nY = pZ = nZ = false;
-            }
-        }
-        int mask = (pX ? 32 : 0) | (nX ? 16 : 0) | (pY ? 8 : 0) | (nY ? 4 : 0) | (pZ ? 2 : 0) | (nZ ? 1 : 0);
-        List<BakedQuad> cachedQuads = cache[mask];
-        if (cachedQuads != null) {
-            return cachedQuads;
-        }
-        int sizeLevel = Math.min(useMeta, 4);
-        float lower = 0.125f + sizeLevel * 0.0625f;
-        float upper = 0.875f - sizeLevel * 0.0625f;
+            } catch (Exception ignored) { pX = true; nX = true; pY = false; nY = false; pZ = false; nZ = false; }
 
-        int count = Integer.bitCount(mask);
-        List<BakedQuad> quads = new ArrayList<>(24);
-        Vector3f from = new Vector3f();
-        Vector3f to = new Vector3f();
-        switch (mask) {
-            case 48 -> addPart(quads, 0, lower, lower, 1, upper, upper, 0, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, from, to);
-            case 12 -> addPart(quads, lower, 0, lower, upper, 1, upper, 1, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, from, to);
-            case 3 -> addPart(quads, lower, lower, 0, upper, upper, 1, 2, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, from, to);
-            default -> {
-                addPart(quads, lower, lower, lower, upper, upper, upper, 3, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, from, to);
-                if (nX) addPart(quads, 0, lower, lower, lower, upper, upper, 0, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, from, to);
-                if (pX) addPart(quads, upper, lower, lower, 1, upper, upper, 0, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, from, to);
-                if (nY) addPart(quads, lower, 0, lower, upper, lower, upper, 1, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, from, to);
-                if (pY) addPart(quads, lower, upper, lower, upper, 1, upper, 1, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, from, to);
-                if (nZ) addPart(quads, lower, lower, 0, upper, upper, lower, 2, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, from, to);
-                if (pZ) addPart(quads, lower, lower, upper, upper, upper, 1, 2, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, from, to);
+            int mask = (pX ? 32 : 0) | (nX ? 16 : 0) | (pY ? 8 : 0) | (nY ? 4 : 0) | (pZ ? 2 : 0) | (nZ ? 1 : 0);
+            cacheIndex = ((useMeta & 0xF) << 6) | mask;
+        }
+
+        List<BakedQuad> quads;
+        long stamp = lock.tryOptimisticRead();
+        quads = cache.get(cacheIndex);
+
+        if (!lock.validate(stamp)) {
+            stamp = lock.readLock();
+            try {
+                quads = cache.get(cacheIndex);
+            } finally {
+                lock.unlockRead(stamp);
             }
         }
-        return cache[mask] = Collections.unmodifiableList(quads);
+
+        if (quads != null) return quads;
+
+        stamp = lock.writeLock();
+        try {
+            quads = cache.get(cacheIndex);
+            if (quads == null) {
+                quads = buildQuads(inventory, useMeta, pX, nX, pY, nY, pZ, nZ);
+                cache.put(cacheIndex, quads);
+            }
+        } finally {
+            lock.unlockWrite(stamp);
+        }
+
+        return quads;
     }
 
-    private static void addPart(List<BakedQuad> quads, float x1, float y1, float z1, float x2, float y2, float z2, int axis,
-                                int meta, int mask, int count, boolean pX, boolean nX, boolean pY, boolean nY, boolean pZ, boolean nZ,
-                                Vector3f from, Vector3f to) {
-
-        float minX = x1 * 16f, minY = y1 * 16f, minZ = z1 * 16f;
-        float maxX = x2 * 16f, maxY = y2 * 16f, maxZ = z2 * 16f;
-
-        from.set(minX, minY, minZ);
-        to.set(maxX, maxY, maxZ);
-
-        FaceBakery faceBakery = new FaceBakery();
-
-        EnumFacing[] faces = EnumFacing.VALUES;
-        for (int i = 0; i < faces.length; i++) {
-            EnumFacing face = faces[i];
-            TextureAtlasSprite sprite = getIcon(meta, i, mask, count, pX, nX, pY, nY, pZ, nZ);
-
-            float uMin, uMax, vMin, vMax;
-            int rot = 0;
-
-            if (axis == 0) {
-                if (face == EnumFacing.UP || face == EnumFacing.DOWN) {
-                    rot = 90; uMin = minZ; uMax = maxZ; vMin = minX; vMax = maxX;
-                } else if (face == EnumFacing.NORTH || face == EnumFacing.SOUTH) {
-                    rot = 90; uMin = minY; uMax = maxY; vMin = minX; vMax = maxX;
-                } else {
-                    uMin = minZ; uMax = maxZ; vMin = minY; vMax = maxY;
-                }
-            } else if (axis == 2) {
-                if (face == EnumFacing.UP || face == EnumFacing.DOWN) {
-                    uMin = minX; uMax = maxX; vMin = minZ; vMax = maxZ;
-                } else if (face == EnumFacing.WEST || face == EnumFacing.EAST) {
-                    rot = 90; uMin = minY; uMax = maxY; vMin = minZ; vMax = maxZ;
-                } else {
-                    uMin = minX; uMax = maxX; vMin = minY; vMax = maxY;
-                }
-            } else {
-                if (face == EnumFacing.UP || face == EnumFacing.DOWN) {
-                    uMin = minX; uMax = maxX; vMin = minZ; vMax = maxZ;
-                } else if (face == EnumFacing.NORTH || face == EnumFacing.SOUTH) {
-                    uMin = minX; uMax = maxX; vMin = minY; vMax = maxY;
-                } else {
-                    uMin = minZ; uMax = maxZ; vMin = minY; vMax = maxY;
-                }
-            }
-
-            if (uMin > uMax) { float t = uMin; uMin = uMax; uMax = t; }
-            if (vMin > vMax) { float t = vMin; vMin = vMax; vMax = t; }
-
-            quads.add(faceBakery.makeBakedQuad(from, to,
-                    new BlockPartFace(null, 0, "", new BlockFaceUV(new float[]{uMin, vMin, uMax, vMax}, rot)),
-                    sprite, face, ModelRotation.X0_Y0, null, false, true));
+    private static void addPart(List<BakedQuad> quads, float x1, float y1, float z1, float x2, float y2, float z2,
+                                int meta, int mask, int count, boolean pX, boolean nX, boolean pY, boolean nY,
+                                boolean pZ, boolean nZ,
+                                int[] rotations) {
+        TextureAtlasSprite[] sprites = new TextureAtlasSprite[6];
+        for (EnumFacing face : EnumFacing.VALUES) {
+            sprites[face.getIndex()] = getIcon(meta, face.ordinal(), mask, count, pX, nX, pY, nY, pZ, nZ);
         }
+        addLegacyBox(quads, x1 * 16.0f, y1 * 16.0f, z1 * 16.0f, x2 * 16.0f, y2 * 16.0f, z2 * 16.0f, sprites, LEGACY_ALL_FACES, rotations);
     }
 
     private static TextureAtlasSprite getIcon(int meta, int side, int mask, int count,
@@ -152,6 +111,61 @@ public class CableBoxBakedModel extends AbstractBakedModel {
         }
 
         return PowerCableBox.iconJunction;
+    }
+
+    private static List<BakedQuad> buildQuads(boolean inventory, int useMeta, boolean pX, boolean nX, boolean pY,
+                                              boolean nY, boolean pZ, boolean nZ) {
+        int sizeLevel = Math.min(useMeta, 4);
+        float lower = 0.125f + sizeLevel * 0.0625f;
+        float upper = 0.875f - sizeLevel * 0.0625f;
+        int mask = (pX ? 32 : 0) | (nX ? 16 : 0) | (pY ? 8 : 0) | (nY ? 4 : 0) | (pZ ? 2 : 0) | (nZ ? 1 : 0);
+        int count = Integer.bitCount(mask);
+        List<BakedQuad> quads = new ArrayList<>(24);
+
+        if (inventory) {
+            TextureAtlasSprite[] inventorySprites = new TextureAtlasSprite[]{
+                    PowerCableBox.iconStraight,
+                    PowerCableBox.iconStraight,
+                    PowerCableBox.iconEnd[useMeta % 5],
+                    PowerCableBox.iconEnd[useMeta % 5],
+                    PowerCableBox.iconStraight,
+                    PowerCableBox.iconStraight
+            };
+            addLegacyBox(quads, lower * 16.0f, lower * 16.0f, 0.0f, upper * 16.0f, upper * 16.0f, 16.0f, inventorySprites, LEGACY_ALL_FACES, new int[]{0, 0, 0, 0, 1, 2});
+            return Collections.unmodifiableList(quads);
+        }
+
+        boolean straightX = (mask & 0b001111) == 0 && mask > 0;
+        boolean straightY = (mask & 0b110011) == 0 && mask > 0;
+        boolean straightZ = (mask & 0b111100) == 0 && mask > 0;
+
+        if (straightX) {
+            addPart(quads, 0, lower, lower, 1, upper, upper, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, new int[]{1, 1, 2, 1, 0, 0});
+        } else if (straightY) {
+            addPart(quads, lower, 0, lower, upper, 1, upper, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, LEGACY_NO_ROTATION);
+        } else if (straightZ) {
+            addPart(quads, lower, lower, 0, upper, upper, 1, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, new int[]{0, 0, 0, 0, 1, 2});
+        } else if (count == 2) {
+            int[] rotations = (nY || pY) && (nX || pX) ? new int[]{1, 1, 0, 0, 0, 0}
+                    : (!nY && !pY ? new int[]{0, 0, 2, 1, 1, 2} : LEGACY_NO_ROTATION);
+            addPart(quads, lower, lower, lower, upper, upper, upper, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, rotations);
+            if (nX) addPart(quads, 0, lower, lower, lower, upper, upper, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, rotations);
+            if (pX) addPart(quads, upper, lower, lower, 1, upper, upper, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, rotations);
+            if (nY) addPart(quads, lower, 0, lower, upper, lower, upper, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, rotations);
+            if (pY) addPart(quads, lower, upper, lower, upper, 1, upper, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, rotations);
+            if (nZ) addPart(quads, lower, lower, 0, upper, upper, lower, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, rotations);
+            if (pZ) addPart(quads, lower, lower, upper, upper, upper, 1, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, rotations);
+        } else {
+            addPart(quads, lower, lower, lower, upper, upper, upper, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, LEGACY_NO_ROTATION);
+            if (nX) addPart(quads, 0, lower, lower, lower, upper, upper, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, LEGACY_NO_ROTATION);
+            if (pX) addPart(quads, upper, lower, lower, 1, upper, upper, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, LEGACY_NO_ROTATION);
+            if (nY) addPart(quads, lower, 0, lower, upper, lower, upper, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, LEGACY_NO_ROTATION);
+            if (pY) addPart(quads, lower, upper, lower, upper, 1, upper, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, LEGACY_NO_ROTATION);
+            if (nZ) addPart(quads, lower, lower, 0, upper, upper, lower, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, LEGACY_NO_ROTATION);
+            if (pZ) addPart(quads, lower, lower, upper, upper, upper, 1, useMeta, mask, count, pX, nX, pY, nY, pZ, nZ, LEGACY_NO_ROTATION);
+        }
+
+        return Collections.unmodifiableList(quads);
     }
 
     @Override

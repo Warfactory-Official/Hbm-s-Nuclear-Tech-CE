@@ -68,7 +68,7 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
     private static TextureAtlasSprite overlayOutSprite;
 
     public PneumoTubePaintableBlock(String name) {
-        super(Material.IRON, name, new BlockBakeFrame("pneumatic_tube_paintable"));
+        super(Material.IRON, name, BlockBakeFrame.cubeAll("pneumatic_tube_paintable"));
         this.setDefaultState(this.blockState.getBaseState());
         this.setSoundType(ModSoundTypes.pipe);
         this.useNeighborBrightness = true;

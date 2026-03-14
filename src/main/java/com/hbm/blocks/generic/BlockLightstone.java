@@ -25,7 +25,7 @@ public class BlockLightstone<E extends Enum<E>> extends BlockEnumMeta<E> {
             String base = registryName + "." + e.name().toLowerCase(Locale.US);
 
             if (i >= 3) {
-                frames[i] = new BlockBakeFrame(BlockBakeFrame.BlockForm.FULL_CUSTOM,
+                frames[i] = BlockBakeFrame.cube(
                         base + ".top", // up
                         base + ".top", // down
                         base,          // north
@@ -34,7 +34,7 @@ public class BlockLightstone<E extends Enum<E>> extends BlockEnumMeta<E> {
                         base           // east
                 );
             } else {
-                frames[i] = new BlockBakeFrame(base);
+                frames[i] = BlockBakeFrame.cubeAll(base);
             }
         }
         return frames;

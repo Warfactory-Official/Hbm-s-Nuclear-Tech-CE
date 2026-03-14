@@ -1,6 +1,7 @@
 package com.hbm.inventory.control_panel;
 
 import com.hbm.Tags;
+import com.hbm.inventory.control_panel.controls.ControlType;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.util.ResourceLocation;
 
@@ -27,14 +28,20 @@ public class SubElementItemChoice extends SubElement {
 		pageLeft = gui.addButton(new GuiButton(gui.currentButtonId(), cX-80, cY+92, 15, 20, "<"));
 		pageRight = gui.addButton(new GuiButton(gui.currentButtonId(), cX+65, cY+92, 15, 20, ">"));
 
-		buttons.add(gui.addButton(new GuiButton(1000, cX-80, (cY-90) + (0%7)*25, 160, 20, "Button")));
-		buttons.add(gui.addButton(new GuiButton(1001, cX-80, (cY-90) + (1%7)*25, 160, 20, "Switch")));
-		buttons.add(gui.addButton(new GuiButton(1002, cX-80, (cY-90) + (2%7)*25, 160, 20, "Display")));
-		buttons.add(gui.addButton(new GuiButton(1003, cX-80, (cY-90) + (3%7)*25, 160, 20, "Indicator")));
-		buttons.add(gui.addButton(new GuiButton(1004, cX-80, (cY-90) + (4%7)*25, 160, 20, "Knob")));
-		buttons.add(gui.addButton(new GuiButton(1005, cX-80, (cY-90) + (5%7)*25, 160, 20, "Dial")));
-		buttons.add(gui.addButton(new GuiButton(1006, cX-80, (cY-90) + (6%7)*25, 160, 20, "Label")));
-		buttons.add(gui.addButton(new GuiButton(1007, cX-80, (cY-90) + (7%7)*25, 160, 20, "Slider")));
+		int id = 1000;
+		int pos = 0;
+		for (ControlType control : ControlType.ALL_VALUES) {
+			if (!ControlRegistry.getAllControlsOfType(control).isEmpty()) {
+				buttons.add(gui.addButton(
+						new GuiButton(id++,
+								cX-80,(cY-90)+((pos++)%7)*25,
+								160,20,
+								control.name
+						))
+				);
+			} else
+				id++; // shift id anyway because the control types are gathered from button IDs
+		}
 
 		numPages = (buttons.size()+6)/7;
 		super.initGui();
@@ -68,6 +75,11 @@ public class SubElementItemChoice extends SubElement {
 			buttons.get(i).visible = true;
 			buttons.get(i).enabled = true;
 		}
+		boolean showPaging = numPages > 1;
+		pageLeft.visible = showPaging && currentPage > 1;
+		pageLeft.enabled = pageLeft.visible;
+		pageRight.visible = showPaging && currentPage < numPages;
+		pageRight.enabled = pageRight.visible;
 	}
 
 	@Override
@@ -79,46 +91,15 @@ public class SubElementItemChoice extends SubElement {
 			currentPage = Math.min(numPages, currentPage + 1);
 			recalculateVisibleButtons();
 		} else {
-			switch (button.id) { //TODO: clean
-				case 1000:
-					gui.currentEditControl = ControlRegistry.getNew("button_push", gui.control.panel);
-					gui.itemConfig.variants = ControlRegistry.getAllControlsOfType(gui.currentEditControl.getControlType());
-					gui.pushElement(gui.itemConfig);
-					break;
-				case 1001:
-					gui.currentEditControl = ControlRegistry.getNew("switch_toggle", gui.control.panel);
-					gui.itemConfig.variants = ControlRegistry.getAllControlsOfType(gui.currentEditControl.getControlType());
-					gui.pushElement(gui.itemConfig);
-					break;
-				case 1002:
-					gui.currentEditControl = ControlRegistry.getNew("display_7seg", gui.control.panel);
-					gui.itemConfig.variants = ControlRegistry.getAllControlsOfType(gui.currentEditControl.getControlType());
-					gui.pushElement(gui.itemConfig);
-					break;
-				case 1003:
-					gui.currentEditControl = ControlRegistry.getNew("indicator_lamp", gui.control.panel);
-					gui.pushElement(gui.linker);
-					break;
-				case 1004:
-					gui.currentEditControl = ControlRegistry.getNew("knob_control", gui.control.panel);
-					gui.itemConfig.variants = ControlRegistry.getAllControlsOfType(gui.currentEditControl.getControlType());
-					gui.pushElement(gui.itemConfig);
-					break;
-				case 1005:
-					gui.currentEditControl = ControlRegistry.getNew("dial_square", gui.control.panel);
-					gui.itemConfig.variants = ControlRegistry.getAllControlsOfType(gui.currentEditControl.getControlType());
-					gui.pushElement(gui.itemConfig);
-					break;
-				case 1006:
-					gui.currentEditControl = ControlRegistry.getNew("label", gui.control.panel);
-					gui.itemConfig.variants = ControlRegistry.getAllControlsOfType(gui.currentEditControl.getControlType());
-					gui.pushElement(gui.itemConfig);
-					break;
-				case 1007:
-					gui.currentEditControl = ControlRegistry.getNew("slider_vertical", gui.control.panel);
-					gui.pushElement(gui.linker);
-					break;
-			}
+			int typeIndex = button.id - 1000;
+			if(typeIndex < 0 || typeIndex >= ControlType.ALL_VALUES.size()) return;
+
+			ControlType type = ControlType.ALL_VALUES.get(typeIndex);
+			gui.itemConfig.variants = ControlRegistry.getAllControlsOfType(type);
+			if(gui.itemConfig.variants.isEmpty()) return;
+
+			gui.currentEditControl = ControlRegistry.getNew(gui.itemConfig.variants.get(0), gui.control.panel);
+			gui.pushElement(gui.itemConfig);
 		}
 	}
 	
@@ -132,9 +113,16 @@ public class SubElementItemChoice extends SubElement {
 				b.enabled = false;
 			}
 		}
-		pageLeft.visible = enable;
-		pageLeft.enabled = enable;
-		pageRight.visible = enable;
-		pageRight.enabled = enable;
+		if(enable){
+			pageLeft.visible = numPages > 1 && currentPage > 1;
+			pageLeft.enabled = pageLeft.visible;
+			pageRight.visible = numPages > 1 && currentPage < numPages;
+			pageRight.enabled = pageRight.visible;
+		} else {
+			pageLeft.visible = false;
+			pageLeft.enabled = false;
+			pageRight.visible = false;
+			pageRight.enabled = false;
+		}
 	}
 }

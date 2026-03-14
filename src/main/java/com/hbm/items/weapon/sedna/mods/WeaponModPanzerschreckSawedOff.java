@@ -11,7 +11,7 @@ import com.hbm.items.weapon.sedna.factory.XFactoryRocket;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna.IType;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
 import com.hbm.render.anim.sedna.BusAnimationSequenceSedna;
-import com.hbm.render.anim.sedna.HbmAnimationsSedna.AnimType;
+import com.hbm.render.anim.sedna.HbmAnimationsSedna.GunAnimation;
 import com.hbm.util.DamageResistanceHandler.DamageClass;
 import com.hbm.util.EntityDamageUtil;
 import net.minecraft.item.ItemStack;
@@ -33,8 +33,8 @@ public class WeaponModPanzerschreckSawedOff extends WeaponModBase {
 		return base;
 	}
 
-	@SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, AnimType, BusAnimationSedna> LAMBDA_PANZERSCHRECK_ANIMS = (stack, type) -> {
-		if (Objects.requireNonNull(type) == AnimType.EQUIP) {
+	@SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, GunAnimation, BusAnimationSedna> LAMBDA_PANZERSCHRECK_ANIMS = (stack, type) -> {
+		if (Objects.requireNonNull(type) == GunAnimation.EQUIP) {
 			return new BusAnimationSedna().addBus("EQUIP", new BusAnimationSequenceSedna().addPos(60, 0, 0, 0).addPos(0, 0, 0, 250, IType.SIN_DOWN));
 		}
 		return XFactoryRocket.LAMBDA_PANZERSCHRECK_ANIMS.apply(stack, type);

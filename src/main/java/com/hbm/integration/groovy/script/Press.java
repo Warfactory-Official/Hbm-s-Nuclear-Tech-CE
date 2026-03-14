@@ -11,9 +11,6 @@ import com.hbm.items.machine.ItemStamp;
 import com.hbm.util.Tuple;
 import net.minecraft.item.ItemStack;
 
-import java.util.Collections;
-
-import static com.hbm.inventory.recipes.AssemblerRecipes.recipeList;
 import static com.hbm.inventory.recipes.PressRecipes.recipes;
 
 @RegistryDescription(linkGenerator = "hbm", isFullyDocumented = false)
@@ -22,7 +19,6 @@ public class Press extends VirtualizedRegistry<Tuple.Pair<Tuple.Pair<RecipesComm
     public void onReload() {
         removeScripted().forEach(this::removeRecipe);
         restoreFromBackup().forEach(this::addRecipe);
-        Collections.sort(recipeList);
     }
 
     private void addRecipe(Tuple.Pair<Tuple.Pair<RecipesCommon.AStack, ItemStamp.StampType>, ItemStack> pairItemStackPair) {

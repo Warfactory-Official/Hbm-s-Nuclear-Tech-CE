@@ -24,8 +24,6 @@ public class RadiationConfig {
 	public static boolean neutronActivation = false;
 	public static int neutronActivationThreshold = 15;
 
-	public static int geigerX = 16;
-	public static int geigerY = 2;
 	public static int digammaX = 16;
 	public static int digammaY = 18;
 
@@ -94,10 +92,8 @@ public class RadiationConfig {
 		neutronActivation = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_RADIATION, "7.01_itemContamination", "Whether high radiation levels should radiate items in inventory. WARNING: extremely laggy and and buggy. Keep it off unless you know what you are doing", false);
 		neutronActivationThreshold = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_RADIATION, "7.01_itemContaminationThreshold", "Minimum recieved Rads/s threshold at which items get irradiated", 15);
 		
-		geigerX = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_RADIATION, "7.02_geigerX", "X Coordinate of the geiger counter gui (x=0 is on the right)", 16);
-		geigerY = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_RADIATION, "7.03_geigerY", "Y Coordinate of the geiger counter gui (y=0 is on the bottom)", 2);
-		digammaX = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_RADIATION, "7.04_digammaX", "X Coordinate of the digamma diagnostic gui (x=0 is on the right)", 16);
-		digammaY = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_RADIATION, "7.05_digammaY", "Y Coordinate of the digamma diagnostic gui (y=0 is on the bottom)", 18);
+		digammaX = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_RADIATION, "7.02_digammaX", "X Coordinate of the digamma diagnostic gui (x=0 is on the right)", 16);
+		digammaY = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_RADIATION, "7.03_digammaY", "Y Coordinate of the digamma diagnostic gui (y=0 is on the bottom)", 18);
         radTickRate = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_RADIATION, "7.99_CE_01_radTickRate", "How many ticks between each radiation system updates. 1 = once per tick", 1);
         radHalfLifeSeconds = CommonConfig.createConfigDouble(config, CommonConfig.CATEGORY_RADIATION, "7.99_CE_02_radHalfLifeSeconds", "The half life of chunk radiation in seconds", 120);
         radDiffusivity = CommonConfig.createConfigDouble(config, CommonConfig.CATEGORY_RADIATION, "7.99_CE_03_radDiffusivity", "The diffusivity of chunk radiation.", 10.0);

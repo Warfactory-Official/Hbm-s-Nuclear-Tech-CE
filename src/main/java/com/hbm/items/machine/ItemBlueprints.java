@@ -41,10 +41,12 @@ public class ItemBlueprints extends ItemBakedBase {
     @SideOnly(Side.CLIENT) private ModelResourceLocation mrlBase;
     @SideOnly(Side.CLIENT) private ModelResourceLocation mrlDiscover;
     @SideOnly(Side.CLIENT) private ModelResourceLocation mrlSecret;
+    @SideOnly(Side.CLIENT) private ModelResourceLocation mrl528;
 
     @SideOnly(Side.CLIENT) private ResourceLocation spriteBase;
     @SideOnly(Side.CLIENT) private ResourceLocation spriteDiscover;
     @SideOnly(Side.CLIENT) private ResourceLocation spriteSecret;
+    @SideOnly(Side.CLIENT) private ResourceLocation sprite528;
 
 
     public ItemBlueprints(String s) {
@@ -55,7 +57,7 @@ public class ItemBlueprints extends ItemBakedBase {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
+    public void getSubItems(@NotNull CreativeTabs tab, @NotNull NonNullList<ItemStack> items) {
         if(tab == this.getCreativeTab() || tab == CreativeTabs.SEARCH) {
             for (Map.Entry<String, List<String>> pool : GenericRecipes.blueprintPools.entrySet()) {
                 String poolName = pool.getKey();
@@ -73,10 +75,12 @@ public class ItemBlueprints extends ItemBakedBase {
             spriteBase = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath);
             spriteDiscover = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_discover");
             spriteSecret = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_secret");
+            sprite528 = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_528");
 
             mrlBase = new ModelResourceLocation(spriteBase, "inventory");
             mrlDiscover = new ModelResourceLocation(spriteDiscover, "inventory");
             mrlSecret = new ModelResourceLocation(spriteSecret, "inventory");
+            mrl528 = new ModelResourceLocation(sprite528, "inventory");
 
             {
                 IModel retextured = baseModel.retexture(ImmutableMap.of("layer0", spriteBase.toString()));
@@ -93,6 +97,11 @@ public class ItemBlueprints extends ItemBakedBase {
                 IBakedModel baked = retextured.bake(ModelRotation.X0_Y0, DefaultVertexFormats.ITEM, ModelLoader.defaultTextureGetter());
                 event.getModelRegistry().putObject(mrlSecret, baked);
             }
+            {
+                IModel retextured = baseModel.retexture(ImmutableMap.of("layer0", sprite528.toString()));
+                IBakedModel baked = retextured.bake(ModelRotation.X0_Y0, DefaultVertexFormats.ITEM, ModelLoader.defaultTextureGetter());
+                event.getModelRegistry().putObject(mrl528, baked);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -104,18 +113,21 @@ public class ItemBlueprints extends ItemBakedBase {
         spriteBase = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath);
         spriteDiscover = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_discover");
         spriteSecret = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_secret");
+        sprite528 = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_528");
 
         mrlBase = new ModelResourceLocation(spriteBase, "inventory");
         mrlDiscover = new ModelResourceLocation(spriteDiscover, "inventory");
         mrlSecret = new ModelResourceLocation(spriteSecret, "inventory");
+        mrl528 = new ModelResourceLocation(sprite528, "inventory");
 
-        ModelBakery.registerItemVariants(this, mrlBase, mrlDiscover, mrlSecret);
+        ModelBakery.registerItemVariants(this, mrlBase, mrlDiscover, mrlSecret, mrl528);
 
         ModelLoader.setCustomMeshDefinition(this, stack -> {
             String pool = grabPool(stack);
             if (pool != null) {
                 if (pool.startsWith(GenericRecipes.POOL_PREFIX_DISCOVER)) return mrlDiscover;
                 if (pool.startsWith(GenericRecipes.POOL_PREFIX_SECRET)) return mrlSecret;
+                if (pool.startsWith(GenericRecipes.POOL_PREFIX_528)) return mrl528;
             }
             return mrlBase;
         });
@@ -127,10 +139,11 @@ public class ItemBlueprints extends ItemBakedBase {
         map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath));
         map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_discover"));
         map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_secret"));
+        map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_528"));
     }
 
     @Override
-    public @NotNull ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
+    public @NotNull ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, @NotNull EnumHand hand) {
         ItemStack stack = player.getHeldItem(hand);
         if(world.isRemote) return ActionResult.newResult(EnumActionResult.PASS, player.getHeldItem(hand));
         if(!stack.hasTagCompound()) return ActionResult.newResult(EnumActionResult.PASS, player.getHeldItem(hand));

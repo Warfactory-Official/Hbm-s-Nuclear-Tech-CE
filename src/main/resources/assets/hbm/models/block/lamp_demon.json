@@ -1,6 +1,6 @@
 {
 	"parent": "block/cube_all",
 	"textures": {
-		"all": "hbm:models/machines/demon_lamp"
+		"all": "hbm:blocks/block_steel"
 	}
 }

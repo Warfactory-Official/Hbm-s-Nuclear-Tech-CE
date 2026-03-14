@@ -17,8 +17,8 @@ import java.util.List;
 
 public class ButtonEmergencyPush extends Control {
 
-    public ButtonEmergencyPush(String name, ControlPanel panel) {
-        super(name, panel);
+    public ButtonEmergencyPush(String name,String registryName,ControlPanel panel) {
+        super(name,registryName, panel);
         vars.put("isPushed", new DataValueFloat(0));
     }
 
@@ -110,7 +110,7 @@ public class ButtonEmergencyPush extends Control {
 
     @Override
     public Control newControl(ControlPanel panel) {
-        return new ButtonEmergencyPush(name, panel);
+        return new ButtonEmergencyPush(name,registryName,panel);
     }
 
 }

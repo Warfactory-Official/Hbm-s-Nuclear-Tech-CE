@@ -4,6 +4,7 @@ import com.hbm.blocks.ITooltipProvider;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.machine.TileEntityStorageDrum;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
@@ -45,6 +46,11 @@ public class StorageDrum extends BlockMachineBase implements ITooltipProvider {
 			return false;
 		}
 	}
+
+    @Override
+    public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
+        return BlockFaceShape.CENTER_BIG;
+    }
 
 	@Override
 	public EnumBlockRenderType getRenderType(IBlockState state){

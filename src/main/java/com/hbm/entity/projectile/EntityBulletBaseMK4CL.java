@@ -5,6 +5,7 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.main.MainRegistry;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeChunkManager;
@@ -15,6 +16,7 @@ import java.util.List;
 public class EntityBulletBaseMK4CL extends EntityBulletBaseMK4 implements IChunkLoader {
     private ForgeChunkManager.Ticket loaderTicket;
     private List<ChunkPos> loadedChunks = new ArrayList<ChunkPos>();
+    private boolean awaitingTicketRestore;
 
     public EntityBulletBaseMK4CL(World world) {
         super(world);
@@ -27,7 +29,6 @@ public class EntityBulletBaseMK4CL extends EntityBulletBaseMK4 implements IChunk
     @Override
     protected void entityInit() {
         super.entityInit();
-        init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, ForgeChunkManager.Type.ENTITY));
     }
 
     @Override
@@ -37,6 +38,8 @@ public class EntityBulletBaseMK4CL extends EntityBulletBaseMK4 implements IChunk
                 loaderTicket = ticket;
                 loaderTicket.bindEntity(this);
                 loaderTicket.getModData();
+            } else if(loaderTicket != ticket) {
+                ForgeChunkManager.releaseTicket(ticket);
             }
             ForgeChunkManager.forceChunk(loaderTicket, new ChunkPos(chunkCoordX, chunkCoordZ));
         }
@@ -44,6 +47,7 @@ public class EntityBulletBaseMK4CL extends EntityBulletBaseMK4 implements IChunk
 
     @Override
     public void onUpdate() {
+        if(!world.isRemote) requestChunkLoaderTicketIfNeeded();
         super.onUpdate();
 
         if(!world.isRemote) loadNeighboringChunks((int)Math.floor(posX / 16D), (int)Math.floor(posZ / 16D));
@@ -60,6 +64,11 @@ public class EntityBulletBaseMK4CL extends EntityBulletBaseMK4 implements IChunk
             for(ChunkPos chunk : loadedChunks) {
                 ForgeChunkManager.unforceChunk(loaderTicket, chunk);
             }
+            loadedChunks.clear();
+            if(this.isDead) {
+                ForgeChunkManager.releaseTicket(loaderTicket);
+                loaderTicket = null;
+            }
         }
     }
 
@@ -74,5 +83,25 @@ public class EntityBulletBaseMK4CL extends EntityBulletBaseMK4 implements IChunk
                 ForgeChunkManager.forceChunk(loaderTicket, chunk);
             }
         }
+    }
+
+    @Override
+    public void readEntityFromNBT(NBTTagCompound compound) {
+        super.readEntityFromNBT(compound);
+        awaitingTicketRestore = true;
+    }
+
+    @Override
+    public void writeEntityToNBT(NBTTagCompound compound) {
+        super.writeEntityToNBT(compound);
+    }
+
+    private void requestChunkLoaderTicketIfNeeded() {
+        if(world.isRemote || loaderTicket != null) return;
+        if(awaitingTicketRestore) {
+            awaitingTicketRestore = false;
+            return;
+        }
+        init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, ForgeChunkManager.Type.ENTITY));
     }
 }

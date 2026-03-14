@@ -2,15 +2,14 @@ package com.hbm.render.tileentity;
 
 import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.generic.BlockBobble;
 import com.hbm.blocks.generic.BlockBobble.BobbleType;
 import com.hbm.blocks.generic.BlockBobble.TileEntityBobble;
-import com.hbm.render.loader.HFRWavefrontObject;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.ModItems;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.loader.IModelCustom;
 import com.hbm.render.item.ItemRenderBase;
+import com.hbm.render.loader.HFRWavefrontObject;
+import com.hbm.render.loader.IModelCustom;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -22,8 +21,6 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import org.lwjgl.opengl.GL11;
 
 @AutoRegister

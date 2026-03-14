@@ -20,6 +20,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
+import org.jetbrains.annotations.NotNull;
 
 public class MachineArcFurnaceLarge extends BlockDummyable {
 
@@ -28,7 +29,7 @@ public class MachineArcFurnaceLarge extends BlockDummyable {
     }
 
     @Override
-    public TileEntity createNewTileEntity(World world, int meta) {
+    public TileEntity createNewTileEntity(@NotNull World world, int meta) {
         if(meta >= 12) return new TileEntityMachineArcFurnaceLarge();
         if(meta >= 6) return new TileEntityProxyCombo().inventory().power();
         return null;
@@ -47,8 +48,7 @@ public class MachineArcFurnaceLarge extends BlockDummyable {
     @Override
     public boolean checkRequirement(World world, int x, int y, int z, ForgeDirection dir, int o) {
         if(!super.checkRequirement(world, x, y, z, dir, o)) return false;
-        if(!MultiblockHandlerXR.checkSpace(world, x + dir.offsetX * o , y, z + dir.offsetZ * o, new int[] {4, 0, 3, -2, 1, 1}, x, y, z, dir)) return false;
-        return true;
+        return MultiblockHandlerXR.checkSpace(world, x + dir.offsetX * o, y, z + dir.offsetZ * o, new int[]{4, 0, 3, -2, 1, 1}, x, y, z, dir);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class MachineArcFurnaceLarge extends BlockDummyable {
     }
 
     @Override
-    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+    public boolean onBlockActivated(World world, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull EntityPlayer player, @NotNull EnumHand hand, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ) {
 
         if(world.isRemote) {
             return true;

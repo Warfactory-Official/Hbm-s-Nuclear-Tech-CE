@@ -25,12 +25,13 @@ public class StockNodeLoader implements INodeLoader {
 				node = new NodeEventBroadcast(0, 0, l);
 				break;
 			case "getVar":
-				int ctrlIdx = tag.getInteger("controlIdx");
-				node = new NodeGetVar(0, 0, sys.parent.panel.controls.get(ctrlIdx));
+				node = new NodeGetVar(0, 0, sys.parent);
 				break;
 			case "queryBlock":
-				ctrlIdx = tag.getInteger("controlIdx");
-				node = new NodeQueryBlock(0, 0, sys.parent.panel.controls.get(ctrlIdx));
+				node = new NodeQueryBlock(0, 0, sys.parent);
+				break;
+			case "redstoneInput":
+				node = new NodeRedstoneInput(0, 0, sys.parent);
 				break;
 			case "math":
 				node = new NodeMath(0, 0);
@@ -48,8 +49,10 @@ public class StockNodeLoader implements INodeLoader {
 				node = new NodeConditional(0, 0);
 				break;
 			case "setVar":
-				int ctrlIdx2 = tag.getInteger("controlIdx");
-				node = new NodeSetVar(0, 0, sys.parent.panel.controls.get(ctrlIdx2));
+				node = new NodeSetVar(0, 0, sys.parent);
+				break;
+			case "redstoneOutput":
+				node = new NodeRedstoneOutput(0, 0);
 				break;
 			case "input":
 				node = new NodeInput(0, 0, null);

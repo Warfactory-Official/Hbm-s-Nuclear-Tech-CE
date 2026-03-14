@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 @AutoRegister(name = "entity_railgun_pellet", trackingRange = 1000)
 public class EntityRailgunBlast extends Entity implements IChunkLoader {
+	private boolean awaitingTicketRestore;
 
 	public EntityRailgunBlast(World w) {
 		super(w);
@@ -39,6 +40,8 @@ public class EntityRailgunBlast extends Entity implements IChunkLoader {
 					loaderTicket = ticket;
 					loaderTicket.bindEntity(this);
 					loaderTicket.getModData();	
+				} else if(loaderTicket != ticket) {
+					ForgeChunkManager.releaseTicket(ticket);
 				}
 
 				ForgeChunkManager.forceChunk(loaderTicket, new ChunkPos(chunkCoordX, chunkCoordZ));
@@ -77,11 +80,13 @@ public class EntityRailgunBlast extends Entity implements IChunkLoader {
 	
 	@Override
 	protected void entityInit() {
-		init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, Type.ENTITY));
 	}
 
 	@Override
 	public void onUpdate() {
+		if(!world.isRemote) {
+			requestChunkLoaderTicketIfNeeded();
+		}
 		this.prevPosX = this.posX;
 		this.prevPosY = this.posY;
 		this.prevPosZ = this.posZ;
@@ -142,10 +147,37 @@ public class EntityRailgunBlast extends Entity implements IChunkLoader {
 	}
 
 	@Override
+	public void setDead() {
+		super.setDead();
+		this.clearChunkLoader();
+	}
+
+	private void clearChunkLoader() {
+		if(!world.isRemote && loaderTicket != null) {
+			for(ChunkPos chunk : loadedChunks) {
+				ForgeChunkManager.unforceChunk(loaderTicket, chunk);
+			}
+			loadedChunks.clear();
+			ForgeChunkManager.releaseTicket(loaderTicket);
+			loaderTicket = null;
+		}
+	}
+
+	@Override
 	protected void readEntityFromNBT(NBTTagCompound compound) {
+		awaitingTicketRestore = true;
 	}
 
 	@Override
 	protected void writeEntityToNBT(NBTTagCompound compound) {
+	}
+
+	private void requestChunkLoaderTicketIfNeeded() {
+		if(world.isRemote || loaderTicket != null) return;
+		if(awaitingTicketRestore) {
+			awaitingTicketRestore = false;
+			return;
+		}
+		init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, Type.ENTITY));
 	}
 }

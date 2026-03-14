@@ -1,24 +1,29 @@
 package com.hbm.tileentity.network;
 
+import com.hbm.interfaces.IControlReceiver;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.container.ContainerCraneInserter;
 import com.hbm.inventory.gui.GUICraneInserter;
 import com.hbm.tileentity.IGUIProvider;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
-public class TileEntityCraneInserter extends TileEntityCraneBase implements IGUIProvider {
+public class TileEntityCraneInserter extends TileEntityCraneBase implements IGUIProvider, IControlReceiver {
+    public boolean destroyer = true;
 
     public TileEntityCraneInserter() {
         super(21);
@@ -41,13 +46,12 @@ public class TileEntityCraneInserter extends TileEntityCraneBase implements IGUI
 
     public void tryFillTe(){
         EnumFacing outputSide = getOutputSide();
+        EnumFacing accessSide = outputSide.getOpposite();
         TileEntity te = world.getTileEntity(pos.offset(outputSide));
 
-        int meta = this.getBlockMetadata();
         if(te != null){
-            ICapabilityProvider capte = te;
-            if(capte.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, outputSide)) {
-                IItemHandler cap = capte.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, outputSide);
+            if(te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessSide)) {
+                IItemHandler cap = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, accessSide);
             
                 for(int i = 0; i < inventory.getSlots(); i++) {
                     tryFillContainerCap(cap, i);
@@ -131,6 +135,45 @@ public class TileEntityCraneInserter extends TileEntityCraneBase implements IGUI
     @SideOnly(Side.CLIENT)
     public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
         return new GUICraneInserter(player.inventory, this);
+    }
+
+    @Override
+    public void serialize(ByteBuf buf) {
+        buf.writeBoolean(destroyer);
+    }
+
+    @Override
+    public void deserialize(ByteBuf buf) {
+        this.destroyer = buf.readBoolean();
+    }
+
+    @Override
+    public void readFromNBT(NBTTagCompound nbt) {
+        super.readFromNBT(nbt);
+        this.destroyer = nbt.getBoolean("destroyer");
+    }
+
+    @Override
+    public @NotNull NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+        super.writeToNBT(nbt);
+        nbt.setBoolean("destroyer", this.destroyer);
+        return nbt;
+    }
+
+    @Override
+    public boolean hasPermission(EntityPlayer player) {
+        int xCoord = pos.getX();
+        int yCoord = pos.getY();
+        int zCoord = pos.getZ();
+        return new Vec3d(xCoord - player.posX, yCoord - player.posY, zCoord - player.posZ).length() < 20;
+    }
+
+    @Override
+    public void receiveControl(NBTTagCompound data) {
+        if(data.hasKey("destroyer")) {
+            this.destroyer = !this.destroyer;
+            this.markDirty();
+        }
     }
 
 }

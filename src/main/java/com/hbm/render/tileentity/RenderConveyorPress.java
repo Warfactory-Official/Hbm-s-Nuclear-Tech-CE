@@ -28,7 +28,7 @@ public class RenderConveyorPress extends TileEntitySpecialRenderer<TileEntityCon
 
         bindTexture(ResourceManager.conveyor_press_tex);
         ResourceManager.conveyor_press.renderPart("Press");
-        if (te.syncStack != null) {
+        if (te.syncStack != null && !te.syncStack.isEmpty()) {
             GlStateManager.pushMatrix();
             double piston = te.lastPress + (te.renderPress - te.lastPress) * partialTicks;
             GlStateManager.translate(0D, -piston * 0.75D, 0D);

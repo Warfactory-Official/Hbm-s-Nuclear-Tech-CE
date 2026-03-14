@@ -8,6 +8,8 @@ import com.hbm.items.armor.IArmorDisableModel;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.render.NTMRenderHelper;
 import com.hbm.render.loader.IModelCustom;
+import com.hbm.render.tileentity.IItemRendererProvider;
+import com.hbm.render.tileentity.ItemRendererProviderRegistry;
 import com.hbm.util.*;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
@@ -80,6 +82,9 @@ public class ArmorFSB extends ItemArmor implements IArmorDisableModel {
         this.texture = texture;
 
         ModItems.ALL_ITEMS.add(this);
+        if (this instanceof IItemRendererProvider provider) {
+            ItemRendererProviderRegistry.registerItemProvider(provider);
+        }
     }
 
     public static boolean hasFSBArmor(EntityPlayer entity) {
@@ -442,9 +447,9 @@ public class ArmorFSB extends ItemArmor implements IArmorDisableModel {
         GlStateManager.disableAlpha();
         Minecraft.getMinecraft().getTextureManager().bindTexture(overlay);
         NTMRenderHelper.startDrawingTexturedQuads();
-        NTMRenderHelper.addVertexWithUV(0.0D, (double) resolution.getScaledHeight(), -90.0D, 0.0D, 1.0D);
-        NTMRenderHelper.addVertexWithUV((double) resolution.getScaledWidth(), (double) resolution.getScaledHeight(), -90.0D, 1.0D, 1.0D);
-        NTMRenderHelper.addVertexWithUV((double) resolution.getScaledWidth(), 0.0D, -90.0D, 1.0D, 0.0D);
+        NTMRenderHelper.addVertexWithUV(0.0D, resolution.getScaledHeight(), -90.0D, 0.0D, 1.0D);
+        NTMRenderHelper.addVertexWithUV(resolution.getScaledWidth(), resolution.getScaledHeight(), -90.0D, 1.0D, 1.0D);
+        NTMRenderHelper.addVertexWithUV(resolution.getScaledWidth(), 0.0D, -90.0D, 1.0D, 0.0D);
         NTMRenderHelper.addVertexWithUV(0.0D, 0.0D, -90.0D, 0.0D, 0.0D);
         NTMRenderHelper.draw();
         GlStateManager.depthMask(true);

@@ -9,13 +9,15 @@ import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
-public class ArmorRPA extends ArmorFSBPowered implements IItemRendererProvider {
+public class ArmorRPA extends ArmorFSBPowered implements IItemRendererProvider, IPAWeaponsProvider {
 
     @SideOnly(Side.CLIENT)
     ModelArmorRPA[] models;
@@ -29,7 +31,7 @@ public class ArmorRPA extends ArmorFSBPowered implements IItemRendererProvider {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public ModelBiped getArmorModel(EntityLivingBase entityLiving, ItemStack itemStack, EntityEquipmentSlot armorSlot, ModelBiped _default){
+    public ModelBiped getArmorModel(@NotNull EntityLivingBase entityLiving, @NotNull ItemStack itemStack, @NotNull EntityEquipmentSlot armorSlot, @NotNull ModelBiped _default){
         if(models == null) {
             models = new ModelArmorRPA[4];
 
@@ -87,4 +89,14 @@ public class ArmorRPA extends ArmorFSBPowered implements IItemRendererProvider {
                         "Head", "Body,Fan,Glow", "LeftArm", "RightArm", "LeftLeg", "RightLeg", "LeftBoot", "RightBoot");
             }};
     }
+
+    public static final ArmorRPAMelee meleeComponent = new ArmorRPAMelee();
+
+    @Override
+    public IPAMelee getMeleeComponent(EntityPlayer entity) {
+        if(hasFSBArmorIgnoreCharge(entity)) return meleeComponent;
+        return null;
+    }
+
+    @Override public IPARanged getRangedComponent(EntityPlayer entity) { return null; }
 }

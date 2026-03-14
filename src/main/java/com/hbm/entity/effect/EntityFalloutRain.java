@@ -771,6 +771,7 @@ public class EntityFalloutRain extends EntityExplosionChunkloading implements Bo
 
     @Override
     protected void readEntityFromNBT(NBTTagCompound tag) {
+        markChunkLoaderRestoredFromNBT();
         setScale(tag.getInteger("scale"));
 
         LongArrayList in = new LongArrayList();

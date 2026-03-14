@@ -1,5 +1,6 @@
 package com.hbm.util;
 
+import com.hbm.config.ServerConfig;
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.interfaces.Untested;
 import com.hbm.items.ModItems;
@@ -67,9 +68,7 @@ public class EntityDamageUtil {
                 if (!chestplate.isEmpty() && ArmorModHandler.hasMods(chestplate)) {
                     ItemStack[] mods = ArmorModHandler.pryMods(chestplate);
 
-                    if (mods[ArmorModHandler.extra] != null && mods[ArmorModHandler.extra].getItem() == ModItems.v1) {
-                        return true;
-                    }
+                    return mods[ArmorModHandler.extra] != null && mods[ArmorModHandler.extra].getItem() == ModItems.v1;
                 }
             }
         }
@@ -96,6 +95,10 @@ public class EntityDamageUtil {
     }
 
     public static RayTraceResult getMouseOver(EntityPlayer attacker, double reach) {
+        return getMouseOver(attacker, reach, 0D);
+    }
+
+    public static RayTraceResult getMouseOver(EntityPlayer attacker, double reach, double threshold) {
 
         World world = attacker.world;
         RayTraceResult objectMouseOver;
@@ -108,32 +111,30 @@ public class EntityDamageUtil {
         Vec3d end = pos.add(look.x * reach, look.y * reach, look.z * reach);
         Vec3d hitvec = null;
         float grace = 1.0F;
-        List list = world.getEntitiesWithinAABBExcludingEntity(attacker, attacker.getEntityBoundingBox().expand(look.x * reach, look.y * reach, look.z * reach).expand(grace, grace, grace));
+        List<Entity> list = world.getEntitiesWithinAABBExcludingEntity(attacker, attacker.getEntityBoundingBox().expand(look.x * reach, look.y * reach, look.z * reach).expand(grace, grace, grace));
 
         double closest = reach;
 
-        for(int i = 0; i < list.size(); ++i) {
-            Entity entity = (Entity) list.get(i);
+        for (Entity entity : list) {
+            if (entity.canBeCollidedWith()) {
 
-            if(entity.canBeCollidedWith()) {
-
-                float borderSize = entity.getCollisionBorderSize();
+                double borderSize = entity.getCollisionBorderSize() + threshold;
                 AxisAlignedBB axisalignedbb = entity.getEntityBoundingBox().expand(borderSize, borderSize, borderSize);
                 RayTraceResult movingobjectposition = axisalignedbb.calculateIntercept(pos, end);
 
-                if(axisalignedbb.contains(pos)) {
-                    if(0.0D <= closest) {
+                if (axisalignedbb.contains(pos)) {
+                    if (0.0D <= closest) {
                         pointedEntity = entity;
                         hitvec = movingobjectposition == null ? pos : movingobjectposition.hitVec;
                         closest = 0.0D;
                     }
 
-                } else if(movingobjectposition != null) {
+                } else if (movingobjectposition != null) {
                     double dist = pos.distanceTo(movingobjectposition.hitVec);
 
-                    if(dist < closest || closest == 0.0D) {
-                        if(entity == attacker.getRidingEntity() && !entity.canRiderInteract()) {
-                            if(closest == 0.0D) {
+                    if (dist < closest || closest == 0.0D) {
+                        if (entity == attacker.getRidingEntity() && !entity.canRiderInteract()) {
+                            if (closest == 0.0D) {
                                 pointedEntity = entity;
                                 hitvec = movingobjectposition.hitVec;
                             }
@@ -166,6 +167,48 @@ public class EntityDamageUtil {
     }
 
     private static boolean attackEntityFromNTInternal(EntityLivingBase living, DamageSource source, float amount, boolean ignoreIFrame, boolean allowSpecialCancel, double knockbackMultiplier) {
+        boolean superCompatibility = ServerConfig.DAMAGE_COMPATIBILITY_MODE.get();
+        return superCompatibility
+                ? attackEntitySuperCompatibility(living, source, amount, ignoreIFrame, allowSpecialCancel, knockbackMultiplier)
+                : attackEntitySEDNAPatch(living, source, amount, ignoreIFrame, allowSpecialCancel, knockbackMultiplier);
+    }
+
+    /**
+     * MK2 SEDNA damage system, currently untested. An even hackier, yet more compatible solution using the vanilla damage calc directly but tweaking certain apsects.
+     * Limitation: Does not apply DR piercing to vanilla armor
+     */
+    private static boolean attackEntitySuperCompatibility(EntityLivingBase living, DamageSource source, float amount, boolean ignoreIFrame, boolean allowSpecialCancel, double knockbackMultiplier) {
+        //disable iframes
+        if(ignoreIFrame) { living.lastDamage = 0F; living.hurtResistantTime = 0; }
+        //cache last velocity
+        double motionX = living.motionX;
+        double motionY = living.motionX;
+        double motionZ = living.motionX;
+        //bam!
+        boolean ret = living.attackEntityFrom(source, amount);
+        //restore last velocity
+        living.motionX = motionX;
+        living.motionY = motionY;
+        living.motionZ = motionZ;
+        //apply own knockback
+        Entity entity = source.getTrueSource();
+        if(entity != null) {
+            double deltaX = entity.posX - living.posX;
+            double deltaZ;
+
+            for(deltaZ = entity.posZ - living.posZ; deltaX * deltaX + deltaZ * deltaZ < 1.0E-4D; deltaZ = (Math.random() - Math.random()) * 0.01D) {
+                deltaX = (Math.random() - Math.random()) * 0.01D;
+            }
+
+            living.attackedAtYaw = (float) (Math.atan2(deltaZ, deltaX) * 180.0D / Math.PI) - living.rotationYaw;
+            if(knockbackMultiplier > 0) knockBack(living, entity, amount, deltaX, deltaZ, knockbackMultiplier);
+        }
+        return ret;
+    }
+
+    /** MK1 SEDNA damage system, basically re-implements the vanilla code (only from Entity, child class code is effectively ignored) with some adjustments */
+    private static boolean attackEntitySEDNAPatch(EntityLivingBase living, DamageSource source, float amount, boolean ignoreIFrame, boolean allowSpecialCancel, double knockbackMultiplier) {
+        if(ignoreIFrame) living.lastDamage = 0F;
         if (MinecraftForge.EVENT_BUS.post(new LivingAttackEvent(living, source, amount)) && allowSpecialCancel) return false;
         if (living.isEntityInvulnerable(source)) return false;
         if (living.world.isRemote) return false;
@@ -276,7 +319,7 @@ public class EntityDamageUtil {
     public static float applyArmorCalculationsNT(EntityLivingBase living, DamageSource source, float amount) {
         if (!source.isUnblockable()) {
             float i = 25F - (living.getTotalArmorValue() * (1 - DamageResistanceHandler.currentPDR));
-            float armor = amount * (float) i;
+            float armor = amount * i;
             damageArmorNT(living, amount);
             amount = armor / 25.0F;
         }
@@ -331,7 +374,7 @@ public class EntityDamageUtil {
             living.motionY /= 2.0D;
             living.motionZ /= 2.0D;
             living.motionX -= motionX / horizontal * magnitude;
-            living.motionY += (double) magnitude;
+            living.motionY += magnitude;
             living.motionZ -= motionZ / horizontal * magnitude;
 
             if (living.motionY > 0.2D) {

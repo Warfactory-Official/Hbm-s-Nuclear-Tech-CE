@@ -10,6 +10,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.item.Item;
@@ -69,6 +70,21 @@ public class BlockDecoToaster extends BlockDecoModel<BlockEnums.DecoToasterEnum>
             ModelResourceLocation inv = new ModelResourceLocation(new ResourceLocation(Tags.MODID, getRegistryName().getPath() + "_item_" + m), "inventory");
             ModelLoader.setCustomModelResourceLocation(item, m, inv);
         }
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public StateMapperBase getStateMapper(ResourceLocation loc) {
+        return new StateMapperBase() {
+            @Override
+            protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
+                int meta = state.getValue(META) & 3;
+                if (meta >= BlockEnums.DecoToasterEnum.VALUES.length) {
+                    meta = 0;
+                }
+                return new ModelResourceLocation(loc, "meta=" + meta);
+            }
+        };
     }
 }
 

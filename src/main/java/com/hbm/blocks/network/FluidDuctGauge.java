@@ -3,6 +3,7 @@ package com.hbm.blocks.network;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.hbm.Tags;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.ILookOverlay;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.blocks.ModBlocks;
@@ -199,8 +200,7 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
     @Override
     @SideOnly(Side.CLIENT)
     public void registerModel() {
-        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0,
-                new ModelResourceLocation(Objects.requireNonNull(getRegistryName()), "inventory"));
+        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0, new ModelResourceLocation(Objects.requireNonNull(getRegistryName()), "inventory"));
         ModelLoader.setCustomStateMapper(this, new StateMapperBase() {
             @Override
             protected @NotNull ModelResourceLocation getModelResourceLocation(@NotNull IBlockState state) {
@@ -211,7 +211,7 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
 
     @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
     @AutoRegister
-    public static class TileEntityPipeGauge extends TileEntityPipeBaseNT implements SimpleComponent, CompatHandler.OCComponent {
+    public static class TileEntityPipeGauge extends TileEntityPipeBaseNT implements SimpleComponent, IRORValueProvider, CompatHandler.OCComponent {
 
         private long deltaTick = 0;
         private long deltaSecond = 0;
@@ -269,24 +269,17 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
             return new Object[]{deltaTick, deltaLastSecond, getType().getName(), pos.getX(), pos.getY(), pos.getZ()};
         }
 
-        /*@Override
+        @Override
         public String[] getFunctionInfo() {
-            return new String[]{
-                    PREFIX_VALUE + "deltatick",
-                    PREFIX_VALUE + "deltasecond"
-            };
+            return new String[]{PREFIX_VALUE + "deltatick", PREFIX_VALUE + "deltasecond",};
         }
 
         @Override
         public String provideRORValue(String name) {
-            if ((PREFIX_VALUE + "deltatick").equals(name)) {
-                return Long.toString(deltaTick);
-            }
-            if ((PREFIX_VALUE + "deltasecond").equals(name)) {
-                return Long.toString(deltaLastSecond);
-            }
+            if ((PREFIX_VALUE + "deltatick").equals(name)) return "" + deltaTick;
+            if ((PREFIX_VALUE + "deltasecond").equals(name)) return "" + deltaLastSecond;
             return null;
-        }*/
+        }
     }
 
     @SideOnly(Side.CLIENT)

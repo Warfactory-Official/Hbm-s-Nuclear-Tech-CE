@@ -29,8 +29,7 @@ public class ContainerElectrolyserMetal extends Container {
         this.addSlotToContainer(new SlotUpgrade(tedf.inventory, 1, 186, 140));
         this.addSlotToContainer(new SlotUpgrade(tedf.inventory, 2, 186, 158));
         //Input
-        this.addSlotToContainer(SlotFiltered.withWhitelist(tedf.inventory, 14, 10, 22, INPUT_FILTER)
-        );
+        this.addSlotToContainer(SlotFiltered.withWhitelist(tedf.inventory, 14, 10, 22, INPUT_FILTER));
         //Outputs
         this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 15, 136, 18));
         this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 16, 154, 18));

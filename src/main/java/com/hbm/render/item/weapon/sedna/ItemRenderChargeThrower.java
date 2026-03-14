@@ -4,7 +4,7 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.factory.XFactoryTool;
 import com.hbm.items.weapon.sedna.mags.MagazineFullReload;
-import com.hbm.items.weapon.sedna.mods.WeaponModManager;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.anim.sedna.HbmAnimationsSedna;
 import net.minecraft.client.Minecraft;
@@ -102,8 +102,6 @@ public class ItemRenderChargeThrower extends ItemRenderWeaponBase {
                 ResourceManager.charge_thrower.renderPart("Mortar");
                 ResourceManager.charge_thrower.renderPart("Oomph");
             }
-            //Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.charge_thrower_rocket_tex);
-            //ResourceManager.charge_thrower.renderPart("Rocket");
         }
 
         GlStateManager.shadeModel(GL11.GL_FLAT);
@@ -168,6 +166,6 @@ public class ItemRenderChargeThrower extends ItemRenderWeaponBase {
     }
 
     public boolean isScoped(ItemStack stack) {
-        return WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_SCOPE);
+        return XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_SCOPE);
     }
 }

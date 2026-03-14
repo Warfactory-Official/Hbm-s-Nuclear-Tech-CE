@@ -1221,8 +1221,7 @@ public class SiloComponent extends Component {
         randomlyFillWithBlocks(world, box, rand, 0.15F, 27, 7, 14, 31, 7, 14, Blocks.WEB);
 
         //Flooded Room
-        // TODO
-        //randomlyFillWithBlocks(world, box, rand, 0.15F, 28, 2, 11, 31, 2, 15, ModBlocks.reeds);
+        randomlyFillWithBlocks(world, box, rand, 0.15F, 28, 2, 11, 31, 2, 15, ModBlocks.reeds);
         fillWithMetadataBlocks(world, box, 28, 3, 12, 28, 3, 15, ModBlocks.deco_pipe_framed_green_rusted, pillarNS);
         setBlockState(world, ModBlocks.deco_steel.getStateFromMeta(0), 28, 3, 11, box);
         setBlockState(world, ModBlocks.deco_pipe_rim_green_rusted.getStateFromMeta(0), 28, 2, 11, box);

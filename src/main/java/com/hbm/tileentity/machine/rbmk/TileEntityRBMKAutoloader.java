@@ -78,8 +78,10 @@ public class TileEntityRBMKAutoloader extends TileEntityMachineBase implements I
                 if(below instanceof RBMKBase rbmkBase) {
                     BlockPos corePos = rbmkBase.findCore(world, down);
                     if(corePos != null && world.getTileEntity(corePos) instanceof TileEntityRBMKRod rod) {
-                        if(rod.inventory.getStackInSlot(0).isEmpty() || rod.inventory.getStackInSlot(0).getItem() instanceof ItemRBMKRod && ItemRBMKRod.getEnrichment(rod.inventory.getStackInSlot(0)) * 100 < cycle) {
-                            this.isRetracting = false;
+                        if(rod.coldEnoughForAutoloader()) {
+                            if (rod.inventory.getStackInSlot(0).isEmpty() || rod.inventory.getStackInSlot(0).getItem() instanceof ItemRBMKRod && ItemRBMKRod.getEnrichment(rod.inventory.getStackInSlot(0)) * 100 < cycle) {
+                                this.isRetracting = false;
+                            }
                         }
                     }
                 }

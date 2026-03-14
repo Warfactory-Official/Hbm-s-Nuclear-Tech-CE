@@ -2,7 +2,6 @@ package com.hbm.particle.helper;
 
 import com.hbm.particle.ParticleSpentCasing;
 import com.hbm.particle.SpentCasing;
-import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.util.Vec3NT;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -72,9 +71,9 @@ public class CasingCreator implements IParticleCreator {
     }
     public static void composeEffect(World world, Vec3d vec, float yaw, float pitch, double frontMotion, double heightMotion, double sideMotion, double motionVariance, float mPitch, float mYaw, String casing, boolean smoking, int smokeLife, double smokeLift, int nodeLife) {
 
-        Vec3d motion = new Vec3d(sideMotion, heightMotion, frontMotion);
-        motion.rotatePitch(-pitch / 180F * (float) Math.PI);
-        motion.rotateYaw(-yaw / 180F * (float) Math.PI);
+        Vec3NT motion = new Vec3NT(sideMotion, heightMotion, frontMotion);
+        motion.rotatePitchSelf(-pitch / 180F * (float) Math.PI);
+        motion.rotateYawSelf(-yaw / 180F * (float) Math.PI);
 
         double mX = motion.x+ world.rand.nextGaussian() * motionVariance;
         double mY = motion.y+ world.rand.nextGaussian() * motionVariance;

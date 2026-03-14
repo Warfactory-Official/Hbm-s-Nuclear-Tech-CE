@@ -12,7 +12,7 @@ import net.minecraft.world.World;
 
 public class BlockFissureBomb extends BlockTNTBase {
 
-    private static final BlockBakeFrame frame = BlockBakeFrame.bottomTop("fissure_bomb_side", "fissure_bomb_top", "fissure_bomb_bottom");
+    private static final BlockBakeFrame frame = BlockBakeFrame.sideTopBottom("fissure_bomb_side", "fissure_bomb_top", "fissure_bomb_bottom");
 
     public BlockFissureBomb(String s) {
         super(s, frame, frame);

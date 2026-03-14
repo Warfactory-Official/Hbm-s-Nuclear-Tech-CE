@@ -244,14 +244,18 @@ public class NodeConnection extends NodeElement implements ITypableNode {
 			case ENUM:
 				DataValueEnum<?> def = (DataValueEnum<?>)defaultValue;
 				Enum<?>[] possibleVals = def.getPossibleValues();
+				boolean matched = false;
 				for(Enum<?> e : possibleVals){
 					if(e.name().equalsIgnoreCase(val.toString())){
 						defaultValue = new DataValueEnum(e);
+						matched = true;
 						break;
 					}
 				}
-				int idx = Math.abs(((int)val.getNumber()))%possibleVals.length;
-				defaultValue = new DataValueEnum(possibleVals[idx]);
+				if(!matched) {
+					int idx = Math.abs(((int)val.getNumber()))%possibleVals.length;
+					defaultValue = new DataValueEnum(possibleVals[idx]);
+				}
 				break;
 			case NUMBER:
 				defaultValue = new DataValueFloat(val.getNumber());

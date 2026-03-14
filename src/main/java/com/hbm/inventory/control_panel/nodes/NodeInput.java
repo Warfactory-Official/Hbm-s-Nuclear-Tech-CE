@@ -33,7 +33,7 @@ public class NodeInput extends Node {
 
 	@Override
 	public void readFromNBT(NBTTagCompound tag, NodeSystem sys){
-		this.name = tag.getString(name);
+		this.name = tag.getString("name");
 		super.readFromNBT(tag, sys);
 	}
 
@@ -50,7 +50,7 @@ public class NodeInput extends Node {
 	public NodeInput setVars(Map<String, DataValue> vars){
 		outputs.clear();
 		for(Entry<String, DataValue> e : vars.entrySet()){
-			NodeConnection c = new NodeConnection(e.getKey(), this, outputs.size(), false, e.getValue().getType(), e.getValue());
+			NodeConnection c = new NodeConnection(e.getKey(), this, outputs.size(), false, e.getValue().getType(), e.getValue().copy());
 			outputs.add(c);
 		}
 		this.recalcSize();

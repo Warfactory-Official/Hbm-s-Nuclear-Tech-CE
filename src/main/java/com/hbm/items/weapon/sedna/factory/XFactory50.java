@@ -84,7 +84,7 @@ public class XFactory50 {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_AMAT))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_AMAT_ANIMS).orchestra(Orchestras.ORCHESTRA_AMAT)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.BMG50_SP, 7);
         ModItems.gun_amat_subtlety = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.LEGENDARY, "gun_amat_subtlety", new GunConfig()
                 .dura(1_000).draw(20).inspect(50).crosshair(RenderScreenOverlay.Crosshair.CIRCLE).scopeTexture(scope).smoke(LAMBDA_SMOKE)
                 .rec(new Receiver(0)
@@ -94,7 +94,7 @@ public class XFactory50 {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_AMAT))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_AMAT_ANIMS).orchestra(Orchestras.ORCHESTRA_AMAT)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.BMG50_JHP, 7);
         ModItems.gun_amat_penance = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.LEGENDARY, "gun_amat_penance", new GunConfig()
                 .dura(5_000).draw(20).inspect(50).crosshair(RenderScreenOverlay.Crosshair.CIRCLE).scopeTexture(scope_thermal).thermalSights(true).smoke(LAMBDA_SMOKE)
                 .rec(new Receiver(0)
@@ -104,7 +104,7 @@ public class XFactory50 {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_AMAT))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_AMAT_ANIMS).orchestra(Orchestras.ORCHESTRA_AMAT)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.BMG50_JHP, 7);
 
         ModItems.gun_m2 = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_m2", new GunConfig()
                 .dura(3_000).draw(10).inspect(31).crosshair(RenderScreenOverlay.Crosshair.L_CIRCLE).smoke(LAMBDA_SMOKE)
@@ -115,7 +115,7 @@ public class XFactory50 {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_M2))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_M2_ANIMS).orchestra(Orchestras.ORCHESTRA_M2)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.BMG50_FMJ, 25);
     }
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_SMOKE = (stack, ctx) -> Lego.handleStandardSmoke(ctx.entity, stack, 2000, 0.05D, 1.1D, 0);
@@ -124,7 +124,7 @@ public class XFactory50 {
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_RECOIL_M2 = (stack, ctx) -> ItemGunBaseNT.setupRecoil((float) (ctx.getPlayer().getRNG().nextGaussian() * 0.5), (float) (ctx.getPlayer().getRNG().nextGaussian() * 0.5));
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_AMAT_ANIMS = (stack, type) -> {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_AMAT_ANIMS = (stack, type) -> {
         double turn = -60;
         double pullAmount = -2.5;
         double side = 4;
@@ -162,7 +162,7 @@ public class XFactory50 {
 
     };
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_M2_ANIMS = (stack, type) -> switch (type) {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_M2_ANIMS = (stack, type) -> switch (type) {
         case EQUIP -> new BusAnimationSedna()
                 .addBus("EQUIP", new BusAnimationSequenceSedna().addPos(80, 0, 0, 0).addPos(0, 0, 0, 500, IType.SIN_FULL));
         case CYCLE -> new BusAnimationSedna()

@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "rot=0":  { "model": "hbm:plushie" },
+    "rot=1":  { "model": "hbm:plushie" },
+    "rot=2":  { "model": "hbm:plushie" },
+    "rot=3":  { "model": "hbm:plushie" },
+    "rot=4":  { "model": "hbm:plushie" },
+    "rot=5":  { "model": "hbm:plushie" },
+    "rot=6":  { "model": "hbm:plushie" },
+    "rot=7":  { "model": "hbm:plushie" },
+    "rot=8":  { "model": "hbm:plushie" },
+    "rot=9":  { "model": "hbm:plushie" },
+    "rot=10": { "model": "hbm:plushie" },
+    "rot=11": { "model": "hbm:plushie" },
+    "rot=12": { "model": "hbm:plushie" },
+    "rot=13": { "model": "hbm:plushie" },
+    "rot=14": { "model": "hbm:plushie" },
+    "rot=15": { "model": "hbm:plushie" }
+  }
+}

@@ -8,7 +8,7 @@ import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.mags.MagazineFullReload;
-import com.hbm.items.weapon.sedna.mods.WeaponModManager;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.ResourceManager;
 import com.hbm.particle.SpentCasing;
@@ -49,11 +49,11 @@ public class XFactory22lr {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_AM180))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_AM180_ANIMS).orchestra(Orchestras.ORCHESTRA_AM180)
-        ).setNameMutator(LAMBDA_NAME_AM180);
+        ).setNameMutator(LAMBDA_NAME_AM180).setDefaultAmmo(GunFactory.EnumAmmo.P22_SP, 35);
     }
 
     public static Function<ItemStack, String> LAMBDA_NAME_AM180 = (stack) -> {
-        if(WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_SILENCER)) return stack.getTranslationKey() + "_silenced";
+        if(XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_SILENCER)) return stack.getTranslationKey() + "_silenced";
         return null;
     };
 
@@ -61,7 +61,7 @@ public class XFactory22lr {
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_RECOIL_AM180 = (stack, ctx) -> ItemGunBaseNT.setupRecoil((float) (ctx.getPlayer().getRNG().nextGaussian() * 0.25), (float) (ctx.getPlayer().getRNG().nextGaussian() * 0.25));
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_AM180_ANIMS = (stack, type) -> {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_AM180_ANIMS = (stack, type) -> {
         if(ClientConfig.GUN_ANIMS_LEGACY.get()) {
             switch (type) {
                 case EQUIP -> {

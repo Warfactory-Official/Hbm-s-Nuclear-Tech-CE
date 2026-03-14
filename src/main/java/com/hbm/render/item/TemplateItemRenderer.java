@@ -1,10 +1,8 @@
 package com.hbm.render.item;
 
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.recipes.CrucibleRecipes;
 import com.hbm.items.ModItems;
-import com.hbm.items.machine.ItemAssemblyTemplate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -14,8 +12,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.input.Keyboard;
-@AutoRegister(item = "assembly_template")
-@AutoRegister(item = "chemistry_template")
 @AutoRegister(item = "crucible_template")
 public class TemplateItemRenderer extends TileEntityItemStackRenderer {
 
@@ -62,12 +58,7 @@ public class TemplateItemRenderer extends TileEntityItemStackRenderer {
         if (originalStack.isEmpty()) return ItemStack.EMPTY;
         Item item = originalStack.getItem();
 
-        if (item instanceof ItemAssemblyTemplate) {
-            ComparableStack output = ItemAssemblyTemplate.getRecipeOutput(originalStack);
-            return (output != null) ? output.toStack() : ItemStack.EMPTY;
-        } else if (item == ModItems.chemistry_template) {
-            return new ItemStack(ModItems.chemistry_icon, 1, originalStack.getMetadata());
-        } else if (item == ModItems.crucible_template) {
+        if (item == ModItems.crucible_template) {
             if (CrucibleRecipes.indexMapping.containsKey(originalStack.getMetadata())) {
                 return CrucibleRecipes.indexMapping.get(originalStack.getMetadata()).icon;
             }

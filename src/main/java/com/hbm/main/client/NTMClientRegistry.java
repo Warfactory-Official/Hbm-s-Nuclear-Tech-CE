@@ -13,11 +13,10 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
-import com.hbm.inventory.recipes.ChemplantRecipes;
+import com.hbm.items.ClaimedModelLocationRegistry;
 import com.hbm.items.IDynamicModels;
 import com.hbm.items.IModelRegister;
 import com.hbm.items.ModItems;
-import com.hbm.items.RBMKItemRenderers;
 import com.hbm.items.gear.RedstoneSword;
 import com.hbm.items.machine.*;
 import com.hbm.items.special.*;
@@ -26,12 +25,15 @@ import com.hbm.items.tool.ItemCanister;
 import com.hbm.items.tool.ItemGasCanister;
 import com.hbm.items.tool.ItemGuideBook;
 import com.hbm.items.weapon.IMetaItemTesr;
-import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.GuiCTMWarning;
 import com.hbm.render.icon.RegistrationUtils;
-import com.hbm.render.item.*;
+import com.hbm.render.item.FancyMissingModelPerspective;
+import com.hbm.render.item.BakedModelNoFPV;
+import com.hbm.render.item.TEISRBase;
+import com.hbm.render.item.TemplateBakedModel;
+import com.hbm.render.item.WrappedTEISRModel;
 import com.hbm.render.item.weapon.B92BakedModel;
 import com.hbm.render.item.weapon.ItemRedstoneSwordRender;
 import com.hbm.render.item.weapon.ItemRenderGunAnim;
@@ -40,24 +42,26 @@ import com.hbm.render.tileentity.*;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.block.model.ModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.model.ModelRotation;
 import net.minecraft.client.renderer.color.IItemColor;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.IRegistry;
 import net.minecraftforge.client.event.*;
+import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-import java.util.Objects;
+import java.util.*;
 
 
 /**
@@ -65,12 +69,9 @@ import java.util.Objects;
  *
  */
 public class NTMClientRegistry {
-
-
     public static TextureAtlasSprite contrail;
     public static TextureAtlasSprite particle_base;
     public static TextureAtlasSprite fog;
-    public static TextureAtlasSprite uv_debug;
     public static TextureAtlasSprite debugPower;
     public static TextureAtlasSprite debugFluid;
     //Lazy, I know
@@ -78,6 +79,90 @@ public class NTMClientRegistry {
     // 1 - No CTM, Player didn't acknowledge
     // 2 - No CTM, Player acknowledge
     public static boolean ctmWarning = false;
+
+    public static void bindTeisr(Item item, TileEntityItemStackRenderer renderer) {
+        ClaimedModelLocationRegistry.unregisterTeisrBinding(item);
+        item.setTileEntityItemStackRenderer(renderer);
+        if (renderer instanceof TEISRBase teisr) {
+            ClaimedModelLocationRegistry.registerTeisrBinding(new OwnedTeisrBinding(item, teisr));
+        }
+    }
+
+    public static void bindTeisrs(Iterable<IItemRendererProvider> providers) {
+        for (IItemRendererProvider provider : providers) {
+            for (Item item : provider.getItemsForRenderer()) {
+                bindTeisr(item, provider.getRenderer(item));
+            }
+        }
+    }
+
+    public static void unbindTeisr(Item item) {
+        ClaimedModelLocationRegistry.unregisterTeisrBinding(item);
+        item.setTileEntityItemStackRenderer(null);
+    }
+
+    public static void unbindTeisrs(Item... items) {
+        for (Item item : items) {
+            unbindTeisr(item);
+        }
+    }
+
+    public static ModelResourceLocation getSyntheticTeisrModelLocation(Item item) {
+        return ClaimedModelLocationRegistry.getSyntheticTeisrModelLocation(item);
+    }
+
+    private static OwnedTeisrBinding getOwnedTeisrBinding(Item item) {
+        ClaimedModelLocationRegistry.ITeisrBinding binding = ClaimedModelLocationRegistry.getTeisrBinding(item);
+        return binding instanceof OwnedTeisrBinding owned ? owned : null;
+    }
+
+    private static ModelResourceLocation getBoundTeisrModelLocation(Item item, TEISRBase teisr) {
+        OwnedTeisrBinding binding = getOwnedTeisrBinding(item);
+        return binding != null ? binding.modelLocation : teisr.createModelBinding(item).getModelLocation();
+    }
+
+    private static final class OwnedTeisrBinding implements ClaimedModelLocationRegistry.ITeisrBinding {
+        private final Item item;
+        private final TEISRBase renderer;
+        private final TEISRBase.ModelBinding modelBinding;
+        private final ModelResourceLocation modelLocation;
+        private final boolean syntheticLocation;
+        private final boolean useIdentityTransform;
+
+        private OwnedTeisrBinding(Item item, TEISRBase renderer) {
+            this.item = item;
+            this.renderer = renderer;
+            this.modelBinding = renderer.createModelBinding(item);
+            this.modelLocation = modelBinding.getModelLocation();
+            this.syntheticLocation = modelLocation.getPath().startsWith("teisr/");
+            this.useIdentityTransform = renderer.useIdentityTransform(item);
+        }
+
+        @Override
+        public Item getItem() {
+            return item;
+        }
+
+        @Override
+        public ModelResourceLocation getModelLocation() {
+            return modelLocation;
+        }
+
+        @Override
+        public boolean isSyntheticLocation() {
+            return syntheticLocation;
+        }
+
+        @Override
+        public boolean ownsModelLocation(ModelResourceLocation location) {
+            return modelLocation.equals(location);
+        }
+
+        @Override
+        public IModel loadModel(ModelResourceLocation location) {
+            return renderer.loadModel(item, modelLocation);
+        }
+    }
 
     @SubscribeEvent
     public void itemColorsEvent(ColorHandlerEvent.Item evt) {
@@ -158,7 +243,6 @@ public class NTMClientRegistry {
         //Debug stuff
         debugPower = map.registerSprite(new ResourceLocation(Tags.MODID, "particle/debug_power"));
         debugFluid = map.registerSprite(new ResourceLocation(Tags.MODID, "particle/debug_fluid"));
-        uv_debug = map.registerSprite(new ResourceLocation(Tags.MODID, "misc/uv_debug"));
         contrail = map.registerSprite(new ResourceLocation(Tags.MODID, "particle/contrail"));
         particle_base = map.registerSprite(new ResourceLocation(Tags.MODID, "particle/particle_base"));
         fog = map.registerSprite(new ResourceLocation(Tags.MODID, "particle/fog"));
@@ -166,7 +250,6 @@ public class NTMClientRegistry {
         RegistrationUtils.registerInFolder(map,"textures/blocks/forgefluid");
 
 
-        map.registerSprite(new ResourceLocation(Tags.MODID, "items/ore_bedrock_layer"));
         map.registerSprite(new ResourceLocation(Tags.MODID, "items/fluid_identifier_overlay"));
         map.registerSprite(new ResourceLocation(Tags.MODID, "items/fluid_barrel_overlay"));
         map.registerSprite(new ResourceLocation(Tags.MODID, "items/fluid_tank_overlay"));
@@ -233,34 +316,55 @@ public class NTMClientRegistry {
         RenderFusionTorusMultiblock.componentSprites[3] = evt.getMap().getAtlasSprite("hbm:blocks/fusion_component.motor");
     }
 
-    public static void swapModels(Item item, IRegistry<ModelResourceLocation, IBakedModel> reg) {
-        ModelResourceLocation loc = new ModelResourceLocation(item.getRegistryName(), "inventory");
-        IBakedModel model = reg.getObject(loc);
-        TileEntityItemStackRenderer render = item.getTileEntityItemStackRenderer();
-        if (render instanceof TEISRBase) {
-            ((TEISRBase) render).itemModel = model;
-            reg.putObject(loc, new BakedModelCustom((TEISRBase) render));
+    public static void wrapAllTeisrModels(IRegistry<ModelResourceLocation, IBakedModel> reg) {
+        for (ClaimedModelLocationRegistry.ITeisrBinding binding : ClaimedModelLocationRegistry.getTeisrBindings()) {
+            if (binding instanceof OwnedTeisrBinding owned) {
+                wrapTeisrBinding(owned, reg);
+            }
         }
     }
 
-    public static void swapModelsNoGui(Item item, IRegistry<ModelResourceLocation, IBakedModel> reg) {
-        ModelResourceLocation loc = new ModelResourceLocation(item.getRegistryName(), "inventory");
-        IBakedModel model = reg.getObject(loc);
-        TileEntityItemStackRenderer render = item.getTileEntityItemStackRenderer();
-        if (render instanceof TEISRBase) {
-            ((TEISRBase) render).itemModel = model;
-            reg.putObject(loc, new BakedModelNoGui((TEISRBase) render));
+    private static void wrapTeisrBinding(OwnedTeisrBinding owned, IRegistry<ModelResourceLocation, IBakedModel> reg) {
+        TEISRBase teisr = owned.renderer;
+        TEISRBase.ModelBinding binding = owned.modelBinding;
+        ModelResourceLocation targetLocation = owned.modelLocation;
+        IBakedModel model = unwrapWrappedModel(reg.getObject(targetLocation));
+        if (model == null) {
+            try {
+                model = owned.loadModel(targetLocation)
+                        .bake(ModelRotation.X0_Y0, DefaultVertexFormats.ITEM, ModelLoader.defaultTextureGetter());
+                reg.putObject(targetLocation, model);
+            } catch (Exception e) {
+                MainRegistry.logger.warn("Skipping TEISR wrap for {} because {} could not be baked", owned.item.getRegistryName(), targetLocation, e);
+                return;
+            }
+        }
+
+        teisr.itemModel = model;
+        if (owned.useIdentityTransform) {
+            reg.putObject(targetLocation, new BakedModelNoFPV(teisr, model));
+            return;
+        }
+        if (owned.item instanceof net.minecraft.item.ItemArmor) {
+            reg.putObject(targetLocation, new FancyMissingModelPerspective(teisr, model));
+            return;
+        }
+        reg.putObject(targetLocation, new WrappedTEISRModel(teisr, model, null, binding, false));
+    }
+
+    private static void registerOwnedTeisrModelLocations() {
+        for (ClaimedModelLocationRegistry.ITeisrBinding owned : ClaimedModelLocationRegistry.getTeisrBindings()) {
+            ModelResourceLocation location = owned.getModelLocation();
+            ModelBakery.registerItemVariants(owned.getItem(), location);
+            ModelLoader.setCustomMeshDefinition(owned.getItem(), _ -> location);
         }
     }
 
-    public static void swapModelsNoFPV(Item item, IRegistry<ModelResourceLocation, IBakedModel> reg) {
-        ModelResourceLocation loc = new ModelResourceLocation(item.getRegistryName(), "inventory");
-        IBakedModel model = reg.getObject(loc);
-        TileEntityItemStackRenderer render = item.getTileEntityItemStackRenderer();
-        if (render instanceof TEISRBase) {
-            ((TEISRBase) render).itemModel = model;
-            reg.putObject(loc, new BakedModelNoFPV((TEISRBase) render, model));
+    private static IBakedModel unwrapWrappedModel(IBakedModel model) {
+        if (model instanceof WrappedTEISRModel wrapped) {
+            return wrapped.getBaseModel();
         }
+        return model;
     }
     @SubscribeEvent
     public void onGuiInit(GuiScreenEvent.InitGuiEvent.Post event) {
@@ -314,6 +418,7 @@ public class NTMClientRegistry {
         IDynamicModels.registerModels();
         IDynamicModels.registerCustomStateMappers();
         IMetaItemTesr.redirectModels();
+        registerOwnedTeisrModelLocations();
 
         ModelLoader.setCustomModelResourceLocation(ModItems.conveyor_wand, 0, new ModelResourceLocation(ModBlocks.conveyor.getRegistryName(),
                 "inventory"));
@@ -334,12 +439,12 @@ public class NTMClientRegistry {
         if (item == Items.AIR)
             return;
 
-        //Drillgon200: I hate myself for making this
-        //Th3_Sl1ze: Don't worry, I hate myself too
-        if (item == ModItems.chemistry_template) {
-            ChemplantRecipes.register();
+        if (item instanceof ItemBlock itemBlock) {
+            Block block = itemBlock.getBlock();
+            if (block instanceof IDynamicModels && IDynamicModels.INSTANCES.contains(block)) {
+                return;
+            }
         }
-
 
         if (item instanceof ItemDepletedFuel) {
             for (int i = 0; i <= 1; i++) {
@@ -353,21 +458,18 @@ public class NTMClientRegistry {
             return;
         }
 
-        if (item == ModItems.chemistry_icon) {
-            for (int i : ChemplantRecipes.recipeNames.keySet()) {
-                ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(Tags.MODID + ":chem_icon_" + ChemplantRecipes.getName(i).toLowerCase(), "inventory"));
-            }
-        } else if (item == ModItems.chemistry_template) {
-            for (int i : ChemplantRecipes.recipeNames.keySet()) {
-                ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(item.getRegistryName(), "inventory"));
-            }
-        } else if (item == ModItems.crucible_template) {
+        if (item.getTileEntityItemStackRenderer() instanceof TEISRBase teisr) {
+            ModelLoader.setCustomModelResourceLocation(item, meta, getBoundTeisrModelLocation(item, teisr));
+            return;
+        }
+
+        if (item == ModItems.crucible_template) {
             for (int i = 0; i < 32; i++) { // FIXME: figure out a better way of doing this
                 ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(item.getRegistryName(), "inventory"));
             }
         } else if (item == ModItems.siren_track) {
-            for (int i = 0; i < ItemCassette.TrackType.VALUES.size(); i++) {
-                ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(item.getRegistryName(), "inventory"));
+            for (ItemCassette.TrackType track : ItemCassette.TrackType.VALUES.values()) {
+                ModelLoader.setCustomModelResourceLocation(item, track.getId(), new ModelResourceLocation(item.getRegistryName(), "inventory"));
             }
         } else if (item == ModItems.ingot_u238m2) {
             ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(item.getRegistryName(), "inventory"));
@@ -386,9 +488,9 @@ public class NTMClientRegistry {
             for (int i = 0; i < ItemGuideBook.BookType.VALUES.length; i++)
                 ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(item.getRegistryName(), "inventory"));
         } else if (item instanceof ItemHot) {
-            for (int i = 0; i < 15; i++)
-                ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(item.getRegistryName(), "inventory"));
-            ModelLoader.setCustomModelResourceLocation(item, 15, new ModelResourceLocation(item.getRegistryName() + "_hot", "inventory"));
+            ModelResourceLocation hotModel = new ModelResourceLocation(new ResourceLocation(Tags.MODID, "items/" + item.getRegistryName().getPath()), "inventory");
+            for (int i = 0; i < 16; i++)
+                ModelLoader.setCustomModelResourceLocation(item, i, hotModel);
         } else if (item instanceof ItemRBMKPellet) {
             for (int xe = 0; xe < 2; xe++) {
                 for (int en = 0; en < 5; en++) {
@@ -411,6 +513,7 @@ public class NTMClientRegistry {
             for (int i = 0; i < 4; i++) {
                 ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(item.getRegistryName(), "inventory"));
             }
+        } else if (item == ModItems.conveyor_wand) {
         } else if (item == ModItems.fluid_identifier_multi) {
             ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(item.getRegistryName(), "inventory"));
         } else if (item instanceof IHasCustomModel) {
@@ -457,8 +560,6 @@ public class NTMClientRegistry {
             ItemRedstoneSwordRender.INSTANCE.itemModel = model;
             evt.getModelRegistry().putObject(RedstoneSword.rsModel, new ItemRenderRedstoneSword());
         }
-        wrapModel(evt, ItemAssemblyTemplate.location);
-        wrapModel(evt, ItemChemistryTemplate.location);
         wrapModel(evt, ItemCrucibleTemplate.location);
         Object object3 = evt.getModelRegistry().getObject(GunB92.b92Model);
         if (object3 instanceof IBakedModel) {
@@ -468,96 +569,7 @@ public class NTMClientRegistry {
         }
 
         IRegistry<ModelResourceLocation, IBakedModel> reg = evt.getModelRegistry();
-        swapModelsNoGui(ModItems.gun_b93, reg);
-        swapModelsNoGui(ModItems.gun_supershotgun, reg);
-        swapModels(ModItems.cell, reg);
-        swapModels(ModItems.gas_empty, reg);
-        swapModelsNoGui(ModItems.multitool_dig, reg);
-        swapModelsNoGui(ModItems.multitool_silk, reg);
-        swapModelsNoGui(ModItems.multitool_ext, reg);
-        swapModelsNoGui(ModItems.multitool_miner, reg);
-        swapModelsNoGui(ModItems.multitool_hit, reg);
-        swapModelsNoGui(ModItems.multitool_beam, reg);
-        swapModelsNoGui(ModItems.multitool_sky, reg);
-        swapModelsNoGui(ModItems.multitool_mega, reg);
-        swapModelsNoGui(ModItems.multitool_joule, reg);
-        swapModelsNoGui(ModItems.multitool_decon, reg);
-        swapModelsNoGui(ModItems.big_sword, reg);
-        swapModelsNoGui(ModItems.shimmer_sledge, reg);
-        swapModelsNoGui(ModItems.shimmer_axe, reg);
-        swapModels(ModItems.fluid_duct, reg);
-        swapModelsNoGui(ModItems.stopsign, reg);
-        swapModelsNoGui(ModItems.sopsign, reg);
-        swapModelsNoGui(ModItems.chernobylsign, reg);
-        swapModels(Item.getItemFromBlock(ModBlocks.radiorec), reg);
-        swapModels(ModItems.gun_vortex, reg);
-        swapModelsNoGui(ModItems.wood_gavel, reg);
-        swapModelsNoGui(ModItems.lead_gavel, reg);
-        swapModelsNoGui(ModItems.diamond_gavel, reg);
-        swapModelsNoGui(ModItems.mese_gavel, reg);
-        swapModels(ModItems.ingot_steel_dusted, reg);
-        swapModels(ModItems.ingot_chainsteel, reg);
-        swapModels(ModItems.ingot_meteorite, reg);
-        swapModels(ModItems.ingot_meteorite_forged, reg);
-        swapModels(ModItems.blade_meteorite, reg);
-        swapModels(ModItems.crucible, reg);
-        swapModels(ModItems.hs_sword, reg);
-        swapModels(ModItems.hf_sword, reg);
-        swapModels(ModItems.gun_egon, reg);
-        swapModels(ModItems.jshotgun, reg);
-
-        swapModels(ModItems.meteorite_sword_seared, reg);
-        swapModels(ModItems.meteorite_sword_reforged, reg);
-        swapModels(ModItems.meteorite_sword_hardened, reg);
-        swapModels(ModItems.meteorite_sword_alloyed, reg);
-        swapModels(ModItems.meteorite_sword_machined, reg);
-        swapModels(ModItems.meteorite_sword_treated, reg);
-        swapModels(ModItems.meteorite_sword_etched, reg);
-        swapModels(ModItems.meteorite_sword_bred, reg);
-        swapModels(ModItems.meteorite_sword_irradiated, reg);
-        swapModels(ModItems.meteorite_sword_fused, reg);
-        swapModels(ModItems.meteorite_sword_baleful, reg);
-
-        swapModelsNoGui(ModItems.bedrock_ore, reg);
-        swapModels(ModItems.detonator_laser, reg);
-        swapModels(ModItems.boltgun, reg);
-
-        swapModels(ModItems.fluid_barrel_full, reg);
-        swapModels(ModItems.fluid_tank_full, reg);
-        swapModels(ModItems.fluid_tank_lead_full, reg);
-
-        swapModels(ModItems.ammo_himars, reg);
-        swapModels(ModItems.jetpack_glider, reg);
-        swapModels(ModItems.gear_large, reg);
-        swapModels(ModItems.battery_pack, reg);
-
-        swapModels(Item.getItemFromBlock(ModBlocks.boat), reg);
-
-        for (Item item : ItemGunBaseNT.INSTANCES) {
-            swapModelsNoFPV(item, reg);
-        }
-
-        for (Item item : RBMKItemRenderers.itemRenderers.keySet()) {
-            swapModels(item, reg);
-        }
-
-        for (TileEntitySpecialRenderer<? extends TileEntity> renderer : TileEntityRendererDispatcher.instance.renderers.values()) {
-            if (renderer instanceof IItemRendererProvider prov) {
-                for (Item item : prov.getItemsForRenderer()) {
-                    swapModels(item, reg);
-                }
-            }
-        }
-
-        for (Item renderer : Item.REGISTRY) {
-            if (renderer instanceof IItemRendererProvider provider) {
-                for (Item item : provider.getItemsForRenderer()) {
-                    swapModels(item, reg);
-                }
-            }
-        }
-
-        MainRegistry.proxy.registerMissileItems(reg);
+        wrapAllTeisrModels(reg);
     }
 
     private void wrapModel(ModelBakeEvent event, ModelResourceLocation location) {

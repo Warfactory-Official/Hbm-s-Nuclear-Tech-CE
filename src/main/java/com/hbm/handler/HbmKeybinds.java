@@ -68,6 +68,7 @@ public class HbmKeybinds {
 		ClientRegistry.registerKeyBinding(craneLoadKey);
 		ClientRegistry.registerKeyBinding(abilityCycle);
 		ClientRegistry.registerKeyBinding(abilityAlt);
+		ClientRegistry.registerKeyBinding(copyToolAlt);
 		ClientRegistry.registerKeyBinding(qmaw);
 	}
 
@@ -148,10 +149,14 @@ public class HbmKeybinds {
         public static final EnumKeybind[] VALUES = values();
 	}
 
+	private static boolean isValidKeyCode(int keyCode) {
+		return keyCode != Keyboard.KEY_NONE && keyCode >= -100;
+	}
+
 	/** Handles keybind overlap. Make sure this runs first before referencing the keybinds set by the extprops */
 	public static void handleOverlap(boolean state, int keyCode) {
 		Minecraft mc = Minecraft.getMinecraft();
-		if(GeneralConfig.enableKeybindOverlap && (mc.currentScreen == null || mc.currentScreen.allowUserInput)) {
+		if(GeneralConfig.enableKeybindOverlap && isValidKeyCode(keyCode) && (mc.currentScreen == null || mc.currentScreen.allowUserInput)) {
             KeyBindingMap HASH;
             try {
                 HASH = (KeyBindingMap) hashHandle.invokeExact();
@@ -205,6 +210,7 @@ public class HbmKeybinds {
 	}
 
 	public static void handleProps(boolean state, int keyCode) {
+		if(!isValidKeyCode(keyCode)) return;
 
 		/// KEYBIND PROPS ///
 		EntityPlayer player = MainRegistry.proxy.me();

@@ -6,6 +6,8 @@ import com.hbm.api.conveyor.IConveyorPackage;
 import com.hbm.api.conveyor.IEnterableBlock;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.entity.item.EntityMovingItem;
+import com.hbm.entity.item.EntityMovingPackage;
+import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemTooling;
 import com.hbm.main.MainRegistry;
 import com.hbm.modules.ModulePatternMatcher;
@@ -47,7 +49,8 @@ public class CraneRouter extends BlockContainer implements IEnterableBlock {
 
     @Override
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        if(playerIn.getHeldItem(hand).getItem() instanceof ItemTooling) {
+        if (playerIn.getHeldItem(hand).getItem() instanceof ItemTooling ||
+            playerIn.getHeldItem(hand).getItem() == ModItems.conveyor_wand) {
             return false;
         } else if(worldIn.isRemote) {
             return true;
@@ -75,9 +78,91 @@ public class CraneRouter extends BlockContainer implements IEnterableBlock {
 
     @Override
     public void onItemEnter(World world, int x, int y, int z, EnumFacing dir, IConveyorItem entity) {
-        TileEntityCraneRouter router = (TileEntityCraneRouter) world.getTileEntity(new BlockPos(x, y, z));
-        ItemStack stack = entity.getItemStack();
+        if (entity == null || entity.getItemStack().isEmpty()) return;
 
+        EnumFacing route = getOutputDir(world, x, y, z, entity.getItemStack());
+        if (route == null) {
+            world.spawnEntity(new EntityItem(world, x + 0.5, y + 0.5, z + 0.5, entity.getItemStack().copy()));
+            return;
+        }
+
+        sendOnRoute(world, x, y, z, entity.getItemStack().copy(), route);
+    }
+
+    protected void sendOnRoute(World world, int x, int y, int z, ItemStack stack, EnumFacing dir) {
+        IConveyorBelt belt = null;
+        BlockPos targetPos = new BlockPos(x + dir.getXOffset(), y + dir.getYOffset(), z + dir.getZOffset());
+        Block block = world.getBlockState(targetPos).getBlock();
+
+        if (block instanceof IConveyorBelt) {
+            belt = (IConveyorBelt) block;
+        }
+
+        if (belt != null) {
+            EntityMovingItem moving = new EntityMovingItem(world);
+            Vec3d pos = new Vec3d(x + 0.5 + dir.getXOffset() * 0.55, y + 0.5 + dir.getYOffset() * 0.55, z + 0.5 + dir.getZOffset() * 0.55);
+            Vec3d snap = belt.getClosestSnappingPosition(world, targetPos, pos);
+            moving.setPosition(snap.x, snap.y, snap.z);
+            moving.setItemStack(stack);
+            world.spawnEntity(moving);
+        } else {
+            world.spawnEntity(new EntityItem(world, x + 0.5 + dir.getXOffset() * 0.55, y + 0.5 + dir.getYOffset() * 0.55, z + 0.5 + dir.getZOffset() * 0.55, stack));
+        }
+    }
+
+    protected void sendPackageOnRoute(World world, int x, int y, int z, List<ItemStack> items, EnumFacing dir) {
+        if (items.isEmpty()) return;
+
+        IConveyorBelt belt = null;
+        BlockPos targetPos = new BlockPos(x + dir.getXOffset(), y + dir.getYOffset(), z + dir.getZOffset());
+        Block block = world.getBlockState(targetPos).getBlock();
+        if (block instanceof IConveyorBelt) {
+            belt = (IConveyorBelt) block;
+        }
+
+        if (belt != null) {
+            EntityMovingPackage moving = new EntityMovingPackage(world);
+            Vec3d pos = new Vec3d(x + 0.5 + dir.getXOffset() * 0.55, y + 0.5 + dir.getYOffset() * 0.55, z + 0.5 + dir.getZOffset() * 0.55);
+            Vec3d snap = belt.getClosestSnappingPosition(world, targetPos, pos);
+            moving.setPosition(snap.x, snap.y, snap.z);
+            moving.setItemStacks(items.toArray(new ItemStack[0]));
+            world.spawnEntity(moving);
+        } else {
+            for (ItemStack stack : items) {
+                world.spawnEntity(new EntityItem(world, x + 0.5 + dir.getXOffset() * 0.55, y + 0.5 + dir.getYOffset() * 0.55, z + 0.5 + dir.getZOffset() * 0.55, stack));
+            }
+        }
+    }
+
+    @Override public boolean canPackageEnter(World world, int x, int y, int z, EnumFacing dir, IConveyorPackage entity) { return true; }
+
+    @Override
+    public void onPackageEnter(World world, int x, int y, int z, EnumFacing dir, IConveyorPackage entity) {
+        if (entity == null || entity.getItemStacks() == null || entity.getItemStacks().length == 0) return;
+
+        List<ItemStack>[] sorted = sort(world, x, y, z, entity.getItemStacks());
+
+        for (int i = 0; i < sorted.length; i++) {
+            List<ItemStack> items = sorted[i];
+            if (items.isEmpty()) continue;
+
+            if (i == 6) {
+                for (ItemStack stack : items) {
+                    world.spawnEntity(new EntityItem(world, x + 0.5, y + 0.5, z + 0.5, stack));
+                }
+            } else {
+                sendPackageOnRoute(world, x, y, z, items, customEnumOrder[i]);
+            }
+        }
+    }
+
+    private static EnumFacing getOutputDir(World world, int x, int y, int z, ItemStack stack) {
+        TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
+        if (!(te instanceof TileEntityCraneRouter router)) return null;
+        return getOutputDir(router, stack, world);
+    }
+
+    private static EnumFacing getOutputDir(TileEntityCraneRouter router, ItemStack stack, World world) {
         List<EnumFacing> validDirs = new ArrayList<>();
 
         //check filters for all sides
@@ -121,36 +206,33 @@ public class CraneRouter extends BlockContainer implements IEnterableBlock {
         }
 
         if(validDirs.isEmpty()) {
-            world.spawnEntity(new EntityItem(world, x + 0.5, y + 0.5, z + 0.5, stack.copy()));
-            return;
+            return null;
         }
 
         int i = world.rand.nextInt(validDirs.size());
-        sendOnRoute(world, x, y, z, entity, validDirs.get(i));
+        return validDirs.get(i);
     }
 
-    protected void sendOnRoute(World world, int x, int y, int z, IConveyorItem item, EnumFacing dir) {
-        IConveyorBelt belt = null;
-        BlockPos targetPos = new BlockPos(x + dir.getXOffset(), y + dir.getYOffset(), z + dir.getZOffset());
-        Block block = world.getBlockState(targetPos).getBlock();
-
-        if (block instanceof IConveyorBelt) {
-            belt = (IConveyorBelt) block;
+    private static int getOutputIndex(EnumFacing side) {
+        for (int i = 0; i < 6; i++) {
+            if (customEnumOrder[i] == side) return i;
         }
-
-        if (belt != null) {
-            EntityMovingItem moving = new EntityMovingItem(world);
-            Vec3d pos = new Vec3d(x + 0.5 + dir.getXOffset() * 0.55, y + 0.5 + dir.getYOffset() * 0.55, z + 0.5 + dir.getZOffset() * 0.55);
-            Vec3d snap = belt.getClosestSnappingPosition(world, targetPos, pos);
-            moving.setPosition(snap.x, snap.y, snap.z);
-            moving.setItemStack(item.getItemStack());
-            world.spawnEntity(moving);
-        } else {
-            world.spawnEntity(new EntityItem(world, x + 0.5 + dir.getXOffset() * 0.55, y + 0.5 + dir.getYOffset() * 0.55, z + 0.5 + dir.getZOffset() * 0.55, item.getItemStack()));
-        }
+        return 6;
     }
 
-    @Override public boolean canPackageEnter(World world, int x, int y, int z, EnumFacing dir, IConveyorPackage entity) { return false; }
-    @Override public void onPackageEnter(World world, int x, int y, int z, EnumFacing dir, IConveyorPackage entity) { }
+    @SuppressWarnings("unchecked")
+    public static List<ItemStack>[] sort(World world, int x, int y, int z, ItemStack... stacks) {
+        List<ItemStack>[] output = new List[7];
+        for (int i = 0; i < 7; i++) output[i] = new ArrayList<>();
+
+        for (ItemStack stack : stacks) {
+            if (stack == null || stack.isEmpty()) continue;
+
+            EnumFacing route = getOutputDir(world, x, y, z, stack.copy());
+            output[getOutputIndex(route)].add(stack.copy());
+        }
+
+        return output;
+    }
 
 }

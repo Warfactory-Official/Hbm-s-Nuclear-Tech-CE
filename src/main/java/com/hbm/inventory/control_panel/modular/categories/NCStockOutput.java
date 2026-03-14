@@ -18,7 +18,9 @@ public class NCStockOutput implements INodeMenuCreator {
 		} else if(s2.equals("Cancel")){
 			return new NodeCancelEvent(x, y);
 		} else if(s2.equals("Set Variable")){
-			return new NodeSetVar(x, y, editor.gui.currentEditControl);
+			return new NodeSetVar(x, y, editor.currentSystem.parent);
+		} else if(s2.equals("Redstone Output")){
+			return new NodeRedstoneOutput(x, y);
 		}
 		return null;
 	}
@@ -31,5 +33,6 @@ public class NCStockOutput implements INodeMenuCreator {
 			list.addItems("Cancel");
 		}
 		list.addItems("Set Variable");
+		list.addItems("Redstone Output");
 	}
 }

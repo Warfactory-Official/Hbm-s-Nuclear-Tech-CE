@@ -43,7 +43,6 @@ public final class PhasedStructureRegistry {
         register("hbm:barrel", Barrel.INSTANCE);
         register("hbm:bedrock_oil_deposit", BedrockOilDeposit.INSTANCE);
         register("hbm:bedrock_ore_overworld", BedrockOre.OVERWORLD);
-        register("hbm:bedrock_ore_coltan", BedrockOre.COLTAN);
         register("hbm:bedrock_ore_nether_glowstone", BedrockOre.NETHER_GLOWSTONE);
         register("hbm:bedrock_ore_nether_quartz", BedrockOre.NETHER_QUARTZ);
         register("hbm:bedrock_ore_nether_powder_fire", BedrockOre.NETHER_POWDER_FIRE);
@@ -61,6 +60,8 @@ public final class PhasedStructureRegistry {
         register("hbm:flowers_hemp", NTMFlowers.INSTANCE_HEMP);
         register("hbm:flowers_tobacco", NTMFlowers.INSTANCE_TOBACCO);
         register("hbm:flowers_nightshade", NTMFlowers.INSTANCE_NIGHTSHADE);
+        register("hbm:reeds_river", PlantReeds.RIVER);
+        register("hbm:reeds_beach", PlantReeds.BEACH);
         register("hbm:radio_01", Radio01.INSTANCE);
         register("hbm:relay", Relay.INSTANCE);
         register("hbm:satellite", Satellite.INSTANCE);

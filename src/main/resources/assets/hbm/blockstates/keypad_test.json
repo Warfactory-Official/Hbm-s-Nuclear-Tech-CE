@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "hbm:keypad_test" },
+    "facing=south": { "model": "hbm:keypad_test", "y": 180 },
+    "facing=west":  { "model": "hbm:keypad_test", "y": 270 },
+    "facing=east":  { "model": "hbm:keypad_test", "y": 90 }
+  }
+}

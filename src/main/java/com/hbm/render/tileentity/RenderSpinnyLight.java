@@ -5,12 +5,14 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.render.item.ItemRenderBase;
+import com.hbm.render.model.BakedModelTransforms;
 import com.hbm.tileentity.deco.TileEntitySpinnyLight;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.DestFactor;
 import net.minecraft.client.renderer.GlStateManager.SourceFactor;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -128,6 +130,11 @@ public class RenderSpinnyLight extends TileEntitySpecialRenderer<TileEntitySpinn
   @Override
   public ItemRenderBase getRenderer(Item item) {
     return new ItemRenderBase() {
+      @Override
+      protected ItemCameraTransforms getBindingTransforms(Item item) {
+        return BakedModelTransforms.standardBlock();
+      }
+
       public void renderInventory() {
         GlStateManager.scale(10, 10, 10);
         GlStateManager.rotate(22.5F, 1, 0, 0);

@@ -1,5 +1,10 @@
 {
 	"variants": {
-		"normal": { "model": "hbm:charge_c4" }
+		"facing=down":  { "model": "hbm:charge_c4" },
+		"facing=up":    { "model": "hbm:charge_c4" },
+		"facing=north": { "model": "hbm:charge_c4" },
+		"facing=south": { "model": "hbm:charge_c4" },
+		"facing=west":  { "model": "hbm:charge_c4" },
+		"facing=east":  { "model": "hbm:charge_c4" }
 	}
 }

@@ -3,6 +3,8 @@ package com.hbm.inventory.control_panel;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 
+import java.util.Objects;
+
 public class DataValueEnum<T extends Enum<T>> extends DataValue {
 
 	public Enum<T> value;
@@ -50,6 +52,12 @@ public class DataValueEnum<T extends Enum<T>> extends DataValue {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
+	public DataValue copy() {
+		return new DataValueEnum<>((Enum<T>) value);
+	}
+
+	@Override
 	public NBTBase writeToNBT(){
 		NBTTagCompound tag = new NBTTagCompound();
 		tag.setString("clazz", enumClass.getName());
@@ -67,6 +75,18 @@ public class DataValueEnum<T extends Enum<T>> extends DataValue {
 			throw new RuntimeException(e);
 		}
 		this.value = this.enumClass.getEnumConstants()[tag.getInteger("ordinal")];
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) return true;
+		if(!(obj instanceof DataValueEnum<?> other)) return false;
+		return Objects.equals(value, other.value) && Objects.equals(enumClass, other.enumClass);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(value, enumClass);
 	}
 
 }

@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "meta=0": { "model": "hbm:deco_toaster" },
+    "meta=1": { "model": "hbm:deco_toaster" },
+    "meta=2": { "model": "hbm:deco_toaster" }
+  }
+}

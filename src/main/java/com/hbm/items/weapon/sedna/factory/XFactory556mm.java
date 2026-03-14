@@ -9,7 +9,7 @@ import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.mags.MagazineFullReload;
-import com.hbm.items.weapon.sedna.mods.WeaponModManager;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
@@ -59,7 +59,7 @@ public class XFactory556mm {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_G3))
                 .setupStandardConfiguration().ps(Lego.LAMBDA_STANDARD_CLICK_SECONDARY)
                 .anim(LAMBDA_G3_ANIMS).orchestra(Orchestras.ORCHESTRA_G3)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.R556_SP, 30);
         ModItems.gun_g3_zebra = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.B_SIDE, "gun_g3_zebra", new GunConfig()
                 .dura(6_000).draw(10).inspect(33).crosshair(Crosshair.CIRCLE).smoke(LAMBDA_SMOKE).scopeTexture(scope)
                 .rec(new Receiver(0)
@@ -69,7 +69,7 @@ public class XFactory556mm {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_ZEBRA))
                 .setupStandardConfiguration().ps(Lego.LAMBDA_STANDARD_CLICK_SECONDARY)
                 .anim(LAMBDA_G3_ANIMS).orchestra(Orchestras.ORCHESTRA_G3)
-        ).setNameMutator(LAMBDA_NAME_G3);
+        ).setNameMutator(LAMBDA_NAME_G3).setDefaultAmmo(GunFactory.EnumAmmo.R556_JHP, 30);
 
         ModItems.gun_stg77 = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_stg77", new GunConfig()
                 .dura(3_000).draw(10).inspect(125).crosshair(Crosshair.CIRCLE).scopeTexture(scope).smoke(LAMBDA_SMOKE)
@@ -81,16 +81,16 @@ public class XFactory556mm {
                 .pp(Lego.LAMBDA_STANDARD_CLICK_PRIMARY).ps(Lego.LAMBDA_STANDARD_CLICK_PRIMARY).pr(Lego.LAMBDA_STANDARD_RELOAD).pt(Lego.LAMBDA_TOGGLE_AIM)
                 .decider(LAMBDA_STG77_DECIDER)
                 .anim(LAMBDA_STG77_ANIMS).orchestra(Orchestras.ORCHESTRA_STG77)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.R556_FMJ, 30);
     }
 
     public static Function<ItemStack, String> LAMBDA_NAME_G3 = (stack) -> {
-        if(WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_SILENCER) &&
-                WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_NO_STOCK) &&
-                WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_FURNITURE_BLACK) &&
-                WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_SCOPE)) return stack.getTranslationKey() + "_infiltrator";
-        if(!WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_NO_STOCK) &&
-                WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_FURNITURE_GREEN)) return stack.getTranslationKey() + "_a3";
+        if(XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_SILENCER) &&
+                XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_NO_STOCK) &&
+                XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_FURNITURE_BLACK) &&
+                XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_SCOPE)) return stack.getTranslationKey() + "_infiltrator";
+        if(!XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_NO_STOCK) &&
+                XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_FURNITURE_GREEN)) return stack.getTranslationKey() + "_a3";
         return null;
     };
 
@@ -109,7 +109,7 @@ public class XFactory556mm {
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_RECOIL_ZEBRA = (stack, ctx) -> ItemGunBaseNT.setupRecoil((float) (ctx.getPlayer().getRNG().nextGaussian() * 0.125), (float) (ctx.getPlayer().getRNG().nextGaussian() * 0.125));
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_RECOIL_STG = (stack, ctx) -> { };
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_G3_ANIMS = (stack, type) -> {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_G3_ANIMS = (stack, type) -> {
         boolean empty = ((ItemGunBaseNT) stack.getItem()).getConfig(stack, 0).getReceivers(stack)[0].getMagazine(stack).getAmount(stack, MainRegistry.proxy.me().inventory) <= 0;
         return switch (type) {
             case EQUIP -> new BusAnimationSedna()
@@ -161,7 +161,7 @@ public class XFactory556mm {
 
     };
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_STG77_ANIMS = (stack, type) -> {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_STG77_ANIMS = (stack, type) -> {
         if(ClientConfig.GUN_ANIMS_LEGACY.get()) {
             switch (type) {
                 case EQUIP -> {

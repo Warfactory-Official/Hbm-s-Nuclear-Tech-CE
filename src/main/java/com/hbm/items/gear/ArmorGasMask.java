@@ -80,7 +80,7 @@ public class ArmorGasMask extends ItemArmor implements IGasMask {
 				return this.modelGas;
 			}
 		}
-		if (this == ModItems.gas_mask_m65 || this == ModItems.hazmat_helmet_red || this == ModItems.hazmat_helmet_grey || this == ModItems.gas_mask_mono || this == ModItems.hazmat_paa_helmet || this == ModItems.gas_mask_olde) {
+		if (this == ModItems.gas_mask_m65 || this == ModItems.gas_mask_mono || this == ModItems.gas_mask_olde) {
 			if (armorSlot == EntityEquipmentSlot.HEAD) {
 				if (this.modelM65 == null) {
 					this.modelM65 = new ModelM65();
@@ -105,25 +105,13 @@ public class ArmorGasMask extends ItemArmor implements IGasMask {
 		if (stack.getItem() == ModItems.gas_mask_mono) {
 			return (Tags.MODID + ":textures/armor/ModelM65Mono.png");
 		}
-		if(stack.getItem() == ModItems.hazmat_helmet) {
-			return (Tags.MODID + ":textures/armor/hazmat_1.png");
-		}
-		if (stack.getItem() == ModItems.hazmat_helmet_red) {
-			return (Tags.MODID + ":textures/armor/ModelHazRed.png");
-		}
-		if (stack.getItem() == ModItems.hazmat_helmet_grey) {
-			return (Tags.MODID + ":textures/armor/ModelHazGrey.png");
-		}
-		if(stack.getItem() == ModItems.hazmat_paa_helmet) {
-			return (Tags.MODID + ":textures/armor/ModelHazPaa.png");
-		}
 		return "hbm:textures/models/capes/CapeUnknown.png";
 	}
 	
 	@SideOnly(Side.CLIENT)
 	@Override
 	public void renderHelmetOverlay(@NotNull ItemStack stack, @NotNull EntityPlayer player, @NotNull ScaledResolution resolution, float partialTicks) {
-		if(this != ModItems.gas_mask && this != ModItems.gas_mask_m65 && this != ModItems.hazmat_helmet_red && this != ModItems.hazmat_helmet_grey)
+		if(this != ModItems.gas_mask && this != ModItems.gas_mask_m65)
     		return;
     	
 
@@ -133,7 +121,7 @@ public class ArmorGasMask extends ItemArmor implements IGasMask {
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         GlStateManager.disableAlpha();
         
-        if(this == ModItems.gas_mask_m65 || this == ModItems.hazmat_helmet_red || this == ModItems.hazmat_helmet_grey) {
+        if(this == ModItems.gas_mask_m65) {
         	switch((int)((double)stack.getItemDamage() / (double)stack.getMaxDamage() * 6D)) {
         	case 0:
             	Minecraft.getMinecraft().getTextureManager().bindTexture(goggleBlur0); break;

@@ -3,6 +3,8 @@ package com.hbm.inventory.control_panel;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagFloat;
 
+import java.util.Objects;
+
 public class DataValueFloat extends DataValue {
 
 	public float num;
@@ -47,6 +49,11 @@ public class DataValueFloat extends DataValue {
 	}
 
 	@Override
+	public DataValue copy() {
+		return new DataValueFloat(num);
+	}
+
+	@Override
 	public NBTBase writeToNBT(){
 		return new NBTTagFloat(num);
 	}
@@ -55,6 +62,18 @@ public class DataValueFloat extends DataValue {
 	public void readFromNBT(NBTBase nbt){
 		NBTTagFloat f = (NBTTagFloat)nbt;
 		num = f.getFloat();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) return true;
+		if(!(obj instanceof DataValueFloat other)) return false;
+		return Float.compare(other.num, num) == 0;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(num);
 	}
 
 }

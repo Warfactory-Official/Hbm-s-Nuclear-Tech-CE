@@ -48,8 +48,12 @@ import java.awt.*;
  * @author MrNorwood
  */
 public class BlockSellafieldSlaked extends BlockBase implements IDynamicModels {
-    public static final BlockBakeFrame[] sellafieldTextures = new BlockBakeFrame[]{new BlockBakeFrame("sellafield_slaked"), new BlockBakeFrame("sellafield_slaked_1"), new BlockBakeFrame("sellafield_slaked_2"),
-            new BlockBakeFrame("sellafield_slaked_3")};
+    public static final BlockBakeFrame[] sellafieldTextures = new BlockBakeFrame[]{
+            BlockBakeFrame.tintedCubeAll("sellafield_slaked"),
+            BlockBakeFrame.tintedCubeAll("sellafield_slaked_1"),
+            BlockBakeFrame.tintedCubeAll("sellafield_slaked_2"),
+            BlockBakeFrame.tintedCubeAll("sellafield_slaked_3")
+    };
     public static final int TEXTURE_VARIANTS = sellafieldTextures.length;
     public static final int META_COUNT = TEXTURE_VARIANTS;
     public static final PropertyInteger SHADE = PropertyInteger.create("shade", 0, 15);
@@ -91,7 +95,7 @@ public class BlockSellafieldSlaked extends BlockBase implements IDynamicModels {
         for (int meta = 0; meta < META_COUNT; meta++) {
             BlockBakeFrame blockFrame = sellafieldTextures[meta % sellafieldTextures.length];
             try {
-                IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation(blockFrame.getBaseModel()));
+                IModel baseModel = ModelLoaderRegistry.getModel(blockFrame.getBaseModelLocation());
                 ImmutableMap.Builder<String, String> textureMap = ImmutableMap.builder();
 
                 blockFrame.putTextures(textureMap);

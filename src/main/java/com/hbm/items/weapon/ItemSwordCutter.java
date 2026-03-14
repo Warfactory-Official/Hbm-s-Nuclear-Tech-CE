@@ -22,6 +22,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 public class ItemSwordCutter extends ItemSwordAbility implements IEquipReceiver {
 
@@ -41,7 +42,7 @@ public class ItemSwordCutter extends ItemSwordAbility implements IEquipReceiver 
 	}
 
 	@Override
-	public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand handIn) {
+	public @NotNull ActionResult<ItemStack> onItemRightClick(@NotNull World worldIn, @NotNull EntityPlayer playerIn, @NotNull EnumHand handIn) {
 		rightClickClient(worldIn, playerIn);
 		return super.onItemRightClick(worldIn, playerIn, handIn);
 	}
@@ -59,7 +60,7 @@ public class ItemSwordCutter extends ItemSwordAbility implements IEquipReceiver 
 	}
 	
 	@Override
-	public boolean onEntitySwing(EntityLivingBase entityLiving, ItemStack stack) {
+	public boolean onEntitySwing(EntityLivingBase entityLiving, @NotNull ItemStack stack) {
 		if(entityLiving.world.isRemote){
 			swingClient(entityLiving, stack);
 		}
@@ -67,7 +68,7 @@ public class ItemSwordCutter extends ItemSwordAbility implements IEquipReceiver 
 	}
 	
 	@Override
-	public boolean onLeftClickEntity(ItemStack stack, EntityPlayer player, Entity entity) {
+	public boolean onLeftClickEntity(@NotNull ItemStack stack, EntityPlayer player, @NotNull Entity entity) {
 		if(stack == player.getHeldItemMainhand()){
 			Animation a = HbmAnimations.getRelevantAnim(EnumHand.MAIN_HAND);
 			if(a != null && a.animation != null){

@@ -12,6 +12,7 @@ import com.hbm.main.MainRegistry;
 import com.hbm.render.model.PneumoTubeBakedModel;
 import com.hbm.tileentity.network.TileEntityPneumoTube;
 import com.hbm.util.Compat;
+import com.hbm.util.UnlistedPropertyInteger;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
@@ -68,7 +69,7 @@ public class PneumoTube extends BlockContainer implements IToolable, ITooltipPro
     public static final IUnlistedProperty<Boolean> CONN_DOWN = new ConnectionProperty("down");
     public static final IUnlistedProperty<ForgeDirection> OUT_DIR = new DirectionProperty("out_dir");
     public static final IUnlistedProperty<ForgeDirection> IN_DIR = new DirectionProperty("in_dir");
-    public static final IUnlistedProperty<ForgeDirection> CONNECTOR_DIR = new DirectionProperty("connector_dir");
+    public static final IUnlistedProperty<Integer> CONNECTOR_MASK = new UnlistedPropertyInteger("connector_mask");
 
     @SideOnly(Side.CLIENT) public static TextureAtlasSprite iconBase, iconStraight, iconIn, iconOut, iconConnector;
 
@@ -130,7 +131,7 @@ public class PneumoTube extends BlockContainer implements IToolable, ITooltipPro
 
     @Override
     protected BlockStateContainer createBlockState() {
-        return new ExtendedBlockState(this, new IProperty[]{}, new IUnlistedProperty[]{CONN_NORTH, CONN_SOUTH, CONN_WEST, CONN_EAST, CONN_UP, CONN_DOWN, OUT_DIR, IN_DIR, CONNECTOR_DIR});
+        return new ExtendedBlockState(this, new IProperty[]{}, new IUnlistedProperty[]{CONN_NORTH, CONN_SOUTH, CONN_WEST, CONN_EAST, CONN_UP, CONN_DOWN, OUT_DIR, IN_DIR, CONNECTOR_MASK});
     }
 
     @Override
@@ -145,11 +146,13 @@ public class PneumoTube extends BlockContainer implements IToolable, ITooltipPro
         ext = ext.withProperty(CONN_DOWN, canConnectTo(world, pos, ForgeDirection.DOWN));
         ext = ext.withProperty(OUT_DIR, te instanceof TileEntityPneumoTube tube ? tube.ejectionDir : ForgeDirection.UNKNOWN);
         ext = ext.withProperty(IN_DIR, te instanceof TileEntityPneumoTube tube ? tube.insertionDir : ForgeDirection.UNKNOWN);
-        ForgeDirection connectorDir = ForgeDirection.UNKNOWN;
+        int connectorMask = 0;
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            if (canConnectToAir(world, pos, dir)) { connectorDir = dir; break; }
+            if (canConnectToAir(world, pos, dir)) {
+                connectorMask |= 1 << dir.ordinal();
+            }
         }
-        ext = ext.withProperty(CONNECTOR_DIR, connectorDir);
+        ext = ext.withProperty(CONNECTOR_MASK, connectorMask);
         return ext;
     }
 

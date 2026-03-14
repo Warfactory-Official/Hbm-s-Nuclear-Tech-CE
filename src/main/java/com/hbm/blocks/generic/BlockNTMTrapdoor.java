@@ -65,7 +65,7 @@ public class BlockNTMTrapdoor extends BlockTrapDoor implements IDynamicModels {
     }
 
     public BlockNTMTrapdoor(Material material, String name) {
-        this(material, name, new BlockBakeFrame(BlockBakeFrame.BlockForm.ALL, name));
+        this(material, name, BlockBakeFrame.cubeAll(name));
     }
 
     @Override
@@ -162,7 +162,7 @@ public class BlockNTMTrapdoor extends BlockTrapDoor implements IDynamicModels {
             return;
         }
         try {
-            String texture = blockFrame.getSpriteLoc(0).toString();
+            String texture = blockFrame.getTextureLocation(0).toString();
 
             IModel bottomModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft:block/trapdoor_bottom"));
             IModel topModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft:block/trapdoor_top"));

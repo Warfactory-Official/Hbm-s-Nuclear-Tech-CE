@@ -9,6 +9,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.init.MobEffects;
@@ -53,12 +54,12 @@ public class BlockClorine extends Block {
 
 	@Override
 	public void onEntityCollision(World world, BlockPos pos, IBlockState state, Entity entity) {
-		if(!(entity instanceof EntityLivingBase))
+		if(!(entity instanceof EntityLivingBase entityLiving))
+			return;
+		if(entity instanceof EntityPlayer player && (player.isSpectator() || player.isCreative()))
 			return;
 
-		EntityLivingBase entityLiving = (EntityLivingBase) entity;
-
-		if(ArmorRegistry.hasAllProtection(entityLiving, EntityEquipmentSlot.HEAD, HazardClass.GAS_LUNG)) {
+        if(ArmorRegistry.hasAllProtection(entityLiving, EntityEquipmentSlot.HEAD, HazardClass.GAS_LUNG)) {
 			ArmorUtil.damageGasMaskFilter(entityLiving, 1);
 		} else {
 			entityLiving.addPotionEffect(new PotionEffect(MobEffects.BLINDNESS, 5 * 20, 0));

@@ -77,7 +77,7 @@ public class EntityC130 extends EntityPlaneBase {
 
         Vec3d vector = new Vec3d(world.rand.nextDouble() - 0.5, 0, world.rand.nextDouble() - 0.5);
         vector = vector.normalize();
-        vector.scale(2);
+        vector = vector.scale(2);
 
         this.payload = payload;
 

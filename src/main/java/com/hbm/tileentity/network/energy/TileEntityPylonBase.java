@@ -15,6 +15,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,10 +86,6 @@ public abstract class TileEntityPylonBase extends TileEntityCableBaseNT {
 		}
 	}
 
-	public void removeConnection(BlockPos pos) {
-		connected.remove(pos);
-	}
-
 	public void disconnectAll() {
 
 		for(int[] pos : connected) {
@@ -135,7 +132,7 @@ public abstract class TileEntityPylonBase extends TileEntityCableBaseNT {
 	}
 
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+	public @NotNull NBTTagCompound writeToNBT(NBTTagCompound nbt) {
 		super.writeToNBT(nbt);
 
 		nbt.setInteger("conCount", connected.size());
@@ -169,18 +166,18 @@ public abstract class TileEntityPylonBase extends TileEntityCableBaseNT {
 	}
 
 	@Override
-	public NBTTagCompound getUpdateTag() {
+	public @NotNull NBTTagCompound getUpdateTag() {
 		NBTTagCompound nbt = new NBTTagCompound();
 		return this.writeToNBT(nbt);
 	}
 
 	@Override
-	public void handleUpdateTag(NBTTagCompound tag) {
+	public void handleUpdateTag(@NotNull NBTTagCompound tag) {
 		this.readFromNBT(tag);
 	}
 	
 	@Override
-	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+	public void onDataPacket(@NotNull NetworkManager net, SPacketUpdateTileEntity pkt) {
 		this.readFromNBT(pkt.getNbtCompound());
 	}
 
@@ -192,7 +189,7 @@ public abstract class TileEntityPylonBase extends TileEntityCableBaseNT {
 	}
 	
 	@Override
-	public AxisAlignedBB getRenderBoundingBox() {
+	public @NotNull AxisAlignedBB getRenderBoundingBox() {
 		return TileEntity.INFINITE_EXTENT_AABB;
 	}
 

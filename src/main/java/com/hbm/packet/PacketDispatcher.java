@@ -116,6 +116,8 @@ public class PacketDispatcher {
 		wrapper.registerMessage(ModFXCollidePacket.Handler.class, ModFXCollidePacket.class, i++, Side.SERVER);
 		wrapper.registerMessage(BiomeSyncPacket.Handler.class, BiomeSyncPacket.class, i++, Side.CLIENT);
         wrapper.registerMessage(PermaSyncPacket.Handler.class, PermaSyncPacket.class, i++, Side.CLIENT);
+		//Syncs muzzle flashes of SEDNA guns for clients from other entities/players
+		wrapper.registerMessage(MuzzleFlashPacket.Handler.class, MuzzleFlashPacket.class, i++, Side.CLIENT);
 
 		for (IPacketRegisterListener listener : LISTENERS) {
 			i = listener.registerPackets(i);

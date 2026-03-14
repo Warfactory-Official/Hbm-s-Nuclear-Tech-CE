@@ -20,8 +20,8 @@ import java.util.List;
 
 public class ButtonPush extends Control {
 
-    public ButtonPush(String name, ControlPanel panel) {
-        super(name, panel);
+    public ButtonPush(String name,String registryName,ControlPanel panel) {
+        super(name,registryName, panel);
         vars.put("isPushed", new DataValueFloat(0));
         vars.put("isLit", new DataValueFloat(0));
         vars.put("color", new DataValueEnum<>(EnumDyeColor.RED));
@@ -142,6 +142,6 @@ public class ButtonPush extends Control {
 
     @Override
     public Control newControl(ControlPanel panel) {
-        return new ButtonPush(name, panel);
+        return new ButtonPush(name,registryName,panel);
     }
 }

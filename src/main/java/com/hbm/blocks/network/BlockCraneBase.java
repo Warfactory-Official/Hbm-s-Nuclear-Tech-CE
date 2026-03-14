@@ -1,45 +1,106 @@
 package com.hbm.blocks.network;
 
+import com.hbm.Tags;
+import com.hbm.api.block.IBlockSideRotation;
 import com.hbm.api.block.IToolable;
 import com.hbm.blocks.ITooltipProvider;
+import com.hbm.items.IDynamicModels;
+import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemTooling;
 import com.hbm.main.MainRegistry;
+import com.hbm.render.model.CraneBakedModel;
 import com.hbm.tileentity.network.TileEntityCraneBase;
 import net.minecraft.block.BlockContainer;
-import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.statemap.StateMapperBase;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.inventory.InventoryHelper;
+import net.minecraftforge.common.property.IExtendedBlockState;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-
-import java.util.Random;
+import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.common.property.ExtendedBlockState;
+import net.minecraftforge.common.property.IUnlistedProperty;
+import net.minecraftforge.common.property.Properties;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 //mlbv: i have zero fucking idea how the direction ids are mapped to EnumFacing..
-//TODO: implement IBlockSideRotation
-public abstract class BlockCraneBase extends BlockContainer implements IToolable, ITooltipProvider {
-    public static final PropertyDirection FACING = BlockHorizontal.FACING;
+// Th3_Sl1ze: down-up-north-south-east-west. 0-1-2-3-4-5 respectively
+public abstract class BlockCraneBase extends BlockContainer implements IToolable, ITooltipProvider, IDynamicModels, IBlockSideRotation {
+    public static final PropertyDirection FACING = PropertyDirection.create("facing");
+    public static final IUnlistedProperty<EnumFacing> OUTPUT_OVERRIDE = new Properties.PropertyAdapter<>(PropertyDirection.create("output_override"));
+
+    @SideOnly(Side.CLIENT)
+    public TextureAtlasSprite iconSide;
+    @SideOnly(Side.CLIENT)
+    public TextureAtlasSprite iconTop;
+    @SideOnly(Side.CLIENT)
+    public TextureAtlasSprite iconIn;
+    @SideOnly(Side.CLIENT)
+    public TextureAtlasSprite iconSideIn;
+    @SideOnly(Side.CLIENT)
+    public TextureAtlasSprite iconOut;
+    @SideOnly(Side.CLIENT)
+    public TextureAtlasSprite iconSideOut;
+    @SideOnly(Side.CLIENT)
+    public TextureAtlasSprite iconDirectional;
+    @SideOnly(Side.CLIENT)
+    public TextureAtlasSprite iconDirectionalUp;
+    @SideOnly(Side.CLIENT)
+    public TextureAtlasSprite iconDirectionalDown;
+    @SideOnly(Side.CLIENT)
+    public TextureAtlasSprite iconDirectionalTurnLeft;
+    @SideOnly(Side.CLIENT)
+    public TextureAtlasSprite iconDirectionalTurnRight;
+    @SideOnly(Side.CLIENT)
+    public TextureAtlasSprite iconDirectionalSideLeftTurnUp;
+    @SideOnly(Side.CLIENT)
+    public TextureAtlasSprite iconDirectionalSideRightTurnUp;
+    @SideOnly(Side.CLIENT)
+    public TextureAtlasSprite iconDirectionalSideLeftTurnDown;
+    @SideOnly(Side.CLIENT)
+    public TextureAtlasSprite iconDirectionalSideRightTurnDown;
+    @SideOnly(Side.CLIENT)
+    public TextureAtlasSprite iconDirectionalSideUpTurnLeft;
+    @SideOnly(Side.CLIENT)
+    public TextureAtlasSprite iconDirectionalSideUpTurnRight;
+    @SideOnly(Side.CLIENT)
+    public TextureAtlasSprite iconDirectionalSideDownTurnLeft;
+    @SideOnly(Side.CLIENT)
+    public TextureAtlasSprite iconDirectionalSideDownTurnRight;
+
+
     public BlockCraneBase(Material mat) {
         super(mat);
+        this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
+        IDynamicModels.INSTANCES.add(this);
     }
 
     @Override
-    public abstract TileEntityCraneBase createNewTileEntity(World worldIn, int meta);
+    public abstract TileEntityCraneBase createNewTileEntity(@NotNull World worldIn, int meta);
 
     @Override
-    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        if(playerIn.getHeldItem(hand).getItem() instanceof ItemTooling) {
+    public boolean onBlockActivated(@NotNull World worldIn, @NotNull BlockPos pos, @NotNull IBlockState state, EntityPlayer playerIn, @NotNull EnumHand hand, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ) {
+        Item heldItem = playerIn.getHeldItem(hand).getItem();
+        if (heldItem instanceof ItemTooling || heldItem == ModItems.conveyor_wand) {
             return false;
         } else if(worldIn.isRemote) {
             return true;
@@ -52,7 +113,7 @@ public abstract class BlockCraneBase extends BlockContainer implements IToolable
     }
 
     @Override
-    public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
+    public void onBlockPlacedBy(World worldIn, @NotNull BlockPos pos, IBlockState state, EntityLivingBase placer, @NotNull ItemStack stack) {
         worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
     }
 
@@ -61,15 +122,15 @@ public abstract class BlockCraneBase extends BlockContainer implements IToolable
         if (tool != ToolType.SCREWDRIVER) return false;
         if (!(world.getTileEntity(new BlockPos(x, y, z)) instanceof TileEntityCraneBase craneTileEntity)) return false;
         if (player.isSneaking()) {
-            craneTileEntity.setOutputOverride(player.getHorizontalFacing().getOpposite());
+            craneTileEntity.setOutputOverride(side);
         } else {
-            craneTileEntity.setInput(player.getHorizontalFacing().getOpposite());
+            craneTileEntity.setInput(side);
         }
         return true;
     }
 
     @Override
-    public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+    public void breakBlock(World worldIn, @NotNull BlockPos pos, @NotNull IBlockState state) {
         TileEntity tileentity = worldIn.getTileEntity(pos);
 
         if (tileentity instanceof IInventory) {
@@ -80,84 +141,106 @@ public abstract class BlockCraneBase extends BlockContainer implements IToolable
         super.breakBlock(worldIn, pos, state);
     }
 
-    private final Random rand = new Random();
-    public void dropContents(World world, BlockPos pos, IBlockState state, int start, int end) {
-        TileEntity tileEntity = world.getTileEntity(pos);
-        if(tileEntity instanceof ISidedInventory) {
-            ISidedInventory tileentityfurnace = (ISidedInventory) tileEntity;
-            if(tileentityfurnace != null) {
-
-                for(int i1 = start; i1 < end; ++i1) {
-                    ItemStack itemstack = tileentityfurnace.getStackInSlot(i1);
-
-                    if(itemstack != null) {
-                        float f = this.rand.nextFloat() * 0.8F + 0.1F;
-                        float f1 = this.rand.nextFloat() * 0.8F + 0.1F;
-                        float f2 = this.rand.nextFloat() * 0.8F + 0.1F;
-
-                        while(itemstack.getCount() > 0) {
-                            int j1 = this.rand.nextInt(21) + 10;
-
-                            if(j1 > itemstack.getCount()) {
-                                j1 = itemstack.getCount();
-                            }
-
-                            itemstack.shrink(j1);
-                            EntityItem entityitem = new EntityItem(world, pos.getX() + f, pos.getY() + f1, pos.getZ() + f2, new ItemStack(itemstack.getItem(), j1, itemstack.getItemDamage()));
-
-                            if(itemstack.hasTagCompound()) {
-                                entityitem.getItem().setTagCompound((NBTTagCompound) itemstack.getTagCompound().copy());
-                            }
-
-                            float f3 = 0.05F;
-                            entityitem.motionX = (float) this.rand.nextGaussian() * f3;
-                            entityitem.motionY = (float) this.rand.nextGaussian() * f3 + 0.2F;
-                            entityitem.motionZ = (float) this.rand.nextGaussian() * f3;
-                            world.spawnEntity(entityitem);
-                        }
-                    }
-                }
-
-                world.notifyNeighborsOfStateChange(pos, state.getBlock(), true);
-            }
-        }
-
-        super.breakBlock(world, pos, state);
-    }
-
     @Override
-    public EnumBlockRenderType getRenderType(IBlockState state) {
+    public @NotNull EnumBlockRenderType getRenderType(@NotNull IBlockState state) {
         return EnumBlockRenderType.MODEL;
     }
 
+
     @Override
-    public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, EnumHand hand) {
+    public @NotNull IBlockState getStateForPlacement(@NotNull World world, @NotNull BlockPos pos, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, @NotNull EnumHand hand) {
         return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
     }
+
     @Override
-    public IBlockState withRotation(IBlockState state, Rotation rot) {
-        return state.withProperty(FACING, rot.rotate((EnumFacing)state.getValue(FACING)));
+    public @NotNull IBlockState withRotation(IBlockState state, Rotation rot) {
+        return state.withProperty(FACING, rot.rotate(state.getValue(FACING)));
     }
 
     @Override
-    public IBlockState withMirror(IBlockState state, Mirror mirrorIn)
-    {
-        return state.withRotation(mirrorIn.toRotation((EnumFacing)state.getValue(FACING)));
+    public @NotNull IBlockState withMirror(IBlockState state, Mirror mirrorIn) {
+        return state.withRotation(mirrorIn.toRotation(state.getValue(FACING)));
     }
 
     @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, FACING);
+    protected @NotNull BlockStateContainer createBlockState() {
+        return new ExtendedBlockState(this, new IProperty[]{FACING}, new IUnlistedProperty[]{OUTPUT_OVERRIDE});
     }
 
     @Override
-    public IBlockState getStateFromMeta(int meta) {
-        EnumFacing enumfacing = EnumFacing.byHorizontalIndex(meta);
-        return this.getDefaultState().withProperty(FACING, enumfacing);
+    public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos) {
+        TileEntityCraneBase te = (TileEntityCraneBase) world.getTileEntity(pos);
+        if (te != null) {
+            EnumFacing output = te.getOutputSide();
+            return ((IExtendedBlockState) state).withProperty(OUTPUT_OVERRIDE, output);
+        }
+        return state;
+    }
+
+    @Override
+    public @NotNull IBlockState getStateFromMeta(int meta) {
+        return this.getDefaultState().withProperty(FACING, EnumFacing.byIndex(meta));
     }
 
     @Override
     public int getMetaFromState(IBlockState state) {
-        return state.getValue(BlockHorizontal.FACING).getHorizontalIndex();
+        return state.getValue(FACING).getIndex();
+    }
+
+    @Override
+    public int getRotationFromSide(IBlockAccess world, BlockPos pos, EnumFacing side) {
+        IBlockState state = world.getBlockState(pos);
+        if (state.getBlock() != this) return 0;
+        EnumFacing facing = state.getValue(FACING);
+        if (facing.getAxis().isHorizontal() && side == EnumFacing.UP) {
+            return switch (facing) {
+                case NORTH -> 3;
+                case EAST -> 1;
+                case WEST -> 2;
+                default -> 0;
+            };
+        }
+        return 0;
+    }
+
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void registerSprite(TextureMap map) {
+        iconSide = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/crane_side"));
+        iconTop = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/crane_top"));
+        iconIn = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/crane_in"));
+        iconSideIn = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/crane_side_in"));
+        iconOut = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/crane_out"));
+        iconSideOut = map.registerSprite(new ResourceLocation(Tags.MODID, "blocks/crane_side_out"));
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void registerModel() {
+        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0, new ModelResourceLocation(getRegistryName(), "inventory"));
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void bakeModel(ModelBakeEvent event) {
+        try {
+            IBakedModel bakedModel = new CraneBakedModel(this);
+            event.getModelRegistry().putObject(new ModelResourceLocation(getRegistryName(), "normal"), bakedModel);
+            event.getModelRegistry().putObject(new ModelResourceLocation(getRegistryName(), "inventory"), bakedModel);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public StateMapperBase getStateMapper(ResourceLocation loc) {
+        return new StateMapperBase() {
+            @Override
+            protected @NotNull ModelResourceLocation getModelResourceLocation(@NotNull IBlockState state) {
+                return new ModelResourceLocation(loc, "normal");
+            }
+        };
     }
 }

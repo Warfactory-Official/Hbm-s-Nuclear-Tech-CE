@@ -11,12 +11,15 @@ import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.client.config.GuiSlider;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class SubElementLabel extends SubElementBaseConfig {
 
+    private static final int[] TRANSFORM = {137, 116, 8, 88};
     private float colorR;
     private float colorG;
     private float colorB;
@@ -30,7 +33,7 @@ public class SubElementLabel extends SubElementBaseConfig {
     GuiSlider slideScale;
 
     public SubElementLabel(GuiControlEdit gui, Map<String, DataValue> map) {
-        super(gui);
+        super(gui,map);
         this.colorR = map.get("colorR").getNumber();
         this.colorG = map.get("colorG").getNumber();
         this.colorB = map.get("colorB").getNumber();
@@ -39,14 +42,12 @@ public class SubElementLabel extends SubElementBaseConfig {
     }
 
     @Override
-    public Map<String, DataValue> getConfigs() {
-        Map<String, DataValue> m = new HashMap<>();
-        m.put("colorR", new DataValueFloat(colorR));
-        m.put("colorG", new DataValueFloat(colorG));
-        m.put("colorB", new DataValueFloat(colorB));
-        m.put("text", new DataValueString(text));
-        m.put("scale", new DataValueFloat(scale));
-        return m;
+    public void fillConfigs(Map<String, DataValue> configs) {
+        putFloatConfig(configs, "colorR", colorR);
+        putFloatConfig(configs, "colorG", colorG);
+        putFloatConfig(configs, "colorB", colorB);
+        putStringConfig(configs, "text", text);
+        putFloatConfig(configs, "scale", scale);
     }
 
     @Override
@@ -113,5 +114,11 @@ public class SubElementLabel extends SubElementBaseConfig {
         textField.setVisible(enable);
         slideScale.visible = enable;
         slideScale.enabled = enable;
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public int[] getPreviewTransform() {
+        return TRANSFORM;
     }
 }

@@ -1,5 +1,7 @@
 package com.hbm.inventory.control_panel.controls;
 
+import com.hbm.inventory.control_panel.controls.configs.SubElementBaseConfig;
+import com.hbm.inventory.control_panel.controls.configs.SubElementDisplaySevenSeg;
 import com.hbm.render.loader.WaveFrontObjectVAO;
 import com.hbm.inventory.control_panel.*;
 import com.hbm.main.ResourceManager;
@@ -23,14 +25,20 @@ public class DisplaySevenSeg extends Control {
     private int digitCount = 1;
     private boolean isDecimal = false;
 
-    public DisplaySevenSeg(String name, ControlPanel panel) {
-        super(name, panel);
+    public DisplaySevenSeg(String name,String registryName,ControlPanel panel) {
+        super(name,registryName, panel);
         vars.put("value", new DataValueFloat(0));
         configMap.put("colorR", new DataValueFloat(color[0]));
         configMap.put("colorG", new DataValueFloat(color[1]));
         configMap.put("colorB", new DataValueFloat(color[2]));
         configMap.put("digitCount", new DataValueFloat(digitCount));
         configMap.put("isDecimal", new DataValueFloat(0));
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public SubElementBaseConfig getConfigSubElement(GuiControlEdit gui,Map<String,DataValue> configs) {
+        return new SubElementDisplaySevenSeg(gui,configs);
     }
 
     @Override
@@ -44,16 +52,17 @@ public class DisplaySevenSeg extends Control {
     }
 
     @Override
-    public float[] getBox() {
+    public void fillBox(float[] box) {
         float width = getSize()[0];
         float length = getSize()[1];
-        return new float[] {posX - (width*digitCount-((digitCount-1)*.125F)) + width, posY, posX + width, posY + length};
+        box[0] = posX - (width * digitCount - ((digitCount - 1) * .125F)) + width;
+        box[1] = posY;
+        box[2] = posX + width;
+        box[3] = posY + length;
     }
 
     @Override
-    public void applyConfigs(Map<String, DataValue> configs) {
-        super.applyConfigs(configs);
-
+    protected void onConfigMapChanged() {
         for (Map.Entry<String, DataValue> e : configMap.entrySet()) {
             switch (e.getKey()) {
                 case "colorR" : {
@@ -161,6 +170,6 @@ public class DisplaySevenSeg extends Control {
 
     @Override
     public Control newControl(ControlPanel panel) {
-        return new DisplaySevenSeg(name, panel);
+        return new DisplaySevenSeg(name,registryName,panel);
     }
 }

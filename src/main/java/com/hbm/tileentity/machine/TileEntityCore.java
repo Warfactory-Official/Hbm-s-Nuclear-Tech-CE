@@ -20,6 +20,7 @@ import com.hbm.main.AdvancementManager;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.Vec3NT;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.Entity;
@@ -111,7 +112,7 @@ public class TileEntityCore extends TileEntityMachineBase implements ITickable, 
                     }
                     EntityNukeExplosionMK3.ATEntry entry = next.getKey();
                     if (entry.dim != world.provider.getDimension()) continue;
-                    Vec3 vec = Vec3.createVectorHelper(pos.getX() + 0.5 - entry.x, pos.getY() + 0.5 - entry.y, pos.getZ() + 0.5 - entry.z);
+                    Vec3NT vec = new Vec3NT(pos.getX() + 0.5 - entry.x, pos.getY() + 0.5 - entry.y, pos.getZ() + 0.5 - entry.z);
                     if (vec.length() < 300) {
                         canExplode = false;
                         break;
@@ -231,13 +232,13 @@ public class TileEntityCore extends TileEntityMachineBase implements ITickable, 
 
     public boolean isReady() {
 
-        if (getCorePower() == 0)
+        if(!lastTickValid)
+            return false;
+
+        if (getCore() == 0)
             return false;
 
         if (color == 0)
-            return false;
-
-        if (tanks[0].getFluid() == null || tanks[1].getFluid() == null)
             return false;
 
         if(getFuelEfficiency(tanks[0].getTankType()) <= 0 || getFuelEfficiency(tanks[1].getTankType()) <= 0)

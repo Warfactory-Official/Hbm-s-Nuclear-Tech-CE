@@ -3,11 +3,13 @@ package com.hbm.blocks;
 import com.google.common.collect.ImmutableMap;
 import com.hbm.handler.MultiblockHandlerXR;
 import com.hbm.interfaces.ICopiable;
+import com.hbm.items.ClaimedModelLocationRegistry;
 import com.hbm.items.IDynamicModels;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
+import com.hbm.main.client.NTMClientRegistry;
 import com.hbm.tileentity.IPersistentNBT;
 import com.hbm.world.gen.nbt.INBTBlockTransformable;
 import net.minecraft.block.Block;
@@ -67,6 +69,7 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
     //meta offset from dummy to extra rotation
     public static final int extra = 6;
     private static final long NO_CORE = Long.MIN_VALUE;
+    private static final AxisAlignedBB DETAIL_AABB = new AxisAlignedBB(0.0F, 0.0F, 0.0F, 1.0F, 0.999F, 1.0F);
     public static boolean safeRem = false;
     public List<AxisAlignedBB> bounding = new ArrayList<>();
 
@@ -491,7 +494,7 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 		if (!this.useDetailedHitbox()) {
 			return FULL_BLOCK_AABB;
 		} else {
-			return new AxisAlignedBB(0.0F, 0.0F, 0.0F, 1.0F, 0.999F, 1.0F);
+			return DETAIL_AABB;
 		}
 	}
 
@@ -564,16 +567,18 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 			);
 			ModelResourceLocation worldLocation = new ModelResourceLocation(getRegistryName(), "normal");
 			event.getModelRegistry().putObject(worldLocation, blockBaked);
-			IModel itemBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
-			ImmutableMap<String, String> itemTextures = ImmutableMap.of("layer0", "hbm:blocks/" + getRegistryName().getPath());
-			IModel itemRetextured = itemBaseModel.retexture(itemTextures);
-			IBakedModel itemBaked = itemRetextured.bake(
-					ModelRotation.X0_Y0,
-					DefaultVertexFormats.ITEM,
-					ModelLoader.defaultTextureGetter()
-			);
-			ModelResourceLocation inventoryLocation = new ModelResourceLocation(getRegistryName(), "inventory");
-			event.getModelRegistry().putObject(inventoryLocation, itemBaked);
+            if (!ClaimedModelLocationRegistry.hasSyntheticTeisrBinding(Item.getItemFromBlock(this))) {
+				IModel itemBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
+				ImmutableMap<String, String> itemTextures = ImmutableMap.of("layer0", "hbm:blocks/" + getRegistryName().getPath());
+				IModel itemRetextured = itemBaseModel.retexture(itemTextures);
+				IBakedModel itemBaked = itemRetextured.bake(
+						ModelRotation.X0_Y0,
+						DefaultVertexFormats.ITEM,
+						ModelLoader.defaultTextureGetter()
+				);
+				ModelResourceLocation inventoryLocation = new ModelResourceLocation(getRegistryName(), "inventory");
+				event.getModelRegistry().putObject(inventoryLocation, itemBaked);
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -584,7 +589,9 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerModel() {
-		ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0, new ModelResourceLocation(this.getRegistryName(), "inventory"));
+		Item item = Item.getItemFromBlock(this);
+		ModelResourceLocation syntheticLocation = NTMClientRegistry.getSyntheticTeisrModelLocation(item);
+		ModelLoader.setCustomModelResourceLocation(item, 0, syntheticLocation != null ? syntheticLocation : new ModelResourceLocation(this.getRegistryName(), "inventory"));
 	}
 
 	@Override

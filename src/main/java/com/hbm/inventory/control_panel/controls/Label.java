@@ -1,6 +1,8 @@
 package com.hbm.inventory.control_panel.controls;
 
 import com.hbm.inventory.control_panel.*;
+import com.hbm.inventory.control_panel.controls.configs.SubElementBaseConfig;
+import com.hbm.inventory.control_panel.controls.configs.SubElementLabel;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.loader.IModelCustom;
 import net.minecraft.client.Minecraft;
@@ -9,6 +11,8 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
 import java.util.Map;
@@ -22,14 +26,20 @@ public class Label extends Control {
     float width = 0;
     float height = 0;
 
-    public Label(String name, ControlPanel panel) {
-        super(name, panel);
+    public Label(String name,String registryName,ControlPanel panel) {
+        super(name,registryName, panel);
         vars.put("isLit", new DataValueFloat(0));
         configMap.put("colorR", new DataValueFloat(color[0]));
         configMap.put("colorG", new DataValueFloat(color[1]));
         configMap.put("colorB", new DataValueFloat(color[2]));
         configMap.put("text", new DataValueString(text));
         configMap.put("scale", new DataValueFloat(scale));
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public SubElementBaseConfig getConfigSubElement(GuiControlEdit gui,Map<String,DataValue> configs) {
+        return new SubElementLabel(gui,configs);
     }
 
     @Override
@@ -43,14 +53,15 @@ public class Label extends Control {
     }
 
     @Override
-    public float[] getBox() {
-        return new float[] {posX, posY, posX + (width*scale/500F), posY + (height*scale/500F)};
+    public void fillBox(float[] box) {
+        box[0] = posX;
+        box[1] = posY;
+        box[2] = posX + (width * scale / 500F);
+        box[3] = posY + (height * scale / 500F);
     }
 
     @Override
-    public void applyConfigs(Map<String, DataValue> configs) {
-        super.applyConfigs(configs);
-
+    protected void onConfigMapChanged() {
         for (Map.Entry<String, DataValue> e : configMap.entrySet()) {
             switch (e.getKey()) {
                 case "colorR" : {
@@ -136,7 +147,7 @@ public class Label extends Control {
 
     @Override
     public Control newControl(ControlPanel panel) {
-        return new Label(name, panel);
+        return new Label(name,registryName,panel);
     }
 
     @Override

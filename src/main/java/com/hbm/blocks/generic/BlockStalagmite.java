@@ -92,7 +92,7 @@ public class BlockStalagmite extends BlockEnumMeta<BlockEnums.EnumStalagmiteType
         return Arrays.stream(blockEnum)
                      .map(Enum::name)
                      .map(n -> registryName + "." + n.toLowerCase(Locale.US))
-                     .map(tex -> new BlockBakeFrame(BlockBakeFrame.BlockForm.CROSS_UNTINTED, tex))
+                     .map(BlockBakeFrame::cross)
                      .toArray(BlockBakeFrame[]::new);
     }
 

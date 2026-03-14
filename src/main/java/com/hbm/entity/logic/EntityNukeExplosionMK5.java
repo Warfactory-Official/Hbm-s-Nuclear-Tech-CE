@@ -111,6 +111,7 @@ public class EntityNukeExplosionMK5 extends EntityExplosionChunkloading {
     @Override
     public void onUpdate() {
         if (world.isRemote) return;
+        requestChunkLoaderTicketIfNeeded();
 
         if (strength == 0 || !CompatibilityConfig.isWarDim(world)) {
             this.setDead();
@@ -209,6 +210,7 @@ public class EntityNukeExplosionMK5 extends EntityExplosionChunkloading {
 
     @Override
     public void readEntityFromNBT(NBTTagCompound nbt) {
+        markChunkLoaderRestoredFromNBT();
         radius = nbt.getInteger("radius");
         strength = nbt.getInteger("strength");
         falloutAdd = nbt.getInteger("falloutAdd");

@@ -91,7 +91,10 @@ public class SubElementEventEditor extends SubElement {
 	}
 
 	public void populateDefaultNodes() {
-		if (!gui.isEditMode) {
+		if (!gui.isEditMode
+				&& gui.currentEditControl != null
+				&& gui.currentEditControl.receiveNodeMap.isEmpty()
+				&& gui.currentEditControl.sendNodeMap.isEmpty()) {
 			gui.currentEditControl.populateDefaultNodes(receiveEvents);
 		}
 	}
@@ -121,6 +124,17 @@ public class SubElementEventEditor extends SubElement {
 				sendButtons.get(i).enabled = true;
 			}
 		}
+		boolean showReceivePaging = numReceivePages > 1;
+		receivePageLeft.visible = showReceivePaging && currentReceivePage > 1;
+		receivePageLeft.enabled = receivePageLeft.visible;
+		receivePageRight.visible = showReceivePaging && currentReceivePage < numReceivePages;
+		receivePageRight.enabled = receivePageRight.visible;
+
+		boolean showSendPaging = numSendPages > 1;
+		sendPageLeft.visible = showSendPaging && currentSendPage > 1;
+		sendPageLeft.enabled = sendPageLeft.visible;
+		sendPageRight.visible = showSendPaging && currentSendPage < numSendPages;
+		sendPageRight.enabled = sendPageRight.visible;
 	}
 	
 	@Override
@@ -158,10 +172,7 @@ public class SubElementEventEditor extends SubElement {
 			currentSendPage = Math.min(numSendPages, currentSendPage + 1);
 			recalculateVisibleButtons();
 		} else if(button == done){
-			for(IControllable c : gui.linker.linked) {
-				if (!gui.currentEditControl.connectedSet.contains(c.getControlPos()))
-					gui.currentEditControl.connectedSet.add(c.getControlPos());
-			}
+			gui.linker.syncCurrentEditControlConnections();
 			gui.currentEditControl.receiveEvent(ControlEvent.newEvent("initialize"));
 			if (!gui.isEditMode) {
 				float[] gridMouse = gui.placement.convertToGridSpace(gui.mouseX, gui.mouseY);
@@ -203,14 +214,25 @@ public class SubElementEventEditor extends SubElement {
 				b.enabled = false;
 			}
 		}
-		receivePageLeft.visible = enable;
-		receivePageLeft.enabled = enable;
-		receivePageRight.visible = enable;
-		receivePageRight.enabled = enable;
-		sendPageLeft.visible = enable;
-		sendPageLeft.enabled = enable;
-		sendPageRight.visible = enable;
-		sendPageRight.enabled = enable;
+		if(enable){
+			receivePageLeft.visible = numReceivePages > 1 && currentReceivePage > 1;
+			receivePageLeft.enabled = receivePageLeft.visible;
+			receivePageRight.visible = numReceivePages > 1 && currentReceivePage < numReceivePages;
+			receivePageRight.enabled = receivePageRight.visible;
+			sendPageLeft.visible = numSendPages > 1 && currentSendPage > 1;
+			sendPageLeft.enabled = sendPageLeft.visible;
+			sendPageRight.visible = numSendPages > 1 && currentSendPage < numSendPages;
+			sendPageRight.enabled = sendPageRight.visible;
+		} else {
+			receivePageLeft.visible = false;
+			receivePageLeft.enabled = false;
+			receivePageRight.visible = false;
+			receivePageRight.enabled = false;
+			sendPageLeft.visible = false;
+			sendPageLeft.enabled = false;
+			sendPageRight.visible = false;
+			sendPageRight.enabled = false;
+		}
 		done.visible = enable;
 		done.enabled = enable;
 		back.visible = enable;

@@ -5,6 +5,7 @@ import com.hbm.Tags;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
+import com.hbm.items.IClaimedModelLocation;
 import com.hbm.items.ModItems;
 import com.hbm.items.special.ItemAutogen;
 import com.hbm.util.I18nUtil;
@@ -93,7 +94,6 @@ public class ItemScraps extends ItemAutogen {
     @SideOnly(Side.CLIENT)
     public void registerModels() {
         List<ResourceLocation> variants = new ArrayList<>();
-        ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(new ResourceLocation(Tags.MODID, "items/scraps-stone"), "inventory"));
         for (NTMMaterial mat : Mats.orderedList) {
             if (mat.smeltable == NTMMaterial.SmeltingBehavior.SMELTABLE
                     || mat.smeltable == NTMMaterial.SmeltingBehavior.ADDITIVE) {
@@ -183,5 +183,13 @@ public class ItemScraps extends ItemAutogen {
         scrap.getTagCompound().setInteger("amount", stack.amount);
         if(liquid) scrap.getTagCompound().setBoolean("liquid", true);
         return scrap;
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public boolean ownsModelLocation(ModelResourceLocation location) {
+        return super.ownsModelLocation(location)
+                || IClaimedModelLocation.isInventoryLocation(location, new ResourceLocation(Tags.MODID, "items/scraps_liquid"))
+                || IClaimedModelLocation.isInventoryLocation(location, new ResourceLocation(Tags.MODID, "items/scraps_additive"));
     }
 }

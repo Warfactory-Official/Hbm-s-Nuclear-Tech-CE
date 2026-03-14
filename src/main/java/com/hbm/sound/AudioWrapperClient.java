@@ -45,6 +45,12 @@ public class AudioWrapperClient extends AudioWrapper {
 			sound.setRange(range);
 	}
 
+    @Override
+    public void updatePitch(float pitch) {
+        if (sound != null)
+            sound.setPitch(pitch);
+    }
+
 	@Override
 	public float getVolume() {
 		if(sound != null)

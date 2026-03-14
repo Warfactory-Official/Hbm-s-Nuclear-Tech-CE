@@ -2,6 +2,7 @@ package com.hbm.render.model;
 
 import com.hbm.blocks.network.FluidDuctStandard;
 import com.hbm.render.loader.HFRWavefrontObject;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -75,7 +76,7 @@ public class DuctNeoBakedModel extends AbstractWavefrontBakedModel {
     }
 
     private List<BakedQuad> buildWorldQuads(boolean pX, boolean nX, boolean pY, boolean nY, boolean pZ, boolean nZ, int mask) {
-        List<String> parts = new ArrayList<>();
+        Set<String> parts = new ObjectOpenHashSet<>();
 
         switch (mask) {
             case 0 -> {
@@ -121,11 +122,11 @@ public class DuctNeoBakedModel extends AbstractWavefrontBakedModel {
     }
 
     private List<BakedQuad> buildItemQuads() {
-        List<String> parts = Arrays.asList("pX", "nX", "pZ", "nZ");
+        Set<String> parts = Set.of("pX", "nX", "pZ", "nZ");
         return bakeWithOverlay(parts, 0.0F, 0.0F, itemYaw, false);
     }
 
-    private List<BakedQuad> bakeWithOverlay(Collection<String> parts, float roll, float pitch, float yaw, boolean centerToBlock) {
+    private List<BakedQuad> bakeWithOverlay(Set<String> parts, float roll, float pitch, float yaw, boolean centerToBlock) {
         List<FaceGeometry> geometry = buildGeometry(parts, roll, pitch, yaw, false, centerToBlock);
         List<BakedQuad> quads = new ArrayList<>(geometry.size() * 2);
         for (FaceGeometry geo : geometry) {

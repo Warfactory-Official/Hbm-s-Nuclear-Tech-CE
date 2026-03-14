@@ -1,6 +1,6 @@
 {
 	"parent": "item/generated",
 	"textures": {
-		"layer0": "hbm:items/keypad_test"
+		"layer0": "hbm:items/sliding_blast_door_keypad"
 	}
 }

@@ -3,6 +3,7 @@ package com.hbm.entity.mob;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.bomb.BlockTaint;
 import com.hbm.config.GeneralConfig;
+import com.hbm.config.ServerConfig;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IRadiationImmune;
 import net.minecraft.block.state.IBlockState;
@@ -66,7 +67,7 @@ public class EntityCreeperTainted extends EntityCreeper implements IRadiationImm
                         pos.setPos(a, b, c);
                         IBlockState state = this.world.getBlockState(pos);
                         if (state.isNormalCube() && !state.getBlock().isAir(state, world, pos)) {
-                            if (GeneralConfig.enableHardcoreTaint)
+                            if (!ServerConfig.TAINT_TRAILS.get())
                                 this.world.setBlockState(pos, ModBlocks.taint.getDefaultState().withProperty(BlockTaint.TAINTAGE, this.rand.nextInt(3) + 5), 2);
                             else
                                 this.world.setBlockState(pos, ModBlocks.taint.getDefaultState().withProperty(BlockTaint.TAINTAGE, this.rand.nextInt(3)), 2);
@@ -80,7 +81,7 @@ public class EntityCreeperTainted extends EntityCreeper implements IRadiationImm
                         pos.setPos(a, b, c);
                         IBlockState state = this.world.getBlockState(pos);
                         if (state.isNormalCube() && !state.getBlock().isAir(state, world, pos)) {
-                            if (GeneralConfig.enableHardcoreTaint)
+                            if (!ServerConfig.TAINT_TRAILS.get())
                                 this.world.setBlockState(pos, ModBlocks.taint.getDefaultState().withProperty(BlockTaint.TAINTAGE, this.rand.nextInt(6) + 10), 2);
                             else
                                 this.world.setBlockState(pos, ModBlocks.taint.getDefaultState().withProperty(BlockTaint.TAINTAGE, this.rand.nextInt(3) + 4), 2);

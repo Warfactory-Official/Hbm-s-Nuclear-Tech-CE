@@ -70,7 +70,10 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 public class BlockRebar extends BlockContainer implements IDynamicModels {
 
@@ -180,7 +183,7 @@ public class BlockRebar extends BlockContainer implements IDynamicModels {
                 int rebarLeft = player.isCreative() ? Integer.MAX_VALUE : InventoryUtil.countAStackMatches(player, new ComparableStack(ModBlocks.rebar), true);
                 int rebarRequired = (maxX - minX + 1) * (maxY - minY + 1) * (maxZ - minZ + 1);
                 TextFormatting color = rebarRequired > rebarLeft ? TextFormatting.RED : TextFormatting.GREEN;
-                MainRegistry.proxy.displayTooltip(color + (rebarLeft + " / " + rebarRequired));
+                MainRegistry.proxy.displayTooltip(color + ((rebarLeft == Integer.MAX_VALUE ? "∞" : rebarLeft) + " / " + rebarRequired));
             }
         }
     }

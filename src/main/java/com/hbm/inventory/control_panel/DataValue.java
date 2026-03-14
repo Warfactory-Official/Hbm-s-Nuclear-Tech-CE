@@ -1,5 +1,6 @@
 package com.hbm.inventory.control_panel;
 
+import com.hbm.main.MainRegistry;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagFloat;
@@ -11,6 +12,7 @@ public abstract class DataValue {
 	public abstract String toString();
 	public abstract DataType getType();
 	public abstract <E extends Enum<E>> E getEnum(Class<E> clazz);
+	public abstract DataValue copy();
 	public abstract NBTBase writeToNBT();
 	public abstract void readFromNBT(NBTBase nbt);
 	
@@ -28,7 +30,7 @@ public abstract class DataValue {
 				val.readFromNBT(base);
 			}
 		} catch(Exception x) {
-			x.printStackTrace();
+			MainRegistry.logger.error("Failed to deserialize control-panel data value from NBT type {}", base.getClass().getName(), x);
 			return null;
 		}
 		return val;

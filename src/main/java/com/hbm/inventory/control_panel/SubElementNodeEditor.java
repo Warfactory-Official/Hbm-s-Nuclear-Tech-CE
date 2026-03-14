@@ -8,6 +8,7 @@ import com.hbm.main.ClientProxy;
 import com.hbm.render.NTMRenderHelper;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.input.Keyboard;
@@ -21,6 +22,7 @@ public class SubElementNodeEditor extends SubElement {
 
 	public static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/control_panel/gui_placement_front.png");
 	public static ResourceLocation grid = new ResourceLocation(Tags.MODID + ":textures/gui/control_panel/grid.png");
+	private static NBTTagCompound clipboardNodes;
 	
 	public GuiButton btn_back;
 	public GuiButton btn_variables;
@@ -82,6 +84,19 @@ public class SubElementNodeEditor extends SubElement {
 	
 	@Override
 	protected void keyTyped(char typedChar, int code){
+		boolean ctrl = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL);
+		if(currentSystem != null && currentSystem.currentTypingBox == null && ctrl) {
+			if(code == Keyboard.KEY_C) {
+				copySelectionToClipboard();
+				return;
+			}
+			if(code == Keyboard.KEY_V) {
+				if(canPasteClipboard()) {
+					pasteClipboardAtMouse();
+				}
+				return;
+			}
+		}
 		if(code == Keyboard.KEY_A && Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
 			if(addMenu != null){
 				addMenu.close();
@@ -89,6 +104,12 @@ public class SubElementNodeEditor extends SubElement {
 			addMenu = new ItemList(gui.mouseX, gui.mouseY, 32, s -> {
 				final float x = (gui.mouseX-gui.getGuiLeft())*gridScale + gui.getGuiLeft() + gridX;
 				final float y = (gui.mouseY-gui.getGuiTop())*gridScale + gui.getGuiTop() - gridY;
+				if("Paste".equals(s)) {
+					pasteClipboard(x, y);
+					addMenu.close();
+					addMenu = null;
+					return null;
+				}
 				List<INodeMenuCreator> controllers = NTMControlPanelRegistry.addMenuControl.get(s.substring(("{expandable}").length()));
 				if (controllers != null) {
 					ItemList list = new ItemList(0, 0, 32,s2 -> {
@@ -110,6 +131,9 @@ public class SubElementNodeEditor extends SubElement {
 				}
 				return null;
 			});
+			if(canPasteClipboard()) {
+				addMenu.addItems("Paste");
+			}
 			for (String item : NTMControlPanelRegistry.addMenuCategories)
 				addMenu.addItems("{expandable}"+item);
 		}
@@ -121,6 +145,54 @@ public class SubElementNodeEditor extends SubElement {
 		}
 		if(currentSystem != null){
 			currentSystem.keyTyped(typedChar, code);
+		}
+	}
+
+	private static boolean hasClipboardData() {
+		return clipboardNodes != null && !clipboardNodes.isEmpty();
+	}
+
+	private boolean canPasteClipboard() {
+		return currentSystem != null
+				&& currentEvent != null
+				&& hasClipboardData()
+				&& currentSystem.canPasteFromNBT(clipboardNodes, currentEvent, sendEvents == null);
+	}
+
+	private void copySelectionToClipboard() {
+		if(currentSystem == null || !currentSystem.hasSelectedNodes()) {
+			return;
+		}
+		NBTTagCompound tag = currentSystem.writeSelectedToNBT();
+		clipboardNodes = tag != null ? tag.copy() : null;
+	}
+
+	private void pasteClipboardAtMouse() {
+		if(currentSystem == null) {
+			return;
+		}
+		float x = (gui.mouseX-gui.getGuiLeft())*gridScale + gui.getGuiLeft() + gridX;
+		float y = (gui.mouseY-gui.getGuiTop())*gridScale + gui.getGuiTop() - gridY;
+		pasteClipboard(x, y);
+	}
+
+	private void pasteClipboard(float x, float y) {
+		if(!canPasteClipboard()) {
+			return;
+		}
+
+		List<Node> pastedNodes = currentSystem.pasteFromNBT(clipboardNodes.copy(), x, y);
+		if(pastedNodes.isEmpty()) {
+			return;
+		}
+
+		currentSystem.selectedNodes.clear();
+		currentSystem.selectedNodes.addAll(pastedNodes);
+		currentSystem.activeNode = pastedNodes.get(pastedNodes.size() - 1);
+		currentSystem.connectionInProgress = null;
+		if(currentSystem.currentTypingBox != null) {
+			currentSystem.currentTypingBox.stopTyping();
+			currentSystem.currentTypingBox = null;
 		}
 	}
 	
@@ -255,6 +327,7 @@ public class SubElementNodeEditor extends SubElement {
 			gui.popElement();
 		}
 		if (button == btn_variables) {
+			gui.currentEditControl = currentSystem.parent;
 			gui.pushElement(gui.variables);
 		}
 	}

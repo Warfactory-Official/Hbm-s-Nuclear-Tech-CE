@@ -2,48 +2,107 @@ package com.hbm.render.model;
 
 import com.hbm.main.ResourceManager;
 import com.hbm.render.loader.ModelRendererObj;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
+import org.lwjgl.opengl.GL11;
+
+import static com.hbm.render.NTMRenderHelper.bindTexture;
 
 public class ModelArmorAJRO extends ModelArmorBase {
-	
-	public ModelArmorAJRO(int type) {
-		super(type);
 
-		head = new ModelRendererObj(ResourceManager.armor_ajr, "Head");
-		body = new ModelRendererObj(ResourceManager.armor_ajr, "Body");
-		leftArm = new ModelRendererObj(ResourceManager.armor_ajr, "LeftArm").setRotationPoint(-5.0F, 2.0F, 0.0F);
-		rightArm = new ModelRendererObj(ResourceManager.armor_ajr, "RightArm").setRotationPoint(5.0F, 2.0F, 0.0F);
-		leftLeg = new ModelRendererObj(ResourceManager.armor_ajr, "LeftLeg").setRotationPoint(1.9F, 12.0F, 0.0F);
-		rightLeg = new ModelRendererObj(ResourceManager.armor_ajr, "RightLeg").setRotationPoint(-1.9F, 12.0F, 0.0F);
-		leftFoot = new ModelRendererObj(ResourceManager.armor_ajr, "LeftBoot").setRotationPoint(1.9F, 12.0F, 0.0F);
-		rightFoot = new ModelRendererObj(ResourceManager.armor_ajr, "RightBoot").setRotationPoint(-1.9F, 12.0F, 0.0F);
-	}
+  public ModelArmorAJRO(int type) {
+    super(type);
 
-	@Override
-    public void renderArmor(Entity par1Entity, float par7) {
-        switch (type) {
-            case 3 -> {
-                Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.ajro_helmet);
-                head.render(par7 * 1.001F);
-            }
-            case 2 -> {
-                Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.ajro_chest);
-                body.render(par7);
-                Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.ajro_arm);
-                leftArm.render(par7);
-                rightArm.render(par7);
-            }
-            case 1 -> {
-                Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.ajro_leg);
-                leftLeg.render(par7);
-                rightLeg.render(par7);
-            }
-            case 0 -> {
-                Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.ajro_leg);
-                leftFoot.render(par7);
-                rightFoot.render(par7);
-            }
-        }
-	}
+    head = new ModelRendererObj(ResourceManager.armor_ajr, "Head");
+    body = new ModelRendererObj(ResourceManager.armor_ajr, "Body");
+    leftArm =
+        new ModelRendererObj(ResourceManager.armor_ajr, "LeftArm")
+            .setRotationPoint(-5.0F, 2.0F, 0.0F);
+    rightArm =
+        new ModelRendererObj(ResourceManager.armor_ajr, "RightArm")
+            .setRotationPoint(5.0F, 2.0F, 0.0F);
+    leftLeg =
+        new ModelRendererObj(ResourceManager.armor_ajr, "LeftLeg")
+            .setRotationPoint(1.9F, 12.0F, 0.0F);
+    rightLeg =
+        new ModelRendererObj(ResourceManager.armor_ajr, "RightLeg")
+            .setRotationPoint(-1.9F, 12.0F, 0.0F);
+    leftFoot =
+        new ModelRendererObj(ResourceManager.armor_ajr, "LeftBoot")
+            .setRotationPoint(1.9F, 12.0F, 0.0F);
+    rightFoot =
+        new ModelRendererObj(ResourceManager.armor_ajr, "RightBoot")
+            .setRotationPoint(-1.9F, 12.0F, 0.0F);
+  }
+
+  @Override
+  public void render(
+      Entity entity,
+      float limbSwing,
+      float limbSwingAmount,
+      float ageInTicks,
+      float netHeadYaw,
+      float headPitch,
+      float scaleFactor) {
+    super.setRotationAngles(
+        limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entity);
+
+    GlStateManager.pushMatrix();
+    GlStateManager.shadeModel(GL11.GL_SMOOTH);
+
+    switch (type) {
+      case 0 -> {
+        bindTexture(ResourceManager.ajro_helmet);
+        this.head.render(scaleFactor);
+      }
+      case 1 -> {
+        bindTexture(ResourceManager.ajro_chest);
+        this.body.render(scaleFactor);
+
+        bindTexture(ResourceManager.ajro_arm);
+        this.leftArm.render(scaleFactor);
+        this.rightArm.render(scaleFactor);
+      }
+      case 2 -> {
+        bindTexture(ResourceManager.ajro_leg);
+        this.leftLeg.render(scaleFactor);
+        this.rightLeg.render(scaleFactor);
+      }
+      case 3 -> {
+        bindTexture(ResourceManager.ajro_leg);
+        this.leftFoot.render(scaleFactor);
+        this.rightFoot.render(scaleFactor);
+      }
+    }
+
+    GlStateManager.shadeModel(GL11.GL_FLAT);
+    GlStateManager.popMatrix();
+  }
+
+  @Override
+  public void renderArmor(Entity par1Entity, float par7) {
+    switch (type) {
+      case 3 -> {
+        bindTexture(ResourceManager.ajro_helmet);
+        head.render(par7 * 1.001F);
+      }
+      case 2 -> {
+        bindTexture(ResourceManager.ajro_chest);
+        body.render(par7);
+        bindTexture(ResourceManager.ajro_arm);
+        leftArm.render(par7);
+        rightArm.render(par7);
+      }
+      case 1 -> {
+        bindTexture(ResourceManager.ajro_leg);
+        leftLeg.render(par7);
+        rightLeg.render(par7);
+      }
+      case 0 -> {
+        bindTexture(ResourceManager.ajro_leg);
+        leftFoot.render(par7);
+        rightFoot.render(par7);
+      }
+    }
+  }
 }

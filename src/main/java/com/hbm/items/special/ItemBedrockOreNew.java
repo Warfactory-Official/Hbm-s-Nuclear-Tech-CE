@@ -1,9 +1,12 @@
 package com.hbm.items.special;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.hbm.Tags;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.NTMMaterial;
+import com.hbm.items.ClaimedModelLocationRegistry;
+import com.hbm.items.IClaimedModelLocation;
 import com.hbm.items.IModelRegister;
 import com.hbm.items.ModItems;
 import com.hbm.main.MainRegistry;
@@ -30,6 +33,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.model.IModel;
+import net.minecraftforge.client.model.ItemLayerModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -42,7 +46,7 @@ import static com.hbm.inventory.material.Mats.*;
 import static com.hbm.items.special.ItemBedrockOreNew.ProcessingTrait.*;
 
 //TODO: fix IDynamicModels
-public class ItemBedrockOreNew extends Item implements IModelRegister {
+public class ItemBedrockOreNew extends Item implements IModelRegister, IClaimedModelLocation {
 
     private static final List<ItemBedrockOreNew> INSTANCES = new ArrayList<>();
 
@@ -54,6 +58,7 @@ public class ItemBedrockOreNew extends Item implements IModelRegister {
         this.setMaxDamage(0);
 
         ModItems.ALL_ITEMS.add(this);
+        ClaimedModelLocationRegistry.register(this);
 
         if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
             INSTANCES.add(this);
@@ -191,6 +196,44 @@ public class ItemBedrockOreNew extends Item implements IModelRegister {
 
     public static BedrockOreOutput o(NTMMaterial mat, int amount) {
         return new BedrockOreOutput(mat, amount);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public boolean ownsModelLocation(ModelResourceLocation location) {
+        for (int i = 0; i < BedrockOreGrade.VALUES.length; i++) {
+            BedrockOreGrade grade = BedrockOreGrade.VALUES[i];
+            for (int j = 0; j < BedrockOreType.VALUES.length; j++) {
+                BedrockOreType type = BedrockOreType.VALUES[j];
+                ResourceLocation resourceLocation = new ResourceLocation(
+                        Tags.MODID,
+                        "items/bedrock_ore_" + grade.prefix + "_" + type.suffix + "-" + (i * BedrockOreType.VALUES.length + j)
+                );
+                if (IClaimedModelLocation.isInventoryLocation(location, resourceLocation)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IModel loadModel(ModelResourceLocation location) {
+        ImmutableList.Builder<ResourceLocation> textures = ImmutableList.builder();
+        String path = location.getPath();
+        ResourceLocation spriteLoc = new ResourceLocation(location.getNamespace(), path);
+        textures.add(spriteLoc);
+        int dash = path.lastIndexOf('-');
+        if (dash >= 0) {
+            int encoded = Integer.parseInt(path.substring(dash + 1));
+            int gradeIndex = encoded / BedrockOreType.VALUES.length;
+            BedrockOreGrade grade = BedrockOreGrade.VALUES[gradeIndex];
+            for (ProcessingTrait trait : grade.traits) {
+                textures.add(new ResourceLocation(Tags.MODID, "items/bedrock_ore_overlay." + trait.name().toLowerCase(Locale.US)));
+            }
+        }
+        return new ItemLayerModel(textures.build());
     }
 
     public static enum BedrockOreType {

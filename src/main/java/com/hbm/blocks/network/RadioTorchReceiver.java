@@ -25,7 +25,9 @@ public class RadioTorchReceiver extends RadioTorchRWBase {
 
     @Override
     public TileEntity createNewTileEntity(@NotNull World worldIn, int meta) {
-        return new TileEntityRadioTorchReceiver();
+        TileEntityRadioTorchReceiver tile = new TileEntityRadioTorchReceiver();
+        tile.lastUpdate = worldIn.getTotalWorldTime();
+        return tile;
     }
 
     @Override
@@ -53,12 +55,6 @@ public class RadioTorchReceiver extends RadioTorchRWBase {
             return ((TileEntityRadioTorchReceiver) tile).lastState;
         }
 
-        return 0;
-    }
-
-    @Override
-    public int getStrongPower(IBlockState state, @NotNull IBlockAccess world, @NotNull BlockPos pos, @NotNull EnumFacing side) {
-        if (side == state.getValue(FACING).getOpposite()) return getWeakPower(state, world, pos, side);
         return 0;
     }
 }

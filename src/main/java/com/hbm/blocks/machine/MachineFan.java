@@ -5,7 +5,9 @@ import com.hbm.api.block.IBlowable;
 import com.hbm.api.block.IToolable;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.interfaces.AutoRegister;
+import com.hbm.items.ClaimedModelLocationRegistry;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.main.client.NTMClientRegistry;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.PlayerInformPacketLegacy;
 import com.hbm.tileentity.TileEntityLoadedBase;
@@ -46,7 +48,6 @@ import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 public class MachineFan extends BlockContainerBakeable implements IToolable, ITooltipProvider {
@@ -278,16 +279,18 @@ public class MachineFan extends BlockContainerBakeable implements IToolable, ITo
             );
             ModelResourceLocation worldLocation = new ModelResourceLocation(getRegistryName(), "normal");
             event.getModelRegistry().putObject(worldLocation, blockBaked);
-            IModel itemBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
-            ImmutableMap<String, String> itemTextures = ImmutableMap.of("layer0", "hbm:blocks/" + getRegistryName().getPath());
-            IModel itemRetextured = itemBaseModel.retexture(itemTextures);
-            IBakedModel itemBaked = itemRetextured.bake(
-                    ModelRotation.X0_Y0,
-                    DefaultVertexFormats.ITEM,
-                    ModelLoader.defaultTextureGetter()
-            );
-            ModelResourceLocation inventoryLocation = new ModelResourceLocation(getRegistryName(), "inventory");
-            event.getModelRegistry().putObject(inventoryLocation, itemBaked);
+            if (!ClaimedModelLocationRegistry.hasSyntheticTeisrBinding(Item.getItemFromBlock(this))) {
+                IModel itemBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
+                ImmutableMap<String, String> itemTextures = ImmutableMap.of("layer0", "hbm:blocks/" + getRegistryName().getPath());
+                IModel itemRetextured = itemBaseModel.retexture(itemTextures);
+                IBakedModel itemBaked = itemRetextured.bake(
+                        ModelRotation.X0_Y0,
+                        DefaultVertexFormats.ITEM,
+                        ModelLoader.defaultTextureGetter()
+                );
+                ModelResourceLocation inventoryLocation = new ModelResourceLocation(getRegistryName(), "inventory");
+                event.getModelRegistry().putObject(inventoryLocation, itemBaked);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -298,7 +301,9 @@ public class MachineFan extends BlockContainerBakeable implements IToolable, ITo
     @Override
     @SideOnly(Side.CLIENT)
     public void registerModel() {
-        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0, new ModelResourceLocation(this.getRegistryName(), "inventory"));
+        Item item = Item.getItemFromBlock(this);
+        ModelResourceLocation syntheticLocation = NTMClientRegistry.getSyntheticTeisrModelLocation(item);
+        ModelLoader.setCustomModelResourceLocation(item, 0, syntheticLocation != null ? syntheticLocation : new ModelResourceLocation(this.getRegistryName(), "inventory"));
     }
 
     @Override

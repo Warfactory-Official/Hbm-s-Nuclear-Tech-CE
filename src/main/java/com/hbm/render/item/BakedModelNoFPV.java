@@ -40,7 +40,7 @@ public class BakedModelNoFPV implements IBakedModel {
     @Override
     public boolean isGui3d() { return original.isGui3d(); }
     @Override
-    public boolean isBuiltInRenderer() { return true; } // всегда TEISR
+    public boolean isBuiltInRenderer() { return true; }
     @Override
     public TextureAtlasSprite getParticleTexture() { return original.getParticleTexture(); }
     @Override

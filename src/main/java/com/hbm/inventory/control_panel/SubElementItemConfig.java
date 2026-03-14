@@ -2,11 +2,12 @@ package com.hbm.inventory.control_panel;
 
 import com.hbm.Tags;
 import com.hbm.inventory.control_panel.controls.configs.*;
+import com.hbm.main.ResourceManager;
+import com.hbm.render.NTMRenderHelper;
+import com.hbm.render.util.ControlPanelViewModelPositonDebugger;
 import net.minecraft.client.gui.GuiButton;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 import java.util.Collections;
 import java.util.List;
@@ -14,6 +15,8 @@ import java.util.Map;
 
 public class SubElementItemConfig extends SubElement {
     public static ResourceLocation bg_tex = new ResourceLocation(Tags.MODID + ":textures/gui/control_panel/gui_base.png");
+    private static final ControlPanelViewModelPositonDebugger PREVIEW_DEBUGGER = new ControlPanelViewModelPositonDebugger();
+    private final float[] previewBox = new float[4];
 
     public GuiButton btn_done;
     public GuiButton btn_next;
@@ -46,63 +49,42 @@ public class SubElementItemConfig extends SubElement {
     Control last_control = null;
     Map<String, DataValue> existing_configs;
 
-    //TODO: clean this up, make variants[] private
     @Override
     protected void drawScreen() {
         int cX = gui.width/2;
-        int cY = gui.height/2;
+        int gLeft = gui.getGuiLeft();
+        int gTop = gui.getGuiTop();
 
         num_variants = variants.size()-1;
 
         if (gui.isEditMode) {
             existing_configs = gui.currentEditControl.getConfigs();
-            curr_variant = variants.indexOf(ControlRegistry.getName(gui.currentEditControl.getClass()));
+            curr_variant = variants.indexOf(gui.currentEditControl.registryName);
         }
-        btn_prev.enabled = !gui.isEditMode;
-        btn_next.enabled = !gui.isEditMode;
 
-        if (curr_variant > variants.size()-1)
+        if (curr_variant < 0 || curr_variant > variants.size()-1)
             curr_variant = 0;
         Control variant = ControlRegistry.getNew(variants.get(curr_variant), gui.control.panel);
 
+        boolean canChangeVariant = !gui.isEditMode && num_variants > 0;
+        btn_prev.visible = canChangeVariant && curr_variant > 0;
+        btn_prev.enabled = btn_prev.visible;
+        btn_next.visible = canChangeVariant && curr_variant < num_variants;
+        btn_next.enabled = btn_next.visible;
+
         String text = variant.name;
         int text_width = gui.getFontRenderer().getStringWidth(text);
-        gui.getFontRenderer().drawString(text, (cX-(text_width/2F))+0, gui.getGuiTop()+11, 0xFF777777, false);
+        gui.getFontRenderer().drawString(text, (cX-(text_width/2F))+0, gTop+11, 0xFF777777, false);
 
         text = (curr_variant+1) + "/" + (num_variants+1);
         text_width = gui.getFontRenderer().getStringWidth(text);
-        gui.getFontRenderer().drawString(text, (cX-(text_width/2F))+0, gui.getGuiTop()+30, 0xFF777777, false);
+        gui.getFontRenderer().drawString(text, (cX-(text_width/2F))+0, gTop+30, 0xFF777777, false);
 
         if (last_control == null || !variant.name.equals(last_control.name)) {
             this.config_gui.enableButtons(false);
-            switch (variants.get(curr_variant)) { //TODO: clean
-                case "display_7seg": {
-                    this.config_gui = new SubElementDisplaySevenSeg(gui, (gui.isEditMode) ? existing_configs : ControlRegistry.registry.get("display_7seg").getConfigs());
-                    break;
-                }
-                case "display_text": {
-                    this.config_gui = new SubElementDisplayText(gui, (gui.isEditMode) ? existing_configs : ControlRegistry.registry.get("display_text").getConfigs());
-                    break;
-                }
-                case "knob_control": {
-                    this.config_gui = new SubElementKnobControl(gui, (gui.isEditMode) ? existing_configs : ControlRegistry.registry.get("knob_control").getConfigs());
-                    break;
-                }
-                case "label": {
-                    this.config_gui = new SubElementLabel(gui, (gui.isEditMode) ? existing_configs : ControlRegistry.registry.get("label").getConfigs());
-                    break;
-                }
-                case "dial_square": {
-                    this.config_gui = new SubElementDialSquare(gui, (gui.isEditMode) ? existing_configs : ControlRegistry.registry.get("dial_square").getConfigs());
-                    break;
-                }
-                case "dial_large": {
-                    this.config_gui = new SubElementDialSquare(gui, (gui.isEditMode) ? existing_configs : ControlRegistry.registry.get("dial_large").getConfigs());
-                    break;
-                }
-                default:
-                    this.config_gui = new SubElementBaseConfig(gui); // blank, shows for variant selection
-            }
+            Control control = ControlRegistry.registry.get(variants.get(curr_variant));
+            if (control != null)
+                this.config_gui = control.getConfigSubElement(gui,(gui.isEditMode) ? existing_configs : control.getConfigs());
             if (!gui.isEditMode) {
                 gui.currentEditControl = variant;
             }
@@ -112,7 +94,14 @@ public class SubElementItemConfig extends SubElement {
 
            variants = ControlRegistry.getAllControlsOfType(gui.currentEditControl.getControlType());
         }
+        int[] previewRect = ControlPanelViewModelPositonDebugger.ENABLED
+                ? PREVIEW_DEBUGGER.tickAndResolve(this.config_gui.getClass().getSimpleName(), this.config_gui.getPreviewTransform())
+                : this.config_gui.getPreviewTransform();
+        renderPreview(gLeft + previewRect[0], gTop + previewRect[1], previewRect[2], previewRect[3], variant);
         this.config_gui.drawScreen();
+        if(ControlPanelViewModelPositonDebugger.ENABLED) {
+            PREVIEW_DEBUGGER.renderOverlay(gui, this.config_gui.getClass().getSimpleName(), previewRect);
+        }
 
         this.last_control = variant;
     }
@@ -148,17 +137,7 @@ public class SubElementItemConfig extends SubElement {
         if (button == btn_done) {
             configs = config_gui.getConfigs();
             gui.currentEditControl.applyConfigs(configs);
-
-            if (gui.isEditMode) {
-                gui.linker.linked.clear();
-                World world = gui.control.getWorld();
-                for (BlockPos p : gui.currentEditControl.connectedSet) {
-                    TileEntity te = world.getTileEntity(p);
-                    if (te instanceof IControllable)
-                        gui.linker.linked.add((IControllable) te);
-                    gui.linker.refreshButtons();
-                }
-            }
+            gui.linker.reloadLinkedFromCurrentEditControl();
 
             config_gui.enableButtons(false);
             last_control = null;
@@ -176,9 +155,38 @@ public class SubElementItemConfig extends SubElement {
     protected void enableButtons(boolean enable) {
         btn_done.visible = enable;
         btn_done.enabled = enable;
-        btn_next.visible = enable;
-        btn_next.enabled = enable;
-        btn_prev.visible = enable;
-        btn_prev.enabled = enable;
+        if (!enable) {
+            btn_next.visible = false;
+            btn_next.enabled = false;
+            btn_prev.visible = false;
+            btn_prev.enabled = false;
+        }
+    }
+
+    private void renderPreview(int x, int y, int width, int height, Control variant) {
+        Map<String, DataValue> previewConfigs = variant.getConfigs();
+        config_gui.fillConfigs(previewConfigs);
+        variant.refreshConfigs();
+        variant.posX = 0;
+        variant.posY = 0;
+
+        GlStateManager.disableLighting();
+        gui.mc.getTextureManager().bindTexture(ResourceManager.white);
+        NTMRenderHelper.drawGuiRectColor(x, y, 0, 0, width, height, 1, 1, 0.09F, 0.11F, 0.10F, 0.85F);
+        NTMRenderHelper.drawGuiRectColor(x + 1, y + 1, 0, 0, width - 2, height - 2, 1, 1, 0.16F, 0.18F, 0.17F, 0.95F);
+        GlStateManager.enableLighting();
+
+        variant.fillBox(previewBox);
+        float boxWidth = Math.max(previewBox[2] - previewBox[0], 0.1F);
+        float boxHeight = Math.max(previewBox[3] - previewBox[1], 0.1F);
+        float scale = Math.min((width - 12F) / boxWidth, (height - 12F) / boxHeight);
+        float renderX = x + (width - boxWidth * scale) / 2F - previewBox[0] * scale;
+        float renderY = y + (height - boxHeight * scale) / 2F - previewBox[1] * scale;
+
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(renderX, renderY, 0);
+        GlStateManager.scale(scale, scale, 1F);
+        gui.placement.renderControl(variant);
+        GlStateManager.popMatrix();
     }
 }

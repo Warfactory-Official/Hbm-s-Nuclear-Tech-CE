@@ -1,7 +1,6 @@
 package com.hbm.inventory.container;
 
 import com.hbm.tileentity.network.TileEntityCraneInserter;
-import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -17,7 +16,7 @@ public class ContainerCraneInserter extends Container {
 
         for(int i = 0; i < 3; i++) {
             for(int j = 0; j < 7; j++) {
-                this.addSlotToContainer(new SlotItemHandler(inserter.inventory, j + i * 7, 26 + j * 18, 17 + i * 18));
+                this.addSlotToContainer(new SlotItemHandler(inserter.inventory, j + i * 7, 8 + j * 18, 17 + i * 18));
             }
         }
 
@@ -35,7 +34,32 @@ public class ContainerCraneInserter extends Container {
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 21);
+        ItemStack result = ItemStack.EMPTY;
+        Slot slot = this.inventorySlots.get(index);
+
+        if(slot != null && slot.getHasStack()) {
+            ItemStack stack = slot.getStack();
+            result = stack.copy();
+            int size = inserter.inventory.getSlots();
+
+            if(index <= size - 1) {
+                if(!this.mergeItemStack(stack, size, this.inventorySlots.size(), true)) {
+                    return ItemStack.EMPTY;
+                }
+            } else if(!this.mergeItemStack(stack, 0, size, false)) {
+                return ItemStack.EMPTY;
+            }
+
+            if(stack.isEmpty()) {
+                slot.putStack(ItemStack.EMPTY);
+            } else {
+                slot.onSlotChanged();
+            }
+
+            slot.onTake(player, stack);
+        }
+
+        return result;
     }
 
 

@@ -51,6 +51,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -97,22 +98,22 @@ public class PowerCableBox extends Block implements ITileEntityProvider, ICustom
     }
 
     @Override
-    public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
+    public @NotNull BlockFaceShape getBlockFaceShape(@NotNull IBlockAccess worldIn, @NotNull IBlockState state, @NotNull BlockPos pos, @NotNull EnumFacing face) {
         return BlockFaceShape.UNDEFINED;
     }
 
     @Override
-    public TileEntity createNewTileEntity(World world, int meta) {
+    public TileEntity createNewTileEntity(@NotNull World world, int meta) {
         return new TileEntityCableBaseNT();
     }
 
     @Override
-    protected BlockStateContainer createBlockState() {
+    protected @NotNull BlockStateContainer createBlockState() {
         return new ExtendedBlockState(this, new IProperty[]{META}, new IUnlistedProperty[]{CONN_NORTH, CONN_SOUTH, CONN_WEST, CONN_EAST, CONN_UP, CONN_DOWN});
     }
 
     @Override
-    public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos) {
+    public @NotNull IBlockState getExtendedState(@NotNull IBlockState state, @NotNull IBlockAccess world, BlockPos pos) {
         IExtendedBlockState ext = (IExtendedBlockState) state;
         ext = ext.withProperty(CONN_NORTH, canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.NORTH));
         ext = ext.withProperty(CONN_SOUTH, canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.SOUTH));
@@ -129,12 +130,12 @@ public class PowerCableBox extends Block implements ITileEntityProvider, ICustom
     }
 
     @Override
-    public IBlockState getStateFromMeta(int meta) {
+    public @NotNull IBlockState getStateFromMeta(int meta) {
         return this.getDefaultState().withProperty(META, meta % 5);
     }
 
     @Override
-    public void getSubBlocks(CreativeTabs tab, NonNullList<ItemStack> items) {
+    public void getSubBlocks(@NotNull CreativeTabs tab, @NotNull NonNullList<ItemStack> items) {
         if(tab == CreativeTabs.SEARCH || tab == this.getCreativeTab()) {
             for (int i = 0; i < 5; ++i) {
                 items.add(new ItemStack(this, 1, i));
@@ -143,17 +144,17 @@ public class PowerCableBox extends Block implements ITileEntityProvider, ICustom
     }
 
     @Override
-    public int damageDropped(IBlockState state) {
+    public int damageDropped(@NotNull IBlockState state) {
         return getMetaFromState(state);
     }
 
     @Override
-    public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
+    public @NotNull ItemStack getPickBlock(@NotNull IBlockState state, @NotNull RayTraceResult target, @NotNull World world, @NotNull BlockPos pos, @NotNull EntityPlayer player) {
         return new ItemStack(Item.getItemFromBlock(this), 1, this.getMetaFromState(state));
     }
 
     @Override
-    public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
+    public void onBlockPlacedBy(World worldIn, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull EntityLivingBase placer, ItemStack stack) {
         int meta = stack.getMetadata() % 5;
         worldIn.setBlockState(pos, this.getStateFromMeta(meta), 3);
     }
@@ -161,26 +162,27 @@ public class PowerCableBox extends Block implements ITileEntityProvider, ICustom
     protected boolean canConnectTo(IBlockAccess world, int x, int y, int z, EnumFacing dir) {
         BlockPos pos = new BlockPos(x, y, z);
         BlockPos offset = pos.offset(dir);
-        return Library.canConnect(world, offset, ForgeDirection.getOrientation(dir.getOpposite()));
+        return canConnectToNeighbor(world, offset, ForgeDirection.getOrientation(dir.getIndex()));
     }
 
+
     @Override
-    public boolean isFullCube(IBlockState state) {
+    public boolean isFullCube(@NotNull IBlockState state) {
         return false;
     }
 
     @Override
-    public boolean isOpaqueCube(IBlockState state) {
+    public boolean isOpaqueCube(@NotNull IBlockState state) {
         return false;
     }
 
     @Override
-    public boolean hasTileEntity(IBlockState state) {
+    public boolean hasTileEntity(@NotNull IBlockState state) {
         return true;
     }
 
     @Override
-    public TileEntity createTileEntity(World world, IBlockState state) {
+    public TileEntity createTileEntity(@NotNull World world, @NotNull IBlockState state) {
         return new TileEntityCableBaseNT();
     }
 
@@ -220,15 +222,14 @@ public class PowerCableBox extends Block implements ITileEntityProvider, ICustom
     public StateMapperBase getStateMapper(ResourceLocation loc) {
         return new StateMapperBase() {
             @Override
-            protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
+            protected @NotNull ModelResourceLocation getModelResourceLocation(@NotNull IBlockState state) {
                 return new ModelResourceLocation(loc, "meta=" + state.getValue(META));
             }
         };
     }
 
     @Override
-    public void addCollisionBoxToList(IBlockState state, World world, BlockPos pos, AxisAlignedBB entityBox, List<AxisAlignedBB> collidingBoxes, Entity entity, boolean isActualState) {
-        TileEntity te = world.getTileEntity(pos);
+    public void addCollisionBoxToList(@NotNull IBlockState state, @NotNull World world, BlockPos pos, @NotNull AxisAlignedBB entityBox, @NotNull List<AxisAlignedBB> collidingBoxes, Entity entity, boolean isActualState) {
         boolean nX = canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.WEST);
         boolean pX = canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.EAST);
         boolean nY = canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.DOWN);
@@ -286,7 +287,7 @@ public class PowerCableBox extends Block implements ITileEntityProvider, ICustom
     }
 
     @Override
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+    public @NotNull AxisAlignedBB getBoundingBox(@NotNull IBlockState state, @NotNull IBlockAccess source, BlockPos pos) {
         boolean nX = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.WEST);
         boolean pX = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.EAST);
         boolean nY = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.DOWN);
@@ -319,7 +320,7 @@ public class PowerCableBox extends Block implements ITileEntityProvider, ICustom
     }
 
     @Override
-    public EnumBlockRenderType getRenderType(IBlockState state) {
+    public @NotNull EnumBlockRenderType getRenderType(@NotNull IBlockState state) {
         return EnumBlockRenderType.MODEL;
     }
 
@@ -371,24 +372,14 @@ public class PowerCableBox extends Block implements ITileEntityProvider, ICustom
         float jLower = lower;
         float jUpper = upper;
 
-        switch (mask) {
-            case 0:
-                return new AxisAlignedBB(jLower, jLower, jLower, jUpper, jUpper, jUpper);
-            case 0b100000:
-            case 0b010000:
-            case 0b110000:
-                return new AxisAlignedBB(0F, lower, lower, 1F, upper, upper);
-            case 0b001000:
-            case 0b000100:
-            case 0b001100:
-                return new AxisAlignedBB(lower, 0F, lower, upper, 1F, upper);
-            case 0b000010:
-            case 0b000001:
-            case 0b000011:
-                return new AxisAlignedBB(lower, lower, 0F, upper, upper, 1F);
-            default:
-                return new AxisAlignedBB(nX ? 0F : lower, nY ? 0F : lower, nZ ? 0F : lower, pX ? 1F : upper, pY ? 1F : upper, pZ ? 1F : upper);
-        }
+        return switch (mask) {
+            case 0 -> new AxisAlignedBB(jLower, jLower, jLower, jUpper, jUpper, jUpper);
+            case 0b100000, 0b010000, 0b110000 -> new AxisAlignedBB(0F, lower, lower, 1F, upper, upper);
+            case 0b001000, 0b000100, 0b001100 -> new AxisAlignedBB(lower, 0F, lower, upper, 1F, upper);
+            case 0b000010, 0b000001, 0b000011 -> new AxisAlignedBB(lower, lower, 0F, upper, upper, 1F);
+            default ->
+                    new AxisAlignedBB(nX ? 0F : lower, nY ? 0F : lower, nZ ? 0F : lower, pX ? 1F : upper, pY ? 1F : upper, pZ ? 1F : upper);
+        };
     }
 
     public static class ConnectionProperty implements IUnlistedProperty<Boolean> {
@@ -417,16 +408,5 @@ public class PowerCableBox extends Block implements ITileEntityProvider, ICustom
         public String valueToString(Boolean value) {
             return value.toString();
         }
-    }
-
-    private boolean canConnect(IBlockAccess world, BlockPos pos, EnumFacing dir) {
-        return switch (dir) {
-            case EAST -> canConnectToNeighbor(world, pos, Library.POS_X);
-            case WEST -> canConnectToNeighbor(world, pos, Library.NEG_X);
-            case UP -> canConnectToNeighbor(world, pos, Library.POS_Y);
-            case DOWN -> canConnectToNeighbor(world, pos, Library.NEG_Y);
-            case SOUTH -> canConnectToNeighbor(world, pos, Library.POS_Z);
-            case NORTH -> canConnectToNeighbor(world, pos, Library.NEG_Z);
-        };
     }
 }

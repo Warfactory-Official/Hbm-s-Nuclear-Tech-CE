@@ -2,7 +2,7 @@ package com.hbm.render.item.weapon.sedna;
 
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
-import com.hbm.items.weapon.sedna.mods.WeaponModManager;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.anim.sedna.HbmAnimationsSedna;
 import net.minecraft.client.Minecraft;
@@ -132,15 +132,15 @@ public class ItemRenderLasrifle extends ItemRenderWeaponBase {
 	}
 
 	public boolean hasScope(ItemStack stack) {
-		return !WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_LAS_AUTO);
+		return !XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_LAS_AUTO);
 	}
 
 	public boolean hasShotgun(ItemStack stack) {
-		return WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_LAS_SHOTGUN);
+		return XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_LAS_SHOTGUN);
 	}
 
 	public boolean hasCapacitor(ItemStack stack) {
-		return WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_LAS_CAPACITOR);
+		return XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_LAS_CAPACITOR);
 	}
 }
 

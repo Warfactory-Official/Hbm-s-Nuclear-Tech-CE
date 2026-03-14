@@ -57,7 +57,7 @@ public class BlockWandLoot extends BlockContainerBakeable implements ILookOverla
     public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
 
     public BlockWandLoot(String s) {
-        super(Material.IRON, s, new BlockBakeFrame("wand_loot_top", "wand_loot"));
+        super(Material.IRON, s, BlockBakeFrame.column("wand_loot_top", "wand_loot"));
         this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
     }
 

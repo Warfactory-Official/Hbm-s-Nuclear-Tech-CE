@@ -1,17 +1,16 @@
 package com.hbm.render.item;
 
+import com.hbm.Tags;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.items.special.ItemHot;
-import com.hbm.render.NTMRenderHelper;
+import com.hbm.render.model.BakedModelTransforms;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.GlStateManager.DestFactor;
-import net.minecraft.client.renderer.GlStateManager.SourceFactor;
 import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import org.lwjgl.opengl.GL11;
+import net.minecraft.util.ResourceLocation;
 @AutoRegister(item = "ingot_steel_dusted")
 @AutoRegister(item = "ingot_chainsteel")
 @AutoRegister(item = "ingot_meteorite")
@@ -20,43 +19,17 @@ import org.lwjgl.opengl.GL11;
 public class ItemRendererHot extends TEISRBase {
 
 	@Override
+	public ModelBinding createModelBinding(Item item) {
+		return ModelBinding.of(new ModelResourceLocation(new ResourceLocation(Tags.MODID, "items/" + item.getRegistryName().getPath()), "inventory"), BakedModelTransforms.defaultItemTransforms(), false);
+	}
+
+	@Override
 	public void renderByItem(ItemStack stack) {
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(0.5, 0.5, 0);
 		Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-		
-		Minecraft.getMinecraft().getRenderItem().renderItem(stack, itemModel);
-		
-		double h = ItemHot.getHeat(stack);
-		if(h > 0) {
-            GlStateManager.enableBlend();
-            GlStateManager.alphaFunc(GL11.GL_GREATER, 0.0F);
-            GlStateManager.disableLighting();
-            GlStateManager.tryBlendFuncSeparate(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ZERO);
-			GlStateManager.color(1F, 1F, 1F, (float) h);
-            IBakedModel model = Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(new ItemStack(stack.getItem(), 1, 15), Minecraft.getMinecraft().world, null);
-			NTMRenderHelper.bindBlockTexture();
-            TextureAtlasSprite icon = model.getParticleTexture();
-            float up = icon.getInterpolatedV(16);
-    		float down = icon.getInterpolatedV(0);
-    		float left = icon.getInterpolatedU(0);
-    		float right = icon.getInterpolatedU(16);
-    		float posX = -0.5F;
-    		float posY = 0.5F;
-    		float sizeY = -1;
-    		float sizeX = 1;
-    		NTMRenderHelper.startDrawingTexturedQuads();
-    		NTMRenderHelper.addVertexWithUV(posX, posY + sizeY, 0.065F, left, up);
-    		NTMRenderHelper.addVertexWithUV(posX + sizeX, posY + sizeY, 0.065F, right, up);
-    		NTMRenderHelper.addVertexWithUV(posX + sizeX, posY, 0.065F, right, down);
-    		NTMRenderHelper.addVertexWithUV(posX, posY, 0.065F, left, down);
-    		NTMRenderHelper.draw();
-    		
-            GlStateManager.enableLighting();
-            GlStateManager.color(1, 1, 1, 1);
-            //GlStateManager.disableBlend();
-            GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
-		}
+		IBakedModel resolvedModel = itemModel.getOverrides().handleItemState(itemModel, stack, world, entity);
+		Minecraft.getMinecraft().getRenderItem().renderItem(stack, resolvedModel);
 		GlStateManager.popMatrix();
 	}
 }

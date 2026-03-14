@@ -6,6 +6,7 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.capability.NTMFluidHandlerWrapper;
 import com.hbm.entity.projectile.EntityRBMKDebris.DebrisType;
 import com.hbm.handler.CompatHandler;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerRBMKBoiler;
@@ -17,7 +18,10 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.gui.GUIRBMKBoiler;
 import com.hbm.lib.DirPos;
+import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
+import com.hbm.main.MainRegistry;
+import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.machine.rbmk.RBMKColumn.ColumnType;
@@ -32,10 +36,12 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fml.common.Optional;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
@@ -50,6 +56,7 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
     public FluidTankNTM steam;
     protected int consumption;
     protected int output;
+    protected int ventDelay;
 
     public TileEntityRBMKBoiler() {
         super(0);
@@ -76,6 +83,7 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
 
             this.consumption = 0;
             this.output = 0;
+            if(this.ventDelay > 0) this.ventDelay--;
 
             double heatCap = getHeatFromSteam(steam.getTankType());
             double heatProvided = this.heat - heatCap;
@@ -106,8 +114,18 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
                 feed.setFill(feed.getFill() - waterUsed);
                 steam.setFill(steam.getFill() + steamProduced);
 
-                if (steam.getFill() > steam.getMaxFill())
+                if(steam.getFill() > steam.getMaxFill()) {
                     steam.setFill(steam.getMaxFill());
+
+                    if(ventDelay <= 0) {
+                        NBTTagCompound data = new NBTTagCompound();
+                        data.setString("type", "rbmksteam");
+                        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.getX() + 0.25 + world.rand.nextInt(2) * 0.5, pos.getY() + RBMKDials.getColumnHeight(world), pos.getZ() + 0.25 + world.rand.nextInt(2) * 0.5), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 100));
+                        MainRegistry.proxy.effectNT(data);
+                        this.ventDelay = 20 + world.rand.nextInt(10);
+                        this.world.playSound(null, pos.getX(), pos.getY() + RBMKDials.getColumnHeight(world), pos.getZ(), HBMSoundHandler.steamEngineOperate, SoundCategory.BLOCKS, 2F, 1F + world.rand.nextFloat() * 0.25F);
+                    }
+                }
 
                 this.heat -= waterUsed * HEAT_PER_MB_WATER;
             }
@@ -115,7 +133,7 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
             this.trySubscribe(feed.getTankType(), world, pos.getX(), pos.getY() - 1, pos.getZ(), Library.NEG_Y);
             for (DirPos pos : getOutputPos()) {
                 if (this.steam.getFill() > 0)
-                    this.sendFluid(steam, world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
+                    this.tryProvide(steam, world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
             }
         }
 

@@ -66,7 +66,7 @@ public class ItemBDCL extends ItemBakedBase {
         }
 
         if(count <= 24 && count % 4 == 0) {
-            player.activeItemStack.shrink(1);
+            player.getActiveItemStack().shrink(1);
         }
     }
 }

@@ -29,6 +29,16 @@ public class RBMKDials {
     }
 
     /**
+     * Returns the amount of heat per tick removed from components passively, when surrounded by other components
+     * @param world
+     * @return >0
+     */
+    public static double getPassiveCoolingInner(World world) {
+        return MathHelper.clamp(shittyWorkaroundParseDouble(world.getGameRules().getString(RBMKKeys.KEY_PASSIVE_COOLING_INNER.keyString),
+                (double) RBMKKeys.KEY_PASSIVE_COOLING_INNER.defValue), 0.0, 1.0D);
+    }
+
+    /**
      * Returns the percentual step size how quickly neighboring component heat equalizes. 1 is instant, 0.5 is in 50% steps, et cetera.
      *
      * @param world
@@ -264,6 +274,16 @@ public class RBMKDials {
     }
 
     /**
+     * How many °C are generated per one flux that hits an absorber.
+     * @param world
+     * @return
+     */
+    public static double getAbsorberHeatConversion(World world) {
+        return MathHelper.clamp(shittyWorkaroundParseDouble(world.getGameRules().getString(RBMKKeys.KEY_ABSORBER_HEAT_CONVERSION.keyString),
+                (double) RBMKKeys.KEY_ABSORBER_HEAT_CONVERSION.defValue), 0.0D, 1.0D);
+    }
+
+    /**
      * The percentage of neutron to reflect when a stream hits a reflector column.
      *
      * @param world
@@ -296,7 +316,8 @@ public class RBMKDials {
 
     public enum RBMKKeys {
         KEY_SAVE_DIALS("dialSaveDials", true),
-        KEY_PASSIVE_COOLING("dialPassiveCooling", 1.0),
+        KEY_PASSIVE_COOLING("dialPassiveCooling", 2.5),
+        KEY_PASSIVE_COOLING_INNER("dialPassiveCoolingInner", 0.1),
         KEY_COLUMN_HEAT_FLOW("dialColumnHeatFlow", 0.2),
         KEY_FUEL_DIFFUSION_MOD("dialDiffusionMod", 1.0),
         KEY_HEAT_PROVISION("dialHeatProvision", 0.2),
@@ -319,7 +340,8 @@ public class RBMKDials {
         KEY_ABSORBER_EFFICIENCY("dialAbsorberEfficiency", 1.0),
         KEY_REFLECTOR_EFFICIENCY("dialReflectorEfficiency", 1.0),
         KEY_DISABLE_DEPLETION("dialDisableDepletion", false),
-        KEY_DISABLE_XENON("dialDisableXenon", false);
+        KEY_DISABLE_XENON("dialDisableXenon", false),
+        KEY_ABSORBER_HEAT_CONVERSION("dialAbsorberHeatConversion", 0.05);
 
         public static final RBMKKeys[] VALUES = values();
 

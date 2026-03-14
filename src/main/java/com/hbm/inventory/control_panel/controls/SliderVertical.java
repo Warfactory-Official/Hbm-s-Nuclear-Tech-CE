@@ -20,8 +20,8 @@ import java.util.Map;
 
 public class SliderVertical extends Control {
 
-    public SliderVertical(String name, ControlPanel panel) {
-        super(name, panel);
+    public SliderVertical(String name,String registryName,ControlPanel panel) {
+        super(name,registryName, panel);
         vars.put("value", new DataValueFloat(0));
     }
 
@@ -128,7 +128,7 @@ public class SliderVertical extends Control {
 
     @Override
     public Control newControl(ControlPanel panel) {
-        return new SliderVertical(name, panel);
+        return new SliderVertical(name,registryName,panel);
     }
 
 }

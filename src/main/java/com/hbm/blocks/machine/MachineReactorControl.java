@@ -36,7 +36,7 @@ public class MachineReactorControl extends BlockContainerBakeable {
     public static final PropertyDirection FACING = BlockHorizontal.FACING;
 
     public MachineReactorControl(String name) {
-        super(Material.IRON, name, new BlockBakeFrame(BlockBakeFrame.BlockForm.FULL_CUSTOM, "machine_controller_top", "machine_controller_top", "machine_controller_back", "machine_controller", "machine_controller_side", "machine_controller_side"));
+        super(Material.IRON, name, BlockBakeFrame.cube("machine_controller_top", "machine_controller_top", "machine_controller_back", "machine_controller", "machine_controller_side", "machine_controller_side"));
         this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
     }
 

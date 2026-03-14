@@ -75,7 +75,7 @@ public class GunAnimationPacketSedna implements IMessage {
                 if(stack.isEmpty()) return null;
 
                 if(stack.getItem() instanceof ItemGunBaseNT) {
-                    handleSedna(player, stack, slot, HbmAnimationsSedna.AnimType.values()[m.type], m.receiverIndex, m.gunIndex);
+                    handleSedna(player, stack, slot, HbmAnimationsSedna.GunAnimation.values()[m.type], m.receiverIndex, m.gunIndex);
                 }
 
             } catch(Exception x) { }
@@ -83,11 +83,11 @@ public class GunAnimationPacketSedna implements IMessage {
             return null;
         }
 
-        public static void handleSedna(EntityPlayer player, ItemStack stack, int slot, HbmAnimationsSedna.AnimType type, int receiverIndex, int gunIndex) {
+        public static void handleSedna(EntityPlayer player, ItemStack stack, int slot, HbmAnimationsSedna.GunAnimation type, int receiverIndex, int gunIndex) {
             ItemGunBaseNT gun = (ItemGunBaseNT) stack.getItem();
             GunConfig config = gun.getConfig(stack, gunIndex);
 
-            if(type == HbmAnimationsSedna.AnimType.CYCLE) {
+            if(type == HbmAnimationsSedna.GunAnimation.CYCLE) {
                 if(gunIndex < gun.lastShot.length) gun.lastShot[gunIndex] = System.currentTimeMillis();
                 gun.shotRand = player.world.rand.nextDouble();
 
@@ -99,20 +99,20 @@ public class GunAnimationPacketSedna implements IMessage {
                 }
             }
 
-            BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> anims = config.getAnims(stack);
+            BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> anims = config.getAnims(stack);
             BusAnimationSedna animation = anims.apply(stack, type);
 
-            if(animation == null && type == HbmAnimationsSedna.AnimType.RELOAD_EMPTY) {
-                animation = anims.apply(stack, HbmAnimationsSedna.AnimType.RELOAD);
+            if(animation == null && type == HbmAnimationsSedna.GunAnimation.RELOAD_EMPTY) {
+                animation = anims.apply(stack, HbmAnimationsSedna.GunAnimation.RELOAD);
             }
-            if(animation == null && (type == HbmAnimationsSedna.AnimType.ALT_CYCLE || type == HbmAnimationsSedna.AnimType.CYCLE_EMPTY)) {
-                animation = anims.apply(stack, HbmAnimationsSedna.AnimType.CYCLE);
+            if(animation == null && (type == HbmAnimationsSedna.GunAnimation.ALT_CYCLE || type == HbmAnimationsSedna.GunAnimation.CYCLE_EMPTY)) {
+                animation = anims.apply(stack, HbmAnimationsSedna.GunAnimation.CYCLE);
             }
 
             if(animation != null) {
                 Minecraft.getMinecraft().entityRenderer.itemRenderer.resetEquippedProgress(EnumHand.MAIN_HAND);
                 Minecraft.getMinecraft().entityRenderer.itemRenderer.updateEquippedItem();
-                boolean isReloadAnimation = type == HbmAnimationsSedna.AnimType.RELOAD || type == HbmAnimationsSedna.AnimType.RELOAD_CYCLE || type == HbmAnimationsSedna.AnimType.RELOAD_EMPTY;
+                boolean isReloadAnimation = type == HbmAnimationsSedna.GunAnimation.RELOAD || type == HbmAnimationsSedna.GunAnimation.RELOAD_CYCLE || type == HbmAnimationsSedna.GunAnimation.RELOAD_EMPTY;
                 if(isReloadAnimation && ArmorTrenchmaster.isTrenchMaster(player)) animation.setTimeMult(0.5D);
                 HbmAnimationsSedna.hotbar[slot][gunIndex] = new HbmAnimationsSedna.Animation(stack.getItem().getTranslationKey(), System.currentTimeMillis(), animation, type, isReloadAnimation && config.getReloadAnimSequential(stack));
             }

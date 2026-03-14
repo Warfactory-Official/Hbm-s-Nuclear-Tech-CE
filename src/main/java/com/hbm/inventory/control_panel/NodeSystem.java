@@ -2,10 +2,15 @@ package com.hbm.inventory.control_panel;
 
 import com.hbm.Tags;
 import com.hbm.inventory.control_panel.nodes.Node;
+import com.hbm.inventory.control_panel.nodes.NodeCancelEvent;
+import com.hbm.inventory.control_panel.nodes.NodeEventBroadcast;
 import com.hbm.inventory.control_panel.nodes.NodeFunction;
+import com.hbm.inventory.control_panel.nodes.NodeGetVar;
 import com.hbm.inventory.control_panel.nodes.NodeInput;
 import com.hbm.inventory.control_panel.nodes.NodeOutput;
+import com.hbm.inventory.control_panel.nodes.NodeSetVar;
 import com.hbm.render.NTMRenderHelper;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -18,7 +23,6 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,6 +30,8 @@ import java.util.Map.Entry;
 public class NodeSystem {
 
 	public static final ResourceLocation node_tex = new ResourceLocation(Tags.MODID + ":textures/gui/control_panel/node.png");
+	private static final String CLIPBOARD_ANCHOR_X = "clipboardAnchorX";
+	private static final String CLIPBOARD_ANCHOR_Y = "clipboardAnchorY";
 	
 	@SideOnly(Side.CLIENT)
 	public SubElementNodeEditor nodeEditor;
@@ -51,11 +57,11 @@ public class NodeSystem {
 	public Control parent;
 	public List<Node> nodes = new ArrayList<>();
 	public List<NodeOutput> outputNodes = new ArrayList<>();
-	private Map<String, DataValue> vars = new HashMap<>();
+	private Map<String, DataValue> vars = new Object2ObjectOpenHashMap<>();
 
 	// an array of subsystems owned by the various nodes sharing a system layer (sublayering is then done recursively)
 	// ○|￣|_   <-- me
-	public Map<Node, NodeSystem> subSystems = new HashMap<>();
+	public Map<Node, NodeSystem> subSystems = new Object2ObjectOpenHashMap<>();
 
 	public NodeSystem(Control parent){
 		this.parent = parent;
@@ -214,7 +220,171 @@ public class NodeSystem {
 			activeNode = null;
 		selectedNodes.remove(n);
 		outputNodes.remove(n);
+		subSystems.remove(n);
 		nodes.remove(n);
+	}
+
+	public boolean hasSelectedNodes() {
+		return selectedNodes != null && !selectedNodes.isEmpty();
+	}
+
+	public NBTTagCompound writeSelectedToNBT() {
+		if(!hasSelectedNodes())
+			return null;
+
+		List<Node> orderedSelection = new ArrayList<>();
+		for(Node node : nodes) {
+			if(selectedNodes.contains(node)) {
+				orderedSelection.add(node);
+			}
+		}
+		if(orderedSelection.isEmpty())
+			return null;
+
+		NodeSystem subset = new NodeSystem(parent);
+		subset.nodes.addAll(orderedSelection);
+		subset.vars.putAll(vars);
+		for(Node node : orderedSelection) {
+			if(node instanceof NodeOutput) {
+				subset.outputNodes.add((NodeOutput) node);
+			}
+			if(node instanceof NodeFunction && subSystems.containsKey(node)) {
+				subset.subSystems.put(node, subSystems.get(node));
+			}
+		}
+
+		float minX = Float.MAX_VALUE;
+		float minY = Float.MAX_VALUE;
+		for(Node node : orderedSelection) {
+			minX = Math.min(minX, node.posX);
+			minY = Math.min(minY, node.posY);
+		}
+
+		NBTTagCompound tag = subset.writeToNBT(new NBTTagCompound());
+		tag.setFloat(CLIPBOARD_ANCHOR_X, minX);
+		tag.setFloat(CLIPBOARD_ANCHOR_Y, minY);
+		return tag;
+	}
+
+	public List<Node> pasteFromNBT(NBTTagCompound tag, float x, float y) {
+		if(tag == null || tag.isEmpty())
+			return new ArrayList<>();
+
+		NodeSystem pastedSystem = new NodeSystem(parent);
+		pastedSystem.readFromNBT(tag);
+
+		float anchorX = tag.hasKey(CLIPBOARD_ANCHOR_X) ? tag.getFloat(CLIPBOARD_ANCHOR_X) : 0;
+		float anchorY = tag.hasKey(CLIPBOARD_ANCHOR_Y) ? tag.getFloat(CLIPBOARD_ANCHOR_Y) : 0;
+		float dX = x - anchorX;
+		float dY = y - anchorY;
+
+		List<Node> pastedNodes = new ArrayList<>(pastedSystem.nodes.size());
+		for(Node node : pastedSystem.nodes) {
+			node.setPosition(node.posX + dX, node.posY + dY);
+			addNode(node);
+			if(node instanceof NodeFunction) {
+				NodeSystem subsystem = pastedSystem.subSystems.get(node);
+				if(subsystem != null) {
+					subSystems.put(node, subsystem);
+				}
+			}
+			pastedNodes.add(node);
+		}
+		return pastedNodes;
+	}
+
+	public boolean canPasteFromNBT(NBTTagCompound tag, ControlEvent evt, boolean sendGraph) {
+		if(tag == null || tag.isEmpty() || evt == null)
+			return false;
+
+		NodeSystem pastedSystem = new NodeSystem(parent);
+		pastedSystem.readFromNBT(tag);
+		return pastedSystem.hasCompatibleGraphNodes(sendGraph)
+				&& pastedSystem.hasCompatibleEventInputs(evt.vars, sendGraph ? "to index" : "from index")
+				&& pastedSystem.hasCompatibleVariableReferences();
+	}
+
+	private boolean hasCompatibleGraphNodes(boolean sendGraph) {
+		for(Node node : nodes) {
+			if(sendGraph) {
+				if(node instanceof NodeCancelEvent) {
+					return false;
+				}
+			} else if(node instanceof NodeEventBroadcast) {
+				return false;
+			}
+			if(node instanceof NodeFunction) {
+				NodeSystem subsystem = subSystems.get(node);
+				if(subsystem != null && !subsystem.hasCompatibleGraphNodes(sendGraph)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	private boolean hasCompatibleEventInputs(Map<String, DataValue> allowedVars, String indexName) {
+		for(Node node : nodes) {
+			if(node instanceof NodeInput input && !isCompatibleEventInput(input, allowedVars, indexName)) {
+				return false;
+			}
+			if(node instanceof NodeFunction) {
+				NodeSystem subsystem = subSystems.get(node);
+				if(subsystem != null && !subsystem.hasCompatibleEventInputs(allowedVars, indexName)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	private boolean hasCompatibleVariableReferences() {
+		for(Node node : nodes) {
+			if(node instanceof NodeGetVar getVar && !hasCompatibleVariableReference(getVar.global, getVar.varName, getVar.outputs)) {
+				return false;
+			}
+			if(node instanceof NodeSetVar setVar && !hasCompatibleVariableReference(setVar.global, setVar.varName, setVar.inputs)) {
+				return false;
+			}
+			if(node instanceof NodeFunction) {
+				NodeSystem subsystem = subSystems.get(node);
+				if(subsystem != null && !subsystem.hasCompatibleVariableReferences()) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	private boolean hasCompatibleVariableReference(boolean global, String varName, List<NodeConnection> ports) {
+		if(varName.isEmpty()) {
+			return true;
+		}
+		DataValue value = global ? parent.panel.globalVars.get(varName) : parent.vars.get(varName);
+		if(value == null || ports.isEmpty()) {
+			return false;
+		}
+		DataValue.DataType expectedType = ports.get(0).type;
+		return expectedType == DataValue.DataType.GENERIC || expectedType == value.getType();
+	}
+
+	private boolean isCompatibleEventInput(NodeInput input, Map<String, DataValue> allowedVars, String indexName) {
+		if(!"Event Data".equals(input.name)) {
+			return true;
+		}
+		for(NodeConnection output : input.outputs) {
+			if(indexName.equals(output.name)) {
+				if(output.type != DataValue.DataType.NUMBER) {
+					return false;
+				}
+				continue;
+			}
+			DataValue allowed = allowedVars.get(output.name);
+			if(allowed == null || allowed.getType() != output.type) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@SideOnly(Side.CLIENT)

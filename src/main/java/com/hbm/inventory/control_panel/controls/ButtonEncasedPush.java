@@ -22,8 +22,8 @@ import java.util.Map;
 
 public class ButtonEncasedPush extends Control {
 
-    public ButtonEncasedPush(String name, ControlPanel panel) {
-        super(name, panel);
+    public ButtonEncasedPush(String name,String registryName,ControlPanel panel) {
+        super(name,registryName, panel);
         vars.put("isPushed", new DataValueFloat(0));
         vars.put("isLit", new DataValueFloat(0));
         vars.put("isCoverOpen", new DataValueFloat(0));
@@ -188,6 +188,6 @@ public class ButtonEncasedPush extends Control {
 
     @Override
     public Control newControl(ControlPanel panel) {
-        return new ButtonEncasedPush(name, panel);
+        return new ButtonEncasedPush(name,registryName,panel);
     }
 }

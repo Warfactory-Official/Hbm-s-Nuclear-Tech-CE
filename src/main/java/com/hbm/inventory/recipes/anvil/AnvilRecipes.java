@@ -13,7 +13,6 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
-import com.hbm.inventory.recipes.AssemblerRecipes;
 import com.hbm.inventory.recipes.loader.SerializableRecipe;
 import com.hbm.items.ItemEnums;
 import com.hbm.items.ItemEnums.EnumCircuitType;
@@ -173,6 +172,10 @@ public class AnvilRecipes extends SerializableRecipe {
 	}
 
 	public static void registerConstructionRecipes() {
+
+		constructionRecipes.add(new AnvilConstructionRecipe(
+				new AStack[] {new ComparableStack(Blocks.STONEBRICK, 16), new ComparableStack(ModItems.ingot_firebrick, 16), new OreDictStack(IRON.ingot(), 8), new OreDictStack(CU.ingot(), 8)},
+				new AnvilOutput(new ItemStack(ModBlocks.machine_annihilator))).setTier(2));
 
 		constructionRecipes.add(new AnvilConstructionRecipe(new OreDictStack(AL.ingot(), 1), new AnvilOutput(new ItemStack(ModBlocks.deco_aluminium, 4))).setTier(1).setOverlay(OverlayType.CONSTRUCTION));
 		constructionRecipes.add(new AnvilConstructionRecipe(new OreDictStack(BE.ingot(), 1), new AnvilOutput(new ItemStack(ModBlocks.deco_beryllium, 4))).setTier(1).setOverlay(OverlayType.CONSTRUCTION));
@@ -998,15 +1001,6 @@ public class AnvilRecipes extends SerializableRecipe {
 		}).setTier(1));
 	}
 
-	public static void pullFromAssembler(ComparableStack result, int tier) {
-
-		AssemblerRecipes.AssemblerRecipe recipe = AssemblerRecipes.recipes.get(result);
-
-		if(recipe != null) {
-			constructionRecipes.add(new AnvilConstructionRecipe(recipe.ingredients, new AnvilOutput(result.toStack())).setTier(tier));
-		}
-	}
-
 	public static List<AnvilSmithingRecipe> getSmithing() {
 		return smithingRecipes;
 	}
@@ -1085,14 +1079,14 @@ public class AnvilRecipes extends SerializableRecipe {
 		public ItemStack getDisplay() {
 			switch (this.overlay) {
 				case NONE, CONSTRUCTION, SMITHING -> {
-					return this.output.get(0).stack.copy();
+					return this.output.getFirst().stack.copy();
 				}
 				case RECYCLING -> {
 					for (AStack stack : this.input) {
 						if (stack instanceof ComparableStack)
 							return ((ComparableStack) stack).toStack();
 					}
-					return this.output.get(0).stack.copy();
+					return this.output.getFirst().stack.copy();
 				}
 				default -> {
 					return new ItemStack(Items.IRON_PICKAXE);
@@ -1126,8 +1120,8 @@ public class AnvilRecipes extends SerializableRecipe {
 	public void readRecipe(JsonElement recipe) {
 		JsonObject obj = (JsonObject) recipe;
 
-		AStack[] inputs = this.readAStackArray(obj.get("inputs").getAsJsonArray());
-		Tuple.Pair<ItemStack, Float>[] outputs = this.readItemStackArrayChance(obj.get("outputs").getAsJsonArray());
+		AStack[] inputs = readAStackArray(obj.get("inputs").getAsJsonArray());
+		Tuple.Pair<ItemStack, Float>[] outputs = readItemStackArrayChance(obj.get("outputs").getAsJsonArray());
 
 		int tierLower = obj.get("tierLower").getAsInt();
 		int tierUpper = obj.has("tierUpper") ? obj.get("tierUpper").getAsInt() : -1;
@@ -1138,7 +1132,7 @@ public class AnvilRecipes extends SerializableRecipe {
 			overlay = OverlayType.valueOf(overlayName);
 		}
 
-		this.constructionRecipes.add(new AnvilConstructionRecipe(inputs, outputs).setTierRange(tierLower, tierUpper).setOverlay(overlay));
+		constructionRecipes.add(new AnvilConstructionRecipe(inputs, outputs).setTierRange(tierLower, tierUpper).setOverlay(overlay));
 	}
 
 	@Override
@@ -1146,11 +1140,11 @@ public class AnvilRecipes extends SerializableRecipe {
 		AnvilConstructionRecipe rec = (AnvilConstructionRecipe) recipe;
 
 		writer.name("inputs").beginArray();
-		for(AStack stack : rec.input) this.writeAStack(stack, writer);
+		for(AStack stack : rec.input) writeAStack(stack, writer);
 		writer.endArray();
 
 		writer.name("outputs").beginArray();
-		for(AnvilOutput stack : rec.output) this.writeItemStackChance(new Tuple.Pair<>(stack.stack, stack.chance), writer);
+		for(AnvilOutput stack : rec.output) writeItemStackChance(new Tuple.Pair<>(stack.stack, stack.chance), writer);
 		writer.endArray();
 
 		writer.name("tierLower").value(rec.tierLower);

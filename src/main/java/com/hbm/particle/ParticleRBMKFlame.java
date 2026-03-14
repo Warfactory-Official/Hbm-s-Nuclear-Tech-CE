@@ -11,8 +11,11 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
-
+@SideOnly(Side.CLIENT)
 public class ParticleRBMKFlame extends Particle {
 
 	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/particle/rbmk_fire.png");
@@ -29,8 +32,10 @@ public class ParticleRBMKFlame extends Particle {
 	}
 	
 	@Override
-	public void renderParticle(BufferBuilder buffer, Entity entityIn, float partialTicks, float rotationX, float rotationZ, float rotationYZ, float rotationXY, float rotationXZ){
+	public void renderParticle(@NotNull BufferBuilder buffer, @NotNull Entity entityIn, float partialTicks, float rotationX, float rotationZ, float rotationYZ, float rotationXY, float rotationXZ){
 		Minecraft.getMinecraft().getTextureManager().bindTexture(getTexture());
+		boolean fog = GL11.glIsEnabled(GL11.GL_FOG);
+		if(fog) GlStateManager.disableFog();
 		NTMRenderHelper.resetParticleInterpPos(entityIn, partialTicks);
 		
 		GlStateManager.pushMatrix();
@@ -81,10 +86,10 @@ public class ParticleRBMKFlame extends Particle {
 		GlStateManager.translate(pX + rotationX, pY + rotationZ, pZ + rotationYZ);
 		GlStateManager.rotate(-Minecraft.getMinecraft().getRenderManager().playerViewY, 0.0F, 1.0F, 0.0F);
 
-		buf.pos((double) (-this.particleScale - 1), (double) (-this.particleScale * 2), (double) (0)).tex(uMax, vMax).endVertex();
-		buf.pos((double) (-this.particleScale - 1), (double) (this.particleScale * 2), (double) 0).tex(uMax, vMin).endVertex();
-		buf.pos((double) (this.particleScale - 1), (double) (this.particleScale * 2), (double) (0)).tex(uMin, vMin).endVertex();
-		buf.pos((double) (this.particleScale - 1), (double) (-this.particleScale * 2), (double) (0)).tex(uMin, vMax).endVertex();
+		buf.pos(-this.particleScale - 1, -this.particleScale * 2, 0).tex(uMax, vMax).endVertex();
+		buf.pos(-this.particleScale - 1, this.particleScale * 2, 0).tex(uMax, vMin).endVertex();
+		buf.pos(this.particleScale - 1, this.particleScale * 2, 0).tex(uMin, vMin).endVertex();
+		buf.pos(this.particleScale - 1, -this.particleScale * 2, 0).tex(uMin, vMax).endVertex();
 		
 		tes.draw();
 		
@@ -94,6 +99,7 @@ public class ParticleRBMKFlame extends Particle {
 		GlStateManager.enableLighting();
 		GlStateManager.disableBlend();
 		GlStateManager.popMatrix();
+		if(fog) GlStateManager.enableFog();
 	}
 	
 	protected ResourceLocation getTexture() {

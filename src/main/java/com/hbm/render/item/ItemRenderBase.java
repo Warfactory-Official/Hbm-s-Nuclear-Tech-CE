@@ -1,13 +1,40 @@
 package com.hbm.render.item;
 
+import com.hbm.render.model.BakedModelTransforms;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
+import net.minecraft.item.ItemArmor;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemBlock;
+import org.jetbrains.annotations.Nullable;
 
 public class ItemRenderBase extends TEISRBase {
 
+    protected ItemCameraTransforms getBindingTransforms(Item item) {
+        if (item instanceof ItemBlock || item instanceof ItemArmor) {
+            return ItemCameraTransforms.DEFAULT;
+        }
+        return BakedModelTransforms.defaultItemTransforms();
+    }
+
+    @Override
+    public ModelBinding createModelBinding(Item item) {
+        if (item instanceof ItemArmor) {
+            return ModelBinding.of(new ModelResourceLocation(item.getRegistryName(), "inventory"), ItemCameraTransforms.DEFAULT, false);
+        }
+        return ModelBinding.inventory(item, getBindingTransforms(item));
+    }
+
 	@Override
-	public void renderByItem(ItemStack itemStackIn) {
+	//Norwood: nowhere in the source of MC in context of rendering, itemstack is considered non-null
+	public void renderByItem(@Nullable ItemStack itemStackIn) {
+		if (this.type == null || itemStackIn == null) {
+			this.type = TransformType.NONE;
+		}
+
 		GlStateManager.pushMatrix();
 		GlStateManager.enableCull();
 
@@ -62,6 +89,7 @@ public class ItemRenderBase extends TEISRBase {
 
 		renderCommon(itemStackIn);
 		GlStateManager.popMatrix();
+		this.type = null;
 	}
 
 	public void renderNonInv(ItemStack stack) { renderNonInv(); }

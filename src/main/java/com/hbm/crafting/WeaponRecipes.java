@@ -5,6 +5,7 @@ import com.hbm.blocks.fluid.ModFluids;
 import com.hbm.inventory.OreDictManager;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.Mats;
+import com.hbm.items.ItemAmmoEnums;
 import com.hbm.items.ItemAmmoEnums.Ammo240Shell;
 import com.hbm.items.ItemEnums;
 import com.hbm.items.ItemEnums.EnumCircuitType;
@@ -84,6 +85,8 @@ public class WeaponRecipes {
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.gun_minigun, 1), "BMG", "BRE", "BGM", 'B', ANY_RESISTANTALLOY.lightBarrel(), 'M', WEAPONSTEEL.mechanism(), 'G', ANY_PLASTIC.grip(), 'R', ANY_RESISTANTALLOY.heavyReceiver(), 'E', ModItems.motor_desh );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.gun_missile_launcher, 1), " CM", "BBB", "G  ", 'C', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.ADVANCED), 'M', WEAPONSTEEL.mechanism(), 'B', ANY_RESISTANTALLOY.heavyBarrel(), 'G', ANY_PLASTIC.grip() );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.gun_tesla_cannon, 1), "CCC", "BRB", "MGE", 'C', ModItems.coil_advanced_alloy, 'B', ANY_RESISTANTALLOY.heavyBarrel(), 'R', ANY_RESISTANTALLOY.heavyReceiver(), 'M', WEAPONSTEEL.mechanism(), 'G', ANY_PLASTIC.grip(), 'E', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.ADVANCED) );
+        CraftingManager.addRecipeAuto(new ItemStack(ModItems.gun_laser_pistol, 1), "CRM", "GG ", 'C', ModItems.crystal_redstone, 'R', BIGMT.lightReceiver(), 'M', BIGMT.mechanism(), 'G', ANY_HARDPLASTIC.grip());
+        CraftingManager.addRecipeAuto(new ItemStack(ModItems.gun_laser_pistol_pew_pew, 1), " M ", "MPM", " M ", 'M', BIGMT.mechanism(), 'P', ModItems.gun_laser_pistol);
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.gun_stg77, 1), " D ", "BRS", "GM ", 'D', DIAMOND.gem(), 'B', BIGMT.lightBarrel(), 'R', BIGMT.lightReceiver(), 'S', ANY_HARDPLASTIC.stock(), 'G', ANY_HARDPLASTIC.grip(), 'M', BIGMT.mechanism() );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.gun_fatman, 1), "PPP", "BSR", "G M", 'P', BIGMT.plate(), 'B', BIGMT.heavyBarrel(), 'S', BIGMT.shell(), 'R', BIGMT.heavyReceiver(), 'G', ANY_HARDPLASTIC.grip(), 'M', BIGMT.mechanism() );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.gun_tau, 1), " RD", "CTT", "GMS", 'D', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.BISMOID), 'C', CU.pipe(), 'T', ModItems.coil_advanced_torus, 'G', ANY_HARDPLASTIC.grip(), 'R', BIGMT.lightReceiver(), 'M', BIGMT.mechanism(), 'S', ANY_HARDPLASTIC.stock() );
@@ -92,6 +95,9 @@ public class WeaponRecipes {
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.gun_charge_thrower, 1),"MMM", "BBL", "GG ", 'M', GUNMETAL.mechanism(), 'B', STEEL.heavyBarrel(), 'G', STEEL.grip(), 'L', Items.LEATHER );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.gun_charge_thrower, 1),"MMM", "BBL", "GG ", 'M', GUNMETAL.mechanism(), 'B', STEEL.heavyBarrel(), 'G', STEEL.grip(), 'L', ANY_RUBBER.ingot() );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.gun_drill, 1), " GL", "IBP", " GL", 'G', GUNMETAL.ingot(), 'L', ANY_RUBBER.ingot(), 'I', TI.ingot(), 'B', STEEL.block(), 'P', ModItems.piston_selenium );
+
+        CraftingManager.addRecipeAuto(new ItemStack(ModItems.gun_pa_melee, 1), " C ", "MWM", 'C', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.BASIC), 'M', ModItems.motor, 'W', GOLD.wireDense() );
+        CraftingManager.addRecipeAuto(new ItemStack(ModItems.gun_pa_ranged, 1), "C", "W", "P", 'C', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.BASIC), 'P', ANY_PLASTIC.ingot(), 'W', GOLD.wireDense() );
 
         //SEDNA Ammo
         CraftingManager.addRecipeAuto(DictFrame.fromOne(ModItems.ammo_standard, GunFactory.EnumAmmo.STONE, 6), "C", "P", "G", 'C', KEY_COBBLESTONE, 'P', Items.PAPER, 'G', Items.GUNPOWDER );
@@ -247,9 +253,9 @@ public class WeaponRecipes {
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.ammo_dgk, 1), "LLL", "GGG", "CCC", 'L', PB.plate(), 'G', ModItems.cordite, 'C', CU.ingot() );
 
         //Fire Extingusisher Tanks
-        /*CraftingManager.addRecipeAuto(new ItemStack(ModItems.ammo_fireext, 1), " P ", "BDB", " P ", 'P', STEEL.plate(), 'B', STEEL.bolt(), 'D', new ItemStack(ModItems.fluid_tank_full, 1, Fluids.WATER.getID()) );
-        CraftingManager.addRecipeAuto(ModItems.ammo_fireext.stackFromEnum(AmmoFireExt.FOAM), " N ", "NFN", " N ", 'N', KNO.dust(), 'F', ModItems.ammo_fireext );
-        CraftingManager.addRecipeAuto(ModItems.ammo_fireext.stackFromEnum(AmmoFireExt.SAND), "NNN", "NFN", "NNN", 'N', ModBlocks.sand_boron, 'F', ModItems.ammo_fireext );*/
+        CraftingManager.addRecipeAuto(new ItemStack(ModItems.ammo_fireext, 1), " P ", "BDB", " P ", 'P', STEEL.plate(), 'B', STEEL.bolt(), 'D', new ItemStack(ModItems.fluid_tank_full, 1, Fluids.WATER.getID()) );
+        CraftingManager.addRecipeAuto(ModItems.ammo_fireext.stackFromEnum(ItemAmmoEnums.AmmoFireExt.FOAM), " N ", "NFN", " N ", 'N', KNO.dust(), 'F', ModItems.ammo_fireext );
+        CraftingManager.addRecipeAuto(ModItems.ammo_fireext.stackFromEnum(ItemAmmoEnums.AmmoFireExt.SAND), "NNN", "NFN", "NNN", 'N', ModBlocks.sand_boron, 'F', ModItems.ammo_fireext );
 
         //Grenades
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.grenade_generic, 4), "RS ", "ITI", " I ", 'I', IRON.plate(), 'R', MINGRADE.wireFine(), 'S', STEEL.plate(), 'T', Item.getItemFromBlock(Blocks.TNT) );
@@ -329,7 +335,5 @@ public class WeaponRecipes {
         CraftingManager.addRecipeAuto(new ItemStack(ModBlocks.lamp_demon, 1), " D ", "S S", 'D', ModItems.demon_core_closed, 'S', STEEL.ingot() );
 
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.crucible, 1, 3), "MEM", "YDY", "YCY", 'M', ModItems.ingot_meteorite_forged, 'E', EUPH.ingot(), 'Y', ModItems.billet_yharonite, 'D', ModItems.demon_core_closed, 'C', ModItems.ingot_chainsteel );
-        //CraftingManager.addRecipeAuto(new ItemStack(ModItems.hf_sword), "MEM", "YDY", "YCY", 'M', ModItems.blade_meteorite, 'E', ModItems.nothing, 'Y', UNOBTAINIUM.billet(), 'D', ModItems.particle_strange, 'C', ModItems.ingot_chainsteel);
-        //CraftingManager.addRecipeAuto(new ItemStack(ModItems.hs_sword), "MEM", "YDY", "YCY", 'M', ModItems.blade_meteorite, 'E', GH336.ingot(), 'Y', ModItems.nothing, 'D', ModItems.particle_dark, 'C', ModItems.ingot_chainsteel);
     }
 }

@@ -77,16 +77,16 @@ public class BlockBakedLayered extends BlockBase implements IDynamicModels {
     public void bakeModel(ModelBakeEvent event) {
 
         for (int i = 0; i < MAX_LAYRES - 1; i++) {
-            IModel layerModel = ModelLoaderRegistry.getModelOrMissing(new ResourceLocation("minecraft", "snow_height" + i * 2));
-            layerModel.retexture(ImmutableMap.of("all", texturePath));
+            IModel layerModel = ModelLoaderRegistry.getModelOrMissing(new ResourceLocation("minecraft", "block/snow_height" + i * 2));
+            layerModel = layerModel.retexture(ImmutableMap.of("all", texturePath));
             IBakedModel model = layerModel.bake(
                     ModelRotation.X0_Y0, DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()
             );
             event.getModelRegistry().putObject(new ModelResourceLocation(this.getRegistryName().toString(), "layers=" + i), model);
         }
 
-        IModel layerModel = ModelLoaderRegistry.getModelOrMissing(new ResourceLocation("minecraft", "cuble_all"));
-        layerModel.retexture(ImmutableMap.of("all", texturePath));
+        IModel layerModel = ModelLoaderRegistry.getModelOrMissing(new ResourceLocation("minecraft", "block/cube_all"));
+        layerModel = layerModel.retexture(ImmutableMap.of("all", texturePath));
         IBakedModel model = layerModel.bake(
                 ModelRotation.X0_Y0, DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()
         );

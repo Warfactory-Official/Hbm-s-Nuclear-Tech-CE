@@ -41,7 +41,6 @@ import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
@@ -342,7 +341,7 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachinePolluting i
 
         if (this.output != null) {
             if (this.output.material != recipe.output.material) return false;
-            if (this.output.amount + recipe.output.amount > maxOutput) return false;
+            return this.output.amount + recipe.output.amount <= maxOutput;
         }
 
         return true;

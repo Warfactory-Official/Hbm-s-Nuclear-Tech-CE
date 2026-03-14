@@ -218,7 +218,7 @@ public class ItemEnums {
     public static final CircuitComponentType[] VALUES = values();
   }
   public enum EnumExpensiveType {
-    STEEL_PLATING, HEAVY_FRAME, CIRCUIT, LEAD_PLATING, FERRO_PLATING, COMPUTER, BRONZE_TUBES, PLASTIC;
+    STEEL_PLATING, HEAVY_FRAME, CIRCUIT, LEAD_PLATING, FERRO_PLATING, COMPUTER, BRONZE_TUBES, PLASTIC, GOLD_DUST, DEGENERATE_MATTER;
 
     public static final EnumExpensiveType[] VALUES = values();
   }

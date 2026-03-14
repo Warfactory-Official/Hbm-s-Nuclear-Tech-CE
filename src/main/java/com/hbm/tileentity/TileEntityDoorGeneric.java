@@ -12,10 +12,10 @@ import com.hbm.inventory.control_panel.IControllable;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
-import com.hbm.packet.PacketDispatcher;
-import com.hbm.packet.toclient.TEDoorAnimationPacket;
+import com.hbm.render.anim.sedna.HbmAnimationsSedna.Animation;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.machine.TileEntityLockableBase;
+import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.longs.LongIterable;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.entity.player.EntityPlayer;
@@ -27,7 +27,6 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
@@ -36,6 +35,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 @AutoRegister
 public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITickable, IAnimatedDoor, IControllable {
@@ -45,10 +45,15 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
     public long animStartTime = 0;
     public boolean shouldUseBB = false;
     protected DoorDecl doorType;
-    private int openTicks = 0;
+    public int openTicks = 0;
     private int redstonePower;
     private AudioWrapper audio;
     private AudioWrapper audio2;
+
+    // new door
+    public Animation currentAnimation;
+    private byte skinIndex = 0;
+
     // For T flip-flop redstone behavior
     private boolean wasPowered = false;
     private boolean redstoneOnly = false;
@@ -60,6 +65,10 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
     public void update() {
         if (getDoorType() == null && this.getBlockType() instanceof BlockDoorGeneric)
             setDoorType(((BlockDoorGeneric) this.getBlockType()).type);
+        Consumer<TileEntityDoorGeneric> update = getDoorType().onDoorUpdate();
+        if (update != null) {
+            update.accept(this);
+        }
         if (state == DoorState.OPENING) {
             openTicks++;
             if (openTicks >= getDoorType().timeToOpen()) {
@@ -138,8 +147,10 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
                 // No need to update when open as well, as opening door should update
                 RadiationSystemNT.markSectionsForRebuild(world, getOccupiedSections());
             }
-            PacketDispatcher.wrapper.sendToAllAround(new TEDoorAnimationPacket(pos, (byte) state.ordinal(), (byte) (shouldUseBB ? 1 : 0)),
-                    new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
+            //PacketDispatcher.wrapper.sendToAllAround(new TEDoorAnimationPacket(pos, (byte) state.ordinal(), (byte) (shouldUseBB ? 1 : 0)),
+            //        new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
+
+            this.networkPackNT(100);
 
             // T-Flip-Flop
             boolean isPowered = redstonePower > 0;
@@ -289,8 +300,23 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
             }
 
             this.state = newState;
-            if (newState.isMovingState()) animStartTime = System.currentTimeMillis();
+            if(state.isMovingState()) {
+                animStartTime = System.currentTimeMillis();
+                currentAnimation = this.doorType.getSEDNAAnim(state, this.skinIndex);
+            }
         }
+    }
+
+    public int getSkinIndex() {
+        return skinIndex;
+    }
+
+    public boolean cycleSkinIndex() {
+        if(!getDoorType().hasSkins()) return false;
+        this.skinIndex++;
+        this.skinIndex %= getDoorType().getSkinCount();
+        this.markDirty();
+        return true;
     }
 
     //Ah yes piggy backing on this packet
@@ -310,6 +336,22 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
     }
 
     @Override
+    public void deserialize(ByteBuf buf) {
+        super.deserialize(buf);
+        handleNewState(DoorState.values()[buf.readByte()%DoorState.values().length]);
+        skinIndex = buf.readByte();
+        shouldUseBB = buf.readBoolean();
+    }
+
+    @Override
+    public void serialize(ByteBuf buf) {
+        super.serialize(buf);
+        buf.writeByte(state.ordinal());
+        buf.writeByte(skinIndex);
+        buf.writeBoolean(shouldUseBB);
+    }
+
+    @Override
     public void readFromNBT(NBTTagCompound tag) {
         this.state = DoorState.values()[tag.getByte("state")];
         this.openTicks = tag.getInteger("openTicks");
@@ -318,6 +360,7 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
         this.shouldUseBB = tag.getBoolean("shouldUseBB");
         this.wasPowered = tag.getBoolean("wasPowered");
         this.redstoneOnly = tag.getBoolean("redstoneOnly");
+        this.skinIndex = tag.getByte("skin");
         NBTTagCompound activatedBlocks = tag.getCompoundTag("activatedBlocks");
         this.activatedBlocks.clear();
         for (int i = 0; i < activatedBlocks.getKeySet().size() / 3; i++) {
@@ -336,6 +379,8 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
         tag.setBoolean("shouldUseBB", shouldUseBB);
         tag.setBoolean("wasPowered", this.wasPowered);
         tag.setBoolean("redstoneOnly", this.redstoneOnly);
+        if(getDoorType().hasSkins())
+            tag.setByte("skin", skinIndex);
         NBTTagCompound activatedBlocks = new NBTTagCompound();
         int i = 0;
         for (BlockPos p : this.activatedBlocks) {

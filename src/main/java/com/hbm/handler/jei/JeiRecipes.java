@@ -4,13 +4,11 @@ import com.hbm.Tags;
 import com.hbm.inventory.FluidContainerRegistry;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
-import com.hbm.inventory.RecipesCommon.NbtComparableStack;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.recipes.*;
 import com.hbm.inventory.recipes.MagicRecipes.MagicRecipe;
 import com.hbm.items.ModItems;
-import com.hbm.items.machine.ItemAssemblyTemplate;
 import com.hbm.items.machine.ItemBatteryPack;
 import com.hbm.items.machine.ItemBatterySC;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
@@ -36,7 +34,6 @@ import java.util.Map.Entry;
 
 public class JeiRecipes {
 
-	private static List<ChemRecipe> chemRecipes = null;
 	private static List<CyclotronRecipe> cyclotronRecipes = null;
 	private static List<AlloyFurnaceRecipe> alloyFurnaceRecipes = null;
     private static List<CMBFurnaceRecipe> cmbRecipes = null;
@@ -57,28 +54,6 @@ public class JeiRecipes {
 	private static List<ItemStack> alloyFuels = null;
 
 	public static final IIngredientType<FluidStack> FluidNTM = () -> FluidStack.class;
-	
-	
-	public static class ChemRecipe implements IRecipeWrapper {
-		
-		private final List<List<ItemStack>> inputs;
-		private final List<ItemStack> outputs;
-		
-		public ChemRecipe(List<AStack> inputs, List<ItemStack> outputs) {
-			List<List<ItemStack>> list = new ArrayList<>(inputs.size());
-			for(AStack s : inputs)
-				list.add(s.getStackList());
-			this.inputs = list;
-			this.outputs = outputs; 
-		}
-		
-		@Override
-		public void getIngredients(IIngredients ingredients) {
-			List<List<ItemStack>> in = Library.copyItemStackListList(inputs); // list of inputs and their list of possible items
-			ingredients.setInputLists(VanillaTypes.ITEM, in);
-			ingredients.setOutputs(VanillaTypes.ITEM, outputs);
-		}
-	}
 	
 	public static class CyclotronRecipe implements IRecipeWrapper {
 		
@@ -115,22 +90,6 @@ public class JeiRecipes {
 			ingredients.setOutput(VanillaTypes.ITEM, output);
 		}
 		
-	}
-
-	public static class BoilerRecipe implements IRecipeWrapper {
-		public final FluidStack input;
-		public final FluidStack output;
-
-		public BoilerRecipe(FluidStack input, FluidStack output) {
-			this.input = input;
-			this.output = output;
-		}
-
-		@Override
-		public void getIngredients(IIngredients ingredients) {
-			ingredients.setInput(FluidNTM, input);
-			ingredients.setOutput(FluidNTM, output);
-		}
 	}
 	
 	public static class CMBFurnaceRecipe implements IRecipeWrapper {
@@ -195,23 +154,6 @@ public class JeiRecipes {
 				GlStateManager.color(1f, 1f, 1f, 1f);
 				Gui.drawModalRectWithCustomSizedTexture(23, 19, 184, 37, 16, 16, 256, 256);
 			}
-		}
-	}
-
-	public static class WasteDrumRecipe implements IRecipeWrapper {
-		
-		private final ItemStack input;
-		private final ItemStack output;
-		
-		public WasteDrumRecipe(ItemStack input, ItemStack output) {
-			this.input = input;
-			this.output = output; 
-		}
-		
-		@Override
-		public void getIngredients(IIngredients ingredients) {
-			ingredients.setInput(VanillaTypes.ITEM, input);
-			ingredients.setOutput(VanillaTypes.ITEM, output);
 		}
 	}
 
@@ -573,59 +515,6 @@ public class JeiRecipes {
             fontRenderer.drawString(consumptionText, side - fontRenderer.getStringWidth(consumptionText), 55, 0x404040);
         }
     }
-	
-	public static List<ChemRecipe> getChemistryRecipes() {
-		if(chemRecipes != null)
-			return chemRecipes;
-		chemRecipes = new ArrayList<>();
-		
-       for(int i: ChemplantRecipes.recipeNames.keySet()){
-
-        	List<AStack> inputs = new ArrayList<>(7);
-        	for(int j = 0; j < 7; j ++)
-        		inputs.add(j, new ComparableStack(ModItems.nothing));
-
-        	List<ItemStack> outputs = new ArrayList<>(6);
-        	for(int j = 0; j < 6; j ++)
-        		outputs.add(j, new ItemStack(ModItems.nothing));
-        	
-        	//Adding template item
-        	ItemStack template = new ItemStack(ModItems.chemistry_template, 1, i);
-
-		   ChemplantRecipes.ChemRecipe recipe = ChemplantRecipes.indexMapping.get(template.getItemDamage());
-
-        	List<AStack> listIn = ChemplantRecipes.ChemRecipe.getChemInputFromTempate(recipe, template);
-        	FluidStack[] fluidIn = ChemplantRecipes.ChemRecipe.getFluidInputFromTempate(recipe, template);
-        	ItemStack[] listOut = ChemplantRecipes.ChemRecipe.getChemOutputFromTempate(recipe, template);
-        	FluidStack[] fluidOut = ChemplantRecipes.ChemRecipe.getFluidOutputFromTempate(recipe, template);
-
-        	inputs.set(6, new ComparableStack(template));
-
-        	if(listIn != null)
-        		for(int j = 0; j < listIn.size(); j++)
-        			if(listIn.get(j) != null)
-        				inputs.set(j + 2, listIn.get(j).copy());
-
-        	if(fluidIn != null)
-	        	for(int j = 0; j < fluidIn.length; j++)
-	        		if(fluidIn[j] != null)
-	        			inputs.set(j, new NbtComparableStack(ItemFluidIcon.make(fluidIn[j].type, fluidIn[j].fill)));
-        	
-        	if(listOut != null)
-	        	for(int j = 0; j < listOut.length; j++)
-	        		if(listOut[j] != null)
-	        			outputs.set(j + 2, listOut[j].copy());
-        	
-        	if(fluidOut != null)
-	        	for(int j = 0; j < fluidOut.length; j++)
-	        		if(fluidOut[j] != null)
-	        			outputs.set(j, ItemFluidIcon.make(fluidOut[j].type, fluidOut[j].fill));
-        	
-        	chemRecipes.add(new ChemRecipe(inputs, outputs));
-        }
-		
-		return chemRecipes;
-	}
 
 	public static List<CyclotronRecipe> getCyclotronRecipes() {
 		if (cyclotronRecipes != null)
@@ -898,45 +787,6 @@ public class JeiRecipes {
 			silexRecipes.add(new SILEXRecipe(e.getKey(), chances, outputs, (double)out.fluidProduced/out.fluidConsumed, out.laserStrength));
 		}
 		return silexRecipes;
-	}
-
-	public static class AssemblerRecipeWrapper implements IRecipeWrapper {
-
-		private final ItemStack output;
-		private final List<List<ItemStack>> inputs;
-		private final int time;
-		private final ComparableStack outputComparable;
-
-		AssemblerRecipeWrapper(ComparableStack output, AssemblerRecipes.AssemblerRecipe recipe) {
-			this.outputComparable = output;
-			this.output = output.toStack();
-			this.time = recipe.time;
-
-			List<List<ItemStack>> list = new ArrayList<>(recipe.ingredients.length);
-			for (AStack s : recipe.ingredients) {
-				list.add(s.getStackList());
-			}
-			this.inputs = list;
-		}
-
-		@Override
-		public void getIngredients(@NotNull IIngredients ingredients) {
-			List<List<ItemStack>> jeiInputs = Library.copyItemStackListList(inputs);
-			while (jeiInputs.size() < 12) {
-				jeiInputs.add(Collections.singletonList(new ItemStack(ModItems.nothing)));
-			}
-			ItemStack templateStack = ItemAssemblyTemplate.writeType(new ItemStack(ModItems.assembly_template), this.outputComparable);
-			jeiInputs.add(Collections.singletonList(templateStack));
-
-			ingredients.setInputLists(VanillaTypes.ITEM, jeiInputs);
-			ingredients.setOutput(VanillaTypes.ITEM, output);
-		}
-
-		@Override
-		public void drawInfo(Minecraft minecraft, int recipeWidth, int recipeHeight, int mouseX, int mouseY) {
-			String timeString = (time / 20.0) + "s";
-			minecraft.fontRenderer.drawString(timeString, 112, 38, 0x404040);
-		}
 	}
 
 	public static List<RadiolysisRecipeHandler.RadiolysisRecipe> getRadiolysisRecipes() {

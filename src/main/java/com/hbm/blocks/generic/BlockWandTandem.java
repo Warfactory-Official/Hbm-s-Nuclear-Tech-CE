@@ -74,7 +74,7 @@ public class BlockWandTandem extends BlockContainerBakeable implements IBlockSid
     public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
 
     public BlockWandTandem(String regName) {
-        super(Material.IRON, regName, new BlockBakeFrame(BlockBakeFrame.BlockForm.FULL_CUSTOM,
+        super(Material.IRON, regName, BlockBakeFrame.cube(
                 "wand_tandem_top",
                 "wand_tandem_top",
                 "wand_tandem_back",

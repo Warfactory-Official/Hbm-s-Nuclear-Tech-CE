@@ -26,6 +26,7 @@ public class FluidLoaderStandard implements IFluidLoadingHandler {
 				tank.setFill(remainder);
 				slots.insertItem(out, full, false);
 				slots.extractItem(in, 1, false);
+				return true;
 			}
 		}
 		return false;

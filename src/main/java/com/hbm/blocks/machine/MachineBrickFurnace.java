@@ -37,7 +37,7 @@ public class MachineBrickFurnace extends BlockContainerBakeable {
     public static final PropertyDirection FACING = BlockHorizontal.FACING;
 
     public MachineBrickFurnace(String s, boolean blockState) {
-        super(Material.IRON, s, new BlockBakeFrame(BlockBakeFrame.BlockForm.FULL_CUSTOM, "machine_furnace_brick_top", "machine_furnace_brick_bottom",
+        super(Material.IRON, s, BlockBakeFrame.cube("machine_furnace_brick_top", "machine_furnace_brick_bottom",
                 "machine_furnace_brick_side", blockState ? "machine_furnace_brick_front_on" : "machine_furnace_brick_front_off",
                 "machine_furnace_brick_side", "machine_furnace_brick_side"));
         isActive = blockState;

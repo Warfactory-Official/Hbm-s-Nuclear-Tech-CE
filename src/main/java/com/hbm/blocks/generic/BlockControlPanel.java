@@ -12,6 +12,7 @@ import com.hbm.main.ClientProxy;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toserver.NBTControlPacket;
 import com.hbm.tileentity.machine.TileEntityControlPanel;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyBool;
@@ -80,6 +81,57 @@ public class BlockControlPanel extends BlockContainer implements ICustomSelectio
 			}
 		}
 		return true;
+	}
+
+	@Override
+	public boolean canProvidePower(IBlockState state) {
+		return true;
+	}
+
+	@Override
+	public int getWeakPower(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
+		TileEntity te = blockAccess.getTileEntity(pos);
+		if(te instanceof TileEntityControlPanel control) {
+			return control.getWeakRedstoneOutput(side);
+		}
+		return 0;
+	}
+
+	@Override
+	public int getStrongPower(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
+		TileEntity te = blockAccess.getTileEntity(pos);
+		if(te instanceof TileEntityControlPanel control) {
+			return control.getStrongRedstoneOutput(side);
+		}
+		return 0;
+	}
+
+	@Override
+	public boolean getWeakChanges(IBlockAccess world, BlockPos pos) {
+		return true;
+	}
+
+	@Override
+	public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
+		super.neighborChanged(state, worldIn, pos, blockIn, fromPos);
+		refreshRedstoneState(worldIn, pos);
+	}
+
+	@Override
+	public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
+		super.onNeighborChange(world, pos, neighbor);
+		if(world instanceof World worldIn) {
+			refreshRedstoneState(worldIn, pos);
+		}
+	}
+
+	private static void refreshRedstoneState(World worldIn, BlockPos pos) {
+		if(!worldIn.isRemote) {
+			TileEntity te = worldIn.getTileEntity(pos);
+			if(te instanceof TileEntityControlPanel control) {
+				control.captureRedstoneInputChanges();
+			}
+		}
 	}
 
 	@Nonnull

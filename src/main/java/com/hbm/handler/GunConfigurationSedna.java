@@ -37,7 +37,7 @@ public class GunConfigurationSedna implements Cloneable {
     public int durability;
 
     //animations!
-    public HashMap<HbmAnimationsSedna.AnimType, BusAnimationSedna> animations = new HashMap<>();
+    public HashMap<HbmAnimationsSedna.GunAnimation, BusAnimationSedna> animations = new HashMap<>();
     //lazy-ish loading for animations, required for loading animations from ResourceManager, since that occurs after we've initialised the guns
     public Consumer<Void> loadAnimations;
     public boolean animationsLoaded = false;

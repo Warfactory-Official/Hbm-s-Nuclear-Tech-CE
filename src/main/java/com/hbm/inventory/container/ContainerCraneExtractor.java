@@ -3,23 +3,19 @@ package com.hbm.inventory.container;
 import com.hbm.inventory.slot.SlotPattern;
 import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.items.ModItems;
-import com.hbm.lib.Library;
 import com.hbm.tileentity.network.TileEntityCraneExtractor;
-import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ClickType;
-import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.items.SlotItemHandler;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.function.Predicate;
-
-public class ContainerCraneExtractor extends Container  {
+public class ContainerCraneExtractor extends ContainerBase  {
     protected TileEntityCraneExtractor extractor;
 
     public ContainerCraneExtractor(InventoryPlayer invPlayer, TileEntityCraneExtractor extractor) {
+        super(invPlayer, extractor.inventory);
         this.extractor = extractor;
 
         //filter
@@ -30,29 +26,17 @@ public class ContainerCraneExtractor extends Container  {
         }
 
         //buffer
-        for(int i = 0; i < 3; i++) {
-            for(int j = 0; j < 3; j++) {
-                this.addSlotToContainer(new SlotItemHandler(extractor.inventory, 9 + j + i * 3, 8 + j * 18, 17 + i * 18));
-            }
-        }
+        addSlots(extractor.inventory, 9, 8, 17, 3, 3);
 
         //upgrades
         this.addSlotToContainer(new SlotUpgrade(extractor.inventory, 18, 152, 23));
         this.addSlotToContainer(new SlotUpgrade(extractor.inventory, 19, 152, 47));
 
-        for(int i = 0; i < 3; i++) {
-            for(int j = 0; j < 9; j++) {
-                this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 103 + i * 18));
-            }
-        }
-
-        for(int i = 0; i < 9; i++) {
-            this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 161));
-        }
+        playerInv(invPlayer, 26, 103, 161);
     }
 
     @Override
-    public ItemStack slotClick(int slotId, int dragType, ClickType clickTypeIn, EntityPlayer player) {
+    public @NotNull ItemStack slotClick(int slotId, int dragType, @NotNull ClickType clickTypeIn, @NotNull EntityPlayer player) {
         if (slotId < 0 || slotId >= 9) {
             return super.slotClick(slotId, dragType, clickTypeIn, player);
         }
@@ -83,12 +67,49 @@ public class ContainerCraneExtractor extends Container  {
     }
 
     @Override
-    public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 20,
-                _ -> false, 9,
-                Predicate.not(Library::isMachineUpgrade), 18,
-                ContainerCraneExtractor::isUpgradeStack, 19,
-                ContainerCraneExtractor::isUpgradeEjector, 20);
+    public @NotNull ItemStack transferStackInSlot(EntityPlayer player, int index) {
+        ItemStack result = ItemStack.EMPTY;
+        Slot slot = this.inventorySlots.get(index);
+
+        if(slot != null && slot.getHasStack()) {
+            ItemStack stack = slot.getStack();
+            result = stack.copy();
+
+            if(index < 9) { // filters
+                return ItemStack.EMPTY;
+            }
+
+            int size = extractor.inventory.getSlots();
+            if(index <= size - 1) {
+                if(!this.mergeItemStack(stack, size, this.inventorySlots.size(), true)) {
+                    return ItemStack.EMPTY;
+                }
+            } else {
+                if(isUpgradeStack(result)) {
+                    if(!this.mergeItemStack(stack, 18, 19, false)) {
+                        return ItemStack.EMPTY;
+                    }
+                } else if(isUpgradeEjector(result)) {
+                    if(!this.mergeItemStack(stack, 19, 20, false)) {
+                        return ItemStack.EMPTY;
+                    }
+                } else if(!this.mergeItemStack(stack, 9, size, false)) {
+                    return ItemStack.EMPTY;
+                }
+
+                return ItemStack.EMPTY;
+            }
+
+            if(stack.isEmpty()) {
+                slot.putStack(ItemStack.EMPTY);
+            } else {
+                slot.onSlotChanged();
+            }
+
+            slot.onTake(player, stack);
+        }
+
+        return result;
     }
 
     private static boolean isUpgradeStack(ItemStack item) {

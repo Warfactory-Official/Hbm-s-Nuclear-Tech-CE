@@ -10,6 +10,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.TileEntityProxyCombo;
 import com.hbm.tileentity.machine.TileEntityChungus;
+import com.hbm.util.BobMathUtil;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,8 +19,11 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.Pre;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,29 +35,24 @@ public class MachineChungus extends BlockDummyable implements ILookOverlay {
 	}
 
 	@Override
-	public TileEntity createNewTileEntity(World world, int meta) {
-		
-		if(meta >= 12)
-			return new TileEntityChungus();
-		
-		if(meta >= 6)
-			return new TileEntityProxyCombo(false, true, true);
-		
+	public TileEntity createNewTileEntity(@NotNull World world, int meta) {
+		if(meta >= 12) return new TileEntityChungus();
+		if(meta >= 6) return new TileEntityProxyCombo(false, true, true);
 		return null;
 	}
 	
 	@Override
-	public boolean onBlockActivated(World world, BlockPos pos1, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ){
+	public boolean onBlockActivated(@NotNull World world, @NotNull BlockPos pos, @NotNull IBlockState state, EntityPlayer player, @NotNull EnumHand hand, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ){
 		if(!player.isSneaking()) {
-			int x = pos1.getX();
-			int y = pos1.getY();
-			int z = pos1.getZ();
-			int[] pos = this.findCore(world, x, y, z);
+			int x = pos.getX();
+			int y = pos.getY();
+			int z = pos.getZ();
+			BlockPos posC = this.findCore(world, pos);
 
-			if(pos == null)
+			if(posC == null)
 				return true;
 
-			TileEntityChungus entity = (TileEntityChungus) world.getTileEntity(new BlockPos(pos[0], pos[1], pos[2]));
+			TileEntityChungus entity = (TileEntityChungus) world.getTileEntity(posC);
 			if(entity != null) {
 				
 				ForgeDirection dir = ForgeDirection.getOrientation(entity.getBlockMetadata() - offset);
@@ -66,30 +65,14 @@ public class MachineChungus extends BlockDummyable implements ILookOverlay {
 				
 				if((x == iX || x == iX2) && (z == iZ || z == iZ2) && y < entity.getPos().getY() + 2) {
 					world.playSound(null, x + 0.5, y + 0.5, z + 0.5, HBMSoundHandler.chungus_lever, SoundCategory.BLOCKS, 1.5F, 1.0F);
-					
+
 					if(!world.isRemote) {
-						FluidType currentType = entity.tanks[0].getTankType();
-						FluidType newType = currentType;
-						int currentFill = entity.tanks[0].getFill();
-						int newFill = 0;
-						entity.onLeverPull(currentType);
-						if (currentType == Fluids.STEAM) {
-							newType = Fluids.HOTSTEAM;
-							newFill = currentFill / 10;
-						} else if (currentType == Fluids.HOTSTEAM) {
-							newType = Fluids.SUPERHOTSTEAM;
-							newFill = currentFill / 10;
-						} else if (currentType == Fluids.SUPERHOTSTEAM) {
-							newType = Fluids.ULTRAHOTSTEAM;
-							newFill = currentFill / 10;
-						} else if (currentType == Fluids.ULTRAHOTSTEAM) {
-							newType = Fluids.STEAM;
-							newFill = (int) Math.min((long)currentFill * 1000, entity.tanks[0].getMaxFill());
+						if(!entity.operational) {
+							world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.chungus_lever, SoundCategory.BLOCKS, 1.5F, 1.0F);
+							entity.onLeverPull();
+						} else {
+							player.sendMessage(new TextComponentString(TextFormatting.RED + "Cannot change compressor setting while operational!"));
 						}
-						entity.tanks[0].setTankType(newType);
-						entity.tanks[0].setFill(newFill);
-						entity.tanks[1].setFill(0);
-						entity.markDirty();
 					}
 					
 					return true;
@@ -131,10 +114,8 @@ public class MachineChungus extends BlockDummyable implements ILookOverlay {
 		if(!MultiblockHandlerXR.checkSpace(world, x + dir.offsetX * o , y + dir.offsetY * o, z + dir.offsetZ * o, getDimensions(), x, y, z, dir)) return false;
 		if(!MultiblockHandlerXR.checkSpace(world, x + dir.offsetX * o , y + dir.offsetY * o, z + dir.offsetZ * o, new int[] {3, 0, 6, -1, 1, 1}, x, y, z, dir)) return false;
 		if(!MultiblockHandlerXR.checkSpace(world, x + dir.offsetX * o , y + dir.offsetY * o, z + dir.offsetZ * o, new int[] {2, 0, 10, -7, 1, 1}, x, y, z, dir)) return false;
-		if(!world.getBlockState(new BlockPos(x + dir.offsetX, y + 2, z + dir.offsetZ)).getBlock().canPlaceBlockAt(world, new BlockPos(x + dir.offsetX, y + 2, z + dir.offsetZ))) return false;
-		
-		return true;
-	}
+        return world.getBlockState(new BlockPos(x + dir.offsetX, y + 2, z + dir.offsetZ)).getBlock().canPlaceBlockAt(world, new BlockPos(x + dir.offsetX, y + 2, z + dir.offsetZ));
+    }
 
 	@Override
 	public void printHook(Pre event, World world, BlockPos pos) {
@@ -147,13 +128,13 @@ public class MachineChungus extends BlockDummyable implements ILookOverlay {
 		if (!(te instanceof TileEntityChungus chungus)) return;
 
         List<String> text = new ArrayList<>();
-		text.add(Library.getShortNumber(chungus.power) + "/" + Library.getShortNumber(chungus.getMaxPower()) + " HE");
 		FluidType inputType = chungus.tanks[0].getTankType();
 		if (inputType != Fluids.NONE)
 			text.add("§a-> §r" + inputType.getLocalizedName() + ": " + chungus.tanks[0].getFill() + "/" + chungus.tanks[0].getMaxFill() + "mB");
 		FluidType outputType = chungus.tanks[1].getTankType();
 		if (outputType != Fluids.NONE)
 			text.add("§c<- §r" + outputType.getLocalizedName() + ": " + chungus.tanks[1].getFill() + "/" + chungus.tanks[1].getMaxFill() + "mB");
+		text.add(TextFormatting.RED + "<- " + TextFormatting.RESET + BobMathUtil.getShortNumber(chungus.powerBuffer) + "HE");
 		ILookOverlay.printGeneric(event, getLocalizedName(), 0xffff00, 0x404000, text);
 	}
 }

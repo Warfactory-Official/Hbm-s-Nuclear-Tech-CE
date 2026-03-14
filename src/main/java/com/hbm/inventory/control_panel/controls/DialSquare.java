@@ -1,5 +1,7 @@
 package com.hbm.inventory.control_panel.controls;
 
+import com.hbm.inventory.control_panel.controls.configs.SubElementBaseConfig;
+import com.hbm.inventory.control_panel.controls.configs.SubElementDialSquare;
 import com.hbm.render.loader.WaveFrontObjectVAO;
 import com.hbm.inventory.control_panel.*;
 import com.hbm.main.ResourceManager;
@@ -10,6 +12,8 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 
 import java.util.List;
@@ -19,10 +23,16 @@ public class DialSquare extends Control {
 
     private String label = "POWER    (RS/10)";
 
-    public DialSquare(String name, ControlPanel panel) {
-        super(name, panel);
+    public DialSquare(String name,String registryName,ControlPanel panel) {
+        super(name,registryName, panel);
         vars.put("value", new DataValueFloat(0));
         configMap.put("label", new DataValueString(label));
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public SubElementBaseConfig getConfigSubElement(GuiControlEdit gui,Map<String,DataValue> configs) {
+        return new SubElementDialSquare(gui,configs);
     }
 
     @Override
@@ -36,9 +46,7 @@ public class DialSquare extends Control {
     }
 
     @Override
-    public void applyConfigs(Map<String, DataValue> configs) {
-        super.applyConfigs(configs);
-
+    protected void onConfigMapChanged() {
         for (Map.Entry<String, DataValue> e : configMap.entrySet()) {
             switch (e.getKey()) {
                 case "label": {
@@ -114,7 +122,7 @@ public class DialSquare extends Control {
 
     @Override
     public Control newControl(ControlPanel panel) {
-        return new DialSquare(name, panel);
+        return new DialSquare(name,registryName,panel);
     }
 
     @Override

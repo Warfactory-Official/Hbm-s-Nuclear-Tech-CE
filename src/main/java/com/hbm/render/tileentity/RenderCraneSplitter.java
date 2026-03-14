@@ -42,7 +42,7 @@ public class RenderCraneSplitter extends TileEntitySpecialRenderer<TileEntityCra
         break;
     }
 
-    GlStateManager.translate(0.5D, 0, 0.5D);
+    GlStateManager.translate(-0.5D, 0, 0.5D);
 
     bindTexture(ResourceManager.splitter_tex);
     ResourceManager.crane_splitter.renderAll();

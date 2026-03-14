@@ -68,7 +68,6 @@ public class NodeEventBroadcast extends NodeOutput {
 					sys.resetCachedValues();
 					sys.setVar("receiver_id", new DataValueFloat(i));
 					for(NodeOutput o : sys.outputNodes){
-						//If canceled, don't continue;
 						if(!o.doOutput(from, sendNodeMap, positions))
 							continue cont;
 					}
@@ -91,7 +90,7 @@ public class NodeEventBroadcast extends NodeOutput {
 		this.inputs.clear();
 		ControlEvent evt = ControlEvent.getRegisteredEvent(name);
 		for(Entry<String, DataValue> e : evt.vars.entrySet()){
-			inputs.add(new NodeConnection(e.getKey(), this, inputs.size(), true, e.getValue().getType(), e.getValue()));
+			inputs.add(new NodeConnection(e.getKey(), this, inputs.size(), true, e.getValue().getType(), e.getValue().copy()));
 		}
 		inputs.add(new NodeConnection("Cancel", this, inputs.size(), true, DataType.GENERIC, new DataValueFloat(0)));
 		recalcSize();

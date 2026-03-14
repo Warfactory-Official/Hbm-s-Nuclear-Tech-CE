@@ -1,6 +1,8 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.fluid.IFluidStandardTransceiver;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.handler.CompatHandler;
 import com.hbm.interfaces.AutoRegister;
@@ -54,7 +56,7 @@ import static com.hbm.items.machine.ItemPWRFuel.EnumPWRFuel;
 
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 @AutoRegister
-public class TileEntityPWRController extends TileEntityMachineBase implements ITickable, IGUIProvider, IControlReceiver, SimpleComponent, IFluidStandardTransceiver, CompatHandler.OCComponent {
+public class TileEntityPWRController extends TileEntityMachineBase implements ITickable, IGUIProvider, IControlReceiver, SimpleComponent, IFluidStandardTransceiver, IRORValueProvider, IRORInteractive, CompatHandler.OCComponent {
 
     public static final long coreHeatCapacityBase = 10_000_000;
     public static final long hullHeatCapacityBase = 10_000_000;
@@ -181,11 +183,7 @@ public class TileEntityPWRController extends TileEntityMachineBase implements IT
             int chunkX = pos.getX() >> 4;
             int chunkZ = pos.getZ() >> 4;
 
-            if (world.getChunkProvider().getLoadedChunk(chunkX, chunkZ) == null ||
-                    world.getChunkProvider().getLoadedChunk(chunkX + 2, chunkZ + 2) == null ||
-                    world.getChunkProvider().getLoadedChunk(chunkX + 2, chunkZ - 2) == null ||
-                    world.getChunkProvider().getLoadedChunk(chunkX - 2, chunkZ + 2) == null ||
-                    world.getChunkProvider().getLoadedChunk(chunkX - 2, chunkZ - 2) == null) {
+            if (world.getChunkProvider().getLoadedChunk(chunkX, chunkZ) == null || world.getChunkProvider().getLoadedChunk(chunkX + 2, chunkZ + 2) == null || world.getChunkProvider().getLoadedChunk(chunkX + 2, chunkZ - 2) == null || world.getChunkProvider().getLoadedChunk(chunkX - 2, chunkZ + 2) == null || world.getChunkProvider().getLoadedChunk(chunkX - 2, chunkZ - 2) == null) {
                 this.unloadDelay = 60;
             }
 
@@ -447,7 +445,7 @@ public class TileEntityPWRController extends TileEntityMachineBase implements IT
     }
 
     @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir){
+    public boolean canConnect(FluidType type, ForgeDirection dir) {
         return type == tanks[0].getTankType() || type == tanks[1].getTankType();
     }
 
@@ -559,6 +557,40 @@ public class TileEntityPWRController extends TileEntityMachineBase implements IT
             this.rodTarget = MathHelper.clamp(data.getInteger("control"), 0, 100);
             this.markDirty();
         }
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "coreheat", PREFIX_VALUE + "hullheat", PREFIX_VALUE + "flux", PREFIX_VALUE + "depletion", PREFIX_FUNCTION + "setrods" + NAME_SEPARATOR + "percent", PREFIX_FUNCTION + "jettison",};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "coreheat").equals(name)) return "" + this.coreHeat;
+        if ((PREFIX_VALUE + "hullheat").equals(name)) return "" + this.hullHeat;
+        if ((PREFIX_VALUE + "flux").equals(name)) return "" + (int) this.flux;
+        if ((PREFIX_VALUE + "depletion").equals(name)) return "" + (int) (this.progress * 100 / this.processTime);
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+
+        if ((PREFIX_FUNCTION + "setrods").equals(name) && params.length > 0) {
+            this.rodTarget = IRORInteractive.parseInt(params[0], 0, 100);
+            this.markChanged();
+            return null;
+        }
+
+        if ((PREFIX_FUNCTION + "jettison").equals(name)) {
+            this.typeLoaded = -1;
+            this.amountLoaded = 0;
+            this.progress = 0;
+            this.markChanged();
+            return null;
+        }
+
+        return null;
     }
 
     @Override

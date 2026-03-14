@@ -14,6 +14,7 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
+import org.jetbrains.annotations.NotNull;
 
 public class ContainerMachineArcFurnaceLarge extends Container {
 
@@ -30,28 +31,30 @@ public class ContainerMachineArcFurnaceLarge extends Container {
         this.addSlotToContainer(new SlotUpgrade(tile.inventory, 4, 152, 108));
         //Inputs
         for(int i = 0; i < 4; i++) for(int j = 0; j < 5; j++) this.addSlotToContainer(new SlotArcFurnace(tile, tile.inventory, 5 + j + i * 5, 44 + j * 18, 54 + i * 18));
+        //IO
+        for(int i = 0; i < 5; i++) this.addSlotToContainer(new SlotNonRetarded(tile.inventory, i + 25, 44 + i * 18, 129));
 
         for(int i = 0; i < 3; i++) {
             for(int j = 0; j < 9; j++) {
-                this.addSlotToContainer(new Slot(playerInv, j + i * 9 + 9, 8 + j * 18, 158 + i * 18));
+                this.addSlotToContainer(new Slot(playerInv, j + i * 9 + 9, 8 + j * 18, 174 + i * 18));
             }
         }
 
         for(int i = 0; i < 9; i++) {
-            this.addSlotToContainer(new Slot(playerInv, i, 8 + i * 18, 216));
+            this.addSlotToContainer(new Slot(playerInv, i, 8 + i * 18, 232));
         }
     }
 
     @Override
-    public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 25,
+    public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
+        return InventoryUtil.transferStack(this.inventorySlots, index, 30,
                 s -> s.getItem() == ModItems.arc_electrode, 3,
                 Library::isBattery, 4,
                 Library::isMachineUpgrade, 5);
     }
 
     @Override
-    public boolean canInteractWith(EntityPlayer player) {
+    public boolean canInteractWith(@NotNull EntityPlayer player) {
         return furnace.isUseableByPlayer(player);
     }
 
@@ -64,7 +67,7 @@ public class ContainerMachineArcFurnaceLarge extends Container {
         }
 
         @Override
-        public boolean isItemValid(ItemStack stack) {
+        public boolean isItemValid(@NotNull ItemStack stack) {
             if(furnace.liquidMode) return true;
             ArcFurnaceRecipes.ArcFurnaceRecipe recipe = ArcFurnaceRecipes.getOutput(stack, false);
             if(recipe != null && recipe.solidOutput != null) {
@@ -74,7 +77,7 @@ public class ContainerMachineArcFurnaceLarge extends Container {
         }
 
         @Override
-        public int getSlotStackLimit() {;
+        public int getSlotStackLimit() {
             return this.getHasStack() ? furnace.getMaxInputSize() : 1;
         }
     }

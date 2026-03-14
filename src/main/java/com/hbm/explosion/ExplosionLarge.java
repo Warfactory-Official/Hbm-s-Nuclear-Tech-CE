@@ -148,7 +148,7 @@ public class ExplosionLarge {
                         rubble.setMetaBasedOnBlock(block, block.getMetaFromState(blockstate));
 
                         Vec3d vec4 = new Vec3d(posX - rubble.posX, posY - rubble.posY, posZ - rubble.posZ);
-                        vec4.normalize();
+                        vec4 = vec4.normalize();
 
                         rubble.motionX = vec4.x * vel;
                         rubble.motionY = vec4.y * vel;

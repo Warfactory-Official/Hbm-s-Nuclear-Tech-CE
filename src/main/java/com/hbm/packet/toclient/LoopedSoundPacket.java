@@ -55,16 +55,10 @@ public class LoopedSoundPacket implements IMessage {
             Minecraft mc = Minecraft.getMinecraft();
             TileEntity te = mc.world.getTileEntity(new BlockPos(msg.x, msg.y, msg.z));
             if (te == null) return;
-            if (te instanceof TileEntityMachineChemplant plant && plant.isProgressing) {
-                playUniqueSound(plant, SoundLoopChemplant.list, () -> new SoundLoopChemplant(HBMSoundHandler.chemplantOperate, plant));
-            } else if (te instanceof TileEntityMachineChemfac fac && fac.isProgressing) {
-                playUniqueSound(fac, SoundLoopChemplant.list, () -> new SoundLoopChemplant(HBMSoundHandler.chemplantOperate, fac));
-            } else if (te instanceof TileEntityFEL fel && fel.isOn) {
+            if (te instanceof TileEntityFEL fel && fel.isOn) {
                 playUniqueSound(fel, SoundLoopFel.list, () -> new SoundLoopFel(HBMSoundHandler.fel, fel));
             } else if (te instanceof TileEntityMachineMiningLaser laser && laser.isOn) {
                 playUniqueSound(laser, SoundLoopFel.list, () -> new SoundLoopFel(HBMSoundHandler.fel, laser));
-            } else if (te instanceof TileEntityMachineAssembler assembler && assembler.isProgressing) {
-                playUniqueSound(assembler, SoundLoopAssembler.list, () -> new SoundLoopAssembler(HBMSoundHandler.assemblerOperate, assembler));
             } else if (te instanceof TileEntityMachineTurbofan turbofan && turbofan.wasOn) {
                 playUniqueSound(turbofan, SoundLoopTurbofan.list, () -> new SoundLoopTurbofan(HBMSoundHandler.turbofanOperate, turbofan));
             } else if (te instanceof TileEntityMachineCentrifuge centrifuge && centrifuge.isProgressing) {

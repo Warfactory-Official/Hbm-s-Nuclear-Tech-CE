@@ -2,7 +2,7 @@ package com.hbm.tileentity.machine;
 
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
-import com.hbm.config.GeneralConfig;
+import com.hbm.config.ClientConfig;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -15,6 +15,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
@@ -54,7 +55,7 @@ public class TileEntityTowerSmall extends TileEntityCondenser {
 		
 		if(world.isRemote) {
 
-			if(GeneralConfig.enableSteamParticles && (this.waterTimer > 0 && this.world.getTotalWorldTime() % 2 == 0)) {
+			if(ClientConfig.COOLING_TOWER_PARTICLES.get() && (this.waterTimer > 0 && this.world.getTotalWorldTime() % 2 == 0)) {
 				NBTTagCompound data = new NBTTagCompound();
 				data.setString("type", "tower");
 				data.setFloat("lift", 1F);
@@ -90,7 +91,7 @@ public class TileEntityTowerSmall extends TileEntityCondenser {
 	AxisAlignedBB bb = null;
 	
 	@Override
-	public AxisAlignedBB getRenderBoundingBox() {
+	public @NotNull AxisAlignedBB getRenderBoundingBox() {
 		
 		if(bb == null) {
 			bb = new AxisAlignedBB(

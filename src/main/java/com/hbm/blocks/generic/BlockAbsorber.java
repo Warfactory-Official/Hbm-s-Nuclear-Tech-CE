@@ -57,7 +57,7 @@ public class BlockAbsorber extends BlockEnumMeta<BlockAbsorber.EnumAbsorberTier>
 	protected BlockBakeFrame[] generateBlockFrames(String registryName) {
 		return Arrays.stream(blockEnum)
 				.map(tier -> tier.textureName)
-				.map(BlockBakeFrame::new)
+				.map(BlockBakeFrame::cubeAll)
 				.toArray(BlockBakeFrame[]::new);
 	}
 

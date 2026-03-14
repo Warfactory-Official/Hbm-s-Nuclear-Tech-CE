@@ -14,6 +14,7 @@ public class NodeQueryBlock extends Node {
 
     public String blockPos = "";
     public String dataName = "";
+    public NodeDropdown blockPosSelector;
     public NodeDropdown dataSelector;
 
     public NodeQueryBlock(float x, float y, Control ctrl) {
@@ -22,16 +23,14 @@ public class NodeQueryBlock extends Node {
 
         this.outputs.add(new NodeConnection("Output", this, outputs.size(), false, DataValue.DataType.GENERIC, new DataValueFloat(0)));
 
-        NodeDropdown blockPosSelector = new NodeDropdown(this, otherElements.size(), s -> {
+        blockPosSelector = new NodeDropdown(this, otherElements.size(), s -> {
             blockPos = s;
             dataName = "";
             setDataSelector();
             return null;
         }, () -> blockPos);
         this.otherElements.add(blockPosSelector);
-        for (BlockPos pos : ctrl.connectedSet) {
-            blockPosSelector.list.addItems(pos.getX() + ", " + pos.getY() + ", " + pos.getZ());
-        }
+        setBlockPosSelector();
 
         dataSelector = new NodeDropdown(this, otherElements.size(), s -> {
             dataName = s;
@@ -50,6 +49,13 @@ public class NodeQueryBlock extends Node {
         return new BlockPos(Integer.parseInt(coords[0]), Integer.parseInt(coords[1]), Integer.parseInt(coords[2]));
     }
 
+    private void setBlockPosSelector() {
+        blockPosSelector.list.itemNames.clear();
+        for (BlockPos pos : ctrl.connectedSet) {
+            blockPosSelector.list.addItems(pos.getX() + ", " + pos.getY() + ", " + pos.getZ());
+        }
+    }
+
     private void setDataSelector() {
         dataSelector.list.itemNames.clear();
         if (blockPos != null && !blockPos.isEmpty()) {
@@ -66,7 +72,6 @@ public class NodeQueryBlock extends Node {
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound tag, NodeSystem sys) {
         tag.setString("nodeType", "queryBlock");
-        tag.setInteger("controlIdx", sys.parent.panel.controls.indexOf(sys.parent));
         tag.setString("blockPos", blockPos);
         tag.setString("dataName", dataName);
 
@@ -77,6 +82,8 @@ public class NodeQueryBlock extends Node {
     public void readFromNBT(NBTTagCompound tag, NodeSystem sys) {
         blockPos = tag.getString("blockPos");
         dataName = tag.getString("dataName");
+        setBlockPosSelector();
+        setDataSelector();
         super.readFromNBT(tag, sys);
     }
 

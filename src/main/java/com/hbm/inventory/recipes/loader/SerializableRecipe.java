@@ -41,15 +41,14 @@ public abstract class SerializableRecipe {
      */
 
     public static void registerAllHandlers() {
-        recipeHandlers.add(new AssemblerRecipes());
         recipeHandlers.add(new AmmoPressRecipes());
+        recipeHandlers.add(new AnnihilatorRecipes());
         recipeHandlers.add(new AnvilRecipes());
         recipeHandlers.add(new ArcFurnaceRecipes());
         recipeHandlers.add(new ArcWelderRecipes());
         recipeHandlers.add(new BlastFurnaceRecipes());
         recipeHandlers.add(new BreederRecipes());
         recipeHandlers.add(new CentrifugeRecipes());
-        recipeHandlers.add(new ChemplantRecipes());
         recipeHandlers.add(new CokerRecipes());
         recipeHandlers.add(new CompressorRecipes());
         recipeHandlers.add(new CrackingRecipes());
@@ -83,6 +82,7 @@ public abstract class SerializableRecipe {
         recipeHandlers.add(ChemicalPlantRecipes.INSTANCE);
         recipeHandlers.add(PUREXRecipes.INSTANCE);
         recipeHandlers.add(FusionRecipes.INSTANCE);
+        recipeHandlers.add(PrecAssRecipes.INSTANCE);
     }
 
     public static void initialize() {

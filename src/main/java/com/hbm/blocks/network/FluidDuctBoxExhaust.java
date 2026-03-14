@@ -9,8 +9,10 @@ import com.hbm.lib.Library;
 import com.hbm.render.model.DuctBakedModel;
 import com.hbm.tileentity.network.TileEntityPipeExhaust;
 import com.hbm.util.I18nUtil;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.creativetab.CreativeTabs;
@@ -122,6 +124,18 @@ public class FluidDuctBoxExhaust extends FluidDuctBox {
             int meta = i * 3;
             ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), meta, new ModelResourceLocation(this.getRegistryName(), "meta=" + meta));
         }
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public StateMapperBase getStateMapper(ResourceLocation loc) {
+        return new StateMapperBase() {
+            @Override
+            protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
+                int meta = state.getBlock().getMetaFromState(state);
+                return new ModelResourceLocation(loc, "meta=" + ((meta / 3) * 3));
+            }
+        };
     }
 
     @SideOnly(Side.CLIENT)

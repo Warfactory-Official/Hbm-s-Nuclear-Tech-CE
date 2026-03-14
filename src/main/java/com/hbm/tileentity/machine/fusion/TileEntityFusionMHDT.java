@@ -4,12 +4,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.capability.NTMEnergyCapabilityWrapper;
+import com.hbm.capability.NTMFluidHandlerWrapper;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
-import com.hbm.lib.HBMSoundHandler;
+import com.hbm.lib.*;
 import com.hbm.main.MainRegistry;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.IConfigurableMachine;
@@ -17,17 +17,24 @@ import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.uninos.UniNodespace;
 import com.hbm.uninos.networkproviders.PlasmaNetwork;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.energy.CapabilityEnergy;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.CapabilityItemHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+
 @AutoRegister
 public class TileEntityFusionMHDT extends TileEntityLoadedBase implements ITickable, IEnergyProviderMK2, IFluidStandardTransceiverMK2, IFusionPowerReceiver, IConfigurableMachine {
 
@@ -54,13 +61,13 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase implements ITicka
     @Override public void writeConfig(JsonWriter writer) throws IOException { writer.name("L:minimumPlasma").value(MINIMUM_PLASMA); }
 
     public TileEntityFusionMHDT() {
-        this.tanks = new FluidTankNTM[2];
-        this.tanks[0] = new FluidTankNTM(Fluids.PERFLUOROMETHYL_COLD, 4_000);
-        this.tanks[1] = new FluidTankNTM(Fluids.PERFLUOROMETHYL, 4_000);
+        tanks = new FluidTankNTM[2];
+        tanks[0] = new FluidTankNTM(Fluids.PERFLUOROMETHYL_COLD, 4_000);
+        tanks[1] = new FluidTankNTM(Fluids.PERFLUOROMETHYL, 4_000);
     }
 
     public boolean hasMinimumPlasma() {
-        return this.plasmaEnergy >= MINIMUM_PLASMA;
+        return plasmaEnergy >= MINIMUM_PLASMA;
     }
 
     @Override
@@ -68,23 +75,23 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase implements ITicka
 
         if(!world.isRemote) {
 
-            this.plasmaEnergySync = this.plasmaEnergy;
+            plasmaEnergySync = plasmaEnergy;
 
             if(isCool()) {
-                this.power = (long) Math.floor(this.plasmaEnergy * PLASMA_EFFICIENCY);
-                if(!this.hasMinimumPlasma()) this.power /= 2;
+                power = (long) Math.floor(plasmaEnergy * PLASMA_EFFICIENCY);
+                if(!hasMinimumPlasma()) power /= 2;
                 tanks[0].setFill(tanks[0].getFill() - COOLANT_USE);
                 tanks[1].setFill(tanks[1].getFill() + COOLANT_USE);
             }
 
             for(DirPos pos : getConPos()) {
-                this.tryProvide(world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
-                if(tanks[0].getTankType() != Fluids.NONE) this.trySubscribe(tanks[0].getTankType(), world, pos);
-                if(tanks[1].getFill() > 0) this.tryProvide(tanks[1], world, pos);
+                tryProvide(world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
+                if(tanks[0].getTankType() != Fluids.NONE) trySubscribe(tanks[0].getTankType(), world, pos);
+                if(tanks[1].getFill() > 0) tryProvide(tanks[1], world, pos);
             }
 
             if(plasmaNode == null || plasmaNode.expired) {
-                ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10).getOpposite();
+                ForgeDirection dir = ForgeDirection.getOrientation(getBlockMetadata() - 10).getOpposite();
                 plasmaNode = UniNodespace.getNode(world, pos.add(dir.offsetX * 6, 2, dir.offsetZ * 6), PlasmaNetwork.THE_PROVIDER);
 
                 if(plasmaNode == null) {
@@ -98,27 +105,27 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase implements ITicka
 
             if(plasmaNode != null && plasmaNode.hasValidNet()) plasmaNode.net.addReceiver(this);
 
-            this.networkPackNT(150);
-            this.plasmaEnergy = 0;
+            networkPackNT(150);
+            plasmaEnergy = 0;
 
         } else {
 
-            if(this.plasmaEnergy > 0 && isCool()) this.rotorSpeed += ROTOR_ACCELERATION;
-            else this.rotorSpeed -= ROTOR_ACCELERATION;
+            if(plasmaEnergy > 0 && isCool()) rotorSpeed += ROTOR_ACCELERATION;
+            else rotorSpeed -= ROTOR_ACCELERATION;
 
-            this.rotorSpeed = MathHelper.clamp(this.rotorSpeed, 0F, hasMinimumPlasma() ? 15F : 10F);
+            rotorSpeed = MathHelper.clamp(rotorSpeed, 0F, hasMinimumPlasma() ? 15F : 10F);
 
-            this.prevRotor = this.rotor;
-            this.rotor += this.rotorSpeed;
+            prevRotor = rotor;
+            rotor += rotorSpeed;
 
-            if(this.rotor >= 360F) {
-                this.rotor -= 360F;
-                this.prevRotor -= 360F;
+            if(rotor >= 360F) {
+                rotor -= 360F;
+                prevRotor -= 360F;
             }
 
-            if(this.rotorSpeed > 0 && MainRegistry.proxy.me().getDistanceSq(pos.getX() + 0.5, pos.getY() + 2.5, pos.getZ() + 0.5) < 30 * 30) {
+            if(rotorSpeed > 0 && MainRegistry.proxy.me().getDistanceSq(pos.getX() + 0.5, pos.getY() + 2.5, pos.getZ() + 0.5) < 30 * 30) {
 
-                float speed = this.rotorSpeed / 15F;
+                float speed = rotorSpeed / 15F;
 
                 if(audio == null) {
                     audio = MainRegistry.proxy.getLoopedSound(HBMSoundHandler.largeTurbineRunning, SoundCategory.BLOCKS, pos.getX() + 0.5F, pos.getY() + 1.5F, pos.getZ() + 0.5F, getVolume(speed), 20F, speed, 20);
@@ -144,7 +151,7 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase implements ITicka
     }
 
     public DirPos[] getConPos() {
-        ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
+        ForgeDirection dir = ForgeDirection.getOrientation(getBlockMetadata() - 10);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
 
         return new DirPos[] {
@@ -155,38 +162,38 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase implements ITicka
     }
 
     @Override public boolean receivesFusionPower() { return true; }
-    @Override public void receiveFusionPower(long fusionPower, double neutronPower) { this.plasmaEnergy = fusionPower; }
+    @Override public void receiveFusionPower(long fusionPower, double neutronPower) { plasmaEnergy = fusionPower; }
 
     @Override
     public void serialize(ByteBuf buf) {
         super.serialize(buf);
         buf.writeLong(plasmaEnergySync);
 
-        this.tanks[0].serialize(buf);
-        this.tanks[1].serialize(buf);
+        tanks[0].serialize(buf);
+        tanks[1].serialize(buf);
     }
 
     @Override
     public void deserialize(ByteBuf buf) {
         super.deserialize(buf);
-        this.plasmaEnergy = buf.readLong();
+        plasmaEnergy = buf.readLong();
 
-        this.tanks[0].deserialize(buf);
-        this.tanks[1].deserialize(buf);
+        tanks[0].deserialize(buf);
+        tanks[1].deserialize(buf);
     }
 
     @Override
     public void readFromNBT(NBTTagCompound nbt) {
         super.readFromNBT(nbt);
 
-        this.tanks[0].readFromNBT(nbt, "t0");
-        this.tanks[1].readFromNBT(nbt, "t1");
+        tanks[0].readFromNBT(nbt, "t0");
+        tanks[1].readFromNBT(nbt, "t1");
     }
 
     @Override
     public @NotNull NBTTagCompound writeToNBT(NBTTagCompound nbt) {
-        this.tanks[0].writeToNBT(nbt, "t0");
-        this.tanks[1].writeToNBT(nbt, "t1");
+        tanks[0].writeToNBT(nbt, "t0");
+        tanks[1].writeToNBT(nbt, "t1");
         return super.writeToNBT(nbt);
     }
 
@@ -210,7 +217,7 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase implements ITicka
         }
 
         if(!world.isRemote) {
-            if(this.plasmaNode != null) UniNodespace.destroyNode(world, plasmaNode);
+            if(plasmaNode != null) UniNodespace.destroyNode(world, plasmaNode);
         }
     }
 
@@ -245,5 +252,23 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase implements ITicka
     @SideOnly(Side.CLIENT)
     public double getMaxRenderDistanceSquared() {
         return 65536.0D;
+    }
+
+    @Override
+    public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+        if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY || capability == CapabilityEnergy.ENERGY) return true;
+        return super.hasCapability(capability, facing);
+    }
+
+    @Override
+    public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+        if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY) {
+            BlockPos accessorPos = facing == null ? null : CapabilityContextProvider.getAccessor(pos);
+            return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(new NTMFluidHandlerWrapper(this, accessorPos));
+        } else if (capability == CapabilityEnergy.ENERGY) {
+            BlockPos accessorPos = facing == null ? null : CapabilityContextProvider.getAccessor(pos);
+            return CapabilityEnergy.ENERGY.cast(new NTMEnergyCapabilityWrapper(this, accessorPos));
+        }
+        return super.getCapability(capability, facing);
     }
 }

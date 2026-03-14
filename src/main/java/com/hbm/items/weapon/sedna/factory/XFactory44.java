@@ -12,7 +12,7 @@ import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.mags.MagazineFullReload;
 import com.hbm.items.weapon.sedna.mags.MagazineSingleReload;
-import com.hbm.items.weapon.sedna.mods.WeaponModManager;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.particle.SpentCasing;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna.IType;
@@ -89,7 +89,7 @@ public class XFactory44 {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_HENRY))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_HENRY_ANIMS).orchestra(Orchestras.ORCHESTRA_HENRY)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.M44_SP, 14);
         ModItems.gun_henry_lincoln = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.B_SIDE, "gun_henry_lincoln", new GunConfig()
                 .dura(300).draw(15).inspect(23).reloadSequential(true).crosshair(Crosshair.CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
                 .rec(new Receiver(0)
@@ -99,7 +99,7 @@ public class XFactory44 {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_HENRY))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_HENRY_ANIMS).orchestra(Orchestras.ORCHESTRA_HENRY)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.M44_JHP, 14);
 
         ModItems.gun_heavy_revolver = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_heavy_revolver", new GunConfig()
                 .dura(600).draw(10).inspect(23).crosshair(Crosshair.L_CLASSIC).smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -110,7 +110,7 @@ public class XFactory44 {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_NOPIP))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_NOPIP_ANIMS).orchestra(Orchestras.ORCHESTRA_NOPIP)
-        ).setNameMutator(LAMBDA_NAME_NOPIP);
+        ).setNameMutator(LAMBDA_NAME_NOPIP).setDefaultAmmo(GunFactory.EnumAmmo.M44_SP, 12);
         ModItems.gun_heavy_revolver_lilmac = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.LEGENDARY, "gun_heavy_revolver_lilmac", new GunConfig()
                 .dura(31_000).draw(10).inspect(23).crosshair(Crosshair.L_CLASSIC).scopeTexture(scope_lilmac).smoke(Lego.LAMBDA_STANDARD_SMOKE)
                 .rec(new Receiver(0)
@@ -120,7 +120,7 @@ public class XFactory44 {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_NOPIP))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_LILMAC_ANIMS).orchestra(Orchestras.ORCHESTRA_NOPIP)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.M44_JHP, 12);
         ModItems.gun_heavy_revolver_protege = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.LEGENDARY, "gun_heavy_revolver_protege", new GunConfig()
                 .dura(31_000).draw(10).inspect(23).crosshair(Crosshair.L_CLASSIC).smoke(Lego.LAMBDA_STANDARD_SMOKE)
                 .rec(new Receiver(0)
@@ -130,7 +130,7 @@ public class XFactory44 {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_NOPIP))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_LILMAC_ANIMS).orchestra(Orchestras.ORCHESTRA_NOPIP)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.M44_JHP, 12);
 
         ModItems.gun_hangman = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.LEGENDARY, "gun_hangman", new GunConfig()
                 .dura(600).draw(10).inspect(31).inspectCancel(false).crosshair(Crosshair.CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -141,19 +141,19 @@ public class XFactory44 {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_HANGMAN))
                 .setupStandardConfiguration().ps(SMACK_A_FUCKER)
                 .anim(LAMBDA_HANGMAN_ANIMS).orchestra(Orchestras.ORCHESTRA_HANGMAN)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.M44_FMJ, 16);
     }
 
     public static Function<ItemStack, String> LAMBDA_NAME_NOPIP = (stack) -> {
-        if(WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_SCOPE)) return stack.getTranslationKey() + "_scoped";
+        if(XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_SCOPE)) return stack.getTranslationKey() + "_scoped";
         return null;
     };
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> SMACK_A_FUCKER = (stack, ctx) -> {
-        if(ItemGunBaseNT.getState(stack, ctx.configIndex) == ItemGunBaseNT.GunState.IDLE || ItemGunBaseNT.getLastAnim(stack, ctx.configIndex) == HbmAnimationsSedna.AnimType.CYCLE) {
+        if(ItemGunBaseNT.getState(stack, ctx.configIndex) == ItemGunBaseNT.GunState.IDLE || ItemGunBaseNT.getLastAnim(stack, ctx.configIndex) == HbmAnimationsSedna.GunAnimation.CYCLE) {
             ItemGunBaseNT.setState(stack, ctx.configIndex, ItemGunBaseNT.GunState.DRAWING);
             ItemGunBaseNT.setTimer(stack, ctx.configIndex, ctx.config.getInspectDuration(stack));
-            ItemGunBaseNT.playAnimation(ctx.getPlayer(), stack, HbmAnimationsSedna.AnimType.INSPECT, ctx.configIndex);
+            ItemGunBaseNT.playAnimation(ctx.getPlayer(), stack, HbmAnimationsSedna.GunAnimation.INSPECT, ctx.configIndex);
         }
     };
 
@@ -163,7 +163,7 @@ public class XFactory44 {
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_RECOIL_HANGMAN = (stack, ctx) -> ItemGunBaseNT.setupRecoil(5, (float) (ctx.getPlayer().getRNG().nextGaussian() * 1));
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_HENRY_ANIMS = (stack, type) -> {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_HENRY_ANIMS = (stack, type) -> {
         switch (type) {
             case EQUIP -> {
                 return new BusAnimationSedna()
@@ -221,7 +221,7 @@ public class XFactory44 {
         return null;
     };
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_NOPIP_ANIMS = (stack, type) -> switch (type) {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_NOPIP_ANIMS = (stack, type) -> switch (type) {
         case CYCLE -> new BusAnimationSedna()
                 .addBus("RECOIL", new BusAnimationSequenceSedna().addPos(0, 0, 0, 50).addPos(0, 0, -3, 50).addPos(0, 0, 0, 250))
                 .addBus("HAMMER", new BusAnimationSequenceSedna().addPos(0, 0, 1, 50).addPos(0, 0, 1, 400).addPos(0, 0, 0, 200))
@@ -243,13 +243,13 @@ public class XFactory44 {
                 .addBus("RELOAD_CYLINDER", new BusAnimationSequenceSedna().addPos(0, 0, 0, 200).addPos(90, 0, 0, 100).addPos(90, 0, 0, 450).addPos(0, 0, 0, 70));
         default -> null;
     };
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_LILMAC_ANIMS = (stack, type) -> switch (type) {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_LILMAC_ANIMS = (stack, type) -> switch (type) {
         case EQUIP ->
                 new BusAnimationSedna().addBus("SPIN", new BusAnimationSequenceSedna().addPos(-360, 0, 0, 350));
         default -> LAMBDA_NOPIP_ANIMS.apply(stack, type);
     };
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_HANGMAN_ANIMS = (stack, type) -> switch (type) {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_HANGMAN_ANIMS = (stack, type) -> switch (type) {
         case EQUIP ->
                 new BusAnimationSedna().addBus("EQUIP", new BusAnimationSequenceSedna().addPos(60, 0, 0, 0).addPos(0, 0, 0, 500, IType.SIN_DOWN));
         case CYCLE -> new BusAnimationSedna()

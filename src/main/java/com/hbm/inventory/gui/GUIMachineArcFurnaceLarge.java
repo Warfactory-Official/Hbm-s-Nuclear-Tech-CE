@@ -26,15 +26,15 @@ import static com.hbm.util.SoundUtil.playClickSound;
 
 public class GUIMachineArcFurnaceLarge extends GuiInfoContainer {
 
-    private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_arc_furnace.png");
-    private TileEntityMachineArcFurnaceLarge arc;
+    private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_arc_furnace.png");
+    private final TileEntityMachineArcFurnaceLarge arc;
 
     public GUIMachineArcFurnaceLarge(InventoryPlayer invPlayer, TileEntityMachineArcFurnaceLarge arc) {
         super(new ContainerMachineArcFurnaceLarge(invPlayer, arc));
         this.arc = arc;
 
         this.xSize = 176;
-        this.ySize = 240;
+        this.ySize = 256;
     }
 
     @Override
@@ -77,13 +77,13 @@ public class GUIMachineArcFurnaceLarge extends GuiInfoContainer {
         if(arc.liquidMode) drawTexturedModalRect(guiLeft + 151, guiTop + 17, 190, 18, 18, 18);
         if(arc.isProgressing) drawTexturedModalRect(guiLeft + 7, guiTop + 17, 190, 0, 18, 18);
 
-        int p = (int) (arc.power * 70 / arc.maxPower);
+        int p = (int) (arc.power * 70 / TileEntityMachineArcFurnaceLarge.maxPower);
         drawTexturedModalRect(guiLeft + 8, guiTop + 106 - p, 176, 70 - p, 7, p);
 
         int o = (int) (arc.progress * 70);
         drawTexturedModalRect(guiLeft + 17, guiTop + 106 - o, 183, 70 - o, 7, o);
 
-        drawStack(arc.liquids, arc.maxLiquid, 152, 106);
+        drawStack(arc.liquids, TileEntityMachineArcFurnaceLarge.maxLiquid, 152, 106);
     }
 
     protected void drawStackInfo(List<Mats.MaterialStack> stack, int mouseX, int mouseY, int x, int y) {

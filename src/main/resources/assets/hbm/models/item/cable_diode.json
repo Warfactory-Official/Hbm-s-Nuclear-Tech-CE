@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "hbm:block/cable_diode"
+    "layer0": "hbm:blocks/cable_diode"
   }
 }

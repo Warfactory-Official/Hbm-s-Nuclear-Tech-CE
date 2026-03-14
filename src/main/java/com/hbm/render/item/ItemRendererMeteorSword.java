@@ -1,6 +1,8 @@
 package com.hbm.render.item;
 
+import com.hbm.Tags;
 import com.hbm.interfaces.AutoRegister;
+import com.hbm.render.model.BakedModelTransforms;
 import com.hbm.render.util.RenderMiscEffects;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -10,8 +12,10 @@ import net.minecraft.client.renderer.GlStateManager.DestFactor;
 import net.minecraft.client.renderer.GlStateManager.SourceFactor;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 @AutoRegister(item = "meteorite_sword_seared", constructorArgsString = "1.0F, 0.5F, 0.0F")
 @AutoRegister(item = "meteorite_sword_reforged", constructorArgsString = "0.5F, 1.0F, 1.0F")
@@ -34,6 +38,11 @@ public class ItemRendererMeteorSword extends TEISRBase {
         this.r = r;
         this.g = g;
         this.b = b;
+    }
+
+    @Override
+    public ModelBinding createModelBinding(Item item) {
+        return ModelBinding.inventoryModel(item, BakedModelTransforms.defaultItemTransforms(), new ResourceLocation(Tags.MODID, "items/meteorite_sword"));
     }
 
     @Override

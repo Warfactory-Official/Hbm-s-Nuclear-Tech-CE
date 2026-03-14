@@ -6,9 +6,9 @@ import com.hbm.handler.ArmorUtil;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
-import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.render.model.ModelArmorBJ;
 import com.hbm.util.I18nUtil;
+import com.hbm.util.Vec3NT;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityLivingBase;
@@ -22,6 +22,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -36,7 +37,7 @@ public class ArmorBJJetpack extends ArmorBJ {
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public ModelBiped getArmorModel(EntityLivingBase entityLiving, ItemStack itemStack, EntityEquipmentSlot armorSlot, ModelBiped _default){
+	public ModelBiped getArmorModel(@NotNull EntityLivingBase entityLiving, @NotNull ItemStack itemStack, @NotNull EntityEquipmentSlot armorSlot, @NotNull ModelBiped _default){
 		if(model == null) {
 			model = new ModelArmorBJ(5);
 		}
@@ -80,14 +81,12 @@ public class ArmorBJJetpack extends ArmorBJ {
 					double mo = player.motionY * -0.4;
 					player.motionY += mo;
 					
-					Vec3 vec = new Vec3(player.getLookVec());
-					vec.xCoord *= mo;
-					vec.yCoord *= mo;
-					vec.zCoord *= mo;
+					Vec3NT vec = new Vec3NT(player.getLookVec());
+                    vec.multiply(mo);
 
-					player.motionX += vec.xCoord;
-					player.motionY += vec.yCoord;
-					player.motionZ += vec.zCoord;
+					player.motionX += vec.x;
+					player.motionY += vec.y;
+					player.motionZ += vec.z;
 				}
 			}
 		}

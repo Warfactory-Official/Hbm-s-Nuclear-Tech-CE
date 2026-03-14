@@ -17,7 +17,7 @@ import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.mags.MagazineBelt;
 import com.hbm.items.weapon.sedna.mags.MagazineFullReload;
 import com.hbm.items.weapon.sedna.mags.MagazineSingleReload;
-import com.hbm.items.weapon.sedna.mods.WeaponModManager;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
@@ -287,7 +287,7 @@ public class XFactory12ga {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_MARESLEG))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_MARESLEG_ANIMS).orchestra(Orchestras.ORCHESTRA_MARESLEG)
-        ).setNameMutator(LAMBDA_NAME_MARESLEG);
+        ).setNameMutator(LAMBDA_NAME_MARESLEG).setDefaultAmmo(GunFactory.EnumAmmo.G12, 12);
         ModItems.gun_maresleg_akimbo = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.B_SIDE, "gun_maresleg_akimbo",
                 new GunConfig().dura(600).draw(5).inspect(39).reloadSequential(true).crosshair(Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
                         .rec(new Receiver(0)
@@ -307,7 +307,7 @@ public class XFactory12ga {
                         .ps(Lego.LAMBDA_STANDARD_CLICK_PRIMARY).pr(Lego.LAMBDA_STANDARD_RELOAD)
                         .decider(GunStateDecider.LAMBDA_STANDARD_DECIDER)
                         .anim(LAMBDA_MARESLEG_SHORT_ANIMS).orchestra(Orchestras.ORCHESTRA_MARESLEG_AKIMBO)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.G12, 24);
         ModItems.gun_maresleg_broken = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.LEGENDARY, "gun_maresleg_broken", new GunConfig()
                 .dura(0).draw(5).inspect(39).reloadSequential(true).crosshair(Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
                 .rec(new Receiver(0)
@@ -317,7 +317,7 @@ public class XFactory12ga {
                         .canFire(Lego.LAMBDA_STANDARD_CAN_FIRE).fire(Lego.LAMBDA_NOWEAR_FIRE).recoil(LAMBDA_RECOIL_MARESLEG))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_MARESLEG_SHORT_ANIMS).orchestra(Orchestras.ORCHESTRA_MARESLEG_SHORT)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.G12_MAGNUM, 24);
 
         ModItems.gun_liberator = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_liberator", new GunConfig()
                 .dura(200).draw(20).inspect(21).reloadSequential(true).crosshair(Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -328,7 +328,7 @@ public class XFactory12ga {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_LIBERATOR))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_LIBERATOR_ANIMS).orchestra(Orchestras.ORCHESTRA_LIBERATOR)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.G12, 12);
 
         ModItems.gun_spas12 = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_spas12", new GunConfig()
                 .dura(600).draw(20).inspect(39).reloadSequential(true).crosshair(Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -339,7 +339,7 @@ public class XFactory12ga {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_MARESLEG))
                 .setupStandardConfiguration().ps(LAMBDA_SPAS_SECONDARY).pt(null)
                 .anim(LAMBDA_SPAS_ANIMS).orchestra(Orchestras.ORCHESTRA_SPAS)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.G12, 16);
 
         ModItems.gun_autoshotgun = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_autoshotgun", new GunConfig()
                 .dura(2_000).draw(10).inspect(33).reloadSequential(true).crosshair(Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -350,7 +350,7 @@ public class XFactory12ga {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_AUTOSHOTGUN))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_SHREDDER_ANIMS).orchestra(Orchestras.ORCHESTRA_SHREDDER)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.G12, 20);
         ModItems.gun_autoshotgun_shredder = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.B_SIDE, "gun_autoshotgun_shredder", new GunConfig()
                 .dura(2_000).draw(10).inspect(33).reloadSequential(true).crosshair(Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
                 .rec(new Receiver(0)
@@ -360,7 +360,7 @@ public class XFactory12ga {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_AUTOSHOTGUN))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_SHREDDER_ANIMS).orchestra(Orchestras.ORCHESTRA_SHREDDER)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.G12, 20);
         ModItems.gun_autoshotgun_sexy = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.LEGENDARY, "gun_autoshotgun_sexy", new GunConfig()
                 .dura(5_000).draw(20).inspect(65).reloadSequential(true).inspectCancel(false).crosshair(Crosshair.L_CIRCLE).hideCrosshair(false).smoke(Lego.LAMBDA_STANDARD_SMOKE)
                 .rec(new Receiver(0)
@@ -370,11 +370,11 @@ public class XFactory12ga {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_SEXY))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_SEXY_ANIMS).orchestra(Orchestras.ORCHESTRA_SHREDDER_SEXY)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.G12_MAGNUM, 50);
     }
 
     public static Function<ItemStack, String> LAMBDA_NAME_MARESLEG = (stack) -> {
-        if(WeaponModManager.hasUpgrade(stack, 0, WeaponModManager.ID_SAWED_OFF)) return stack.getTranslationKey() + "_short";
+        if(XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_SAWED_OFF)) return stack.getTranslationKey() + "_short";
         return null;
     };
 
@@ -408,7 +408,7 @@ public class XFactory12ga {
                 ItemGunBaseNT.setTimer(stack, index, 20);
             } else {
                 if(rec.getDoesDryFire(stack)) {
-                    ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.AnimType.CYCLE_DRY, index);
+                    ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.GunAnimation.CYCLE_DRY, index);
                     ItemGunBaseNT.setState(stack, index, ItemGunBaseNT.GunState.DRAWING);
                     ItemGunBaseNT.setTimer(stack, index, rec.getDelayAfterDryFire(stack));
                 }
@@ -419,7 +419,7 @@ public class XFactory12ga {
         }
     };
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_MARESLEG_ANIMS = (stack, type) -> {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_MARESLEG_ANIMS = (stack, type) -> {
         switch (type) {
             case EQUIP -> {
                 return new BusAnimationSedna()
@@ -477,7 +477,7 @@ public class XFactory12ga {
         return null;
     };
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_MARESLEG_SHORT_ANIMS = (stack, type) -> switch (type) {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_MARESLEG_SHORT_ANIMS = (stack, type) -> switch (type) {
         case EQUIP -> new BusAnimationSedna()
                 .addBus("EQUIP", new BusAnimationSequenceSedna().addPos(-60, 0, 0, 0).addPos(0, 0, -3, 250, IType.SIN_DOWN));
         case CYCLE -> new BusAnimationSedna()
@@ -500,7 +500,7 @@ public class XFactory12ga {
     };
 
     /** This fucking sucks */
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_LIBERATOR_ANIMS = (stack, type) -> {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_LIBERATOR_ANIMS = (stack, type) -> {
         int ammo = ((ItemGunBaseNT) stack.getItem()).getConfig(stack, 0).getReceivers(stack)[0].getMagazine(stack).getAmount(stack, MainRegistry.proxy.me().inventory);
         switch(type) {
             case EQUIP: return new BusAnimationSedna()
@@ -597,7 +597,7 @@ public class XFactory12ga {
         return null;
     };
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_SPAS_ANIMS = (stack, type) -> {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_SPAS_ANIMS = (stack, type) -> {
         switch (type) {
             case EQUIP -> {
                 return new BusAnimationSedna()
@@ -633,7 +633,7 @@ public class XFactory12ga {
         return null;
     };
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_SHREDDER_ANIMS = (stack, type) -> switch (type) {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_SHREDDER_ANIMS = (stack, type) -> switch (type) {
         case EQUIP -> new BusAnimationSedna()
                 .addBus("EQUIP", new BusAnimationSequenceSedna().addPos(60, 0, 0, 0).addPos(0, 0, 0, 500, IType.SIN_DOWN));
         case CYCLE -> new BusAnimationSedna()
@@ -656,7 +656,7 @@ public class XFactory12ga {
         default -> null;
     };
     // TODO: port AnimationEnums
-	@SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.AnimType, BusAnimationSedna> LAMBDA_SEXY_ANIMS = (stack, type) -> {
+	@SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_SEXY_ANIMS = (stack, type) -> {
         switch (type) {
             case EQUIP -> {
                 return new BusAnimationSedna()

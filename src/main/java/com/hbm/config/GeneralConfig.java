@@ -1,5 +1,6 @@
 package com.hbm.config;
 
+import com.hbm.inventory.recipes.PrecAssRecipes;
 import com.hbm.main.MainRegistry;
 import com.hbm.render.GLCompat;
 import net.minecraftforge.common.config.Configuration;
@@ -45,11 +46,11 @@ public class GeneralConfig {
 	public static boolean advancedRadiation = true;
 	public static boolean enableCataclysm = false;
 	public static boolean enableExtendedLogging = false;
-	public static boolean enableHardcoreTaint = false;
 	public static boolean enableGuns = true;
 	public static boolean ssgAnim = true;
 	public static boolean enableVirus = true;
 	public static boolean enableCrosshairs = true;
+	public static boolean enableReflectorCompat = false;
 	public static boolean instancedParticles = true;
 	public static boolean callListModels = true;
 	public static boolean useShaders = false;
@@ -69,22 +70,29 @@ public class GeneralConfig {
 	public static boolean bulletHoleNormalMapping = true;
 	public static int flowingDecalAmountMax = 20;
 	public static boolean bloodFX = true;
-	public static int hintPos = 0;
 	public static int decoToIngotRate = 25;
 	public static int crucibleMaxCharges = 16;
 	public static boolean enableReEval = true;
-	public static boolean enableSteamParticles = true;
 	public static boolean enableServerRecipeSync = true;
 	public static boolean enableExpensiveMode = false;
+
+	public static boolean trueExp() {
+		return enableExpensiveMode && !PrecAssRecipes.INSTANCE.modified;
+	}
 	
 	public static boolean enable528 = false;
 	public static boolean enable528ReasimBoilers = true;
 	public static boolean enable528ColtanDeposit = true;
 	public static boolean enable528ColtanSpawn = false;
-	public static boolean enable528BedrockDeposit = true;
-	public static boolean enable528BedrockSpawn = false;
-	public static boolean enableReflectorCompat = false;
+	public static boolean enable528BosniaSimulator = true;
+	public static boolean enable528NetherBurn = true;
+	public static boolean enable528PressurizedRecipes = true;
+	public static boolean enable528ExplosiveEnergistics = true;
 	public static int coltanRate = 2;
+	public static boolean true528() {
+		return enable528 && enable528ReasimBoilers && !enable528ColtanSpawn && enable528BosniaSimulator &&
+				enable528NetherBurn && enable528PressurizedRecipes && enable528ExplosiveEnergistics && coltanRate <= 2;
+	}
 	public static int bedrockRate = 50;
 	public static boolean enableThreadedAtmospheres = true;
 	public static boolean enableHardcoreDarkness = false;
@@ -103,7 +111,6 @@ public class GeneralConfig {
 	public static boolean enableLBSMSafeCrates = true;
 	public static boolean enableLBSMSafeMEDrives = true;
 	public static boolean enableLBSMIGen = true;
-    public static boolean enable528BosniaSimulator = false;
 
 	public static boolean enableBlockReplcement = false;
 	public static boolean enableAdvancements = true;
@@ -140,7 +147,6 @@ public class GeneralConfig {
 		enableRads = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.16_enableRadiation", "GENERAL SWITCH: Enables radiation system", true);
 		enableCataclysm = config.get(CommonConfig.CATEGORY_GENERAL, "1.17_enableCataclysm", false, "Causes satellites to fall whenever a mob dies").getBoolean(false);
 		enableExtendedLogging = config.get(CommonConfig.CATEGORY_GENERAL, "1.18_enableExtendedLogging", false, "Logs uses of the detonator, nuclear explosions, missile launches, grenades, etc.").getBoolean(false);
-		enableHardcoreTaint = config.get(CommonConfig.CATEGORY_GENERAL, "1.19_enableHardcoreTaint", false, "Allows taint blocks to basically be unstoppable. NOT RECOMMENDED FOR REGULAR SURVIVAL").getBoolean(false);
 		enableGuns = config.get(CommonConfig.CATEGORY_GENERAL, "1.20_enableGuns", true, "Prevents new system guns to be fired").getBoolean(true);
 		enableVirus = config.get(CommonConfig.CATEGORY_GENERAL, "1.21_enableVirus", false, "Allows virus blocks to spread").getBoolean(false);
 		enableCrosshairs = config.get(CommonConfig.CATEGORY_GENERAL, "1.22_enableCrosshairs", true, "Shows custom crosshairs when an NTM gun is being held").getBoolean(true);
@@ -166,8 +172,7 @@ public class GeneralConfig {
         enableExplosiveGas = config.get(CommonConfig.CATEGORY_GENERAL, "1.26_enableExplosiveGas", true, "Allows the explosive gas to spawn in the world.").getBoolean(true);
         enableMeltdownGas = config.get(CommonConfig.CATEGORY_GENERAL, "1.26_enableMeltdownGas", true, "Allows the meltdown gas to spawn (e.g. after ZIRNOX explosion).").getBoolean(true);
 		enableReEval = config.get(CommonConfig.CATEGORY_GENERAL, "1.27_enableReEval", true, "Allows re-evaluating power networks on link remove instead of destroying and recreating").getBoolean(true);
-		enableSteamParticles = config.get(CommonConfig.CATEGORY_GENERAL, "1.27.1_enableSteamParticles", true, "If disabled, auxiliary cooling towers and large cooling towers will not emit steam particles when in use.").getBoolean(true);
-		
+
 		recipes = config.get(CommonConfig.CATEGORY_GENERAL, "1.28_enableRecipes", true, "A general switch for ALL crafting table/smelting recipes. If set to false, all recipes will be disabled.").getBoolean(true);
 		registerTanks = config.get(CommonConfig.CATEGORY_GENERAL, "1.28_registerTanks", true, "A general switch for ALL the tanks items in the mod (e.g. universal fluid, lead, barrels, packed containers). If set to false, they won't be registered as items in the game." ).getBoolean(true);
 		
@@ -214,14 +219,13 @@ public class GeneralConfig {
 		conversionRateHeToRF = CommonConfig.createConfigDouble(config, CommonConfig.CATEGORY_GENERAL, "1.35_conversionRateHeToRF", "One HE is (insert number) RF - <number> (double)", 1.0D);
 		autoCableConversion = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.35.1_autoCableConversion", "If enabled, NTM cables will automatically convert FE <-> HE. Note: WILL MAKE ALL OTHER MODS' CABLES USELESS", false);
 
-		hintPos = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_GENERAL, "1.36_infoOverlayPosition", "Positions where the info overlay will appear (from 0 to 3). 0: Top left\n1: Top right\n2: Center right\n3: Center Left", 0);
+		enableMOTD = config.get(CommonConfig.CATEGORY_GENERAL, "1.36_enableMOTD", true, "If enabled, shows the 'Loaded mod!' chat message as well as update notifications when joining a world").getBoolean(true);
 		enableFluidContainerCompat = config.get(CommonConfig.CATEGORY_GENERAL, "1.37_enableFluidContainerCompat", true, "If enabled, fluid containers will be oredicted and interchangable in recipes with other mods' containers. Should probably work with things like IE's/GC oil properly.").getBoolean(true);
-        enableMOTD = config.get(CommonConfig.CATEGORY_GENERAL, "1.36_enableMOTD", true, "If enabled, shows the 'Loaded mod!' chat message as well as update notifications when joining a world").getBoolean(true);
-        enableGuideBook = config.get(CommonConfig.CATEGORY_GENERAL, "1.37_enableGuideBook", true, "If enabled, gives players the guide book when joining the world for the first time").getBoolean(true);
-        decoToIngotRate = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_GENERAL, "1.38_decoToIngotConversionRate", "Chance of successful turning a deco block into an ingot. Default is 25%", 25);
-		enableThreadedAtmospheres = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.39_threadedAtmospheres", "If enabled, will run atmosphere blobbing in a separate thread for performance", true);
-		enableHardcoreDarkness = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.40_hardcoreDarkness", "If enabled, sets night-time minimum fog to zero, to complement hardcore darkness mods", false);
-		enableKeybindOverlap = config.get(CommonConfig.CATEGORY_GENERAL, "1.41_enableKeybindOverlap", true, "If enabled, will handle keybinds that would otherwise be ignored due to overlapping.").getBoolean(true);
+        enableGuideBook = config.get(CommonConfig.CATEGORY_GENERAL, "1.38_enableGuideBook", true, "If enabled, gives players the guide book when joining the world for the first time").getBoolean(true);
+        decoToIngotRate = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_GENERAL, "1.39_decoToIngotConversionRate", "Chance of successful turning a deco block into an ingot. Default is 25%", 25);
+		enableThreadedAtmospheres = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.40_threadedAtmospheres", "If enabled, will run atmosphere blobbing in a separate thread for performance", true);
+		enableHardcoreDarkness = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.41_hardcoreDarkness", "If enabled, sets night-time minimum fog to zero, to complement hardcore darkness mods", false);
+		enableKeybindOverlap = config.get(CommonConfig.CATEGORY_GENERAL, "1.42_enableKeybindOverlap", true, "If enabled, will handle keybinds that would otherwise be ignored due to overlapping.").getBoolean(true);
 		enableExpensiveMode = config.get(CommonConfig.CATEGORY_GENERAL, "1.99_enableExpensiveMode", false, "It does what the name implies.").getBoolean(false);
         
 
@@ -235,10 +239,11 @@ public class GeneralConfig {
 		enable528ReasimBoilers = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_528, "X528_forceReasimBoilers", "Keeps the RBMK dial for ReaSim boilers on, preventing use of non-ReaSim boiler columns and forcing the use of steam in-/outlets", true);
 		enable528ColtanDeposit = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_528, "X528_enableColtanDepsoit", "Enables the coltan deposit. A large amount of coltan will spawn around a single random location in the world.", true);
 		enable528ColtanSpawn = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_528, "X528_enableColtanSpawning", "Enables coltan ore as a random spawn in the world. Unlike the deposit option, coltan will not just spawn in one central location.", false);
-		enable528BedrockDeposit = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_528, "X528_enableBedrockDepsoit", "Enables bedrock coltan ores in the coltan deposit. These ores can be drilled to extract infinite coltan, albeit slowly.", true);
-		enable528BedrockSpawn = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_528, "X528_enableBedrockSpawning", "Enables the bedrock coltan ores as a rare spawn. These will be rarely found anywhere in the world.", false);
+		enable528BosniaSimulator = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_528, "X528_enableBosniaSimulator", "Enables anti tank mines spawning all over the world.", true);
+		enable528NetherBurn = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_528, "X528_enable528NetherBurn", "Whether players burn in the nether", true);
+		enable528PressurizedRecipes = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_528, "X528_enable528PressurizedRecipes", "Sets some recipes to require pressurized input fluid", true);
+		enable528ExplosiveEnergistics = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_528, "X528_enable528ExplosiveEnergistics", "Renders AE2 unusable.", true);
 		coltanRate = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_528, "X528_oreColtanFrequency", "Determines how many coltan ore veins are to be expected in a chunk. These values do not affect the frequency in deposits, and only apply if random coltan spanwing is enabled.", 2);
-		bedrockRate = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_528, "X528_bedrockColtanFrequency", "Determines how often (1 in X) bedrock coltan ores spawn. Applies for both the bedrock ores in the coltan deposit (if applicable) and the random bedrock ores (if applicable)", 50);
 
 		config.addCustomCategoryComment(CommonConfig.CATEGORY_LBSM,
                 """
@@ -262,6 +267,14 @@ public class GeneralConfig {
 		enableLBSMIGen = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_LBSM, "LBSM_iGen", "When enabled, restores the industrial generator to pre-nerf power", true);
 
 		if(enable528) enableLBSM = false;
+
+		if(!enable528) {
+			enable528ReasimBoilers = false;
+			enable528BosniaSimulator = false;
+			enable528NetherBurn = false;
+			enable528PressurizedRecipes = false;
+			enable528ExplosiveEnergistics = false;
+		}
 		// Th3_Sl1ze: I'll temporarily move it here, if no one minds
 		// TODO: remove/rework Alc's parser to smth managable and bring these parameters back to WorldConfig
 

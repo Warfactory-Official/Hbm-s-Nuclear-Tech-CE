@@ -5,6 +5,8 @@ import com.hbm.Tags;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
+import com.hbm.items.ClaimedModelLocationRegistry;
+import com.hbm.items.IClaimedModelLocation;
 import com.hbm.items.IModelRegister;
 import com.hbm.items.ModItems;
 import com.hbm.render.icon.RGBMutatorInterpolatedComponentRemap;
@@ -37,7 +39,7 @@ import java.util.List;
 import java.util.Objects;
 
 //TODO: fix IDynamicModels
-public class ItemAutogen extends Item implements IModelRegister {
+public class ItemAutogen extends Item implements IModelRegister, IClaimedModelLocation {
 
     public static List<ItemAutogen> INSTANCES = new ArrayList<>();
     MaterialShapes shape;
@@ -53,6 +55,7 @@ public class ItemAutogen extends Item implements IModelRegister {
 
         ModItems.ALL_ITEMS.add(this);
         INSTANCES.add(this);
+        ClaimedModelLocationRegistry.register(this);
 
     }
 
@@ -138,6 +141,20 @@ public class ItemAutogen extends Item implements IModelRegister {
         } else {
             return "items/" + Objects.requireNonNull(this.getRegistryName()).getPath() + "-" + mat.names[0];
         }
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public boolean ownsModelLocation(ModelResourceLocation location) {
+        for (NTMMaterial mat : Mats.orderedList) {
+            if (shape == null || mat.autogen.contains(shape)) {
+                ResourceLocation resourceLocation = new ResourceLocation(Tags.MODID, getTexturePath(mat));
+                if (IClaimedModelLocation.isInventoryLocation(location, resourceLocation)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @SideOnly(Side.CLIENT)
