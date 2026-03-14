@@ -38,15 +38,20 @@ public abstract class DoorDecl {
 		public static final ResourceLocation pheo_fire_door_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/fire_door.png");
 		public static final ResourceLocation pheo_fire_door_black_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/fire_door_black.png");
 		public static final ResourceLocation pheo_fire_door_orange_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/fire_door_orange.png");
+		public static final ResourceLocation Pheo_fire_door_yellow_tex_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/fire_door_yellow.png");
+		public static final ResourceLocation pheo_fire_door_trefoil_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/fire_door_trefoil.png");
 		public static final ResourceLocation pheo_airlock_door_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/airlock_door.png");
 		public static final ResourceLocation pheo_airlock_door_clean_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/airlock_door_clean.png");
 		public static final ResourceLocation pheo_airlock_door_green_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/airlock_door_green.png");
 		public static final ResourceLocation pheo_blast_door_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/blast_door.png");
 		public static final ResourceLocation pheo_containment_door_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/containment_door.png");
 		public static final ResourceLocation pheo_containment_door_trefoil_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/containment_door_trefoil.png");
+		public static final ResourceLocation pheo_containment_door_trefoil_yellow_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/containment_door_trefoil_yellow.png");
 		public static final ResourceLocation pheo_seal_door_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/seal_door.png");
 		public static final ResourceLocation pheo_secure_door_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/secure_door.png");
 		public static final ResourceLocation pheo_secure_door_grey_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/secure_door_grey.png");
+		public static final ResourceLocation pheo_secure_door_yellow_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/secure_door_yellow.png");
+		public static final ResourceLocation pheo_secure_door_black_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/secure_door_black.png");
 		public static final ResourceLocation pheo_sliding_door_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/sliding_door.png");
 		public static final ResourceLocation pheo_vehicle_door_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/vehicle_door.png");
 		public static final ResourceLocation pheo_water_door_tex = new ResourceLocation(Tags.MODID, "textures/models/pheodoors/water_door.png");
@@ -385,7 +390,9 @@ public abstract class DoorDecl {
 		@Override public ResourceLocation[] getDefaultSkins() {
 			return new ResourceLocation[] {
 					DefaultSkins.pheo_secure_door_tex,
-					DefaultSkins.pheo_secure_door_grey_tex
+					DefaultSkins.pheo_secure_door_grey_tex,
+					DefaultSkins.pheo_secure_door_black_tex,
+					DefaultSkins.pheo_secure_door_yellow_tex,
 			};
 		}
 
@@ -606,6 +613,8 @@ public abstract class DoorDecl {
 					DefaultSkins.pheo_fire_door_tex,
 					DefaultSkins.pheo_fire_door_black_tex,
 					DefaultSkins.pheo_fire_door_orange_tex,
+					DefaultSkins.pheo_fire_door_yellow_tex,
+					DefaultSkins.pheo_fire_door_trefoil_tex
 			};
 		}
 
@@ -720,7 +729,8 @@ public abstract class DoorDecl {
 		@Override public ResourceLocation[] getDefaultSkins() {
 			return new ResourceLocation[] {
 					DefaultSkins.pheo_containment_door_tex,
-					DefaultSkins.pheo_containment_door_trefoil_tex
+					DefaultSkins.pheo_containment_door_trefoil_tex,
+					DefaultSkins.pheo_containment_door_trefoil_yellow_tex
 			};
 		}
 
