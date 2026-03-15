@@ -730,6 +730,7 @@ public class ModBlocks {
     public static final Block cable_diode = new CableDiode(Material.IRON, "cable_diode").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
     public static final Block red_cable_gauge = new BlockCableGauge(Material.IRON, "red_cable_gauge").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
     public static final Block red_connector = new ConnectorRedWire(Material.IRON, "red_connector").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
+    public static final Block red_connector_super = new ConnectorRedWireSuper(Material.IRON, "connector_red_super").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
 
     public static final Block red_pylon = new PylonRedWire(Material.IRON, "red_pylon").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
     public static final Block red_pylon_large = new PylonLarge(Material.IRON, "red_pylon_large").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);

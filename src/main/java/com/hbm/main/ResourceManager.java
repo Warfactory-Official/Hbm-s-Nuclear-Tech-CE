@@ -256,6 +256,7 @@ public class ResourceManager {
     public static final HFRWavefrontObject cable_neo_obj = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/blocks/cable_neo.obj"));
     //Big Cables
     public static final IModelCustom connector = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/network/connector.obj")).asVBO();
+    public static final IModelCustom connector_super = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/network/connector_super.obj")).asVBO();
     public static final IModelCustom pylon_large = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/network/pylon_large.obj")).asVBO();
     public static final IModelCustom pylon_medium = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/network/pylon_medium.obj")).asVBO();
     public static final IModelCustom substation = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/network/substation.obj")).asVBO();
@@ -741,6 +742,7 @@ public class ResourceManager {
     public static final ResourceLocation pylon_medium_tex = new ResourceLocation(Tags.MODID, "textures/models/network/pylon_medium.png");
     public static final ResourceLocation pylon_medium_steel_tex = new ResourceLocation(Tags.MODID, "textures/models/network/pylon_medium_steel.png");
     public static final ResourceLocation connector_tex = new ResourceLocation(Tags.MODID, "textures/models/network/connector.png");
+    public static final ResourceLocation connector_super_tex = new ResourceLocation(Tags.MODID, "textures/models/network/connector_super.png");
     //Turbofan
     public static final ResourceLocation turbofan_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/turbofan.png");
     public static final ResourceLocation turbofan_back_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/turbofan_back.png");
