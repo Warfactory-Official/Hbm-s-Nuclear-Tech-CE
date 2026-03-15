@@ -7402,6 +7402,7 @@ tile.red_cable_gauge.name=功率计
 tile.red_cable_paintable.name=可涂漆紫铜线
 tile.red_cable.name=紫铜电线
 tile.red_connector.name=电力连接器
+tile.connector_red_super.name=重型电力连接器
 tile.red_pylon_large.desc=§6连接类型: §e四倍$§6连接距离: §e100m$§6这个塔架需要一个变电站！
 tile.red_pylon_large.name=大型输电塔
 tile.red_pylon_medium_steel_transformer.name=中型钢制电线杆（带变压器）

@@ -7816,6 +7816,7 @@ tile.red_cable_gauge.desc=Cable that displays how much power$moves within the ne
 tile.red_cable_gauge.name=Power Gauge
 tile.red_cable_paintable.name=Paintable Red Copper Cable
 tile.red_connector.name=Electricity Connector
+tile.connector_red_super.name=Heavy Duty Electricity Connector
 tile.red_pylon.desc=§6Connection Type: §eSingle$§6Connection Range: §e25m
 tile.red_pylon.name=Electricity Pylon
 tile.red_pylon_large.desc=§6Connection Type: §eQuadruple$§6Connection Range: §e100m$§6This pylon requires a substation!
