@@ -201,7 +201,7 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements IT
 	public int[] getAccessibleSlotsFromSide(@NotNull EnumFacing side) {
 		if (side == EnumFacing.DOWN) return new int[]{3};
 		if (side == EnumFacing.UP) return new int[]{2};
-		return new int[]{0, 1, 2};
+		return new int[]{0, 1, 2, 3};
 	}
 
 	@Override

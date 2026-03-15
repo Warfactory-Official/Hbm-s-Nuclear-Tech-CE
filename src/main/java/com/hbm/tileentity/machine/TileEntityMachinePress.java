@@ -219,7 +219,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements ITi
 
 	@Override
 	public int[] getAccessibleSlotsFromSide(EnumFacing e) {
-		return e == EnumFacing.DOWN ? new int[]{3} : new int[]{0, 1, 2};
+		return e == EnumFacing.DOWN ? new int[]{3} : new int[]{0, 1, 2, 3};
 	}
 
 	@Override
