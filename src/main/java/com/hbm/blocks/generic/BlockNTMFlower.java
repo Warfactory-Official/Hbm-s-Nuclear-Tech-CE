@@ -20,9 +20,9 @@ import static com.hbm.blocks.PlantEnums.EnumFlowerPlantType;
 import static com.hbm.blocks.PlantEnums.EnumFlowerPlantType.*;
 import static com.hbm.blocks.PlantEnums.EnumTallPlantType.*;
 
-public class BlockFlowerPlant extends BlockPlantEnumMeta<EnumFlowerPlantType> implements IGrowable, IPlantable {
+public class BlockNTMFlower extends BlockPlantEnumMeta<EnumFlowerPlantType> implements IGrowable, IPlantable {
 
-    public BlockFlowerPlant(String registryName) {
+    public BlockNTMFlower(String registryName) {
         super(registryName, EnumFlowerPlantType.VALUES);
         this.setTickRandomly(true);
     }
@@ -61,7 +61,7 @@ public class BlockFlowerPlant extends BlockPlantEnumMeta<EnumFlowerPlantType> im
 
     @Override
     public boolean canUseBonemeal(World worldIn, Random rand, BlockPos pos, IBlockState state) {
-        var type = (EnumFlowerPlantType) this.getEnumFromState(state);
+        var type = this.getEnumFromState(state);
         return switch (type) {
             case HEMP, MUSTARD_WILLOW_0, MUSTARD_WILLOW_1 -> rand.nextFloat() < 0.33F;
             default -> true;
@@ -70,7 +70,7 @@ public class BlockFlowerPlant extends BlockPlantEnumMeta<EnumFlowerPlantType> im
 
     @Override
     public void grow(World worldIn, Random rand, BlockPos pos, IBlockState state) {
-        var type = (EnumFlowerPlantType) this.getEnumFromState(state);
+        var type = this.getEnumFromState(state);
         switch (type) {
             case HEMP:
                 Block ground = worldIn.getBlockState(pos.down()).getBlock();

@@ -499,6 +499,7 @@ public class ResourceManager {
     public static final IModelCustom stopsign = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/weapons/stopsign.obj")).asVBO();
     public static final IModelCustom gavel = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/weapons/gavel.obj")).asVBO();
     public static final IModelCustom crucible = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/weapons/crucible.obj")).asVBO();
+    public static final IModelCustom chainsaw = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/weapons/chainsaw.obj")).asVBO(); // .noSmooth()
     public static final IModelCustom boltgun = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/weapons/boltgun.obj")).asVBO();
     public static final IModelCustom n_i_4_n_i = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/weapons/n_i_4_n_i.obj")).asVBO();
     public static final HashMap<String, BusAnimationSedna> python_anim = AnimationLoader.load(new ResourceLocation(Tags.MODID, "models/weapons/animations/python.json"));
@@ -838,6 +839,7 @@ public class ResourceManager {
     public static final ResourceLocation crucible_guard = new ResourceLocation(Tags.MODID, "textures/models/weapons/crucible_guard.png");
     public static final ResourceLocation crucible_blade = new ResourceLocation(Tags.MODID, "textures/models/weapons/crucible_blade.png");
     public static final ResourceLocation crucible_blade_bloom = new ResourceLocation(Tags.MODID, "textures/models/weapons/crucible_blade_bloom.png");
+    public static final ResourceLocation chainsaw_tex = new ResourceLocation(Tags.MODID, "textures/models/weapons/chainsaw.png");
     public static final ResourceLocation boltgun_tex = new ResourceLocation(Tags.MODID, "textures/models/weapons/boltgun.png");
     public static final ResourceLocation stinger_tex = new ResourceLocation(Tags.MODID, "textures/models/weapons/stinger.png");
     public static final ResourceLocation spas_12_tex = new ResourceLocation(Tags.MODID, "textures/models/weapons/spas-12.png");

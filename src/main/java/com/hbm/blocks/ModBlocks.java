@@ -555,9 +555,9 @@ public class ModBlocks {
     public static final Block burning_earth = new WasteEarth(Material.GROUND, SoundType.PLANT, true, "burning_earth").setCreativeTab(MainRegistry.resourceTab).setHardness(0.6F);
 
     //PollutedBecauseOilThings
-    public static final Block plant_dead = new BlockDeadPlant("plant_dead").setHardness(0).setResistance(0).setCreativeTab(MainRegistry.resourceTab).setLightOpacity(0);
-    public static final Block plant_flower = new BlockFlowerPlant("plant_flower").setHardness(0).setResistance(0).setCreativeTab(MainRegistry.resourceTab).setLightOpacity(0);
+    public static final Block plant_flower = new BlockNTMFlower("plant_flower").setHardness(0).setResistance(0).setCreativeTab(MainRegistry.resourceTab).setLightOpacity(0);
     public static final Block plant_tall = new BlockTallPlant("plant_tall").setHardness(0).setResistance(0).setCreativeTab(MainRegistry.resourceTab).setLightOpacity(0);
+    public static final Block plant_dead = new BlockDeadPlant("plant_dead").setHardness(0).setResistance(0).setCreativeTab(MainRegistry.resourceTab).setLightOpacity(0);
     public static final Block reeds = new BlockReeds("plant_reeds").setHardness(0).setResistance(0).setCreativeTab(MainRegistry.blockTab).setLightOpacity(0);
 
     public static final Block dirt_dead = new BlockFallingBase(Material.GROUND, "dirt_dead", SoundType.GROUND).setHardness(0.5F).setCreativeTab(MainRegistry.resourceTab);
@@ -1506,7 +1506,7 @@ public class ModBlocks {
         }
         BlockTallPlant.initPlacables();
         BlockDeadPlant.initPlacables();
-        BlockFlowerPlant.initPlacables();
+        BlockNTMFlower.initPlacables();
     }
 
     private static void registerFluidBlocks() {

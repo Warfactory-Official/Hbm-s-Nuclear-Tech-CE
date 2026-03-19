@@ -1,6 +1,5 @@
 package com.hbm.render.anim.sedna;
 
-import com.hbm.render.anim.BusAnimation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -18,32 +17,6 @@ public class HbmAnimationsSedna {
     //animation is playing, though this will cancel the animation entirely.
     public static final Animation[][] hotbar = new Animation[9][8]; //now with 8 parallel rails per slot! time to get railed!
 
-    public enum GunAnimation {
-        RELOAD,			//either a full reload or start of a reload
-        @Deprecated RELOAD_EMPTY,	//same as reload, but the mag is completely empty
-        RELOAD_CYCLE,	//animation that plays for every individual round (for shotguns and similar single round loading weapons)
-        RELOAD_END,		//animation for transitioning from our RELOAD_CYCLE to idle
-        CYCLE,			//animation for every firing cycle
-        CYCLE_EMPTY,	//animation for the final shot in the magazine
-        CYCLE_DRY,		//animation for trying to fire, but no round is available
-        ALT_CYCLE,		//animation for alt fire cycles
-        SPINUP,			//animation for actionstart
-        SPINDOWN,		//animation for actionend
-        EQUIP,			//animation for drawing the weapon
-        INSPECT,		//animation for inspecting the weapon
-        JAMMED;			//animation for jammed weapons
-
-        public static final GunAnimation[] VALUES = values();
-    }
-
-    public static enum ToolAnimation {
-        SWING,
-        EQUIP,
-    }
-
-    // A NOTE ON SHOTGUN STYLE RELOADS
-    // Make sure the RELOAD and RELOAD_EMPTY adds shells, not just RELOAD_CYCLE, they all proc once for each loaded shell
-
     public static class Animation {
 
         //the "name" of the animation slot. if the item has a different key than
@@ -56,16 +29,16 @@ public class HbmAnimationsSedna {
         // If set, don't cancel this animation when the timer ends, instead wait for the next to start
         public boolean holdLastFrame = false;
         // so we know what type of animation we're playing, only used rarely
-        public GunAnimation type;
+        public AnimationEnums.AnimationType type;
 
-        public Animation(String key, long startMillis, BusAnimationSedna animation, GunAnimation type) {
+        public <T extends Enum<T> & AnimationEnums.AnimationType> Animation(String key, long startMillis, BusAnimationSedna animation, T type) {
             this.key = key;
             this.startMillis = startMillis;
             this.animation = animation;
             this.type = type;
         }
 
-        public Animation(String key, long startMillis, BusAnimationSedna animation, GunAnimation type, boolean holdLastFrame) {
+        public <T extends Enum<T> & AnimationEnums.AnimationType> Animation(String key, long startMillis, BusAnimationSedna animation, T type, boolean holdLastFrame) {
             this.key = key;
             this.startMillis = startMillis;
             this.animation = animation;
@@ -94,7 +67,7 @@ public class HbmAnimationsSedna {
         int slot = player.inventory.currentItem;
         ItemStack stack = player.getHeldItem(EnumHand.MAIN_HAND);
 
-        if(stack == null)
+        if(stack == ItemStack.EMPTY)
             return null;
 
         if(slot < 0 || slot > 8) { //for freak of nature hotbars, probably won't work right but at least it doesn't crash

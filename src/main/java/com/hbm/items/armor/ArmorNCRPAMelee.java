@@ -1,43 +1,38 @@
 package com.hbm.items.armor;
 
+import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.items.weapon.sedna.ItemGunBaseNT.LambdaContext;
+import com.hbm.items.weapon.sedna.factory.ConfettiUtil;
+import com.hbm.items.weapon.sedna.factory.XFactoryPA;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna;
-import com.hbm.render.anim.sedna.BusAnimationSedna;
-import com.hbm.render.anim.sedna.BusAnimationSequenceSedna;
-import com.hbm.render.anim.sedna.HbmAnimationsSedna;
+import com.hbm.main.ResourceManager;
+import com.hbm.render.anim.sedna.*;
+import com.hbm.util.EntityDamageUtil;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import org.lwjgl.opengl.GL11;
 
-import com.hbm.items.weapon.sedna.ItemGunBaseNT;
-import com.hbm.items.weapon.sedna.ItemGunBaseNT.LambdaContext;
-import com.hbm.items.weapon.sedna.factory.ConfettiUtil;
-import com.hbm.items.weapon.sedna.factory.XFactoryPA;
-import com.hbm.main.ResourceManager;
-import com.hbm.util.EntityDamageUtil;
-
-import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.DamageSource;
-
 public class ArmorNCRPAMelee implements IPAMelee {
 
-    @Override public void clickPrimary(ItemStack stack, LambdaContext ctx) { XFactoryPA.doSwing(stack, ctx, HbmAnimationsSedna.GunAnimation.CYCLE, 25); }
-    @Override public void clickSecondary(ItemStack stack, LambdaContext ctx) { XFactoryPA.doSwing(stack, ctx, HbmAnimationsSedna.GunAnimation.ALT_CYCLE, 30); }
+    @Override public void clickPrimary(ItemStack stack, LambdaContext ctx) { XFactoryPA.doSwing(stack, ctx, AnimationEnums.GunAnimation.CYCLE, 25); }
+    @Override public void clickSecondary(ItemStack stack, LambdaContext ctx) { XFactoryPA.doSwing(stack, ctx, AnimationEnums.GunAnimation.ALT_CYCLE, 30); }
 
     @Override
     public void orchestra(ItemStack stack, LambdaContext ctx) {
         EntityLivingBase entity = ctx.entity;
         if(entity.world.isRemote) return;
-        HbmAnimationsSedna.GunAnimation type = ItemGunBaseNT.getLastAnim(stack, ctx.configIndex);
+        AnimationEnums.GunAnimation type = ItemGunBaseNT.getLastAnim(stack, ctx.configIndex);
         int timer = ItemGunBaseNT.getAnimTimer(stack, ctx.configIndex);
 
-        boolean swings = type == HbmAnimationsSedna.GunAnimation.CYCLE && (timer == 5 || timer == 15);
-        boolean sweep = type == HbmAnimationsSedna.GunAnimation.ALT_CYCLE && timer == 5;
+        boolean swings = type == AnimationEnums.GunAnimation.CYCLE && (timer == 5 || timer == 15);
+        boolean sweep = type == AnimationEnums.GunAnimation.ALT_CYCLE && timer == 5;
 
         if((swings || sweep) && ctx.getPlayer() != null) {
             RayTraceResult mop = EntityDamageUtil.getMouseOver(ctx.getPlayer(), 3.0D, 0.5D);
@@ -70,13 +65,13 @@ public class ArmorNCRPAMelee implements IPAMelee {
     }
 
     @Override
-    public BusAnimationSedna playAnim(ItemStack stack, HbmAnimationsSedna.GunAnimation type) {
-        if(type == HbmAnimationsSedna.GunAnimation.EQUIP) return new BusAnimationSedna()
+    public BusAnimationSedna playAnim(ItemStack stack, AnimationEnums.GunAnimation type) {
+        if(type == AnimationEnums.GunAnimation.EQUIP) return new BusAnimationSedna()
                 .addBus("EQUIP", new BusAnimationSequenceSedna().setPos(-1, 0, 0).addPos(0, 0, 0, 750, BusAnimationKeyframeSedna.IType.SIN_DOWN));
-        if(type == HbmAnimationsSedna.GunAnimation.CYCLE) return new BusAnimationSedna()
+        if(type == AnimationEnums.GunAnimation.CYCLE) return new BusAnimationSedna()
                 .addBus("SWINGRIGHT", new BusAnimationSequenceSedna().addPos(1, 0, 0, 250, BusAnimationKeyframeSedna.IType.SIN_DOWN).addPos(0, 0, 0, 500, BusAnimationKeyframeSedna.IType.SIN_FULL))
                 .addBus("SWINGLEFT", new BusAnimationSequenceSedna().addPos(0, 0, 0, 500).addPos(1, 0, 0, 250, BusAnimationKeyframeSedna.IType.SIN_DOWN).addPos(0, 0, 0, 500, BusAnimationKeyframeSedna.IType.SIN_FULL));
-        if(type == HbmAnimationsSedna.GunAnimation.ALT_CYCLE) return new BusAnimationSedna()
+        if(type == AnimationEnums.GunAnimation.ALT_CYCLE) return new BusAnimationSedna()
                 .addBus("SWEEPTURN", new BusAnimationSequenceSedna().addPos(1, 0, 0, 100, BusAnimationKeyframeSedna.IType.LINEAR).hold(350).addPos(0, 0, 0, 500, BusAnimationKeyframeSedna.IType.LINEAR))
                 .addBus("SWEEPCUT", new BusAnimationSequenceSedna().hold(100).addPos(1, 0, 0, 250, BusAnimationKeyframeSedna.IType.SIN_DOWN).hold(100).addPos(0, 0, 0, 500, BusAnimationKeyframeSedna.IType.SIN_FULL));
 

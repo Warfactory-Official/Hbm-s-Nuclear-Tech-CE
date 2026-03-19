@@ -10,10 +10,7 @@ import com.hbm.items.weapon.sedna.impl.ItemGunDrill;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
 import com.hbm.items.weapon.sedna.mags.MagazineFluid;
 import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
-import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna;
-import com.hbm.render.anim.sedna.BusAnimationSedna;
-import com.hbm.render.anim.sedna.BusAnimationSequenceSedna;
-import com.hbm.render.anim.sedna.HbmAnimationsSedna;
+import com.hbm.render.anim.sedna.*;
 import com.hbm.render.misc.RenderScreenOverlay;
 import com.hbm.util.EntityDamageUtil;
 import net.minecraft.block.Block;
@@ -67,7 +64,7 @@ public class XFactoryDrill {
         if (player == null) return;
 
         Lego.spawnBullet(player.world, () -> {
-            ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.GunAnimation.CYCLE, index);
+            ItemGunBaseNT.playAnimation(player, stack, AnimationEnums.GunAnimation.CYCLE, index);
 
             Receiver primary = ctx.config.getReceivers(stack)[0];
             IMagazine mag = primary.getMagazine(stack);
@@ -142,7 +139,7 @@ public class XFactoryDrill {
     public static int getModdableHarvestLevel(ItemStack stack, int base) {		return XWeaponModManager.eval(base, stack, I_HARVEST, ModItems.gun_drill, 0); }
 
     @SuppressWarnings("incomplete-switch")
-    public static final BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_DRILL_ANIMS = (stack, type) -> {
+    public static final BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> LAMBDA_DRILL_ANIMS = (stack, type) -> {
         switch (type) {
 
             case EQUIP:
