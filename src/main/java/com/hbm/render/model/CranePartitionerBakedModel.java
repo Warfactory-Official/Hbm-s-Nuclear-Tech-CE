@@ -39,7 +39,7 @@ public class CranePartitionerBakedModel extends AbstractWavefrontBakedModel {
                                        TextureAtlasSprite sideSprite, TextureAtlasSprite topSprite, TextureAtlasSprite backSprite,
                                        TextureAtlasSprite beltSprite, TextureAtlasSprite innerSprite, TextureAtlasSprite innerSideSprite,
                                        boolean forBlock, float itemYaw) {
-        super(model, format, baseScale, tx, ty, tz, BakedModelTransforms.pipeItem());
+        super(model, format, baseScale, tx, ty, tz, BakedModelTransforms.forDeco(BakedModelTransforms.standardBlock()));
         this.sideSprite = sideSprite;
         this.topSprite = topSprite;
         this.backSprite = backSprite;
