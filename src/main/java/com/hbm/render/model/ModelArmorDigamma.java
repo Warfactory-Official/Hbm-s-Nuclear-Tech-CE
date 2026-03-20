@@ -95,11 +95,11 @@ public class ModelArmorDigamma extends ModelArmorBase {
     body.copyTo(cassette);
 
     switch (type) {
-      case 0 -> {
+      case 3 -> {
         bindTexture(ResourceManager.fau_helmet);
         head.render(par7 * 1.1F);
       }
-      case 1 -> {
+      case 2 -> {
         bindTexture(ResourceManager.fau_chest);
         body.render(par7 * 1.1F);
         GlStateManager.enableBlend();
@@ -110,12 +110,12 @@ public class ModelArmorDigamma extends ModelArmorBase {
         leftArm.render(par7 * 1.1F);
         rightArm.render(par7 * 1.1F);
       }
-      case 2 -> {
+      case 1 -> {
         bindTexture(ResourceManager.fau_leg);
         leftLeg.render(par7 * 1.1F);
         rightLeg.render(par7 * 1.1F);
       }
-      case 3 -> {
+      case 0 -> {
         bindTexture(ResourceManager.fau_leg);
         leftFoot.render(par7 * 1.1F);
         rightFoot.render(par7 * 1.1F);

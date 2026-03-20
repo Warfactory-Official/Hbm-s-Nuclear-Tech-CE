@@ -108,23 +108,23 @@ public class ModelArmorRPA extends ModelArmorBase {
     @Override
     public void renderArmor(Entity par1Entity, float par7) {
         switch (type) {
-            case 0 -> {
+            case 3 -> {
                 bindTexture(ResourceManager.rpa_helmet);
                 head.render(par7 * 1.05F);
             }
-            case 1 -> {
+            case 2 -> {
                 bindTexture(ResourceManager.rpa_chest);
                 body.render(par7 * 1.05F);
                 bindTexture(ResourceManager.rpa_arm);
                 leftArm.render(par7 * 1.05F);
                 rightArm.render(par7 * 1.05F);
             }
-            case 2 -> {
+            case 1 -> {
                 bindTexture(ResourceManager.rpa_leg);
                 leftLeg.render(par7 * 1.05F);
                 rightLeg.render(par7 * 1.05F);
             }
-            case 3 -> {
+            case 0 -> {
                 bindTexture(ResourceManager.rpa_leg);
                 leftFoot.render(par7 * 1.05F);
                 rightFoot.render(par7 * 1.05F);

@@ -61,23 +61,23 @@ public class ModelArmorDNT extends ModelArmorBase {
 	@Override
     public void renderArmor(Entity par1Entity, float scale) {
         switch (type) {
-            case 0 -> {
+            case 3 -> {
                 bindTexture(ResourceManager.dnt_helmet);
                 head.render(scale * 1.001F);
             }
-            case 1 -> {
+            case 2 -> {
                 bindTexture(ResourceManager.dnt_chest);
                 body.render(scale);
                 bindTexture(ResourceManager.dnt_arm);
                 leftArm.render(scale);
                 rightArm.render(scale);
             }
-            case 2 -> {
+            case 1 -> {
                 bindTexture(ResourceManager.dnt_leg);
                 leftLeg.render(scale);
                 rightLeg.render(scale);
             }
-            case 3 -> {
+            case 0 -> {
                 bindTexture(ResourceManager.dnt_leg);
                 leftFoot.render(scale);
                 rightFoot.render(scale);
