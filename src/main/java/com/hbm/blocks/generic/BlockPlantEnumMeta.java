@@ -35,7 +35,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public abstract class BlockPlantEnumMeta<E extends Enum<E>> extends BlockEnumMeta<E> {
+public abstract class BlockPlantEnumMeta<E extends Enum<E>> extends BlockEnumMeta<E> implements IPlantable {
 
     public static Set<Block> PLANTABLE_BLOCKS = new HashSet<>();
 
@@ -113,11 +113,12 @@ public abstract class BlockPlantEnumMeta<E extends Enum<E>> extends BlockEnumMet
         return false;
     }
 
-
+    @Override
     public EnumPlantType getPlantType(IBlockAccess world, BlockPos pos) {
         return EnumPlantType.Plains; //TODO: Make custom one for custom plants
     }
 
+    @Override
     public IBlockState getPlant(IBlockAccess world, BlockPos pos) {
         IBlockState state = world.getBlockState(pos);
         if (state.getBlock() != this) return getDefaultState();

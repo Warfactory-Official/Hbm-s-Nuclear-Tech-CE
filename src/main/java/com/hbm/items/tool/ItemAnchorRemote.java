@@ -23,7 +23,7 @@ public class ItemAnchorRemote extends ItemBattery {
 
   @Override
   public void addInformation(
-      ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
+          ItemStack stack, World worldIn, @NotNull List<String> list, @NotNull ITooltipFlag flagIn) {
     long maxCharge = getMaxCharge(stack);
     long charge = maxCharge;
 

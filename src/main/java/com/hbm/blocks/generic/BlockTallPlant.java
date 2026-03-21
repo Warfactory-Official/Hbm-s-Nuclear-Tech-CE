@@ -30,7 +30,7 @@ import static com.hbm.blocks.PlantEnums.EnumFlowerPlantType.MUSTARD_WILLOW_0;
 import static com.hbm.blocks.PlantEnums.EnumTallPlantType;
 import static com.hbm.blocks.PlantEnums.EnumTallPlantType.*;
 
-public class BlockTallPlant extends BlockPlantEnumMeta<EnumTallPlantType> implements IGrowable, IPlantable {
+public class BlockTallPlant extends BlockPlantEnumMeta<EnumTallPlantType> implements IGrowable {
 
 
     public BlockTallPlant(String registryName) {

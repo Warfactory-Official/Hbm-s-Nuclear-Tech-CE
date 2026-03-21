@@ -20,7 +20,7 @@ import static com.hbm.blocks.PlantEnums.EnumFlowerPlantType;
 import static com.hbm.blocks.PlantEnums.EnumFlowerPlantType.*;
 import static com.hbm.blocks.PlantEnums.EnumTallPlantType.*;
 
-public class BlockNTMFlower extends BlockPlantEnumMeta<EnumFlowerPlantType> implements IGrowable, IPlantable {
+public class BlockNTMFlower extends BlockPlantEnumMeta<EnumFlowerPlantType> implements IGrowable {
 
     public BlockNTMFlower(String registryName) {
         super(registryName, EnumFlowerPlantType.VALUES);
