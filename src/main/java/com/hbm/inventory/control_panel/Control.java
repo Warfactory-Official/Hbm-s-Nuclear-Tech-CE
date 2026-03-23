@@ -1,10 +1,17 @@
 package com.hbm.inventory.control_panel;
 
-import com.hbm.inventory.control_panel.controls.ControlType;
+import com.hbm.inventory.control_panel.controls.*;
 import com.hbm.inventory.control_panel.controls.configs.SubElementBaseConfig;
+import com.hbm.main.ResourceManager;
 import com.hbm.render.loader.IModelCustom;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.item.EnumDyeColor;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
@@ -12,6 +19,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -89,6 +97,21 @@ public abstract class Control {
 	public abstract IModelCustom getModel();
 	@SideOnly(Side.CLIENT)
 	public abstract ResourceLocation getGuiTexture();
+
+	@SideOnly(Side.CLIENT)
+	public void renderControl(float[] renderBox,Control selectedControl,GuiControlEdit gui) {
+		Tessellator tes = Tessellator.getInstance();
+		BufferBuilder buf = tes.getBuffer();
+		buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
+		float red = 1F;
+		float green = (this == selectedControl) ? .8F : 1F;
+		float blue = 1F;
+		buf.pos(renderBox[0], renderBox[1], 0).tex(0, 0).color(red, green, blue, 1).endVertex();
+		buf.pos(renderBox[0], renderBox[3], 0).tex(0, 1).color(red, green, blue, 1).endVertex();
+		buf.pos(renderBox[2], renderBox[3], 0).tex(1, 1).color(red, green, blue, 1).endVertex();
+		buf.pos(renderBox[2], renderBox[1], 0).tex(1, 0).color(red, green, blue, 1).endVertex();
+		tes.draw();
+	}
 
 	public AxisAlignedBB getBoundingBox() {
 		float width = getSize()[0];

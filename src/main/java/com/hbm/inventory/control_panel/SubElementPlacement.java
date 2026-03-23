@@ -209,97 +209,9 @@ public class SubElementPlacement extends SubElement {
 	}
 
 	public void renderControl(Control c){
-		Tessellator tes = Tessellator.getInstance();
-		BufferBuilder buf = tes.getBuffer();
 		Minecraft.getMinecraft().getTextureManager().bindTexture(c.getGuiTexture());
 		c.fillBox(renderBox);
-
-		if (c instanceof DisplaySevenSeg) {
-			float boxMinX = renderBox[0];
-			float boxMinY = renderBox[1];
-			float boxMaxX = renderBox[2];
-			float boxMaxY = renderBox[3];
-			float digitWidth = (boxMaxX - boxMinX) / c.getConfigs().get("digitCount").getNumber();
-			float red = 1F;
-			float green = (c == selectedControl) ? .8F : 1F;
-			float blue = 1F;
-			for (int i = 0; i < c.getConfigs().get("digitCount").getNumber(); i++) {
-				float digitMinX = boxMinX + digitWidth * i;
-				float digitMaxX = digitMinX + digitWidth;
-				buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
-				buf.pos(digitMinX, boxMinY, 0).tex(0, 0).color(red, green, blue, 1).endVertex();
-				buf.pos(digitMinX, boxMaxY, 0).tex(0, 1).color(red, green, blue, 1).endVertex();
-				buf.pos(digitMaxX, boxMaxY, 0).tex(1, 1).color(red, green, blue, 1).endVertex();
-				buf.pos(digitMaxX, boxMinY, 0).tex(1, 0).color(red, green, blue, 1).endVertex();
-				tes.draw();
-			}
-		}
-		else if (c instanceof Label) {
-			Label label = (Label) c;
-			String text = label.getConfigs().get("text").toString();
-			float scale = label.getConfigs().get("scale").getNumber()/500F;
-
-			int r = (int) (label.getConfigs().get("colorR").getNumber()*255);
-			int g = (int) (label.getConfigs().get("colorG").getNumber()*255 * ((c == selectedControl) ? .5F : 1F));
-			int b = (int) (label.getConfigs().get("colorB").getNumber()*255);
-			int rgb2 = (r << 16) | (g << 8) | b;
-
-			GlStateManager.pushMatrix();
-			GlStateManager.translate(c.posX, c.posY, 0);
-			GlStateManager.scale(scale, scale, scale);
-			GlStateManager.translate(-c.posX, -c.posY, 0);
-			gui.getFontRenderer().drawString(text, c.posX, c.posY, rgb2, false);
-			GlStateManager.popMatrix();
-		}
-		else if (c instanceof DisplayText) {
-			DisplayText thing = (DisplayText) c;
-
-			String text = thing.getVar("text").toString();
-			float scale = thing.getConfigs().get("scale").getNumber()/500F;
-
-			Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.white);
-			buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
-			float red = .2F;
-			float green = (c == selectedControl) ? .1F : .2F;
-			float blue = .2F;
-			buf.pos(renderBox[0], renderBox[1], 0).tex(0, 0).color(red, green, blue, 1).endVertex();
-			buf.pos(renderBox[0], renderBox[3], 0).tex(0, 1).color(red, green, blue, 1).endVertex();
-			buf.pos(renderBox[2], renderBox[3], 0).tex(1, 1).color(red, green, blue, 1).endVertex();
-			buf.pos(renderBox[2], renderBox[1], 0).tex(1, 0).color(red, green, blue, 1).endVertex();
-			tes.draw();
-
-			EnumDyeColor dyeColor = thing.getVar("color").getEnum(EnumDyeColor.class);
-			int color = dyeColor.getColorValue();
-
-			GlStateManager.pushMatrix();
-			GlStateManager.translate(c.posX, c.posY, 0);
-			GlStateManager.scale(scale, scale, scale);
-			GlStateManager.translate(-c.posX, -c.posY, 0);
-			gui.getFontRenderer().drawString(text, c.posX, c.posY, color, false);
-			GlStateManager.popMatrix();
-		}
-		else if (c instanceof DialLarge) {
-			buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
-			float red = 1F;
-			float green = (c == selectedControl) ? .8F : 1F;
-			float blue = 1F;
-			buf.pos(renderBox[0], renderBox[1], 0).tex(0, 0).color(red, green, blue, 1).endVertex();
-			buf.pos(renderBox[0], renderBox[3], 0).tex(0, .5).color(red, green, blue, 1).endVertex();
-			buf.pos(renderBox[2], renderBox[3], 0).tex(1, .5).color(red, green, blue, 1).endVertex();
-			buf.pos(renderBox[2], renderBox[1], 0).tex(1, 0).color(red, green, blue, 1).endVertex();
-			tes.draw();
-		}
-		else {
-			buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
-			float red = 1F;
-			float green = (c == selectedControl) ? .8F : 1F;
-			float blue = 1F;
-			buf.pos(renderBox[0], renderBox[1], 0).tex(0, 0).color(red, green, blue, 1).endVertex();
-			buf.pos(renderBox[0], renderBox[3], 0).tex(0, 1).color(red, green, blue, 1).endVertex();
-			buf.pos(renderBox[2], renderBox[3], 0).tex(1, 1).color(red, green, blue, 1).endVertex();
-			buf.pos(renderBox[2], renderBox[1], 0).tex(1, 0).color(red, green, blue, 1).endVertex();
-			tes.draw();
-		}
+		c.renderControl(renderBox,selectedControl,gui);
 	}
 	
 	@Override

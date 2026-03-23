@@ -9,13 +9,17 @@ import com.hbm.render.util.NTMBufferBuilder;
 import com.hbm.render.util.NTMImmediate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
 
 import java.util.List;
 import java.util.Map;
@@ -154,6 +158,36 @@ public class DisplayText extends Control {
     @Override
     public ResourceLocation getGuiTexture() {
         return ResourceManager.ctrl_display_seven_seg_gui_tex;
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public void renderControl(float[] renderBox,Control selectedControl,GuiControlEdit gui) {
+        Tessellator tes = Tessellator.getInstance();
+        BufferBuilder buf = tes.getBuffer();
+        String text = getVar("text").toString();
+        float scale = getConfigs().get("scale").getNumber()/500F;
+
+        Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.white);
+        buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
+        float red = .2F;
+        float green = (this == selectedControl) ? .1F : .2F;
+        float blue = .2F;
+        buf.pos(renderBox[0], renderBox[1], 0).tex(0, 0).color(red, green, blue, 1).endVertex();
+        buf.pos(renderBox[0], renderBox[3], 0).tex(0, 1).color(red, green, blue, 1).endVertex();
+        buf.pos(renderBox[2], renderBox[3], 0).tex(1, 1).color(red, green, blue, 1).endVertex();
+        buf.pos(renderBox[2], renderBox[1], 0).tex(1, 0).color(red, green, blue, 1).endVertex();
+        tes.draw();
+
+        EnumDyeColor dyeColor = getVar("color").getEnum(EnumDyeColor.class);
+        int color = dyeColor.getColorValue();
+
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(posX, posY, 0);
+        GlStateManager.scale(scale, scale, scale);
+        GlStateManager.translate(-posX, -posY, 0);
+        gui.getFontRenderer().drawString(text, posX, posY, color, false);
+        GlStateManager.popMatrix();
     }
 
     @Override
