@@ -17,10 +17,6 @@ import org.jetbrains.annotations.NotNull;
  * decides everything" ambiguity.
  */
 public class BlockBakeFrame {
-    
-    protected String getNamespace() {
-        return Tags.MODID;
-    }
 
     public static final String ROOT_PATH = "blocks/";
 
@@ -187,7 +183,7 @@ public class BlockBakeFrame {
 
     public void registerBlockTextures(TextureMap map) {
         for (String texture : new ObjectOpenHashSet<>(textures)) {
-            map.registerSprite(new ResourceLocation(getNamespace(), ROOT_PATH + texture));
+            map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + texture));
         }
     }
 
@@ -212,7 +208,7 @@ public class BlockBakeFrame {
     }
 
     public ResourceLocation getTextureLocation(int index) {
-        return new ResourceLocation(getNamespace(), ROOT_PATH + getTexturePath(index));
+        return new ResourceLocation(Tags.MODID, ROOT_PATH + getTexturePath(index));
     }
 
     /**
