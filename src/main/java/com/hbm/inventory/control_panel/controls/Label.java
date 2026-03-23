@@ -7,10 +7,8 @@ import com.hbm.main.ResourceManager;
 import com.hbm.render.loader.IModelCustom;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.fml.relauncher.Side;
@@ -145,8 +143,6 @@ public class Label extends Control {
     @SideOnly(Side.CLIENT)
     @Override
     public void renderControl(float[] renderBox,Control selectedControl,GuiControlEdit gui) {
-        Tessellator tes = Tessellator.getInstance();
-        BufferBuilder buf = tes.getBuffer();
         String text = getConfigs().get("text").toString();
         float scale = getConfigs().get("scale").getNumber()/500F;
 
