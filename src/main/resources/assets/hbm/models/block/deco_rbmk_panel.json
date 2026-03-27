@@ -1,0 +1,6 @@
+{
+	"parent": "block/cube_all",
+	"textures": {
+		"all": "hbm:blocks/deco_rbmk_panel"
+	}
+}

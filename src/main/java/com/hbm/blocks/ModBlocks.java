@@ -486,6 +486,10 @@ public class ModBlocks {
     public static final Block deco_asbestos = new BlockOutgas(true, 40, true, "deco_asbestos").setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(10.0F);
     public static final Block deco_rbmk = new BlockClean(Material.IRON, "deco_rbmk").setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(10.0F);
     public static final Block deco_rbmk_smooth = new BlockClean(Material.IRON, "deco_rbmk_smooth").setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(10.0F);
+    public static final Block deco_rbmk_panel = new BlockClean(Material.IRON, "deco_rbmk_panel").setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(10.0F);
+    public static final Block deco_rbmk_smooth_panel = new BlockClean(Material.IRON, "deco_rbmk_smooth_panel").setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(10.0F);
+    public static final Block deco_rbmk_panel_slab = new BlockRBMKSlab(Material.IRON,"deco_rbmk_panel_slab2",new BlockRBMKSlab(Material.IRON,"deco_rbmk_panel_slab4"));
+    public static final Block deco_rbmk_smooth_panel_slab = new BlockRBMKSlab(Material.IRON,"deco_rbmk_smooth_panel_slab2",new BlockRBMKSlab(Material.IRON,"deco_rbmk_smooth_panel_slab4"));
 
     public static final Block deco_loot = new BlockLoot("deco_loot").setCreativeTab(null).setHardness(0.0F).setResistance(0.0F);
     public static final Block bobblehead = new BlockBobble("bobblehead").setCreativeTab(MainRegistry.blockTab);
