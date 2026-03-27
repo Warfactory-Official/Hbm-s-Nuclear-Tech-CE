@@ -429,6 +429,7 @@ public final class RadiationSystemNT {
         }
     }
 
+    @ServerThread
     public static void markSectionForRebuild(World world, BlockPos pos) {
         if (world == null || world.isRemote || !GeneralConfig.advancedRadiation) return;
         if (!(world instanceof WorldServer)) return;
