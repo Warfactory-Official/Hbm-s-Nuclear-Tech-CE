@@ -43,6 +43,22 @@ public interface NTMBufferBuilder {
         }
     }
 
+    default void appendRawVertexData(int[] data, int intsPerVertex, NTMFastVertexFormat requiredFormat) {
+        if (data == null || data.length == 0) return;
+        if (intsPerVertex <= 0 || data.length % intsPerVertex != 0) {
+            throw new IllegalArgumentException("Invalid raw vertex payload length " + (data == null ? 0 : data.length) + " for stride " + intsPerVertex);
+        }
+
+        ensureDrawing(requiredFormat);
+        BufferBuilder self = vanilla();
+        if (!hasRemainingInts(data.length)) {
+            self.growBuffer(data.length * Integer.BYTES);
+        }
+        self.rawIntBuffer.position(self.vertexCount * self.getVertexFormat().getIntegerSize());
+        self.rawIntBuffer.put(data);
+        self.vertexCount += data.length / intsPerVertex;
+    }
+
     default void reservePositionColorQuads(int quadCount) {
         ensureDrawing(NTMFastVertexFormat.POSITION_COLOR);
         if (quadCount > 0) {

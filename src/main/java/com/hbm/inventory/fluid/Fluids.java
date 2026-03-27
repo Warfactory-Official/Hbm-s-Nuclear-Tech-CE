@@ -267,7 +267,7 @@ public class Fluids {
          * You may screw with metaOrder as much as you like, as long as you keep all fluids in the list exactly once.
          */
 
-        NONE =					new FluidType("NONE",				0x888888, 0, 0, 0, EnumSymbol.NONE);
+        NONE =					new FluidType("NONE",				0x888888, 0, 0, 0, EnumSymbol.NONE).noFF(true);
         WATER =					new FluidType("WATER",				0x3333FF, 0, 0, 0, EnumSymbol.NONE).addTraits(LIQUID, UNSIPHONABLE);
         STEAM =					new FluidType("STEAM",				0xe5e5e5, 3, 0, 0, EnumSymbol.NONE).setTemp(100).addTraits(GASEOUS, UNSIPHONABLE);
         HOTSTEAM =				new FluidType("HOTSTEAM",			0xE7D6D6, 4, 0, 0, EnumSymbol.NONE).setTemp(300).addTraits(GASEOUS, UNSIPHONABLE);

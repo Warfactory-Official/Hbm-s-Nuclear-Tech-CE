@@ -7,6 +7,9 @@ import net.minecraft.world.World;
 
 public class RBMKDials {
 
+    private static volatile int clientColumnHeightRuleValue = (int) RBMKKeys.KEY_COLUMN_HEIGHT.defValue;
+    private static volatile int clientColumnHeightDimension = Integer.MIN_VALUE;
+
     public static void createDials(World world) {
         GameRules rules = world.getGameRules();
 
@@ -80,8 +83,22 @@ public class RBMKDials {
      * @return [2;16]
      */
     public static int getColumnHeightRuleValue(World world) {
+        if (world != null && world.isRemote && world.provider != null && clientColumnHeightDimension == world.provider.getDimension()) {
+            return clientColumnHeightRuleValue;
+        }
         return MathHelper.clamp(shittyWorkaroundParseInt(world.getGameRules().getString(RBMKKeys.KEY_COLUMN_HEIGHT.keyString),
                 (int) RBMKKeys.KEY_COLUMN_HEIGHT.defValue), 2, 16);
+    }
+
+    public static void updateClientColumnHeightRuleValue(World world, int value) {
+        if (world == null || world.provider == null) return;
+        clientColumnHeightDimension = world.provider.getDimension();
+        clientColumnHeightRuleValue = MathHelper.clamp(value, 2, 16);
+    }
+
+    public static void resetClientColumnHeightRuleValue() {
+        clientColumnHeightDimension = Integer.MIN_VALUE;
+        clientColumnHeightRuleValue = (int) RBMKKeys.KEY_COLUMN_HEIGHT.defValue;
     }
 
     /**

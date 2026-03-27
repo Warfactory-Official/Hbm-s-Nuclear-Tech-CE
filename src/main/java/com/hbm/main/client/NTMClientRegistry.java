@@ -210,9 +210,12 @@ public class NTMClientRegistry {
             return 0xFFFFFF;
         }, ModItems.scraps);
         //TODO: Move to IDynamicModels
+        //mlbv: please, no.
         ItemDepletedFuel.registerColorHandlers(evt);
         ItemBedrockOreNew.registerColorHandlers(evt);
         ItemFFFluidDuct.registerColorHandlers(evt);
+        FluidDuctStandard.registerItemColorHandler(evt);
+        FluidDuctBox.registerItemColorHandler(evt);
         ItemGasCanister.registerColorHandler(evt);
         ItemAutogen.registerColorHandlers(evt);
         IDynamicModels.registerItemColorHandlers(evt);

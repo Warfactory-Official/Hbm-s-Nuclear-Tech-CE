@@ -277,8 +277,11 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 		return dir;
 	}
 
-	protected EnumFacing getDirModified(EnumFacing dir) {
-		return dir;
+	protected final EnumFacing getDirModified(EnumFacing dir) {
+        if (dir == null) return null;
+        ForgeDirection modified = getDirModified(ForgeDirection.getOrientation(dir));
+        EnumFacing facing = modified.toEnumFacing();
+		return facing != null ? facing : dir;
 	}
 
     public boolean checkRequirement(World world, int x, int y, int z, ForgeDirection dir, int o) {

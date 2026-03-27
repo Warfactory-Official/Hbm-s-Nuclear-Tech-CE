@@ -1,14 +1,14 @@
 package com.hbm.render.tileentity;
 
+import com.hbm.blocks.machine.rbmk.RBMKDisplay;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.tileentity.machine.rbmk.TileEntityRBMKDisplay;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import com.hbm.tileentity.machine.rbmk.RBMKColumn;
-
-import net.minecraft.client.renderer.BufferBuilder;
+import com.hbm.tileentity.machine.rbmk.TileEntityRBMKDisplay;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.util.EnumFacing;
 import org.lwjgl.opengl.GL11;
 @AutoRegister
 public class RenderRBMKDisplay extends TileEntitySpecialRenderer<TileEntityRBMKDisplay> {
@@ -21,23 +21,39 @@ public class RenderRBMKDisplay extends TileEntitySpecialRenderer<TileEntityRBMKD
         GlStateManager.enableCull();
         GlStateManager.enableLighting();
 
-        switch(te.getBlockMetadata()) {
-            case 2: GlStateManager.rotate(90, 0F, 1F, 0F); break;
-            case 4: GlStateManager.rotate(180, 0F, 1F, 0F); break;
-            case 3: GlStateManager.rotate(270, 0F, 1F, 0F); break;
-            case 5: GlStateManager.rotate(0, 0F, 1F, 0F); break;
+        EnumFacing facing = te.getWorld().getBlockState(te.getPos()).getValue(RBMKDisplay.FACING);
+        switch(facing) {
+            case NORTH: GlStateManager.rotate(90, 0F, 1F, 0F); break;
+            case WEST: GlStateManager.rotate(180, 0F, 1F, 0F); break;
+            case SOUTH: GlStateManager.rotate(270, 0F, 1F, 0F); break;
+            case EAST: GlStateManager.rotate(0, 0F, 1F, 0F); break;
+            default: break;
         }
 
         GlStateManager.translate(0, 0.5, 0);
         GlStateManager.scale(1, 8D / 7D, 8D / 7D);
         GlStateManager.translate(0, -0.5, 0);
 
-        Tessellator tess = Tessellator.getInstance();
-        BufferBuilder buf = tess.getBuffer();
         GlStateManager.disableTexture2D();
         GlStateManager.glNormal3f(1.0F, 0.0F, 0.0F);
 
-        buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+        int expectedQuads = 0;
+        for(RBMKColumn col : te.columns) {
+            if(col == null) continue;
+            expectedQuads++;
+            switch(col.type) {
+                case FUEL:
+                case FUEL_SIM:
+                case BREEDER:
+                case CONTROL:
+                case CONTROL_AUTO:
+                    expectedQuads += 3;
+                    break;
+                default:
+            }
+        }
+
+        NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionColorQuads(expectedQuads);
 
         for(int i = 0; i < te.columns.length; i++) {
 
@@ -45,9 +61,11 @@ public class RenderRBMKDisplay extends TileEntitySpecialRenderer<TileEntityRBMKD
 
             if(col == null) continue;
 
+            int row = i / 7;
+            int column = i % 7;
             double kx = 0.28125D;
-            double ky = -((double) i / 7) * 0.125 + 0.875;
-            double kz = -(i % 7) * 0.125 + 0.125D * 3;
+            double ky = -row * 0.125 + 0.875;
+            double kz = -column * 0.125 + 0.125D * 3;
 
             float r = 1.0F, g = 1.0F, b = 1.0F;
 
@@ -90,49 +108,61 @@ public class RenderRBMKDisplay extends TileEntitySpecialRenderer<TileEntityRBMKD
             }
         }
 
-        tess.draw();
+        NTMImmediate.INSTANCE.draw();
         GlStateManager.enableTexture2D();
 
         GlStateManager.popMatrix();
     }
 
-    private void drawColumn(BufferBuilder buf, double x, double y, double z, float r, float g, float b) {
+    private void drawColumn(NTMBufferBuilder buf, double x, double y, double z, float r, float g, float b) {
         double width = 0.0625D * 0.75;
-        buf.pos(x, y + width, z - width).color(r, g, b, 1.0F).endVertex();
-        buf.pos(x, y + width, z + width).color(r, g, b, 1.0F).endVertex();
-        buf.pos(x, y - width, z + width).color(r, g, b, 1.0F).endVertex();
-        buf.pos(x, y - width, z - width).color(r, g, b, 1.0F).endVertex();
+        int packedColor = NTMBufferBuilder.packColor(r, g, b, 1.0F);
+        buf.appendPositionColorQuadUnchecked(
+                x, y + width, z - width,
+                x, y + width, z + width,
+                x, y - width, z + width,
+                x, y - width, z - width,
+                packedColor
+        );
     }
 
-    private void drawFuel(BufferBuilder buf, double x, double y, double z, double enrichment) {
+    private void drawFuel(NTMBufferBuilder buf, double x, double y, double z, double enrichment) {
         this.drawDot(buf, x, y, z, 0F, 0.25F + (float) (enrichment * 0.75D), 0F);
     }
 
-    private void drawControl(BufferBuilder buf, double x, double y, double z, double level) {
+    private void drawControl(NTMBufferBuilder buf, double x, double y, double z, double level) {
         this.drawDot(buf, x, y, z, (float) level, (float) level, 0F);
     }
 
-    private void drawControlAuto(BufferBuilder buf, double x, double y, double z, double level) {
+    private void drawControlAuto(NTMBufferBuilder buf, double x, double y, double z, double level) {
         this.drawDot(buf, x, y, z, (float) level, 0F, (float) level);
     }
 
-    private void drawDot(BufferBuilder buf, double x, double y, double z, float r, float g, float b) {
+    private void drawDot(NTMBufferBuilder buf, double x, double y, double z, float r, float g, float b) {
         double width = 0.03125D;
         double edge = 0.022097D;
+        int packedColor = NTMBufferBuilder.packColor(r, g, b, 1.0F);
 
-        buf.pos(x, y + width, z).color(r, g, b, 1.0F).endVertex();
-        buf.pos(x, y + edge, z + edge).color(r, g, b, 1.0F).endVertex();
-        buf.pos(x, y, z + width).color(r, g, b, 1.0F).endVertex();
-        buf.pos(x, y - edge, z + edge).color(r, g, b, 1.0F).endVertex();
-
-        buf.pos(x, y + edge, z - edge).color(r, g, b, 1.0F).endVertex();
-        buf.pos(x, y + width, z).color(r, g, b, 1.0F).endVertex();
-        buf.pos(x, y - edge, z - edge).color(r, g, b, 1.0F).endVertex();
-        buf.pos(x, y, z - width).color(r, g, b, 1.0F).endVertex();
-
-        buf.pos(x, y + width, z).color(r, g, b, 1.0F).endVertex();
-        buf.pos(x, y - edge, z + edge).color(r, g, b, 1.0F).endVertex();
-        buf.pos(x, y - width, z).color(r, g, b, 1.0F).endVertex();
-        buf.pos(x, y - edge, z - edge).color(r, g, b, 1.0F).endVertex();
+        buf.appendPositionColorQuadUnchecked(
+                x, y + width, z,
+                x, y + edge, z + edge,
+                x, y, z + width,
+                x, y - edge, z + edge,
+                packedColor
+        );
+        buf.appendPositionColorQuadUnchecked(
+                x, y + edge, z - edge,
+                x, y + width, z,
+                x, y - edge, z - edge,
+                x, y, z - width,
+                packedColor
+        );
+        buf.appendPositionColorQuadUnchecked(
+                x, y + width, z,
+                x, y - edge, z + edge,
+                x, y - width, z,
+                x, y - edge, z - edge,
+                packedColor
+        );
     }
 }

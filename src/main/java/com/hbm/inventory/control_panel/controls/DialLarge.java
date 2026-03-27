@@ -6,12 +6,11 @@ import com.hbm.render.loader.WaveFrontObjectVAO;
 import com.hbm.inventory.control_panel.*;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.loader.IModelCustom;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
@@ -126,17 +125,10 @@ public class DialLarge extends Control {
     @SideOnly(Side.CLIENT)
     @Override
     public void renderControl(float[] renderBox,Control selectedControl,GuiControlEdit gui) {
-        Tessellator tes = Tessellator.getInstance();
-        BufferBuilder buf = tes.getBuffer();
-        buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
-        float red = 1F;
-        float green = (this == selectedControl) ? .8F : 1F;
-        float blue = 1F;
-        buf.pos(renderBox[0], renderBox[1], 0).tex(0, 0).color(red, green, blue, 1).endVertex();
-        buf.pos(renderBox[0], renderBox[3], 0).tex(0, .5).color(red, green, blue, 1).endVertex();
-        buf.pos(renderBox[2], renderBox[3], 0).tex(1, .5).color(red, green, blue, 1).endVertex();
-        buf.pos(renderBox[2], renderBox[1], 0).tex(1, 0).color(red, green, blue, 1).endVertex();
-        tes.draw();
+        NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionTexColorQuads(1);
+        int packedColor = NTMBufferBuilder.packColor(1.0F, this == selectedControl ? 0.8F : 1.0F, 1.0F, 1.0F);
+        appendGuiQuad(buf, renderBox[0], renderBox[1], renderBox[2], renderBox[3], 0.0F, 0.0F, 1.0F, 0.5F, packedColor);
+        NTMImmediate.INSTANCE.draw();
     }
 
     @Override

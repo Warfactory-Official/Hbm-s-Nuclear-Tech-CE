@@ -439,4 +439,12 @@ public class FluidDuctStandard extends FluidDuctBase implements IDynamicModels, 
 		};
 		evt.getBlockColors().registerBlockColorHandler(colorHandler, ModBlocks.fluid_duct_neo); // ensure ModBlocks.fluid_duct refers to this block
 	}
+
+	@SideOnly(Side.CLIENT)
+	public static void registerItemColorHandler(ColorHandlerEvent.Item evt) {
+		evt.getItemColors().registerItemColorHandler(
+				(stack, tintIndex) -> tintIndex == 1 ? Fluids.NONE.getColor() : 0xFFFFFF,
+				Item.getItemFromBlock(ModBlocks.fluid_duct_neo)
+		);
+	}
 }

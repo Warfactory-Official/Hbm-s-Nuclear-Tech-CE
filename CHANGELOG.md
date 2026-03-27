@@ -13,159 +13,29 @@
 > change(major API bump).  
 >   - Changes, New Features correspond to a minor bump.  
 >   - Fixes/Performance/Misc correspond to a minor or patch bump.
-> - Previous public release: 2.1.1.0
-> - Next release: at least 2.2.0.0
+> - Previous public release: 2.2.0.0
+> - Next release: at least 2.2.1.0
 
 ### SUBSTANTIAL CHANGES
 
 ### Breaking Changes
-- Aligned RBMK cooling behavior to upstream. This MAY blow up your reactor! 1.7 Changelog copied verbatim below:
-  - RBMK absorber columns now heat up when exposed to neutrons
-    - The type of neutron does not matter, only the quantity
-    - 20 flux equals 1°C heatup
-  - RBMK passive cooling has changed
-    - The default value is now 2.5°C/t instead of 1
-    - This value only applies to rods that have exposed sides, i.e. the edges of a reactor
-    - There is now a second passive cooling variable used for rods on the inside (dialPassiveCoolingInner, 0.1°C/t by default)
-    - The effective passive cooling value is scaled smoothly depending on how many sides are exposed, using dialPassiveCoolingInner with no exposed sides and dialPassiveCooling for rods with four exposed sides
-    - Simply put, spindly RBMKs are now way less desirable, structural columns no longer just debuff the reactor and reactors that actually look like reactors are now more powerful
-  - Changed the way RBMK coolers work
-    - Instead of using cryogel, coolers use 50mB of cold PFM per tick and return an equal amount of warm PFM
-    - In a 5x5 square around the cooler, all components are cooled down by 200°C per tick, down to a minimum of 20°C
-    - This renders that section of the reactor unsuitable for boiling water, however it means very high heat fuels can be used
-    - Cold PFM is used up at a steady rate, even if the reactor is already cold
-- Removed legacy `machine_assembler`, `machine_assemfac`, `machine_chemplant`, and `machine_chemfac`, plus their legacy
-templates/JEI/category/render assets
-- Removed `hf_sword` and `hs_sword`
-- Removed `paa_helmet`; PaA armor now uses the chest/legs/boots only, while hazmat-capable helmet behavior lives on the
-hazmat helmet variants.
-- Reworked dynamic model/TEISR registration and placeholder handling; renderer/model registration integrations depending
-on the previous client-side binding path may require API updates
-- Removed legacy `toolbox_legacy`; serialized custom kits now use hidden `kit_custom` instead
-- Removed the legacy `relay` phased/worldgen structure and the `/hbmstruct relay` generator hook
-- Oil Well, Pumpjack, and Fracking Tower now serialize only the NTM-native tank/power fields; legacy fluid/power
-contents are not migrated on load
-- Tsar Bomba now uses the upstream six-slot inventory layout; contents from the removed legacy stage slots are
-discarded on load
-- Removed old `struct_plasma_core` and `marker_structure` 
 
 ### Fixes
-- Fixed chunkloader ticket lifecycle for fallout effects, delivery drones, EMPs, missiles, artillery projectiles,
-railgun blasts, and other entity-backed chunkloaders so restored tickets are reused correctly and released on death
-- Fixed gas centrifuge fluid rendering in GUI tanks
-- Fixed chlorine/mist/chemical effects being applied to creative or spectator players
-- Fixed fence connections for yellow barrels, storage drums, and tape recorders
-- Fixed missing "too far" chat warning while linking pylons
-- Fixed beam/door pathfinding crashes by returning non-null empty AABBs
-- Fixed a possible concurrent modification while firing powered drills
-- Fixed artillery turrets not clearing invalid/dead entity targets
-- Fixed Assembly Factory upgrade info showing the Chemical Factory label
-- Fixed scraps model registration conflict (#1158)
-- Fixed precision/rounding drift in power and fluid network distribution
-- Fixed simulation side effects in power transfer paths (REDD, charger, capacitor, cable diode)
-- Fixed siren track indexing/model registration
-- Fixed `ore_oil` being unbreakable
-- Fixed MHD Turbine and Boiler missing Forge capability compatibility
-- Fixed some latent misuse issues of Vec3d methods
-- Fixed Multi Fluid ID not working when another item is held off-hand
-- Fixed Industrial Turbine not having any sound
-- Fixed gas centrifuge speed upgrades not being accepted
-- Fixed empty container returns being deleted in autocrafters
-- Fixed Heatex multiblock parts opening the wrong GUI instead of the core
-- Fixed hazmat/gas-mask helmet behavior parity, gas mask filter removal, Mass Storage capacity sync, and Assembly Machine
-slot validation for meteorite alloyed sword recipes
-- Fixed low-pressure steam pipes not visually connecting to Industrial Steam Turbines
-- Fixed missing radiation resistance on the M1TTY Environment Suit armor set
-- Fixed special-model rendering/orientation issues across modular spotlights, scaffolds, wavefront-based models, cable
-diodes, pneumo tubes, ducts, and cables
-- Fixed keybind and sound issues around invalid overlap handling, the alternate copy-tool binding, looped sound pitch,
-and laser pistol/bobble sound registration
-- Fixed bedrock ore crumbs crystallizing with `Slop` instead of `Nitric Acid`
-- Hardened control panel save/load and editor flows so duplicated controls round-trip through serialized state, unresolved
-links are preserved, and missing controls are kept as placeholders instead of being discarded
-- Fixed latent bugs affecting Forge Fluid item tank I/O in NTM tanks
-- Fixed Cable Boxes and medium pylons using incorrect connection directions, restoring proper power-network attachment
-- Fixed Rotary Furnace JEI recipes not showing steam usage
-- Fixed guide book grant state not being preserved correctly across player lifecycle events
-- Fixed gas flares not polluting while burning vented fluids
-- Fixed Electric Press and Shredder sided automation/input validation edge cases, corrected crane output textures, and
-avoided Sedna weapon-mod priority overflow
-- Fixed Assembly Machine, Assembly Factory, and Press recipe previews rendering with incorrect orientation/scaling
-(#845)
-- Fixed several custom-rendered armor and powered-suit items using incorrect fancy-missing-model perspective transforms
-in inventory/hand views
-- Fixed machine upgrade tooltips not showing machine-specific descriptions for `IUpgradeInfoProvider` GUIs, including
-oil drill family machines and Maxwell turrets (#1152)
-- Fixed oily terrain generation replacing the wrong surface layer and leaving floating snow layers/leaves behind (#1184)
-- Fixed OpenComputers component passthrough on combo proxies, preserving component names and delegated methods (#1305)
-- Fixed special-AABB block placement checks so cables, cable boxes, red wire connectors, and fluid pipe anchors use
-the actual placement state for preview/collision
-- Fixed RBMK client column-height sync
+- Fixed impact overworld provider rebinding clashing with OTG / other mods' custom provider
+- Fixed RBMK Display facing/render
+- Fixed RBMK columns' extreme placing / removing lag due to improper quads caching
+- Mitigated duct and cable placing / removing lag due to eager net destruction and reconstruction
+- Fixed potential CME when switching door states
 
 ### Changes
-- Diesel Generator now uses a refreshed animated model/GUI, rotates like other machines, emits smoke while running, supports a larger internal power buffer when fueled with Nitan, and has corrected block/item presentation
-- Reworked Autosaw tree felling to better handle complex trunk/leaf structures, sapling replanting, and nearby entity damage
-- Refreshed RBMK presentation and behavior with new baked-model rendering for columns/rods/controls, updated textures/GUI art, corrected inventory models, and height-aware renderer caching
-- Assembly Factory now exposes truly separate recipe ports using position-aware slot access
-- Starter kit now provides new assembly/chemical machine variants instead of removed legacy ones
-- Template folder now focuses on crucible templates after removing legacy assembly/chem templates
-- Reworked Conveyor blocks to match upstream behavior
-- Added `hbmClient.json` / `hbmServer.json` plus `/ntmclient` and `/ntmserver` for live-editable client/server settings
-- Reworked conveyor crane logistics toward 1.7 behavior, including package-capable routers, extractor max-stack mode,
-inserter overflow-destroy mode, and restored package flow/orientation handling
-- Crates and safes can now be opened while held, with live item-backed storage, self-insertion guards, and
-server-configurable keep-contents behavior
-- Electric Arc Furnace Large now has five buffer/queue slots and a taller GUI
-- Restored powered armor and fueled jetpack charge/fuel bars beside the armor HUD
-- Contaminating items now use waste contamination, making spontaneous U -> Sa326 transformations much less likely
-- Normalized `glowing_stew`, `balefire_scrambled`, and `balefire_and_ham` into standard soups; the balefire variants no
-longer trigger balefire/cloud effects
-- Removed phased bedrock coltan world generation from new chunks
-- SPAS-12, Congolake, and Fat Man can now switch ammo types during reload
-- RBMK fuel channels can now accept rods directly by right-clicking an empty channel with an RBMK rod item
-- Exposed the Precision Assembly Machine in the machine creative tab
-- Refreshed bomb/crystallizer GUI art, moved bomb schematic textures under the weapon GUI namespace, and reworked
-Gadget, Fat Man, Ivy Mike, and Tsar Bomba screens toward the upstream info-panel style
-- Rebalanced SILEX MOX reprocessing yields and restored xenon output on the alternate MOX processing path
-- Updated `_explosive8`, steel tool, and plasma forge textures
+- JEI recipe lookup for `fluid_icon` items is now forwarded to their Forge fluid mirror
 
 ### New Features
-- Added Satellite Laser Designator
-- Added Reinforced Glass Pane, Reinforced Laminate, and Reinforced Laminate Pane
-- Added UZH RBMK fuel rods and pellets with their recipes and item art
-- Added RBMK Display blocks with dedicated renderer/model support
-- Added control panel editor node graph copy/paste with improved per-control preview layouts and validation for incompatible pasted graphs/variables
-- Ported colored scaffold variants and their dynamic baked model
-- Added OpenComputers callbacks for artillery turrets, including manual coordinate queueing
-- Ported plushies with per-type models, sounds, and squish animation
-- Added fake HE/RF converters (PR #1396 by Leafia)
-- Added the 528 `Annihilator` multiblock with recycling pools, payout slots, JEI support, blueprint milestone
-rewards, pollution while burning off stored fluids, and radiation release when destroying radioactive items
-- Ported reeds with river/beach generation and proper long-distance rendering
-- Expanded Redstone-over-Radio with `Radio Torch Logic`, `Radio Torch Reader`, and `Radio Torch Controller`, broader
-machine read/write integration, and OpenComputers support for Fluid Tanks and Capacitors
-- Overhauled large animated doors with new models, skin support, screwdriver skin cycling, and a generic `vault_door`
-implementation, covering vault, airlock, containment, fire, seal, secure, QE sliding/containment, water, and vehicle
-doors (PR #1402 by Leafia)
-  - Some missing door textures are added in PR #1410 by nuhyuh
-- Reworked `ammo_container` into a functional default-ammo refill item, including a constrained variant that skips
-high-tier ammo
-- Added control panel addon instrument support, control duplication, and the new `Indicator Lamp (RGB)` instrument
-(PR #1407 by Leafia)
-- Added control panel redstone input/output nodes, including `redstone_input` events and weak/strong redstone emission
-from panels
-- Added `Universal Fluid Tank V2` and `Hazardous Material Tank V2`, which support partial fill/drain and recipe
-conversions from the legacy tanks (PR #1370 by Hacker6329)
-- Ported `Heavy Duty Electricity Connector` with a 100m single-connection range (PR #1413 by purpl3xity)
 
 ### Performance
-- Added baked-quad caches for Combinator Funnel and Spotlight models
-- Reduced unnecessary Hazard System inventory syncs and optimized NBT lookup
-- Migrated a lot of machines / blocks / items from TESR/TEISR to baked models, thereby significantly reducing draw calls
-- Added specialized fast-immediate vertex buffers
-- Fixed laggy crates
+- Moved Tau/Vortex particles, chemical projectiles, black-hole effects, and RBMK console/display overlays onto
+`NTMImmediate` / fast-buffer rendering paths, reducing legacy Tessellator overhead and aligning them with the newer
+client rendering utilities
+- Reworked rebar concrete-fill rendering into a dedicated client renderer. The render-limit client config is removed.
 
 ### Misc
-- Expanded the in-game manual with Redstone-over-Radio, crude oil, and remaining QMAW/ammo pages
-- Corrected some translations
-- Added more JEI transfer handlers

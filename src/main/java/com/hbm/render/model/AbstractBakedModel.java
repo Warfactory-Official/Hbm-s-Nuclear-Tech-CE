@@ -145,6 +145,11 @@ public abstract class AbstractBakedModel implements IBakedModel {
 
     protected static void addLegacyBox(List<BakedQuad> quads, float minX, float minY, float minZ, float maxX, float maxY, float maxZ,
                                       TextureAtlasSprite[] sprites, boolean[] visibleFaces, int[] rotations) {
+        addLegacyBox(quads, minX, minY, minZ, maxX, maxY, maxZ, sprites, visibleFaces, rotations, -1);
+    }
+
+    protected static void addLegacyBox(List<BakedQuad> quads, float minX, float minY, float minZ, float maxX, float maxY, float maxZ,
+                                      TextureAtlasSprite[] sprites, boolean[] visibleFaces, int[] rotations, int tintIndex) {
         if (minX == maxX || minY == maxY || minZ == maxZ) return;
 
         for (EnumFacing face : EnumFacing.VALUES) {
@@ -152,12 +157,17 @@ public abstract class AbstractBakedModel implements IBakedModel {
             if (!visibleFaces[index]) continue;
             TextureAtlasSprite sprite = sprites[index];
             if (sprite == null) continue;
-            quads.add(buildLegacyQuad(face, minX, minY, minZ, maxX, maxY, maxZ, sprite, rotations[index]));
+            quads.add(buildLegacyQuad(face, minX, minY, minZ, maxX, maxY, maxZ, sprite, rotations[index], tintIndex));
         }
     }
 
     protected static BakedQuad buildLegacyQuad(EnumFacing face, float minX, float minY, float minZ, float maxX, float maxY, float maxZ,
                                               TextureAtlasSprite sprite, int rotation) {
+        return buildLegacyQuad(face, minX, minY, minZ, maxX, maxY, maxZ, sprite, rotation, -1);
+    }
+
+    protected static BakedQuad buildLegacyQuad(EnumFacing face, float minX, float minY, float minZ, float maxX, float maxY, float maxZ,
+                                              TextureAtlasSprite sprite, int rotation, int tintIndex) {
         float uMin;
         float uMax;
         float vMin;
@@ -459,7 +469,7 @@ public abstract class AbstractBakedModel implements IBakedModel {
             putLegacyVertex(vertexData, i, px[i] / 16.0F, py[i] / 16.0F, pz[i] / 16.0F, uu[i], vv[i], normal, sprite, scratch);
         }
 
-        return new BakedQuad(vertexData, -1, face, sprite, true, LEGACY_FORMAT);
+        return new BakedQuad(vertexData, tintIndex, face, sprite, true, LEGACY_FORMAT);
     }
 
     private static void putLegacyVertex(int[] vertexData, int vertexIndex, float x, float y, float z, float u16, float v16,

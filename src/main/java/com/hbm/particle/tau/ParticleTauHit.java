@@ -2,6 +2,8 @@ package com.hbm.particle.tau;
 
 import com.hbm.main.ResourceManager;
 import com.hbm.render.NTMRenderHelper;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import com.hbm.util.BobMathUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
@@ -10,13 +12,11 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.DestFactor;
 import net.minecraft.client.renderer.GlStateManager.SourceFactor;
 import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 public class ParticleTauHit extends Particle {
 
@@ -107,17 +107,21 @@ public class ParticleTauHit extends Particle {
         GL11.glRotated(pitch, 1, 0, 0);
         
         float scale = particleScale * (1-lifeN);
-		buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-		buffer.pos(-0.5*scale, 0, -0.5*scale).tex(0, 0).endVertex();
-		buffer.pos(0.5*scale, 0, -0.5*scale).tex(1, 0).endVertex();
-		buffer.pos(0.5*scale, 0, 0.5*scale).tex(1, 1).endVertex();
-		buffer.pos(-0.5*scale, 0, 0.5*scale).tex(0, 1).endVertex();
+		NTMBufferBuilder fastBuffer = NTMImmediate.INSTANCE.beginPositionTexQuads(2);
+		fastBuffer.appendPositionTexQuadUnchecked(
+				-0.5 * scale, 0, -0.5 * scale, 0, 0,
+				0.5 * scale, 0, -0.5 * scale, 1, 0,
+				0.5 * scale, 0, 0.5 * scale, 1, 1,
+				-0.5 * scale, 0, 0.5 * scale, 0, 1
+		);
 		scale *= 0.1;
-		buffer.pos(-0.5*scale, 0, -0.5*scale).tex(0, 0).endVertex();
-		buffer.pos(0.5*scale, 0, -0.5*scale).tex(1, 0).endVertex();
-		buffer.pos(0.5*scale, 0, 0.5*scale).tex(1, 1).endVertex();
-		buffer.pos(-0.5*scale, 0, 0.5*scale).tex(0, 1).endVertex();
-		Tessellator.getInstance().draw();
+		fastBuffer.appendPositionTexQuadUnchecked(
+				-0.5 * scale, 0, -0.5 * scale, 0, 0,
+				0.5 * scale, 0, -0.5 * scale, 1, 0,
+				0.5 * scale, 0, 0.5 * scale, 1, 1,
+				-0.5 * scale, 0, 0.5 * scale, 0, 1
+		);
+		NTMImmediate.INSTANCE.draw();
 		
 		GlStateManager.disablePolygonOffset();
 		NTMRenderHelper.resetColor();

@@ -156,11 +156,14 @@ public class JEIConfig implements IModPlugin {
     private VacuumRecipeHandler vacuumHandler;
     private ZirnoxRecipeHandler zirnoxHandler;
     private PUREXRecipeHandler purexHandler;
+    private final FluidIconRecipeRegistryPlugin fluidIconRecipeRegistryPlugin = new FluidIconRecipeRegistryPlugin();
 
     @Override
     public void register(@NotNull IModRegistry registry) {
         if (!GeneralConfig.jei)
             return;
+
+        registry.addRecipeRegistryPlugin(fluidIconRecipeRegistryPlugin);
 
         registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_electric_furnace_off), VanillaRecipeCategoryUid.SMELTING);
         registry.addRecipeCatalyst(new ItemStack(ModBlocks.furnace_iron), VanillaRecipeCategoryUid.SMELTING);
@@ -557,5 +560,8 @@ public class JEIConfig implements IModPlugin {
 
     @Override
     public void onRuntimeAvailable(@NotNull IJeiRuntime jeiRuntime) {
+        if (!GeneralConfig.jei)
+            return;
+        fluidIconRecipeRegistryPlugin.setRecipeRegistry(jeiRuntime.getRecipeRegistry());
     }
 }

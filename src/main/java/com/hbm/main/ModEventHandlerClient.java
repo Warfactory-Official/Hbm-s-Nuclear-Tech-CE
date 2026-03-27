@@ -62,6 +62,7 @@ import com.hbm.sound.MovingSoundPlayerLoop.EnumHbmSound;
 import com.hbm.tileentity.bomb.TileEntityNukeCustom;
 import com.hbm.tileentity.bomb.TileEntityNukeCustom.CustomNukeEntry;
 import com.hbm.tileentity.bomb.TileEntityNukeCustom.EnumEntryType;
+import com.hbm.tileentity.machine.rbmk.RBMKDials;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKBase;
 import com.hbm.util.*;
 import com.hbm.util.ArmorRegistry.HazardClass;
@@ -113,6 +114,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.client.event.sound.PlaySoundEvent;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -1451,6 +1453,14 @@ public class ModEventHandlerClient {
     @SubscribeEvent
     public void onPlayerLeaveServer(ClientDisconnectionFromServerEvent event) {
         SerializableRecipe.clearReceivedRecipes();
+        RBMKDials.resetClientColumnHeightRuleValue();
+    }
+
+    @SubscribeEvent
+    public void onClientWorldUnload(WorldEvent.Unload event) {
+        if (event.getWorld().isRemote) {
+            RBMKDials.resetClientColumnHeightRuleValue();
+        }
     }
 
     @SubscribeEvent

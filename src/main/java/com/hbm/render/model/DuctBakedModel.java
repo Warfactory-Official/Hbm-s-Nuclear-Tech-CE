@@ -138,7 +138,8 @@ public class DuctBakedModel extends AbstractBakedModel {
         for (EnumFacing face : EnumFacing.VALUES) {
             sprites[face.getIndex()] = getPipeIcon(meta, face.ordinal(), pX, nX, pY, nY, pZ, nZ, isExhaust);
         }
-        addLegacyBox(quads, x1 * 16.0f, y1 * 16.0f, z1 * 16.0f, x2 * 16.0f, y2 * 16.0f, z2 * 16.0f, sprites, LEGACY_ALL_FACES, rotations);
+        int tintIndex = !isExhaust && meta % 3 == 2 ? 0 : -1;
+        addLegacyBox(quads, x1 * 16.0f, y1 * 16.0f, z1 * 16.0f, x2 * 16.0f, y2 * 16.0f, z2 * 16.0f, sprites, LEGACY_ALL_FACES, rotations, tintIndex);
     }
 
     private TextureAtlasSprite getStraightSprite(int meta) {
@@ -166,7 +167,8 @@ public class DuctBakedModel extends AbstractBakedModel {
                     getStraightSprite(useMeta),
                     getStraightSprite(useMeta)
             };
-            addLegacyBox(quads, lower * 16.0f, lower * 16.0f, 0.0f, upper * 16.0f, upper * 16.0f, 16.0f, inventorySprites, LEGACY_ALL_FACES, new int[]{0, 0, 0, 0, 1, 2});
+            int tintIndex = !isExhaust && useMeta % 3 == 2 ? 0 : -1;
+            addLegacyBox(quads, lower * 16.0f, lower * 16.0f, 0.0f, upper * 16.0f, upper * 16.0f, 16.0f, inventorySprites, LEGACY_ALL_FACES, new int[]{0, 0, 0, 0, 1, 2}, tintIndex);
             return Collections.unmodifiableList(quads);
         }
 

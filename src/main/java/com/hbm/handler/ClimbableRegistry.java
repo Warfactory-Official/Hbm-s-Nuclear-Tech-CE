@@ -8,7 +8,10 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -52,7 +55,7 @@ public final class ClimbableRegistry {
         Entry entry = new Entry(dim);
 
         if (aabb == null) {
-            long key = chunkKey(c.pos());
+            long key = Library.chunkKey(c.pos());
             addToChunk(w, dim, key, c);
             entry.keys.add(key);
         } else {
@@ -213,10 +216,6 @@ public final class ClimbableRegistry {
         if (next != bucket) {
             byChunk.put(key, next);
         }
-    }
-
-    private static long chunkKey(BlockPos p) {
-        return ChunkPos.asLong(p.getX() >> 4, p.getZ() >> 4);
     }
 
     private static int minSectionCoord(AxisAlignedBB aabb) {

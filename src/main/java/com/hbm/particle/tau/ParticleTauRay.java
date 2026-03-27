@@ -3,6 +3,8 @@ package com.hbm.particle.tau;
 import com.hbm.handler.HbmShaderManager2;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.NTMRenderHelper;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -10,13 +12,11 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.DestFactor;
 import net.minecraft.client.renderer.GlStateManager.SourceFactor;
 import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 public class ParticleTauRay extends Particle {
 
@@ -66,7 +66,7 @@ public class ParticleTauRay extends Particle {
 		
 		ResourceManager.tau_ray.use();
 		
-		buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+		NTMBufferBuilder fastBuffer = NTMImmediate.INSTANCE.beginPositionTexQuads(hitPositions.length - 1);
 		for(int i = 0; i < hitPositions.length-1; i ++){
 			Vec3d current = hitPositions[i].subtract(interpPosX, interpPosY, interpPosZ);
 			Vec3d next = hitPositions[i+1].subtract(interpPosX, interpPosY, interpPosZ);
@@ -74,12 +74,14 @@ public class ParticleTauRay extends Particle {
 			Vec3d toPlayer = current.subtract(0, entityIn.getEyeHeight(), 0);
 			Vec3d pos1 = axis.crossProduct(toPlayer).normalize().scale(particleScale*0.5);
 			Vec3d pos2 = pos1.scale(-1);
-			buffer.pos(pos1.x + current.x, pos1.y + current.y, pos1.z + current.z).tex(0, 0).endVertex();
-			buffer.pos(pos2.x + current.x, pos2.y + current.y, pos2.z + current.z).tex(0, 1).endVertex();
-			buffer.pos(pos2.x + next.x, pos2.y + next.y, pos2.z + next.z).tex(1, 1).endVertex();
-			buffer.pos(pos1.x + next.x, pos1.y + next.y, pos1.z + next.z).tex(1, 0).endVertex();
+			fastBuffer.appendPositionTexQuadUnchecked(
+					pos1.x + current.x, pos1.y + current.y, pos1.z + current.z, 0, 0,
+					pos2.x + current.x, pos2.y + current.y, pos2.z + current.z, 0, 1,
+					pos2.x + next.x, pos2.y + next.y, pos2.z + next.z, 1, 1,
+					pos1.x + next.x, pos1.y + next.y, pos1.z + next.z, 1, 0
+			);
 		}
-		Tessellator.getInstance().draw();
+		NTMImmediate.INSTANCE.draw();
 		
 		HbmShaderManager2.releaseShader();
 		

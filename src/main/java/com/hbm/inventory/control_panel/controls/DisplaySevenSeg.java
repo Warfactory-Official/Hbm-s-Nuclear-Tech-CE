@@ -6,12 +6,11 @@ import com.hbm.render.loader.WaveFrontObjectVAO;
 import com.hbm.inventory.control_panel.*;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.loader.IModelCustom;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.fml.relauncher.Side;
@@ -165,26 +164,20 @@ public class DisplaySevenSeg extends Control {
     @SideOnly(Side.CLIENT)
     @Override
     public void renderControl(float[] renderBox,Control selectedControl,GuiControlEdit gui) {
-        Tessellator tes = Tessellator.getInstance();
-        BufferBuilder buf = tes.getBuffer();
         float boxMinX = renderBox[0];
         float boxMinY = renderBox[1];
         float boxMaxX = renderBox[2];
         float boxMaxY = renderBox[3];
-        float digitWidth = (boxMaxX - boxMinX) / getConfigs().get("digitCount").getNumber();
-        float red = 1F;
-        float green = (this == selectedControl) ? .8F : 1F;
-        float blue = 1F;
-        for (int i = 0; i < getConfigs().get("digitCount").getNumber(); i++) {
+        int digitCount = (int) getConfigs().get("digitCount").getNumber();
+        float digitWidth = (boxMaxX - boxMinX) / digitCount;
+        int packedColor = NTMBufferBuilder.packColor(1.0F, this == selectedControl ? 0.8F : 1.0F, 1.0F, 1.0F);
+        NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionTexColorQuads(digitCount);
+        for (int i = 0; i < digitCount; i++) {
             float digitMinX = boxMinX + digitWidth * i;
             float digitMaxX = digitMinX + digitWidth;
-            buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
-            buf.pos(digitMinX, boxMinY, 0).tex(0, 0).color(red, green, blue, 1).endVertex();
-            buf.pos(digitMinX, boxMaxY, 0).tex(0, 1).color(red, green, blue, 1).endVertex();
-            buf.pos(digitMaxX, boxMaxY, 0).tex(1, 1).color(red, green, blue, 1).endVertex();
-            buf.pos(digitMaxX, boxMinY, 0).tex(1, 0).color(red, green, blue, 1).endVertex();
-            tes.draw();
+            appendGuiQuad(buf, digitMinX, boxMinY, digitMaxX, boxMaxY, 0.0F, 0.0F, 1.0F, 1.0F, packedColor);
         }
+        NTMImmediate.INSTANCE.draw();
     }
 
     @Override

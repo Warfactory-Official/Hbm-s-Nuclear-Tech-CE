@@ -18,7 +18,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -98,19 +97,6 @@ public abstract class RBMKBase extends BlockDummyable implements IToolable, ILoo
 	}
 
 	@Override
-	public void onBlockPlacedBy(@NotNull World worldIn, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull EntityLivingBase placer, @NotNull ItemStack stack) {
-		super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
-
-		if (!worldIn.isRemote) {
-			BlockPos core = this.findCore(worldIn, pos);
-			if (core != null) {
-				worldIn.setBlockState(core, this.getStateFromMeta(DIR_NO_LID.getIndex() + offset), 3); // idk how but otherwise it spawns a fucking lid out of nowhere
-			}
-		}
-	}
-
-
-	@Override
 	public int[] getDimensions() {
 		return new int[] {3, 0, 0, 0, 0, 0};
 	}
@@ -173,8 +159,8 @@ public abstract class RBMKBase extends BlockDummyable implements IToolable, ILoo
 	}
 
 	@Override
-	protected EnumFacing getDirModified(EnumFacing dir) {
-		return DIR_NO_LID;
+	public ForgeDirection getDirModified(ForgeDirection dir) {
+		return ForgeDirection.getOrientation(DIR_NO_LID.getIndex());
 	}
 
 	public int[] getDimensions(World world) {

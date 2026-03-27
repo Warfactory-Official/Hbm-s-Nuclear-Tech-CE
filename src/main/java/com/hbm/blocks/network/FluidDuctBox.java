@@ -494,4 +494,15 @@ public class FluidDuctBox extends FluidDuctBase implements IDynamicModels, ILook
         BlockColors blockColors = evt.getBlockColors();
         blockColors.registerBlockColorHandler(ductColorHandler, ModBlocks.fluid_duct_box);
     }
+
+    @SideOnly(Side.CLIENT)
+    public static void registerItemColorHandler(ColorHandlerEvent.Item evt) {
+        evt.getItemColors().registerItemColorHandler((stack, tintIndex) -> {
+            if (tintIndex != 0 || stack.getMetadata() % 3 != 2) {
+                return 0xFFFFFF;
+            }
+
+            return ColorUtil.lightenColor(Fluids.NONE.getColor(), 0.25D);
+        }, Item.getItemFromBlock(ModBlocks.fluid_duct_box));
+    }
 }

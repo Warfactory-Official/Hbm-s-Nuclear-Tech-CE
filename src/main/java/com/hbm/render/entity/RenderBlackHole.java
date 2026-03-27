@@ -10,15 +10,14 @@ import com.hbm.main.ClientProxy;
 import com.hbm.render.NTMRenderHelper;
 import com.hbm.render.loader.IModelCustom;
 import com.hbm.render.amlfrom1710.Vec3;
-import net.minecraft.client.renderer.BufferBuilder;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.DestFactor;
 import net.minecraft.client.renderer.GlStateManager.SourceFactor;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
 import org.lwjgl.opengl.GL11;
@@ -96,9 +95,6 @@ public class RenderBlackHole extends Render<EntityBlackHole> {
 		GlStateManager.alphaFunc(GL11.GL_GEQUAL, 0.0F);
 		GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA);
 
-		Tessellator tes = Tessellator.getInstance();
-		BufferBuilder buf = tes.getBuffer();
-
 		int count = 16;
 
 		Vec3 vec = Vec3.createVectorHelper(1, 0, 0);
@@ -113,7 +109,7 @@ public class RenderBlackHole extends Render<EntityBlackHole> {
 
 			for(int j = 0; j < 2; j++) {
 
-				buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
+				NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionTexColorQuads(count);
 				for(int i = 0; i < count; i++) {
 
 					if(j == 0){
@@ -124,25 +120,28 @@ public class RenderBlackHole extends Render<EntityBlackHole> {
 						color[2] = 1;
 						color[3] = glow;
 					}
-					buf.pos(vec.xCoord * s, 0, vec.zCoord * s).tex(0.5 + vec.xCoord * 0.25, 0.5 + vec.zCoord * 0.25).color(color[0], color[1], color[2], color[3]).endVertex();
+					int innerColor = packCurrentColor(color);
+					double x0 = vec.xCoord * s;
+					double z0 = vec.zCoord * s;
+					double u0 = 0.5 + vec.xCoord * 0.25;
+					double v0 = 0.5 + vec.zCoord * 0.25;
+
 					this.setColorFromIteration(k, 0F, color);
-					buf.pos(vec.xCoord * s * 2, 0, vec.zCoord * s * 2).tex(0.5 + vec.xCoord * 0.5, 0.5 + vec.zCoord * 0.5).color(color[0], color[1], color[2], color[3]).endVertex();
+					int outerColor = packCurrentColor(color);
+					double x1 = vec.xCoord * s * 2;
+					double z1 = vec.zCoord * s * 2;
+					double u1 = 0.5 + vec.xCoord * 0.5;
+					double v1 = 0.5 + vec.zCoord * 0.5;
 
 					vec.rotateAroundY((float)(Math.PI * 2 / count));
-					this.setColorFromIteration(k, 0F, color);
-					buf.pos(vec.xCoord * s * 2, 0, vec.zCoord * s * 2).tex(0.5 + vec.xCoord * 0.5, 0.5 + vec.zCoord * 0.5).color(color[0], color[1], color[2], color[3]).endVertex();
-
-					if(j == 0){
-						this.setColorFromIteration(k, 1F, color);
-					} else {
-						color[0] = 1;
-						color[1] = 1;
-						color[2] = 1;
-						color[3] = glow;
-					}
-					buf.pos(vec.xCoord * s, 0, vec.zCoord * s).tex(0.5 + vec.xCoord * 0.25, 0.5 + vec.zCoord * 0.25).color(color[0], color[1], color[2], color[3]).endVertex();
+					buf.appendPositionTexColorQuadUnchecked(
+							x0, 0, z0, u0, v0, innerColor,
+							x1, 0, z1, u1, v1, outerColor,
+							vec.xCoord * s * 2, 0, vec.zCoord * s * 2, 0.5 + vec.xCoord * 0.5, 0.5 + vec.zCoord * 0.5, outerColor,
+							vec.xCoord * s, 0, vec.zCoord * s, 0.5 + vec.xCoord * 0.25, 0.5 + vec.zCoord * 0.25, innerColor
+					);
 				}
-				tes.draw();
+				NTMImmediate.INSTANCE.draw();
 
 				GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE);
 			}
@@ -214,9 +213,6 @@ public class RenderBlackHole extends Render<EntityBlackHole> {
 		GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA);
 		Vec3 vec = Vec3.createVectorHelper(1, 0, 0);
 
-		Tessellator tes = Tessellator.getInstance();
-		BufferBuilder buf = tes.getBuffer();
-
 		double s = 3;
 		int count = 16;
 
@@ -224,13 +220,17 @@ public class RenderBlackHole extends Render<EntityBlackHole> {
 		
 		//swirl, inner part (solid)
 		for(int j = 0; j < 2; j++) {
-			buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
+			NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionTexColorQuads(count);
 			for(int i = 0; i < count; i++) {
 				color[0] = 0;
 				color[1] = 0;
 				color[2] = 0;
 				color[3] = 1;
-				buf.pos(vec.xCoord * 0.9, 0, vec.zCoord * 0.9).tex(0.5 + vec.xCoord * 0.25 / s * 0.9, 0.5 + vec.zCoord * 0.25 / s * 0.9).color(color[0], color[1], color[2], color[3]).endVertex();
+				int innerCoreColor = packCurrentColor(color);
+				double x0 = vec.xCoord * 0.9;
+				double z0 = vec.zCoord * 0.9;
+				double u0 = 0.5 + vec.xCoord * 0.25 / s * 0.9;
+				double v0 = 0.5 + vec.zCoord * 0.25 / s * 0.9;
 
 				if(j == 0){
 					this.setColorFull(entity, color);
@@ -240,29 +240,22 @@ public class RenderBlackHole extends Render<EntityBlackHole> {
 					color[2] = 1;
 					color[3] = glow;
 				}
-
-				buf.pos(vec.xCoord * s, 0, vec.zCoord * s).tex(0.5 + vec.xCoord * 0.25, 0.5 + vec.zCoord * 0.25).color(color[0], color[1], color[2], color[3]).endVertex();
+				int ringColor = packCurrentColor(color);
+				double x1 = vec.xCoord * s;
+				double z1 = vec.zCoord * s;
+				double u1 = 0.5 + vec.xCoord * 0.25;
+				double v1 = 0.5 + vec.zCoord * 0.25;
 
 				vec.rotateAroundY((float)(Math.PI * 2 / count));
-
-				if(j == 0){
-					this.setColorFull(entity, color);
-				} else {
-					color[0] = 1;
-					color[1] = 1;
-					color[2] = 1;
-					color[3] = glow;
-				}
-				
-				buf.pos(vec.xCoord * s, 0, vec.zCoord * s).tex(0.5 + vec.xCoord * 0.25, 0.5 + vec.zCoord * 0.25).color(color[0], color[1], color[2], color[3]).endVertex();
-				color[0] = 0;
-				color[1] = 0;
-				color[2] = 0;
-				color[3] = 1;
-				buf.pos(vec.xCoord * 0.9, 0, vec.zCoord * 0.9).tex(0.5 + vec.xCoord * 0.25 / s * 0.9, 0.5 + vec.zCoord * 0.25 / s * 0.9).color(color[0], color[1], color[2], color[3]).endVertex();
+				buf.appendPositionTexColorQuadUnchecked(
+						x0, 0, z0, u0, v0, innerCoreColor,
+						x1, 0, z1, u1, v1, ringColor,
+						vec.xCoord * s, 0, vec.zCoord * s, 0.5 + vec.xCoord * 0.25, 0.5 + vec.zCoord * 0.25, ringColor,
+						vec.xCoord * 0.9, 0, vec.zCoord * 0.9, 0.5 + vec.xCoord * 0.25 / s * 0.9, 0.5 + vec.zCoord * 0.25 / s * 0.9, innerCoreColor
+				);
 			}
 
-			tes.draw();
+			NTMImmediate.INSTANCE.draw();
 
 			GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE);
 		}
@@ -272,7 +265,7 @@ public class RenderBlackHole extends Render<EntityBlackHole> {
 		//swirl, outer part (fade)
 		for(int j = 0; j < 2; j++) {
 
-			buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
+			NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionTexColorQuads(count);
 			for(int i = 0; i < count; i++) {
 
 				if(j == 0){
@@ -283,25 +276,27 @@ public class RenderBlackHole extends Render<EntityBlackHole> {
 					color[2] = 1;
 					color[3] = glow;
 				}
-				buf.pos(vec.xCoord * s, 0, vec.zCoord * s).tex(0.5 + vec.xCoord * 0.25, 0.5 + vec.zCoord * 0.25).color(color[0], color[1], color[2], color[3]).endVertex();
+				int innerRingColor = packCurrentColor(color);
+				double x0 = vec.xCoord * s;
+				double z0 = vec.zCoord * s;
+				double u0 = 0.5 + vec.xCoord * 0.25;
+				double v0 = 0.5 + vec.zCoord * 0.25;
 				this.setColorNone(entity, color);
-				buf.pos(vec.xCoord * s * 2, 0, vec.zCoord * s * 2).tex(0.5 + vec.xCoord * 0.5, 0.5 + vec.zCoord * 0.5).color(color[0], color[1], color[2], color[3]).endVertex();
+				int outerFadeColor = packCurrentColor(color);
+				double x1 = vec.xCoord * s * 2;
+				double z1 = vec.zCoord * s * 2;
+				double u1 = 0.5 + vec.xCoord * 0.5;
+				double v1 = 0.5 + vec.zCoord * 0.5;
 
 				vec.rotateAroundY((float)(Math.PI * 2 / count));
-				this.setColorNone(entity, color);
-				buf.pos(vec.xCoord * s * 2, 0, vec.zCoord * s * 2).tex(0.5 + vec.xCoord * 0.5, 0.5 + vec.zCoord * 0.5).color(color[0], color[1], color[2], color[3]).endVertex();
-
-				if(j == 0)
-					this.setColorFull(entity, color);
-				else {
-					color[0] = 1;
-					color[1] = 1;
-					color[2] = 1;
-					color[3] = glow;
-				}
-				buf.pos(vec.xCoord * s, 0, vec.zCoord * s).tex(0.5 + vec.xCoord * 0.25, 0.5 + vec.zCoord * 0.25).color(color[0], color[1], color[2], color[3]).endVertex();
+				buf.appendPositionTexColorQuadUnchecked(
+						x0, 0, z0, u0, v0, innerRingColor,
+						x1, 0, z1, u1, v1, outerFadeColor,
+						vec.xCoord * s * 2, 0, vec.zCoord * s * 2, 0.5 + vec.xCoord * 0.5, 0.5 + vec.zCoord * 0.5, outerFadeColor,
+						vec.xCoord * s, 0, vec.zCoord * s, 0.5 + vec.xCoord * 0.25, 0.5 + vec.zCoord * 0.25, innerRingColor
+				);
 			}
-			tes.draw();
+			NTMImmediate.INSTANCE.draw();
 
 			GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE);
 		}
@@ -317,9 +312,6 @@ public class RenderBlackHole extends Render<EntityBlackHole> {
 
 	protected void renderJets(EntityBlackHole entity, float interp){
 
-		Tessellator tes = Tessellator.getInstance();
-		BufferBuilder buf = tes.getBuffer();
-
 		GlStateManager.pushMatrix();
 		GlStateManager.rotate(entity.getEntityId() % 90 - 45, 1, 0, 0);
 		GlStateManager.rotate(entity.getEntityId() % 360, 0, 1, 0);
@@ -332,19 +324,20 @@ public class RenderBlackHole extends Render<EntityBlackHole> {
 		GlStateManager.shadeModel(GL11.GL_SMOOTH);
 		GlStateManager.disableTexture2D();
 
+		int centerColor = NTMBufferBuilder.packColor(1.0F, 1.0F, 1.0F, 0.35F);
+		int edgeColor = NTMBufferBuilder.packColor(1.0F, 1.0F, 1.0F, 0.0F);
 		for(int j = -1; j <= 1; j += 2) {
-			buf.begin(GL11.GL_TRIANGLE_FAN, DefaultVertexFormats.POSITION_COLOR);
-
-			buf.pos(0, 0, 0).color(1, 1, 1, 0.35F).endVertex();
+			NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionColor(GL11.GL_TRIANGLE_FAN, 14);
+			buf.appendPositionColorUnchecked(0, 0, 0, centerColor);
 
 			Vec3 jet = Vec3.createVectorHelper(0.5, 0, 0);
 
 			for(int i = 0; i <= 12; i++) {
-				buf.pos(jet.xCoord, 10 * j, jet.zCoord).color(1.0F, 1.0F, 1.0F, 0.0F).endVertex();
+				buf.appendPositionColorUnchecked(jet.xCoord, 10 * j, jet.zCoord, edgeColor);
 				jet.rotateAroundY((float)(Math.PI / 6 * -j));
 			}
 
-			tes.draw();
+			NTMImmediate.INSTANCE.draw();
 		}
 		GlStateManager.enableTexture2D();
 		GlStateManager.shadeModel(GL11.GL_FLAT);
@@ -360,8 +353,6 @@ public class RenderBlackHole extends Render<EntityBlackHole> {
 		GlStateManager.pushMatrix();
 		GlStateManager.scale(0.2F, 0.2F, 0.2F);
 
-		Tessellator tes = Tessellator.getInstance();
-		BufferBuilder buf = tes.getBuffer();
 		RenderHelper.disableStandardItemLighting();
 		int j = 75;
 		float f1 = (j + 2.0F) / 200.0F;
@@ -391,17 +382,19 @@ public class RenderBlackHole extends Render<EntityBlackHole> {
 			GlStateManager.rotate(random.nextFloat() * 360.0F, 1.0F, 0.0F, 0.0F);
 			GlStateManager.rotate(random.nextFloat() * 360.0F, 0.0F, 1.0F, 0.0F);
 			GlStateManager.rotate(random.nextFloat() * 360.0F + f1 * 90.0F, 0.0F, 0.0F, 1.0F);
-			buf.begin(GL11.GL_TRIANGLE_FAN, DefaultVertexFormats.POSITION_COLOR);
+			NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionColor(GL11.GL_TRIANGLE_FAN, 5);
 			float f3 = random.nextFloat() * 20.0F + 5.0F + f2 * 10.0F;
 			float f4 = random.nextFloat() * 2.0F + 1.0F + f2 * 2.0F;
 			setColorFull(entity, color);
-			buf.pos(0.0D, 0.0D, 0.0D).color(color[0], color[1], color[2], color[3]).endVertex();
+			int fullColor = packCurrentColor(color);
 			setColorNone(entity, color);
-			buf.pos(-0.866D * f4, f3, -0.5F * f4).color(color[0], color[1], color[2], color[3]).endVertex();
-			buf.pos(0.866D * f4, f3, -0.5F * f4).color(color[0], color[1], color[2], color[3]).endVertex();
-			buf.pos(0.0D, f3, 1.0F * f4).color(color[0], color[1], color[2], color[3]).endVertex();
-			buf.pos(-0.866D * f4, f3, -0.5F * f4).color(color[0], color[1], color[2], color[3]).endVertex();
-			tes.draw();
+			int fadeColor = packCurrentColor(color);
+			buf.appendPositionColorUnchecked(0.0D, 0.0D, 0.0D, fullColor);
+			buf.appendPositionColorUnchecked(-0.866D * f4, f3, -0.5F * f4, fadeColor);
+			buf.appendPositionColorUnchecked(0.866D * f4, f3, -0.5F * f4, fadeColor);
+			buf.appendPositionColorUnchecked(0.0D, f3, 1.0F * f4, fadeColor);
+			buf.appendPositionColorUnchecked(-0.866D * f4, f3, -0.5F * f4, fadeColor);
+			NTMImmediate.INSTANCE.draw();
 		}
 
 		GlStateManager.depthMask(true);
@@ -413,6 +406,10 @@ public class RenderBlackHole extends Render<EntityBlackHole> {
 		GlStateManager.enableAlpha();
 		RenderHelper.enableStandardItemLighting();
 		GlStateManager.popMatrix();
+	}
+
+	private static int packCurrentColor(float[] color){
+		return NTMBufferBuilder.packColor(color[0], color[1], color[2], color[3]);
 	}
 
 	protected void setColorFull(EntityBlackHole e, float[] color){

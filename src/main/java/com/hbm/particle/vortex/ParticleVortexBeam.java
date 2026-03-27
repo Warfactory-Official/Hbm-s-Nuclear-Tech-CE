@@ -1,6 +1,8 @@
 package com.hbm.particle.vortex;
 
 import com.hbm.main.ResourceManager;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import com.hbm.util.BobMathUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
@@ -9,13 +11,11 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.DestFactor;
 import net.minecraft.client.renderer.GlStateManager.SourceFactor;
 import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 public class ParticleVortexBeam extends Particle {
 
@@ -94,22 +94,20 @@ public class ParticleVortexBeam extends Particle {
         point1 = point1.add(f5, f6, f7);
         point2 = point2.add(f5, f6, f7);
         
-        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
         OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240, 240);
         float alpha = this.particleAlpha;
+        NTMBufferBuilder fastBuffer = NTMImmediate.INSTANCE.beginPositionTexColorQuads(MathHelper.ceil(alpha));
         while(alpha > 0){
-        	buffer.pos(point2.x+dissolveAmount.x, point2.y+dissolveAmount.y, point2.z+dissolveAmount.z).tex(1, 0).color(particleRed, particleGreen, particleBlue, MathHelper.clamp(alpha, 0, 1)).endVertex();
-        	buffer.pos(point1.x+dissolveAmount.x, point1.y+dissolveAmount.y, point1.z+dissolveAmount.z).tex(1, 1).color(particleRed, particleGreen, particleBlue, MathHelper.clamp(alpha, 0, 1)).endVertex();
-        	buffer.pos(point1.x+particleAxis.x, point1.y+particleAxis.y, point1.z+particleAxis.z).tex(0, 1).color(particleRed, particleGreen, particleBlue, MathHelper.clamp(alpha, 0, 1)).endVertex();
-        	buffer.pos(point2.x+particleAxis.x, point2.y+particleAxis.y, point2.z+particleAxis.z).tex(0, 0).color(particleRed, particleGreen, particleBlue, MathHelper.clamp(alpha, 0, 1)).endVertex();
-        	
-        	//buffer.pos(point2.x, point2.y, point2.z).tex(1, 0).color(particleRed, particleGreen, particleBlue, MathHelper.clamp(alpha, 0, 1)).endVertex();
-        	//buffer.pos(point1.x, point1.y, point1.z).tex(1, 1).color(particleRed, particleGreen, particleBlue, MathHelper.clamp(alpha, 0, 1)).endVertex();
-        	//buffer.pos(point1.x+dissolveAmount.x, point1.y+dissolveAmount.y, point1.z+dissolveAmount.z).tex(0, 1).color(particleRed, particleGreen, particleBlue, MathHelper.clamp(alpha, 0, 1)).endVertex();
-        	//buffer.pos(point2.x+dissolveAmount.x, point2.y+dissolveAmount.y, point2.z+dissolveAmount.z).tex(0, 0).color(particleRed, particleGreen, particleBlue, MathHelper.clamp(alpha, 0, 1)).endVertex();
+        	int packedColor = NTMBufferBuilder.packColor(particleRed, particleGreen, particleBlue, MathHelper.clamp(alpha, 0, 1));
+        	fastBuffer.appendPositionTexColorQuadUnchecked(
+        			point2.x + dissolveAmount.x, point2.y + dissolveAmount.y, point2.z + dissolveAmount.z, 1, 0, packedColor,
+        			point1.x + dissolveAmount.x, point1.y + dissolveAmount.y, point1.z + dissolveAmount.z, 1, 1, packedColor,
+        			point1.x + particleAxis.x, point1.y + particleAxis.y, point1.z + particleAxis.z, 0, 1, packedColor,
+        			point2.x + particleAxis.x, point2.y + particleAxis.y, point2.z + particleAxis.z, 0, 0, packedColor
+        	);
         	alpha -= 1;
         }
-        Tessellator.getInstance().draw();
+        NTMImmediate.INSTANCE.draw();
         GlStateManager.enableAlpha();
         GlStateManager.depthMask(true);
         GlStateManager.disableBlend();

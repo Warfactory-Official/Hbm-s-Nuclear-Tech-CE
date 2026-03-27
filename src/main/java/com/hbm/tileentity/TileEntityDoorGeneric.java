@@ -18,6 +18,7 @@ import com.hbm.tileentity.machine.TileEntityLockableBase;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.longs.LongIterable;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -338,9 +339,18 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
     @Override
     public void deserialize(ByteBuf buf) {
         super.deserialize(buf);
-        handleNewState(DoorState.values()[buf.readByte()%DoorState.values().length]);
-        skinIndex = buf.readByte();
-        shouldUseBB = buf.readBoolean();
+        DoorState newState = DoorState.VALUES[buf.readUnsignedByte()];
+        byte newSkinIndex = buf.readByte();
+        boolean newShouldUseBB = buf.readBoolean();
+        Minecraft.getMinecraft().addScheduledTask(() -> {
+            if (world == null || !world.isRemote || isInvalid() || world.getTileEntity(pos) != this) {
+                return;
+            }
+
+            handleNewState(newState);
+            skinIndex = newSkinIndex;
+            shouldUseBB = newShouldUseBB;
+        });
     }
 
     @Override
@@ -353,7 +363,7 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
-        this.state = DoorState.values()[tag.getByte("state")];
+        this.state = DoorState.VALUES[tag.getByte("state")];
         this.openTicks = tag.getInteger("openTicks");
         this.animStartTime = tag.getInteger("animStartTime");
         this.redstonePower = tag.getInteger("redstoned");

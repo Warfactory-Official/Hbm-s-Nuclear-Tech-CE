@@ -2235,6 +2235,10 @@ public class Library {
         return ((serialized >> 42) & 0xFFFFFFFFL) | ((serialized << 38 >> 42) << 32);
     }
 
+    public static long chunkKey(BlockPos p) {
+        return ChunkPos.asLong(p.getX() >> 4, p.getZ() >> 4);
+    }
+
     public static int getChunkPosX(long ck) {
         return (int) ck;
     }

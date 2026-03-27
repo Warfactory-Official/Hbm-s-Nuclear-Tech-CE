@@ -5,18 +5,17 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.item.ItemRenderBase;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole.RBMKScreen;
 import com.hbm.tileentity.machine.rbmk.RBMKColumn;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.Item;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL11;
@@ -61,11 +60,24 @@ public class RenderRBMKConsole extends TileEntitySpecialRenderer<TileEntityRBMKC
         ResourceManager.rbmk_console.renderAll();
         GlStateManager.shadeModel(GL11.GL_FLAT);
 
-        Tessellator tess = Tessellator.getInstance();
-        BufferBuilder buf = tess.getBuffer();
-        buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
-
         GlStateManager.disableTexture2D();
+
+        int expectedQuads = 0;
+        for(RBMKColumn col : te.columns) {
+            if(col == null) continue;
+            expectedQuads++;
+            switch(col.type) {
+                case FUEL:
+                case FUEL_SIM:
+                case CONTROL:
+                case CONTROL_AUTO:
+                    expectedQuads += 3;
+                    break;
+                default:
+            }
+        }
+
+        NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionColorQuads(expectedQuads);
 
         for (int i = 0; i < te.columns.length; i++) {
 
@@ -115,7 +127,7 @@ public class RenderRBMKConsole extends TileEntitySpecialRenderer<TileEntityRBMKC
             }
         }
 
-        tess.draw();
+        NTMImmediate.INSTANCE.draw();
         GlStateManager.enableTexture2D();
 
         FontRenderer font = Minecraft.getMinecraft().fontRenderer;
@@ -185,44 +197,56 @@ public class RenderRBMKConsole extends TileEntitySpecialRenderer<TileEntityRBMKC
         };
     }
 
-    private void drawColumn(BufferBuilder buf, double x, double y, double z, float r, float g, float b) {
+    private void drawColumn(NTMBufferBuilder buf, double x, double y, double z, float r, float g, float b) {
         double width = 0.0625D * 0.75;
-        buf.pos(x, y + width, z - width).color(r, g, b, 1.0F).endVertex();
-        buf.pos(x, y + width, z + width).color(r, g, b, 1.0F).endVertex();
-        buf.pos(x, y - width, z + width).color(r, g, b, 1.0F).endVertex();
-        buf.pos(x, y - width, z - width).color(r, g, b, 1.0F).endVertex();
+        int packedColor = NTMBufferBuilder.packColor(r, g, b, 1.0F);
+        buf.appendPositionColorQuadUnchecked(
+                x, y + width, z - width,
+                x, y + width, z + width,
+                x, y - width, z + width,
+                x, y - width, z - width,
+                packedColor
+        );
     }
 
-    private void drawFuel(BufferBuilder buf, double x, double y, double z, double enrichment) {
+    private void drawFuel(NTMBufferBuilder buf, double x, double y, double z, double enrichment) {
         this.drawDot(buf, x, y, z, 0F, 0.25F + (float) (enrichment * 0.75D), 0F);
     }
 
-    private void drawControl(BufferBuilder buf, double x, double y, double z, double level) {
+    private void drawControl(NTMBufferBuilder buf, double x, double y, double z, double level) {
         this.drawDot(buf, x, y, z, (float) level, (float) level, 0F);
     }
 
-    private void drawControlAuto(BufferBuilder buf, double x, double y, double z, double level) {
+    private void drawControlAuto(NTMBufferBuilder buf, double x, double y, double z, double level) {
         this.drawDot(buf, x, y, z, (float) level, 0F, (float) level);
     }
 
-    private void drawDot(BufferBuilder buf, double x, double y, double z, float r, float g, float b) {
+    private void drawDot(NTMBufferBuilder buf, double x, double y, double z, float r, float g, float b) {
 
         double width = 0.03125D;
         double edge = 0.022097D;
+        int packedColor = NTMBufferBuilder.packColor(r, g, b, 1.0F);
 
-        buf.pos(x, y + width, z).color(r, g, b, 1F).endVertex();
-        buf.pos(x, y + edge, z + edge).color(r, g, b, 1F).endVertex();
-        buf.pos(x, y, z + width).color(r, g, b, 1F).endVertex();
-        buf.pos(x, y - edge, z + edge).color(r, g, b, 1F).endVertex();
-
-        buf.pos(x, y + edge, z - edge).color(r, g, b, 1F).endVertex();
-        buf.pos(x, y + width, z).color(r, g, b, 1F).endVertex();
-        buf.pos(x, y - edge, z - edge).color(r, g, b, 1F).endVertex();
-        buf.pos(x, y, z - width).color(r, g, b, 1F).endVertex();
-
-        buf.pos(x, y + width, z).color(r, g, b, 1F).endVertex();
-        buf.pos(x, y - edge, z + edge).color(r, g, b, 1F).endVertex();
-        buf.pos(x, y - width, z).color(r, g, b, 1F).endVertex();
-        buf.pos(x, y - edge, z - edge).color(r, g, b, 1F).endVertex();
+        buf.appendPositionColorQuadUnchecked(
+                x, y + width, z,
+                x, y + edge, z + edge,
+                x, y, z + width,
+                x, y - edge, z + edge,
+                packedColor
+        );
+        buf.appendPositionColorQuadUnchecked(
+                x, y + edge, z - edge,
+                x, y + width, z,
+                x, y - edge, z - edge,
+                x, y, z - width,
+                packedColor
+        );
+        buf.appendPositionColorQuadUnchecked(
+                x, y + width, z,
+                x, y - edge, z + edge,
+                x, y - width, z,
+                x, y - edge, z - edge,
+                packedColor
+        );
     }
 }

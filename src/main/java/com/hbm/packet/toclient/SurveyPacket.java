@@ -43,6 +43,7 @@ public class SurveyPacket extends ThreadedPacket {
                 Minecraft mc = Minecraft.getMinecraft();
                 WorldClient w = mc.world;
                 if (w == null) return;
+                RBMKDials.updateClientColumnHeightRuleValue(w, m.columnHeightRuleValue);
                 w.getGameRules().setOrCreateGameRule(RBMKDials.RBMKKeys.KEY_COLUMN_HEIGHT.keyString, h);
                 if (mc.player == null) return;
 

@@ -34,7 +34,7 @@ public abstract class AbstractRBMKLiddedBakedModel extends AbstractWavefrontBake
         private final List<BakedQuad>[] sideQuads;
 
         protected QuadLookup(List<BakedQuad> generalQuads, List<BakedQuad>[] sideQuads) {
-            this.generalQuads = Collections.unmodifiableList(generalQuads);
+            this.generalQuads = generalQuads;
             this.sideQuads = sideQuads;
         }
 
@@ -46,13 +46,9 @@ public abstract class AbstractRBMKLiddedBakedModel extends AbstractWavefrontBake
         }
     }
 
-    private QuadLookup cacheNoLid;
-    private QuadLookup cacheNormalLid;
-    private QuadLookup cacheGlassLid;
+    private QuadLookup[] worldCache = new QuadLookup[4];
     private List<BakedQuad> cacheInventory;
-    private int cacheNoLidHeight = Integer.MIN_VALUE;
-    private int cacheNormalLidHeight = Integer.MIN_VALUE;
-    private int cacheGlassLidHeight = Integer.MIN_VALUE;
+    private int cachedColumnHeight = Integer.MIN_VALUE;
 
     protected AbstractRBMKLiddedBakedModel(HFRWavefrontObject model, VertexFormat format, float baseScale, float tx, float ty, float tz,
                                            ItemCameraTransforms transforms,
@@ -76,36 +72,23 @@ public abstract class AbstractRBMKLiddedBakedModel extends AbstractWavefrontBake
         }
 
         int columnHeight = getColumnHeight();
+        if (cachedColumnHeight != columnHeight) {
+            worldCache = new QuadLookup[4];
+            cachedColumnHeight = columnHeight;
+        }
         int lidType = RBMKBase.LID_NONE;
         if (state != null) {
             int meta = state.getBlock().getMetaFromState(state);
             lidType = RBMKBase.metaToLid(meta);
         }
 
-        switch (lidType) {
-            case RBMKBase.LID_STANDARD -> {
-                if (cacheNormalLid == null || cacheNormalLidHeight != columnHeight) {
-                    cacheNormalLid = buildWorldQuads(RBMKBase.LID_STANDARD, columnHeight);
-                    cacheNormalLidHeight = columnHeight;
-                }
-                return cacheNormalLid.get(side);
-            }
-            case RBMKBase.LID_GLASS -> {
-                if (cacheGlassLid == null || cacheGlassLidHeight != columnHeight) {
-                    cacheGlassLid = buildWorldQuads(RBMKBase.LID_GLASS, columnHeight);
-                    cacheGlassLidHeight = columnHeight;
-                }
-                return cacheGlassLid.get(side);
-            }
-            case RBMKBase.LID_NONE -> {
-                if (cacheNoLid == null || cacheNoLidHeight != columnHeight) {
-                    cacheNoLid = buildWorldQuads(RBMKBase.LID_NONE, columnHeight);
-                    cacheNoLidHeight = columnHeight;
-                }
-                return cacheNoLid.get(side);
-            }
+        int cacheKey = lidType + 1;
+        QuadLookup cache = worldCache[cacheKey];
+        if (cache == null) {
+            cache = buildWorldQuads(lidType, columnHeight);
+            worldCache[cacheKey] = cache;
         }
-        return buildWorldQuads(RBMKBase.LID_NULL, columnHeight).get(side);
+        return cache.get(side);
     }
 
     protected abstract @NotNull List<BakedQuad> buildInventoryQuads();
