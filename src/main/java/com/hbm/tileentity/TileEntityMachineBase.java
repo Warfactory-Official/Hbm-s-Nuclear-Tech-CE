@@ -284,24 +284,12 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
         return super.hasCapability(capability, facing);
     }
 
-    protected void updateRedstoneConnection(DirPos pos) {
+    protected void updateRedstoneComparatorConnection(DirPos pos) {
         BlockPos blockPos = pos.getPos();
-        IBlockState state1 = world.getBlockState(blockPos);
-        Block block1 = state1.getBlock();
-
-        block1.onNeighborChange(world, blockPos, this.getPos());
-
-        block1.neighborChanged(state1, world, blockPos, this.getBlockType(), this.getPos());
-
-        if (state1.isNormalCube()) {
-            BlockPos offsetPos = blockPos.offset(pos.getDir().toEnumFacing());
-            Block block2 = world.getBlockState(offsetPos).getBlock();
-
-            if (block2.getWeakChanges(world, offsetPos)) {
-                block2.onNeighborChange(world, offsetPos, this.getPos());
-                block2.neighborChanged(world.getBlockState(offsetPos), world, offsetPos, this.getBlockType(), this.getPos());
-            }
-        }
+        IBlockState state = world.getBlockState(blockPos);
+        Block block = state.getBlock();
+        world.updateComparatorOutputLevel(blockPos, block);
+        world.notifyNeighborsOfStateChange(blockPos, block, false);
     }
 
     public void setDestroyedByCreativePlayer() {
