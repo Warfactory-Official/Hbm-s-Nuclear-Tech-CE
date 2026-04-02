@@ -150,12 +150,6 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         return super.getCapability(capability, facing);
     }
 
-    public byte getComparatorPower() {
-        if (tank.getFill() == 0) return 0;
-        double frac = (double) tank.getFill() / (double) tank.getMaxFill() * 15D;
-        return (byte) (MathHelper.clamp((int) frac + 1, 0, 15));
-    }
-
     @Override
     public void update() {
         if (!world.isRemote) {
@@ -232,12 +226,13 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
                 this.node = null;
             }
 
-            byte comp = this.getComparatorPower(); //comparator shit
-            if (comp != this.lastRedstone) {
-                this.markDirty();
-                for (DirPos pos : getConPos()) this.updateRedstoneConnection(pos);
-            }
-            this.lastRedstone = comp;
+			// Redstone Comparator Check
+			byte comp = tank.getRedstoneComparatorPower();
+			if(comp != this.lastRedstone) {
+				this.markDirty();
+				for(DirPos pos : getConPos()) this.updateRedstoneComparatorConnection(pos);
+			}
+			this.lastRedstone = comp;
 
             if (tank.getFill() > 0) {
                 if (tank.getTankType().isAntimatter()) {
