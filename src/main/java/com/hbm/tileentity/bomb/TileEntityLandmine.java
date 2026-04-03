@@ -23,6 +23,7 @@ public class TileEntityLandmine extends TileEntity implements ITickable {
 
 	private boolean isPrimed = false;
 	public boolean waitingForPlayer = false;
+	private AxisAlignedBB bb;
 
 	@Override
 	public void update() {
@@ -99,5 +100,11 @@ public class TileEntityLandmine extends TileEntity implements ITickable {
 	{
 		return 65536.0D;
 	}
-	
+
+	@Override
+	public AxisAlignedBB getRenderBoundingBox() {
+		if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+		return bb;
+	}
+
 }

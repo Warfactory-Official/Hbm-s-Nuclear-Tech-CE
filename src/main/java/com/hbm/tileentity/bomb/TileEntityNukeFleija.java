@@ -12,7 +12,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.relauncher.Side;
@@ -86,12 +85,7 @@ public class TileEntityNukeFleija extends TileEntity implements IGUIProvider {
 		this.customName = name;
 	}
 
-	@Override
-	public AxisAlignedBB getRenderBoundingBox() {
-		return INFINITE_EXTENT_AABB;
-	}
-
-	public boolean isReady() {
+    public boolean isReady() {
 
         return inventory.getStackInSlot(0).getItem() == ModItems.fleija_igniter
                 && inventory.getStackInSlot(1).getItem() == ModItems.fleija_igniter
@@ -108,12 +102,7 @@ public class TileEntityNukeFleija extends TileEntity implements IGUIProvider {
 		}
 	}
 
-	@Override
-	public double getMaxRenderDistanceSquared() {
-		return 65536.0D;
-	}
-
-	@Override
+    @Override
 	public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		return new ContainerNukeFleija(player.inventory, this);
 	}
@@ -122,6 +111,12 @@ public class TileEntityNukeFleija extends TileEntity implements IGUIProvider {
 	@SideOnly(Side.CLIENT)
 	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		return new GUINukeFleija(player.inventory, this);
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public double getMaxRenderDistanceSquared() {
+		return 65536.0D;
 	}
 
 }

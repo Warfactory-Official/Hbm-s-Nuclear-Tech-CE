@@ -43,6 +43,9 @@
 - Fixed missing 2x scale in torex instanced billboard path
 - Fixed funnel ClassCastException and funnel not properly inputting/outputting items (e.g. via conveyor inserter/ejector)
 - Fixed RBMK Cooler console stats not displaying fluid levels; cooler now reports both cold and hot tank types, fill, and capacity
+- Fixed firebox not returning container items (e.g. lava bucket → empty bucket) when fuel is fully consumed
+- Fixed baked model culling and lighting issues
+- Fixed TESR culling issues
 
 ### Changes
 - Removed `enableHardcoreDarkness` config option; sun brightness calculation no longer applies the 0.8/0.2 floor that broke compatibility with hardcore darkness mods

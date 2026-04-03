@@ -16,12 +16,6 @@ import net.minecraft.item.Item;
 public class RenderMissileAssembly
     extends TileEntitySpecialRenderer<TileEntityMachineMissileAssembly>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityMachineMissileAssembly te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityMachineMissileAssembly te,

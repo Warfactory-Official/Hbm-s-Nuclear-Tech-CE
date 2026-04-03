@@ -1,12 +1,13 @@
 package com.hbm.mixin;
 
-import com.hbm.render.chunk.IOversizedModelExtentsHolder;
+import com.hbm.render.chunk.IExtraExtentsHolder;
 import net.minecraft.client.renderer.chunk.CompiledChunk;
+import net.minecraft.tileentity.TileEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(CompiledChunk.class)
-public abstract class MixinCompiledChunk implements IOversizedModelExtentsHolder {
+public abstract class MixinCompiledChunk implements IExtraExtentsHolder {
 
     @Unique
     private int hbm$negX;
@@ -20,6 +21,8 @@ public abstract class MixinCompiledChunk implements IOversizedModelExtentsHolder
     private int hbm$negZ;
     @Unique
     private int hbm$posZ;
+    @Unique
+    private TileEntity[] hbm$chunkSpanningTesrs = EMPTY_TE_ARR;
 
     @Override
     public void hbm$setOversizedModelExtents(int negX, int posX, int negY, int posY, int negZ, int posZ) {
@@ -59,5 +62,15 @@ public abstract class MixinCompiledChunk implements IOversizedModelExtentsHolder
     @Override
     public int hbm$getPosZ() {
         return hbm$posZ;
+    }
+
+    @Override
+    public TileEntity[] hbm$getChunkSpanningTesrs() {
+        return hbm$chunkSpanningTesrs;
+    }
+
+    @Override
+    public void hbm$setChunkSpanningTesrs(TileEntity[] tesrs) {
+        hbm$chunkSpanningTesrs = tesrs;
     }
 }

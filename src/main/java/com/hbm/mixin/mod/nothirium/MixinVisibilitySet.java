@@ -1,12 +1,12 @@
 package com.hbm.mixin.mod.nothirium;
 
-import com.hbm.render.chunk.IOversizedModelExtentsHolder;
+import com.hbm.render.chunk.IExtraExtentsHolder;
 import meldexun.nothirium.util.VisibilitySet;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(value = VisibilitySet.class, remap = false)
-public abstract class MixinVisibilitySet implements IOversizedModelExtentsHolder {
+public abstract class MixinVisibilitySet implements IExtraExtentsHolder {
 
     @Unique
     private int hbm$negX;

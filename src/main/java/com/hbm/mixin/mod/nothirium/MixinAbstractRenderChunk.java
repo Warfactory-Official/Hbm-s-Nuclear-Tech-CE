@@ -1,6 +1,6 @@
 package com.hbm.mixin.mod.nothirium;
 
-import com.hbm.render.chunk.IOversizedModelExtentsHolder;
+import com.hbm.render.chunk.IExtraExtentsHolder;
 import meldexun.nothirium.renderer.chunk.AbstractRenderChunk;
 import meldexun.nothirium.util.VisibilitySet;
 import meldexun.renderlib.util.Frustum;
@@ -27,7 +27,7 @@ public abstract class MixinAbstractRenderChunk {
     @Inject(method = "setVisibility", at = @At("RETURN"))
     private void hbm$cacheExpansion(VisibilitySet visibilitySet, CallbackInfo ci) {
         if (visibilitySet != null) {
-            IOversizedModelExtentsHolder holder = (IOversizedModelExtentsHolder) visibilitySet;
+            IExtraExtentsHolder holder = (IExtraExtentsHolder) visibilitySet;
             hbm$negX = holder.hbm$getNegX();
             hbm$posX = holder.hbm$getPosX();
             hbm$negY = holder.hbm$getNegY();

@@ -48,6 +48,7 @@ public class TileEntityMachineSteamEngine extends TileEntityLoadedBase
         IFluidCopiable,
         IBufPacketReceiver,
         IConfigurableMachine {
+  private AxisAlignedBB bb;
   public long powerBuffer;
 
   public float rotor;
@@ -227,7 +228,8 @@ public class TileEntityMachineSteamEngine extends TileEntityLoadedBase
 
   @Override
   public @NotNull AxisAlignedBB getRenderBoundingBox() {
-    return TileEntity.INFINITE_EXTENT_AABB;
+    if (bb == null) bb = new AxisAlignedBB(pos.getX() - 5, pos.getY(), pos.getZ() - 5, pos.getX() + 6, pos.getY() + 2, pos.getZ() + 6);
+    return bb;
   }
 
   @Override

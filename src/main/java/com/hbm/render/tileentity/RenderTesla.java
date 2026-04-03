@@ -15,12 +15,6 @@ import net.minecraft.item.Item;
 @AutoRegister
 public class RenderTesla extends TileEntitySpecialRenderer<TileEntityTesla>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityTesla te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityTesla tesla,

@@ -220,6 +220,7 @@ public class BlockBobble extends BlockContainer implements INBTBlockTransformabl
     @AutoRegister
     public static class TileEntityBobble extends TileEntity implements IGUIProvider, INBTTileEntityTransformable {
         public BobbleType type = BobbleType.NONE;
+        private AxisAlignedBB bb;
 
         @Override
         public NBTTagCompound getUpdateTag() {
@@ -276,6 +277,12 @@ public class BlockBobble extends BlockContainer implements INBTBlockTransformabl
         @SideOnly(Side.CLIENT)
         public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
             return new GUIScreenBobble(this);
+        }
+
+        @Override
+        public AxisAlignedBB getRenderBoundingBox() {
+            if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+            return bb;
         }
     }
 }

@@ -21,12 +21,6 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister
 public class RenderBAT9000 extends TileEntitySpecialRenderer<TileEntityMachineBAT9000>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityMachineBAT9000 te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityMachineBAT9000 bat,

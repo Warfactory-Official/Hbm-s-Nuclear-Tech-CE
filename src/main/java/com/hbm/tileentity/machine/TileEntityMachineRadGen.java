@@ -39,6 +39,7 @@ import java.util.HashMap;
 @AutoRegister
 public class TileEntityMachineRadGen extends TileEntityMachineBase implements ITickable, IEnergyProviderMK2, IGUIProvider {
 
+	private AxisAlignedBB bb;
 	public int[] progress = new int[12];
 	public int[] maxProgress = new int[12];
 	public int[] production = new int[12];
@@ -293,7 +294,8 @@ public class TileEntityMachineRadGen extends TileEntityMachineBase implements IT
 
 	@Override
 	public @NotNull AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		if (bb == null) bb = new AxisAlignedBB(pos.getX() - 3, pos.getY(), pos.getZ() - 3, pos.getX() + 4, pos.getY() + 3, pos.getZ() + 4);
+		return bb;
 	}
 
 	@Override

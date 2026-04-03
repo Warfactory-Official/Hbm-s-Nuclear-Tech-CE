@@ -54,6 +54,7 @@ public class TileEntityCoreEmitter extends TileEntityMachineBase implements ITic
 	public boolean isOn;
 	public FluidTankNTM tank;
 	public long prev;
+    private int prevBeam;
 
 	public static final int range = 50;
 	
@@ -162,6 +163,11 @@ public class TileEntityCoreEmitter extends TileEntityMachineBase implements ITic
 			this.markDirty();
 
 			this.networkPackNT(250);
+        } else {
+            if (prevBeam != beam) {
+                prevBeam = beam;
+                world.markBlockRangeForRenderUpdate(pos, pos);
+            }
 		}
 
 	}
@@ -232,7 +238,18 @@ public class TileEntityCoreEmitter extends TileEntityMachineBase implements ITic
 
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+        if (beam <= 0) {
+            return new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1,
+                    pos.getZ() + 1);
+        }
+        ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata());
+        int endX = pos.getX() + dir.offsetX * beam;
+        int endY = pos.getY() + dir.offsetY * beam;
+        int endZ = pos.getZ() + dir.offsetZ * beam;
+        return new AxisAlignedBB(
+                Math.min(pos.getX(), endX), Math.min(pos.getY(), endY), Math.min(pos.getZ(), endZ),
+                Math.max(pos.getX(), endX) + 1, Math.max(pos.getY(), endY) + 1, Math.max(pos.getZ(), endZ) + 1
+        );
 	}
 	
 	@Override

@@ -45,6 +45,7 @@ import org.jetbrains.annotations.NotNull;
 @AutoRegister
 public class TileEntityMachineGasCent extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardReceiver, IGUIProvider, IFFtoNTMF {
 
+    private AxisAlignedBB bb;
     public int progress;
     public long power;
     public boolean isProgressing;
@@ -371,7 +372,8 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
 
     @Override
     public @NotNull AxisAlignedBB getRenderBoundingBox() {
-        return new AxisAlignedBB(pos, pos.add(1, 4, 1));
+        if (bb == null) bb = new AxisAlignedBB(pos, pos.add(1, 4, 1));
+        return bb;
     }
 
     @Override

@@ -27,6 +27,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @AutoRegister
 public class TileEntitySlidingBlastDoor extends TileEntityLockableBase implements ITickable, IAnimatedDoor {
 
+    private AxisAlignedBB bb;
     public DoorState state = DoorState.CLOSED;
     public byte texture = 0;
     public long sysTime;
@@ -240,7 +241,8 @@ public class TileEntitySlidingBlastDoor extends TileEntityLockableBase implement
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return INFINITE_EXTENT_AABB;
+        if (bb == null) bb = new AxisAlignedBB(pos.getX() - 3, pos.getY(), pos.getZ() - 3, pos.getX() + 4, pos.getY() + 4, pos.getZ() + 4);
+        return bb;
     }
 
     @Override

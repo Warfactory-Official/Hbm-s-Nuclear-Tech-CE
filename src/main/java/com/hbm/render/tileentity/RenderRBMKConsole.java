@@ -17,18 +17,11 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.item.Item;
-import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
 @AutoRegister
 public class RenderRBMKConsole extends TileEntitySpecialRenderer<TileEntityRBMKConsole> implements IItemRendererProvider {
-
-    @Override
-    public boolean isGlobalRenderer(@NotNull TileEntityRBMKConsole te) {
-        return true;
-    }
-
     @Override
     public void render(TileEntityRBMKConsole te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
         GlStateManager.pushMatrix();

@@ -66,6 +66,7 @@ import java.util.*;
 @Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")
 @AutoRegister
 public class TileEntityMachineFluidTank extends TileEntityMachineBase implements SimpleComponent, CompatHandler.OCComponent, ITickable, IFluidStandardTransceiverMK2, IPersistentNBT, IControllable, IGUIProvider, IOverpressurable, IRepairable, IFluidCopiable, IClimbable, IRORValueProvider, IRORInteractive {
+    private AxisAlignedBB bb;
     protected FluidNode node;
     protected FluidType lastType;
     public FluidTankNTM tank;
@@ -433,7 +434,8 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
+        if (bb == null) bb = new AxisAlignedBB(pos.getX() - 2, pos.getY(), pos.getZ() - 2, pos.getX() + 3, pos.getY() + 3, pos.getZ() + 3);
+        return bb;
     }
 
     @Override

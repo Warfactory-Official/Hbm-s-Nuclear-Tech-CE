@@ -16,11 +16,6 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister
 public class RenderHeatingOven extends TileEntitySpecialRenderer<TileEntityHeaterOven> implements IItemRendererProvider {
     @Override
-    public boolean isGlobalRenderer(TileEntityHeaterOven te) {
-        return true;
-    }
-
-    @Override
     public void render(TileEntityHeaterOven tile, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
         boolean prevLighting = RenderUtil.isLightingEnabled();
         boolean prevCull = RenderUtil.isCullEnabled();

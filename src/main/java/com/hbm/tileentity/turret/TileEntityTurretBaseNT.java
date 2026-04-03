@@ -856,7 +856,9 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		double r = getBarrelLength() + 2;
+		double h = getHeightOffset();
+		return new AxisAlignedBB(pos.getX() - r, pos.getY(), pos.getZ() - r, pos.getX() + 1 + r, pos.getY() + h + r + 1, pos.getZ() + 1 + r);
 	}
 
 	@Override

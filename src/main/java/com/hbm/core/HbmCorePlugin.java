@@ -27,10 +27,10 @@ public class HbmCorePlugin implements IFMLLoadingPlugin, IEarlyMixinLoader {
         boolean nothiriumPresent = Launch.classLoader.getResource("meldexun/nothirium/mc/Nothirium.class") != null;
         boolean neoniumPresent = Launch.classLoader.getResource("io/neox/neonium/Neonium.class") != null;
 
-        if (optifinePresent) {
-            bufferBuilderBackend = BufferBuilderBackend.OPTIFINE;
-        } else if (nothiriumPresent) {
+        if (nothiriumPresent) {
             bufferBuilderBackend = BufferBuilderBackend.NOTHIRIUM;
+        } else if (optifinePresent) {
+            bufferBuilderBackend = BufferBuilderBackend.OPTIFINE;
         } else if (neoniumPresent) {
             bufferBuilderBackend = BufferBuilderBackend.NEONIUM;
         } else {

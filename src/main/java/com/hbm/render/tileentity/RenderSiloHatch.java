@@ -18,12 +18,6 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister
 public class RenderSiloHatch extends TileEntitySpecialRenderer<TileEntitySiloHatch>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntitySiloHatch te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntitySiloHatch te,

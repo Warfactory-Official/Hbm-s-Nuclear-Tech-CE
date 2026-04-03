@@ -44,6 +44,7 @@ import java.util.List;
 @AutoRegister
 public class TileEntityMachineCyclotron extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiver, IGUIProvider, IUpgradeInfoProvider, IFluidCopiable {
 
+	private AxisAlignedBB bb;
 	public long power;
 	public static final long maxPower = 100000000;
 	public static int consumption = 1_000_000;
@@ -335,7 +336,8 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 	
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return new AxisAlignedBB(pos.getX() - 2, pos.getY(), pos.getZ() - 2, pos.getX() + 3, pos.getY() + 4, pos.getZ() + 3);
+		if (bb == null) bb = new AxisAlignedBB(pos.getX() - 2, pos.getY(), pos.getZ() - 2, pos.getX() + 3, pos.getY() + 4, pos.getZ() + 3);
+		return bb;
 	}
 
 	@Override

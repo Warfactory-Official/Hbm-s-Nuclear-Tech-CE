@@ -13,6 +13,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
@@ -26,6 +27,7 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
 	
 	public int nextUpdate;
 	public int lastFlow = 0;
+	private AxisAlignedBB bb;
 
 	protected NTMMaterial neighborType;
 	protected boolean hasCheckedNeighbors;
@@ -237,7 +239,7 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
 
 		for(ForgeDirection dir : new ForgeDirection[] { ForgeDirection.NORTH, ForgeDirection.SOUTH, ForgeDirection.WEST, ForgeDirection.EAST }) {
 			TileEntity b = world.getTileEntity(pos.add(dir.offsetX, 0, dir.offsetZ));
-			
+
 			if(b instanceof TileEntityFoundryChannel acc && !visited.contains(b)) {
 				visited.add(acc);
 
@@ -249,6 +251,12 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
 		}
 
 		return null;
+	}
+
+	@Override
+	public AxisAlignedBB getRenderBoundingBox() {
+		if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+		return bb;
 	}
 
 }

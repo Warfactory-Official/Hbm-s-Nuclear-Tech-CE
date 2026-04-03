@@ -16,6 +16,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 @AutoRegister
 public class TileEntityICFStruct extends TileEntity implements ITickable {
+    private AxisAlignedBB bb;
 
     @Override
     public void update() {
@@ -60,7 +61,8 @@ public class TileEntityICFStruct extends TileEntity implements ITickable {
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
+        if (bb == null) bb = new AxisAlignedBB(pos.getX() - 9, pos.getY(), pos.getZ() - 9, pos.getX() + 10, pos.getY() + 7, pos.getZ() + 10);
+        return bb;
     }
 
     @Override

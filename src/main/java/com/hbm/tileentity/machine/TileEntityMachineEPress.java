@@ -46,6 +46,7 @@ import java.util.List;
 @AutoRegister
 public class TileEntityMachineEPress extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IGUIProvider, IUpgradeInfoProvider {
 
+	private AxisAlignedBB bb;
 	public long power = 0;
 	public final static long maxPower = 50000;
 
@@ -242,7 +243,8 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements IT
 	@NotNull
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return new AxisAlignedBB(pos, pos.add(1, 3, 1));
+		if (bb == null) bb = new AxisAlignedBB(pos, pos.add(1, 3, 1));
+		return bb;
 	}
 
 	@Override

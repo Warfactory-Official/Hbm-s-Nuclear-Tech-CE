@@ -1,7 +1,7 @@
 package com.hbm.mixin.mod.nothirium;
 
 import com.hbm.main.client.StaticTesrBakedModels;
-import com.hbm.render.chunk.IOversizedModelExtentsHolder;
+import com.hbm.render.chunk.IExtraExtentsHolder;
 import meldexun.nothirium.mc.renderer.chunk.RenderChunkTaskCompile;
 import meldexun.nothirium.renderer.chunk.AbstractRenderChunk;
 import net.minecraft.block.state.IBlockState;
@@ -63,7 +63,7 @@ public abstract class MixinRenderChunkTaskCompile {
     @Redirect(method = "compileSection(Lnet/minecraft/client/renderer/RegionRenderCacheBuilder;)Lmeldexun/nothirium/api/renderer/chunk/RenderChunkTaskResult;", at = @At(value = "INVOKE", target = "Lmeldexun/nothirium/util/VisibilityGraph;compute()Lmeldexun/nothirium/util/VisibilitySet;"), remap = false)
     private meldexun.nothirium.util.VisibilitySet hbm$publishOversizedExtents(meldexun.nothirium.util.VisibilityGraph visibilityGraph) {
         meldexun.nothirium.util.VisibilitySet visibilitySet = visibilityGraph.compute();
-        ((IOversizedModelExtentsHolder) visibilitySet).hbm$setOversizedModelExtents(hbm$negX, hbm$posX, hbm$negY, hbm$posY, hbm$negZ, hbm$posZ);
+        ((IExtraExtentsHolder) visibilitySet).hbm$setOversizedModelExtents(hbm$negX, hbm$posX, hbm$negY, hbm$posY, hbm$negZ, hbm$posZ);
         return visibilitySet;
     }
 }

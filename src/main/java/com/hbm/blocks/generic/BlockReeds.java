@@ -128,6 +128,12 @@ public class BlockReeds extends Block implements ICustomBlockItem, IDynamicModel
     @Override
     public void neighborChanged(@NotNull IBlockState state, @NotNull World world, @NotNull BlockPos pos, @NotNull Block blockIn, @NotNull BlockPos fromPos) {
         checkAndDropBlock(world, pos);
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof TileEntityReeds reeds) {
+            reeds.invalidateRenderBB();
+            // i hope this is good enough
+            world.markBlockRangeForRenderUpdate(pos, pos);
+        }
     }
 
     protected void checkAndDropBlock(World world, BlockPos pos) {

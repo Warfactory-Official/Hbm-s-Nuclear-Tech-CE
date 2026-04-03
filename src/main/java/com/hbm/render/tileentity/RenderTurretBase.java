@@ -12,12 +12,6 @@ import net.minecraft.world.World;
 import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
 
 public abstract class RenderTurretBase<T extends TileEntityTurretBaseNT> extends TileEntitySpecialRenderer<T> {
-
-    @Override
-    public boolean isGlobalRenderer(T te) {
-        return true;
-    }
-
     protected void renderConnectors(TileEntityTurretBaseNT turret, boolean power, boolean fluid, FluidType type) {
 
         bindTexture(ResourceManager.turret_connector_tex);

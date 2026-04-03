@@ -360,7 +360,8 @@ public class TileEntityForceField extends TileEntityLoadedBase implements ITicka
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
+        double r = radius;
+        return new AxisAlignedBB(pos.getX() - r, pos.getY() - r, pos.getZ() - r, pos.getX() + 1 + r, pos.getY() + 1 + r, pos.getZ() + 1 + r);
     }
 
     @Override

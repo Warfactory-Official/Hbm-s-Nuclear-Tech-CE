@@ -217,6 +217,7 @@ public class BlockSnowglobe extends BlockContainer implements INBTBlockTransform
     public static class TileEntitySnowglobe extends TileEntity {
 
         public SnowglobeType type = SnowglobeType.NONE;
+        private AxisAlignedBB bb;
 
         @Override
         public @NotNull NBTTagCompound getUpdateTag() {
@@ -252,6 +253,12 @@ public class BlockSnowglobe extends BlockContainer implements INBTBlockTransform
             super.writeToNBT(nbt);
             nbt.setByte("type", (byte) type.ordinal());
             return nbt;
+        }
+
+        @Override
+        public AxisAlignedBB getRenderBoundingBox() {
+            if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+            return bb;
         }
     }
 

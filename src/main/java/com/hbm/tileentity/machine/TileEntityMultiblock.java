@@ -17,6 +17,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @AutoRegister
 public class TileEntityMultiblock extends TileEntity implements ITickable {
 
+	private AxisAlignedBB bb;
+
 	@Override
 	public void update() {
 		if(!world.isRemote) {
@@ -195,7 +197,8 @@ public class TileEntityMultiblock extends TileEntity implements ITickable {
 	
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		if (bb == null) bb = new AxisAlignedBB(pos.getX() - 5, pos.getY(), pos.getZ() - 5, pos.getX() + 6, pos.getY() + 12, pos.getZ() + 6);
+		return bb;
 	}
 	
 	@Override

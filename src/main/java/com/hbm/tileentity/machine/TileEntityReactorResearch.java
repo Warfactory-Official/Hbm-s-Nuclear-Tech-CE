@@ -40,6 +40,7 @@ import java.util.List;
 @AutoRegister
 public class TileEntityReactorResearch extends TileEntityMachineBase implements IControlReceiver, IGUIProvider, ITickable {
 
+    private AxisAlignedBB bb;
     @SideOnly(Side.CLIENT)
     public double lastLevel;
     public double level;
@@ -386,7 +387,8 @@ public class TileEntityReactorResearch extends TileEntityMachineBase implements 
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
+        if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 3, pos.getZ() + 1);
+        return bb;
     }
 
     @Override

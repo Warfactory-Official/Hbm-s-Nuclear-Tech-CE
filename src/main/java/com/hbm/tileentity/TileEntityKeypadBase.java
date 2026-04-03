@@ -7,6 +7,7 @@ import com.hbm.util.Keypad;
 import com.hbm.util.KeypadClient;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.ITickable;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
@@ -18,7 +19,8 @@ import org.lwjgl.util.vector.Vector3f;
 public class TileEntityKeypadBase extends TileEntity implements ITickable, IKeypadHandler {
 
 	public Keypad keypad;
-	
+	private AxisAlignedBB bb;
+
 	public TileEntityKeypadBase() {
 		if(FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER){
 			keypad = new Keypad(this);
@@ -83,6 +85,12 @@ public class TileEntityKeypadBase extends TileEntity implements ITickable, IKeyp
 	public void readFromNBT(NBTTagCompound compound) {
 		keypad.readFromNbt(compound);
 		super.readFromNBT(compound);
+	}
+
+	@Override
+	public AxisAlignedBB getRenderBoundingBox() {
+		if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+		return bb;
 	}
 
 }

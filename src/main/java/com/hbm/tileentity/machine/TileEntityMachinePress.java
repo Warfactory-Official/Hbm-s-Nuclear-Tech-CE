@@ -30,6 +30,7 @@ import org.jetbrains.annotations.Nullable;
 @AutoRegister
 public class TileEntityMachinePress extends TileEntityMachineBase implements ITickable, IGUIProvider {
 
+	private AxisAlignedBB bb;
 	public int speed = 0;
 	public static final int maxSpeed = 400;
 	public static final int progressAtMax = 25;
@@ -200,7 +201,8 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements ITi
 
 	@Override
 	public @NotNull AxisAlignedBB getRenderBoundingBox() {
-		return new AxisAlignedBB(pos, pos.add(1, 3, 1));
+		if (bb == null) bb = new AxisAlignedBB(pos, pos.add(1, 3, 1));
+		return bb;
 	}
 
 	@Override

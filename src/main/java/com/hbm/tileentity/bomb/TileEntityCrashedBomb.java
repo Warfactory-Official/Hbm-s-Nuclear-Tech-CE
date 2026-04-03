@@ -18,6 +18,7 @@ import java.util.function.BiConsumer;
 
 @AutoRegister
 public class TileEntityCrashedBomb extends TileEntity implements ITickable {
+    private AxisAlignedBB bb;
 
     @Override
     public void update() {
@@ -55,7 +56,8 @@ public class TileEntityCrashedBomb extends TileEntity implements ITickable {
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
+        if (bb == null) bb = new AxisAlignedBB(pos.getX() - 2, pos.getY() - 1, pos.getZ() - 2, pos.getX() + 3, pos.getY() + 3, pos.getZ() + 3);
+        return bb;
     }
 
     @Override

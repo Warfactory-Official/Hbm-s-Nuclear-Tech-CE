@@ -17,12 +17,6 @@ import org.jetbrains.annotations.NotNull;
 public class RenderRBMKLid extends TileEntitySpecialRenderer<TileEntityRBMKRod> {
 
 	private static final ResourceLocation TEX_FUEL = new ResourceLocation(Tags.MODID, "textures/blocks/rbmk/rbmk_element_fuel.png");
-
-	@Override
-	public boolean isGlobalRenderer(@NotNull TileEntityRBMKRod te) {
-		return true;
-	}
-
 	@Override
 	public void render(@NotNull TileEntityRBMKRod te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
         if (!te.hasRod) return;

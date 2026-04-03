@@ -326,9 +326,61 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
         shouldUseBB = tex > 0;
     }
 
+    private AxisAlignedBB bb;
+
     @Override
     public @NotNull AxisAlignedBB getRenderBoundingBox() {
-        return INFINITE_EXTENT_AABB;
+        if (bb != null) return bb;
+        if (doorType == null) return new AxisAlignedBB(pos, pos.add(1, 1, 1));
+        int[] d = doorType.getDimensions();
+        int h = Math.max(Math.max(d[2], d[3]), Math.max(d[4], d[5]));
+        int up = d[0], down = d[1];
+        int[][] extra = doorType.getExtraDimensions();
+        if (extra != null) {
+            for (int[] e : extra) {
+                h = Math.max(h, Math.max(Math.max(Math.abs(e[2]), Math.abs(e[3])), Math.max(Math.abs(e[4]), Math.abs(e[5]))));
+                up = Math.max(up, e[0]);
+                down = Math.max(down, e[1]);
+            }
+        }
+        int minX = -h, maxX = 1 + h;
+        int minY = -down, maxY = 1 + up;
+        int minZ = -h, maxZ = 1 + h;
+
+        int[][] ranges = doorType.getDoorOpenRanges();
+        ForgeDirection dir = ForgeDirection.getOrientation(getBlockMetadata() - BlockDummyable.offset);
+        Rotation r = dir.getBlockRotation();
+        if (dir.toEnumFacing().getAxis() == EnumFacing.Axis.X) r = r.add(Rotation.CLOCKWISE_180);
+
+        for (int[] range : ranges) {
+            int absExt = Math.abs(range[3]);
+            int signExt = (int) Math.signum(range[3]);
+            for (int j = 0; j < absExt; j++) {
+                for (int k = 0; k < range[4]; k++) {
+                    int ax = 0, ay = 0, az = 0;
+                    switch (range[5]) {
+                        case 0 -> { ay = k; az = signExt * j; }
+                        case 1 -> { ax = k; ay = signExt * j; }
+                        case 2 -> { ax = signExt * j; ay = k; }
+                    }
+                    int rx = range[0] + ax, ry = range[1] + ay, rz = range[2] + az;
+                    int rotX = rx, rotZ = rz;
+                    switch (r) {
+                        case CLOCKWISE_90 -> { rotX = -rz; rotZ = rx; }
+                        case CLOCKWISE_180 -> { rotX = -rx; rotZ = -rz; }
+                        case COUNTERCLOCKWISE_90 -> { rotX = rz; rotZ = -rx; }
+                    }
+                    minX = Math.min(minX, rotX);
+                    maxX = Math.max(maxX, rotX + 1);
+                    minY = Math.min(minY, ry);
+                    maxY = Math.max(maxY, ry + 1);
+                    minZ = Math.min(minZ, rotZ);
+                    maxZ = Math.max(maxZ, rotZ + 1);
+                }
+            }
+        }
+        return bb = new AxisAlignedBB(pos.getX() + minX, pos.getY() + minY, pos.getZ() + minZ,
+                pos.getX() + maxX, pos.getY() + maxY, pos.getZ() + maxZ);
     }
 
     @Override

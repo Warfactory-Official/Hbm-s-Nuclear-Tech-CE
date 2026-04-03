@@ -47,6 +47,7 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 	public ItemStackHandler inventory;
 	public ControlPanel panel;
 	public BlockControlPanelType panelType = BlockControlPanelType.CUSTOM_PANEL;
+	private AxisAlignedBB bb;
 	private final int[] redstoneInputPower = new int[EnumFacing.VALUES.length];
 	private final int[] redstoneInputWeak = new int[EnumFacing.VALUES.length];
 	private final int[] redstoneInputStrong = new int[EnumFacing.VALUES.length];
@@ -625,6 +626,12 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 	@SideOnly(Side.CLIENT)
 	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		return new GuiControlEdit(player.inventory, this);
+	}
+
+	@Override
+	public AxisAlignedBB getRenderBoundingBox() {
+		if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+		return bb;
 	}
 
 	private static final class RedstoneInputSnapshot {

@@ -79,6 +79,8 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
     public int lastTargetY;
     public int lastTargetZ;
     public boolean beam;
+    private boolean prevBeam;
+    private int prevTargetX, prevTargetY, prevTargetZ;
     private double breakProgress;
     private double clientBreakProgress = 0;
 
@@ -199,6 +201,14 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
 
             if (beam) PacketDispatcher.wrapper.sendToAll(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()));
             networkPackNT(250);
+        } else {
+            if (prevBeam != beam || (beam && (prevTargetX != targetX || prevTargetY != targetY || prevTargetZ != targetZ))) {
+                prevBeam = beam;
+                prevTargetX = targetX;
+                prevTargetY = targetY;
+                prevTargetZ = targetZ;
+                world.markBlockRangeForRenderUpdate(pos, pos);
+            }
         }
     }
 
@@ -485,7 +495,16 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
+        if (!beam)
+            return new AxisAlignedBB(pos.getX() - 1, pos.getY() - 1, pos.getZ() - 1,
+                    pos.getX() + 2, pos.getY() + 2, pos.getZ() + 2);
+        return new AxisAlignedBB(
+                Math.min(pos.getX(), Math.min(lastTargetX, targetX)),
+                Math.min(pos.getY(), Math.min(lastTargetY, targetY)),
+                Math.min(pos.getZ(), Math.min(lastTargetZ, targetZ)),
+                Math.max(pos.getX(), Math.max(lastTargetX, targetX)) + 1,
+                Math.max(pos.getY(), Math.max(lastTargetY, targetY)) + 1,
+                Math.max(pos.getZ(), Math.max(lastTargetZ, targetZ)) + 1);
     }
 
     @Override

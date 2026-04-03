@@ -5,7 +5,9 @@
   "compatibilityLevel": "JAVA_8",
   "target": "@env(DEFAULT)",
   "client": [
-    "MixinBufferBuilderNeonium"
+    "MixinBufferBuilderNeonium",
+    "mod.neonium.MixinChunkRenderManager",
+    "mod.neonium.MixinSodiumWorldRenderer"
   ],
   "mixins": [],
   "server": [],

@@ -21,12 +21,6 @@ import net.minecraft.util.math.Vec3d;
 
 @AutoRegister
 public class RenderCoreComponent extends TileEntitySpecialRenderer<TileEntityMachineBase> implements IItemRendererProvider {
-
-    @Override
-    public boolean isGlobalRenderer(TileEntityMachineBase te) {
-        return true;
-    }
-
     @Override
     public void render(TileEntityMachineBase tileEntity, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
         GlStateManager.pushMatrix();

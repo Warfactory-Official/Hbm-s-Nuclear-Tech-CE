@@ -37,6 +37,7 @@ import java.util.*;
 @AutoRegister
 public class TileEntityRBMKConsole extends TileEntityMachineBase implements IControlReceiver, IGUIProvider, ITickable, SimpleComponent, CompatHandler.OCComponent {
 
+    private AxisAlignedBB bb;
     public static final int fluxDisplayBuffer = 60;
     public int[] fluxBuffer = new int[fluxDisplayBuffer];
     // one-dimensional for simpler (de)serialization
@@ -302,7 +303,8 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
 
     @Override
     public @NotNull AxisAlignedBB getRenderBoundingBox() {
-        return new AxisAlignedBB(pos.getX() - 2, pos.getY(), pos.getZ() - 2, pos.getX() + 3, pos.getY() + 4, pos.getZ() + 3);
+        if (bb == null) bb = new AxisAlignedBB(pos.getX() - 2, pos.getY(), pos.getZ() - 2, pos.getX() + 3, pos.getY() + 4, pos.getZ() + 3);
+        return bb;
     }
 
     @Override

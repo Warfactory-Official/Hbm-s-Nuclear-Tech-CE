@@ -14,12 +14,6 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister
 public class RenderBreeder extends TileEntitySpecialRenderer<TileEntityMachineReactorBreeding>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityMachineReactorBreeding te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityMachineReactorBreeding breeder,

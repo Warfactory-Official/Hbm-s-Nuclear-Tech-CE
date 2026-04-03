@@ -1,6 +1,6 @@
 package com.hbm.mixin.mod.neonium;
 
-import com.hbm.render.chunk.IOversizedModelExtentsHolder;
+import com.hbm.render.chunk.IExtraExtentsHolder;
 import me.jellysquid.mods.sodium.client.render.chunk.cull.graph.ChunkGraphNode;
 import me.jellysquid.mods.sodium.client.util.math.FrustumExtended;
 import net.minecraft.client.renderer.chunk.SetVisibility;
@@ -27,7 +27,7 @@ public abstract class MixinChunkGraphNode {
     @Inject(method = "setOcclusionData", at = @At("RETURN"))
     private void hbm$cacheExpansion(SetVisibility occlusionData, CallbackInfo ci) {
         if (occlusionData != null) {
-            IOversizedModelExtentsHolder holder = (IOversizedModelExtentsHolder) occlusionData;
+            IExtraExtentsHolder holder = (IExtraExtentsHolder) occlusionData;
             hbm$negX = holder.hbm$getNegX();
             hbm$posX = holder.hbm$getPosX();
             hbm$negY = holder.hbm$getNegY();

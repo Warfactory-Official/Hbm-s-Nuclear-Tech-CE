@@ -21,7 +21,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.Container;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
+
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -40,6 +40,7 @@ public class TileEntityCoreReceiver extends TileEntityMachineBase implements ITi
     public long joules;
     public long prevJoules;
     public FluidTankNTM tank;
+    private AxisAlignedBB bb;
 
     public TileEntityCoreReceiver() {
         super(0, true, true);
@@ -95,7 +96,8 @@ public class TileEntityCoreReceiver extends TileEntityMachineBase implements ITi
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
+        if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+        return bb;
     }
 
     @Override

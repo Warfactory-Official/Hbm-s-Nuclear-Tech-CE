@@ -8,12 +8,6 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 @AutoRegister
 public class RenderSoyuzLauncher extends TileEntitySpecialRenderer<TileEntitySoyuzLauncher> {
-
-	@Override
-	public boolean isGlobalRenderer(TileEntitySoyuzLauncher te) {
-		return true;
-	}
-	
 	@Override
 	public void render(TileEntitySoyuzLauncher soyuzLauncher, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
 		GlStateManager.pushMatrix();

@@ -24,12 +24,6 @@ import java.nio.DoubleBuffer;
 public class RenderSlidingBlastDoor extends TileEntitySpecialRenderer<TileEntitySlidingBlastDoor> {
 
 	private static DoubleBuffer buf = null;
-	
-	@Override
-	public boolean isGlobalRenderer(TileEntitySlidingBlastDoor te) {
-		return true;
-	}
-	
 	@Override
 	public void render(TileEntitySlidingBlastDoor te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
 		GlStateManager.pushMatrix();
