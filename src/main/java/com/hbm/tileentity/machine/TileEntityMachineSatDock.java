@@ -20,7 +20,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -177,17 +176,6 @@ public class TileEntityMachineSatDock extends TileEntityMachineBase implements I
 	}
 
 	@Override
-	public AxisAlignedBB getRenderBoundingBox(){
-		return TileEntity.INFINITE_EXTENT_AABB;
-	}
-
-	@Override
-	@SideOnly(Side.CLIENT)
-	public double getMaxRenderDistanceSquared(){
-		return 65536.0D;
-	}
-	
-	@Override
 	public int[] getAccessibleSlotsFromSide(EnumFacing e){
 		return access;
 	}
@@ -216,5 +204,11 @@ public class TileEntityMachineSatDock extends TileEntityMachineBase implements I
 	@SideOnly(Side.CLIENT)
 	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		return new GUIMachineSatDock(player.inventory, this);
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public double getMaxRenderDistanceSquared() {
+		return 65536.0D;
 	}
 }

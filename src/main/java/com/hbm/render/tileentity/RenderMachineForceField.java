@@ -16,12 +16,6 @@ import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManage
 @AutoRegister
 public class RenderMachineForceField extends TileEntitySpecialRenderer<TileEntityForceField>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityForceField te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityForceField ff,

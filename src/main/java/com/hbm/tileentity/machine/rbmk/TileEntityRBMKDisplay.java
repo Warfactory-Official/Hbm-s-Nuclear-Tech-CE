@@ -6,6 +6,7 @@ import com.hbm.util.Compat;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.ITickable;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,6 +18,7 @@ public class TileEntityRBMKDisplay extends TileEntityLoadedBase implements ITick
     private int targetZ;
 
     private byte rotation;
+    private AxisAlignedBB bb;
 
     public RBMKColumn[] columns = new RBMKColumn[7 * 7];
 
@@ -116,5 +118,11 @@ public class TileEntityRBMKDisplay extends TileEntityLoadedBase implements ITick
             case 3 -> -i;
             default -> j;
         };
+    }
+
+    @Override
+    public AxisAlignedBB getRenderBoundingBox() {
+        if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+        return bb;
     }
 }

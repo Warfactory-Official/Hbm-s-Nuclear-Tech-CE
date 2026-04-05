@@ -62,6 +62,7 @@ import static com.hbm.items.machine.ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted
 @AutoRegister
 public class TileEntityReactorZirnox extends TileEntityMachineBase implements ITickable, IControlReceiver, IFluidStandardTransceiver, SimpleComponent, IGUIProvider, CompatHandler.OCComponent {
 
+    private AxisAlignedBB bb;
     public static final int maxHeat = 100000;
     private boolean redstonePowered = false;
     public static final int maxPressure = 100000;
@@ -449,7 +450,8 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
     }
 
     public @NotNull AxisAlignedBB getRenderBoundingBox() {
-        return new AxisAlignedBB(pos.getX() - 2, pos.getY(), pos.getZ() - 2, pos.getX() + 3, pos.getY() + 5, pos.getZ() + 3);
+        if (bb == null) bb = new AxisAlignedBB(pos.getX() - 2, pos.getY(), pos.getZ() - 2, pos.getX() + 3, pos.getY() + 5, pos.getZ() + 3);
+        return bb;
     }
 
     @SideOnly(Side.CLIENT)

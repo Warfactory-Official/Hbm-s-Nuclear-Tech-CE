@@ -80,6 +80,7 @@ public class ResourceManager {
     public static final IModelCustom fusion_torus = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/fusion/torus.obj")).asVBO();
     public static final IModelCustom fusion_klystron = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/fusion/klystron.obj")).asVBO();
     public static final IModelCustom fusion_mhdt = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/fusion/mhdt.obj")).asVBO();
+    public static final IModelCustom fusion_plasma_forge = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/fusion/plasma_forge.obj")).asVBO();
 
     //FENSU
     public static final IModelCustom battery_socket = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/battery.obj")).asVBO();
@@ -462,7 +463,9 @@ public class ResourceManager {
     public static final ResourceLocation fusion_plasma_glow_tex = new ResourceLocation(Tags.MODID, "textures/models/fusion/plasma_glow.png");
     public static final ResourceLocation fusion_plasma_sparkle_tex = new ResourceLocation(Tags.MODID, "textures/models/fusion/plasma_sparkle.png");
     public static final ResourceLocation fusion_klystron_tex = new ResourceLocation(Tags.MODID, "textures/models/fusion/klystron.png");
+    public static final ResourceLocation fusion_klystron_creative_tex = new ResourceLocation(Tags.MODID, "textures/models/fusion/klystron_creative.png");
     public static final ResourceLocation fusion_mhdt_tex = new ResourceLocation(Tags.MODID, "textures/models/fusion/mhdt.png");
+    public static final ResourceLocation fusion_plasma_forge_tex = new ResourceLocation(Tags.MODID, "textures/models/fusion/plasma_forge.png");
 
     //Strand Caster
     public static final ResourceLocation strand_caster_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/strand_caster.png");

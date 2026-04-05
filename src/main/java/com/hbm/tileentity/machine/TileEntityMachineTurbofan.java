@@ -52,6 +52,7 @@ import java.util.List;
 @AutoRegister
 public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implements ITickable, IEnergyProviderMK2, IFluidStandardTransceiver, IUpgradeInfoProvider, IGUIProvider, IFluidCopiable, IFFtoNTMF {
 
+	private AxisAlignedBB bb;
 	public long power;
 	public static final long maxPower = 1_000_000;
 	public FluidTankNTM tank;
@@ -463,7 +464,8 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 	@NotNull
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		if (bb == null) bb = new AxisAlignedBB(pos.getX() - 3, pos.getY(), pos.getZ() - 3, pos.getX() + 4, pos.getY() + 3, pos.getZ() + 4);
+		return bb;
 	}
 
 	@Override

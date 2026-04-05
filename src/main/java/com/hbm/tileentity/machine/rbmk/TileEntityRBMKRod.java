@@ -187,12 +187,6 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 		}
 	}
 
-//	@Override
-//	public boolean canExtractItem(int slot, ItemStack itemStack, int amount) {
-//		if(itemStack.getItem() instanceof ItemRBMKRod) return !(ItemRBMKRod.getMeltdownPercent(itemStack) > 0);
-//		return true;
-//	}
-	
 	/**
 	 * SLOW: full efficiency for slow neutrons, fast neutrons have half efficiency
 	 * FAST: fast neutrons have 100% efficiency, slow only 30%

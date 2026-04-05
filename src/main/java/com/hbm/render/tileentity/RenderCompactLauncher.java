@@ -13,12 +13,6 @@ import net.minecraft.item.Item;
 @AutoRegister
 public class RenderCompactLauncher extends TileEntitySpecialRenderer<TileEntityCompactLauncher>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityCompactLauncher te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityCompactLauncher launcher,

@@ -38,6 +38,7 @@ public class TileEntityMicrowave extends TileEntityMachineBase implements ITicka
 	public int time;
 	public int speed;
 	public static final int maxSpeed = 5;
+	private AxisAlignedBB bb;
 	
 	public TileEntityMicrowave() {
 		super(3);
@@ -192,7 +193,8 @@ public class TileEntityMicrowave extends TileEntityMachineBase implements ITicka
 
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+		return bb;
 	}
 
 	@Override

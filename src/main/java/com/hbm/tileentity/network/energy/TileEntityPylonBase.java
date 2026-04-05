@@ -24,6 +24,7 @@ public abstract class TileEntityPylonBase extends TileEntityCableBaseNT {
 	
 	public List<int[]> connected = new ArrayList<>();
 	public int color;
+	private AxisAlignedBB bb;
 
 	public static int canConnect(TileEntityPylonBase first, TileEntityPylonBase second) {
 
@@ -73,6 +74,7 @@ public abstract class TileEntityPylonBase extends TileEntityCableBaseNT {
 	public void addConnection(int x, int y, int z) {
 
 		connected.add(new int[] {x, y, z});
+		this.bb = null;
 
 		Nodespace.PowerNode node = Nodespace.getNode(world, pos);
 		if (node == null) return;
@@ -107,6 +109,7 @@ public abstract class TileEntityPylonBase extends TileEntityCableBaseNT {
 					}
 				}
 
+				pylon.bb = null;
 				pylon.markDirty();
 
 				if(world instanceof WorldServer worldS) {
@@ -152,6 +155,7 @@ public abstract class TileEntityPylonBase extends TileEntityCableBaseNT {
 		this.color = nbt.getInteger("color");
 
 		this.connected.clear();
+		this.bb = null;
 
 		for(int i = 0; i < count; i++) {
 			connected.add(nbt.getIntArray("con" + i));
@@ -179,6 +183,9 @@ public abstract class TileEntityPylonBase extends TileEntityCableBaseNT {
 	@Override
 	public void onDataPacket(@NotNull NetworkManager net, SPacketUpdateTileEntity pkt) {
 		this.readFromNBT(pkt.getNbtCompound());
+		if (world != null) {
+			world.markBlockRangeForRenderUpdate(pos, pos);
+		}
 	}
 
 	public enum ConnectionType {
@@ -190,7 +197,50 @@ public abstract class TileEntityPylonBase extends TileEntityCableBaseNT {
 	
 	@Override
 	public @NotNull AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		if (bb != null) return bb;
+		double minX = pos.getX(), minY = pos.getY(), minZ = pos.getZ();
+		double maxX = pos.getX() + 1, maxY = pos.getY() + 1, maxZ = pos.getZ() + 1;
+
+		for (Vec3d m : getMountPos()) {
+			double mx = pos.getX() + m.x;
+			double my = pos.getY() + m.y;
+			double mz = pos.getZ() + m.z;
+			if (mx < minX) minX = mx;
+			if (my < minY) minY = my;
+			if (my > maxY) maxY = my;
+			if (mz < minZ) minZ = mz;
+			if (mx > maxX) maxX = mx;
+			if (mz > maxZ) maxZ = mz;
+		}
+
+		for (int[] c : connected) {
+			TileEntity te = world != null ? world.getTileEntity(new BlockPos(c[0], c[1], c[2])) : null;
+			if (te instanceof TileEntityPylonBase other) {
+				for (Vec3d m : other.getMountPos()) {
+					double mx = c[0] + m.x;
+					double my = c[1] + m.y;
+					double mz = c[2] + m.z;
+					if (mx < minX) minX = mx;
+					if (my < minY) minY = my;
+					if (my > maxY) maxY = my;
+					if (mz < minZ) minZ = mz;
+					if (mx > maxX) maxX = mx;
+					if (mz > maxZ) maxZ = mz;
+				}
+			} else {
+				if (c[0] < minX) minX = c[0];
+				if (c[1] < minY) minY = c[1];
+				if (c[2] < minZ) minZ = c[2];
+				if (c[0] + 1 > maxX) maxX = c[0] + 1;
+				if (c[1] + 1 > maxY) maxY = c[1] + 1;
+				if (c[2] + 1 > maxZ) maxZ = c[2] + 1;
+			}
+		}
+
+		// cable sag: up to min(length/15, 2.5) blocks below the straight line
+		minY -= 2.5;
+
+		return bb = new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
 	}
 
 	@Override

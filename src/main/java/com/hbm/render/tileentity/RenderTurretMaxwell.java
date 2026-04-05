@@ -15,12 +15,6 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister(tileentity = TileEntityTurretMaxwell.class)
 public class RenderTurretMaxwell extends RenderTurretBase<TileEntityTurretMaxwell>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityTurretMaxwell te) {
-    return te.beam > 0;
-  }
-
   @Override
   public void render(
       TileEntityTurretMaxwell turret,

@@ -42,6 +42,7 @@ import org.jetbrains.annotations.NotNull;
 @AutoRegister
 public class TileEntityRailgun extends TileEntityLoadedBase implements ITickable, IEnergyReceiverMK2, IGUIProvider {
 
+	private AxisAlignedBB bb;
 	public ItemStackHandler inventory;
 	public ICapabilityProvider specialProvider;
 	
@@ -300,7 +301,8 @@ public class TileEntityRailgun extends TileEntityLoadedBase implements ITickable
 	
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		if (bb == null) bb = new AxisAlignedBB(pos.getX() - 6, pos.getY() - 3, pos.getZ() - 6, pos.getX() + 7, pos.getY() + 6, pos.getZ() + 7);
+		return bb;
 	}
 	
 	@Override

@@ -450,6 +450,7 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 	}
 	
 	public abstract int[] getDimensions();
+
 	public abstract int getOffset();
 	
 	public int getHeightOffset() {

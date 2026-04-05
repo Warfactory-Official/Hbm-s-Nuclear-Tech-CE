@@ -18,12 +18,6 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister
 public class RenderOrbus extends TileEntitySpecialRenderer<TileEntityMachineOrbus>
         implements IItemRendererProvider {
-
-    @Override
-    public boolean isGlobalRenderer(TileEntityMachineOrbus te) {
-        return true;
-    }
-
     @Override
     public void render(
             TileEntityMachineOrbus orbus,

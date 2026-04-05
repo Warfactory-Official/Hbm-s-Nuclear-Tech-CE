@@ -73,9 +73,9 @@ public class BlockFunnelBakedModel extends AbstractWavefrontBakedModel {
     private List<BakedQuad> buildItemQuads() {
         List<BakedQuad> out = new ArrayList<>();
 
-        out.addAll(bakeSimpleQuads(Collections.singleton("Top"), 0, 0, itemYaw, false, false, spriteTop));
-        out.addAll(bakeSimpleQuads(Collections.singleton("Side"), 0, 0, itemYaw, false, false, spriteSide));
-        out.addAll(bakeSimpleQuads(Collections.singleton("Bottom"), 0, 0, itemYaw, false, false, spriteBottom));
+        out.addAll(bakeSimpleQuads(Collections.singleton("Top"), 0, 0, itemYaw, true, false, spriteTop));
+        out.addAll(bakeSimpleQuads(Collections.singleton("Side"), 0, 0, itemYaw, true, false, spriteSide));
+        out.addAll(bakeSimpleQuads(Collections.singleton("Bottom"), 0, 0, itemYaw, true, false, spriteBottom));
         return out;
     }
 

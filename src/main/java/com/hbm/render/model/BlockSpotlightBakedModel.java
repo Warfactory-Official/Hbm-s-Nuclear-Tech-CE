@@ -151,7 +151,7 @@ public class BlockSpotlightBakedModel extends AbstractWavefrontBakedModel {
     private List<BakedQuad> buildWorldQuads(String partName, float roll, float pitch, float yaw,
                                             float extraTx, float extraTy, float extraTz) {
         return new ArrayList<>(
-                bakeSimpleQuads(Collections.singleton(partName), roll, pitch, yaw, false, false, sprite, -1, extraTx,
+                bakeSimpleQuads(Collections.singleton(partName), roll, pitch, yaw, true, false, sprite, -1, extraTx,
                         extraTy, extraTz));
     }
 
@@ -164,7 +164,7 @@ public class BlockSpotlightBakedModel extends AbstractWavefrontBakedModel {
             default -> partName;
         };
 
-        return new ArrayList<>(bakeSimpleQuads(Collections.singleton(partName), 0, 0, itemYaw, false, true, sprite));
+        return new ArrayList<>(bakeSimpleQuads(Collections.singleton(partName), 0, 0, itemYaw, true, true, sprite));
     }
 
     @Override

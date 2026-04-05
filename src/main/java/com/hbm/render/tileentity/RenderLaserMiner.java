@@ -17,12 +17,6 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister
 public class RenderLaserMiner extends TileEntitySpecialRenderer<TileEntityMachineMiningLaser>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityMachineMiningLaser te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityMachineMiningLaser laser,

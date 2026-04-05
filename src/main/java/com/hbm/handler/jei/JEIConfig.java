@@ -74,6 +74,7 @@ public class JEIConfig implements IModPlugin {
     public static final String FRACTIONING = "hbm.fracturing";
     public static final String FUSION_BYPRODUCT = "hbm.fusionbyproduct";
     public static final String FUSION_BREEDER = "hbm.fusionbreeder";
+    public static final String PLASMA_FORGE = "hbm.plasma_forge";
     public static final String GAS_CENT = "hbm.gas_centrifuge";
     public static final String HADRON = "hbm.hadron";
     public static final String HYDROTREATING = "hbm.hydrotreating";
@@ -135,6 +136,7 @@ public class JEIConfig implements IModPlugin {
     private FractioningRecipeHandler fractioningHandler;
     private FusionBreederRecipeHandler fusionBreederRecipeHandler;
     private FusionRecipeHandler fusionRecipeHandler;
+    private PlasmaForgeRecipeHandler plasmaForgeRecipeHandler;
     private FuelPoolHandler fuelPoolHandler;
     private HydrotreatingHandler hydrotreatHandler;
     private LiquefactionHandler liquefactHandler;
@@ -230,6 +232,7 @@ public class JEIConfig implements IModPlugin {
         registry.addRecipeCatalyst(new ItemStack(ModItems.book_of_), BOOK);
         registry.addRecipeCatalyst(new ItemStack(ModBlocks.fusion_torus), FUSION_BYPRODUCT);
         registry.addRecipeCatalyst(new ItemStack(ModBlocks.fusion_breeder), FUSION_BREEDER);
+        registry.addRecipeCatalyst(new ItemStack(ModBlocks.fusion_plasma_forge), PLASMA_FORGE);
         registry.addRecipeCatalyst(new ItemStack(ModBlocks.hadron_core), HADRON);
         registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_silex), SILEX);
         registry.addRecipeCatalyst(new ItemStack(ModBlocks.machine_rtg_grey), RTG);
@@ -284,6 +287,7 @@ public class JEIConfig implements IModPlugin {
         registry.addRecipes(fractioningHandler.getRecipes(), FRACTIONING);
         registry.addRecipes(fusionBreederRecipeHandler.getRecipes(), FUSION_BREEDER);
         registry.addRecipes(fusionRecipeHandler.getRecipes(), FUSION_BYPRODUCT);
+        registry.addRecipes(plasmaForgeRecipeHandler.getRecipes(), PLASMA_FORGE);
         registry.addRecipes(hydrotreatHandler.getRecipes(), HYDROTREATING);
         registry.addRecipes(liquefactHandler.getRecipes(), LIQUEFACTION);
         registry.addRecipes(mixerHandler.getRecipes(), MIXER);
@@ -486,6 +490,7 @@ public class JEIConfig implements IModPlugin {
                 fractioningHandler = new FractioningRecipeHandler(help),
                 fusionBreederRecipeHandler = new FusionBreederRecipeHandler(help),
                 fusionRecipeHandler = new FusionRecipeHandler(help),
+                plasmaForgeRecipeHandler = new PlasmaForgeRecipeHandler(help),
                 fuelPoolHandler = new FuelPoolHandler(help),
                 hydrotreatHandler = new HydrotreatingHandler(help),
                 liquefactHandler = new LiquefactionHandler(help),

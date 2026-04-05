@@ -25,6 +25,7 @@ import java.util.List;
 @AutoRegister
 public class TileEntityZirnoxDestroyed extends TileEntity implements ITickable {
 
+    private AxisAlignedBB bb;
     public boolean onFire = true;
 
     @Override
@@ -98,7 +99,8 @@ public class TileEntityZirnoxDestroyed extends TileEntity implements ITickable {
     }
 
     public AxisAlignedBB getRenderBoundingBox() {
-        return new AxisAlignedBB(pos.getX() - 3, pos.getY(), pos.getZ() - 3, pos.getX() + 4, pos.getY() + 3, pos.getZ() + 4);
+        if (bb == null) bb = new AxisAlignedBB(pos.getX() - 3, pos.getY(), pos.getZ() - 3, pos.getX() + 4, pos.getY() + 3, pos.getZ() + 4);
+        return bb;
     }
 
     @SideOnly(Side.CLIENT)

@@ -26,6 +26,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.Pre;
@@ -119,6 +120,7 @@ public class BlockCableGauge extends BlockContainer implements ILookOverlay, ITo
         private long deltaTick = 10;
         private long deltaSecond = 0;
         public long deltaLastSecond = 0;
+        private AxisAlignedBB bb;
 
         @Override
         public void update() {
@@ -176,6 +178,12 @@ public class BlockCableGauge extends BlockContainer implements ILookOverlay, ITo
         @Optional.Method(modid = "opencomputers")
         public Object[] getPowerPerS(Context context, Arguments args) {
             return new Object[]{deltaLastSecond};
+        }
+
+        @Override
+        public AxisAlignedBB getRenderBoundingBox() {
+            if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+            return bb;
         }
     }
 }

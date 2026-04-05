@@ -5,6 +5,8 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.handler.CompatHandler;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.control_panel.DataValue;
+import com.hbm.inventory.control_panel.DataValueFloat;
+import com.hbm.inventory.control_panel.DataValueString;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
@@ -27,18 +29,21 @@ import java.util.Map;
 public class TileEntityRBMKCooler extends TileEntityRBMKBase implements IFluidStandardTransceiverMK2, SimpleComponent, CompatHandler.OCComponent {
 
 	protected int timer = 0;
+	public int lastCooled;
 	private final FluidTankNTM[] tanks;
 	protected TileEntityRBMKBase[] neighborCache = new TileEntityRBMKBase[25];
 
 	public TileEntityRBMKCooler() {
 		super();
-		this.tanks = new FluidTankNTM[2];
-		this.tanks[0] = new FluidTankNTM(Fluids.PERFLUOROMETHYL_COLD, 4_000);
-		this.tanks[1] = new FluidTankNTM(Fluids.PERFLUOROMETHYL, 4_000);
+		tanks = new FluidTankNTM[2];
+		tanks[0] = new FluidTankNTM(Fluids.PERFLUOROMETHYL_COLD, 4_000);
+		tanks[1] = new FluidTankNTM(Fluids.PERFLUOROMETHYL, 4_000);
 	}
 
 	public void getDiagData(NBTTagCompound nbt) {
-		this.writeToNBT(nbt);
+		diag = true;
+		writeToNBT(nbt);
+		diag = false;
 		nbt.removeTag("jumpheight");
 	}
 
@@ -67,18 +72,28 @@ public class TileEntityRBMKCooler extends TileEntityRBMKBase implements IFluidSt
 				tanks[0].setFill(tanks[0].getFill() - 50);
 				tanks[1].setFill(tanks[1].getFill() + 50);
 
+				int cooled = 0;
 				for(TileEntityRBMKBase neighbor : neighborCache) {
-					if(neighbor != null) {
+					if(neighbor != null && !neighbor.isInvalid()) {
+						double before = neighbor.heat;
 						neighbor.heat -= 200;
 						if(neighbor.heat < 20) neighbor.heat = 20;
+						int delta = (int)(before - neighbor.heat);
+						if(delta > 0) {
+							cooled += delta;
+							neighbor.markDirty();
+						}
 					}
 				}
+				lastCooled = cooled;
+			} else {
+				lastCooled = 0;
 			}
 
-			this.trySubscribe(tanks[0].getTankType(), world, pos.getX(), pos.getY() - 1, pos.getZ(), Library.NEG_Y);
+			trySubscribe(tanks[0].getTankType(), world, pos.getX(), pos.getY() - 1, pos.getZ(), Library.NEG_Y);
 
-			if(this.tanks[1].getFill() > 0) for(DirPos pos : getOutputPos()) {
-				this.tryProvide(this.tanks[1], world, pos);
+			if(tanks[1].getFill() > 0) for(DirPos pos : getOutputPos()) {
+				tryProvide(tanks[1], world, pos);
 			}
 
 		}
@@ -90,25 +105,25 @@ public class TileEntityRBMKCooler extends TileEntityRBMKBase implements IFluidSt
 
 		if(world.getBlockState(pos.down()).getBlock() == ModBlocks.rbmk_loader) {
 			return new DirPos[] {
-					new DirPos(this.pos.getX(), this.pos.getY() + RBMKDials.getColumnHeight(world) + 1, this.pos.getZ(), Library.POS_Y),
-					new DirPos(this.pos.getX() + 1, this.pos.getY() - 1, this.pos.getZ(), Library.POS_X),
-					new DirPos(this.pos.getX() - 1, this.pos.getY() - 1, this.pos.getZ(), Library.NEG_X),
-					new DirPos(this.pos.getX(), this.pos.getY() - 1, this.pos.getZ() + 1, Library.POS_Z),
-					new DirPos(this.pos.getX(), this.pos.getY() - 1, this.pos.getZ() - 1, Library.NEG_Z),
-					new DirPos(this.pos.getX(), this.pos.getY() - 2, this.pos.getZ(), Library.NEG_Y)
+					new DirPos(pos.getX(), pos.getY() + RBMKDials.getColumnHeight(world) + 1, pos.getZ(), Library.POS_Y),
+					new DirPos(pos.getX() + 1, pos.getY() - 1, pos.getZ(), Library.POS_X),
+					new DirPos(pos.getX() - 1, pos.getY() - 1, pos.getZ(), Library.NEG_X),
+					new DirPos(pos.getX(), pos.getY() - 1, pos.getZ() + 1, Library.POS_Z),
+					new DirPos(pos.getX(), pos.getY() - 1, pos.getZ() - 1, Library.NEG_Z),
+					new DirPos(pos.getX(), pos.getY() - 2, pos.getZ(), Library.NEG_Y)
 			};
 		} else if(world.getBlockState(pos.down(2)).getBlock() == ModBlocks.rbmk_loader) {
 			return new DirPos[] {
-					new DirPos(this.pos.getX(), this.pos.getY() + RBMKDials.getColumnHeight(world) + 1, this.pos.getZ(), Library.POS_Y),
-					new DirPos(this.pos.getX() + 1, this.pos.getY() - 2, this.pos.getZ(), Library.POS_X),
-					new DirPos(this.pos.getX() - 1, this.pos.getY() - 2, this.pos.getZ(), Library.NEG_X),
-					new DirPos(this.pos.getX(), this.pos.getY() - 2, this.pos.getZ() + 1, Library.POS_Z),
-					new DirPos(this.pos.getX(), this.pos.getY() - 2, this.pos.getZ() - 1, Library.NEG_Z),
-					new DirPos(this.pos.getX(), this.pos.getY() - 3, this.pos.getZ(), Library.NEG_Y)
+					new DirPos(pos.getX(), pos.getY() + RBMKDials.getColumnHeight(world) + 1, pos.getZ(), Library.POS_Y),
+					new DirPos(pos.getX() + 1, pos.getY() - 2, pos.getZ(), Library.POS_X),
+					new DirPos(pos.getX() - 1, pos.getY() - 2, pos.getZ(), Library.NEG_X),
+					new DirPos(pos.getX(), pos.getY() - 2, pos.getZ() + 1, Library.POS_Z),
+					new DirPos(pos.getX(), pos.getY() - 2, pos.getZ() - 1, Library.NEG_Z),
+					new DirPos(pos.getX(), pos.getY() - 3, pos.getZ(), Library.NEG_Y)
 			};
 		} else {
 			return new DirPos[] {
-					new DirPos(this.pos.getX(), this.pos.getY() + RBMKDials.getColumnHeight(world) + 1, this.pos.getZ(), Library.POS_Y)
+					new DirPos(pos.getX(), pos.getY() + RBMKDials.getColumnHeight(world) + 1, pos.getZ(), Library.POS_Y)
 			};
 		}
 	}
@@ -132,37 +147,42 @@ public class TileEntityRBMKCooler extends TileEntityRBMKBase implements IFluidSt
     @Override
     public void serialize(ByteBuf buf) {
         super.serialize(buf);
-		this.tanks[0].serialize(buf);
-		this.tanks[1].serialize(buf);
+		tanks[0].serialize(buf);
+		tanks[1].serialize(buf);
     }
 
     @Override
     public void deserialize(ByteBuf buf) {
         super.deserialize(buf);
-		this.tanks[0].deserialize(buf);
-		this.tanks[1].deserialize(buf);
+		tanks[0].deserialize(buf);
+		tanks[1].deserialize(buf);
     }
 
 	@Override
 	public ColumnType getConsoleType() {
 		return ColumnType.COOLER;
 	}
-	// Th3_Sl1ze: TODO mov update this pls
+
 	@Override
 	public RBMKColumn getConsoleData() {
 		RBMKColumn.CoolerColumn data = (RBMKColumn.CoolerColumn) super.getConsoleData();
-		//data.cryo = this.tank.getFill();
-		//data.cooled = this.lastCooled;
+		data.cooled = lastCooled;
+		data.cryo = tanks[0].getFill();
+		data.maxCryo = tanks[0].getMaxFill();
+		data.hot = tanks[1].getFill();
+		data.maxHot = tanks[1].getMaxFill();
+		data.coldType = (short) tanks[0].getTankType().getID();
+		data.hotType = (short) tanks[1].getTankType().getID();
 		return data;
 	}
 
-	// control panel
 	@Override
 	public Map<String, DataValue> getQueryData() {
 		Map<String, DataValue> data = super.getQueryData();
-
-		//data.put("coolant", new DataValueFloat(tanks[0].getFill()));
-
+		data.put("t0_fluidType", new DataValueString(tanks[0].getTankType().getName()));
+		data.put("t0_fluidAmount", new DataValueFloat(tanks[0].getFill()));
+		data.put("t1_fluidType", new DataValueString(tanks[1].getTankType().getName()));
+		data.put("t1_fluidAmount", new DataValueFloat(tanks[1].getFill()));
 		return data;
 	}
 

@@ -15,14 +15,7 @@ public final class GeometryBakeUtil {
     }
 
     public static int computeShade(float nx, float ny, float nz) {
-        float brightness = (ny + 0.7F) * 0.9F - Math.abs(nx) * 0.1F + Math.abs(nz) * 0.1F;
-        if (brightness < 0.45F) brightness = 0.45F;
-        if (brightness > 1.0F) brightness = 1.0F;
-        return clampColor((int) (brightness * 255.0F));
-    }
-
-    public static int clampColor(int value) {
-        return Math.min(Math.max(value, 0), 255);
+        return (int) (LightUtil.diffuseLight(nx, ny, nz) * 255.0F);
     }
 
     public static float @NotNull [] rotateX(float x, float y, float z, float angle) {

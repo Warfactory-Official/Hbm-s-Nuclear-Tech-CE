@@ -1,5 +1,6 @@
 package com.hbm.render.model;
 
+import com.hbm.lib.internal.UnsafeHolder;
 import com.hbm.render.loader.*;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
@@ -14,6 +15,8 @@ import javax.vecmath.Vector3f;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import static com.hbm.lib.internal.UnsafeHolder.U;
 
 /**
  * Base implementation for baked models that render exported Wavefront meshes.
@@ -34,9 +37,9 @@ public abstract class AbstractWavefrontBakedModel extends AbstractBakedModel {
         this.model = model;
         this.format = format;
         this.baseScale = baseScale;
-        this.baseTx = tx;
-        this.baseTy = ty;
-        this.baseTz = tz;
+        baseTx = tx;
+        baseTy = ty;
+        baseTz = tz;
     }
 
     protected List<BakedQuad> bakeSimpleQuads(Set<String> partNames, float roll, float pitch, float yaw,
@@ -86,8 +89,6 @@ public abstract class AbstractWavefrontBakedModel extends AbstractBakedModel {
                 float[] n2 = GeometryBakeUtil.rotateZ(n1[0], n1[1], n1[2], pitch);
                 float[] n3 = GeometryBakeUtil.rotateY(n2[0], n2[1], n2[2], yaw);
 
-                int color = applyShading ? GeometryBakeUtil.computeShade(n3[0], n3[1], n3[2]) : 255;
-
                 int vertexCount = face.vertices.length;
                 if (vertexCount < 3) {
                     continue;
@@ -101,6 +102,7 @@ public abstract class AbstractWavefrontBakedModel extends AbstractBakedModel {
                 float[] uu = new float[4];
                 float[] vv = new float[4];
                 Vector3f[] vertexNormals = new Vector3f[4];
+                int[] colors = new int[4];
 
                 for (int v = 0; v < 4; v++) {
                     int idx = indices[v];
@@ -140,8 +142,10 @@ public abstract class AbstractWavefrontBakedModel extends AbstractBakedModel {
                             vectorNormal.set(n3[0], n3[1], n3[2]);
                         }
                         vertexNormals[v] = vectorNormal;
+                        colors[v] = applyShading ? GeometryBakeUtil.computeShade(vectorNormal.x, vectorNormal.y, vectorNormal.z) : 255;
                     } else {
                         vertexNormals[v] = new Vector3f(n3[0], n3[1], n3[2]);
+                        colors[v] = applyShading ? GeometryBakeUtil.computeShade(n3[0], n3[1], n3[2]) : 255;
                     }
 
                     px[v] = x;
@@ -150,14 +154,49 @@ public abstract class AbstractWavefrontBakedModel extends AbstractBakedModel {
                 }
 
                 EnumFacing facing = EnumFacing.getFacingFromVector(n3[0], n3[1], n3[2]);
-                geometries.add(new FaceGeometry(facing, px, py, pz, uu, vv, vertexNormals, color));
+                geometries.add(new FaceGeometry(facing, px, py, pz, uu, vv, vertexNormals, colors));
             }
         }
 
         return geometries;
     }
 
+    protected float[] computeGeometryBounds(Set<String> partNames, float roll, float pitch, float yaw,
+                                            boolean centerToBlock, float extraTx, float extraTy, float extraTz) {
+        List<FaceGeometry> geometries = buildGeometry(partNames, roll, pitch, yaw, false, centerToBlock, extraTx,
+                extraTy, extraTz);
+        if (geometries.isEmpty()) {
+            return null;
+        }
+
+        float minX = Float.POSITIVE_INFINITY;
+        float minY = Float.POSITIVE_INFINITY;
+        float minZ = Float.POSITIVE_INFINITY;
+        float maxX = Float.NEGATIVE_INFINITY;
+        float maxY = Float.NEGATIVE_INFINITY;
+        float maxZ = Float.NEGATIVE_INFINITY;
+
+        for (FaceGeometry geometry : geometries) {
+            for (int i = 0; i < 4; i++) {
+                minX = Math.min(minX, geometry.px[i]);
+                minY = Math.min(minY, geometry.py[i]);
+                minZ = Math.min(minZ, geometry.pz[i]);
+                maxX = Math.max(maxX, geometry.px[i]);
+                maxY = Math.max(maxY, geometry.py[i]);
+                maxZ = Math.max(maxZ, geometry.pz[i]);
+            }
+        }
+
+        return new float[]{minX, minY, minZ, maxX, maxY, maxZ};
+    }
+
     protected final class FaceGeometry {
+        private static final long COLORS_BASE = UnsafeHolder.fieldOffset(FaceGeometry.class, "colors01");
+        static {
+            if (UnsafeHolder.fieldOffset(FaceGeometry.class, "colors23") != COLORS_BASE + 8L)
+                throw new AssertionError("colors01 and colors23 are not contiguous");
+        }
+
         private final EnumFacing facing;
         private final float[] px;
         private final float[] py;
@@ -165,10 +204,11 @@ public abstract class AbstractWavefrontBakedModel extends AbstractBakedModel {
         private final float[] uu;
         private final float[] vv;
         private final Vector3f[] vertexNormals;
-        private final int color;
+        private final long colors01;
+        private final long colors23;
 
         private FaceGeometry(EnumFacing facing, float[] px, float[] py, float[] pz, float[] uu, float[] vv,
-                             Vector3f[] vertexNormals, int color) {
+                             Vector3f[] vertexNormals, int[] colors) {
             this.facing = facing;
             this.px = px;
             this.py = py;
@@ -176,7 +216,8 @@ public abstract class AbstractWavefrontBakedModel extends AbstractBakedModel {
             this.uu = uu;
             this.vv = vv;
             this.vertexNormals = vertexNormals;
-            this.color = color;
+            colors01 = (colors[0] & 0xFFFFFFFFL) | ((long) colors[1] << 32);
+            colors23 = (colors[2] & 0xFFFFFFFFL) | ((long) colors[3] << 32);
         }
 
         public BakedQuad buildQuad(TextureAtlasSprite sprite, int tintIndex) {
@@ -186,10 +227,12 @@ public abstract class AbstractWavefrontBakedModel extends AbstractBakedModel {
         public BakedQuad buildQuad(TextureAtlasSprite sprite, int tintIndex, float uScale, float vScale) {
             int[] vertexData = new int[format.getIntegerSize() * 4];
             float[] scratch = new float[4];
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 4; i++) {
+                int c = U.getInt(this, COLORS_BASE + i * 4L);
                 GeometryBakeUtil.putVertex(format, vertexData, i, px[i], py[i], pz[i], uu[i] * uScale, vv[i] * vScale,
-                        color, color, color, vertexNormals[i], sprite, scratch);
-            return new BakedQuad(vertexData, tintIndex, facing, sprite, false, format);
+                        c, c, c, vertexNormals[i], sprite, scratch);
+            }
+            return new HbmBakedQuad(vertexData, tintIndex, facing, sprite, format);
         }
 
         public BakedQuad buildBackQuad(TextureAtlasSprite sprite, int tintIndex) {
@@ -205,10 +248,11 @@ public abstract class AbstractWavefrontBakedModel extends AbstractBakedModel {
                 Vector3f normal = vertexNormals[index];
                 Vector3f reversedNormal = new Vector3f(-normal.x, -normal.y, -normal.z);
                 int vertexIndex = outIndex++;
+                int c = U.getInt(this, COLORS_BASE + index * 4L);
                 GeometryBakeUtil.putVertex(format, vertexData, vertexIndex, px[index], py[index], pz[index],
-                        uu[index] * uScale, vv[index] * vScale, color, color, color, reversedNormal, sprite, scratch);
+                        uu[index] * uScale, vv[index] * vScale, c, c, c, reversedNormal, sprite, scratch);
             }
-            return new BakedQuad(vertexData, tintIndex, facing.getOpposite(), sprite, false, format);
+            return new HbmBakedQuad(vertexData, tintIndex, facing.getOpposite(), sprite, format);
         }
     }
 }

@@ -41,6 +41,7 @@ import java.util.Random;
 @AutoRegister
 public class TileEntityChungus extends TileEntityTurbineBase implements SimpleComponent, CompatHandler.OCComponent, IConfigurableMachine {
 
+	private AxisAlignedBB bb;
 	public long power;
 	private int turnTimer;
 	public float rotor;
@@ -177,7 +178,8 @@ public class TileEntityChungus extends TileEntityTurbineBase implements SimpleCo
 	
 	@Override
 	public @NotNull AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		if (bb == null) bb = new AxisAlignedBB(pos.getX() - 6, pos.getY(), pos.getZ() - 6, pos.getX() + 7, pos.getY() + 9, pos.getZ() + 7);
+		return bb;
 	}
 	
 	@Override

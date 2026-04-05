@@ -17,12 +17,6 @@ public class RenderPylon extends RenderPylonBase {
 	public RenderPylon() {
 		this.pylon = new ModelPylon();
 	}
-
-	@Override
-	public boolean isGlobalRenderer(TileEntityPylonBase te) {
-		return true;
-	}
-
 	@Override
 	public void render(TileEntityPylonBase pyl, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
 		if(!(pyl instanceof TileEntityPylon tepylon)) return;

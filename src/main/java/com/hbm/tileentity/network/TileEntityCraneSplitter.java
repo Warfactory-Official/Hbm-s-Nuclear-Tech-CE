@@ -5,10 +5,9 @@ import com.hbm.tileentity.TileEntityLoadedBase;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
 import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
@@ -93,11 +92,6 @@ public class TileEntityCraneSplitter extends TileEntityLoadedBase {
         super.deserialize(buf);
         leftRatio = buf.readByte();
         rightRatio = buf.readByte();
-    }
-
-    @Override
-    public @NotNull AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
     }
 
     @Override

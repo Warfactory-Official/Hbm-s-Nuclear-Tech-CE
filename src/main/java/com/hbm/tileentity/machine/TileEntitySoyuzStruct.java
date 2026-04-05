@@ -15,6 +15,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @AutoRegister
 public class TileEntitySoyuzStruct extends TileEntity implements ITickable {
 
+	private AxisAlignedBB bb;
 	int age;
 
 	@Override
@@ -149,7 +150,8 @@ public class TileEntitySoyuzStruct extends TileEntity implements ITickable {
 
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		if (bb == null) bb = new AxisAlignedBB(pos.getX() - 10, pos.getY(), pos.getZ() - 10, pos.getX() + 11, pos.getY() + 53, pos.getZ() + 11);
+		return bb;
 	}
 
 	@Override

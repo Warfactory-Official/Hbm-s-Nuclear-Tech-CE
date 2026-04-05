@@ -112,13 +112,13 @@ public class BlockScaffoldBakedModel extends AbstractWavefrontBakedModel {
 
     private List<BakedQuad> buildWorldQuads(float pitch, float yaw, float extraTx, float extraTy, float extraTz) {
         return new ArrayList<>(
-                bakeSimpleQuads(Collections.singleton("Scaffold"), 0, pitch, yaw, false, true, sprite, -1, extraTx,
+                bakeSimpleQuads(Collections.singleton("Scaffold"), 0, pitch, yaw, true, true, sprite, -1, extraTx,
                         extraTy, extraTz));
     }
 
     private List<BakedQuad> buildItemQuads() {
         return new ArrayList<>(
-                bakeSimpleQuads(Collections.singleton("Scaffold"), 0, 0, (float) Math.PI, false, true, sprite));
+                bakeSimpleQuads(Collections.singleton("Scaffold"), 0, 0, (float) Math.PI, true, true, sprite));
     }
 
     @Override

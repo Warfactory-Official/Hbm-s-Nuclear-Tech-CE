@@ -80,10 +80,11 @@ public abstract class TileEntityFireboxBase extends TileEntityMachinePolluting i
 
 							this.maxBurnTime = this.burnTime = fuel;
 							this.burnHeat = getModule().getBurnHeat(getBaseHeat(), inventory.getStackInSlot(i));
+							ItemStack container = inventory.getStackInSlot(i).getItem().getContainerItem(inventory.getStackInSlot(i));
 							inventory.getStackInSlot(i).shrink(1);
 
-							if(inventory.getStackInSlot(i).getCount() == 0) {
-								inventory.setStackInSlot(i, inventory.getStackInSlot(i).getItem().getContainerItem(inventory.getStackInSlot(i)));
+							if(inventory.getStackInSlot(i).isEmpty()) {
+								inventory.setStackInSlot(i, container);
 							}
 
 							this.wasOn = true;

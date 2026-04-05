@@ -36,6 +36,7 @@ public class TileEntityCharger extends TileEntityLoadedBase implements IBufPacke
 	private int lastOp = 0;
 
 	boolean particles = false;
+	private AxisAlignedBB bb;
 
 	public int usingTicks;
 	public int lastUsingTicks;
@@ -183,5 +184,11 @@ public class TileEntityCharger extends TileEntityLoadedBase implements IBufPacke
 			);
 		}
 		return super.getCapability(capability, facing);
+	}
+
+	@Override
+	public AxisAlignedBB getRenderBoundingBox() {
+		if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+		return bb;
 	}
 }

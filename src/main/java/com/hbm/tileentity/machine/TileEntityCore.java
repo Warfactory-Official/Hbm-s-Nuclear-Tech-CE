@@ -49,6 +49,7 @@ import java.util.Map;
 public class TileEntityCore extends TileEntityMachineBase implements ITickable, IGUIProvider {
 
 
+    private AxisAlignedBB bb;
     public int field;
     public int heat;
     public int prevHeat;
@@ -349,7 +350,8 @@ public class TileEntityCore extends TileEntityMachineBase implements ITickable, 
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
+        if (bb == null) bb = new AxisAlignedBB(pos.getX() - 8, pos.getY() - 8, pos.getZ() - 8, pos.getX() + 9, pos.getY() + 9, pos.getZ() + 9);
+        return bb;
     }
 
     @Override

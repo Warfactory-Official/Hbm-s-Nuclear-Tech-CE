@@ -2,12 +2,14 @@ package com.hbm.main.client;
 
 import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.render.chunk.IRenderExtentsOverride;
 import com.hbm.render.icon.PaddedSpriteUtil;
 import com.hbm.render.icon.PaddedSpriteUtil.TextureInfo;
 import com.hbm.render.loader.HFRWavefrontObject;
 import com.hbm.render.model.*;
-import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -15,7 +17,9 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.IRegistry;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.IntFunction;
@@ -286,6 +290,7 @@ public final class StaticTesrBakedModels {
                     .gui(-0.7D, -1.0D, 1.5D, 2.5D, 90.0D),
             normalSpec(ModBlocks.machine_fracking_tower, "models/fracking_tower.obj", "models/machines/fracking_tower", yawMap().meta(12, 180).meta(13, 180).meta(14, 180).meta(15, 180).build())
                     .doubleSided()
+                    .extraWorldLayer("models/blocks/pipe_neo.obj", "blocks/pipe_silver", 0.0F, 0.5F, 0.0F, "pX", "nX", "pZ", "nZ")
                     .item(0.25F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
                     .gui(0.0D, -4.5D, 0.0D, 2.5D),
             normalSpec(ModBlocks.machine_solar_boiler, "models/machines/solar_boiler.obj", "models/machines/solar_boiler", yawMap().meta(12, 90).meta(13, 270).meta(14, 180).meta(15, 0).build())
@@ -309,7 +314,7 @@ public final class StaticTesrBakedModels {
                     .item(0.75F, (float) Math.toRadians(90), 0.5F, 1.0F, -0.3F, 0.0F, 0.0F)
                     .gui(0.5D, -1.55D, 0.0D, 2.7D, 90.0D)
     );
-    private static final ReferenceOpenHashSet<Block> MANAGED_BLOCKS = createManagedBlocks();
+    private static final Reference2ObjectOpenHashMap<Block, Spec> SPECS_BY_BLOCK = createSpecsByBlock();
 
     private StaticTesrBakedModels() {
     }
@@ -319,6 +324,11 @@ public final class StaticTesrBakedModels {
             ResourceLocation itemTex = spec.itemTextureLocation();
             TextureInfo textureInfo = PaddedSpriteUtil.inspectTexture(itemTex, spec.textureLocation);
             PaddedSpriteUtil.register(map, textureInfo);
+            for (LayerSpec layer : spec.extraWorldLayers) {
+                TextureInfo layerTextureInfo = PaddedSpriteUtil.inspectTexture(layer.itemTextureLocation(),
+                        layer.textureLocation);
+                PaddedSpriteUtil.register(map, layerTextureInfo);
+            }
         }
         registerLegacyModelRendererSprite(map, new ResourceLocation(Tags.MODID, "models/deco/ModelBroadcaster"));
         registerLegacyModelRendererSprite(map, new ResourceLocation(Tags.MODID, "models/deco/ModelRadioReceiver"));
@@ -352,7 +362,16 @@ public final class StaticTesrBakedModels {
                     spec.translateY,
                     spec.translateZ
             );
-            IBakedModel resolvedWorldModel = maybeWrapWorldModel(spec, atlas, worldModel);
+            int[][] autoRenderExtents = worldModel.captureRenderExtentsByMeta();
+            List<IBakedModel> extraWorldModels = new ArrayList<>(spec.extraWorldLayers.size());
+            for (LayerSpec layer : spec.extraWorldLayers) {
+                StaticMetaWavefrontBakedModel layerModel = layer.createWorldModel(atlas, spec.yawsByMeta);
+                autoRenderExtents = unionAutoRenderExtents(autoRenderExtents, layerModel.captureRenderExtentsByMeta());
+                extraWorldModels.add(layerModel);
+            }
+            IBakedModel resolvedWorldModel = extraWorldModels.isEmpty() ? worldModel
+                    : new CompositeBakedModel(worldModel, extraWorldModels.toArray(new IBakedModel[0]));
+            spec.setAutoRenderExtents(autoRenderExtents);
             for (ModelResourceLocation worldLocation : spec.getWorldModelLocations()) {
                 registry.putObject(worldLocation, resolvedWorldModel);
             }
@@ -389,7 +408,12 @@ public final class StaticTesrBakedModels {
     }
 
     public static boolean isManagedBlock(Block block) {
-        return MANAGED_BLOCKS.contains(block);
+        return SPECS_BY_BLOCK.containsKey(block);
+    }
+
+    public static int @Nullable [] getDetectedRenderExtents(IBlockState state) {
+        Spec spec = SPECS_BY_BLOCK.get(state.getBlock());
+        return spec != null ? spec.getAutoRenderExtents(state) : null;
     }
 
     private static Spec facingSpec(Block block, String modelPath, String texturePath, float[] yawsByMeta) {
@@ -419,35 +443,6 @@ public final class StaticTesrBakedModels {
         ModelResourceLocation four = new ModelResourceLocation(block.getRegistryName(), "facing=4");
         ModelResourceLocation five = new ModelResourceLocation(block.getRegistryName(), "facing=5");
         return new Spec(block, modelPath, texturePath, yawsByMeta, two, three, four, five);
-    }
-
-    private static IBakedModel maybeWrapWorldModel(Spec spec, TextureMap atlas, IBakedModel baseModel) {
-        if (spec.block != ModBlocks.machine_fracking_tower) {
-            return baseModel;
-        }
-
-        ResourceLocation itemTex = new ResourceLocation(Tags.MODID, "textures/blocks/pipe_silver.png");
-        TextureInfo pipeTexture = PaddedSpriteUtil.inspectTexture(itemTex,
-                new ResourceLocation(Tags.MODID, "blocks/pipe_silver"));
-        TextureAtlasSprite pipeSprite = atlas.getAtlasSprite(pipeTexture.spriteLocation.toString());
-        StaticMetaWavefrontBakedModel pipeLayer = new StaticMetaWavefrontBakedModel(
-                new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/blocks/pipe_neo.obj")),
-                pipeSprite,
-                spec.yawsByMeta,
-                new String[]{"pX", "nX", "pZ", "nZ"},
-                0.0F,
-                0.0F,
-                false,
-                pipeTexture.uScale,
-                pipeTexture.vScale,
-                0.0F,
-                0.0F,
-                0.0F,
-                0.0F,
-                0.5F,
-                0.0F
-        );
-        return new CompositeBakedModel(baseModel, pipeLayer);
     }
 
     private static void registerLegacyModelRendererSprite(TextureMap map, ResourceLocation textureLocation) {
@@ -535,12 +530,101 @@ public final class StaticTesrBakedModels {
         return new YawMapBuilder();
     }
 
-    private static ReferenceOpenHashSet<Block> createManagedBlocks() {
-        ReferenceOpenHashSet<Block> managedBlocks = new ReferenceOpenHashSet<>(SPECS.size());
+    private static Reference2ObjectOpenHashMap<Block, Spec> createSpecsByBlock() {
+        Reference2ObjectOpenHashMap<Block, Spec> specsByBlock = new Reference2ObjectOpenHashMap<>(SPECS.size());
         for (Spec spec : SPECS) {
-            managedBlocks.add(spec.block);
+            specsByBlock.put(spec.block, spec);
         }
-        return managedBlocks;
+        return specsByBlock;
+    }
+
+    public static int @Nullable [] getManagedRenderExtents(IBlockState state) {
+        Block block = state.getBlock();
+        if (!isManagedBlock(block)) {
+            return null;
+        }
+
+        if (block instanceof IRenderExtentsOverride override) {
+            int[] manual = override.getRenderExtentsOverride(state);
+            if (manual != null) {
+                return manual;
+            }
+        }
+
+        return getDetectedRenderExtents(state);
+    }
+
+    private static int[][] unionAutoRenderExtents(int[][] primary, int[][] secondary) {
+        int maxLength = Math.max(primary.length, secondary.length);
+        int[][] merged = new int[maxLength][];
+        for (int i = 0; i < maxLength; i++) {
+            int[] left = i < primary.length ? primary[i] : null;
+            int[] right = i < secondary.length ? secondary[i] : null;
+            merged[i] = unionRenderExtents(left, right);
+        }
+        return merged;
+    }
+
+    private static int[] unionRenderExtents(int[] left, int[] right) {
+        if (left == null) {
+            return right;
+        }
+        if (right == null) {
+            return left;
+        }
+        return new int[]{
+                Math.max(left[0], right[0]),
+                Math.max(left[1], right[1]),
+                Math.max(left[2], right[2]),
+                Math.max(left[3], right[3]),
+                Math.max(left[4], right[4]),
+                Math.max(left[5], right[5])
+        };
+    }
+
+    private static final class LayerSpec {
+        private final ResourceLocation modelLocation;
+        private final ResourceLocation textureLocation;
+        private final String[] partNames;
+        private final float translateX;
+        private final float translateY;
+        private final float translateZ;
+
+        private LayerSpec(String modelPath, String texturePath, String[] partNames, float translateX, float translateY,
+                          float translateZ) {
+            modelLocation = new ResourceLocation(Tags.MODID, modelPath);
+            textureLocation = new ResourceLocation(Tags.MODID, texturePath);
+            this.partNames = partNames;
+            this.translateX = translateX;
+            this.translateY = translateY;
+            this.translateZ = translateZ;
+        }
+
+        private ResourceLocation itemTextureLocation() {
+            return new ResourceLocation(textureLocation.getNamespace(), "textures/" + textureLocation.getPath() + ".png");
+        }
+
+        private StaticMetaWavefrontBakedModel createWorldModel(TextureMap atlas, float[] yawsByMeta) {
+            TextureInfo textureInfo = PaddedSpriteUtil.inspectTexture(itemTextureLocation(), textureLocation);
+            TextureAtlasSprite sprite = PaddedSpriteUtil.sprite(atlas, textureInfo);
+            return new StaticMetaWavefrontBakedModel(
+                    new HFRWavefrontObject(modelLocation),
+                    sprite,
+                    yawsByMeta,
+                    partNames,
+                    0.0F,
+                    0.0F,
+                    false,
+                    textureInfo.uScale,
+                    textureInfo.vScale,
+                    0.0F,
+                    0.0F,
+                    0.0F,
+                    translateX,
+                    translateY,
+                    translateZ
+            );
+        }
     }
 
     private static final class YawMapBuilder {
@@ -567,8 +651,10 @@ public final class StaticTesrBakedModels {
         private final float[] yawsByMeta;
         private final ModelResourceLocation[] worldModelLocations;
         private String[] partNames;
+        private final List<LayerSpec> extraWorldLayers = new ArrayList<>();
         private boolean bakeInventory = true;
         private boolean doubleSided;
+        private int[][] autoRenderExtentsByMeta;
         private float worldRoll;
         private float worldPitch;
         private float preTranslateX;
@@ -622,6 +708,12 @@ public final class StaticTesrBakedModels {
 
         private Spec parts(String... names) {
             partNames = names;
+            return this;
+        }
+
+        private Spec extraWorldLayer(String modelPath, String texturePath, float translateX, float translateY,
+                                     float translateZ, String... partNames) {
+            extraWorldLayers.add(new LayerSpec(modelPath, texturePath, partNames, translateX, translateY, translateZ));
             return this;
         }
 
@@ -688,6 +780,22 @@ public final class StaticTesrBakedModels {
 
         private ModelResourceLocation getInventoryModelLocation() {
             return new ModelResourceLocation(block.getRegistryName(), "inventory");
+        }
+
+        private void setAutoRenderExtents(int[][] autoRenderExtentsByMeta) {
+            this.autoRenderExtentsByMeta = autoRenderExtentsByMeta;
+        }
+
+        private int @Nullable [] getAutoRenderExtents(IBlockState state) {
+            if (autoRenderExtentsByMeta == null) {
+                return null;
+            }
+
+            int meta = block.getMetaFromState(state);
+            if (meta < 0 || meta >= autoRenderExtentsByMeta.length) {
+                return null;
+            }
+            return autoRenderExtentsByMeta[meta];
         }
     }
 }

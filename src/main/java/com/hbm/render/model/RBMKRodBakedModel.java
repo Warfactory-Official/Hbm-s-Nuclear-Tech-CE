@@ -98,7 +98,7 @@ public class RBMKRodBakedModel extends AbstractRBMKLiddedBakedModel {
     }
 
     private List<BakedQuad> bakeWavefrontAtYOffset(Set<String> parts, float yOffsetBlocks, TextureAtlasSprite sprite) {
-        return bakeSimpleQuads(parts, 0, 0, 0, !isInventory, false, sprite, -1, 0.0F, yOffsetBlocks, 0.0F);
+        return bakeSimpleQuads(parts, 0, 0, 0, true, false, sprite, -1, 0.0F, yOffsetBlocks, 0.0F);
     }
 
     @Override

@@ -25,6 +25,7 @@ import java.util.List;
 public abstract class TileEntityPipelineBase extends TileEntityPipeBaseNT {
 
     protected List<int[]> connected = new ArrayList<>();
+    private AxisAlignedBB bb;
 
     @Override
     public FluidNode createNode(FluidType type) {
@@ -36,6 +37,7 @@ public abstract class TileEntityPipelineBase extends TileEntityPipeBaseNT {
     public void addConnection(int x, int y, int z) {
 
         connected.add(new int[] {x, y, z});
+        this.bb = null;
 
         FluidNode node = UniNodespace.getNode(world, pos, this.type.getNetworkProvider());
         node.recentlyChanged = true;
@@ -69,6 +71,7 @@ public abstract class TileEntityPipelineBase extends TileEntityPipeBaseNT {
                     }
                 }
 
+                pipeline.bb = null;
                 pipeline.markDirty();
 
                 if (world instanceof WorldServer) {
@@ -146,6 +149,7 @@ public abstract class TileEntityPipelineBase extends TileEntityPipeBaseNT {
         int count = nbt.getInteger("conCount");
 
         this.connected.clear();
+        this.bb = null;
 
         for(int i = 0; i < count; i++) {
             connected.add(nbt.getIntArray("con" + i));
@@ -174,7 +178,18 @@ public abstract class TileEntityPipelineBase extends TileEntityPipeBaseNT {
 
     @Override
     public @NotNull AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB; // not great!
+        if (bb != null) return bb;
+        double minX = pos.getX(), minY = pos.getY(), minZ = pos.getZ();
+        double maxX = pos.getX() + 1, maxY = pos.getY() + 1, maxZ = pos.getZ() + 1;
+        for (int[] c : connected) {
+            if (c[0] < minX) minX = c[0];
+            if (c[1] < minY) minY = c[1];
+            if (c[2] < minZ) minZ = c[2];
+            if (c[0] + 1 > maxX) maxX = c[0] + 1;
+            if (c[1] + 1 > maxY) maxY = c[1] + 1;
+            if (c[2] + 1 > maxZ) maxZ = c[2] + 1;
+        }
+        return bb = new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
     @Override

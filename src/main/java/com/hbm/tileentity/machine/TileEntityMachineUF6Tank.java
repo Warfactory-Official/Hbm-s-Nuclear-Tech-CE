@@ -22,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
 public class TileEntityMachineUF6Tank extends TileEntityMachineBase implements ITickable, IFluidStandardTransceiver, IGUIProvider {
+	private AxisAlignedBB bb;
 	public FluidTankNTM tank;
 
 	//private static final int[] slots_top = new int[] {0};
@@ -80,7 +81,8 @@ public class TileEntityMachineUF6Tank extends TileEntityMachineBase implements I
 
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return new AxisAlignedBB(pos, pos.add(1, 2, 1));
+		if (bb == null) bb = new AxisAlignedBB(pos, pos.add(1, 2, 1));
+		return bb;
 	}
 
 	@Override

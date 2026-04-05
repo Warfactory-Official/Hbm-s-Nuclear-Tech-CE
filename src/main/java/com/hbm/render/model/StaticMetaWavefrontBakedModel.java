@@ -95,6 +95,53 @@ public class StaticMetaWavefrontBakedModel extends AbstractWavefrontBakedModel {
         return quads;
     }
 
+    public int[][] captureRenderExtentsByMeta() {
+        int[][] extentsByMeta = new int[yawsByMeta.length][];
+        for (int meta = 0; meta < yawsByMeta.length; meta++) {
+            extentsByMeta[meta] = captureRenderExtents(meta);
+        }
+        return extentsByMeta;
+    }
+
+    private int[] captureRenderExtents(int meta) {
+        if (meta < 0 || meta >= yawsByMeta.length) {
+            return null;
+        }
+
+        float yaw = yawsByMeta[meta];
+        if (Float.isNaN(yaw)) {
+            return null;
+        }
+
+        float[] rotatedPreTranslate = GeometryBakeUtil.rotateY(preTranslateX, preTranslateY, preTranslateZ, yaw);
+        float extraTx = 0.5F + rotatedPreTranslate[0];
+        float extraTy = rotatedPreTranslate[1];
+        float extraTz = 0.5F + rotatedPreTranslate[2];
+        float[] bounds = computeGeometryBounds(partNames, roll, pitch, yaw, false, extraTx, extraTy, extraTz);
+        if (bounds == null) {
+            return null;
+        }
+
+        return new int[]{
+                extentAbove(bounds[4]),
+                extentBelow(bounds[1]),
+                extentBelow(bounds[2]),
+                extentAbove(bounds[5]),
+                extentBelow(bounds[0]),
+                extentAbove(bounds[3])
+        };
+    }
+
+    private static final float EXTENT_EPSILON = 1e-3F;
+
+    private static int extentBelow(float min) {
+        return min < -EXTENT_EPSILON ? (int) Math.ceil(-min) : 0;
+    }
+
+    private static int extentAbove(float max) {
+        return max > 1.0F + EXTENT_EPSILON ? (int) Math.ceil(max - 1.0F) : 0;
+    }
+
     @Override
     public @NotNull TextureAtlasSprite getParticleTexture() {
         return sprite;

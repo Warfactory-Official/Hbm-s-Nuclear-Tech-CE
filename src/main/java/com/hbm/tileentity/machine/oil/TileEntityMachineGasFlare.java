@@ -34,7 +34,6 @@ import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -280,16 +279,6 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         };
     }
 
-    @Override
-    public @NotNull AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
-    }
-
-    @Override
-    @SideOnly(Side.CLIENT)
-    public double getMaxRenderDistanceSquared() {
-        return 65536.0D;
-    }
 
     @Override
     public FluidTankNTM[] getReceivingTanks() {
@@ -384,5 +373,11 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         upgrades.put(UpgradeType.SPEED, 3);
         upgrades.put(UpgradeType.EFFECT, 3);
         return upgrades;
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public double getMaxRenderDistanceSquared() {
+        return 65536.0D;
     }
 }

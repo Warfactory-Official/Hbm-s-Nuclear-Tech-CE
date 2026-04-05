@@ -140,6 +140,7 @@ public class BlockLoot extends BlockContainer implements IDynamicModels {
     @AutoRegister
     public static class TileEntityLoot extends TileEntity {
         public final List<Quartet<ItemStack, Double, Double, Double>> items = new ArrayList<>();
+        private AxisAlignedBB bb;
 
         public TileEntityLoot addItem(ItemStack stack, double x, double y, double z) {
             items.add(new Quartet<>(stack, x, y, z));
@@ -202,6 +203,12 @@ public class BlockLoot extends BlockContainer implements IDynamicModels {
                 nbt.setDouble("z" + i, q.getZ());
             }
             return nbt;
+        }
+
+        @Override
+        public AxisAlignedBB getRenderBoundingBox() {
+            if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 3, pos.getZ() + 1);
+            return bb;
         }
     }
 

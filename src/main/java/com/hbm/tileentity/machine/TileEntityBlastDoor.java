@@ -34,6 +34,7 @@ import java.util.List;
 @AutoRegister
 public class TileEntityBlastDoor extends TileEntityLockableBase implements ITickable, IControllable, IAnimatedDoor {
 
+    private AxisAlignedBB bb;
     public IDoor.DoorState state = IDoor.DoorState.CLOSED;
     public long sysTime;
     private int timer = 0;
@@ -42,7 +43,8 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return new AxisAlignedBB(pos, pos.up(6).add(1, 1, 1)).grow(0.25F);
+        if (bb == null) bb = new AxisAlignedBB(pos, pos.up(6).add(1, 1, 1)).grow(0.25F);
+        return bb;
     }
 
     @Override

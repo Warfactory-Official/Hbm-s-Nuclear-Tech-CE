@@ -11,12 +11,6 @@ import net.minecraft.item.Item;
 
 @AutoRegister
 public class RenderRadar extends TileEntitySpecialRenderer<TileEntityMachineRadarNT> implements IItemRendererProvider {
-
-    @Override
-    public boolean isGlobalRenderer(TileEntityMachineRadarNT te) {
-        return true;
-    }
-
     @Override
     public void render(TileEntityMachineRadarNT radar, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
         GlStateManager.pushMatrix();

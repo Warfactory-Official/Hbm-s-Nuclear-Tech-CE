@@ -31,6 +31,7 @@ import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.stats.StatList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
@@ -235,6 +236,7 @@ public class BlockPlushie extends BlockContainer implements IBlockMulti, IToolti
 
         public PlushieType type = PlushieType.NONE;
         public int squishTimer;
+        private AxisAlignedBB bb;
 
         @Override
         public void update() {
@@ -279,6 +281,12 @@ public class BlockPlushie extends BlockContainer implements IBlockMulti, IToolti
         @Override
         public void transformTE(World world, int coordBaseMode) {
             type = PlushieType.VALUES[world.rand.nextInt(PlushieType.VALUES.length - 1) + 1];
+        }
+
+        @Override
+        public AxisAlignedBB getRenderBoundingBox() {
+            if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+            return bb;
         }
     }
 }

@@ -20,12 +20,6 @@ public class RenderExcavator extends TileEntitySpecialRenderer<TileEntityMachine
       new ResourceLocation("minecraft:textures/blocks/cobblestone.png");
   public static final ResourceLocation gravel =
       new ResourceLocation("minecraft:textures/blocks/gravel.png");
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityMachineExcavator te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityMachineExcavator drill,

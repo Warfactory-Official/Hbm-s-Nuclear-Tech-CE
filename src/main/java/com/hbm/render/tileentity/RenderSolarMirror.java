@@ -16,12 +16,6 @@ import net.minecraft.item.Item;
 import org.lwjgl.opengl.GL11;
 @AutoRegister
 public class RenderSolarMirror extends TileEntitySpecialRenderer<TileEntitySolarMirror> implements IItemRendererProvider {
-
-	@Override
-	public boolean isGlobalRenderer(TileEntitySolarMirror te) {
-		return true;
-	}
-	
 	@Override
 	public void render(TileEntitySolarMirror te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
 		GlStateManager.pushMatrix();

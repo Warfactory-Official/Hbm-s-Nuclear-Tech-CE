@@ -55,6 +55,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
     public static final long maxPower = 1000000;
     public static final int demand = 1000;
     private static boolean converted = false;
+    private AxisAlignedBB bb;
     public long power;
     public short progress;
     public short duration = 600;
@@ -295,7 +296,8 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
+        if (bb == null) bb = new AxisAlignedBB(pos.getX() - 1, pos.getY(), pos.getZ() - 1, pos.getX() + 2, pos.getY() + 6, pos.getZ() + 2);
+        return bb;
     }
 
     @Override

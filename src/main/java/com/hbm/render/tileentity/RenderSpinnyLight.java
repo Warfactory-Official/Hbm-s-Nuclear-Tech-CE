@@ -81,12 +81,6 @@ public class RenderSpinnyLight extends TileEntitySpecialRenderer<TileEntitySpinn
         meshData[index++] = a;
         return index;
     }
-
-    @Override
-    public boolean isGlobalRenderer(TileEntitySpinnyLight te) {
-        return true;
-    }
-
     @Override
     public void render(TileEntitySpinnyLight te, double x, double y, double z, float partialTicks, int destroyStage,
                        float alpha) {

@@ -32,6 +32,7 @@ import static com.hbm.inventory.OreDictManager.DictFrame.fromOne;
 import static com.hbm.inventory.material.MaterialShapes.*;
 import static com.hbm.items.ModItems.*;
 
+//mlbv: all future changes to this class should stay additive
 //the more i optimize this, the more it starts looking like gregtech
 public class OreDictManager {
 
@@ -394,7 +395,7 @@ public class OreDictManager {
     public static final DictFrame ANY_HIGHEXPLOSIVE = new DictFrame("AnyHighexplosive");
     public static final DictFrame ANY_COKE = new DictFrame("AnyCoke", "Coke");
     public static final DictFrame ANY_CONCRETE = new DictFrame("Concrete");            //no any prefix means that any has to be appended with the any() or anys() getters, registering works with the any (i.e. no shape) setter
-    public static final DictGroup ANY_TAR = new DictGroup("Tar", KEY_OIL_TAR, KEY_COAL_TAR, KEY_CRACK_TAR);
+    public static final DictGroup ANY_TAR = new DictGroup("Tar", KEY_OIL_TAR, KEY_COAL_TAR, KEY_CRACK_TAR, KEY_WOOD_TAR);
     /**
      * Any special psot-RBMK gating material, namely bismuth and arsenic
      */

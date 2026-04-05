@@ -8,6 +8,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +17,8 @@ import org.jetbrains.annotations.NotNull;
 public class TileEntityMachineMiniRTG extends TileEntityLoadedBase implements ITickable, IEnergyProviderMK2 {
 
 	public long power;
-	
+	private AxisAlignedBB bb;
+
 	@Override
 	public void update() {
 		if(!world.isRemote) {
@@ -67,5 +69,11 @@ public class TileEntityMachineMiniRTG extends TileEntityLoadedBase implements IT
 			);
 		}
 		return super.getCapability(capability, facing);
+	}
+
+	@Override
+	public AxisAlignedBB getRenderBoundingBox() {
+		if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+		return bb;
 	}
 }

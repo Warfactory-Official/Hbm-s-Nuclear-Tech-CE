@@ -17,9 +17,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -282,16 +280,6 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase imple
 
     }
 
-    @Override
-    public @NotNull AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
-    }
-
-    @Override
-    @SideOnly(Side.CLIENT)
-    public double getMaxRenderDistanceSquared() {
-        return 65536.0D;
-    }
 
     @Override
     public FluidTankNTM[] getSendingTanks() {
@@ -334,6 +322,12 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase imple
         upgrades.put(ItemMachineUpgrade.UpgradeType.AFTERBURN, 3);
         upgrades.put(ItemMachineUpgrade.UpgradeType.OVERDRIVE, 3);
         return upgrades;
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public double getMaxRenderDistanceSquared() {
+        return 65536.0D;
     }
 
 }

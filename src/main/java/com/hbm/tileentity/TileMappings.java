@@ -431,11 +431,13 @@ public class TileMappings {
         put(TileEntityFusionTorusStruct.class, "tileentity_fusion_torus_struct");
         put(TileEntityFusionTorus.class, "tileentity_fusion_torus");
         put(TileEntityFusionKlystron.class, "tileentity_fusion_klystron");
+        put(TileEntityFusionKlystronCreative.class, "tileentity_fusion_klystron_creative");
         put(TileEntityFusionBreeder.class, "tileentity_fusion_breeder");
         put(TileEntityFusionCollector.class, "tileentity_fusion_collector");
         put(TileEntityFusionBoiler.class, "tileentity_fusion_boiler");
         put(TileEntityFusionMHDT.class, "tileentity_fusion_mhdt");
         put(TileEntityFusionCoupler.class, "tileentity_fusion_coupler");
+        put(TileEntityFusionPlasmaForge.class, "tileentity_fusion_plasma_forge");
     }
 
     private static void putNetwork() {

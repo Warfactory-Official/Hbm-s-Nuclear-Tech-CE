@@ -20,6 +20,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 @AutoRegister
 public class TileEntityObjTester extends TileEntity implements ITickable {
+	private AxisAlignedBB bb;
 
 	public int fireAge = -1;
 
@@ -63,7 +64,8 @@ public class TileEntityObjTester extends TileEntity implements ITickable {
 
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		if (bb == null) bb = new AxisAlignedBB(pos.getX() - 1, pos.getY(), pos.getZ() - 1, pos.getX() + 13, pos.getY() + 4, pos.getZ() + 2);
+		return bb;
 	}
 
 	@Override

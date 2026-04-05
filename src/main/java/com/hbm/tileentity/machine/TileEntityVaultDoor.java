@@ -18,7 +18,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing.Axis;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
@@ -34,17 +33,6 @@ public class TileEntityVaultDoor extends TileEntityLockableBase implements ITick
     private int timer = 0;
     private boolean wasPowered = false;
     private boolean redstoneOnly = false;
-
-    @Override
-    public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
-    }
-
-    @Override
-    @SideOnly(Side.CLIENT)
-    public double getMaxRenderDistanceSquared() {
-        return 65536.0D;
-    }
 
     @Override
     public void update() {
@@ -378,6 +366,12 @@ public class TileEntityVaultDoor extends TileEntityLockableBase implements ITick
 
     public void setRedstoneOnly(boolean redstoneOnly) {
         this.redstoneOnly = redstoneOnly;
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public double getMaxRenderDistanceSquared() {
+        return 65536.0D;
     }
 
     public LongIterable getOccupiedSections() {

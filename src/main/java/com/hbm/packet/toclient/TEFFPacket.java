@@ -82,6 +82,7 @@ public class TEFFPacket implements IMessage {
 					if(te instanceof TileEntityForceField) {
 						TileEntityForceField ff = (TileEntityForceField)te;
 
+						float prevRadius = ff.radius;
 						ff.radius = m.rad;
 						ff.health = m.health;
 						ff.maxHealth = m.maxHealth;
@@ -89,6 +90,9 @@ public class TEFFPacket implements IMessage {
 						ff.isOn = m.isOn;
 						ff.color = m.color;
 						ff.cooldown = m.cooldown;
+						if (prevRadius != ff.radius) {
+							Minecraft.getMinecraft().world.markBlockRangeForRenderUpdate(ff.getPos(), ff.getPos());
+						}
 					}
 					
 				} catch (Exception x) {

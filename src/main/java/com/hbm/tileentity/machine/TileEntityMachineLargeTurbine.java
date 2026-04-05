@@ -45,6 +45,7 @@ import java.util.Random;
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 public class TileEntityMachineLargeTurbine extends TileEntityMachineBase implements ITickable, IEnergyProviderMK2, IFluidStandardTransceiver, IGUIProvider, IFFtoNTMF {
 
+    private AxisAlignedBB bb;
     public static final long maxPower = 100000000;
     private static boolean converted = false;
     public long power;
@@ -267,7 +268,8 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase impleme
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
+        if (bb == null) bb = new AxisAlignedBB(pos.getX() - 3, pos.getY(), pos.getZ() - 3, pos.getX() + 4, pos.getY() + 2, pos.getZ() + 4);
+        return bb;
     }
 
     @Override

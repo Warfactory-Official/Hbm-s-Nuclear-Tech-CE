@@ -80,7 +80,7 @@ public class StaticWavefrontItemBakedModel extends AbstractWavefrontBakedModel {
         float extraTy = rotatedPreTranslate[1];
         float extraTz = rotatedPreTranslate[2];
 
-        List<FaceGeometry> geometry = buildGeometry(partNames, roll, pitch, yaw, false, false, extraTx, extraTy,
+        List<FaceGeometry> geometry = buildGeometry(partNames, roll, pitch, yaw, true, false, extraTx, extraTy,
                 extraTz);
         List<BakedQuad> quads = new ArrayList<>(doubleSided ? geometry.size() * 2 : geometry.size());
         for (FaceGeometry face : geometry) {

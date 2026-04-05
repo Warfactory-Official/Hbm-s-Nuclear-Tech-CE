@@ -59,6 +59,7 @@ public class TileEntityLaunchTable extends TileEntityMachineBase implements ITic
     public static final int maxSolid = 100000;
     public static final int clearingDuration = 100;
 
+    private AxisAlignedBB bb;
     public long power;
     public int solid;
     public FluidTankNTM[] tanks;
@@ -348,7 +349,8 @@ public class TileEntityLaunchTable extends TileEntityMachineBase implements ITic
     @NotNull
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
+        if (bb == null) bb = new AxisAlignedBB(pos.getX() - 5, pos.getY(), pos.getZ() - 5, pos.getX() + 6, pos.getY() + 20, pos.getZ() + 6);
+        return bb;
     }
 
     @Override

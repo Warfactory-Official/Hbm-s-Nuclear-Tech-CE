@@ -99,7 +99,7 @@ public class BlockCableBakedModel extends AbstractWavefrontBakedModel {
 
     private List<BakedQuad> buildItemQuads() {
         Set<String> parts = Set.of("Core", "posX", "negX", "posZ", "negZ");
-        return bakeSimpleQuads(parts, 0.0F, 0.0F, itemYaw, false, false, sprite);
+        return bakeSimpleQuads(parts, 0.0F, 0.0F, itemYaw, true, false, sprite);
     }
 
     @Override

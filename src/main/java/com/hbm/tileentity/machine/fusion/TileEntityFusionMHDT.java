@@ -162,7 +162,7 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase implements ITicka
     }
 
     @Override public boolean receivesFusionPower() { return true; }
-    @Override public void receiveFusionPower(long fusionPower, double neutronPower) { plasmaEnergy = fusionPower; }
+    @Override public void receiveFusionPower(long fusionPower, double neutronPower, float r, float g, float b) { plasmaEnergy = fusionPower; }
 
     @Override
     public void serialize(ByteBuf buf) {

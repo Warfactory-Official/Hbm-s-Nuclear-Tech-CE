@@ -37,12 +37,6 @@ public class RenderDoorGeneric extends TileEntitySpecialRenderer<TileEntityDoorG
 	private static final float[] orig = new float[3];
 	private static final float[] rot = new float[3];
 	private static DoubleBuffer buf = null;
-
-	@Override
-	public boolean isGlobalRenderer(TileEntityDoorGeneric te) {
-		return true;
-	}
-
 	@Override
 	public void render(
 			TileEntityDoorGeneric te,

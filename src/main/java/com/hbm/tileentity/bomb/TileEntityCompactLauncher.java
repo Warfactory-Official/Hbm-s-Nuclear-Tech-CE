@@ -56,6 +56,7 @@ import java.util.List;
 @AutoRegister
 public class TileEntityCompactLauncher extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiver, SimpleComponent, IGUIProvider {
 
+	private AxisAlignedBB bb;
 	public long power;
 	public static final long maxPower = 100000;
 	public int solid;
@@ -405,7 +406,8 @@ public class TileEntityCompactLauncher extends TileEntityMachineBase implements 
 
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		if (bb == null) bb = new AxisAlignedBB(pos.getX() - 2, pos.getY(), pos.getZ() - 2, pos.getX() + 3, pos.getY() + 7, pos.getZ() + 3);
+		return bb;
 	}
 
 	@Override

@@ -82,7 +82,7 @@ public class BlockDecoBakedModel extends AbstractWavefrontBakedModel {
 
     private List<BakedQuad> buildItemQuads() {
         // Item: no shadow, no centering (+0.5), but apply base scale and translation
-        return super.bakeSimpleQuads(null, 0.0F, 0.0F, 0.0F, false, false, sprite);
+        return super.bakeSimpleQuads(null, 0.0F, 0.0F, 0.0F, true, false, sprite);
     }
 
     @Override

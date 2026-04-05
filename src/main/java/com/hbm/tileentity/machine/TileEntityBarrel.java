@@ -40,6 +40,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
@@ -65,6 +66,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements ITickable
     private static final int[] slots_bottom = new int[]{3, 5};
     private static final int[] slots_side = new int[]{4};
     private static boolean converted = false;
+    private AxisAlignedBB bb;
     protected FluidNode node;
     protected FluidType lastType;
     public FluidTank tank;
@@ -539,6 +541,12 @@ public class TileEntityBarrel extends TileEntityMachineBase implements ITickable
     @SideOnly(Side.CLIENT)
     public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
         return new GUIBarrel(player.inventory, this);
+    }
+
+    @Override
+    public AxisAlignedBB getRenderBoundingBox() {
+        if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+        return bb;
     }
 
 }

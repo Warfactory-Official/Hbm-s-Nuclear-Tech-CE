@@ -60,12 +60,12 @@ public abstract class MixinBufferBuilderNeonium implements NTMBufferBuilder {
     @Unique
     private ByteBuffer hbm$viewSource;
 
-    @Inject(method = "<init>", at = @At("RETURN"))
+    @Inject(method = "<init>", at = @At("RETURN"), require = 1)
     private void hbm$init(int bufferSizeIn, CallbackInfo ci) {
         hbm$syncViews();
     }
 
-    @Inject(method = "growBuffer", at = @At("RETURN"))
+    @Inject(method = "growBuffer", at = @At("RETURN"), require = 1)
     private void hbm$afterGrowBuffer(int increaseAmount, CallbackInfo ci) {
         hbm$syncViews();
     }

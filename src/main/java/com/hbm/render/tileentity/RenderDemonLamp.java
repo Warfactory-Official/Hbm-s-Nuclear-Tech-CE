@@ -27,12 +27,6 @@ public class RenderDemonLamp extends TileEntitySpecialRenderer<TileEntityDemonLa
           new ResourceLocation(Tags.MODID, "models/blocks/demon_lamp.obj"));
   public static final ResourceLocation tex =
       new ResourceLocation(Tags.MODID, "textures/models/machines/demon_lamp.png");
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityDemonLamp te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityDemonLamp te,
