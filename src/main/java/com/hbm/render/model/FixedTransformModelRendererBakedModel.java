@@ -129,7 +129,7 @@ public class FixedTransformModelRendererBakedModel extends AbstractBakedModel {
             GeometryBakeUtil.putVertex(DefaultVertexFormats.BLOCK, vertexData, i, px[i], py[i], pz[i], uu[i] * uScale,
                     vv[i] * vScale, color, color, color, normal, sprite, scratch);
         }
-        return new BakedQuad(vertexData, -1, facing, sprite, false, DefaultVertexFormats.BLOCK);
+        return new HbmBakedQuad(vertexData, -1, facing, sprite, DefaultVertexFormats.BLOCK);
     }
 
     private static Vector3f computeNormal(float[] px, float[] py, float[] pz) {

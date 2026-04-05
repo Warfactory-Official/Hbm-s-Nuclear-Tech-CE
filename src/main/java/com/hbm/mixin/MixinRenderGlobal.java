@@ -31,12 +31,12 @@ public abstract class MixinRenderGlobal {
     @Unique
     private final ReferenceOpenHashSet<TileEntity> hbm$renderedTileEntities = new ReferenceOpenHashSet<>();
 
-    @Inject(method = "loadRenderers", at = @At("HEAD"))
+    @Inject(method = "loadRenderers", at = @At("HEAD"), require = 1)
     private void hbm$clearOnReload(CallbackInfo ci) {
         ChunkSpanningTesrHelper.clear();
     }
 
-    @Inject(method = "renderEntities", at = @At("HEAD"))
+    @Inject(method = "renderEntities", at = @At("HEAD"), require = 1)
     private void hbm$beginTileEntityFrame(Entity renderViewEntity, ICamera camera, float partialTicks,
                                           CallbackInfo ci) {
         hbm$renderedTileEntities.clear();

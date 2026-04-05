@@ -51,7 +51,7 @@ public abstract class MixinRenderChunk {
     @Shadow
     public CompiledChunk compiledChunk;
 
-    @Inject(method = "rebuildChunk", at = @At("HEAD"))
+    @Inject(method = "rebuildChunk", at = @At("HEAD"), require = 1)
     private void hbm$resetOversizedExtents(float x, float y, float z, net.minecraft.client.renderer.chunk.ChunkCompileTaskGenerator generator, CallbackInfo ci) {
         hbm$negX = 0;
         hbm$posX = 0;
@@ -62,7 +62,7 @@ public abstract class MixinRenderChunk {
         hbm$spanningTesrs.clear();
     }
 
-    @Redirect(method = "rebuildChunk", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/BlockRendererDispatcher;renderBlock(Lnet/minecraft/block/state/IBlockState;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/world/IBlockAccess;Lnet/minecraft/client/renderer/BufferBuilder;)Z"))
+    @Redirect(method = "rebuildChunk", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/BlockRendererDispatcher;renderBlock(Lnet/minecraft/block/state/IBlockState;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/world/IBlockAccess;Lnet/minecraft/client/renderer/BufferBuilder;)Z"), require = 1)
     private boolean hbm$trackOversizedBlock(BlockRendererDispatcher dispatcher, IBlockState state, BlockPos pos,
                                             IBlockAccess world, BufferBuilder buffer) {
         boolean result = dispatcher.renderBlock(state, pos, world, buffer);
@@ -122,7 +122,7 @@ public abstract class MixinRenderChunk {
         compiledChunk.setVisibility(visibility);
     }
 
-    @Inject(method = "setCompiledChunk", at = @At("HEAD"))
+    @Inject(method = "setCompiledChunk", at = @At("HEAD"), require = 1)
     private void hbm$updateChunkSpanningTesrSet(CompiledChunk compiledChunkIn, CallbackInfo ci) {
         TileEntity[] old = ((IExtraExtentsHolder) compiledChunk).hbm$getChunkSpanningTesrs();
         TileEntity[] nu = ((IExtraExtentsHolder) compiledChunkIn).hbm$getChunkSpanningTesrs();
@@ -132,7 +132,7 @@ public abstract class MixinRenderChunk {
     }
 
     /** stopCompileTask assigns compiledChunk = DUMMY directly, bypassing setCompiledChunk. */
-    @Inject(method = "stopCompileTask", at = @At("HEAD"))
+    @Inject(method = "stopCompileTask", at = @At("HEAD"), require = 1)
     private void hbm$drainOnStop(CallbackInfo ci) {
         TileEntity[] old = ((IExtraExtentsHolder) compiledChunk).hbm$getChunkSpanningTesrs();
         if (old.length != 0) {
@@ -140,7 +140,7 @@ public abstract class MixinRenderChunk {
         }
     }
 
-    @Inject(method = "setCompiledChunk", at = @At("RETURN"))
+    @Inject(method = "setCompiledChunk", at = @At("RETURN"), require = 1)
     private void hbm$applyExpansion(CompiledChunk compiledChunkIn, CallbackInfo ci) {
         double minX = position.getX();
         double minY = position.getY();

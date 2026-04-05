@@ -1,10 +1,6 @@
 package com.hbm.render.model;
 
-import com.hbm.render.loader.Face;
-import com.hbm.render.loader.GroupObject;
-import com.hbm.render.loader.HFRWavefrontObject;
-import com.hbm.render.loader.TextureCoordinate;
-import com.hbm.render.loader.Vertex;
+import com.hbm.render.loader.*;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -124,7 +120,7 @@ public class FixedTransformWavefrontBakedModel extends AbstractBakedModel {
                     GeometryBakeUtil.putVertex(DefaultVertexFormats.BLOCK, vertexData, i, px[i], py[i], pz[i],
                             uu[i] * uScale, vv[i] * vScale, colors[i], colors[i], colors[i], vertexNormals[i], sprite, scratch);
                 }
-                quads.add(new BakedQuad(vertexData, -1, facing, sprite, false, DefaultVertexFormats.BLOCK));
+                quads.add(new HbmBakedQuad(vertexData, -1, facing, sprite, DefaultVertexFormats.BLOCK));
             }
         }
 

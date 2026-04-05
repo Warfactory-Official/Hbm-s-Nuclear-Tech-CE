@@ -85,6 +85,10 @@ public class WorldProviderNTM extends WorldProviderSurface {
     @Override
     @SideOnly(Side.CLIENT)
     public Vec3d getSkyColor(Entity cameraEntity, float partialTicks) {
+        //noinspection ConstantValue
+        if (cameraEntity == null) {
+            return Vec3d.ZERO;
+        }
         Vec3d sky = super.getSkyColor(cameraEntity, partialTicks);
         float dust = MainRegistry.proxy.getImpactDust(world);
         float fire = MainRegistry.proxy.getImpactFire(world);

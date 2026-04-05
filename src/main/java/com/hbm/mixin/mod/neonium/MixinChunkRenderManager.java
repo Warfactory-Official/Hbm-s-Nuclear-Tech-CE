@@ -28,13 +28,13 @@ public abstract class MixinChunkRenderManager<T extends ChunkGraphicsState> impl
     private final LongOpenHashSet hbm$visibleSections = new LongOpenHashSet();
 
     @Dynamic
-    @Inject(method = "reset", at = @At("HEAD"))
+    @Inject(method = "reset", at = @At("HEAD"), require = 1)
     private void hbm$resetVisibleSections(CallbackInfo ci) {
         hbm$visibleSections.clear();
     }
 
     @Dynamic
-    @Redirect(method = "addChunk", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/ChunkRenderContainer;getSquaredDistanceXZ(DD)D"), remap = false)
+    @Redirect(method = "addChunk", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/ChunkRenderContainer;getSquaredDistanceXZ(DD)D"), remap = false, require = 1)
     private double hbm$fogDistanceForOversizedChunk(ChunkRenderContainer<T> render, double x, double z) {
         double dist = render.getSquaredDistanceXZ(x, z);
         if (dist < fogRenderCutoff) return dist;
@@ -54,7 +54,7 @@ public abstract class MixinChunkRenderManager<T extends ChunkGraphicsState> impl
     }
 
     @Dynamic
-    @Redirect(method = "addChunk", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/ChunkRenderContainer;isEmpty()Z"), remap = false)
+    @Redirect(method = "addChunk", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/ChunkRenderContainer;isEmpty()Z"), remap = false, require = 1)
     private boolean hbm$trackVisibleSection(ChunkRenderContainer<T> render) {
         hbm$visibleSections.add(Library.sectionToLong(
                 render.getOriginX() >> 4,

@@ -35,7 +35,7 @@ public abstract class MixinNetworkDispatcher {
     @Shadow
     public NetworkManager manager;
 
-    @Inject(method = "write", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "write", at = @At("HEAD"), cancellable = true, remap = false, require = 1)
     private void hbm$write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise, CallbackInfo ci) {
         if (networkDispatcherWrite(ctx, msg, promise)) {
             ci.cancel();

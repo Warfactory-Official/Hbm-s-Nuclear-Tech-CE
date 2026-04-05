@@ -232,7 +232,7 @@ public abstract class AbstractWavefrontBakedModel extends AbstractBakedModel {
                 GeometryBakeUtil.putVertex(format, vertexData, i, px[i], py[i], pz[i], uu[i] * uScale, vv[i] * vScale,
                         c, c, c, vertexNormals[i], sprite, scratch);
             }
-            return new BakedQuad(vertexData, tintIndex, facing, sprite, false, format);
+            return new HbmBakedQuad(vertexData, tintIndex, facing, sprite, format);
         }
 
         public BakedQuad buildBackQuad(TextureAtlasSprite sprite, int tintIndex) {
@@ -252,7 +252,7 @@ public abstract class AbstractWavefrontBakedModel extends AbstractBakedModel {
                 GeometryBakeUtil.putVertex(format, vertexData, vertexIndex, px[index], py[index], pz[index],
                         uu[index] * uScale, vv[index] * vScale, c, c, c, reversedNormal, sprite, scratch);
             }
-            return new BakedQuad(vertexData, tintIndex, facing.getOpposite(), sprite, false, format);
+            return new HbmBakedQuad(vertexData, tintIndex, facing.getOpposite(), sprite, format);
         }
     }
 }

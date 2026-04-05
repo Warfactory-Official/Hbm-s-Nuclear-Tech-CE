@@ -14,6 +14,7 @@ public class ModMixinConfigPlugin implements IMixinConfigPlugin {
     private static final boolean NEONIUM_PRESENT = Launch.classLoader.getResource("io/neox/neonium/Neonium.class") != null;
     private static final boolean NOTHIRIUM_PRESENT = Launch.classLoader.getResource("meldexun/nothirium/mc/Nothirium.class") != null;
     private static final boolean OPTIFINE_PRESENT = Launch.classLoader.getResource("optifine/OptiFineForgeTweaker.class") != null;
+    private static final boolean CELERITAS_PRESENT = Launch.classLoader.getResource("org/taumc/celeritas/CeleritasVintage.class") != null;
 
     @Override
     public void onLoad(String mixinPackage) {
@@ -41,6 +42,7 @@ public class ModMixinConfigPlugin implements IMixinConfigPlugin {
             case "neonium" -> NEONIUM_PRESENT;
             case "nothirium" -> NOTHIRIUM_PRESENT;
             case "optifine" -> OPTIFINE_PRESENT;
+            case "celeritas" -> CELERITAS_PRESENT;
             default -> true;
         };
     }

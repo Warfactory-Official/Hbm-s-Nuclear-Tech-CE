@@ -1,20 +1,18 @@
 package meldexun.nothirium.mc.renderer.chunk;
 
 import meldexun.nothirium.api.renderer.chunk.RenderChunkTaskResult;
-import meldexun.nothirium.renderer.chunk.AbstractRenderChunk;
+import meldexun.nothirium.renderer.chunk.AbstractRenderChunkTask;
 import meldexun.nothirium.util.VisibilityGraph;
 import meldexun.nothirium.util.VisibilitySet;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.RegionRenderCacheBuilder;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 
 /** Stub for compilation only — provided at runtime by Nothirium. */
-public class RenderChunkTaskCompile {
-    protected AbstractRenderChunk renderChunk;
+public class RenderChunkTaskCompile extends AbstractRenderChunkTask<RenderChunk> {
     protected IBlockAccess chunkCache;
 
     public RenderChunkTaskResult run() {

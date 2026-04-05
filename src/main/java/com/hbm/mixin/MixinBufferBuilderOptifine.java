@@ -60,12 +60,12 @@ public abstract class MixinBufferBuilderOptifine implements NTMBufferBuilder {
     @Unique
     private long hbm$byteBufferAddress;
 
-    @Inject(method = "<init>", at = @At("RETURN"))
+    @Inject(method = "<init>", at = @At("RETURN"), require = 1)
     private void hbm$init(int bufferSizeIn, CallbackInfo ci) {
         hbm$refreshByteBufferAddress();
     }
 
-    @Inject(method = "growBuffer", at = @At("RETURN"))
+    @Inject(method = "growBuffer", at = @At("RETURN"), require = 1)
     private void hbm$afterGrowBuffer(int increaseAmount, CallbackInfo ci) {
         hbm$refreshByteBufferAddress();
     }

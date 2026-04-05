@@ -38,7 +38,7 @@ public abstract class MixinChunkRenderRebuildTask {
     private boolean hbm$shouldTrackCurrentBlock;
 
     @Dynamic
-    @Inject(method = "performBuild", at = @At("HEAD"))
+    @Inject(method = "performBuild", at = @At("HEAD"), require = 1)
     private void hbm$resetOversizedExtents(ChunkRenderCacheLocal cache, ChunkBuildBuffers buffers,
                                            CancellationSource cancellationSource,
                                            CallbackInfoReturnable<ChunkBuildResult<?>> cir) {
@@ -53,7 +53,7 @@ public abstract class MixinChunkRenderRebuildTask {
     }
 
     @Dynamic
-    @Redirect(method = "performBuild", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/state/IBlockState;getRenderType()Lnet/minecraft/util/EnumBlockRenderType;"), remap = true)
+    @Redirect(method = "performBuild", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/state/IBlockState;getRenderType()Lnet/minecraft/util/EnumBlockRenderType;"), remap = true, require = 1)
     private EnumBlockRenderType hbm$trackCurrentBlock(IBlockState state) {
         int[] extents = StaticTesrBakedModels.getManagedRenderExtents(state);
         if (extents == null) {
@@ -72,7 +72,7 @@ public abstract class MixinChunkRenderRebuildTask {
     }
 
     @Dynamic
-    @Redirect(method = "performBuild", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/data/ChunkRenderBounds$Builder;addBlock(III)V"), remap = false)
+    @Redirect(method = "performBuild", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/data/ChunkRenderBounds$Builder;addBlock(III)V"), remap = false, require = 1)
     private void hbm$trackRenderedBlock(ChunkRenderBounds.Builder bounds, int relX, int relY, int relZ) {
         if (hbm$shouldTrackCurrentBlock) {
             hbm$negX = Math.max(hbm$negX, hbm$currentWest - relX);
@@ -86,7 +86,7 @@ public abstract class MixinChunkRenderRebuildTask {
     }
 
     @Dynamic
-    @Redirect(method = "performBuild", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/VisGraph;computeVisibility()Lnet/minecraft/client/renderer/chunk/SetVisibility;"), remap = true)
+    @Redirect(method = "performBuild", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/VisGraph;computeVisibility()Lnet/minecraft/client/renderer/chunk/SetVisibility;"), remap = true, require = 1)
     private SetVisibility hbm$publishOversizedExtents(VisGraph occluder) {
         SetVisibility visibility = occluder.computeVisibility();
         IExtraExtentsHolder holder = (IExtraExtentsHolder) visibility;
@@ -98,7 +98,7 @@ public abstract class MixinChunkRenderRebuildTask {
     }
 
     @Dynamic
-    @Redirect(method = "performBuild", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/data/ChunkRenderData$Builder;addBlockEntity(Lnet/minecraft/tileentity/TileEntity;Z)V"), remap = false)
+    @Redirect(method = "performBuild", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/data/ChunkRenderData$Builder;addBlockEntity(Lnet/minecraft/tileentity/TileEntity;Z)V"), remap = false, require = 1)
     private void hbm$trackOversizedTesr(ChunkRenderData.Builder renderData, TileEntity te, boolean cull) {
         if (cull) {
             AxisAlignedBB bb = te.getRenderBoundingBox();
@@ -129,7 +129,7 @@ public abstract class MixinChunkRenderRebuildTask {
     }
 
     @Dynamic
-    @Redirect(method = "performBuild", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/data/ChunkRenderData$Builder;setBounds(Lme/jellysquid/mods/sodium/client/render/chunk/data/ChunkRenderBounds;)V"), remap = false)
+    @Redirect(method = "performBuild", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/data/ChunkRenderData$Builder;setBounds(Lme/jellysquid/mods/sodium/client/render/chunk/data/ChunkRenderBounds;)V"), remap = false, require = 1)
     private void hbm$expandBounds(ChunkRenderData.Builder renderData, ChunkRenderBounds original) {
         if ((hbm$negX | hbm$posX | hbm$negY | hbm$posY | hbm$negZ | hbm$posZ) == 0) {
             renderData.setBounds(original);

@@ -25,7 +25,7 @@ public abstract class MixinChunkGraphNode {
     public abstract int getOriginZ();
 
     @Dynamic
-    @Inject(method = "setOcclusionData", at = @At("RETURN"))
+    @Inject(method = "setOcclusionData", at = @At("RETURN"), require = 1)
     private void hbm$cacheExpansion(SetVisibility occlusionData, CallbackInfo ci) {
         if (occlusionData != null) {
             IExtraExtentsHolder holder = (IExtraExtentsHolder) occlusionData;

@@ -35,7 +35,7 @@ public abstract class MixinFMLProxyPacket implements IMixinFMLProxyPacket {
     @Shadow
     private PacketBuffer payload;
 
-    @Inject(method = "toS3FPackets", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "toS3FPackets", at = @At("HEAD"), cancellable = true, remap = false, require = 1)
     private void hbm$toS3FPackets(CallbackInfoReturnable<List<Packet<INetHandlerPlayClient>>> cir) {
         if (!NetworkUtil.shouldHandleProxyPacket(channel)) return;
         cir.setReturnValue(hbm$toS3FPackets());

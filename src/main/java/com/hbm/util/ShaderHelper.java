@@ -22,8 +22,7 @@ public class ShaderHelper {
         if (HbmCorePlugin.isOptifinePresent()) {
             Class<?> shadersClass = Class.forName("net.optifine.shaders.Shaders");
             SHADER_PACK_LOADED = MethodHandleHelper.findStaticGetter(shadersClass, "shaderPackLoaded", boolean.class);
-            IS_SHADOW_PASS = MethodHandleHelper.findStatic(shadersClass, "isShadowPass",
-                    MethodType.methodType(boolean.class));
+            IS_SHADOW_PASS = MethodHandleHelper.findStaticGetter(shadersClass, "isShadowPass", boolean.class);
             NEXT_BLOCK_ENTITY = MethodHandleHelper.findStatic(shadersClass, "nextBlockEntity",
                     MethodType.methodType(void.class, TileEntity.class));
         } else {

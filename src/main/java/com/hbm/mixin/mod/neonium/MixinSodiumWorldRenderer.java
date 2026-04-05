@@ -37,14 +37,14 @@ public abstract class MixinSodiumWorldRenderer {
     protected abstract void hbm$invokeRenderTE(TileEntity tileEntity, int pass, float partialTicks, int damageProgress);
 
     @Dynamic
-    @Inject(method = "renderTileEntities", at = @At("HEAD"))
+    @Inject(method = "renderTileEntities", at = @At("HEAD"), require = 1)
     private void hbm$beginTileEntityFrame(float partialTicks, Map<Integer, DestroyBlockProgress> damagedBlocks,
                                           CallbackInfo ci) {
         hbm$renderedTileEntities.clear();
     }
 
     @Dynamic
-    @Redirect(method = "renderTileEntities", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/SodiumWorldRenderer;renderTE(Lnet/minecraft/tileentity/TileEntity;IFI)V"))
+    @Redirect(method = "renderTileEntities", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/SodiumWorldRenderer;renderTE(Lnet/minecraft/tileentity/TileEntity;IFI)V"), require = 1)
     private void hbm$renderTileEntityOnce(SodiumWorldRenderer instance, TileEntity tileEntity, int pass,
                                           float partialTicks, int damageProgress) {
         if (damageProgress >= 0 || hbm$renderedTileEntities.add(tileEntity)) {
@@ -53,7 +53,7 @@ public abstract class MixinSodiumWorldRenderer {
     }
 
     @Dynamic
-    @Inject(method = "renderTileEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher;drawBatch(I)V", shift = At.Shift.BEFORE))
+    @Inject(method = "renderTileEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher;drawBatch(I)V", shift = At.Shift.BEFORE), require = 1)
     private void hbm$renderChunkSpanningTesrs(float partialTicks, Map<Integer, DestroyBlockProgress> damagedBlocks,
                                               CallbackInfo ci) {
         int pass = MinecraftForgeClient.getRenderPass();
@@ -78,13 +78,13 @@ public abstract class MixinSodiumWorldRenderer {
     }
 
     @Dynamic
-    @Inject(method = "initRenderer", at = @At("HEAD"))
+    @Inject(method = "initRenderer", at = @At("HEAD"), require = 1)
     private void hbm$clearOnReload(CallbackInfo ci) {
         ChunkSpanningTesrHelper.clear();
     }
 
     @Dynamic
-    @Inject(method = "onChunkRenderUpdated", at = @At("HEAD"))
+    @Inject(method = "onChunkRenderUpdated", at = @At("HEAD"), require = 1)
     private void hbm$updateChunkSpanningTesrSet(int x, int y, int z, ChunkRenderData meshBefore,
                                                 ChunkRenderData meshAfter, CallbackInfo ci) {
         // ChunkRenderData.ABSENT has null occlusion data

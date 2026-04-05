@@ -5,6 +5,8 @@ import com.google.common.collect.ImmutableMap;
 import com.hbm.Tags;
 import com.hbm.items.ItemBakedBase;
 import com.hbm.render.model.BakedModelTransforms;
+import com.hbm.render.model.HbmBakedQuad;
+import com.hbm.render.model.IHbmBakedQuad;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.*;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -243,7 +245,9 @@ public class ItemHot extends ItemBakedBase {
 					int baseIndex = v * strideInts + colorOffsetInts;
 					vd[baseIndex] = color;
 				}
-				BakedQuad nq = new BakedQuad(vd, q.getTintIndex(), q.getFace(), q.getSprite(), q.shouldApplyDiffuseLighting(), format);
+				BakedQuad nq = q instanceof IHbmBakedQuad
+						? new HbmBakedQuad(vd, q.getTintIndex(), q.getFace(), q.getSprite(), format)
+						: new BakedQuad(vd, q.getTintIndex(), q.getFace(), q.getSprite(), q.shouldApplyDiffuseLighting(), format);
 				result.add(nq);
 			}
 			return result;

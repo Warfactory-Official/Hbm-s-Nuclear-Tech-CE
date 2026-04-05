@@ -1,31 +1,26 @@
 package com.hbm.mixin.mod.nothirium;
 
 import com.hbm.render.chunk.IExtraExtentsHolder;
+import meldexun.nothirium.api.renderer.chunk.IRenderChunk;
 import meldexun.nothirium.renderer.chunk.AbstractRenderChunk;
 import meldexun.nothirium.util.VisibilitySet;
 import meldexun.renderlib.util.Frustum;
-import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.Dynamic;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value = AbstractRenderChunk.class, remap = false)
-public abstract class MixinAbstractRenderChunk {
+public abstract class MixinAbstractRenderChunk implements IRenderChunk {
 
     @Unique
     private int hbm$negX, hbm$posX, hbm$negY, hbm$posY, hbm$negZ, hbm$posZ;
 
-    @Shadow
-    public abstract int getX();
-
-    @Shadow
-    public abstract int getY();
-
-    @Shadow
-    public abstract int getZ();
-
     @Dynamic
-    @Inject(method = "setVisibility", at = @At("RETURN"))
+    @Inject(method = "setVisibility", at = @At("RETURN"), require = 1)
     private void hbm$cacheExpansion(VisibilitySet visibilitySet, CallbackInfo ci) {
         if (visibilitySet != null) {
             IExtraExtentsHolder holder = (IExtraExtentsHolder) visibilitySet;
