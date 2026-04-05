@@ -290,6 +290,7 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
         Block block = state.getBlock();
         world.updateComparatorOutputLevel(blockPos, block);
         world.notifyNeighborsOfStateChange(blockPos, block, false);
+        block.neighborChanged(state, world, blockPos, this.getBlockType(), this.getPos());
     }
 
     public void setDestroyedByCreativePlayer() {
