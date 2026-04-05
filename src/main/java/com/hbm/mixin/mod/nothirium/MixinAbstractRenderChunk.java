@@ -24,6 +24,7 @@ public abstract class MixinAbstractRenderChunk {
     @Shadow
     public abstract int getZ();
 
+    @Dynamic
     @Inject(method = "setVisibility", at = @At("RETURN"))
     private void hbm$cacheExpansion(VisibilitySet visibilitySet, CallbackInfo ci) {
         if (visibilitySet != null) {

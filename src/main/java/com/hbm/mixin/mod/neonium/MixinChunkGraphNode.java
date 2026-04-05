@@ -24,6 +24,7 @@ public abstract class MixinChunkGraphNode {
     @Shadow
     public abstract int getOriginZ();
 
+    @Dynamic
     @Inject(method = "setOcclusionData", at = @At("RETURN"))
     private void hbm$cacheExpansion(SetVisibility occlusionData, CallbackInfo ci) {
         if (occlusionData != null) {

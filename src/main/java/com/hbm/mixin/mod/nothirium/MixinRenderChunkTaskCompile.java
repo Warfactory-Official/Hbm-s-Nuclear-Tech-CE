@@ -9,10 +9,7 @@ import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -28,6 +25,7 @@ public abstract class MixinRenderChunkTaskCompile {
     @Unique
     private int hbm$negX, hbm$posX, hbm$negY, hbm$posY, hbm$negZ, hbm$posZ;
 
+    @Dynamic
     @Inject(method = "run", at = @At("HEAD"))
     private void hbm$resetOversizedExtents(CallbackInfoReturnable<?> cir) {
         hbm$negX = 0;
@@ -38,6 +36,7 @@ public abstract class MixinRenderChunkTaskCompile {
         hbm$posZ = 0;
     }
 
+    @Dynamic
     @Redirect(method = "renderBlockState", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/BlockRendererDispatcher;renderBlock(Lnet/minecraft/block/state/IBlockState;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/world/IBlockAccess;Lnet/minecraft/client/renderer/BufferBuilder;)Z"), remap = true)
     private boolean hbm$trackOversizedBlock(BlockRendererDispatcher dispatcher, IBlockState state, BlockPos pos,
                                             IBlockAccess world, BufferBuilder buffer) {
@@ -60,6 +59,7 @@ public abstract class MixinRenderChunkTaskCompile {
         return result;
     }
 
+    @Dynamic
     @Redirect(method = "compileSection(Lnet/minecraft/client/renderer/RegionRenderCacheBuilder;)Lmeldexun/nothirium/api/renderer/chunk/RenderChunkTaskResult;", at = @At(value = "INVOKE", target = "Lmeldexun/nothirium/util/VisibilityGraph;compute()Lmeldexun/nothirium/util/VisibilitySet;"), remap = false)
     private meldexun.nothirium.util.VisibilitySet hbm$publishOversizedExtents(meldexun.nothirium.util.VisibilityGraph visibilityGraph) {
         meldexun.nothirium.util.VisibilitySet visibilitySet = visibilityGraph.compute();

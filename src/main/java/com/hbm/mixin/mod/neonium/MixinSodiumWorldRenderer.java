@@ -8,7 +8,6 @@ import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import me.jellysquid.mods.sodium.client.render.SodiumWorldRenderer;
 import me.jellysquid.mods.sodium.client.render.chunk.ChunkRenderManager;
 import me.jellysquid.mods.sodium.client.render.chunk.data.ChunkRenderData;
-import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.DestroyBlockProgress;
 import net.minecraft.client.renderer.chunk.SetVisibility;
 import net.minecraft.tileentity.TileEntity;
@@ -28,8 +27,6 @@ import java.util.Map;
 @Mixin(value = SodiumWorldRenderer.class, remap = false)
 public abstract class MixinSodiumWorldRenderer {
 
-    @Shadow
-    private WorldClient world;
     @Shadow
     private ChunkRenderManager<?> chunkRenderManager;
 

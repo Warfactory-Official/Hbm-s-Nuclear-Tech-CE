@@ -37,6 +37,7 @@ public abstract class MixinChunkRenderRebuildTask {
     @Unique
     private boolean hbm$shouldTrackCurrentBlock;
 
+    @Dynamic
     @Inject(method = "performBuild", at = @At("HEAD"))
     private void hbm$resetOversizedExtents(ChunkRenderCacheLocal cache, ChunkBuildBuffers buffers,
                                            CancellationSource cancellationSource,
@@ -51,6 +52,7 @@ public abstract class MixinChunkRenderRebuildTask {
         hbm$spanningTesrs.clear();
     }
 
+    @Dynamic
     @Redirect(method = "performBuild", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/state/IBlockState;getRenderType()Lnet/minecraft/util/EnumBlockRenderType;"), remap = true)
     private EnumBlockRenderType hbm$trackCurrentBlock(IBlockState state) {
         int[] extents = StaticTesrBakedModels.getManagedRenderExtents(state);
@@ -69,6 +71,7 @@ public abstract class MixinChunkRenderRebuildTask {
         return state.getRenderType();
     }
 
+    @Dynamic
     @Redirect(method = "performBuild", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/data/ChunkRenderBounds$Builder;addBlock(III)V"), remap = false)
     private void hbm$trackRenderedBlock(ChunkRenderBounds.Builder bounds, int relX, int relY, int relZ) {
         if (hbm$shouldTrackCurrentBlock) {
@@ -82,6 +85,7 @@ public abstract class MixinChunkRenderRebuildTask {
         bounds.addBlock(relX, relY, relZ);
     }
 
+    @Dynamic
     @Redirect(method = "performBuild", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/VisGraph;computeVisibility()Lnet/minecraft/client/renderer/chunk/SetVisibility;"), remap = true)
     private SetVisibility hbm$publishOversizedExtents(VisGraph occluder) {
         SetVisibility visibility = occluder.computeVisibility();
@@ -124,6 +128,7 @@ public abstract class MixinChunkRenderRebuildTask {
         renderData.addBlockEntity(te, cull);
     }
 
+    @Dynamic
     @Redirect(method = "performBuild", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/chunk/data/ChunkRenderData$Builder;setBounds(Lme/jellysquid/mods/sodium/client/render/chunk/data/ChunkRenderBounds;)V"), remap = false)
     private void hbm$expandBounds(ChunkRenderData.Builder renderData, ChunkRenderBounds original) {
         if ((hbm$negX | hbm$posX | hbm$negY | hbm$posY | hbm$negZ | hbm$posZ) == 0) {
