@@ -257,7 +257,7 @@ public class TileEntityFusionBreeder extends TileEntityMachineBase implements IT
     }
 
     @Override public boolean receivesFusionPower() { return false; }
-    @Override public void receiveFusionPower(long fusionPower, double neutronPower) { this.neutronEnergy = neutronPower; doProgress(); }
+    @Override public void receiveFusionPower(long fusionPower, double neutronPower, float r, float g, float b) { this.neutronEnergy = neutronPower; doProgress(); }
 
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[] {tanks[0]}; }
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[] {tanks[1]}; }

@@ -1250,6 +1250,7 @@ public class ModBlocks {
     public static final Block fusion_component = new BlockFusionComponent().setHardness(5.0F).setResistance(30.0F).setCreativeTab(MainRegistry.machineTab);
     public static final Block fusion_torus = new MachineFusionTorus("fusion_torus").setHardness(5.0F).setResistance(60.0F).setCreativeTab(MainRegistry.machineTab);
     public static final Block fusion_klystron = new MachineFusionKlystron("fusion_klystron").setHardness(5.0F).setResistance(60.0F).setCreativeTab(MainRegistry.machineTab);
+    public static final Block fusion_klystron_creative = new MachineFusionKlystronCreative("fusion_klystron_creative").setHardness(5.0F).setResistance(60.0F).setCreativeTab(MainRegistry.machineTab);
     public static final Block fusion_breeder = new MachineFusionBreeder("fusion_breeder").setHardness(5.0F).setResistance(60.0F).setCreativeTab(MainRegistry.machineTab);
     public static final Block fusion_collector = new MachineFusionCollector("fusion_collector").setHardness(5.0F).setResistance(60.0F).setCreativeTab(MainRegistry.machineTab);
     public static final Block fusion_boiler = new MachineFusionBoiler("fusion_boiler").setHardness(5.0F).setResistance(60.0F).setCreativeTab(MainRegistry.machineTab);

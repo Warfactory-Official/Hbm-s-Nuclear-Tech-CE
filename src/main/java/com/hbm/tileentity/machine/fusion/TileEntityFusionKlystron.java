@@ -46,7 +46,7 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase implements I
     public long outputTarget;
     public long output;
     public long power;
-    public long maxPower;
+    public long maxPower = 1_000_000L;
 
     public float fan;
     public float prevFan;
@@ -100,33 +100,8 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase implements I
 
             if(output < outputTarget / 50) output = 0;
 
-            if(klystronNode == null || klystronNode.expired) {
-                ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10).getOpposite();
-                klystronNode = UniNodespace.getNode(world, pos.add(dir.offsetX * 4, 2, dir.offsetZ * 4), KlystronNetwork.THE_PROVIDER);
-
-                if(klystronNode == null) {
-                    klystronNode = (KlystronNetwork.KlystronNode) new KlystronNetwork.KlystronNode(KlystronNetwork.THE_PROVIDER,
-                            new BlockPos(pos.getX() + dir.offsetX * 4, pos.getY() + 2, pos.getZ() + dir.offsetZ * 4))
-                            .setConnections(new DirPos(pos.getX() + dir.offsetX * 5, pos.getY() + 2, pos.getZ() + dir.offsetZ * 5, dir));
-
-                    UniNodespace.createNode(world, klystronNode);
-                }
-            }
-
-            if(klystronNode.net != null) klystronNode.net.addProvider(this);
-
-            if(klystronNode != null && klystronNode.net != null) {
-                KlystronNetwork net = klystronNode.net;
-
-                for(Map.Entry<TileEntity, Long> o : net.receiverEntries.entrySet()) {
-                    if(o.getKey() instanceof TileEntityFusionTorus torus) { // replace this with an interface should we ever get more acceptors
-                        if(torus.isLoaded() && !torus.isInvalid()) { // check against zombie network members
-                            torus.klystronEnergy += this.output;
-                            break; // we only do one anyway
-                        }
-                    }
-                }
-            }
+            this.klystronNode = handleKNode(klystronNode, this);
+            provideKyU(klystronNode, this.output);
 
             this.networkPackNT(100);
 
@@ -178,6 +153,51 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase implements I
                 new DirPos(pos.getX() + rot.offsetX * 3, pos.getY(), pos.getZ() + rot.offsetZ * 3, rot),
                 new DirPos(pos.getX() - rot.offsetX * 3, pos.getY(), pos.getZ() - rot.offsetZ * 3, rot.getOpposite())
         };
+    }
+
+    /** Ensures the k-node exists, is loaded, and the klystron is a provider in the k-net. Returns a new klystron node if none existed, or the previous one. */
+    public static KlystronNetwork.KlystronNode handleKNode(KlystronNetwork.KlystronNode klystronNode, TileEntity that) {
+
+        World world = that.getWorld();
+        BlockPos pos = that.getPos();
+
+        if(klystronNode == null || klystronNode.expired) {
+            ForgeDirection dir = ForgeDirection.getOrientation(that.getBlockMetadata() - 10).getOpposite();
+            klystronNode = UniNodespace.getNode(world, pos.add(dir.offsetX * 4, 2, dir.offsetZ * 4), KlystronNetwork.THE_PROVIDER);
+
+            if(klystronNode == null) {
+                klystronNode = (KlystronNetwork.KlystronNode) new KlystronNetwork.KlystronNode(KlystronNetwork.THE_PROVIDER,
+                        new BlockPos(pos.getX() + dir.offsetX * 4, pos.getY() + 2, pos.getZ() + dir.offsetZ * 4))
+                        .setConnections(new DirPos(pos.getX() + dir.offsetX * 5, pos.getY() + 2, pos.getZ() + dir.offsetZ * 5, dir));
+
+                UniNodespace.createNode(world, klystronNode);
+            }
+        }
+
+        if(klystronNode.net != null) klystronNode.net.addProvider(that);
+
+        return klystronNode;
+    }
+
+    /** Provides klystron energy to the k-net of the supplied k-node, returns true is a connection is established */
+    public static boolean provideKyU(KlystronNetwork.KlystronNode klystronNode, long output) {
+        boolean connected = false;
+
+        if(klystronNode != null && klystronNode.net != null) {
+            KlystronNetwork net = klystronNode.net;
+
+            for(Map.Entry<TileEntity, Long> o : net.receiverEntries.entrySet()) {
+                if(o.getKey() instanceof TileEntityFusionTorus torus) { // replace this with an interface should we ever get more acceptors
+                    if(torus.isLoaded() && !torus.isInvalid()) { // check against zombie network members
+                        torus.klystronEnergy += output;
+                        connected = true;
+                        break; // we only do one anyway
+                    }
+                }
+            }
+        }
+
+        return connected;
     }
 
     @Override
