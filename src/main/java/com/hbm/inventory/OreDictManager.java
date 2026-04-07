@@ -909,6 +909,11 @@ public class OreDictManager {
             return stacks;
         }
 
+        /**
+         * @deprecated Creates a separate HazardData per call, breaking alias sharing.
+         *             Internal callers should use {@link #buildSharedHazardData()} instead.
+         */
+        @Deprecated(forRemoval = true, since = "2.3.0.1")
         public static void registerHazards(List<HazardEntry> hazards, float hazMult, String dictKey) {
 
             if (!hazards.isEmpty() && hazMult > 0F) {
@@ -1196,17 +1201,24 @@ public class OreDictManager {
         // TODO: rethink this. currently, keys are only registered on-demand if the dict frame has a valid entry, even though we can maximize compatibility
         // by simply registereing all known shapes in the haz reg, whether it exists or not
         public DictFrame autoRegHazard(MaterialShapes shape) {
-            String tag = shape.name();
-            for(String mat : mats) {
-                registerHazards(hazards, hazMult, tag + mat);
+            HazardData sharedData = buildSharedHazardData();
+            if (sharedData != null) {
+                String tag = shape.name();
+                for (String mat : mats) {
+                    HazardSystem.register(tag + mat, sharedData);
+                }
             }
             return this;
         }
 
         public void registerStack(String tag, ItemStack stack) {
+            // All oredict aliases for the same shape share a single HazardData so that
+            // modifications through any alias key are visible through all of them.
+            HazardData sharedData = buildSharedHazardData();
+
             for (String mat : mats) {
                 OreDictionary.registerOre(tag + mat, stack);
-                registerHazards(hazards, hazMult, tag + mat);
+                if (sharedData != null) HazardSystem.register(tag + mat, sharedData);
             }
 
             /*
@@ -1216,8 +1228,26 @@ public class OreDictManager {
              * I'd imagine greg's OD system might not like things without prefixes.
              */
             if ("ingot".equals(tag)) {
-                registerStack("", stack);
+                for (String mat : mats) {
+                    OreDictionary.registerOre(mat, stack);
+                    if (sharedData != null) HazardSystem.register(mat, sharedData);
+                }
             }
+        }
+
+        /**
+         * <p>DO NOT AIM FOR UPSTREAM PARITY FOR THIS!! DO NOT REMOVE, MODIFY, OR REFACTOR</p>
+         * This supersedes {@link DictFrame#registerHazards(List, float, String)}
+         *
+         * @author movblock
+         */
+        private HazardData buildSharedHazardData() {
+            if (hazards.isEmpty() || hazMult <= 0F) return null;
+            HazardData data = new HazardData().setMutex(0b1);
+            for (HazardEntry hazard : hazards) {
+                data.addEntry(hazard.clone(hazMult));
+            }
+            return data;
         }
     }
 
