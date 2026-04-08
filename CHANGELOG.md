@@ -13,60 +13,24 @@
 > change(major API bump).  
 >   - Changes, New Features correspond to a minor bump.  
 >   - Fixes/Performance/Misc correspond to a minor or patch bump.
-> - Previous public release: 2.2.0.0
-> - Next release: at least 2.2.1.0
+> - Previous public release: 2.3.0.0
+> - Next release: at least 2.3.0.1
 
 ### SUBSTANTIAL CHANGES
-- The mod now requires `mixinbooter 10.7` to bootstrap!
 
 ### Breaking Changes
 
 ### Fixes
-- Fixed impact overworld provider rebinding clashing with OTG / other mods' custom provider
-- Fixed RBMK Display facing/render
-- Fixed RBMK columns' extreme placing / removing lag due to improper quads caching
-- Mitigated duct and cable placing / removing lag due to eager net destruction and reconstruction
-- Fixed potential CME when switching door states
-- Fixed clash with Universal Tweaks by migrating to mixins
-- Fixed ClassCastException on fake worlds in RadiationSystemNT (PR #1446 by kaduvill)
-- Fixed baked models missing tintindex and shading issues with Optifine
-- Fixed upgrade dupe caused by server-side invocation of client-only sound code
-- Fixed latent GL state leaks in meteor sword, Egon gun, and JShotgun renderers
-- Fixed bobblehead render not capturing blend state
-- Fixed Xaero's Minimap black screen caused by badge HUD rendering on wrong overlay event type
-- Fixed rad sealed duct having an absurdly high blast resistance (10000 → 400)
-- Fixed capability wrapper crash messages not reporting the offending TileEntity class
-- Fixed capacitor not marking dirty state on power change
-- Fixed sawmill and drone crate registering erroneous capabilities
-- Fixed crane router facing (used custom enum order instead of `EnumFacing.byIndex`)
-- Fixed glyphid StackOverflowError caused by recursive `getAttackTarget`/`setAttackTarget` loop when blind
-- Fixed missing 2x scale in torex instanced billboard path
-- Fixed funnel ClassCastException and funnel not properly inputting/outputting items (e.g. via conveyor inserter/ejector)
-- Fixed RBMK Cooler console stats not displaying fluid levels; cooler now reports both cold and hot tank types, fill, and capacity
-- Fixed firebox not returning container items (e.g. lava bucket → empty bucket) when fuel is fully consumed
-- Fixed baked model culling and lighting issues
-- Fixed TESR culling issues
+- Fixed crate item stack custom name not being displayed
+- Fixed a crash when the GUI of Klystron is opened immediately after placement
+- Fixed a 2.3.0.0 regression that caused Celeritas to incorrectly cull chunks
+- Fixed an issue that may cause RBMK to explode on chunk load/unload
+- Fixed a hazard system oredict aliasing issue
 
 ### Changes
-- Removed `enableHardcoreDarkness` config option; sun brightness calculation no longer applies the 0.8/0.2 floor that broke compatibility with hardcore darkness mods
-- JEI recipe lookup for `fluid_icon` items is now forwarded to their Forge fluid mirror
-- RBMK Cooler console tooltip now shows cold/hot fluid type, fill, and max capacity instead of just cryogel amount
-- Crane router now has a standard tooltip
-- Added missing `.lang` entries (en_us, ru_ru)
-- Partially migrated coremod ASM transformers to Mixin
-- Tool ability HUD overlay now properly manages GL depth/lighting/color state
 
 ### New Features
-- Updated RBMK debris block textures and added new RBMK decorative panel/slab blocks (PR #1450 by Leafia)
-- Added network compatibility mode config option
-- Ported Creative klystron and Plasma Forge
 
 ### Performance
-- Moved Tau/Vortex particles, chemical projectiles, black-hole effects, and RBMK console/display overlays onto
-`NTMImmediate` / fast-buffer rendering paths, reducing legacy Tessellator overhead and aligning them with the newer
-client rendering utilities
-- Reworked rebar concrete-fill rendering into a dedicated client renderer. The render-limit client config is removed.
-- Reworked BufferBuilder mixin with per-mod-loader variants (vanilla, Neonium, Nothirium, Optifine)
 
 ### Misc
-- Refactored container shift-click transfer routing to declarative `TransferStrategy`, preserving `slot.onTake` semantics consistently across all containers
