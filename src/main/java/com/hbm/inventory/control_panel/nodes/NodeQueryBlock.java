@@ -51,8 +51,8 @@ public class NodeQueryBlock extends Node {
 
     private void setBlockPosSelector() {
         tagSelector.list.itemNames.clear();
-        for (BlockPos pos : ctrl.connectedSet) {
-            tagSelector.list.addItems(pos.getX() + ", " + pos.getY() + ", " + pos.getZ());
+        for (String s : ctrl.taggedLinks.keySet()) {
+            tagSelector.list.addItems(s);
         }
     }
 
@@ -89,8 +89,8 @@ public class NodeQueryBlock extends Node {
 
     @Override
     public DataValue evaluate(int inx) {
-        if (!dataName.isEmpty()) {
-            TileEntity tile = ctrl.panel.parent.getControlWorld().getTileEntity(getPos(tag));
+        if (!dataName.isEmpty() && ctrl.taggedLinks.containsKey(tag)) {
+            TileEntity tile = ctrl.panel.parent.getControlWorld().getTileEntity(ctrl.taggedLinks.get(tag));
 
             if (tile instanceof IControllable) {
                 IControllable te = (IControllable) tile;

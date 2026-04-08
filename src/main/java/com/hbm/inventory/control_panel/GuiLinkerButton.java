@@ -11,14 +11,14 @@ public class GuiLinkerButton extends GuiButton {
 	public GuiTextField field;
 	FontRenderer font;
 	public GuiLinkerButton(FontRenderer font,int buttonId,int x,int y,int widthIn,int heightIn,String buttonText) {
-		super(buttonId,x+widthIn-20,y,widthIn-20,heightIn,"X");
+		super(buttonId,x+widthIn-20,y,20,heightIn,"X");
 		actualX = x;
 		actualWidth = widthIn;
 		this.font = font;
 		field = new GuiTextField(
 				-1,
-				font,x,y,
-				widthIn-20,heightIn
+				font,x+1,y+1,
+				widthIn-20-2,heightIn-2
 		);
 		field.setText(buttonText);
 	}
@@ -35,5 +35,13 @@ public class GuiLinkerButton extends GuiButton {
 	}
 	public void mouseClicked(int x,int y,int i) {
 		field.mouseClicked(x,y,i);
+	}
+	public void setVisible(boolean visible) {
+		this.visible = visible;
+		field.setVisible(visible);
+	}
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+		field.setVisible(enabled);
 	}
 }

@@ -38,8 +38,6 @@ public abstract class Control {
 	public final String registryName;
 	public ControlPanel panel;
 	//Set of block positions this control is connected to. When an event is sent, it gets sent to each one
-	@Deprecated
-	public List<BlockPos> connectedSet = new ArrayList<>();
 	public Map<String,BlockPos> taggedLinks = new HashMap<>();
 	//A map of event names to node system for events this control is sending out to connected blocks
 	public Map<String, NodeSystem> sendNodeMap = new Object2ObjectLinkedOpenHashMap<>();

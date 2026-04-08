@@ -14,6 +14,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import org.lwjgl.input.Keyboard;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -31,15 +32,18 @@ public class SubElementLinker extends SubElement {
 
 	//public List<IControllable> linked = new ArrayList<>();
 	//private final Set<BlockPos> unresolvedLinks = new LinkedHashSet<>();
-	public List<GuiButton> linkedButtons = new ArrayList<>();
+	public List<GuiLinkerButton> linkedButtons = new ArrayList<>();
+	public Map<GuiLinkerButton,BlockPos> linkerToPosMap = new HashMap<>();
 	public final Set<BlockPos> linkedPositions = new HashSet<>();
 	public final Map<BlockPos,String> tags = new HashMap<>();
 	//private final List<BlockPos> listedLinkPositions = new ArrayList<>();
 	public int numPages = 1;
 	public int currentPage = 1;
+	public boolean invalid = false;
 	
 	public SubElementLinker(GuiControlEdit gui){
 		super(gui);
+		Keyboard.enableRepeatEvents(true);
 	}
 	
 	@Override
@@ -78,16 +82,16 @@ public class SubElementLinker extends SubElement {
 	}
 	
 	private void recalculateVisibleButtons(){
-		for(GuiButton b : linkedButtons){
-			b.visible = false;
-			b.enabled = false;
+		for(GuiLinkerButton b : linkedButtons){
+			b.setVisible(false);
+			b.setEnabled(false);
 		}
 		int idx = (currentPage-1)*3;
 		for(int i = idx; i < idx+3; i ++) {
 			if(i >= linkedButtons.size()) //TODO: when block gone, remove from linked
 				break;
-			linkedButtons.get(i).visible = true;
-			linkedButtons.get(i).enabled = true;
+			linkedButtons.get(i).setVisible(true);
+			linkedButtons.get(i).setEnabled(true);
 		}
 		boolean showPaging = numPages > 1;
 		pageLeft.visible = showPaging && currentPage > 1;
@@ -95,7 +99,13 @@ public class SubElementLinker extends SubElement {
 		pageRight.visible = showPaging && currentPage < numPages;
 		pageRight.enabled = pageRight.visible;
 	}
-	
+
+	@Override
+	public void onClose() {
+		super.onClose();
+		Keyboard.enableRepeatEvents(false);
+	}
+
 	@Override
 	protected void actionPerformed(GuiButton button){
 		World world = gui.control.getWorld();
@@ -136,27 +146,33 @@ public class SubElementLinker extends SubElement {
 		} else if(button == clear){
 			//linked.clear();
 			//unresolvedLinks.clear();
+			linkedPositions.clear();
+			tags.clear();
 			refreshButtons();
 		} else if(button == back){
 			gui.returnControlInputToPlayerInventory();
 			gui.popElement();
 		} else if(button == cont){
-			syncCurrentEditControlConnections();
-			gui.eventEditor.accumulateEventTypes(getLinked());
-			gui.eventEditor.populateDefaultNodes();
-			gui.returnControlInputToPlayerInventory();
-			gui.pushElement(gui.eventEditor);
+			if (!invalid) {
+				syncCurrentEditControlConnections();
+				gui.eventEditor.accumulateEventTypes(getLinked());
+				gui.eventEditor.populateDefaultNodes();
+				gui.returnControlInputToPlayerInventory();
+				gui.pushElement(gui.eventEditor);
+			}
 		} else if(button == pageLeft){
 			currentPage = Math.max(1, currentPage - 1);
 			recalculateVisibleButtons();
 		} else if(button == pageRight){
 			currentPage = Math.min(numPages, currentPage + 1);
 			recalculateVisibleButtons();
-		} else if(linkedButtons.contains(button)){
-			int idx = linkedButtons.indexOf(button);
+		} else if(linkerToPosMap.containsKey(button)){
+			BlockPos p = linkerToPosMap.get(button);
 			//if(idx >= 0 && idx < listedLinkPositions.size()) {
 			//	removeLinked(listedLinkPositions.get(idx));
 			//}
+			linkedPositions.remove(p);
+			tags.remove(p);
 			refreshButtons();
 		}
 	}
@@ -242,6 +258,7 @@ public class SubElementLinker extends SubElement {
 	protected void refreshButtons(){
 		gui.getButtons().removeAll(linkedButtons);
 		linkedButtons.clear();
+		linkerToPosMap.clear();
 		//listedLinkPositions.clear();
 		int i = 0;
 		int cX = gui.width/2;
@@ -259,7 +276,9 @@ public class SubElementLinker extends SubElement {
 			i = (i+1)%3;
 		}*/
 		for (BlockPos pos : linkedPositions) {
-			linkedButtons.add(new ButtonHoverText(gui.currentButtonId(), cX-73, cY-90 + i*22, 170, 20, formatLinkLabel(pos), "<Click to remove>"));
+			GuiLinkerButton button = new GuiLinkerButton(gui.mc.fontRenderer,gui.currentButtonId(), cX-73, cY-90 + i*22, 170, 20, tags.getOrDefault(pos,"ERROR"));
+			linkedButtons.add(button);
+			linkerToPosMap.put(button,pos);
 			i = (i+1)%3;
 		}
 		for(GuiButton b : linkedButtons)
@@ -272,15 +291,58 @@ public class SubElementLinker extends SubElement {
 	private static String formatLinkLabel(BlockPos pos) {
 		return pos.getX() + ", " + pos.getY() + ", " + pos.getZ();
 	}
-	
+
+	@Override
+	protected void keyTyped(char typedChar,int code) {
+		super.keyTyped(typedChar,code);
+		for(GuiLinkerButton b : linkedButtons)
+			b.keyTyped(typedChar,code);
+	}
+
+	@Override
+	protected void mouseClicked(int mouseX,int mouseY,int button) {
+		super.mouseClicked(mouseX,mouseY,button);
+		for(GuiLinkerButton b : linkedButtons)
+			b.mouseClicked(mouseX,mouseY,button);
+	}
+
+	@Override
+	protected void update() {
+		super.update();
+		for(GuiLinkerButton b : linkedButtons)
+			b.update();
+		invalid = false;
+		tags.clear();
+		Set<String> invalidTags = new HashSet<>();
+		for(GuiLinkerButton b : linkedButtons) {
+			BlockPos p = linkerToPosMap.get(b);
+			String tag = b.field.getText();
+			b.field.setTextColor(0xFFFFFF);
+			if (tags.containsValue(tag)) {
+				invalid = true;
+				invalidTags.add(tag);
+			} else
+				tags.put(p,tag);
+		}
+		for(GuiLinkerButton b : linkedButtons) {
+			String tag = b.field.getText();
+			if (invalidTags.contains(tag))
+				b.field.setTextColor(0xFF0000);
+		}
+		cont.enabled = lastEnable && !invalid;
+	}
+
+	boolean lastEnable = true;
+
 	@Override
 	protected void enableButtons(boolean enable) {
+		lastEnable = enable;
 		if(enable){
 			recalculateVisibleButtons();
 		} else {
-			for(GuiButton b : linkedButtons){
-				b.visible = false;
-				b.enabled = false;
+			for(GuiLinkerButton b : linkedButtons){
+				b.setVisible(false);
+				b.setEnabled(false);
 			}
 		}
 		clear.enabled = enable;
@@ -298,7 +360,7 @@ public class SubElementLinker extends SubElement {
 			pageRight.visible = false;
 			pageRight.enabled = false;
 		}
-		cont.enabled = enable;
+		cont.enabled = enable && !invalid;
 		cont.visible = enable;
 		back.enabled = enable;
 		back.visible = enable;
