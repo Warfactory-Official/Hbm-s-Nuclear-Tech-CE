@@ -82,9 +82,7 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 					ControlEventSystem.get(world).subscribeTo(this, b);
 				}
 			}
-			pendingRedstoneInputSnapshots.clear();
-			captureRedstoneInputChanges(true);
-			dispatchPendingRedstoneInputEvents(false);
+			reinitializePanelState();
 			if(hasAnyRedstoneOutput()) {
 				notifyRedstoneNeighbors();
 			}

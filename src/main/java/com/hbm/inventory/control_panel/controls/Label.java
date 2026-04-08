@@ -128,6 +128,7 @@ public class Label extends Control {
 
         GlStateManager.depthMask(true);
         GlStateManager.popMatrix();
+        GlStateManager.color(1F, 1F, 1F, 1F);
     }
 
     @Override

@@ -83,6 +83,7 @@ public class ButtonPush extends Control {
         }
 
         GlStateManager.shadeModel(GL11.GL_FLAT);
+        GlStateManager.color(1F, 1F, 1F, 1F);
     }
 
     @Override

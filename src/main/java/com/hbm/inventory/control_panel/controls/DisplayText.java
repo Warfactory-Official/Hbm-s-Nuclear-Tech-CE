@@ -143,7 +143,7 @@ public class DisplayText extends Control {
         NTMImmediate.INSTANCE.draw();
         GlStateManager.enableTexture2D();
         GlStateManager.popMatrix();
-
+        GlStateManager.color(1F, 1F, 1F, 1F);
     }
 
     @Override

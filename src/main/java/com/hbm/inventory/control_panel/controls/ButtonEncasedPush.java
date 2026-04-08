@@ -55,6 +55,7 @@ public class ButtonEncasedPush extends Control {
         // --- Base ---
         GlStateManager.pushMatrix();
         GlStateManager.translate(posX, 0, posY);
+        GlStateManager.color(1F, 1F, 1F, 1F);
         model.renderPart("base");
         GlStateManager.popMatrix();
 
@@ -77,6 +78,7 @@ public class ButtonEncasedPush extends Control {
             OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lX, lY);
         }
 
+        GlStateManager.color(1F, 1F, 1F, 1F);
         GlStateManager.enableBlend();
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
 
@@ -92,6 +94,7 @@ public class ButtonEncasedPush extends Control {
 
         GlStateManager.disableBlend();
         GlStateManager.shadeModel(GL11.GL_FLAT);
+        GlStateManager.color(1F, 1F, 1F, 1F);
     }
 
     @Override

@@ -10,6 +10,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.WorldTickEvent;
 
 import java.util.Collection;
@@ -157,6 +158,8 @@ public class ControlEventSystem {
 	
 	@SubscribeEvent
 	public static void tick(WorldTickEvent evt){
+		if(evt.phase != Phase.START || evt.world.isRemote)
+			return;
 		ControlEventSystem s = systems.get(evt.world);
 		if(s != null){
 			for(IControllable c : s.tickables){
