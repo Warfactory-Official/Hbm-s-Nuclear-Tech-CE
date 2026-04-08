@@ -78,7 +78,7 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 			loadClient();
 		else {
 			for(Control c : panel.controls){
-				for(BlockPos b : c.connectedSet){
+				for (BlockPos b : c.taggedLinks.values()) {
 					ControlEventSystem.get(world).subscribeTo(this, b);
 				}
 			}
@@ -226,13 +226,13 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 		if(data.hasKey("full_set")) {
 			markDirty();
 			for(Control c : panel.controls){
-				for(BlockPos b : c.connectedSet){
+				for (BlockPos b : c.taggedLinks.values()) {
 					ControlEventSystem.get(world).unsubscribeFrom(this, b);
 				}
 			}
 			this.panel.readFromNBT(data);
 			for(Control c : panel.controls){
-				for(BlockPos b : c.connectedSet){
+				for (BlockPos b : c.taggedLinks.values()) {
 					ControlEventSystem.get(world).subscribeTo(this, b);
 				}
 			}

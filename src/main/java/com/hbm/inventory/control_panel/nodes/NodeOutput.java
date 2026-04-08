@@ -30,5 +30,5 @@ public abstract class NodeOutput extends Node {
 	 * explicit cancellation behavior such as {@link NodeCancelEvent}, and return {@code true}
 	 * for side effect or no-op outputs like variable assignment and redstone output.
 	 */
-	public abstract boolean doOutput(IControllable from, Map<String, NodeSystem> sendNodeMap, List<BlockPos> positions);
+	public abstract boolean doOutput(IControllable from, Map<String, NodeSystem> sendNodeMap, Map<String,BlockPos> links);
 }

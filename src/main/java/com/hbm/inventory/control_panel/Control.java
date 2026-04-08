@@ -38,7 +38,9 @@ public abstract class Control {
 	public final String registryName;
 	public ControlPanel panel;
 	//Set of block positions this control is connected to. When an event is sent, it gets sent to each one
+	@Deprecated
 	public List<BlockPos> connectedSet = new ArrayList<>();
+	public Map<String,BlockPos> taggedLinks = new HashMap<>();
 	//A map of event names to node system for events this control is sending out to connected blocks
 	public Map<String, NodeSystem> sendNodeMap = new Object2ObjectLinkedOpenHashMap<>();
 	//A map of event names to node systems for events this control is receiving
@@ -185,13 +187,26 @@ public abstract class Control {
 		}
 		tag.setTag("customvars", customVarNames);
 		
-		NBTTagCompound connectedSet = new NBTTagCompound();
+		/*NBTTagCompound connectedSet = new NBTTagCompound();
 		for(i = 0; i < this.connectedSet.size(); i ++){
 			connectedSet.setInteger("px"+i, this.connectedSet.get(i).getX());
 			connectedSet.setInteger("py"+i, this.connectedSet.get(i).getY());
 			connectedSet.setInteger("pz"+i, this.connectedSet.get(i).getZ());
 		}
-		tag.setTag("conset", connectedSet);
+		tag.setTag("conset", connectedSet);*/
+
+		NBTTagCompound taggedLinks = new NBTTagCompound();
+		for (Entry<String,BlockPos> entry : this.taggedLinks.entrySet()) {
+			taggedLinks.setIntArray(
+					entry.getKey(),
+					new int[]{
+							entry.getValue().getX(),
+							entry.getValue().getY(),
+							entry.getValue().getZ()
+					}
+			);
+		}
+		tag.setTag("taglnk",taggedLinks);
 		
 		tag.setFloat("X", posX);
 		tag.setFloat("Y", posY);
@@ -246,19 +261,28 @@ public abstract class Control {
 		sendNodeMap.clear();
 		receiveNodeMap.clear();
 		customVarNames.clear();
-		connectedSet.clear();
 
 		NBTTagCompound customVarNames = tag.getCompoundTag("customvars");
 		for(int i = 0; i < customVarNames.getKeySet().size(); i ++){
 			this.customVarNames.add(customVarNames.getString("var"+i));
 		}
 
-		NBTTagCompound connectedSet = tag.getCompoundTag("conset");
-		for(int i = 0; i < connectedSet.getKeySet().size()/3; i ++){
-			int x = connectedSet.getInteger("px"+i);
-			int y = connectedSet.getInteger("py"+i);
-			int z = connectedSet.getInteger("pz"+i);
-			this.connectedSet.add(new BlockPos(x, y, z));
+		if (tag.hasKey("conset")) { // retrocompatibility
+			NBTTagCompound connectedSet = tag.getCompoundTag("conset");
+			for (int i = 0; i < connectedSet.getKeySet().size()/3; i++) {
+				int x = connectedSet.getInteger("px"+i);
+				int y = connectedSet.getInteger("py"+i);
+				int z = connectedSet.getInteger("pz"+i);
+				this.taggedLinks.put(x+", "+y+", "+z,new BlockPos(x,y,z));
+			}
+		}
+
+		if (tag.hasKey("taglnk")) {
+			NBTTagCompound taggedLinks = tag.getCompoundTag("taglnk");
+			for (String key : taggedLinks.getKeySet()) {
+				int[] p = taggedLinks.getIntArray(key);
+				this.taggedLinks.put(key,new BlockPos(p[0],p[1],p[2]));
+			}
 		}
 
 		NBTTagCompound sendNodes = tag.getCompoundTag("SN");

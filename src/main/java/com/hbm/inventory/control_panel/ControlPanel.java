@@ -189,9 +189,15 @@ public class ControlPanel {
 		}
 		try {
 			for(Control c : controls) {
-				int idx = c.connectedSet.indexOf(from);
-				if(idx != -1 || parent.getControlPos().equals(from)) {
-					evt.setVar("from index", idx);
+				String tag = null;
+				for (Entry<String,BlockPos> entry : c.taggedLinks.entrySet()) {
+					if (entry.getValue().equals(from)) {
+						tag = entry.getKey();
+						break;
+					}
+				}
+				if(tag != null || parent.getControlPos().equals(from)) {
+					evt.setVar("tag", tag);
 					c.receiveEvent(evt);
 				}
 			}

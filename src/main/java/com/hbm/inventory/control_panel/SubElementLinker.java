@@ -15,10 +15,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class SubElementLinker extends SubElement {
 
@@ -31,10 +29,12 @@ public class SubElementLinker extends SubElement {
 	public GuiButton cont;
 	public GuiButton back;
 
-	public List<IControllable> linked = new ArrayList<>();
-	private final Set<BlockPos> unresolvedLinks = new LinkedHashSet<>();
+	//public List<IControllable> linked = new ArrayList<>();
+	//private final Set<BlockPos> unresolvedLinks = new LinkedHashSet<>();
 	public List<GuiButton> linkedButtons = new ArrayList<>();
-	private final List<BlockPos> listedLinkPositions = new ArrayList<>();
+	public final Set<BlockPos> linkedPositions = new HashSet<>();
+	public final Map<BlockPos,String> tags = new HashMap<>();
+	//private final List<BlockPos> listedLinkPositions = new ArrayList<>();
 	public int numPages = 1;
 	public int currentPage = 1;
 	
@@ -121,8 +121,11 @@ public class SubElementLinker extends SubElement {
 								if (bpos != null)
 									te = world.getTileEntity(((TileEntityDummy) te).target);
 							}
-							if (te instanceof IControllable) {
-								addLinked((IControllable) te);
+							if (te instanceof IControllable controllable) {
+								//addLinked((IControllable) te);
+								BlockPos p = controllable.getControlPos();
+								linkedPositions.add(p);
+								tags.put(p,formatLinkLabel(p));
 							}
 						}
 						refreshButtons();
@@ -131,15 +134,15 @@ public class SubElementLinker extends SubElement {
 				}
 			}
 		} else if(button == clear){
-			linked.clear();
-			unresolvedLinks.clear();
+			//linked.clear();
+			//unresolvedLinks.clear();
 			refreshButtons();
 		} else if(button == back){
 			gui.returnControlInputToPlayerInventory();
 			gui.popElement();
 		} else if(button == cont){
 			syncCurrentEditControlConnections();
-			gui.eventEditor.accumulateEventTypes(linked);
+			gui.eventEditor.accumulateEventTypes(getLinked());
 			gui.eventEditor.populateDefaultNodes();
 			gui.returnControlInputToPlayerInventory();
 			gui.pushElement(gui.eventEditor);
@@ -151,29 +154,45 @@ public class SubElementLinker extends SubElement {
 			recalculateVisibleButtons();
 		} else if(linkedButtons.contains(button)){
 			int idx = linkedButtons.indexOf(button);
-			if(idx >= 0 && idx < listedLinkPositions.size()) {
-				removeLinked(listedLinkPositions.get(idx));
-			}
+			//if(idx >= 0 && idx < listedLinkPositions.size()) {
+			//	removeLinked(listedLinkPositions.get(idx));
+			//}
 			refreshButtons();
 		}
 	}
 
+	List<IControllable> getLinked() {
+		World world = gui.control.getWorld();
+		List<IControllable> list = new ArrayList<>();
+		for (BlockPos p : linkedPositions) {
+			if (world.getTileEntity(p) instanceof IControllable ctrl)
+				list.add(ctrl);
+		}
+		return list;
+	}
+
 	void reloadLinkedFromCurrentEditControl() {
-		linked.clear();
-		unresolvedLinks.clear();
+		//linked.clear();
+		//unresolvedLinks.clear();
+		linkedPositions.clear();
+		tags.clear();
 		if(gui.currentEditControl == null) {
 			refreshButtons();
 			return;
 		}
 
 		World world = gui.control.getWorld();
-		for(BlockPos pos : gui.currentEditControl.connectedSet) {
+		/*for(BlockPos pos : gui.currentEditControl.connectedSet) {
 			TileEntity te = world.getTileEntity(pos);
 			if(te instanceof IControllable) {
 				addLinked((IControllable) te);
 			} else {
 				unresolvedLinks.add(pos);
 			}
+		}*/
+		for (Entry<String,BlockPos> entry : gui.currentEditControl.taggedLinks.entrySet()) {
+			linkedPositions.add(entry.getValue());
+			tags.put(entry.getValue(),entry.getKey());
 		}
 		refreshButtons();
 	}
@@ -182,7 +201,7 @@ public class SubElementLinker extends SubElement {
 		if(gui.currentEditControl == null) {
 			return;
 		}
-
+		/* what's this movblock
 		LinkedHashSet<BlockPos> resolvedConnections = new LinkedHashSet<>();
 		for(BlockPos pos : gui.currentEditControl.connectedSet) {
 			if(unresolvedLinks.contains(pos) || containsLinked(pos)) {
@@ -191,20 +210,22 @@ public class SubElementLinker extends SubElement {
 		}
 		for(IControllable controllable : linked) {
 			resolvedConnections.add(controllable.getControlPos());
-		}
-		gui.currentEditControl.connectedSet.clear();
-		gui.currentEditControl.connectedSet.addAll(resolvedConnections);
+		}*/
+		gui.currentEditControl.taggedLinks.clear();
+		for (Entry<BlockPos,String> entry : tags.entrySet())
+			gui.currentEditControl.taggedLinks.put(entry.getValue(),entry.getKey());
 	}
 
+	/* this sucks
 	private void addLinked(IControllable controllable) {
 		BlockPos pos = controllable.getControlPos();
 		unresolvedLinks.remove(pos);
 		if(!containsLinked(pos)) {
 			linked.add(controllable);
 		}
-	}
+	}*/
 
-	private boolean containsLinked(BlockPos pos) {
+	/*private boolean containsLinked(BlockPos pos) {
 		for(IControllable controllable : linked) {
 			if(controllable.getControlPos().equals(pos)) {
 				return true;
@@ -216,16 +237,16 @@ public class SubElementLinker extends SubElement {
 	private void removeLinked(BlockPos pos) {
 		linked.removeIf(controllable -> controllable.getControlPos().equals(pos));
 		unresolvedLinks.remove(pos);
-	}
+	}*/
 	
 	protected void refreshButtons(){
 		gui.getButtons().removeAll(linkedButtons);
 		linkedButtons.clear();
-		listedLinkPositions.clear();
+		//listedLinkPositions.clear();
 		int i = 0;
 		int cX = gui.width/2;
 		int cY = gui.height/2;
-
+		/*
 		for(IControllable c : linked){
 			BlockPos pos = c.getControlPos();
 			listedLinkPositions.add(pos);
@@ -236,17 +257,20 @@ public class SubElementLinker extends SubElement {
 			listedLinkPositions.add(pos);
 			linkedButtons.add(new ButtonHoverText(gui.currentButtonId(), cX-73, cY-90 + i*22, 170, 20, formatLinkLabel(pos, true), "<Click to remove>"));
 			i = (i+1)%3;
+		}*/
+		for (BlockPos pos : linkedPositions) {
+			linkedButtons.add(new ButtonHoverText(gui.currentButtonId(), cX-73, cY-90 + i*22, 170, 20, formatLinkLabel(pos), "<Click to remove>"));
+			i = (i+1)%3;
 		}
 		for(GuiButton b : linkedButtons)
 			gui.addButton(b);
-		numPages = Math.max(1, (listedLinkPositions.size()+2)/3);
+		numPages = Math.max(1, (linkedPositions.size()+2)/3);
 		currentPage = MathHelper.clamp(currentPage, 1, numPages);
 		recalculateVisibleButtons();
 	}
 
-	private static String formatLinkLabel(BlockPos pos, boolean unresolved) {
-		String label = "(" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + ")";
-		return unresolved ? label + " [Unresolved]" : label;
+	private static String formatLinkLabel(BlockPos pos) {
+		return pos.getX() + ", " + pos.getY() + ", " + pos.getZ();
 	}
 	
 	@Override

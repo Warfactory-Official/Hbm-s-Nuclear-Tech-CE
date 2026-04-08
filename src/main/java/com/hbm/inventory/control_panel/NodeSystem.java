@@ -569,7 +569,7 @@ public class NodeSystem {
 			}
 		}
 		for (NodeOutput o : outputNodes) {
-			o.doOutput(panel.parent, ctrl.sendNodeMap, ctrl.connectedSet);
+			o.doOutput(panel.parent, ctrl.sendNodeMap, ctrl.taggedLinks);
 		}
 	}
 

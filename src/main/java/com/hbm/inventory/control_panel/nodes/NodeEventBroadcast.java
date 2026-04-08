@@ -49,7 +49,7 @@ public class NodeEventBroadcast extends NodeOutput {
 	}
 
 	@Override
-	public boolean doOutput(IControllable from, Map<String, NodeSystem> sendNodeMap, List<BlockPos> positions){
+	public boolean doOutput(IControllable from, Map<String, NodeSystem> sendNodeMap, Map<String,BlockPos> positions){
 		World world = from.getControlWorld();
 		ControlEvent e = ControlEvent.newEvent(eventName);
 		for(NodeConnection c : inputs){
@@ -74,10 +74,10 @@ public class NodeEventBroadcast extends NodeOutput {
 					ControlEventSystem.get(world).broadcastEvent(from.getControlPos(), e, positions.get(i));
 				}
 			} else {
-				ControlEventSystem.get(world).broadcastEvent(from.getControlPos(), e, positions);
+				ControlEventSystem.get(world).broadcastEvent(from.getControlPos(), e, positions.values());
 			}
 		} else {
-			ControlEventSystem.get(world).broadcastEvent(from.getControlPos(), e, positions);
+			ControlEventSystem.get(world).broadcastEvent(from.getControlPos(), e, positions.values());
 		}
 		return true;
 	}

@@ -18,7 +18,7 @@ public class NodeCancelEvent extends NodeOutput {
 	}
 
 	@Override
-	public boolean doOutput(IControllable from, Map<String, NodeSystem> sendNodeMap, List<BlockPos> positions){
+	public boolean doOutput(IControllable from, Map<String, NodeSystem> sendNodeMap, Map<String,BlockPos> positions){
 		return !inputs.get(0).evaluate().getBoolean();
 	}
 
