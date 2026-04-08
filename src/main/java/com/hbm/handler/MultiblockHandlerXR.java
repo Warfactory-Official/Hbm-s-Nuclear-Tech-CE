@@ -3,7 +3,9 @@ package com.hbm.handler;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.lib.ForgeDirection;
 import net.minecraft.block.Block;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.World;
@@ -48,10 +50,12 @@ public class MultiblockHandlerXR {
 				}
 			}
 		}
-		
-		return true;
-	}
-	
+
+        return world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(
+                x - rot[4], y - rot[1], z - rot[2],
+                x + rot[5] + 1, y + rot[0] + 1, z + rot[3] + 1)).isEmpty();
+    }
+
 	public static void fillSpace(World world, int x, int y, int z, int[] dim, Block block, ForgeDirection dir) {
 		fillSpace(world, x, y, z, dim, block, dir.toEnumFacing());
 	}

@@ -4,6 +4,7 @@ import com.hbm.handler.MultiblockBBHandler;
 import com.hbm.handler.MultiblockBBHandler.MultiblockBounds;
 import com.hbm.lib.ForgeDirection;
 import net.minecraft.block.material.Material;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -52,6 +53,7 @@ public abstract class BlockDummyableMBB extends BlockDummyable {
 				}
 			}
 		}
+		int minX = 0, minY = 0, minZ = 0, maxX = 0, maxY = 0, maxZ = 0;
 		for(BlockPos pos : blocks.keySet()){
 			BlockPos pos1 = pos.add(xx, yy, zz);
 			if(pos1.getX() == xx && pos1.getY() == yy && pos1.getZ() == zz)
@@ -59,9 +61,17 @@ public abstract class BlockDummyableMBB extends BlockDummyable {
 			if(!world.getBlockState(pos1).getBlock().canPlaceBlockAt(world, pos1)) {
 				return false;
 			}
+			minX = Math.min(minX, pos.getX());
+			minY = Math.min(minY, pos.getY());
+			minZ = Math.min(minZ, pos.getZ());
+			maxX = Math.max(maxX, pos.getX());
+			maxY = Math.max(maxY, pos.getY());
+			maxZ = Math.max(maxZ, pos.getZ());
 		}
-		return true;
-	}
+        return world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(
+                minX + xx, minY + yy, minZ + zz,
+                maxX + xx + 1, maxY + yy + 1, maxZ + zz + 1)).isEmpty();
+    }
 	
 	@Override
 	protected void fillSpace(World world, int xxx, int yyy, int zzz, ForgeDirection dir, int o) {
