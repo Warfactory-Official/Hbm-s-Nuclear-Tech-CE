@@ -291,8 +291,15 @@ public class NodeSystem {
 
 		NodeSystem pastedSystem = new NodeSystem(parent);
 		pastedSystem.readFromNBT(tag);
+		Map<String, DataValue> allowedVars = new Object2ObjectOpenHashMap<>(evt.vars);
+		if(sendGraph) {
+			allowedVars.put("to index", new DataValueFloat(0));
+		} else {
+			allowedVars.put("tag", new DataValueString(""));
+			allowedVars.put("from index", new DataValueFloat(0));
+		}
 		return pastedSystem.hasCompatibleGraphNodes(sendGraph)
-				&& pastedSystem.hasCompatibleEventInputs(evt.vars, sendGraph ? "to index" : "from index")
+				&& pastedSystem.hasCompatibleEventInputs(allowedVars, sendGraph ? "to index" : "from index")
 				&& pastedSystem.hasCompatibleVariableReferences();
 	}
 

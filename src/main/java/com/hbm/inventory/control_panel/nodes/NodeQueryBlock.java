@@ -59,7 +59,7 @@ public class NodeQueryBlock extends Node {
     private void setDataSelector() {
         dataSelector.list.itemNames.clear();
         if (tag != null && !tag.isEmpty()) {
-            TileEntity tile = ctrl.panel.parent.getControlWorld().getTileEntity(getPos(tag));
+            TileEntity tile = ctrl.panel.parent.getControlWorld().getTileEntity(ctrl.taggedLinks.get(tag));
             if (tile instanceof IControllable) {
                 IControllable te = (IControllable) tile;
                 for (Map.Entry<String, DataValue> var : te.getQueryData().entrySet()) {

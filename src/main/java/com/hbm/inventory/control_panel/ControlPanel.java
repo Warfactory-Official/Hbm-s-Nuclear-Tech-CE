@@ -189,15 +189,20 @@ public class ControlPanel {
 		}
 		try {
 			for(Control c : controls) {
-				String tag = null;
+				String tag = "";
+				int fromIndex = -1;
+				int i = 0;
 				for (Entry<String,BlockPos> entry : c.taggedLinks.entrySet()) {
 					if (entry.getValue().equals(from)) {
 						tag = entry.getKey();
+						fromIndex = i;
 						break;
 					}
+					i++;
 				}
-				if(tag != null || parent.getControlPos().equals(from)) {
+				if(fromIndex != -1 || parent.getControlPos().equals(from)) {
 					evt.setVar("tag", tag);
+					evt.setVar("from index", fromIndex);
 					c.receiveEvent(evt);
 				}
 			}
@@ -217,6 +222,7 @@ public class ControlPanel {
 			redstonePanel.beginRedstoneOutputCollection();
 		}
 		try {
+			evt.setVar("tag", "");
 			control.receiveEvent(evt);
 		} finally {
 			if(redstonePanel != null) {

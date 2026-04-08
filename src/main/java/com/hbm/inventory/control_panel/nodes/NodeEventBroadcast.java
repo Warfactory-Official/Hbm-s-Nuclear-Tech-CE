@@ -63,15 +63,17 @@ public class NodeEventBroadcast extends NodeOutput {
 		if(sendNodeMap != null){
 			if(sendNodeMap.containsKey(e.name)){
 				NodeSystem sys = sendNodeMap.get(e.name);
+				int i = 0;
 				cont:
-				for(int i = 0; i < positions.size(); i ++){
+				for(BlockPos pos : positions.values()){
 					sys.resetCachedValues();
 					sys.setVar("receiver_id", new DataValueFloat(i));
 					for(NodeOutput o : sys.outputNodes){
 						if(!o.doOutput(from, sendNodeMap, positions))
 							continue cont;
 					}
-					ControlEventSystem.get(world).broadcastEvent(from.getControlPos(), e, positions.get(i));
+					ControlEventSystem.get(world).broadcastEvent(from.getControlPos(), e, pos);
+					i++;
 				}
 			} else {
 				ControlEventSystem.get(world).broadcastEvent(from.getControlPos(), e, positions.values());

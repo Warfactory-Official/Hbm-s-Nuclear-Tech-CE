@@ -14,50 +14,52 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.Map.Entry;
 
 public abstract class Control {
 
-	static final String PLACEHOLDER_META_TAG = "ntmPlaceholderMeta";
-	static final String PLACEHOLDER_BOX_MIN_X = "boxMinX";
-	static final String PLACEHOLDER_BOX_MIN_Y = "boxMinY";
-	static final String PLACEHOLDER_BOX_MAX_X = "boxMaxX";
-	static final String PLACEHOLDER_BOX_MAX_Y = "boxMaxY";
-	static final String PLACEHOLDER_SIZE_HEIGHT = "sizeHeight";
-	static final String PLACEHOLDER_HAS_BOUNDING_BOX = "hasBoundingBox";
-	static final String PLACEHOLDER_BOUNDS_MIN_X = "boundsMinX";
-	static final String PLACEHOLDER_BOUNDS_MIN_Y = "boundsMinY";
-	static final String PLACEHOLDER_BOUNDS_MIN_Z = "boundsMinZ";
-	static final String PLACEHOLDER_BOUNDS_MAX_X = "boundsMaxX";
-	static final String PLACEHOLDER_BOUNDS_MAX_Y = "boundsMaxY";
-	static final String PLACEHOLDER_BOUNDS_MAX_Z = "boundsMaxZ";
+    static final String PLACEHOLDER_META_TAG = "ntmPlaceholderMeta";
+    static final String PLACEHOLDER_BOX_MIN_X = "boxMinX";
+    static final String PLACEHOLDER_BOX_MIN_Y = "boxMinY";
+    static final String PLACEHOLDER_BOX_MAX_X = "boxMaxX";
+    static final String PLACEHOLDER_BOX_MAX_Y = "boxMaxY";
+    static final String PLACEHOLDER_SIZE_HEIGHT = "sizeHeight";
+    static final String PLACEHOLDER_HAS_BOUNDING_BOX = "hasBoundingBox";
+    static final String PLACEHOLDER_BOUNDS_MIN_X = "boundsMinX";
+    static final String PLACEHOLDER_BOUNDS_MIN_Y = "boundsMinY";
+    static final String PLACEHOLDER_BOUNDS_MIN_Z = "boundsMinZ";
+    static final String PLACEHOLDER_BOUNDS_MAX_X = "boundsMaxX";
+    static final String PLACEHOLDER_BOUNDS_MAX_Y = "boundsMaxY";
+    static final String PLACEHOLDER_BOUNDS_MAX_Z = "boundsMaxZ";
 
-	public String name;
-	public final String registryName;
-	public ControlPanel panel;
-	//Set of block positions this control is connected to. When an event is sent, it gets sent to each one
-	public Map<String,BlockPos> taggedLinks = new HashMap<>();
-	//A map of event names to node system for events this control is sending out to connected blocks
-	public Map<String, NodeSystem> sendNodeMap = new Object2ObjectLinkedOpenHashMap<>();
-	//A map of event names to node systems for events this control is receiving
-	public Map<String, NodeSystem> receiveNodeMap = new Object2ObjectLinkedOpenHashMap<>();
-	//A map of all variables, either used internally by the control or in the node systems
-	public Map<String, DataValue> vars = new Object2ObjectLinkedOpenHashMap<>();
-	public Map<String, DataValue> varsPrev = new Object2ObjectLinkedOpenHashMap<>();
-	//A set of the custom variables the user is allowed to remove
-	public Set<String> customVarNames = new ObjectOpenHashSet<>();
-	// map of (static) initial configurations for a control e.g. color, size
-	public Map<String, DataValue> configMap = new Object2ObjectLinkedOpenHashMap<>();
-	public float posX;
-	public float posY;
+    public String name;
+    public final String registryName;
+    public ControlPanel panel;
+    //Set of block positions this control is connected to. When an event is sent, it gets sent to each one
+    public Object2ObjectLinkedOpenHashMap<String, @NotNull BlockPos> taggedLinks = new Object2ObjectLinkedOpenHashMap<>();
+    //A map of event names to node system for events this control is sending out to connected blocks
+    public Map<String, NodeSystem> sendNodeMap = new Object2ObjectLinkedOpenHashMap<>();
+    //A map of event names to node systems for events this control is receiving
+    public Map<String, NodeSystem> receiveNodeMap = new Object2ObjectLinkedOpenHashMap<>();
+    //A map of all variables, either used internally by the control or in the node systems
+    public Map<String, DataValue> vars = new Object2ObjectLinkedOpenHashMap<>();
+    public Map<String, DataValue> varsPrev = new Object2ObjectLinkedOpenHashMap<>();
+    //A set of the custom variables the user is allowed to remove
+    public Set<String> customVarNames = new ObjectOpenHashSet<>();
+    // map of (static) initial configurations for a control e.g. color, size
+    public Map<String, DataValue> configMap = new Object2ObjectLinkedOpenHashMap<>();
+    public float posX;
+    public float posY;
 
 
 	public Control(String name,String registryName,ControlPanel panel){
 		this.name = name;
 		this.registryName = registryName;
 		this.panel = panel;
+        taggedLinks.defaultReturnValue(BlockPos.ORIGIN);
 	}
 
 	public abstract ControlType getControlType();
@@ -116,8 +118,6 @@ public abstract class Control {
 		float height = getSize()[2];
 		// offset to fix placement position error for controls not 1x1.
 		return new AxisAlignedBB(-width/2, 0, -length/2, width/2, height, length/2).offset(posX+((width>1?Math.abs(1-width)/2:(width-1)/2)), 0, posY+((length>1)? Math.abs(1-length)/2 : (length-1)/2));
-//				.offset(posX+((width>1)?Math.abs(1-width/2):0), 0, posY+Math.abs(1-length)/2);
-//		GlStateManager.translate((width>1)? Math.abs(1-width)/2 : (width-1)/2, 0, (length>1)? Math.abs(1-length)/2 : 0);
 	}
 
 	public float[] getBox() {
@@ -184,14 +184,6 @@ public abstract class Control {
 			i++;
 		}
 		tag.setTag("customvars", customVarNames);
-		
-		/*NBTTagCompound connectedSet = new NBTTagCompound();
-		for(i = 0; i < this.connectedSet.size(); i ++){
-			connectedSet.setInteger("px"+i, this.connectedSet.get(i).getX());
-			connectedSet.setInteger("py"+i, this.connectedSet.get(i).getY());
-			connectedSet.setInteger("pz"+i, this.connectedSet.get(i).getZ());
-		}
-		tag.setTag("conset", connectedSet);*/
 
 		NBTTagCompound taggedLinks = new NBTTagCompound();
 		for (Entry<String,BlockPos> entry : this.taggedLinks.entrySet()) {
@@ -259,6 +251,7 @@ public abstract class Control {
 		sendNodeMap.clear();
 		receiveNodeMap.clear();
 		customVarNames.clear();
+		taggedLinks.clear();
 
 		NBTTagCompound customVarNames = tag.getCompoundTag("customvars");
 		for(int i = 0; i < customVarNames.getKeySet().size(); i ++){
