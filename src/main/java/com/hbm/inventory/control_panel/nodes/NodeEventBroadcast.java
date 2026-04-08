@@ -49,7 +49,7 @@ public class NodeEventBroadcast extends NodeOutput {
 	}
 
 	@Override
-	public boolean doOutput(IControllable from, Map<String, NodeSystem> sendNodeMap, List<BlockPos> positions){
+	public boolean doOutput(IControllable from, Map<String, NodeSystem> sendNodeMap, Map<String,BlockPos> positions){
 		World world = from.getControlWorld();
 		ControlEvent e = ControlEvent.newEvent(eventName);
 		for(NodeConnection c : inputs){
@@ -63,21 +63,23 @@ public class NodeEventBroadcast extends NodeOutput {
 		if(sendNodeMap != null){
 			if(sendNodeMap.containsKey(e.name)){
 				NodeSystem sys = sendNodeMap.get(e.name);
+				int i = 0;
 				cont:
-				for(int i = 0; i < positions.size(); i ++){
+				for(BlockPos pos : positions.values()){
 					sys.resetCachedValues();
 					sys.setVar("receiver_id", new DataValueFloat(i));
 					for(NodeOutput o : sys.outputNodes){
 						if(!o.doOutput(from, sendNodeMap, positions))
 							continue cont;
 					}
-					ControlEventSystem.get(world).broadcastEvent(from.getControlPos(), e, positions.get(i));
+					ControlEventSystem.get(world).broadcastEvent(from.getControlPos(), e, pos);
+					i++;
 				}
 			} else {
-				ControlEventSystem.get(world).broadcastEvent(from.getControlPos(), e, positions);
+				ControlEventSystem.get(world).broadcastEvent(from.getControlPos(), e, positions.values());
 			}
 		} else {
-			ControlEventSystem.get(world).broadcastEvent(from.getControlPos(), e, positions);
+			ControlEventSystem.get(world).broadcastEvent(from.getControlPos(), e, positions.values());
 		}
 		return true;
 	}

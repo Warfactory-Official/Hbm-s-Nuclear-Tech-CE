@@ -12,9 +12,9 @@ public class NodeQueryBlock extends Node {
 
     public Control ctrl;
 
-    public String blockPos = "";
+    public String tag = "";
     public String dataName = "";
-    public NodeDropdown blockPosSelector;
+    public NodeDropdown tagSelector;
     public NodeDropdown dataSelector;
 
     public NodeQueryBlock(float x, float y, Control ctrl) {
@@ -23,13 +23,13 @@ public class NodeQueryBlock extends Node {
 
         this.outputs.add(new NodeConnection("Output", this, outputs.size(), false, DataValue.DataType.GENERIC, new DataValueFloat(0)));
 
-        blockPosSelector = new NodeDropdown(this, otherElements.size(), s -> {
-            blockPos = s;
+        tagSelector = new NodeDropdown(this, otherElements.size(),s -> {
+            tag = s;
             dataName = "";
             setDataSelector();
             return null;
-        }, () -> blockPos);
-        this.otherElements.add(blockPosSelector);
+        }, () ->tag);
+        this.otherElements.add(tagSelector);
         setBlockPosSelector();
 
         dataSelector = new NodeDropdown(this, otherElements.size(), s -> {
@@ -50,16 +50,16 @@ public class NodeQueryBlock extends Node {
     }
 
     private void setBlockPosSelector() {
-        blockPosSelector.list.itemNames.clear();
-        for (BlockPos pos : ctrl.connectedSet) {
-            blockPosSelector.list.addItems(pos.getX() + ", " + pos.getY() + ", " + pos.getZ());
+        tagSelector.list.itemNames.clear();
+        for (String s : ctrl.taggedLinks.keySet()) {
+            tagSelector.list.addItems(s);
         }
     }
 
     private void setDataSelector() {
         dataSelector.list.itemNames.clear();
-        if (blockPos != null && !blockPos.isEmpty()) {
-            TileEntity tile = ctrl.panel.parent.getControlWorld().getTileEntity(getPos(blockPos));
+        if (tag != null && !tag.isEmpty()) {
+            TileEntity tile = ctrl.panel.parent.getControlWorld().getTileEntity(ctrl.taggedLinks.get(tag));
             if (tile instanceof IControllable) {
                 IControllable te = (IControllable) tile;
                 for (Map.Entry<String, DataValue> var : te.getQueryData().entrySet()) {
@@ -72,7 +72,7 @@ public class NodeQueryBlock extends Node {
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound tag, NodeSystem sys) {
         tag.setString("nodeType", "queryBlock");
-        tag.setString("blockPos", blockPos);
+        tag.setString("blockPos",this.tag);
         tag.setString("dataName", dataName);
 
         return super.writeToNBT(tag, sys);
@@ -80,7 +80,7 @@ public class NodeQueryBlock extends Node {
 
     @Override
     public void readFromNBT(NBTTagCompound tag, NodeSystem sys) {
-        blockPos = tag.getString("blockPos");
+        this.tag = tag.getString("blockPos");
         dataName = tag.getString("dataName");
         setBlockPosSelector();
         setDataSelector();
@@ -89,8 +89,8 @@ public class NodeQueryBlock extends Node {
 
     @Override
     public DataValue evaluate(int inx) {
-        if (!dataName.isEmpty()) {
-            TileEntity tile = ctrl.panel.parent.getControlWorld().getTileEntity(getPos(blockPos));
+        if (!dataName.isEmpty() && ctrl.taggedLinks.containsKey(tag)) {
+            TileEntity tile = ctrl.panel.parent.getControlWorld().getTileEntity(ctrl.taggedLinks.get(tag));
 
             if (tile instanceof IControllable) {
                 IControllable te = (IControllable) tile;
@@ -105,7 +105,7 @@ public class NodeQueryBlock extends Node {
     }
 
     public NodeQueryBlock setData(String blockPos) {
-        this.blockPos = blockPos;
+        this.tag = blockPos;
         return this;
     }
 

@@ -71,7 +71,7 @@ public class NodeRedstoneOutput extends NodeOutput {
 	}
 
 	@Override
-	public boolean doOutput(IControllable from, Map<String, NodeSystem> sendNodeMap, List<BlockPos> positions) {
+	public boolean doOutput(IControllable from, Map<String, NodeSystem> sendNodeMap, Map<String,BlockPos> positions) {
 		if(from instanceof TileEntityControlPanel panel) {
 			int strength = Math.round(inputs.get(0).evaluate().getNumber());
 			if(mode == OutputMode.WEAK) {
