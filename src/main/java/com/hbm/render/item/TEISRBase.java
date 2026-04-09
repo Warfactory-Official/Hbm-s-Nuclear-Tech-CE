@@ -3,6 +3,9 @@ package com.hbm.render.item;
 import com.google.common.collect.ImmutableList;
 import com.hbm.Tags;
 import com.hbm.render.model.BakedModelTransforms;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
@@ -39,6 +42,36 @@ public class TEISRBase extends TileEntityItemStackRenderer {
 
 	public boolean useIdentityTransform(Item item) {
 		return false;
+	}
+
+	protected void drawDebugAxes() {
+		GlStateManager.pushMatrix();
+		GlStateManager.disableTexture2D();
+		GlStateManager.disableLighting();
+		GlStateManager.glLineWidth(3.0F);
+
+		Tessellator tessellator = Tessellator.getInstance();
+		BufferBuilder buffer = tessellator.getBuffer();
+
+		buffer.begin(org.lwjgl.opengl.GL11.GL_LINES, net.minecraft.client.renderer.vertex.DefaultVertexFormats.POSITION_COLOR);
+
+		// X Axis (RED) - Usually Right
+		buffer.pos(0, 0, 0).color(255, 0, 0, 255).endVertex();
+		buffer.pos(1, 0, 0).color(255, 0, 0, 255).endVertex();
+
+		// Y Axis (GREEN) - Usually Up
+		buffer.pos(0, 0, 0).color(0, 255, 0, 255).endVertex();
+		buffer.pos(0, 1, 0).color(0, 255, 0, 255).endVertex();
+
+		// Z Axis (BLUE) - Usually Backwards/Forwards
+		buffer.pos(0, 0, 0).color(0, 0, 255, 255).endVertex();
+		buffer.pos(0, 0, 1).color(0, 0, 255, 255).endVertex();
+
+		tessellator.draw();
+
+		GlStateManager.enableLighting();
+		GlStateManager.enableTexture2D();
+		GlStateManager.popMatrix();
 	}
 
     /**

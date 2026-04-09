@@ -86,9 +86,16 @@ public abstract class ItemRenderWeaponBase extends TEISRBase {
                 setupThirdPerson(stack);
                 renderEquipped(stack);
             }
-            case GROUND -> {
+            case GROUND-> {
                 offsets.apply(type);
                 setupEntity(stack);
+                renderEntity(stack);
+            }
+
+            //FIXME:Slize for the love of god why did you forget Fixed
+            case FIXED-> {
+                offsets.apply(type);
+                setupFixed(stack);
                 renderEntity(stack);
             }
             case GUI -> {
@@ -98,6 +105,7 @@ public abstract class ItemRenderWeaponBase extends TEISRBase {
                 renderInv(stack);
                 GlStateManager.enableCull();
             }
+
             default -> {
                 if (!doNullTransform()) {
                     renderOther(stack, null);
@@ -106,6 +114,12 @@ public abstract class ItemRenderWeaponBase extends TEISRBase {
         }
         if (!prevCull) GlStateManager.disableCull();
         GlStateManager.popMatrix();
+    }
+
+    private void setupFixed(@NotNull ItemStack stack) {
+        double scale = 1F;
+        GlStateManager.scale(scale, scale, scale);
+
     }
 
     public void renderEquipped(ItemStack stack) { renderOther(stack, null); }
