@@ -252,8 +252,37 @@ public class SubElementPlacement extends SubElement {
 		}
 	}
 
+	public static Control clipboard = null;
+
 	@Override
 	protected void keyTyped(char typedChar,int code) {
+		if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)) {
+			if (code == Keyboard.KEY_C || code == Keyboard.KEY_X) { // Copy
+				if (isEditableControl(selectedControl)) {
+					clipboard = duplicateControl(selectedControl);
+					if(clipboard == null)
+						return;
+					if (code == Keyboard.KEY_X) {
+						gui.isEditMode = false;
+						gui.control.panel.controls.remove(selectedControl);
+						selectedControl = null;
+					}
+				}
+			} else if (code == Keyboard.KEY_V) {
+				if (clipboard != null) {
+					Control duplicate = duplicateControl(clipboard);
+					if(duplicate == null)
+						return;
+					gui.currentEditControl = duplicate;
+					float[] gridMouse = gui.placement.convertToGridSpace(gui.mouseX, gui.mouseY);
+					gui.currentEditControl.posX = gridMouse[0];
+					gui.currentEditControl.posY = gridMouse[1];
+					gui.placement.resetPrevPos();
+					controlGrabbed = false;
+					selectedControl = null;
+				}
+			}
+		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
 			if (gui.currentEditControl != null) return;
 			if (code == Keyboard.KEY_A) { // Add new

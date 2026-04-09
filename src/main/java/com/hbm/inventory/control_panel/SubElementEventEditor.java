@@ -182,6 +182,7 @@ public class SubElementEventEditor extends SubElement {
 			}
 			else {
 				gui.currentEditControl = null;
+				gui.isEditMode = false;
 			}
 			gui.resetStack();
 		} else {
