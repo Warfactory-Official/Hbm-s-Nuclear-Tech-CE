@@ -124,7 +124,7 @@ public class TileEntityICF extends TileEntityMachineBase implements ITickable, I
 
                     NBTTagCompound dPart = new NBTTagCompound();
                     dPart.setString("type", "hadron");
-                    PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(dPart, getPos()),
+                    PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(dPart, getPos().getX() + 0.5, getPos().getY() + 3.5, getPos().getZ() + 0.5),
                             new NetworkRegistry.TargetPoint(world.provider.getDimension(), getPos().getX(), getPos().getY(), getPos().getZ(), 25));
                 }
             }
