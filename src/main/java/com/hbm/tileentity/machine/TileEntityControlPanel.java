@@ -146,10 +146,6 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 	@Override
 	public void update(){
 		if(!world.isRemote) {
-			if (loadData != null) {
-				loadPanel();
-				loadData = null;
-			}
 			dispatchPendingRedstoneInputEvents(false);
 		}
 		panel.update();
@@ -173,19 +169,14 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 		return super.writeToNBT(compound);
 	}
 
-	NBTTagCompound loadData = null;
-	/// assuming world != null
-	public void loadPanel() {
-		if (world == null)
-			throw new RuntimeException("loadPanel called but world is null");
-		panel.readFromNBT(loadData.getCompoundTag("panel"));
+	@Override
+	protected void setWorldCreate(World worldIn) {
+		this.world = worldIn; // WHY IS THIS NOT THE DEFAULT SMH SMH SMH SMH SMH SMH SMH SMH SMH SMH SMH SMH SMH SMH SMH SMH SMH
 	}
 
 	@Override
 	public void readFromNBT(NBTTagCompound compound){
-		loadData = compound;
-		if (world != null)
-			loadPanel();
+		panel.readFromNBT(compound.getCompoundTag("panel"));
 		NBTTagCompound weakOutput = compound.getCompoundTag("redstoneWeakOut");
 		NBTTagCompound strongOutput = compound.getCompoundTag("redstoneStrongOut");
 		for(EnumFacing facing : EnumFacing.VALUES) {

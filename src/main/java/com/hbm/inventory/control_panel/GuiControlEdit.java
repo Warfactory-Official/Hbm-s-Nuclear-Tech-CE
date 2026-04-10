@@ -156,6 +156,7 @@ public class GuiControlEdit extends GuiContainer {
 	
 	protected void pushElement(SubElement e){
 		subElementStack.getFirst().enableButtons(false);
+		subElementStack.getFirst().onElementClose();
 		e.lock = true;
 		e.enableButtons(true);
 		e.onElementOpen();
@@ -167,10 +168,12 @@ public class GuiControlEdit extends GuiContainer {
 		e.enableButtons(false);
 		e.onElementClose();
 		subElementStack.getFirst().enableButtons(true);
+		subElementStack.getFirst().onElementOpen();
 	}
 	
 	protected void resetStack(){
 		subElementStack.getFirst().enableButtons(false);
+		subElementStack.getFirst().onElementClose();
 		subElementStack.clear();
 		subElementStack.addFirst(placement);
 		placement.enableButtons(true);
