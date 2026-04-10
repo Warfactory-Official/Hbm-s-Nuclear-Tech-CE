@@ -284,9 +284,14 @@ public abstract class Control {
 		}
 		NBTTagCompound receiveNodes = tag.getCompoundTag("RN");
 		for(String s : receiveNodes.getKeySet()){
-			NodeSystem sys = new NodeSystem(this);
-			receiveNodeMap.put(s, sys);
-			sys.readFromNBT(receiveNodes.getCompoundTag(s));
+			try {
+				NodeSystem sys = new NodeSystem(this);
+				receiveNodeMap.put(s,sys);
+				sys.readFromNBT(receiveNodes.getCompoundTag(s));
+			} catch (Exception e) {
+				System.out.println("Exception while loading instrument: "+e.getMessage());
+				e.printStackTrace();
+			}
 		}
 
 		this.posX = tag.getFloat("X");
