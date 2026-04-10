@@ -549,12 +549,14 @@ public class NodeSystem {
 	}
 	
 	@SideOnly(Side.CLIENT)
-	public void keyTyped(char c, int key){
+	public boolean keyTyped(char c, int key){
 		if(currentTypingBox != null){
 			currentTypingBox.keyTyped(c, key);
 			if(!currentTypingBox.isTyping())
 				currentTypingBox = null;
+			return true;
 		}
+		return false;
 	}
 
 	public void resetCachedValues(){

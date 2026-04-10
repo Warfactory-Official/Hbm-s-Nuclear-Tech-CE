@@ -84,6 +84,10 @@ public class SubElementNodeEditor extends SubElement {
 	
 	@Override
 	protected void keyTyped(char typedChar, int code){
+		boolean isTyping = false;
+		if(currentSystem != null)
+			isTyping = currentSystem.keyTyped(typedChar, code);
+		if (isTyping) return;
 		boolean ctrl = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL);
 		if(currentSystem != null && currentSystem.currentTypingBox == null && ctrl) {
 			if(code == Keyboard.KEY_C) {
@@ -142,9 +146,6 @@ public class SubElementNodeEditor extends SubElement {
 			for(Node n : selected){
 				currentSystem.removeNode(n);
 			}
-		}
-		if(currentSystem != null){
-			currentSystem.keyTyped(typedChar, code);
 		}
 	}
 

@@ -40,7 +40,6 @@ public class SubElementLinker extends SubElement {
 	
 	public SubElementLinker(GuiControlEdit gui){
 		super(gui);
-		Keyboard.enableRepeatEvents(true);
 	}
 	
 	@Override
@@ -243,6 +242,7 @@ public class SubElementLinker extends SubElement {
 	@Override
 	protected void update() {
 		super.update();
+		Keyboard.enableRepeatEvents(true);
 		for(GuiLinkerButton b : linkedButtons)
 			b.update();
 		invalid = false;
