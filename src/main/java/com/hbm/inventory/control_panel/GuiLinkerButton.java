@@ -31,10 +31,12 @@ public class GuiLinkerButton extends GuiButton {
 		field.drawTextBox();
 	}
 	public void keyTyped(char key,int code) {
-		field.textboxKeyTyped(key,code);
+		if (enabled)
+			field.textboxKeyTyped(key,code);
 	}
 	public void mouseClicked(int x,int y,int i) {
-		field.mouseClicked(x,y,i);
+		if (enabled)
+			field.mouseClicked(x,y,i);
 	}
 	public void setVisible(boolean visible) {
 		this.visible = visible;
@@ -43,5 +45,7 @@ public class GuiLinkerButton extends GuiButton {
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 		field.setVisible(enabled);
+		if (!enabled)
+			field.setFocused(false);
 	}
 }
