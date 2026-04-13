@@ -188,6 +188,7 @@ public class CrystallizerRecipes extends SerializableRecipe {
 		registerRecipe(new ComparableStack(DictFrame.fromOne(ModItems.oil_tar, ItemEnums.EnumTarType.CRUDE)),		new CrystallizerRecipe(DictFrame.fromOne(ModItems.oil_tar, ItemEnums.EnumTarType.WAX), 20),	new FluidStack(Fluids.CHLORINE, 250));
 		registerRecipe(new ComparableStack(DictFrame.fromOne(ModItems.oil_tar, ItemEnums.EnumTarType.CRACK)),		new CrystallizerRecipe(DictFrame.fromOne(ModItems.oil_tar, ItemEnums.EnumTarType.WAX), 20),	new FluidStack(Fluids.CHLORINE, 100));
 		registerRecipe(new ComparableStack(DictFrame.fromOne(ModItems.oil_tar, ItemEnums.EnumTarType.PARAFFIN)),	new CrystallizerRecipe(DictFrame.fromOne(ModItems.oil_tar, ItemEnums.EnumTarType.WAX), 20),	new FluidStack(Fluids.CHLORINE, 100));
+		registerRecipe(new ComparableStack(DictFrame.fromOne(ModItems.oil_tar, ItemEnums.EnumTarType.PARAFFIN)),	new CrystallizerRecipe(new ItemStack(ModItems.pill_red), 200),								new FluidStack(Fluids.ESTRADIOL, 250));
 		registerRecipe(new ComparableStack(DictFrame.fromOne(ModItems.oil_tar, ItemEnums.EnumTarType.WAX)), 		new CrystallizerRecipe(new ItemStack(ModItems.pellet_charged), 200), 				new FluidStack(Fluids.IONGEL, 500));
 
 		registerRecipe(KEY_SAND, new CrystallizerRecipe(Blocks.CLAY, 20), new FluidStack(Fluids.COLLOID, 1_000));

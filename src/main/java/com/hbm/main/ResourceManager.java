@@ -218,6 +218,8 @@ public class ResourceManager {
     public static final IModelCustom armor_dnt = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/armor/dnt.obj")).asVBO();
     public static final IModelCustom armor_mod_tesla = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/armor/mod_tesla.obj")).asVBO();
     public static final IModelCustom armor_wings = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/armor/murk.obj")).asVBO();
+    public static final IModelCustom player_manly_af = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/armor/player_fem.obj")).asVBO();
+    public static final ResourceLocation player_manly_tex = new ResourceLocation(Tags.MODID, "textures/entity/player_fem.png");
     //Centrifuge
     public static final IModelCustom centrifuge_gas = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/centrifuge_gas.obj")).asVBO();
     public static final IModelCustom silex = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/silex.obj")).asVBO();

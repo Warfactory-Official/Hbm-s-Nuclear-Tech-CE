@@ -87,6 +87,10 @@ public class ItemPill extends ItemFood implements IDynamicModels, IClaimedModelL
         			player.attackEntityFrom(rand.nextBoolean() ? ModDamageSource.euthanizedSelf : ModDamageSource.euthanizedSelf2, 1000);
         	}
 
+        	if(this == ModItems.pill_red) {
+        		player.addPotionEffect(new PotionEffect(HbmPotion.death, 60 * 60 * 20, 0));
+        	}
+
         	if(this == ModItems.radx) {
         		player.addPotionEffect(new PotionEffect(HbmPotion.radx, 3 * 60 * 20, 3));
         	}

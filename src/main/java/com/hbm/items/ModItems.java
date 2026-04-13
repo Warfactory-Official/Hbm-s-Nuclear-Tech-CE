@@ -146,6 +146,7 @@ public class ModItems {
     }).setCreativeTab(MainRegistry.consumableTab);
     public static final Item pill_iodine = new ItemPill(0, "pill_iodine").setCreativeTab(MainRegistry.consumableTab);
     public static final Item plan_c = new ItemPill(0, "plan_c").setCreativeTab(MainRegistry.consumableTab);
+    public static final Item pill_red = new ItemPill(0, "pill_red").setCreativeTab(MainRegistry.consumableTab);
     public static final Item iv_blood = new ItemSimpleConsumable("iv_blood").setUseActionServer((stack, user) -> {
         ItemSimpleConsumable.giveSoundAndDecrement(stack, user, HBMSoundHandler.radawayUse, new ItemStack(ModItems.iv_empty));
         user.heal(3F);
