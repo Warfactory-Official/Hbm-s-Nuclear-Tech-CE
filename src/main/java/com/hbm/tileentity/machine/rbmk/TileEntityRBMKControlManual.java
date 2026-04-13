@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.rbmk;
 
+import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.blocks.machine.rbmk.RBMKControl;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IControlReceiver;
@@ -34,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 @AutoRegister
-public class TileEntityRBMKControlManual extends TileEntityRBMKControl implements IControlReceiver, IGUIProvider, ICopiable {
+public class TileEntityRBMKControlManual extends TileEntityRBMKControl implements IControlReceiver, IGUIProvider, ICopiable, IRORInteractive {
 
     public RBMKColor color;
     public double startingLevel;
@@ -219,6 +220,26 @@ public class TileEntityRBMKControlManual extends TileEntityRBMKControl implement
     @Override
     public void pasteSettings(NBTTagCompound nbt, int index, World world, EntityPlayer player, int x, int y, int z) {
         if (nbt.hasKey("color")) color = EnumUtil.grabEnumSafely(RBMKColor.VALUES, nbt.getInteger("color"));
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+
+        if((PREFIX_FUNCTION + "setrods").equals(name) && params.length > 0) {
+            int percent = IRORInteractive.parseInt(params[0], 0, 100);
+            this.targetLevel = percent / 100D;
+            this.markDirty();
+            return null;
+        }
+
+        if((PREFIX_FUNCTION + "extendrods").equals(name) && params.length > 0) {
+            int percent = IRORInteractive.parseInt(params[0], -100, 100);
+            this.targetLevel = MathHelper.clamp(this.targetLevel + percent / 100D, 0D, 1D);
+            this.markDirty();
+            return null;
+        }
+
+        return null;
     }
 
     public enum RBMKColor {

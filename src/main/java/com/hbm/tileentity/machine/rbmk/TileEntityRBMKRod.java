@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.rbmk;
 
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.rbmk.RBMKBase;
 import com.hbm.blocks.machine.rbmk.RBMKRod;
@@ -47,7 +48,7 @@ import java.util.List;
 import java.util.Map;
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 @AutoRegister
-public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBMKFluxReceiver, IRBMKLoadable, IGUIProvider, SimpleComponent, CompatHandler.OCComponent {
+public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBMKFluxReceiver, IRBMKLoadable, IGUIProvider, SimpleComponent, CompatHandler.OCComponent, IRORValueProvider {
 
 	// New system!!
 	// Used for receiving flux (calculating outbound flux/burning rods)
@@ -541,5 +542,26 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 	@SideOnly(Side.CLIENT)
 	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		return new GUIRBMKRod(player.inventory, this);
+	}
+
+	@Override
+	public String[] getFunctionInfo() {
+		return new String[] {
+				PREFIX_VALUE + "columnheat",
+				PREFIX_VALUE + "rodheat",
+				PREFIX_VALUE + "depletion",
+				PREFIX_VALUE + "xenon"
+		};
+	}
+
+	@Override
+	public String provideRORValue(String name) {
+		if((PREFIX_VALUE + "columnheat").equals(name))		return "" + (int) this.heat;
+		if(inventory.getStackInSlot(0).getItem() instanceof ItemRBMKRod) {
+			if((PREFIX_VALUE + "rodheat").equals(name))		return "" + (int) ItemRBMKRod.getHullHeat(inventory.getStackInSlot(0));
+			if((PREFIX_VALUE + "depletion").equals(name))	return "" + (int) (100 - ItemRBMKRod.getEnrichment(inventory.getStackInSlot(0)) * 100);
+			if((PREFIX_VALUE + "xenon").equals(name))		return "" + (int) (ItemRBMKRod.getPoison(inventory.getStackInSlot(0)));
+		}
+		return null;
 	}
 }
