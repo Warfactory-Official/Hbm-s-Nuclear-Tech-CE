@@ -56,7 +56,6 @@ public class DataValueComposite extends DataValue {
 	@Override
 	public NBTBase writeToNBT() {
 		NBTTagCompound compound = new NBTTagCompound();
-		compound.setString(TYPE_TAG, TYPE_COMPOSITE);
 		for (Entry<String,String> entry : dataMap.entrySet())
 			compound.setString(entry.getKey(),entry.getValue());
 		return compound;
@@ -65,7 +64,6 @@ public class DataValueComposite extends DataValue {
 	public void readFromNBT(NBTBase nbt) {
 		if (nbt instanceof NBTTagCompound compound) {
 			for (String s : compound.getKeySet()) {
-				if (TYPE_TAG.equals(s)) continue;
 				dataMap.put(s,compound.getString(s));
 			}
 		}

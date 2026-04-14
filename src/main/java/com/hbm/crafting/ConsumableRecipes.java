@@ -7,6 +7,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ItemEnums;
 import com.hbm.items.ItemEnums.*;
 import com.hbm.items.ModItems;
+import com.hbm.items.weapon.grenade.ItemGrenadeFilling.EnumGrenadeFilling;
 import com.hbm.items.weapon.sedna.factory.GunFactory;
 import com.hbm.main.CraftingManager;
 import net.minecraft.init.Blocks;
@@ -26,9 +27,8 @@ public class ConsumableRecipes {
 
         //Airstikes
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.bomb_caller, 1, 0),"TTT", "TRT", "TTT", 'T', Blocks.TNT, 'R', ModItems.rangefinder );
-        CraftingManager.addRecipeAuto(new ItemStack(ModItems.bomb_caller, 1, 1),"TTT", "TRT", "TTT", 'T', ModItems.grenade_gascan, 'R', ModItems.rangefinder );
+        CraftingManager.addRecipeAuto(new ItemStack(ModItems.bomb_caller, 1, 1),"TTT", "TRT", "TTT", 'T', new ItemStack(ModItems.grenade_filling, 1, EnumGrenadeFilling.INC.ordinal()), 'R', ModItems.rangefinder );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.bomb_caller, 1, 2),"TTT", "TRT", "TTT", 'T', ModItems.pellet_gas, 'R', ModItems.rangefinder );
-        CraftingManager.addRecipeAuto(new ItemStack(ModItems.bomb_caller, 1, 3),"TRT", 'T', ModItems.grenade_cloud, 'R', ModItems.rangefinder );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.bomb_caller, 1, 4),"TRC", 'T', OreDictManager.DictFrame.fromOne(ModItems.ammo_standard, GunFactory.EnumAmmo.NUKE_HIGH), 'R', ModItems.rangefinder, 'C', OreDictManager.DictFrame.fromOne(ModItems.circuit, EnumCircuitType.CONTROLLER) );
 
         //Food

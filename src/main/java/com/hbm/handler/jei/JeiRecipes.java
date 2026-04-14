@@ -9,6 +9,11 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.recipes.*;
 import com.hbm.inventory.recipes.MagicRecipes.MagicRecipe;
 import com.hbm.items.ModItems;
+import com.hbm.items.weapon.grenade.ItemGrenadeExtra.EnumGrenadeExtra;
+import com.hbm.items.weapon.grenade.ItemGrenadeFilling.EnumGrenadeFilling;
+import com.hbm.items.weapon.grenade.ItemGrenadeFuze.EnumGrenadeFuze;
+import com.hbm.items.weapon.grenade.ItemGrenadeShell.EnumGrenadeShell;
+import com.hbm.items.weapon.grenade.ItemGrenadeUniversal;
 import com.hbm.items.machine.ItemBatteryPack;
 import com.hbm.items.machine.ItemBatterySC;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
@@ -25,8 +30,10 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.oredict.ShapelessOreRecipe;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -48,6 +55,7 @@ public class JeiRecipes {
 	private static List<SILEXRecipe> silexRecipes = null;
 	private static final Map<EnumWavelengths, List<SILEXRecipe>> waveSilexRecipes = new HashMap<>();
     private static List<TransmutationRecipe> transmutationRecipes = null;
+	private static List<IRecipe> grenadeRecipes = null;
 	
 	private static List<ItemStack> batteries = null;
     private static List<ItemStack> blades = null;
@@ -193,22 +201,22 @@ public class JeiRecipes {
 	}
 
 	public static class RBMKFuelRecipe implements IRecipeWrapper {
-		
+
 		private final ItemStack input;
 		private final ItemStack output;
-		
+
 		public RBMKFuelRecipe(ItemStack input, ItemStack output) {
 			this.input = input;
-			this.output = output; 
+			this.output = output;
 		}
-		
+
 		@Override
 		public void getIngredients(IIngredients ingredients) {
 			ingredients.setInput(VanillaTypes.ITEM, input);
 			ingredients.setOutput(VanillaTypes.ITEM, output);
 		}
 	}
-	
+
 	public static class RefineryRecipe implements IRecipeWrapper {
 		
 		private final ItemStack input;
@@ -560,6 +568,34 @@ public class JeiRecipes {
 			rbmkFuelRecipes.add(new RBMKFuelRecipe(pairEntry.getKey(), pairEntry.getValue()));
 		}
 		return rbmkFuelRecipes;
+	}
+
+	public static List<IRecipe> getGrenadeRecipes() {
+		if(grenadeRecipes != null) return grenadeRecipes;
+		grenadeRecipes = new ArrayList<>();
+
+		for(EnumGrenadeShell shell : EnumGrenadeShell.values()) {
+			for(EnumGrenadeFilling filling : EnumGrenadeFilling.values()) {
+				if(!filling.compatibleShells.contains(shell)) continue;
+				for(EnumGrenadeFuze fuze : EnumGrenadeFuze.values()) {
+					grenadeRecipes.add(makeGrenadeRecipe(shell, filling, fuze, null));
+					for(EnumGrenadeExtra extra : EnumGrenadeExtra.values()) {
+						grenadeRecipes.add(makeGrenadeRecipe(shell, filling, fuze, extra));
+					}
+				}
+			}
+		}
+		return grenadeRecipes;
+	}
+
+	private static ShapelessOreRecipe makeGrenadeRecipe(EnumGrenadeShell shell, EnumGrenadeFilling filling, EnumGrenadeFuze fuze, EnumGrenadeExtra extra) {
+		ItemStack output = ItemGrenadeUniversal.make(shell, filling, fuze, extra);
+		Object[] inputs = extra == null ? new Object[3] : new Object[4];
+		inputs[0] = new ItemStack(ModItems.grenade_shell,   1, shell.ordinal());
+		inputs[1] = new ItemStack(ModItems.grenade_filling, 1, filling.ordinal());
+		inputs[2] = new ItemStack(ModItems.grenade_fuze,    1, fuze.ordinal());
+		if (extra != null) inputs[3] = new ItemStack(ModItems.grenade_extra, 1, extra.ordinal());
+		return new ShapelessOreRecipe(null, output, inputs);
 	}
 	
 	public static List<ItemStack> getAlloyFuels() {

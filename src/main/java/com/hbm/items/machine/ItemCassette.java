@@ -117,9 +117,6 @@ public class ItemCassette extends Item {
 		if(!(stack.getItem() instanceof ItemCassette))
 			return;
 
-		tooltip.add("[CREATED USING TEMPLATE FOLDER]");
-		tooltip.add("");
-
 		tooltip.add("Siren sound cassette:");
 		tooltip.add("   Name: " + TrackType.byIndex(stack.getItemDamage()).getTrackTitle());
 		tooltip.add("   Type: " + TrackType.byIndex(stack.getItemDamage()).getType().name());

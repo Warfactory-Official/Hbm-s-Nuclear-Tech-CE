@@ -1,7 +1,6 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.slot.SlotNonRetarded;
-import com.hbm.items.machine.ItemCrucibleTemplate;
 import com.hbm.tileentity.machine.TileEntityCrucible;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -17,8 +16,6 @@ public class ContainerCrucible extends Container {
 
     public ContainerCrucible(InventoryPlayer invPlayer, TileEntityCrucible crucible) {
         this.crucible = crucible;
-
-        this.addSlotToContainer(new SlotCrucibleTemplate(crucible.inventory, 0, 107, 81));
 
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
@@ -52,13 +49,13 @@ public class ContainerCrucible extends Container {
             ItemStack stackInSlot = slot.getStack();
             ret = stackInSlot.copy();
 
-            if (index < 10) {
-                if (!this.mergeItemStack(stackInSlot, 10, this.inventorySlots.size(), true)) {
+            if (index < 9) {
+                if (!this.mergeItemStack(stackInSlot, 9, this.inventorySlots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
                 slot.onSlotChange(stackInSlot, ret);
             } else {
-                if (!this.mergeItemStack(stackInSlot, 0, 10, false)) {
+                if (!this.mergeItemStack(stackInSlot, 0, 9, false)) {
                     return ItemStack.EMPTY;
                 }
             }
@@ -76,22 +73,6 @@ public class ContainerCrucible extends Container {
     @Override
     public boolean canInteractWith(EntityPlayer player) {
         return crucible.isUseableByPlayer(player);
-    }
-
-    public static class SlotCrucibleTemplate extends SlotNonRetarded {
-        public SlotCrucibleTemplate(IItemHandler inv, int index, int x, int y) {
-            super(inv, index, x, y);
-        }
-
-        @Override
-        public boolean isItemValid(ItemStack stack) {
-            return !stack.isEmpty() && stack.getItem() instanceof ItemCrucibleTemplate;
-        }
-
-        @Override
-        public int getSlotStackLimit() {
-            return 1;
-        }
     }
 
     public static class SlotOneItem extends SlotNonRetarded {

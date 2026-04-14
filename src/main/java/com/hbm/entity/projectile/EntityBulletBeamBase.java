@@ -49,13 +49,16 @@ public class EntityBulletBeamBase extends Entity implements IEntityAdditionalSpa
         this.isImmuneToFire = true;
     }
 
-    public EntityBulletBeamBase(EntityLivingBase entity, BulletConfig config, float baseDamage) {
-        this(entity.world);
+    public EntityBulletBeamBase(World world, BulletConfig config, float baseDamage) {
+        this(world);
 
-        this.thrower = entity;
         this.setBulletConfig(config);
-
         this.damage = baseDamage * this.config.damageMult;
+    }
+
+    public EntityBulletBeamBase(EntityLivingBase entity, BulletConfig config, float baseDamage) {
+        this(entity.world, config, baseDamage);
+        this.thrower = entity;
     }
 
     public EntityBulletBeamBase(EntityLivingBase entity, BulletConfig config, float baseDamage, float angularInaccuracy, double sideOffset, double heightOffset, double frontOffset) {

@@ -23,17 +23,14 @@ public abstract class DataValue {
 	public abstract NBTBase writeToNBT();
 	public abstract void readFromNBT(NBTBase nbt);
 	
-    public static final String TYPE_TAG = "__type";
-	public static final String TYPE_COMPOSITE = "composite";
-
 	public static DataValue newFromNBT(NBTBase base){
 		DataValue val = null;
 		try {
 			if(base instanceof NBTTagCompound tag) {
-				if(TYPE_COMPOSITE.equals(tag.getString(TYPE_TAG))) {
-					val = new DataValueComposite();
-				} else {
+				if (tag.hasKey("ordinal") && tag.getTag("ordinal") instanceof NBTTagInt) {
 					val = new DataValueEnum<>(null);
+				} else {
+					val = new DataValueComposite();
 				}
 				val.readFromNBT(base);
 			} else if(base instanceof NBTTagFloat) {

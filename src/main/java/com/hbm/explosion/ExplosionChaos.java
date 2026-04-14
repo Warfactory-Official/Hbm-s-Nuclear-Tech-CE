@@ -3,8 +3,6 @@ package com.hbm.explosion;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.BlockMeta;
 import com.hbm.config.CompatibilityConfig;
-import com.hbm.entity.grenade.EntityGrenadeTau;
-import com.hbm.entity.grenade.EntityGrenadeZOMG;
 import com.hbm.entity.projectile.*;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.handler.threading.PacketThreading;
@@ -623,7 +621,7 @@ public class ExplosionChaos {
     }
 
 	// Drillgon200: This method name irks me.
-	public static void tauMeSinPi(World world, double x, double y, double z, int count, Entity shooter, EntityGrenadeTau tau) {
+	public static void tauMeSinPi(World world, double x, double y, double z, int count, Entity shooter, Entity tau) {
 
 		double d1 = 0;
 		double d2 = 0;
@@ -668,7 +666,14 @@ public class ExplosionChaos {
 	}
 
 	// Drillgon200: You know what? I'm changing this one.
-	public static void zomg(World world, double x, double y, double z, int count, Entity shooter, EntityGrenadeZOMG zomg) {
+	public static void zomg(World world, double x, double y, double z, int count, Entity shooter, Entity zomg) {
+
+		double anchorX = zomg != null ? zomg.posX : x;
+		double anchorY = zomg != null ? zomg.posY : y;
+		double anchorZ = zomg != null ? zomg.posZ : z;
+		float anchorYaw = zomg != null ? zomg.rotationYaw : 0.0F;
+		float anchorPitch = zomg != null ? zomg.rotationPitch : 0.0F;
+		EntityLivingBase livingShooter = shooter instanceof EntityLivingBase ? (EntityLivingBase) shooter : null;
 
 		double d1 = 0;
 		double d2 = 0;
@@ -692,7 +697,7 @@ public class ExplosionChaos {
 				d3 *= -1;
 			}
 
-			EntityRainbow entityZomg = new EntityRainbow(world, (EntityPlayer) shooter, 1F, 10000, 100000, zomg);
+			EntityRainbow entityZomg = new EntityRainbow(world, livingShooter, 1F, 10000, 100000, anchorX, anchorY, anchorZ, anchorYaw, anchorPitch);
 
 			entityZomg.motionX = d1;// * 5;
 			entityZomg.motionY = d2;// * 5;
@@ -700,7 +705,7 @@ public class ExplosionChaos {
 			entityZomg.shootingEntity = shooter;
 
 			world.spawnEntity(entityZomg);
-			world.playSound(null, zomg.posX, zomg.posY, zomg.posZ, HBMSoundHandler.zomgShoot, SoundCategory.AMBIENT, 10.0F, 0.8F + (rand.nextFloat() * 0.4F));
+			world.playSound(null, anchorX, anchorY, anchorZ, HBMSoundHandler.zomgShoot, SoundCategory.AMBIENT, 10.0F, 0.8F + (rand.nextFloat() * 0.4F));
 		}
 	}
 

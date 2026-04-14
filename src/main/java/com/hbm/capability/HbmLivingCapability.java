@@ -70,6 +70,9 @@ public class HbmLivingCapability {
 		int getBalefire();
 		void setBalefire(int time);
 
+		int getGrenadeDeployment();
+		void setGrenadeDeployment(int ticks);
+
 		List<HbmLivingProps.ContaminationEffect> getContaminationEffectList();
 
 		void saveNBTData(NBTTagCompound tag);
@@ -95,6 +98,7 @@ public class HbmLivingCapability {
 		public int phosphorus;
 		public int fire;
 		public int balefire;
+		private int grenadeDeployment;
 		private final List<HbmLivingProps.ContaminationEffect> contamination = new ArrayList<>();
 
         @Override
@@ -225,6 +229,8 @@ public class HbmLivingCapability {
 
 		@Override public void setBalefire(int time) { this.balefire = time; }
 
+		@Override public int getGrenadeDeployment() { return grenadeDeployment; }
+		@Override public void setGrenadeDeployment(int ticks) { this.grenadeDeployment = ticks; }
 
 		@Override
 		public List<HbmLivingProps.ContaminationEffect> getContaminationEffectList(){
@@ -421,6 +427,10 @@ public class HbmLivingCapability {
 			public int getBalefire(){ return 0; }
 			@Override
 			public void setBalefire(int time){ }
+			@Override
+			public int getGrenadeDeployment(){ return 0; }
+			@Override
+			public void setGrenadeDeployment(int ticks){ }
 		};
 		
 		@CapabilityInject(IEntityHbmProps.class)

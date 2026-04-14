@@ -5,7 +5,6 @@ import com.hbm.config.BombConfig;
 import com.hbm.entity.effect.EntityCloudFleija;
 import com.hbm.entity.effect.EntityCloudSolinium;
 import com.hbm.entity.effect.EntityNukeTorex;
-import com.hbm.entity.grenade.EntityGrenadeZOMG;
 import com.hbm.entity.logic.EntityBalefire;
 import com.hbm.entity.logic.EntityNukeExplosionMK3;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
@@ -103,8 +102,7 @@ public class NukeCustom extends BlockContainer implements IBomb {
 		if(euph > 0) {
 			
 			euph = Math.min(euph, BombConfig.maxCustomEuphLvl);
-			EntityGrenadeZOMG zomg = new EntityGrenadeZOMG(world, xCoord, yCoord, zCoord);
-			ExplosionChaos.zomg(world, xCoord, yCoord, zCoord, (int)(100 * euph), detonator, zomg);
+			ExplosionChaos.zomg(world, xCoord, yCoord, zCoord, (int)(100 * euph), detonator, null);
 
 		// SOLINIUM ///
 		} else if(sol > 0) {

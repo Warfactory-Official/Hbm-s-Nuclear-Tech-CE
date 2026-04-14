@@ -9,13 +9,14 @@ import com.hbm.config.ServerConfig;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
+import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerCrucible;
 import com.hbm.inventory.gui.GUICrucible;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
+import com.hbm.inventory.recipes.CrucibleRecipe;
 import com.hbm.inventory.recipes.CrucibleRecipes;
-import com.hbm.items.ModItems;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
@@ -40,9 +41,8 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -53,10 +53,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @AutoRegister
-public class TileEntityCrucible extends TileEntityMachineBase implements IGUIProvider, ICrucibleAcceptor, IConfigurableMachine, ITickable, IMetalCopiable {
+public class TileEntityCrucible extends TileEntityMachineBase implements IGUIProvider, ICrucibleAcceptor, IConfigurableMachine, ITickable, IMetalCopiable, IControlReceiver {
 
     public int heat;
     public int progress;
+
+    public String recipe = "null";
 
     public volatile List<Mats.MaterialStack> recipeStack = new ArrayList<>();
     public volatile List<Mats.MaterialStack> wasteStack = new ArrayList<>();
@@ -189,7 +191,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
                 ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
                 List<Mats.MaterialStack> toCast = new ArrayList<>();
 
-                CrucibleRecipes.CrucibleRecipe recipe = this.getLoadedRecipe();
+                CrucibleRecipe recipe = this.getLoadedRecipe();
                 //if no recipe is loaded, everything from the recipe stack will be drainable
                 if(recipe == null) {
                     toCast.addAll(this.recipeStack);
@@ -257,6 +259,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
         buf.writeInt(progress);
         buf.writeInt(heat);
 
+        ByteBufUtils.writeUTF8String(buf, recipe);
+
         buf.writeShort(recipeStack.size());
         for(Mats.MaterialStack sta : recipeStack) {
             if (sta.material == null)
@@ -282,6 +286,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
         progress = buf.readInt();
         heat = buf.readInt();
 
+        recipe = ByteBufUtils.readUTF8String(buf);
+
         int rLen = buf.readShort() & 0xFFFF;
         List<Mats.MaterialStack> newRecipe = new ArrayList<>(rLen);
         for (int i = 0; i < rLen; i++) {
@@ -304,6 +310,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
     public void readFromNBT(NBTTagCompound nbt) {
         super.readFromNBT(nbt);
 
+        this.recipe = nbt.getString("recipe");
+
         int[] rec = nbt.getIntArray("rec");
         for(int i = 0; i < rec.length / 2; i++) {
             recipeStack.add(new Mats.MaterialStack(Mats.matById.get(rec[i * 2]), rec[i * 2 + 1]));
@@ -321,6 +329,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
     @NotNull
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+
+        nbt.setString("recipe", this.recipe);
 
         int[] rec = new int[recipeStack.size() * 2];
         int[] was = new int[wasteStack.size() * 2];
@@ -379,7 +389,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
             this.progress = 0;
 
             List<Mats.MaterialStack> materials = Mats.getSmeltingMaterialsFromItem(inventory.getStackInSlot(slot));
-            CrucibleRecipes.CrucibleRecipe recipe = getLoadedRecipe();
+            CrucibleRecipe recipe = getLoadedRecipe();
 
             for(Mats.MaterialStack material : materials) {
                 boolean recipeMaterial = recipe != null && (getQuantaFromType(recipe.input, material.material) > 0 || getQuantaFromType(recipe.output, material.material) > 0);
@@ -398,7 +408,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
     }
 
     protected void tryRecipe() {
-        CrucibleRecipes.CrucibleRecipe recipe = this.getLoadedRecipe();
+        CrucibleRecipe recipe = this.getLoadedRecipe();
 
         if(recipe == null) return;
         if(world.getTotalWorldTime() % recipe.frequency > 0) return;
@@ -441,11 +451,6 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
 
     @Override
     public boolean isItemValidForSlot(int i, ItemStack stack) {
-
-        if(i == 0) {
-            return stack.getItem() == ModItems.crucible_template;
-        }
-
         return isItemSmeltable(stack);
     }
 
@@ -456,7 +461,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
         //if there's no materials in there at all, don't smelt
         if(materials.isEmpty())
             return false;
-        CrucibleRecipes.CrucibleRecipe recipe = getLoadedRecipe();
+        CrucibleRecipe recipe = getLoadedRecipe();
 
         //needs to be true, will always be true if there's no recipe loaded
         boolean matchesRecipe = recipe == null;
@@ -518,13 +523,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
         stack.add(matStack.copy());
     }
 
-    public CrucibleRecipes.CrucibleRecipe getLoadedRecipe() {
-
-        if(!inventory.getStackInSlot(0).isEmpty() && inventory.getStackInSlot(0).getItem() == ModItems.crucible_template) {
-            return CrucibleRecipes.indexMapping.get(inventory.getStackInSlot(0).getItemDamage());
-        }
-
-        return null;
+    public CrucibleRecipe getLoadedRecipe() {
+        return CrucibleRecipes.INSTANCE.recipeNameMap.get(recipe);
     }
 
     /* "Arrays and Lists don't have a common ancestor" my fucking ass */
@@ -595,7 +595,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
     @Override
     public boolean canAcceptPartialPour(World world, BlockPos pos, double dX, double dY, double dZ, ForgeDirection side, Mats.MaterialStack stack) {
 
-        CrucibleRecipes.CrucibleRecipe recipe = getLoadedRecipe();
+        CrucibleRecipe recipe = getLoadedRecipe();
 
         if(recipe == null) {
             return getQuantaFromType(this.wasteStack, null) < wasteZCapacity;
@@ -612,7 +612,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
     @Override
     public Mats.MaterialStack pour(World world, BlockPos pos, double dX, double dY, double dZ, ForgeDirection side, Mats.MaterialStack stack) {
 
-        CrucibleRecipes.CrucibleRecipe recipe = getLoadedRecipe();
+        CrucibleRecipe recipe = getLoadedRecipe();
 
         if(recipe == null) {
 
@@ -659,4 +659,20 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
         return BobMathUtil.intCollectionToArray(types);
     }
 
+    @Override
+    public boolean hasPermission(EntityPlayer player) {
+        return this.isUseableByPlayer(player);
+    }
+
+    @Override
+    public void receiveControl(NBTTagCompound data) {
+        if(data.hasKey("index") && data.hasKey("selection")) {
+            int index = data.getInteger("index");
+            String selection = data.getString("selection");
+            if(index == 0) {
+                this.recipe = selection;
+                this.markDirty();
+            }
+        }
+    }
 }

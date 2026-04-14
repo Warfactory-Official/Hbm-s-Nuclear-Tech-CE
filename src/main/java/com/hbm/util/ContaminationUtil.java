@@ -5,8 +5,8 @@ import com.hbm.capability.HbmLivingProps;
 import com.hbm.config.CompatibilityConfig;
 import com.hbm.config.GeneralConfig;
 import com.hbm.entity.effect.EntityNukeTorex;
-import com.hbm.entity.grenade.EntityGrenadeASchrab;
-import com.hbm.entity.grenade.EntityGrenadeNuclear;
+import com.hbm.entity.grenade.EntityGrenadeUniversal;
+import com.hbm.items.weapon.grenade.ItemGrenadeFilling.EnumGrenadeFilling;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.entity.missile.EntityMIRV;
 import com.hbm.entity.mob.EntityCreeperNuclear;
@@ -581,13 +581,18 @@ public class ContaminationUtil {
 				e instanceof EntityMIRV ||
 				e instanceof EntityMiniNuke ||
 				e instanceof EntityMiniMIRV ||
-				e instanceof EntityGrenadeASchrab ||
-				e instanceof EntityGrenadeNuclear ||
 				e instanceof EntityExplosiveBeam ||
 				e instanceof EntityBulletBase ||
 				(e instanceof EntityPlayer &&
 				ArmorUtil.checkArmor((EntityPlayer) e, ModItems.euphemium_helmet, ModItems.euphemium_plate, ModItems.euphemium_legs, ModItems.euphemium_boots))) {
 			return true;
+		}
+
+		if (e instanceof EntityGrenadeUniversal) {
+			EnumGrenadeFilling filling = ((EntityGrenadeUniversal) e).getFilling();
+			if (filling == EnumGrenadeFilling.NUCLEAR || filling == EnumGrenadeFilling.NUCLEAR_DEMO || filling == EnumGrenadeFilling.SCHRAB) {
+				return true;
+			}
 		}
 
         return e instanceof EntityPlayer && (((EntityPlayer) e).isCreative() || ((EntityPlayer) e).isSpectator());

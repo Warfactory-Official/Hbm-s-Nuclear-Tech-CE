@@ -4,18 +4,11 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.config.ClientConfig;
 import com.hbm.config.GeneralConfig;
 import com.hbm.handler.jei.transfer.ExposureChamberTransferInfo;
-import com.hbm.inventory.container.ContainerDiFurnace;
-import com.hbm.inventory.container.ContainerDiFurnaceRTG;
 import com.hbm.inventory.FluidContainerRegistry;
-import com.hbm.inventory.container.ContainerFurnaceCombo;
-import com.hbm.inventory.container.ContainerMachineEPress;
-import com.hbm.inventory.container.ContainerMachinePress;
-import com.hbm.inventory.container.ContainerMachineRTG;
-import com.hbm.inventory.container.ContainerRtgFurnace;
+import com.hbm.inventory.container.*;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.gui.*;
-import com.hbm.inventory.recipes.CrucibleRecipes;
 import com.hbm.inventory.recipes.DFCRecipes;
 import com.hbm.items.EffectItem;
 import com.hbm.items.ItemEnums;
@@ -319,6 +312,7 @@ public class JEIConfig implements IModPlugin {
         registry.addRecipes(JeiRecipes.getSILEXRecipes(EnumWavelengths.GAMMA), SILEX_GAMMA);
         registry.addRecipes(JeiRecipes.getSILEXRecipes(EnumWavelengths.DRX), SILEX_DIGAMMA);
         registry.addRecipes(JeiRecipes.getRBMKFuelRecipes(), RBMKFUEL);
+        registry.addRecipes(JeiRecipes.getGrenadeRecipes(), VanillaRecipeCategoryUid.CRAFTING);
         registry.addRecipes(DFCRecipes.getDFCRecipes(), DFC);
         registry.addRecipes(oreSlopperHandler.getRecipes(), ORE_SLOPPER);
         registry.addRecipes(particleAcceleratorHandler.getRecipes(), PA);
@@ -555,11 +549,6 @@ public class JEIConfig implements IModPlugin {
             FluidType fluidType = ItemFluidIcon.getFluidType(stack);
             if (fluidType == null) return "";
             return fluidType.getTranslationKey();
-        });
-        subtypeRegistry.registerSubtypeInterpreter(ModItems.crucible_template, itemStack -> {
-            CrucibleRecipes.CrucibleRecipe recipe = CrucibleRecipes.indexMapping.get(itemStack.getItemDamage());
-            if(recipe == null) return "";
-            return recipe.getName();
         });
 	}
 

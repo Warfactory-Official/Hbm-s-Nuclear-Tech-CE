@@ -29,7 +29,10 @@ import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.GuiCTMWarning;
 import com.hbm.render.icon.RegistrationUtils;
-import com.hbm.render.item.*;
+import com.hbm.render.item.BakedModelNoFPV;
+import com.hbm.render.item.FancyMissingModelPerspective;
+import com.hbm.render.item.TEISRBase;
+import com.hbm.render.item.WrappedTEISRModel;
 import com.hbm.render.item.weapon.B92BakedModel;
 import com.hbm.render.item.weapon.ItemRedstoneSwordRender;
 import com.hbm.render.item.weapon.ItemRenderGunAnim;
@@ -431,11 +434,7 @@ public class NTMClientRegistry {
             return;
         }
 
-        if (item == ModItems.crucible_template) {
-            for (int i = 0; i < 32; i++) { // FIXME: figure out a better way of doing this
-                ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(item.getRegistryName(), "inventory"));
-            }
-        } else if (item == ModItems.siren_track) {
+        if (item == ModItems.siren_track) {
             for (ItemCassette.TrackType track : ItemCassette.TrackType.VALUES.values()) {
                 ModelLoader.setCustomModelResourceLocation(item, track.getId(), new ModelResourceLocation(item.getRegistryName(), "inventory"));
             }
@@ -523,7 +522,6 @@ public class NTMClientRegistry {
         ResourceManager.init();
         ItemRedstoneSwordRender.INSTANCE.itemModel = registry.getObject(RedstoneSword.rsModel);
         registry.putObject(RedstoneSword.rsModel, new ItemRenderRedstoneSword());
-        wrapModel(evt, ItemCrucibleTemplate.location);
         ItemRenderGunAnim.INSTANCE.b92ItemModel = registry.getObject(GunB92.b92Model);
         registry.putObject(GunB92.b92Model, new B92BakedModel());
         wrapAllTeisrModels(registry);
@@ -533,14 +531,6 @@ public class NTMClientRegistry {
     public void onModelBakeLast(ModelBakeEvent evt) {
         StaticTesrBakedModels.bakeModels(evt.getModelRegistry());
         StaticDecoBakedModels.bakeModels(evt.getModelRegistry());
-    }
-
-    private void wrapModel(ModelBakeEvent event, ModelResourceLocation location) {
-        IBakedModel existingModel = event.getModelRegistry().getObject(location);
-        if (existingModel != null && !(existingModel instanceof TemplateBakedModel)) {
-            TemplateBakedModel wrapper = new TemplateBakedModel(existingModel);
-            event.getModelRegistry().putObject(location, wrapper);
-        }
     }
 
 }
