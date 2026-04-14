@@ -1846,6 +1846,7 @@ public class ClientProxy extends ServerProxy {
             case JETPACK -> Minecraft.getMinecraft().gameSettings.keyBindJump.isKeyDown();
             case TOGGLE_JETPACK -> HbmKeybinds.jetpackKey.isKeyDown();
             case TOGGLE_HEAD -> HbmKeybinds.hudKey.isKeyDown();
+            case TOGGLE_MAGNET -> HbmKeybinds.magnetKey.isKeyDown();
             case RELOAD -> HbmKeybinds.reloadKey.isKeyDown();
             case DASH -> HbmKeybinds.dashKey.isKeyDown();
             case CRANE_UP -> HbmKeybinds.craneUpKey.isKeyDown();

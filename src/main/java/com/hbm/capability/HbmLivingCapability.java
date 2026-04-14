@@ -2,6 +2,7 @@ package com.hbm.capability;
 
 import com.hbm.capability.HbmLivingProps.ContaminationEffect;
 import com.hbm.config.ServerConfig;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -77,6 +78,51 @@ public class HbmLivingCapability {
 
 		void saveNBTData(NBTTagCompound tag);
 		void loadNBTData(NBTTagCompound tag);
+
+		/**
+		 * Scalar reads tolerate cross-thread staleness (next tick re-syncs); the contamination
+		 * list does not, so the caller must supply a thread-local snapshot taken on whichever
+		 * thread owns the live list (main thread on the server).
+		 */
+		default void serialize(ByteBuf buf, ContaminationEffect[] contaminationSnapshot) {
+			buf.writeByte(1);
+			buf.writeDouble(getRads());
+			buf.writeDouble(getNeutrons());
+			buf.writeDouble(getRadsEnv());
+			buf.writeDouble(getRadBuf());
+			buf.writeDouble(getDigamma());
+			buf.writeInt(getAsbestos());
+			buf.writeInt(getBlacklung());
+			buf.writeInt(getBombTimer());
+			buf.writeInt(getContagion());
+			buf.writeInt(getOil());
+			buf.writeInt(getPhosphorus());
+			buf.writeInt(getFire());
+			buf.writeInt(getBalefire());
+			buf.writeInt(contaminationSnapshot.length);
+			for (ContaminationEffect e : contaminationSnapshot) e.writeTo(buf);
+		}
+
+		default void deserialize(ByteBuf buf) {
+			if (buf.readByte() != 1) return;
+			setRads(buf.readDouble());
+			setNeutrons(buf.readDouble());
+			setRadsEnv(buf.readDouble());
+			setRadBuf(buf.readDouble());
+			setDigamma(buf.readDouble());
+			setAsbestos(buf.readInt());
+			setBlacklung(buf.readInt());
+			setBombTimer(buf.readInt());
+			setContagion(buf.readInt());
+			setOil(buf.readInt());
+			setPhosphorus(buf.readInt());
+			setFire(buf.readInt());
+			setBalefire(buf.readInt());
+			List<ContaminationEffect> effects = getContaminationEffectList();
+			effects.clear();
+			int size = buf.readInt();
+			for (int i = 0; i < size; i++) effects.add(ContaminationEffect.readFrom(buf));
+		}
 	}
 
 	public static class EntityHbmProps implements IEntityHbmProps {

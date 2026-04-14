@@ -9,6 +9,7 @@ import com.hbm.main.AdvancementManager;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.packet.toclient.PlayerInformPacketLegacy;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -270,6 +271,23 @@ public class HbmLivingProps {
             me.setInteger("time", this.time);
             me.setBoolean("ignoreArmor", ignoreArmor);
             nbt.setTag("cont_" + index, me);
+        }
+
+        public void writeTo(ByteBuf buf) {
+            buf.writeDouble(maxRad);
+            buf.writeInt(maxTime);
+            buf.writeInt(time);
+            buf.writeBoolean(ignoreArmor);
+        }
+
+        public static ContaminationEffect readFrom(ByteBuf buf) {
+            double maxRad = buf.readDouble();
+            int maxTime = buf.readInt();
+            int time = buf.readInt();
+            boolean ignoreArmor = buf.readBoolean();
+            ContaminationEffect effect = new ContaminationEffect(maxRad, maxTime, ignoreArmor);
+            effect.time = time;
+            return effect;
         }
     }
 }

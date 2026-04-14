@@ -34,6 +34,7 @@ public class HbmKeybinds {
     public static KeyBinding calculatorKey = new KeyBinding(category + ".calculator", Keyboard.KEY_N, category);
 	public static KeyBinding jetpackKey = new KeyBinding(category + ".toggleBack", Keyboard.KEY_C, category);
 	public static KeyBinding hudKey = new KeyBinding(category + ".toggleHUD", Keyboard.KEY_V, category);
+	public static KeyBinding magnetKey = new KeyBinding(category + ".toggleMagnet", Keyboard.KEY_Z, category);
 	public static KeyBinding reloadKey = new KeyBinding(category + ".reload", Keyboard.KEY_R, category);
 	public static KeyBinding dashKey = new KeyBinding(category + ".dash", Keyboard.KEY_LSHIFT, category);
 
@@ -55,6 +56,7 @@ public class HbmKeybinds {
         ClientRegistry.registerKeyBinding(calculatorKey);
 		ClientRegistry.registerKeyBinding(jetpackKey);
 		ClientRegistry.registerKeyBinding(hudKey);
+		ClientRegistry.registerKeyBinding(magnetKey);
 		ClientRegistry.registerKeyBinding(reloadKey);
 		ClientRegistry.registerKeyBinding(dashKey);
 
@@ -132,6 +134,7 @@ public class HbmKeybinds {
 		JETPACK,
 		TOGGLE_JETPACK,
 		TOGGLE_HEAD,
+		TOGGLE_MAGNET,
 		RELOAD,
 		DASH,
 		CRANE_UP,
