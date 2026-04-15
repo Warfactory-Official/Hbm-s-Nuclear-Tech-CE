@@ -1,4 +1,4 @@
-package com.hbm.mixin;
+package com.hbm.mixin.vanilla.base;
 
 import com.hbm.lib.internal.UnsafeHolder;
 import com.hbm.render.util.NTMBufferBuilder;

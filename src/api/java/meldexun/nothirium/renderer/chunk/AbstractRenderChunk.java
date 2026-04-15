@@ -7,6 +7,7 @@ import meldexun.renderlib.util.Frustum;
 
 /** Stub for compilation only — provided at runtime by Nothirium. */
 public abstract class AbstractRenderChunk implements IRenderChunk {
+    public int lastTimeRecorded;
     private VisibilitySet visibilitySet = new VisibilitySet();
 
     @Override

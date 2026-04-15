@@ -1,4 +1,4 @@
-package com.hbm.mixin.mod.neonium;
+package com.hbm.mixin.vanilla.neonium;
 
 import com.hbm.render.chunk.ChunkSpanningTesrHelper;
 import com.hbm.render.chunk.IExtraExtentsHolder;

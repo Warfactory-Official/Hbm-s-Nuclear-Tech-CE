@@ -1,4 +1,4 @@
-package com.hbm.mixin;
+package com.hbm.mixin.vanilla.nothirium;
 
 import com.hbm.lib.internal.UnsafeHolder;
 import com.hbm.render.util.NTMBufferBuilder;
@@ -6,7 +6,6 @@ import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,32 +13,24 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
 
 import static com.hbm.lib.internal.UnsafeHolder.U;
 import static net.minecraft.client.renderer.vertex.DefaultVertexFormats.*;
 
 @Mixin(BufferBuilder.class)
-public abstract class MixinBufferBuilderNeonium implements NTMBufferBuilder {
+public abstract class MixinBufferBuilder implements NTMBufferBuilder {
 
     @Shadow
     private ByteBuffer byteBuffer;
     @Shadow
     private IntBuffer rawIntBuffer;
     @Shadow
-    private ShortBuffer rawShortBuffer;
-    @Shadow
-    private FloatBuffer rawFloatBuffer;
-    @Shadow
     private int vertexCount;
     @Shadow
     private VertexFormatElement vertexFormatElement;
     @Shadow
     private int vertexFormatIndex;
-    @Shadow
-    private boolean noColor;
     @Shadow
     private double xOffset;
     @Shadow
@@ -58,36 +49,31 @@ public abstract class MixinBufferBuilderNeonium implements NTMBufferBuilder {
     protected abstract void growBuffer(int increaseAmount);
 
     @Unique
-    private ByteBuffer hbm$viewSource;
+    private long hbm$byteBufferAddress;
 
     @Inject(method = "<init>", at = @At("RETURN"), require = 1)
     private void hbm$init(int bufferSizeIn, CallbackInfo ci) {
-        hbm$syncViews();
+        hbm$refreshByteBufferAddress();
     }
 
     @Inject(method = "growBuffer", at = @At("RETURN"), require = 1)
     private void hbm$afterGrowBuffer(int increaseAmount, CallbackInfo ci) {
-        hbm$syncViews();
+        hbm$refreshByteBufferAddress();
     }
 
     @Unique
-    private void hbm$syncViews() {
-        if (hbm$viewSource != byteBuffer) {
-            rawIntBuffer = byteBuffer.asIntBuffer();
-            rawShortBuffer = byteBuffer.asShortBuffer();
-            rawFloatBuffer = byteBuffer.asFloatBuffer().asReadOnlyBuffer();
-            hbm$viewSource = byteBuffer;
-        }
+    private void hbm$refreshByteBufferAddress() {
+        hbm$byteBufferAddress = NTMBufferBuilder.address(byteBuffer);
     }
 
     @Unique
     private long hbm$intAddress(int intIndex) {
-        return NTMBufferBuilder.address(byteBuffer) + ((long) intIndex << 2);
+        return hbm$byteBufferAddress + ((long) intIndex << 2);
     }
 
     @Unique
     private long hbm$elementAddress() {
-        return NTMBufferBuilder.address(byteBuffer) + (long) vertexCount * vertexFormat.getSize()
+        return hbm$byteBufferAddress + (long) vertexCount * vertexFormat.getSize()
                 + vertexFormat.getOffset(vertexFormatIndex);
     }
 
@@ -115,7 +101,6 @@ public abstract class MixinBufferBuilderNeonium implements NTMBufferBuilder {
     @Override
     public void beginFast(int drawMode, VertexFormat format, int expectedVertices) {
         begin(drawMode, format);
-        hbm$syncViews();
         rawIntBuffer.clear();
         reserveVertices(expectedVertices);
     }
@@ -141,11 +126,9 @@ public abstract class MixinBufferBuilderNeonium implements NTMBufferBuilder {
             throw new IllegalArgumentException("Invalid raw vertex payload length " + data.length + " for stride " + intsPerVertex);
         }
 
-        hbm$syncViews();
         ensureDrawing(requiredFormat);
         if (!hasRemainingInts(data.length)) {
             growBuffer(data.length * Integer.BYTES);
-            hbm$syncViews();
         }
 
         int dstIntIndex = hbm$bufferSizeInts();
@@ -455,7 +438,7 @@ public abstract class MixinBufferBuilderNeonium implements NTMBufferBuilder {
 
     @Unique
     private boolean hasRemainingInts(int additionalInts) {
-        return hbm$bufferSizeInts() + additionalInts <= (byteBuffer.capacity() >> 2);
+        return hbm$bufferSizeInts() + additionalInts <= rawIntBuffer.capacity();
     }
 
     @Unique
@@ -481,298 +464,5 @@ public abstract class MixinBufferBuilderNeonium implements NTMBufferBuilder {
     @Unique
     private float applyZOffset(double z) {
         return (float) (z + zOffset);
-    }
-
-    /**
-     * @author movblock
-     * @reason Route tex-coordinate writes through direct unsafe stores.
-     */
-    @Overwrite
-    public BufferBuilder tex(double u, double v) {
-        long address = hbm$elementAddress();
-
-        switch (vertexFormatElement.getType().ordinal()) {
-            case 0:
-                U.putFloat(address, (float) u);
-                U.putFloat(address + 4L, (float) v);
-                break;
-            case 5:
-            case 6:
-                U.putInt(address, (int) u);
-                U.putInt(address + 4L, (int) v);
-                break;
-            case 3:
-            case 4:
-                U.putShort(address, (short) ((int) v));
-                U.putShort(address + 2L, (short) ((int) u));
-                break;
-            case 1:
-            case 2:
-                U.putByte(address, (byte) ((int) v));
-                U.putByte(address + 1L, (byte) ((int) u));
-                break;
-        }
-
-        hbm$nextVertexFormatIndex();
-        return (BufferBuilder) (Object) this;
-    }
-
-    /**
-     * @author movblock
-     * @reason Route lightmap-coordinate writes through direct unsafe stores.
-     */
-    @Overwrite
-    public BufferBuilder lightmap(int skyLight, int blockLight) {
-        long address = hbm$elementAddress();
-
-        switch (vertexFormatElement.getType().ordinal()) {
-            case 0:
-                U.putFloat(address, (float) skyLight);
-                U.putFloat(address + 4L, (float) blockLight);
-                break;
-            case 5:
-            case 6:
-                U.putInt(address, skyLight);
-                U.putInt(address + 4L, blockLight);
-                break;
-            case 3:
-            case 4:
-                U.putShort(address, (short) blockLight);
-                U.putShort(address + 2L, (short) skyLight);
-                break;
-            case 1:
-            case 2:
-                U.putByte(address, (byte) blockLight);
-                U.putByte(address + 1L, (byte) skyLight);
-                break;
-        }
-
-        hbm$nextVertexFormatIndex();
-        return (BufferBuilder) (Object) this;
-    }
-
-    /**
-     * @author movblock
-     * @reason Update the previous quad's lightmap lanes without ByteBuffer indirection.
-     */
-    @Overwrite
-    public void putBrightness4(int vertex0, int vertex1, int vertex2, int vertex3) {
-        int baseIntIndex = (vertexCount - 4) * vertexFormat.getIntegerSize() + vertexFormat.getUvOffsetById(1) / 4;
-        int strideInts = vertexFormat.getSize() >> 2;
-        long address = hbm$intAddress(baseIntIndex);
-        U.putInt(address, vertex0);
-        U.putInt(address + ((long) strideInts << 2), vertex1);
-        U.putInt(address + ((long) strideInts << 3), vertex2);
-        U.putInt(address + ((long) strideInts * 12L), vertex3);
-    }
-
-    /**
-     * @author movblock
-     * @reason Offset the previous quad's positions with direct float loads and stores.
-     */
-    @Overwrite
-    public void putPosition(double x, double y, double z) {
-        int strideInts = vertexFormat.getIntegerSize();
-        int baseIntIndex = (vertexCount - 4) * strideInts;
-        float translatedX = (float) (x + xOffset);
-        float translatedY = (float) (y + yOffset);
-        float translatedZ = (float) (z + zOffset);
-
-        for (int vertex = 0; vertex < 4; vertex++) {
-            long address = hbm$intAddress(baseIntIndex + vertex * strideInts);
-            U.putFloat(address, translatedX + U.getFloat(address));
-            U.putFloat(address + 4L, translatedY + U.getFloat(address + 4L));
-            U.putFloat(address + 8L, translatedZ + U.getFloat(address + 8L));
-        }
-    }
-
-    /**
-     * @author movblock
-     * @reason Apply color multipliers against little-endian packed colors in place.
-     */
-    @Overwrite
-    public void putColorMultiplier(float red, float green, float blue, int vertexIndex) {
-        int colorIndex = hbm$getColorIndex(vertexIndex);
-        long address = hbm$intAddress(colorIndex);
-        int color = -1;
-
-        if (!noColor) {
-            color = U.getInt(address);
-
-            int r = (int) ((float) (color & 255) * red);
-            int g = (int) ((float) (color >> 8 & 255) * green);
-            int b = (int) ((float) (color >> 16 & 255) * blue);
-            color = (color & -16777216) | (b << 16) | (g << 8) | r;
-        }
-
-        U.putInt(address, color);
-    }
-
-    /**
-     * @author movblock
-     * @reason Keep the three-channel overload on the direct packed-color path.
-     */
-    @Overwrite
-    public void putColorRGBA(int index, int red, int green, int blue) {
-        hbm$putColorRGBA(index, red, green, blue, 255);
-    }
-
-    /**
-     * @author movblock
-     * @reason Write color elements through unsafe stores instead of ByteBuffer helpers.
-     */
-    @Overwrite
-    public BufferBuilder color(int red, int green, int blue, int alpha) {
-        if (noColor) {
-            return (BufferBuilder) (Object) this;
-        }
-
-        long address = hbm$elementAddress();
-
-        switch (vertexFormatElement.getType().ordinal()) {
-            case 0:
-                U.putFloat(address, (float) red / 255.0F);
-                U.putFloat(address + 4L, (float) green / 255.0F);
-                U.putFloat(address + 8L, (float) blue / 255.0F);
-                U.putFloat(address + 12L, (float) alpha / 255.0F);
-                break;
-            case 5:
-            case 6:
-                U.putFloat(address, (float) red);
-                U.putFloat(address + 4L, (float) green);
-                U.putFloat(address + 8L, (float) blue);
-                U.putFloat(address + 12L, (float) alpha);
-                break;
-            case 3:
-            case 4:
-                U.putShort(address, (short) red);
-                U.putShort(address + 2L, (short) green);
-                U.putShort(address + 4L, (short) blue);
-                U.putShort(address + 6L, (short) alpha);
-                break;
-            case 1:
-            case 2:
-                U.putByte(address, (byte) red);
-                U.putByte(address + 1L, (byte) green);
-                U.putByte(address + 2L, (byte) blue);
-                U.putByte(address + 3L, (byte) alpha);
-                break;
-        }
-
-        hbm$nextVertexFormatIndex();
-        return (BufferBuilder) (Object) this;
-    }
-
-    /**
-     * @author movblock
-     * @reason Bulk-copy raw vertex payloads straight into the native backing buffer.
-     */
-    @Overwrite
-    public void addVertexData(int[] vertexData) {
-        hbm$syncViews();
-        growBuffer(vertexData.length * Integer.BYTES + vertexFormat.getSize());
-        hbm$syncViews();
-        int dstIntIndex = hbm$bufferSizeInts();
-        U.copyMemory(vertexData, UnsafeHolder.IA_BASE, null, hbm$intAddress(dstIntIndex), (long) vertexData.length << 2);
-        rawIntBuffer.position(dstIntIndex + vertexData.length);
-        vertexCount += vertexData.length / vertexFormat.getIntegerSize();
-    }
-
-    /**
-     * @author movblock
-     * @reason Route position element writes through direct unsafe stores.
-     */
-    @Overwrite
-    public BufferBuilder pos(double x, double y, double z) {
-        long address = hbm$elementAddress();
-
-        switch (vertexFormatElement.getType().ordinal()) {
-            case 0:
-                U.putFloat(address, (float) (x + xOffset));
-                U.putFloat(address + 4L, (float) (y + yOffset));
-                U.putFloat(address + 8L, (float) (z + zOffset));
-                break;
-            case 5:
-            case 6:
-                U.putFloat(address, (float) (x + xOffset));
-                U.putFloat(address + 4L, (float) (y + yOffset));
-                U.putFloat(address + 8L, (float) (z + zOffset));
-                break;
-            case 3:
-            case 4:
-                U.putShort(address, (short) ((int) (x + xOffset)));
-                U.putShort(address + 2L, (short) ((int) (y + yOffset)));
-                U.putShort(address + 4L, (short) ((int) (z + zOffset)));
-                break;
-            case 1:
-            case 2:
-                U.putByte(address, (byte) ((int) (x + xOffset)));
-                U.putByte(address + 1L, (byte) ((int) (y + yOffset)));
-                U.putByte(address + 2L, (byte) ((int) (z + zOffset)));
-                break;
-        }
-
-        hbm$nextVertexFormatIndex();
-        return (BufferBuilder) (Object) this;
-    }
-
-    /**
-     * @author movblock
-     * @reason Stamp packed normals into the previous quad without IntBuffer indirection.
-     */
-    @Overwrite
-    public void putNormal(float x, float y, float z) {
-        int packedNormal = NTMBufferBuilder.packNormal(x, y, z);
-        int strideInts = vertexFormat.getSize() >> 2;
-        int baseIntIndex = (vertexCount - 4) * strideInts + vertexFormat.getNormalOffset() / 4;
-        long address = hbm$intAddress(baseIntIndex);
-        U.putInt(address, packedNormal);
-        U.putInt(address + ((long) strideInts << 2), packedNormal);
-        U.putInt(address + ((long) strideInts << 3), packedNormal);
-        U.putInt(address + ((long) strideInts * 12L), packedNormal);
-    }
-
-    /**
-     * @author movblock
-     * @reason Route normal element writes through direct unsafe stores.
-     */
-    @Overwrite
-    public BufferBuilder normal(float x, float y, float z) {
-        long address = hbm$elementAddress();
-
-        switch (vertexFormatElement.getType().ordinal()) {
-            case 0:
-                U.putFloat(address, x);
-                U.putFloat(address + 4L, y);
-                U.putFloat(address + 8L, z);
-                break;
-            case 5:
-            case 6:
-                U.putInt(address, (int) x);
-                U.putInt(address + 4L, (int) y);
-                U.putInt(address + 8L, (int) z);
-                break;
-            case 3:
-            case 4:
-                U.putShort(address, (short) ((int) (x * 32767.0F) & 65535));
-                U.putShort(address + 2L, (short) ((int) (y * 32767.0F) & 65535));
-                U.putShort(address + 4L, (short) ((int) (z * 32767.0F) & 65535));
-                break;
-            case 1:
-            case 2:
-                U.putByte(address, (byte) ((int) (x * 127.0F) & 255));
-                U.putByte(address + 1L, (byte) ((int) (y * 127.0F) & 255));
-                U.putByte(address + 2L, (byte) ((int) (z * 127.0F) & 255));
-                break;
-        }
-
-        hbm$nextVertexFormatIndex();
-        return (BufferBuilder) (Object) this;
-    }
-
-    @Unique
-    private void hbm$putColorRGBA(int index, int red, int green, int blue, int alpha) {
-        int packedColor = (alpha << 24) | (blue << 16) | (green << 8) | red;
-        U.putInt(hbm$intAddress(index), packedColor);
     }
 }

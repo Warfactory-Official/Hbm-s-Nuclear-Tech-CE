@@ -1,6 +1,5 @@
 package com.hbm.core;
 
-import net.minecraft.launchwrapper.Launch;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -8,13 +7,11 @@ import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 import java.util.List;
 import java.util.Set;
 
+import static com.hbm.core.HbmCorePlugin.*;
+
 public class ModMixinConfigPlugin implements IMixinConfigPlugin {
 
     private static final String PACKAGE_PREFIX = "com.hbm.mixin.mod.";
-    private static final boolean NEONIUM_PRESENT = Launch.classLoader.getResource("io/neox/neonium/Neonium.class") != null;
-    private static final boolean NOTHIRIUM_PRESENT = Launch.classLoader.getResource("meldexun/nothirium/mc/Nothirium.class") != null;
-    private static final boolean OPTIFINE_PRESENT = Launch.classLoader.getResource("optifine/OptiFineForgeTweaker.class") != null;
-    private static final boolean CELERITAS_PRESENT = Launch.classLoader.getResource("org/taumc/celeritas/CeleritasVintage.class") != null;
 
     @Override
     public void onLoad(String mixinPackage) {

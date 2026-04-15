@@ -1,7 +1,9 @@
-package com.hbm.mixin;
+package com.hbm.mixin.vanilla.nothirium;
 
 import com.hbm.lib.internal.UnsafeHolder;
 import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.util.OptifineHooks;
+import com.hbm.util.ShaderHelper;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
@@ -19,7 +21,7 @@ import static com.hbm.lib.internal.UnsafeHolder.U;
 import static net.minecraft.client.renderer.vertex.DefaultVertexFormats.*;
 
 @Mixin(BufferBuilder.class)
-public abstract class MixinBufferBuilderNothirium implements NTMBufferBuilder {
+public abstract class MixinBufferBuilderOptifine implements NTMBufferBuilder {
 
     @Shadow
     private ByteBuffer byteBuffer;
@@ -126,6 +128,13 @@ public abstract class MixinBufferBuilderNothirium implements NTMBufferBuilder {
             throw new IllegalArgumentException("Invalid raw vertex payload length " + data.length + " for stride " + intsPerVertex);
         }
 
+        BufferBuilder self = (BufferBuilder) (Object) this;
+        boolean shadersActive = ShaderHelper.areShadersActive();
+
+        if (shadersActive) {
+            OptifineHooks.beginAddVertexData(self, data);
+        }
+
         ensureDrawing(requiredFormat);
         if (!hasRemainingInts(data.length)) {
             growBuffer(data.length * Integer.BYTES);
@@ -135,6 +144,10 @@ public abstract class MixinBufferBuilderNothirium implements NTMBufferBuilder {
         U.copyMemory(data, UnsafeHolder.IA_BASE, null, hbm$intAddress(dstIntIndex), (long) data.length << 2);
         rawIntBuffer.position(dstIntIndex + data.length);
         vertexCount += data.length / intsPerVertex;
+
+        if (shadersActive) {
+            OptifineHooks.endAddVertexData(self);
+        }
     }
 
     @Override

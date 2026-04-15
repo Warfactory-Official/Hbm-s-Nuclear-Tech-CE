@@ -1,4 +1,4 @@
-package com.hbm.mixin.mod.optifine;
+package com.hbm.mixin.vanilla.optifine;
 
 import com.hbm.render.chunk.RenderPassFrameHolder;
 import com.hbm.render.chunk.IShadowRenderFrameStamp;

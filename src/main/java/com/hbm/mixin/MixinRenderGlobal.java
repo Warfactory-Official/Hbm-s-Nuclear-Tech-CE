@@ -22,10 +22,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.util.List;
 
 @Mixin(RenderGlobal.class)
 public abstract class MixinRenderGlobal {
@@ -40,29 +37,6 @@ public abstract class MixinRenderGlobal {
     @Inject(method = "loadRenderers", at = @At("HEAD"), require = 1)
     private void hbm$clearOnReload(CallbackInfo ci) {
         ChunkSpanningTesrHelper.clear();
-    }
-
-    @Inject(method = "setupTerrain",
-            at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/entity/Entity;setRenderDistanceWeight(D)V"),
-            require = 1)
-    private void hbm$captureTerrainFrame(Entity viewEntity, double partialTicks, ICamera camera, int frameCount,
-                                         boolean playerSpectator, CallbackInfo ci) {
-        RenderPassFrameHolder.currentTerrainFrame = frameCount;
-    }
-
-    //mlbv: this may target the wrong place under optifine but should be benign, I am aware
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    @Redirect(method = "setupTerrain",
-            at = @At(value = "INVOKE", target = "Ljava/util/List;add(Ljava/lang/Object;)Z", ordinal = 0),
-            slice = @Slice(
-                    from = @At(value = "INVOKE", target = "Ljava/util/Set;isEmpty()Z"),
-                    to = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/RenderChunk;setFrameIndex(I)Z", ordinal = 0)),
-            require = 1)
-    private boolean hbm$stampDirectlyVisibleRenderChunk(List list, Object element) {
-        RenderChunk renderChunk = ((RenderGlobal.ContainerLocalRenderInformation) element).renderChunk;
-        ((IRenderFrameStamp) renderChunk).hbm$setFrameStamp(RenderPassFrameHolder.currentTerrainFrame);
-        return list.add(element);
     }
 
     @Inject(method = "renderEntities", at = @At("HEAD"), require = 1)
