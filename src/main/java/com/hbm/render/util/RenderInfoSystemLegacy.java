@@ -10,6 +10,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RenderInfoSystemLegacy {
@@ -50,9 +51,13 @@ public class RenderInfoSystemLegacy {
         Minecraft mc = Minecraft.getMinecraft();
         ScaledResolution resolution = event.getResolution();
 
-        List<InfoEntry> entries = new ArrayList(messages.values());
-        Collections.sort(entries);
-
+        List<InfoEntry> entries = new ArrayList();
+        { // sort by ID rather than time
+            List<Entry<Integer,InfoEntry>> sortedList = new ArrayList<>(messages.entrySet());
+            sortedList.sort(Entry.comparingByKey());
+            for (Entry<Integer,InfoEntry> entry : sortedList)
+                entries.add(entry.getValue());
+        }
         GlStateManager.pushMatrix();
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
