@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import java.util.Set;
 
@@ -194,13 +195,21 @@ public class GeneralConfig {
 		advancedRadiation = adv_rads.getBoolean(true);
         enableImpactWorldProvider = config.get(CommonConfig.CATEGORY_GENERAL, "1.32_enableImpactWorldProvider", true, "If enabled, registers a custom overworld provider which modifies lighting and sky colors for post-impact effects.").getBoolean(true);
         bloodFX = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.32_enable_blood_effects", "Enables the over-the-top blood visual effects for some weapons", true);
-	
-		if(instancedParticles && !GLCompat.error.isEmpty()){
-			MainRegistry.logger.error("Warning - Open GL 3.3 not supported! Disabling instanced particles...");
+
+		boolean clientSide = FMLCommonHandler.instance().getSide().isClient();
+		boolean advancedRenderingSupported = false;
+		if(clientSide) {
+			advancedRenderingSupported = GLCompat.error.isEmpty();
+		}
+
+		if(instancedParticles && !advancedRenderingSupported){
+			if(clientSide) {
+				MainRegistry.logger.error("Warning - Open GL 3.3 not supported! Disabling instanced particles...");
+			}
 			instancedParticles = false;
 		}
-		if((depthEffects || flowingDecalAmountMax > 0 || bloodFX || bloom || heatDistortion) && (!GLCompat.error.isEmpty() || !useShaders2)){
-			if(!GLCompat.error.isEmpty()){
+		if((depthEffects || flowingDecalAmountMax > 0 || bloodFX || bloom || heatDistortion) && (!advancedRenderingSupported || !useShaders2)){
+			if(clientSide && !advancedRenderingSupported){
 				MainRegistry.logger.error("Warning - Open GL 3.3 not supported! Disabling shader-driven effects...");
 			}
 			if(!useShaders2){
