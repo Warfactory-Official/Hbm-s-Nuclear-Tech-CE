@@ -49,6 +49,7 @@ public class ShadyUtil {
     public static final UUID Golem              = UUID.fromString("058b52a6-05b7-4d11-8cfa-2db665d9a521");
     public static final UUID LePeeperSauvage    = UUID.fromString("433c2bb7-018c-4d51-acfe-27f907432b5e");
     public static final UUID movblock           = UUID.fromString("d45aac48-013d-4efd-aa4d-bc40d6b6026d");
+    public static final UUID Hacker6329         = UUID.fromString("a53a3807-cd85-4833-b791-0c27705bb6fd");
 
     public static final Set<String> hashes = new HashSet<>();
     static {
