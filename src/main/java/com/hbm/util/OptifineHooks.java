@@ -1,6 +1,6 @@
 package com.hbm.util;
 
-import com.hbm.core.HbmCorePlugin;
+import com.hbm.core.ModPresence;
 import com.hbm.interfaces.SuppressCheckedExceptions;
 import com.hbm.lib.internal.MethodHandleHelper;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -22,7 +22,7 @@ public final class OptifineHooks {
     private static final MethodHandle TO_SINGLE_V;
 
     static {
-        if (!HbmCorePlugin.isOptifinePresent()) {
+        if (!ModPresence.OPTIFINE) {
             BEGIN_ADD_VERTEX = null;
             BEGIN_ADD_VERTEX_DATA = null;
             END_ADD_VERTEX_DATA = null;

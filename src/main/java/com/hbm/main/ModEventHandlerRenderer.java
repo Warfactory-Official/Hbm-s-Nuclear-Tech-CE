@@ -17,11 +17,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.entity.RenderPlayer;
-import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
@@ -30,8 +30,8 @@ import net.minecraft.world.biome.Biome;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.client.event.EntityViewRenderEvent.FogColors;
 import net.minecraftforge.client.event.EntityViewRenderEvent.FogDensity;
-import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.minecraftforge.client.event.RenderSpecificHandEvent;
 import net.minecraftforge.common.ForgeModContainer;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -120,22 +120,20 @@ public class ModEventHandlerRenderer {
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
-	public void onRenderHand(RenderHandEvent event) {
-		if (ShaderHelper.isShadowPass()) {
-			return;
-		}
-		//can't use plaxer.getHeldItem() here because the item rendering persists for a few frames after hitting the switch key
-		ItemRenderer itemRenderer = Minecraft.getMinecraft().entityRenderer.itemRenderer;
-		ItemStack toRender = itemRenderer.itemStackMainHand;
+	public void onRenderSpecificHand(RenderSpecificHandEvent event) {
+        if (ShaderHelper.isShadowPass()) return;
 
-		if(toRender != null) {
-			TileEntityItemStackRenderer render = toRender.getItem().getTileEntityItemStackRenderer();
+        //can't use plaxer.getHeldItem() here because the item rendering persists for a few frames after hitting the switch key
+        ItemRenderer itemRenderer = Minecraft.getMinecraft().entityRenderer.itemRenderer;
+        ItemStack toRender = itemRenderer.itemStackMainHand;
 
-			if(render instanceof ItemRenderWeaponBase) {
-				((ItemRenderWeaponBase) render).setPerspectiveAndRender(toRender, event.getPartialTicks());
-				event.setCanceled(true);
-			}
-		}
+        if (toRender.getItem().getTileEntityItemStackRenderer() instanceof ItemRenderWeaponBase weapon) {
+            EnumHand hand = event.getHand();
+            if (hand == EnumHand.MAIN_HAND && !ShaderHelper.isSkipRenderHand(hand)) {
+                weapon.setPerspectiveAndRender(toRender, event.getPartialTicks());
+            }
+            event.setCanceled(true);
+        }
 	}
 
 	@SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)

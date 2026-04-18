@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 import java.util.List;
 import java.util.Set;
 
-import static com.hbm.core.HbmCorePlugin.*;
+import static com.hbm.core.ModPresence.*;
 
 public class ModMixinConfigPlugin implements IMixinConfigPlugin {
 
@@ -36,10 +36,10 @@ public class ModMixinConfigPlugin implements IMixinConfigPlugin {
 
         String group = suffix.substring(0, separator);
         return switch (group) {
-            case "neonium" -> NEONIUM_PRESENT;
-            case "nothirium" -> NOTHIRIUM_PRESENT;
-            case "optifine" -> OPTIFINE_PRESENT;
-            case "celeritas" -> CELERITAS_PRESENT;
+            case "neonium" -> NEONIUM;
+            case "nothirium" -> NOTHIRIUM;
+            case "optifine" -> OPTIFINE;
+            case "celeritas" -> CELERITAS;
             default -> true;
         };
     }

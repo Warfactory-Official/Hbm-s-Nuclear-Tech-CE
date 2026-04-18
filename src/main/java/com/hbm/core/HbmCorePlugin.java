@@ -16,10 +16,6 @@ import java.util.Map;
 public class HbmCorePlugin implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
     static final Logger coreLogger = LogManager.getLogger("HBM CoreMod");
-    static final boolean NEONIUM_PRESENT = Launch.classLoader.getResource("io/neox/neonium/Neonium.class") != null;
-    static final boolean NOTHIRIUM_PRESENT = Launch.classLoader.getResource("meldexun/nothirium/mc/Nothirium.class") != null;
-    static final boolean OPTIFINE_PRESENT = Launch.classLoader.getResource("optifine/OptiFineForgeTweaker.class") != null;
-    static final boolean CELERITAS_PRESENT = Launch.classLoader.getResource("org/taumc/celeritas/CeleritasVintage.class") != null;
 
     private static final Brand brand;
     private static boolean runtimeDeobfEnabled = false;
@@ -57,10 +53,6 @@ public class HbmCorePlugin implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
     public static Brand getBrand() {
         return brand;
-    }
-
-    public static boolean isOptifinePresent() {
-        return OPTIFINE_PRESENT;
     }
 
     @Override

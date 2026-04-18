@@ -1,6 +1,6 @@
 package com.hbm.render.util;
 
-import com.hbm.core.HbmCorePlugin;
+import com.hbm.core.ModPresence;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
@@ -147,7 +147,7 @@ public final class NTMImmediate {
             buffer.reset();
             return;
         }
-        if (HbmCorePlugin.isOptifinePresent()) {
+        if (ModPresence.OPTIFINE) {
             genericUploader.draw(buffer);
             return;
         }

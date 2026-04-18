@@ -64,6 +64,7 @@ dependencies {
     runtimeOnlyNonPublishable "com.cleanroommc:configanytime:3.0"
     runtimeOnlyNonPublishable rfg.deobf("curse.maven:flare-692142:6598523")
     runtimeOnlyNonPublishable rfg.deobf("curse.maven:ctm-267602:2915363")
+//    runtimeOnlyNonPublishable('appeng:ae2-uel:v0.56.7') { transitive false }
 //    devOnlyNonPublishable rfg.deobf("curse.maven:quark-243121:2924091")
 //    devOnlyNonPublishable rfg.deobf("curse.maven:autoreglib-250363:2746011")
 //    runtimeOnlyNonPublishable rfg.deobf("curse.maven:gregtech-ce-unofficial-557242:5519022")
