@@ -142,13 +142,14 @@ if (apiPackage) {
 }
 
 if (accessTransformersFile) {
+    MCPTasks mcpTasks = project.extensions.getByType(MCPTasks)
     for (atFile in accessTransformersFile.split(",")) {
         String targetFile = 'src/main/resources/' + atFile.trim()
         if (!getFile(targetFile).exists()) {
             throw new GradleException("Could not resolve \"accessTransformersFile\"! Could not find " + targetFile)
         }
-        tasks.deobfuscateMergedJarToSrg.accessTransformerFiles.from(targetFile)
-        tasks.srgifyBinpatchedJar.accessTransformerFiles.from(targetFile)
+        mcpTasks.preDecompATs.from(targetFile)
+        mcpTasks.deobfuscationATs.from(targetFile)
     }
 }
 
