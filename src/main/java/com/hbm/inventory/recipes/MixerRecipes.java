@@ -98,6 +98,8 @@ public class MixerRecipes extends SerializableRecipe {
 				new MixerRecipe(300, 40).setStack1(new FluidStack(Fluids.SODIUM_ALUMINATE, 150)).setSolid(new ComparableStack(DictFrame.fromOne(ModItems.chunk_ore, ItemEnums.EnumChunkType.CRYOLITE))));
 
 		register(Fluids.PERFLUOROMETHYL, new MixerRecipe(1000, 20).setStack1(new FluidStack(Fluids.PETROLEUM, 1000)).setStack2(new FluidStack(Fluids.UNSATURATEDS, 500)).setSolid(new RecipesCommon.OreDictStack(F.dust())));
+
+        register(Fluids.BITUMEN, new MixerRecipe(50, 20).setSolid(new RecipesCommon.OreDictStack(ANY_TAR.any())));
 	}
 
 	public static void register(FluidType type, MixerRecipe... rec) {

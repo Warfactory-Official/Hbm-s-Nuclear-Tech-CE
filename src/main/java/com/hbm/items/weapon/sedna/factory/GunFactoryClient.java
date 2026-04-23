@@ -36,6 +36,7 @@ import static com.hbm.items.weapon.sedna.factory.XFactoryFolly.folly_sm;
 import static com.hbm.items.weapon.sedna.factory.XFactoryTool.*;
 import static com.hbm.items.weapon.sedna.factory.XFactoryTurret.*;
 import static com.hbm.items.weapon.sedna.factory.XFactoryRocket.*;
+import com.hbm.tileentity.machine.storage.TileEntityBatterySocket;
 
 public class GunFactoryClient {
 
@@ -149,7 +150,8 @@ public class GunFactoryClient {
         nuke_hive.setRenderer(LegoClient.RENDER_HIVE);
         nuke_balefire.setRenderer(LegoClient.RENDER_NUKE_BALEFIRE);
 
-        setRendererBulkBeam(LegoClient.RENDER_LIGHTNING, energy_tesla, energy_tesla_overcharge);
+        setRendererBulkBeam(LegoClient.RENDER_LIGHTNING, energy_tesla, energy_tesla_overcharge, energy_tesla_ir);
+        setRendererBulkBeam(LegoClient.RENDER_LIGHTNING_SUB, energy_tesla_ir_sub, TileEntityBatterySocket.discharge);
         setRendererBulkBeam(LegoClient.RENDER_TAU, tau_uranium);
         setRendererBulkBeam(LegoClient.RENDER_TAU_CHARGE, tau_uranium_charge);
         setRendererBulkBeam(LegoClient.RENDER_LASER_RED, energy_las, energy_las_overcharge, energy_las_ir);

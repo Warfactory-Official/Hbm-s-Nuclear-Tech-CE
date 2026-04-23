@@ -9,23 +9,19 @@ import net.minecraft.block.BlockOre;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import com.hbm.util.I18nUtil;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Random;
-import java.util.Arrays;
-
-import static com.hbm.blocks.OreEnumUtil.OreEnum;
 
 public class BlockNTMOre extends BlockOre {
 
@@ -59,16 +55,21 @@ public class BlockNTMOre extends BlockOre {
         super.setSoundType(sound);
     }
 
+    @Override
+    public boolean canSilkHarvest(@NotNull World world, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull EntityPlayer player) {
+        if (this == ModBlocks.ore_oil) return false;
+        return super.canSilkHarvest(world, pos, state, player);
+    }
 
     @Override
-    public int getExpDrop(IBlockState state, IBlockAccess world, BlockPos pos, int fortune) {
+    public int getExpDrop(@NotNull IBlockState state, @NotNull IBlockAccess world, @NotNull BlockPos pos, int fortune) {
         if (this.getItemDropped(state, RANDOM, fortune) != Item.getItemFromBlock(this))
             return xp;
         return 0;
     }
 
     @Override
-    public void getDrops(NonNullList<ItemStack> drops, IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
+    public void getDrops(@NotNull NonNullList<ItemStack> drops, @NotNull IBlockAccess world, @NotNull BlockPos pos, @NotNull IBlockState state, int fortune) {
 
         Random rand =  ((World)world).rand;
         //TODO: perhaps move everyting to meta
@@ -95,13 +96,13 @@ public class BlockNTMOre extends BlockOre {
     }
 
     @Override
-    public int damageDropped(IBlockState state) {
+    public int damageDropped(@NotNull IBlockState state) {
         return 0;
     }
 
 
     @Override
-    public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
+    public void neighborChanged(@NotNull IBlockState state, @NotNull World world, @NotNull BlockPos pos, @NotNull Block blockIn, @NotNull BlockPos fromPos) {
         if (this == ModBlocks.ore_oil && world.getBlockState(pos.down()).getBlock() == ModBlocks.ore_oil_empty) {
             world.setBlockState(pos, ModBlocks.ore_oil_empty.getDefaultState());
             world.setBlockState(pos.down(), ModBlocks.ore_oil.getDefaultState());
@@ -109,19 +110,19 @@ public class BlockNTMOre extends BlockOre {
     }
 
     @Override
-    public void onEntityWalk(World worldIn, BlockPos pos, Entity entity) {
+    public void onEntityWalk(@NotNull World worldIn, @NotNull BlockPos pos, @NotNull Entity entity) {
         if (entity instanceof EntityLivingBase)
             HazardSystem.applyHazards(this, (EntityLivingBase)entity);
     }
 
     @Override
-    public void onEntityCollision(World worldIn, BlockPos pos, IBlockState state, Entity entity) {
+    public void onEntityCollision(@NotNull World worldIn, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull Entity entity) {
         if (entity instanceof EntityLivingBase)
             HazardSystem.applyHazards(this, (EntityLivingBase)entity);
     }
     // Th3_Sl1ze: I'm not sure this doesn't cause charred wood to be able to burn...
     @Override
-    public Material getMaterial(IBlockState state)
+    public @NotNull Material getMaterial(@NotNull IBlockState state)
     {
         if(this == ModBlocks.waste_planks) return Material.WOOD;
         else return super.getMaterial(state);

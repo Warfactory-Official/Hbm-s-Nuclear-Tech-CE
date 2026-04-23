@@ -11,6 +11,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
 
@@ -79,7 +80,7 @@ public class BlockOutgas extends BlockNTMOre {
     }
 
     @Override
-    public void onEntityWalk(World world, BlockPos pos, Entity entity) {
+    public void onEntityWalk(@NotNull World world, @NotNull BlockPos pos, @NotNull Entity entity) {
         BlockPos up = pos.up();
         if(this.randomTick && getGas() == ModBlocks.gas_asbestos) {
             IBlockState upState = world.getBlockState(up);
@@ -101,7 +102,7 @@ public class BlockOutgas extends BlockNTMOre {
     }
 
     @Override
-    public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
+    public void neighborChanged(@NotNull IBlockState state, @NotNull World world, @NotNull BlockPos pos, @NotNull Block blockIn, @NotNull BlockPos fromPos) {
         if(onNeighbour && !world.isRemote &&world.rand.nextInt(3) == 0) {
             for(EnumFacing dir : EnumFacing.VALUES) {
                 BlockPos targetPos = pos.offset(dir);

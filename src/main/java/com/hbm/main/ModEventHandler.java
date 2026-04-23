@@ -348,10 +348,9 @@ public class ModEventHandler {
             EntityLivingBase entity = event.getEntityLiving();
             World world = event.getWorld();
 
-            if (entity instanceof EntityLiving && canWear(entity)) {
+            if (entity instanceof EntityLiving mob && canWear(entity)) {
                 int randomArmorNumber = rand.nextInt(2 << 16);
                 int randomHandNumber = rand.nextInt(256);
-                EntityLiving mob = (EntityLiving) entity;
                 boolean hasMainHand = !mob.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND).isEmpty();
                 boolean hasOffHand = !mob.getItemStackFromSlot(EntityEquipmentSlot.OFFHAND).isEmpty();
                 boolean hasHat = !mob.getItemStackFromSlot(EntityEquipmentSlot.HEAD).isEmpty();
@@ -493,6 +492,8 @@ public class ModEventHandler {
 
     private static ItemStack getSkelegun(float soot, Random rand) {
         if (!MobConfig.enableMobWeapons) return null;
+
+        soot -= (float) MobConfig.mobWeaponSootReduction;
         if (rand.nextDouble() > Math.log(soot) * 0.25) return null;
 
         ArrayList<WeightedRandomObject> pool = new ArrayList<>();

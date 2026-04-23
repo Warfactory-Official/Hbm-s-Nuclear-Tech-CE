@@ -698,12 +698,20 @@ public class HbmWorldGen implements IWorldGenerator {
         }
 
         int dimOilSpawn = parseInt(CompatibilityConfig.oilBubbleSpawn.get(dimID));
-        if (dimOilSpawn > 0 && rand.nextInt(dimOilSpawn) == 0) {
-            int randPosX = chunkMinX + rand.nextInt(16);
-            int randPosY = rand.nextInt(25);
-            int randPosZ = chunkMinZ + rand.nextInt(16);
+        if (dimOilSpawn > 0) {
+            Biome biomeOil = world.getBiome(new BlockPos(centerX, 0, centerZ));
+            if (biomeOil.getDefaultTemperature() >= 2.0F && biomeOil.getRainfall() < 0.1F) {
+                dimOilSpawn /= 3;
+            }
+            if (dimOilSpawn == 0) dimOilSpawn = 1;
 
-            new OilBubble(10 + rand.nextInt(7)).generate(world, rand, pos.setPos(randPosX, randPosY, randPosZ));
+            if (rand.nextInt(dimOilSpawn) == 0) {
+                int randPosX = chunkMinX + rand.nextInt(16);
+                int randPosY = rand.nextInt(25);
+                int randPosZ = chunkMinZ + rand.nextInt(16);
+
+                new OilBubble(10 + rand.nextInt(7)).generate(world, rand, pos.setPos(randPosX, randPosY, randPosZ));
+            }
         }
 
         if (GeneralConfig.enableNITAN) {
