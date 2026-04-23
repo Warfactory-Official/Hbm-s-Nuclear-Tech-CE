@@ -28,6 +28,8 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 @AutoRegister
@@ -224,7 +226,7 @@ public class TileEntityRBMKLever extends TileEntityLoadedBase implements ITickab
     }
 
     @Override public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) { return null; }
-    @Override public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) { return new GUIScreenRBMKLever(this); }
+    @Override @SideOnly(Side.CLIENT) public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) { return new GUIScreenRBMKLever(this); }
 
     @Override
     public boolean hasPermission(EntityPlayer player) {
