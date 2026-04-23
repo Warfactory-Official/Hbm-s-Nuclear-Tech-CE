@@ -36,6 +36,7 @@ public class ClientConfig extends RunningConfig {
     public static ConfigWrapper<Integer> TOOL_HUD_INDICATOR_Y = 			new ConfigWrapper<>(0);
     public static ConfigWrapper<Boolean> SHOW_BLOCK_META_OVERLAY = 			new ConfigWrapper<>(false);
     public static ConfigWrapper<Boolean> BADGES_HUD = 						new ConfigWrapper<>(true);
+    public static ConfigWrapper<Boolean> HEALTHBAR_HUD = 					new ConfigWrapper<>(false);
 
     private static void initDefaults() {
         configMap.put("GEIGER_OFFSET_HORIZONTAL", GEIGER_OFFSET_HORIZONTAL);
@@ -63,6 +64,7 @@ public class ClientConfig extends RunningConfig {
         configMap.put("TOOL_HUD_INDICATOR_Y", TOOL_HUD_INDICATOR_Y);
         configMap.put("SHOW_BLOCK_META_OVERLAY", SHOW_BLOCK_META_OVERLAY);
         configMap.put("BADGES_HUD", BADGES_HUD);
+        configMap.put("HEALTHBAR_HUD", HEALTHBAR_HUD);
     }
 
     /** Initializes defaults, then reads the config file if it exists, then writes the config file. */

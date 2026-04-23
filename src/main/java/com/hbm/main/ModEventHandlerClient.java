@@ -822,7 +822,7 @@ public class ModEventHandlerClient {
             ItemStack plate = player.inventory.armorInventory.get(2);
             ArmorFSB chestplate = (ArmorFSB) plate.getItem();
 
-            if (chestplate.vats) {
+            if (chestplate.vats && ClientConfig.HEALTHBAR_HUD.get()) {
 
                 int count = (int) Math.min(event.getEntity().getMaxHealth(), 100);
 
