@@ -5,10 +5,10 @@
 		"model": "hbm:tape_recorder.obj"
 	},
 	"variants": {
-		"facing=north": [{}],
-		"facing=south": [{ "y": 180 }],
-		"facing=west": [{ "y": 270 }],
-		"facing=east": [{ "y": 90 }],
+		"facing=north": [{"y": 90}],
+		"facing=south": [{ "y": 270 }],
+		"facing=west": [{ }],
+		"facing=east": [{ "y": 180 }],
 		"inventory": [{ "transform": "forge:default-block" }]
 	}
 }

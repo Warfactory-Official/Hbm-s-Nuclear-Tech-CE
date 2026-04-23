@@ -67,7 +67,7 @@ public class BlockDecoModel<E extends Enum<E>> extends BlockEnumMeta<E> implemen
     @Override
     public @NotNull ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
         if(state.getBlock() == ModBlocks.filing_cabinet)
-            return new ItemStack(Item.getItemFromBlock(this), 1, state.getValue(META)%2);
+            return new ItemStack(Item.getItemFromBlock(this), 1, state.getValue(META) & 3);
         if(state.getBlock() == ModBlocks.deco_computer)
             return new ItemStack(Item.getItemFromBlock(this), 1, 0);
         else
@@ -99,33 +99,29 @@ public class BlockDecoModel<E extends Enum<E>> extends BlockEnumMeta<E> implemen
         return false;
     }
 
-    private static int orientationFromYaw(EntityLivingBase player) {
-        int i = MathHelper.floor(player.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
-        if ((i & 1) != 1) {
-            return i >> 1; // North(0) and South(1)
-        } else {
-            return (i == 3) ? 2 : 3; // West(2) or East(3)
-        }
-    }
-
     @Override
     public @NotNull IBlockState getStateForPlacement(@NotNull World worldIn, @NotNull BlockPos pos, @NotNull EnumFacing facing,
                                                      float hitX, float hitY, float hitZ, int meta, @NotNull EntityLivingBase placer, @NotNull EnumHand hand) {
-        int orient = orientationFromYaw(placer) & 3;
-        int finalMeta = ((orient << 2) | (meta & 3)) & 15;
+        int i = MathHelper.floor(placer.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
+        int orient;
+
+        if((i & 1) != 1)
+            orient = i >> 1;
+        else {
+            if(i == 3) orient = 2;
+            else orient = 3;
+        }
+
+        int finalMeta = (orient << 2) | (meta & 3);
         return this.getDefaultState().withProperty(META, finalMeta);
     }
 
     private AxisAlignedBB getBoxFor(int orient) {
         return switch (orient) {
-            case 0 -> // North
-                    new AxisAlignedBB(1.0F - mxX, mnY, 1.0F - mxZ, 1.0F - mnX, mxY, 1.0F - mnZ);
-            case 1 -> // South
-                    new AxisAlignedBB(mnX, mnY, mnZ, mxX, mxY, mxZ);
-            case 2 -> // West
-                    new AxisAlignedBB(1.0F - mxZ, mnY, mnX, 1.0F - mnZ, mxY, mxX);
-            case 3 -> // East
-                    new AxisAlignedBB(mnZ, mnY, 1.0F - mxX, mxZ, mxY, 1.0F - mnX);
+            case 0 -> new AxisAlignedBB(1.0F - mxX, mnY, 1.0F - mxZ, 1.0F - mnX, mxY, 1.0F - mnZ);
+            case 1 -> new AxisAlignedBB(mnX, mnY, mnZ, mxX, mxY, mxZ);
+            case 2 -> new AxisAlignedBB(1.0F - mxZ, mnY, mnX, 1.0F - mnZ, mxY, mxX);
+            case 3 -> new AxisAlignedBB(mnZ, mnY, 1.0F - mxX, mxZ, mxY, 1.0F - mnX);
             default -> FULL_BLOCK_AABB;
         };
     }
@@ -153,31 +149,7 @@ public class BlockDecoModel<E extends Enum<E>> extends BlockEnumMeta<E> implemen
 
     @Override
     public int transformMeta(int meta, int coordBaseMode) {
-        if(coordBaseMode == 0) return meta;
-        //N: 0b00, S: 0b01, W: 0b10, E: 0b11
-        int rot = meta >> 2;
-        int type = meta & 3;
-
-        switch (coordBaseMode) {
-            case 1 -> { //West
-                if ((rot & 3) < 2) //N & S can just have bits toggled
-                    rot = rot ^ 3;
-                else //W & E can just have first bit set to 0
-                    rot = rot ^ 2;
-            }
-            case 2 -> //North
-                    rot = rot ^ 1; //N, W, E & S can just have first bit toggled
-            case 3 -> { //East
-                if ((rot & 3) < 2)//N & S can just have second bit set to 1
-                    rot = rot ^ 2;
-                else //W & E can just have bits toggled
-                    rot = rot ^ 3;
-            }
-            default -> {
-            } //South
-        }
-        //genuinely like. why did i do that
-        return (rot << 2) | type; //To accommodate for BlockDecoModel's shift in the rotation bits; otherwise, simply bit-shift right and or any non-rotation meta after
+        return INBTBlockTransformable.transformMetaDecoModelHigh(meta, coordBaseMode);
     }
 
     @SideOnly(Side.CLIENT)
@@ -193,7 +165,8 @@ public class BlockDecoModel<E extends Enum<E>> extends BlockEnumMeta<E> implemen
                 .getTextureMapBlocks()
                 .getAtlasSprite(new ResourceLocation("hbm", "blocks/deco_computer").toString());
         IBakedModel baked = BlockDecoBakedModel.forBlock(wavefront, sprite);
-        for (int m = 0; m < 4; m++) {
+
+        for (int m = 0; m < 16; m++) {
             ModelResourceLocation mrl = new ModelResourceLocation(getRegistryName(), "meta=" + m);
             event.getModelRegistry().putObject(mrl, baked);
         }
@@ -205,8 +178,7 @@ public class BlockDecoModel<E extends Enum<E>> extends BlockEnumMeta<E> implemen
         return new StateMapperBase() {
             @Override
             protected @NotNull ModelResourceLocation getModelResourceLocation(@NotNull IBlockState state) {
-                int meta = state.getValue(META) & 3;
-                return new ModelResourceLocation(loc, "meta=" + meta);
+                return new ModelResourceLocation(loc, "meta=" + state.getValue(META));
             }
         };
     }

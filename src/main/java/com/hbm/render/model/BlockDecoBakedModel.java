@@ -18,28 +18,26 @@ public class BlockDecoBakedModel extends AbstractWavefrontBakedModel {
 
     private final TextureAtlasSprite sprite;
     private final boolean forBlock;
-    private final int rotation;
+    private final int rotationOffset;
+    private final boolean rotationInLowBits;
     @SuppressWarnings("unchecked")
     private final List<BakedQuad>[] cache = new List[4];
     private List<BakedQuad> itemQuads;
 
-    public BlockDecoBakedModel(HFRWavefrontObject model, TextureAtlasSprite sprite, boolean forBlock, float baseScale, float tx, float ty, float tz, int rotation) {
+    public BlockDecoBakedModel(HFRWavefrontObject model, TextureAtlasSprite sprite, boolean forBlock, float baseScale, float tx, float ty, float tz, int rotationOffset, boolean rotationInLowBits) {
         super(model, DefaultVertexFormats.ITEM, baseScale, tx, ty, tz, BakedModelTransforms.forDeco(BakedModelTransforms.standardBlock()));
         this.sprite = sprite;
         this.forBlock = forBlock;
-        this.rotation = rotation;
+        this.rotationOffset = rotationOffset;
+        this.rotationInLowBits = rotationInLowBits;
     }
 
     public static BlockDecoBakedModel forBlock(HFRWavefrontObject model, TextureAtlasSprite sprite) {
-        return new BlockDecoBakedModel(model, sprite, true, 1.0F, 0.0F, 0.0F, 0.0F, 0);
+        return new BlockDecoBakedModel(model, sprite, true, 1.0F, 0.0F, 0.0F, 0.0F, 0, false);
     }
 
     public static BlockDecoBakedModel forBlock(HFRWavefrontObject model, TextureAtlasSprite sprite, float ty) {
-        return new BlockDecoBakedModel(model, sprite, true, 1.0F, 0.0F, ty, 0.0F, 0);
-    }
-
-    public static BlockDecoBakedModel forBlock(HFRWavefrontObject model, TextureAtlasSprite sprite, float ty, int rotation) {
-        return new BlockDecoBakedModel(model, sprite, true, 1.0F, 0.0F, ty, 0.0F, rotation);
+        return new BlockDecoBakedModel(model, sprite, true, 1.0F, 0.0F, ty, 0.0F, 0, true);
     }
 
     @Override
@@ -47,18 +45,14 @@ public class BlockDecoBakedModel extends AbstractWavefrontBakedModel {
         if (side != null) return Collections.emptyList();
 
         if (!forBlock) {
-            if (itemQuads == null) {
-                itemQuads = buildItemQuads();
-            }
+            if (itemQuads == null) itemQuads = super.bakeSimpleQuads(null, 0.0F, 0.0F, 0.0F, true, false, sprite);
             return itemQuads;
         }
 
         int orient = 1;
         if (state != null) {
-            try {
-                orient = (state.getValue(BlockEnumMeta.META) >> 2) & 3;
-            } catch (Exception ignored) {
-            }
+            int meta = state.getValue(BlockEnumMeta.META);
+            orient = rotationInLowBits ? (meta & 3) : ((meta >> 2) & 3);
         }
 
         List<BakedQuad> quads = cache[orient];
@@ -69,20 +63,28 @@ public class BlockDecoBakedModel extends AbstractWavefrontBakedModel {
     }
 
     private List<BakedQuad> buildQuadsForOrient(int orient) {
-        float yawOffset;
-        switch (orient) {
-            case 0 -> yawOffset = 1.0F; // NORTH
-            case 2 -> yawOffset = 1.5F; // WEST
-            case 3 -> yawOffset = 0.5F; // EAST
-            default -> yawOffset = 0.0F; // SOUTH (case 1)
-        }
-        float yaw = (0.5F * rotation + yawOffset) * (float) Math.PI;
-        return super.bakeSimpleQuads(null, 0.0F, 0.0F, yaw, true, true, sprite);
-    }
+        float yaw = 0;
 
-    private List<BakedQuad> buildItemQuads() {
-        // Item: no shadow, no centering (+0.5), but apply base scale and translation
-        return super.bakeSimpleQuads(null, 0.0F, 0.0F, 0.0F, true, false, sprite);
+        if (rotationInLowBits) {
+            yaw = switch (orient) {
+                case 0 -> 0.5F;  // South
+                case 1 -> 0.0F;  // West
+                case 2 -> 1.5F;  // North
+                case 3 -> 1.0F;  // East
+                default -> 0.0F;
+            };
+        } else {
+            yaw = switch (orient) {
+                case 0 -> 1.0F;  // South
+                case 1 -> 0.0F;  // North
+                case 2 -> 1.5F;  // East
+                case 3 -> 0.5F;  // West
+                default -> 0.0F;
+            };
+        }
+
+        float totalYaw = (yaw + (0.5F * rotationOffset)) * (float) Math.PI;
+        return super.bakeSimpleQuads(null, 0.0F, 0.0F, totalYaw, true, true, sprite);
     }
 
     @Override

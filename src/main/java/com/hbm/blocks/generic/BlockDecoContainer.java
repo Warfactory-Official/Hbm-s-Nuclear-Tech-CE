@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.block.model.ModelRotation;
 import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -29,6 +30,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.model.IModel;
@@ -37,6 +39,7 @@ import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
 import java.util.function.Supplier;
@@ -52,12 +55,12 @@ public class BlockDecoContainer<E extends Enum<E>, T extends TileEntity> extends
     }
 
     @Override
-    public boolean hasTileEntity(IBlockState state) {
+    public boolean hasTileEntity(@NotNull IBlockState state) {
         return true;
     }
 
     @Override
-    public TileEntity createTileEntity(World world, IBlockState state) {
+    public TileEntity createTileEntity(@NotNull World world, @NotNull IBlockState state) {
         try {
             return tile.get();
         } catch (Exception e) {
@@ -67,7 +70,7 @@ public class BlockDecoContainer<E extends Enum<E>, T extends TileEntity> extends
     }
 
     @Override
-    public TileEntity createNewTileEntity(World world, int metadata) {
+    public TileEntity createNewTileEntity(@NotNull World world, int metadata) {
         try {
             return tile.get();
         } catch (Exception e) {
@@ -76,20 +79,37 @@ public class BlockDecoContainer<E extends Enum<E>, T extends TileEntity> extends
         }
     }
 
+    // Th3_Sl1ze: yeah yeah, I know this is a getStateForPlacement copy. Problem is TileEntityWandLoot which uses this to rotate our lovely filing cabinets
     @Override
-    public boolean eventReceived(IBlockState state, World world, BlockPos pos, int eventNo, int eventArg) {
+    public void onBlockPlacedBy(@NotNull World worldIn, @NotNull BlockPos pos, @NotNull IBlockState state, EntityLivingBase placer, @NotNull ItemStack stack) {
+        int i = MathHelper.floor(placer.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
+        int orient;
+
+        if((i & 1) != 1)
+            orient = i >> 1;
+        else {
+            if(i == 3) orient = 2;
+            else orient = 3;
+        }
+
+        int finalMeta = (orient << 2) | (stack.getMetadata() & 3);
+        worldIn.setBlockState(pos, state.withProperty(META, finalMeta), 2);
+    }
+
+    @Override
+    public boolean eventReceived(@NotNull IBlockState state, @NotNull World world, @NotNull BlockPos pos, int eventNo, int eventArg) {
         super.eventReceived(state, world, pos, eventNo, eventArg);
         TileEntity tileentity = world.getTileEntity(pos);
         return tileentity != null && tileentity.receiveClientEvent(eventNo, eventArg);
     }
 
     @Override
-    public EnumBlockRenderType getRenderType(IBlockState state) {
+    public @NotNull EnumBlockRenderType getRenderType(@NotNull IBlockState state) {
         return EnumBlockRenderType.INVISIBLE;
     }
 
     @Override
-    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+    public boolean onBlockActivated(World world, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull EntityPlayer player, @NotNull EnumHand hand, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ) {
 
         if (world.isRemote) {
             return true;
@@ -113,7 +133,7 @@ public class BlockDecoContainer<E extends Enum<E>, T extends TileEntity> extends
     }
 
     @Override
-    public void breakBlock(World world, BlockPos pos, IBlockState state) {
+    public void breakBlock(World world, @NotNull BlockPos pos, @NotNull IBlockState state) {
         TileEntity te = world.getTileEntity(pos);
         // mlbv: IInventory? seriously?
         IInventory inventory = te instanceof IInventory ? (IInventory) te : null;
@@ -208,7 +228,7 @@ public class BlockDecoContainer<E extends Enum<E>, T extends TileEntity> extends
     public StateMapperBase getStateMapper(ResourceLocation loc) {
         return new StateMapperBase() {
             @Override
-            protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
+            protected @NotNull ModelResourceLocation getModelResourceLocation(@NotNull IBlockState state) {
                 return new ModelResourceLocation(loc, "normal");
             }
         };

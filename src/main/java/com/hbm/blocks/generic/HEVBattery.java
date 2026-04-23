@@ -11,6 +11,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -24,6 +25,9 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 public class HEVBattery extends BlockBakeBase {
 
@@ -34,37 +38,37 @@ public class HEVBattery extends BlockBakeBase {
     }
 
     @Override
-    public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
+    public @NotNull BlockFaceShape getBlockFaceShape(@NotNull IBlockAccess worldIn, @NotNull IBlockState state, @NotNull BlockPos pos, @NotNull EnumFacing face) {
         return BlockFaceShape.UNDEFINED;
     }
 
     @Override
-    public boolean isOpaqueCube(IBlockState state) {
+    public boolean isOpaqueCube(@NotNull IBlockState state) {
         return false;
     }
 
     @Override
-    public boolean isFullCube(IBlockState state) {
+    public boolean isFullCube(@NotNull IBlockState state) {
         return false;
     }
 
     @Override
-    public EnumBlockRenderType getRenderType(IBlockState state) {
+    public @NotNull EnumBlockRenderType getRenderType(@NotNull IBlockState state) {
         return EnumBlockRenderType.MODEL;
     }
 
     @Override
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+    public @NotNull AxisAlignedBB getBoundingBox(@NotNull IBlockState state, @NotNull IBlockAccess source, @NotNull BlockPos pos) {
         return BOUNDS;
     }
 
     @Override
-    public AxisAlignedBB getCollisionBoundingBox(IBlockState state, IBlockAccess worldIn, BlockPos pos) {
+    public AxisAlignedBB getCollisionBoundingBox(@NotNull IBlockState state, @NotNull IBlockAccess worldIn, @NotNull BlockPos pos) {
         return BOUNDS;
     }
 
     @Override
-    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
+    public boolean onBlockActivated(World world, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull EntityPlayer player, @NotNull EnumHand hand, @NotNull EnumFacing side, float hitX, float hitY, float hitZ) {
         if (world.isRemote) {
             return true;
         } else if (!player.isSneaking()) {
@@ -100,24 +104,21 @@ public class HEVBattery extends BlockBakeBase {
         HFRWavefrontObject wavefront = null;
         try {
             wavefront = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/blocks/battery.obj"));
-        } catch (Exception ignored) {}
-
-        if (wavefront == null) {
-            TextureAtlasSprite missing = Minecraft.getMinecraft().getTextureMapBlocks().getMissingSprite();
-            IBakedModel baked = BlockDecoBakedModel.forBlock(new HFRWavefrontObject(new ResourceLocation("minecraft:empty")), missing, -0.5f);
-            ModelResourceLocation modelLocation = new ModelResourceLocation(getRegistryName(), "inventory");
-            event.getModelRegistry().putObject(modelLocation, baked);
-            ModelResourceLocation worldLocation = new ModelResourceLocation(getRegistryName(), "normal");
-            event.getModelRegistry().putObject(worldLocation, baked);
-        } else {
-            TextureAtlasSprite sprite = Minecraft.getMinecraft()
-                    .getTextureMapBlocks()
-                    .getAtlasSprite(new ResourceLocation("hbm", "blocks/hev_battery_block").toString());
-            IBakedModel baked = BlockDecoBakedModel.forBlock(wavefront, sprite, -0.5f);
-            ModelResourceLocation modelLocation = new ModelResourceLocation(getRegistryName(), "inventory");
-            event.getModelRegistry().putObject(modelLocation, baked);
-            ModelResourceLocation worldLocation = new ModelResourceLocation(getRegistryName(), "normal");
-            event.getModelRegistry().putObject(worldLocation, baked);
+        } catch (Exception ignored) {
         }
+
+        TextureAtlasSprite sprite = (wavefront != null) ? Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite("hbm:blocks/hev_battery_block") : Minecraft.getMinecraft().getTextureMapBlocks().getMissingSprite();
+
+        HFRWavefrontObject modelToUse = (wavefront != null) ? wavefront : new HFRWavefrontObject(new ResourceLocation("minecraft:empty"));
+
+        IBakedModel baked = new BlockDecoBakedModel(modelToUse, sprite, true, 1.0F, 0.0F, -0.5F, 0.0F, 2, false) {
+            @Override
+            public @NotNull List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
+                return super.getQuads(null, side, rand);
+            }
+        };
+
+        event.getModelRegistry().putObject(new ModelResourceLocation(getRegistryName(), "inventory"), baked);
+        event.getModelRegistry().putObject(new ModelResourceLocation(getRegistryName(), "normal"), baked);
     }
 }
