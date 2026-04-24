@@ -1,93 +1,72 @@
 package com.hbm.render.tileentity.door;
 
-import com.hbm.animloader.AnimationWrapper;
-import com.hbm.animloader.AnimationWrapper.EndResult;
-import com.hbm.animloader.AnimationWrapper.EndType;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.blocks.ModBlocks;
-import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IDoor;
 import com.hbm.main.ResourceManager;
-import com.hbm.tileentity.machine.TileEntitySlidingBlastDoor;
+import com.hbm.tileentity.DoorDecl;
+import com.hbm.tileentity.TileEntityDoorGeneric;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GLAllocation;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.GlStateManager.DestFactor;
-import net.minecraft.client.renderer.GlStateManager.SourceFactor;
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.MathHelper;
 import org.lwjgl.opengl.GL11;
 
 import java.nio.DoubleBuffer;
 /// Didn't update sliding blast doors because they dont have keypads in 1.7.10
-@AutoRegister
-public class RenderSlidingBlastDoor extends TileEntitySpecialRenderer<TileEntitySlidingBlastDoor> {
+/// Th3_Sl1ze: I don't give a fuck
+public class RenderSlidingBlastDoor implements IRenderDoors {
 
-	private static DoubleBuffer buf = null;
-	@Override
-	public void render(TileEntitySlidingBlastDoor te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
-		GlStateManager.pushMatrix();
-        GlStateManager.translate(x+0.5, y, z+0.5);
-        
+    public static final RenderSlidingBlastDoor INSTANCE = new RenderSlidingBlastDoor();
+
+    @Override
+    public void render(TileEntityDoorGeneric door, DoubleBuffer buf) {
+
+        Minecraft.getMinecraft().getTextureManager().bindTexture(DoorDecl.DefaultSkins.pheo_blast_door_tex);
+
+        double maxOpen = 2.125;
+        double open = 0;
+        double lock = 0;
+        if(door.state == IDoor.DoorState.OPEN) {
+            open = maxOpen;
+            lock = 90;
+        }
+
+        if(door.currentAnimation != null) {
+            open = IRenderDoors.getRelevantTransformation("DOOR", door.currentAnimation)[1] * maxOpen;
+            lock = IRenderDoors.getRelevantTransformation("LOCK", door.currentAnimation)[0] * 90;
+        }
+
+        GL11.glDisable(GL11.GL_CULL_FACE);
+        ResourceManager.pheo_blast_door.renderPart("Frame");
+
         GL11.glEnable(GL11.GL_CLIP_PLANE0);
-        GL11.glEnable(GL11.GL_CLIP_PLANE1);
-        GlStateManager.enableCull();
-		GlStateManager.enableLighting();
-		GlStateManager.shadeModel(GL11.GL_SMOOTH);
-		GlStateManager.enableBlend();
-		GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA);
+        buf.put(new double[] { 0.0, 0.0, 1, 2.5 }); buf.rewind();
+        GL11.glClipPlane(GL11.GL_CLIP_PLANE0, buf);
 
-		switch(te.getBlockMetadata() - BlockDummyable.offset) {
-		case 2: GlStateManager.rotate(0, 0F, 1F, 0F); break;
-		case 4: GlStateManager.rotate(90, 0F, 1F, 0F); break;
-		case 3: GlStateManager.rotate(180, 0F, 1F, 0F); break;
-		case 5: GlStateManager.rotate(270, 0F, 1F, 0F); break;
-		}
-		
-		if(buf == null){
-			buf = GLAllocation.createDirectByteBuffer(8*4).asDoubleBuffer();
-		}
-		buf.put(new double[]{1, 0, 0, 0});
-		buf.rewind();
-		GlStateManager.pushMatrix();
-		GlStateManager.translate(-3.50001, 0, 0);
-		GL11.glClipPlane(GL11.GL_CLIP_PLANE0, buf);
-		GlStateManager.popMatrix();
-		buf.put(new double[]{-1, 0, 0, 0});
-		buf.rewind();
-		GlStateManager.pushMatrix();
-		GlStateManager.translate(3.50001, 0, 0);
-		GL11.glClipPlane(GL11.GL_CLIP_PLANE1, buf);
-		GlStateManager.popMatrix();
-        
-        long time = System.currentTimeMillis();
-        long startTime = te.state.isMovingState() ? te.sysTime : time;
-        boolean reverse = te.state == IDoor.DoorState.OPEN || te.state == IDoor.DoorState.CLOSING;
-        AnimationWrapper w = new AnimationWrapper(startTime, ResourceManager.door0_open);
-        if(reverse){
-        	w.reverse();
-        }
-        w.onEnd(new EndResult(EndType.STAY, null));
-        if(te.getBlockType() == ModBlocks.sliding_blast_door){
-        	ResourceLocation tex = null;
-        	switch(te.texture){
-        	case 0: tex = ResourceManager.sliding_blast_door_tex; break;
-        	case 1: tex = ResourceManager.sliding_blast_door_variant1_tex; break;
-        	case 2: tex = ResourceManager.sliding_blast_door_variant2_tex; break;
-        	}
-        	Minecraft.getMinecraft().getTextureManager().bindTexture(tex);
-        	ResourceManager.door0.controller.setAnim(w);
-            ResourceManager.door0.renderAnimated(time);
-        } else if(te.getBlockType() == ModBlocks.sliding_blast_door_2){
-        	Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.sliding_blast_door_keypad_tex);
-        	ResourceManager.door0_1.controller.setAnim(w);
-            ResourceManager.door0_1.renderAnimated(time);
-        }
-        
+        GL11.glEnable(GL11.GL_CLIP_PLANE1);
+        buf.put(new double[] { 0.0, 0.0, -1, 2.5 }); buf.rewind();
+        GL11.glClipPlane(GL11.GL_CLIP_PLANE1, buf);
+
+        GL11.glPushMatrix();
+        GL11.glTranslated(0, 0, MathHelper.clamp(open, 0, maxOpen));
+        ResourceManager.pheo_blast_door.renderPart("LeftDoor");
+        GL11.glPushMatrix();
+        GL11.glTranslated(0, 1.8125, 0);
+        GL11.glRotated(90 + lock, 1, 0, 0);
+        GL11.glTranslated(0, -1.8125, 0);
+        ResourceManager.pheo_blast_door.renderPart("RightLock");
+        GL11.glPopMatrix();
+        GL11.glPopMatrix();
+
+        GL11.glPushMatrix();
+        GL11.glTranslated(0, 0, -MathHelper.clamp(open, 0, maxOpen));
+        ResourceManager.pheo_blast_door.renderPart("RightDoor");
+        GL11.glPushMatrix();
+        GL11.glTranslated(0, 1.8125, 0);
+        GL11.glRotated(90 + lock, 1, 0, 0);
+        GL11.glTranslated(0, -1.8125, 0);
+        ResourceManager.pheo_blast_door.renderPart("LeftLock");
+        GL11.glPopMatrix();
+        GL11.glPopMatrix();
+
         GL11.glDisable(GL11.GL_CLIP_PLANE0);
         GL11.glDisable(GL11.GL_CLIP_PLANE1);
-        GlStateManager.shadeModel(GL11.GL_FLAT);
-        GlStateManager.disableBlend();
-        GlStateManager.popMatrix();
-	}
+    }
 }

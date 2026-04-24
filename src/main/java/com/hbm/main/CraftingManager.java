@@ -684,6 +684,8 @@ public class CraftingManager {
 		addRecipeAuto(new ItemStack(ModItems.door_metal, 1), "II", "SS", "II", 'I', IRON.plate(), 'S', STEEL.plate() );
 		addRecipeAuto(new ItemStack(ModItems.door_office, 1), "II", "SS", "II", 'I', KEY_PLANKS, 'S', IRON.plate() );
 		addRecipeAuto(new ItemStack(ModItems.door_bunker, 1), "II", "SS", "II", 'I', STEEL.plate(), 'S', PB.plate() );
+        addShapelessAuto(new ItemStack(ModBlocks.sliding_blast_door_legacy, 1), new ItemStack(ModBlocks.sliding_blast_door) );
+        addShapelessAuto(new ItemStack(ModBlocks.sliding_blast_door, 1), new ItemStack(ModBlocks.sliding_blast_door_legacy) );
 
 		addShapelessAuto(new ItemStack(Items.SLIME_BALL, 16), new ItemStack(Items.DYE, 1, 15), new ItemStack(Items.DYE, 1, 15), new ItemStack(Items.DYE, 1, 15), new ItemStack(Items.DYE, 1, 15), Fluids.SULFURIC_ACID.getDict(1000) );
 

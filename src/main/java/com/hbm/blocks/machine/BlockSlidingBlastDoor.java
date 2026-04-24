@@ -45,7 +45,7 @@ public class BlockSlidingBlastDoor extends BlockDummyable implements IRadResista
 
 	@Override
 	protected boolean isSameMultiblock(Block other) {
-		return other == ModBlocks.sliding_blast_door
+		return other == ModBlocks.sliding_blast_door_legacy
 			|| other == ModBlocks.sliding_blast_door_2
 			|| other == ModBlocks.sliding_blast_door_keypad;
 	}
@@ -82,7 +82,7 @@ public class BlockSlidingBlastDoor extends BlockDummyable implements IRadResista
 		if(hardness > 50){
 			tooltip.add("§6" + I18nUtil.resolveKey("trait.blastres", hardness));
 		}
-		if(this == ModBlocks.sliding_blast_door){
+		if(this == ModBlocks.sliding_blast_door_legacy){
 			tooltip.add(I18nUtil.resolveKey("desc.varwin"));
 		} else if(this == ModBlocks.sliding_blast_door_2){
 			tooltip.add(I18nUtil.resolveKey("desc.varkey"));

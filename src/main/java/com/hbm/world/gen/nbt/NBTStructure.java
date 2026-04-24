@@ -751,7 +751,9 @@ public class NBTStructure {
         if (newItems.tagCount() == 0) return;
         NBTTagCompound invTag = new NBTTagCompound();
         invTag.setTag("Items", newItems);
-        invTag.setInteger("Size", maxSlot + 1);
+        //invTag.setInteger("Size", maxSlot + 1);
+        // Th3_Sl1ze: problem is, if any ticking update tries to access greater slot than maxSlot + 1 (e.g. fluid tank trying to empty a fluid container),
+        // you'll get into a fucking miracle of corrupted saves
         teNbt.setTag("inventory", invTag);
         MainRegistry.logger.debug("[NBTStructure] Added inventory wrapper for TE with {} items in structure {}", newItems.tagCount(), resource);
     }

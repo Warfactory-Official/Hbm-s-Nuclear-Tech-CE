@@ -301,7 +301,21 @@ public class RenderDoorGeneric extends TileEntitySpecialRenderer<TileEntityDoorG
 					GlStateManager.shadeModel(GL11.GL_FLAT);
 				}
 			};
-		} else if (item == Item.getItemFromBlock(ModBlocks.small_hatch)) {
+		} else if (item == Item.getItemFromBlock(ModBlocks.sliding_blast_door)) {
+            return new ItemRenderBase() {
+                public void renderInventory() {
+                    GL11.glTranslated(0, -2.75, 0);
+                    GL11.glScaled(2.5, 2.5, 2.5);
+                }
+
+                public void renderCommon() {
+                    bindTexture(DefaultSkins.pheo_blast_door_tex);
+                    GL11.glShadeModel(GL11.GL_SMOOTH);
+                    ResourceManager.pheo_blast_door.renderAll();
+                    GL11.glShadeModel(GL11.GL_FLAT);
+                }
+            };
+        } else if (item == Item.getItemFromBlock(ModBlocks.small_hatch)) {
 			return new ItemRenderBase() {
 				public void renderInventory() {
 					GlStateManager.translate(0, -4.5, 0);
