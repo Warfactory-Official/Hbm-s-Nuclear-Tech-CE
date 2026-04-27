@@ -1203,6 +1203,8 @@ public class ModBlocks {
     public static final Block foundry_basin = new FoundryBasin("foundry_basin").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
     public static final Block foundry_channel = new FoundryChannel("foundry_channel").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
     public static final Block foundry_outlet = new FoundryOutlet("foundry_outlet").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
+    public static final Block foundry_slagtap = new FoundrySlagtap("foundry_slagtap").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
+    public static final Block slag = new BlockDynamicSlag("slag").setHardness(5.0F).setResistance(10.0F).setCreativeTab(null);
     public static final Block machine_industrial_boiler = new MachineHeatBoilerIndustrial(Material.IRON, "machine_industrial_boiler").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
 
     //Misc
