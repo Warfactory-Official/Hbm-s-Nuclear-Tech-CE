@@ -4,7 +4,6 @@ import com.hbm.Tags;
 import com.hbm.handler.GunConfiguration;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -367,39 +366,39 @@ public final class HBMSoundHandler {
     public static SoundEvent plinkMedium;
     public static SoundEvent plinkLarge;
 
-    public static SoundEvent alarmHatch = registerBypass("alarm.hatch");
-    public static SoundEvent alarmAutopilot = registerBypass("alarm.autopilot");
-    public static SoundEvent alarmAMSSiren = registerBypass("alarm.amsSiren");
-    public static SoundEvent alarmBlastDoor = registerBypass("alarm.blastDoorAlarm");
-    public static SoundEvent alarmAPCLoop = registerBypass("alarm.apcLoop");
-    public static SoundEvent alarmKlaxon = registerBypass("alarm.klaxon");
-    public static SoundEvent alarmFoKlaxonA = registerBypass("alarm.foKlaxonA");
-    public static SoundEvent alarmFoKlaxonB = registerBypass("alarm.foKlaxonB");
-    public static SoundEvent alarmRegular = registerBypass("alarm.regularSiren");
-    public static SoundEvent alarmClassic = registerBypass("alarm.classic");
-    public static SoundEvent alarmBank = registerBypass("alarm.bankAlarm");
-    public static SoundEvent alarmBeep = registerBypass("alarm.beepSiren");
-    public static SoundEvent alarmContainer = registerBypass("alarm.containerAlarm");
-    public static SoundEvent alarmSweep = registerBypass("alarm.sweepSiren");
-    public static SoundEvent alarmStrider = registerBypass("alarm.striderSiren");
-    public static SoundEvent alarmAirRaid = registerBypass("alarm.airRaid");
-    public static SoundEvent alarmNostromo = registerBypass("alarm.nostromoSiren");
-    public static SoundEvent alarmEas = registerBypass("alarm.easAlarm");
-    public static SoundEvent alarmAPCPass = registerBypass("alarm.apcPass");
-    public static SoundEvent alarmRazorTrain = registerBypass("alarm.razortrainHorn");
-    public static SoundEvent soyuzed = registerBypass("alarm.soyuzed");
-    public static SoundEvent metalStep = registerBypass("step.metal");
-    public static SoundEvent iron = registerBypass("step.iron");
-    public static SoundEvent ironLand = registerBypass("step.iron_land");
-    public static SoundEvent ironJump = registerBypass("step.iron_jump");
-    public static SoundEvent poweredStep = registerBypass("step.powered");
+    public static SoundEvent alarmHatch = registerDeferred("alarm.hatch");
+    public static SoundEvent alarmAutopilot = registerDeferred("alarm.autopilot");
+    public static SoundEvent alarmAMSSiren = registerDeferred("alarm.amsSiren");
+    public static SoundEvent alarmBlastDoor = registerDeferred("alarm.blastDoorAlarm");
+    public static SoundEvent alarmAPCLoop = registerDeferred("alarm.apcLoop");
+    public static SoundEvent alarmKlaxon = registerDeferred("alarm.klaxon");
+    public static SoundEvent alarmFoKlaxonA = registerDeferred("alarm.foKlaxonA");
+    public static SoundEvent alarmFoKlaxonB = registerDeferred("alarm.foKlaxonB");
+    public static SoundEvent alarmRegular = registerDeferred("alarm.regularSiren");
+    public static SoundEvent alarmClassic = registerDeferred("alarm.classic");
+    public static SoundEvent alarmBank = registerDeferred("alarm.bankAlarm");
+    public static SoundEvent alarmBeep = registerDeferred("alarm.beepSiren");
+    public static SoundEvent alarmContainer = registerDeferred("alarm.containerAlarm");
+    public static SoundEvent alarmSweep = registerDeferred("alarm.sweepSiren");
+    public static SoundEvent alarmStrider = registerDeferred("alarm.striderSiren");
+    public static SoundEvent alarmAirRaid = registerDeferred("alarm.airRaid");
+    public static SoundEvent alarmNostromo = registerDeferred("alarm.nostromoSiren");
+    public static SoundEvent alarmEas = registerDeferred("alarm.easAlarm");
+    public static SoundEvent alarmAPCPass = registerDeferred("alarm.apcPass");
+    public static SoundEvent alarmRazorTrain = registerDeferred("alarm.razortrainHorn");
+    public static SoundEvent soyuzed = registerDeferred("alarm.soyuzed");
+    public static SoundEvent metalStep = registerDeferred("step.metal");
+    public static SoundEvent iron = registerDeferred("step.iron");
+    public static SoundEvent ironLand = registerDeferred("step.iron_land");
+    public static SoundEvent ironJump = registerDeferred("step.iron_jump");
+    public static SoundEvent poweredStep = registerDeferred("step.powered");
 
-    public static SoundEvent lambdaCore = registerBypass("music.recordlambdacore");
-    public static SoundEvent sectorSweep = registerBypass("music.recordsectorsweep");
-    public static SoundEvent vortalCombat = registerBypass("music.recordvortalcombat");
-    public static SoundEvent glass = registerBypass("music.transmission");
+    public static SoundEvent lambdaCore = registerDeferred("music.recordlambdacore");
+    public static SoundEvent sectorSweep = registerDeferred("music.recordsectorsweep");
+    public static SoundEvent vortalCombat = registerDeferred("music.recordvortalcombat");
+    public static SoundEvent glass = registerDeferred("music.transmission");
 
-    public static SoundEvent metalBlock = registerBypass("step.metalBlock");
+    public static SoundEvent metalBlock = registerDeferred("step.metalBlock");
 
     public static SoundEvent[] geigerSounds;
     public static SoundEvent[] voiceSounds;
@@ -414,7 +413,7 @@ public final class HBMSoundHandler {
      * This works, but you must ensure that the .ogg file in src\main\resources\assets\hbm\sounds\block is in lowercase.
      * In other words, there must be an assembleroperate.ogg under that directory. assemblerOperate.ogg won't work!
      */
-    public static void init() {
+    public static void preinit() {
 
         explosionSmallNear = register("weapon.explosion_small_near");
         explosionSmallFar = register("weapon.explosion_small_far");
@@ -781,10 +780,10 @@ public final class HBMSoundHandler {
         return e;
     }
 
-    public static SoundEvent registerBypass(String name) {
+    public static SoundEvent registerDeferred(String name) {
         SoundEvent e = new SoundEvent(new ResourceLocation(Tags.MODID, name));
         e.setRegistryName(name);
-        ForgeRegistries.SOUND_EVENTS.register(e);
+        ALL_SOUNDS.add(e);
         return e;
     }
 

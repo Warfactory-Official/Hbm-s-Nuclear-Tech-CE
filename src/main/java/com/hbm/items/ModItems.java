@@ -2803,7 +2803,7 @@ public class ModItems {
             .addAbility(IToolAreaAbility.HAMMER_FLAT, 3)
             .addAbility(IToolAreaAbility.RECURSION, 5);
 
-    public static void preInit() {
+    public static void registerItems() {
         GunFactory.init();
         excludeNEI.add(item_secret);
 

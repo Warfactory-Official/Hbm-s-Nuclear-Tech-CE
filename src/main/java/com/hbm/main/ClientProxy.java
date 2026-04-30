@@ -49,7 +49,6 @@ import com.hbm.render.anim.sedna.BusAnimationSedna;
 import com.hbm.render.anim.sedna.BusAnimationSequenceSedna;
 import com.hbm.render.anim.sedna.HbmAnimationsSedna;
 import com.hbm.render.entity.ElectricityRenderer;
-import com.hbm.render.entity.RenderBoat;
 import com.hbm.render.entity.RenderMetaSensitiveItem;
 import com.hbm.render.item.ItemRenderMissile;
 import com.hbm.render.item.ItemRenderMissileGeneric;
@@ -59,7 +58,6 @@ import com.hbm.render.item.weapon.ItemRenderGunAnim;
 import com.hbm.render.item.weapon.sedna.*;
 import com.hbm.render.misc.MissilePart;
 import com.hbm.render.modelrenderer.EgonBackpackRenderer;
-import com.hbm.render.tileentity.ItemRendererProviderRegistry;
 import com.hbm.render.util.RenderInfoSystemLegacy;
 import com.hbm.render.util.RenderOverhead;
 import com.hbm.sound.AudioWrapper;
@@ -1923,14 +1921,7 @@ public class ClientProxy extends ServerProxy {
         OBJLoader.INSTANCE.addDomain(Tags.MODID);
         ModelLoaderRegistry.registerLoader(DynamicPlaceholderModelLoader.INSTANCE);
 
-        AutoRegistry.preInitClient();
         AutoRegistry.registerRenderInfo();
-        NTMClientRegistry.bindTeisrs(ItemRendererProviderRegistry.getTileEntityProviders());
-        NTMClientRegistry.bindTeisrs(ItemRendererProviderRegistry.getItemProviders());
-
-        // IItemRendererProvider is not applicable to Render<T extends Entity>
-        NTMClientRegistry.bindTeisr(Item.getItemFromBlock(ModBlocks.boat), new RenderBoat.BoatItemRenderer());
-        registerMissileItems(null);
 
         ClientHttpHandler.preinit();
     }

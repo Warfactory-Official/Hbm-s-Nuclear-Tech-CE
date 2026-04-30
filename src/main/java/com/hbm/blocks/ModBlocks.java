@@ -1509,7 +1509,7 @@ public class ModBlocks {
     public static final Block volcanic_lava_block = new VolcanicBlock(ModFluids.volcanic_lava_fluid, fluidvolcanic, "volcanic_lava_block").setResistance(500F);
     public static final Block sulfuric_acid_block = new GenericFluidBlock(ModFluids.sulfuric_acid_fluid, Material.WATER, "sulfuric_acid_block").setDamage(ModDamageSource.acid, 5F).setResistance(500F);
 
-    public static void preInit() {
+    public static void registerBlocks() {
         for (Block block : ALL_BLOCKS) {
             ForgeRegistries.BLOCKS.register(block);
         }
@@ -1520,7 +1520,7 @@ public class ModBlocks {
     public static void init() {
     }
 
-    public static void postInit() {
+    public static void initializeHazardsAndPlacables() {
 
         for (Block block : ALL_BLOCKS) {
             if (block instanceof BlockHazard) {

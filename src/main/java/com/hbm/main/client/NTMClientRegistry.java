@@ -4,6 +4,7 @@ import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.bomb.Balefire;
 import com.hbm.blocks.generic.TrappedBrick;
+import com.hbm.blocks.machine.BlockSeal;
 import com.hbm.blocks.network.FluidDuctBox;
 import com.hbm.blocks.network.FluidDuctStandard;
 import com.hbm.entity.siege.SiegeTier;
@@ -25,9 +26,11 @@ import com.hbm.items.tool.ItemCanister;
 import com.hbm.items.tool.ItemGasCanister;
 import com.hbm.items.tool.ItemGuideBook;
 import com.hbm.items.weapon.IMetaItemTesr;
+import com.hbm.main.AutoRegistry;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.GuiCTMWarning;
+import com.hbm.render.entity.RenderBoat;
 import com.hbm.render.icon.RegistrationUtils;
 import com.hbm.render.item.BakedModelNoFPV;
 import com.hbm.render.item.FancyMissingModelPerspective;
@@ -39,11 +42,16 @@ import com.hbm.render.item.weapon.ItemRenderGunAnim;
 import com.hbm.render.item.weapon.ItemRenderRedstoneSword;
 import com.hbm.render.tileentity.*;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockDoor;
+import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.model.ModelRotation;
+import net.minecraft.client.renderer.block.statemap.StateMap;
+import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.client.renderer.color.IItemColor;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
@@ -58,6 +66,7 @@ import net.minecraft.util.registry.IRegistry;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.fluids.BlockFluidBase;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -69,6 +78,7 @@ import java.util.Objects;
  *
  */
 public class NTMClientRegistry {
+    private static boolean itemRendererBindingsInitialized = false;
     public static TextureAtlasSprite contrail;
     public static TextureAtlasSprite particle_base;
     public static TextureAtlasSprite fog;
@@ -86,6 +96,82 @@ public class NTMClientRegistry {
         if (renderer instanceof TEISRBase teisr) {
             ClaimedModelLocationRegistry.registerTeisrBinding(new OwnedTeisrBinding(item, teisr));
         }
+    }
+
+    private static void initializeItemRendererBindings() {
+        if (itemRendererBindingsInitialized) return;
+        itemRendererBindingsInitialized = true;
+        AutoRegistry.preInitClient();
+        bindTeisrs(ItemRendererProviderRegistry.getTileEntityProviders());
+        bindTeisrs(ItemRendererProviderRegistry.getItemProviders());
+        bindTeisr(Item.getItemFromBlock(ModBlocks.boat), new RenderBoat.BoatItemRenderer());
+        MainRegistry.proxy.registerMissileItems(null);
+    }
+
+    private static StateMapperBase fixedModelStateMapper(ModelResourceLocation location) {
+        return new StateMapperBase() {
+            @Override
+            protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
+                return location;
+            }
+        };
+    }
+
+    private static void registerNormalStateMapper(Block block) {
+        ResourceLocation name = Objects.requireNonNull(block.getRegistryName());
+        ModelLoader.setCustomStateMapper(block, fixedModelStateMapper(new ModelResourceLocation(name, "normal")));
+    }
+
+    private static void registerIgnoringStateMapper(Block block, IProperty<?>... ignored) {
+        ModelLoader.setCustomStateMapper(block, new StateMap.Builder().ignore(ignored).build());
+    }
+
+    private static void registerLoggedStateMappers() {
+        registerIgnoringStateMapper(ModBlocks.door_bunker, BlockDoor.POWERED);
+        registerIgnoringStateMapper(ModBlocks.door_metal, BlockDoor.POWERED);
+        registerIgnoringStateMapper(ModBlocks.door_office, BlockDoor.POWERED);
+        registerIgnoringStateMapper(ModBlocks.door_red, BlockDoor.POWERED);
+        registerIgnoringStateMapper(ModBlocks.acid_block, BlockFluidBase.LEVEL);
+        registerIgnoringStateMapper(ModBlocks.corium_block, BlockFluidBase.LEVEL);
+        registerIgnoringStateMapper(ModBlocks.mud_block, BlockFluidBase.LEVEL);
+        registerIgnoringStateMapper(ModBlocks.schrabidic_block, BlockFluidBase.LEVEL);
+        registerIgnoringStateMapper(ModBlocks.sulfuric_acid_block, BlockFluidBase.LEVEL);
+        registerIgnoringStateMapper(ModBlocks.toxic_block, BlockFluidBase.LEVEL);
+        registerIgnoringStateMapper(ModBlocks.volcanic_lava_block, BlockFluidBase.LEVEL);
+        registerIgnoringStateMapper(ModBlocks.seal_controller, BlockSeal.ACTIVATED);
+
+        registerNormalStateMapper(ModBlocks.bm_power_box);
+        registerNormalStateMapper(ModBlocks.brick_jungle_trap);
+        registerNormalStateMapper(ModBlocks.digamma_matter);
+        registerNormalStateMapper(ModBlocks.fire_door);
+        registerNormalStateMapper(ModBlocks.floodlight);
+        registerNormalStateMapper(ModBlocks.frozen_grass);
+        registerNormalStateMapper(ModBlocks.large_vehicle_door);
+        registerNormalStateMapper(ModBlocks.machine_diesel);
+        registerNormalStateMapper(ModBlocks.ntm_dirt);
+        registerNormalStateMapper(ModBlocks.pribris_radiating);
+        registerNormalStateMapper(ModBlocks.qe_containment);
+        registerNormalStateMapper(ModBlocks.qe_sliding_door);
+        registerNormalStateMapper(ModBlocks.red_connector);
+        registerNormalStateMapper(ModBlocks.round_airlock_door);
+        registerNormalStateMapper(ModBlocks.secure_access_door);
+        registerNormalStateMapper(ModBlocks.silo_hatch);
+        registerNormalStateMapper(ModBlocks.silo_hatch_drillgon);
+        registerNormalStateMapper(ModBlocks.silo_hatch_large);
+        registerNormalStateMapper(ModBlocks.sliding_blast_door);
+        registerNormalStateMapper(ModBlocks.sliding_blast_door_2);
+        registerNormalStateMapper(ModBlocks.sliding_blast_door_keypad);
+        registerNormalStateMapper(ModBlocks.sliding_blast_door_legacy);
+        registerNormalStateMapper(ModBlocks.sliding_gate_door);
+        registerNormalStateMapper(ModBlocks.sliding_seal_door);
+        registerNormalStateMapper(ModBlocks.small_hatch);
+        registerNormalStateMapper(ModBlocks.spotlight_beam);
+        registerNormalStateMapper(ModBlocks.transition_seal);
+        registerNormalStateMapper(ModBlocks.turret_sentry);
+        registerNormalStateMapper(ModBlocks.turret_sentry_damaged);
+        registerNormalStateMapper(ModBlocks.vault_door);
+        registerNormalStateMapper(ModBlocks.volcano_core);
+        registerNormalStateMapper(ModBlocks.water_door);
     }
 
     public static void bindTeisrs(Iterable<IItemRendererProvider> providers) {
@@ -348,6 +434,8 @@ public class NTMClientRegistry {
 
     @SubscribeEvent
     public void registerModels(ModelRegistryEvent event) {
+        initializeItemRendererBindings();
+        registerLoggedStateMappers();
         int i = 0;
         ResourceLocation[] list = new ResourceLocation[SpecialContainerFillLists.EnumCell.VALUES.length];
         for (SpecialContainerFillLists.EnumCell e : SpecialContainerFillLists.EnumCell.VALUES) {

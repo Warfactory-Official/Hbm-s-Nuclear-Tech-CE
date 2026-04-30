@@ -9,9 +9,11 @@ import com.hbm.items.machine.ItemCassette;
 import com.hbm.main.MainRegistry;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.registries.IForgeRegistry;
 
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * How to create a cassette element:
@@ -27,6 +29,7 @@ import java.util.Locale;
  */
 public class CassetteJsonConfig {
     public static final String FILENAME = "hbm_siren_cassettes.json";
+    private static final LinkedHashMap<ResourceLocation, SoundEvent> DEFERRED_SOUNDS = new LinkedHashMap<>();
 
     public static void init() {
         if (!tryRead() && JsonConfig.isFileNonexistent(FILENAME)) {
@@ -56,7 +59,7 @@ public class CassetteJsonConfig {
                 if (!obj.has("sound")) continue;
                 ResourceLocation soundLocation = new ResourceLocation(obj.get("sound").getAsString());
                 SoundEvent sound = SoundEvent.REGISTRY.getObject(soundLocation);
-                if (sound == null) sound = tryRegisterSound(soundLocation);
+                if (sound == null) sound = getOrCreateDeferredSound(soundLocation);
 
                 if (!obj.has("type")) continue;
                 ItemCassette.SoundType type = switch (obj.get("type").getAsString().toLowerCase(Locale.ROOT)) {
@@ -90,14 +93,23 @@ public class CassetteJsonConfig {
         }
     }
 
-    public static SoundEvent tryRegisterSound(ResourceLocation location) {
+    public static SoundEvent getOrCreateDeferredSound(ResourceLocation location) {
         try {
-            SoundEvent e = new SoundEvent(location);
-            e.setRegistryName(location.getPath());
-            ForgeRegistries.SOUND_EVENTS.register(e);
-            return e;
+            return DEFERRED_SOUNDS.computeIfAbsent(location, key -> {
+                SoundEvent sound = new SoundEvent(key);
+                sound.setRegistryName(key);
+                return sound;
+            });
         } catch (Exception e) {
             throw new RuntimeException("Could not find nor register siren sound at location " + location, e);
+        }
+    }
+
+    public static void registerSounds(IForgeRegistry<SoundEvent> registry) {
+        for (Map.Entry<ResourceLocation, SoundEvent> entry : DEFERRED_SOUNDS.entrySet()) {
+            if (!registry.containsKey(entry.getKey())) {
+                registry.register(entry.getValue());
+            }
         }
     }
 }
