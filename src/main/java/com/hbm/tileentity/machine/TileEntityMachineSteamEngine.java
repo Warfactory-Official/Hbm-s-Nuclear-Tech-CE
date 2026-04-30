@@ -275,6 +275,14 @@ public class TileEntityMachineSteamEngine extends TileEntityLoadedBase
   }
 
   @Override
+  public void serializeInitial(ByteBuf buf) {
+    this.tanks[0].serialize(buf);
+    buf.writeLong(this.powerBuffer);
+    buf.writeFloat(this.rotor);
+    this.tanks[1].serialize(buf);
+  }
+
+  @Override
   public void serialize(ByteBuf buf) {
     buf.writeBytes(this.buf);
   }

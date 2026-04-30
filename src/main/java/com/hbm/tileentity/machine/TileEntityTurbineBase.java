@@ -131,6 +131,14 @@ public abstract class TileEntityTurbineBase extends TileEntityLoadedBase impleme
     }
 
     @Override
+    public void serializeInitial(ByteBuf buf) {
+        super.serialize(buf);
+        this.tanks[0].serialize(buf);
+        this.tanks[1].serialize(buf);
+        buf.writeLong(this.powerBuffer);
+    }
+
+    @Override
     public void serialize(ByteBuf buf) {
         super.serialize(buf);
         buf.writeBytes(this.buf);

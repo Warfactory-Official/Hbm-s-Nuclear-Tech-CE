@@ -164,6 +164,12 @@ public class TileEntityChungus extends TileEntityTurbineBase implements SimpleCo
 	}
 
 	@Override
+	public void serializeInitial(ByteBuf buf) {
+		super.serializeInitial(buf);
+		buf.writeInt(this.turnTimer);
+	}
+
+	@Override
 	public void serialize(ByteBuf buf) {
 		super.serialize(buf);
 		buf.writeInt(this.turnTimer);

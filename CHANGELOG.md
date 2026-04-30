@@ -20,6 +20,7 @@
 ### SUBSTANTIAL CHANGES
 ### Breaking Changes
 - Dropped unmaintained translation files. Supported languages are now: English, German, French, Italian, Japanese, Polish, Russian, Simplified Chinese, Ukrainian.
+- The Sliding Blast Door has been re-implemented on the standard door framework. The original door is preserved as the Sliding Blast Door (Legacy); existing placed sliding blast doors switch to the new mechanics, and a shapeless recipe converts between the two variants.
 ### Fixes
 - Fixed T-51 texture loading
 - Fixed jetpack rendering not following the player's body orientation while elytra-flying
@@ -30,20 +31,39 @@
 - Fixed turbofans applying player motion on the client even when the engine wasn't running
 - Fixed the control panel Function node's "Edit Body" button doing nothing
 - Fixed multiblock placement being blocked when the player's head merely clipped the build area, and fixed large flare-tower blocks suffocating players and allowing hostile mob spawns
-- Fixed decoration blocks (CRT, toaster, satellite-dish pole, tape recorder, misc. deco) losing their stored state when pushed/pulled by block-movers
+- Fixed decoration blocks (CRT, toaster, satellite-dish pole, tape recorder, filing cabinet, misc. deco) losing their stored state when pushed/pulled by block-movers, and fixed CRT/toaster/filing cabinet/screen blocks rotating incorrectly when placed (#1360)
+- Fixed the pole satellite receiver model
 - Fixed control-panel composite data values retaining stale entries after reload
+- Fixed control-panel Input nodes failing to deserialize when their name was missing
 - Fixed crash with low-radius contaminating drops
 - Fixed crash and incredible log spam when a node queries a te in a not-yet-loaded chunk during world load
+- Fixed dedicated server crash on chunk load for RBMK Gauge, Graph, Indicator, KeyPad, Lever, and Numitron blocks
+- Fixed cables briefly desyncing their connection state when an adjacent chunk was being loaded
+- Restored the per-fluid tank textures that had regressed
+- Fixed multi-slot inventory tile entities (e.g. fluid tanks) crashing after generating in NBT structures
+- Fixed Experience Bottles not being convertible to Experience Juice in barrels and fluid tanks
 ### Changes
 - On-screen info messages now render in a stable, deterministic order instead of being reordered by timing
+- Oil ore can no longer be silk-touched
+- Alexandrite ore now drops at most two gems regardless of fortune
+- Oil deposits now spawn less often in hot, arid biomes
+- Steel grates now have an additional height level
+- Removed the crafting recipes for the Mini RTG and the Power RTG
 ### New Features
 - Ported recent upstream additions from X5671, including:
   - New Redstone-over-Radio Pager item
   - New Redstone-over-Radio Indicator Lights and Lever panel blocks (screwdriver-configurable), with matching manual pages
   - Paintable fluid ducts, exhaust pipes, and pneumatic tubes now document paint and port configuration in their tooltips
   - New lever click and electrical spark sound effects
+  - New IR-tier Tesla capacitor ammo with a chain-lightning beam
+  - SC (super-capacitor) batteries placed in Battery Sockets now intermittently arc to nearby entities and detonate locally
+  - Empty pipelines now adopt the connecting pipeline's fluid type when joined
+  - New mixer recipe converting tar (any) into Bitumen
+  - New Mug Can drink that grants Resistance and Regeneration when consumed
   - Removed the legacy Plasma block
 - Added OpenComputers integration for the RBMK Gauge, Graph, KeyPad, and Numitron
+- Added a `HEALTHBAR_HUD` client config to toggle the VATS-style entity healthbar overlay (#1447)
+- Added a `mobWeaponSootReduction` server config to lower the soot threshold for skeletons spawning with guns
 ### Performance
 - Reduced per-tick work and network traffic. For developers: this is a substantial API change for TileEntityLoadedBase! You are now required to override (de)serializeInitial instead of vanilla updateTag methods for the correct first sync on chunk load. 
 - Sawmills now cache their recipe lookup

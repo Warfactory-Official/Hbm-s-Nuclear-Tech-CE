@@ -174,6 +174,12 @@ public class TileEntityMachineIndustrialTurbine extends TileEntityTurbineBase im
     }
 
     @Override
+    public void serializeInitial(ByteBuf buf) {
+        super.serializeInitial(buf);
+        buf.writeDouble(this.spin);
+    }
+
+    @Override
     public void serialize(ByteBuf buf) {
         super.serialize(buf);
         buf.writeDouble(this.spin);
