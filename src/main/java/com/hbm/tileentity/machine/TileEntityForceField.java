@@ -339,7 +339,7 @@ public class TileEntityForceField extends TileEntityLoadedBase implements ITicka
                             entity.posY -= entity.motionY;
                             entity.posZ -= entity.motionZ;
 
-                            world.playSound(null, entity.posX, entity.posY, entity.posZ, HBMSoundHandler.sparkShoot, SoundCategory.BLOCKS, 2.5F, 1.0F);
+                            if (!this.muffled) world.playSound(null, entity.posX, entity.posY, entity.posZ, HBMSoundHandler.sparkShoot, SoundCategory.BLOCKS, 2.5F, 1.0F);
                             inside.add(entity);
 
                             if (!world.isRemote) {
