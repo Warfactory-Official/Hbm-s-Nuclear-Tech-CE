@@ -117,7 +117,7 @@ public class FoundryChannel extends BlockContainer implements ICrucibleAcceptor 
 		IBlockState neighborState = world.getBlockState(neighborPos);
 		Block neighborBlock = neighborState.getBlock();
 
-		if (neighborBlock == ModBlocks.foundry_outlet) {
+		if (neighborBlock instanceof FoundryOutlet) {
 			if (neighborBlock.getMetaFromState(neighborState) == direction.getIndex()) return true;
 		}
 

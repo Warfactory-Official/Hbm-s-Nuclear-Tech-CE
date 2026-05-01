@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.material.MaterialShapes;
@@ -17,7 +18,12 @@ import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.EnumPushReaction;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -25,12 +31,14 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.opengl.GL11;
 
 import java.util.HashMap;
 import java.util.Random;
@@ -41,12 +49,19 @@ public class BlockDynamicSlag extends BlockContainer {
 
 	public BlockDynamicSlag(String s) {
 		super(Material.IRON);
-		this.useNeighborBrightness = true;
+		//this.useNeighborBrightness = true; Since it's now TESR, we'd like to fuck this off.
 		setTranslationKey(s);
 		setRegistryName(s);
 		setHarvestLevel("pickaxe", 0);
 		setCreativeTab(MainRegistry.controlTab);
 		ModBlocks.ALL_BLOCKS.add(this);
+		fullBlock = false;
+		useNeighborBrightness = false;
+	}
+
+	@Override
+	public boolean isFullCube(IBlockState state) {
+		return false;
 	}
 
 	@Override
@@ -125,7 +140,11 @@ public class BlockDynamicSlag extends BlockContainer {
 		return super.getBoundingBox(state,world,pos);
 	}
 
-	/*@Override
+	@Override
+	public @Nullable AxisAlignedBB getCollisionBoundingBox(IBlockState blockState,IBlockAccess worldIn,BlockPos pos) {
+		return getBoundingBox(blockState,worldIn,pos);
+	}
+/*@Override
 	public AxisAlignedBB getCollisionBoundingBoxFromPool(World world, int x, int y, int z) {
 		TileEntitySlag tile = (TileEntitySlag) world.getTileEntity(x, y, z);
 		if(tile != null) {
@@ -259,6 +278,58 @@ public class BlockDynamicSlag extends BlockContainer {
 	@Override
 	public EnumPushReaction getPushReaction(IBlockState state) {
 		return EnumPushReaction.DESTROY;
+	}
+	@AutoRegister
+	public static class RenderTileEntitySlag extends TileEntitySpecialRenderer<TileEntitySlag> {
+		public static final ResourceLocation rl = new ResourceLocation(Tags.MODID,"textures/blocks/slag.png");
+		@Override
+		public void render(TileEntitySlag te,double x,double y,double z,float partialTicks,int destroyStage,float alpha) {
+			bindTexture(rl);
+			GlStateManager.pushMatrix();
+			GlStateManager.translate(x,y,z);
+			if (te.mat != null) {
+				int color = te.mat.solidColorLight;
+				GlStateManager.color((color>>16&0xFF)/255f,(color>>8&0xFF)/255f,(color&0xFF)/255f);
+			}
+			float height = (float)te.amount/TileEntitySlag.maxAmount;
+			Tessellator tess = Tessellator.getInstance();
+			BufferBuilder buf = tess.getBuffer();
+			buf.begin(GL11.GL_QUADS,DefaultVertexFormats.POSITION_TEX);
+
+			// top
+			buf.pos(0,height,1).tex(0,1).endVertex();
+			buf.pos(1,height,1).tex(1,1).endVertex();
+			buf.pos(1,height,0).tex(1,0).endVertex();
+			buf.pos(0,height,0).tex(0,0).endVertex();
+
+			// south
+			buf.pos(0,0,1).tex(0,1).endVertex();
+			buf.pos(1,0,1).tex(1,1).endVertex();
+			buf.pos(1,height,1).tex(1,1-height).endVertex();
+			buf.pos(0,height,1).tex(0,1-height).endVertex();
+
+			// north
+			buf.pos(1,0,0).tex(0,1).endVertex();
+			buf.pos(0,0,0).tex(1,1).endVertex();
+			buf.pos(0,height,0).tex(1,1-height).endVertex();
+			buf.pos(1,height,0).tex(0,1-height).endVertex();
+
+			// west
+			buf.pos(0,0,0).tex(0,1).endVertex();
+			buf.pos(0,0,1).tex(1,1).endVertex();
+			buf.pos(0,height,1).tex(1,1-height).endVertex();
+			buf.pos(0,height,0).tex(0,1-height).endVertex();
+
+			// east
+			buf.pos(1,0,1).tex(0,1).endVertex();
+			buf.pos(1,0,0).tex(1,1).endVertex();
+			buf.pos(1,height,0).tex(1,1-height).endVertex();
+			buf.pos(1,height,1).tex(0,1-height).endVertex();
+
+			tess.draw();
+			GlStateManager.color(1,1,1);
+			GlStateManager.popMatrix();
+		}
 	}
 	// CE addition end
 
