@@ -19,6 +19,11 @@ public class TileEntityReeds extends TileEntity {
     }
 
     @Override
+    public boolean hasFastRenderer() {
+        return true;
+    }
+
+    @Override
     public @NotNull AxisAlignedBB getRenderBoundingBox() {
         if (bb == null) {
             int depth = 1;
