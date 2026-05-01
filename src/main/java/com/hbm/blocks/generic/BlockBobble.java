@@ -241,7 +241,8 @@ public class BlockBobble extends BlockContainer implements INBTBlockTransformabl
         MOVBLOCK("movblock", "movblock", "Threaded MK5 and some part of 1.12.2 Community Edition", "In three dimensions!", true, ScrapType.CPU_LOGIC,
                 ShadyUtil.movblock),
         LEAFIA("りー (Ri/Leafia)", "Leafia", "Custom Control Panel shenanigans$and porting (such as RoR panels) since 2026", "Control panel #1 sniffer$Also 1.12.2 sniffer$$This was the best I could model", false, ScrapType.BOARD_BLANK),
-        HACKER6329("Hacker6329", "Hacker6329", "Partially fillable fluid barrels and some fixes.", "\"movblock i told you my v2 system wasn't the issue.\"", true, ScrapType.CARD_BOARD, ShadyUtil.Hacker6329);
+        HACKER6329("Hacker6329", "Hacker6329", "Partially fillable fluid barrels and some fixes.", "\"movblock i told you my v2 system wasn't the issue.\"", true, ScrapType.CARD_BOARD, ShadyUtil.Hacker6329),
+        EOS("EOS", "EOS", "Ported some stuff. Refactor code", "string[0] = EOS;", true, ScrapType.MEM_16K_A, ShadyUtil.EOS);
         // CE ADDITIONS END
         public static final BobbleType[] VALUES = values();
 
