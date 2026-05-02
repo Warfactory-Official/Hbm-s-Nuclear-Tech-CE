@@ -480,6 +480,8 @@ public class ClientProxy extends ServerProxy {
         NTMClientRegistry.bindTeisr(Item.getItemFromBlock(ModBlocks.boat), new RenderBoat.BoatItemRenderer());
         registerSpecialItemRenderers(null);
 
+        HbmEffectNT.registerClientHandlers();
+
         ClientHttpHandler.preinit();
     }
 
