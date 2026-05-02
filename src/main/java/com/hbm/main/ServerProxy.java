@@ -43,7 +43,7 @@ public class ServerProxy {
     public void effectNT(HbmEffectNT type, double x, double y, double z, @Nullable NBTTagCompound data) {}
     public void effectNT(HbmEffectNT type, double x, double y, double z) { effectNT(type, x, y, z, null); }
 
-	public void registerSpecialItemRenderers(IRegistry<ModelResourceLocation, IBakedModel> reg) {}
+	public void registerMissileItems(IRegistry<ModelResourceLocation, IBakedModel> reg) {}
 
 	public AudioWrapper getLoopedSound(SoundEvent sound, SoundCategory cat, float x, float y, float z, float volume, float range, float pitch, int keepAlive) { return null; }
 	public AudioWrapper getLoopedSound(SoundEvent sound, SoundCategory cat, float x, float y, float z, float volume, float range, float pitch) { return null; }
