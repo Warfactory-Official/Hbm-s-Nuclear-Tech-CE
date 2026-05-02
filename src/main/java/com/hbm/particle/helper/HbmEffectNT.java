@@ -1471,6 +1471,10 @@ public enum HbmEffectNT {
 
     private Object handler;
 
+    /**
+     * Registers a client handler for this effect. Should be called in your client proxy's preInit
+     * @param handler A lambda of what the effect does.
+     */
     @SideOnly(Side.CLIENT)
     public void setHandler(EffectHandler handler) {
         this.handler = handler;
@@ -1481,6 +1485,11 @@ public enum HbmEffectNT {
         ((EffectHandler) handler).summonParticle(world, x, y, z, data == null ? new NBTTagCompound() : data);
     }
 
+    /**
+     * Creates a new HbmEffectNT entry WITHOUT a handler
+     * @param name The name of the new entry
+     * @return The newly created entry
+     */
     public static HbmEffectNT registerEffect(String name) {
         return EnumHelper.addEnum(HbmEffectNT.class, name, new Class[0]);
     }

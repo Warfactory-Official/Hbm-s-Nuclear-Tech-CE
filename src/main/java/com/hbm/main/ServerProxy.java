@@ -34,6 +34,12 @@ public class ServerProxy {
 
 	public void spawnSpark(World world, double posX, double posY, double posZ, Vec3d payload) {}
 
+    /**
+     * @deprecated Use {@link #effectNT(HbmEffectNT, double, double, double, NBTTagCompound)} or {@link #effectNT(HbmEffectNT, double, double, double)} whenever possible
+     */
+    @Deprecated
+    public void effectNT(NBTTagCompound data) {}
+
     public void effectNT(HbmEffectNT type, double x, double y, double z, @Nullable NBTTagCompound data) {}
     public void effectNT(HbmEffectNT type, double x, double y, double z) { effectNT(type, x, y, z, null); }
 

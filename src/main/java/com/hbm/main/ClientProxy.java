@@ -27,6 +27,7 @@ import com.hbm.main.client.DynamicPlaceholderModelLoader;
 import com.hbm.main.client.NTMClientRegistry;
 import com.hbm.particle.ParticleRadiationFog;
 import com.hbm.particle.ParticleRenderLayer;
+import com.hbm.particle.helper.EffectNTLegacyAdapter;
 import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.particle_instanced.InstancedParticleRenderer;
 import com.hbm.particle_instanced.ParticleContrailInstanced;
@@ -370,6 +371,11 @@ public class ClientProxy extends ServerProxy {
                 world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, x + world.rand.nextDouble(), y + world.rand.nextDouble(), z + 1.1, 0.0, 0.0, 0.0);
                 break;
         }
+    }
+
+    @Deprecated
+    public void effectNT(NBTTagCompound data) {
+        EffectNTLegacyAdapter.runLegacyEffect(data);
     }
 
     //mk4!
