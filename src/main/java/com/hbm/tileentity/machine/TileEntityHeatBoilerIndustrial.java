@@ -144,6 +144,15 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
     }
 
     @Override
+    public void serializeInitial(ByteBuf buf) {
+        super.serialize(buf);
+        buf.writeInt(this.heat);
+        this.tanks[0].serialize(buf);
+        this.tanks[1].serialize(buf);
+        buf.writeBoolean(this.isOn);
+    }
+
+    @Override
     public void serialize(ByteBuf buf) {
         super.serialize(buf);
         buf.writeInt(this.lastHeat);

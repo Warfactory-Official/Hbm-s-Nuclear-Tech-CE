@@ -35,7 +35,6 @@ import com.hbm.particle_instanced.ParticleRadiationFogInstanced;
 import com.hbm.qmaw.QMAWLoader;
 import com.hbm.render.GLCompat;
 import com.hbm.render.entity.ElectricityRenderer;
-import com.hbm.render.entity.RenderBoat;
 import com.hbm.render.entity.RenderMetaSensitiveItem;
 import com.hbm.render.item.ItemRenderMissile;
 import com.hbm.render.item.ItemRenderMissileGeneric;
@@ -45,7 +44,6 @@ import com.hbm.render.item.weapon.ItemRenderGunAnim;
 import com.hbm.render.item.weapon.sedna.*;
 import com.hbm.render.misc.MissilePart;
 import com.hbm.render.modelrenderer.EgonBackpackRenderer;
-import com.hbm.render.tileentity.ItemRendererProviderRegistry;
 import com.hbm.render.util.RenderInfoSystemLegacy;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.sound.AudioWrapperClient;
@@ -477,14 +475,7 @@ public class ClientProxy extends ServerProxy {
         OBJLoader.INSTANCE.addDomain(Tags.MODID);
         ModelLoaderRegistry.registerLoader(DynamicPlaceholderModelLoader.INSTANCE);
 
-        AutoRegistry.preInitClient();
         AutoRegistry.registerRenderInfo();
-        NTMClientRegistry.bindTeisrs(ItemRendererProviderRegistry.getTileEntityProviders());
-        NTMClientRegistry.bindTeisrs(ItemRendererProviderRegistry.getItemProviders());
-
-        // IItemRendererProvider is not applicable to Render<T extends Entity>
-        NTMClientRegistry.bindTeisr(Item.getItemFromBlock(ModBlocks.boat), new RenderBoat.BoatItemRenderer());
-        registerSpecialItemRenderers(null);
 
         HbmEffectNT.registerClientHandlers();
 

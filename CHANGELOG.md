@@ -14,13 +14,13 @@
 > change(major API bump).  
 >   - Changes, New Features correspond to a minor bump.  
 >   - Fixes/Performance/Misc correspond to a minor or patch bump.
-> - Previous public release: 2.5.0.0
-> - Next release: at least 2.5.0.1
+> - Previous public release: 2.5.0.1
+> - Next release: at least 2.5.0.2
 
 ### SUBSTANTIAL CHANGES
 ### Breaking Changes
 ### Fixes
-- Reverted a load order change in 2.5 that caused some regressions.
+- 2.5 regression that caused boilers crashing the game on load
 ### Changes
 ### New Features
 ### Performance

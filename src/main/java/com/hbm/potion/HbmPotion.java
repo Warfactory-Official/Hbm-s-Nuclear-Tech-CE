@@ -5,7 +5,6 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.bomb.BlockTaint;
 import com.hbm.capability.HbmLivingCapability;
 import com.hbm.config.CompatibilityConfig;
-import com.hbm.config.GeneralConfig;
 import com.hbm.config.ServerConfig;
 import com.hbm.entity.mob.EntityCreeperTainted;
 import com.hbm.explosion.ExplosionLarge;
@@ -24,9 +23,9 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.registries.IForgeRegistry;
 
 public class HbmPotion extends Potion {
 	
@@ -50,27 +49,34 @@ public class HbmPotion extends Potion {
 		this.setIconIndex(x, y);
 	}
 
-	public static void init() {
-		taint = registerPotion(true, 8388736, "potion.hbm_taint", 0, 0);
-		radiation = registerPotion(true, 8700200, "potion.hbm_radiation", 1, 0);
-		bang = registerPotion(true, 1118481, "potion.hbm_bang", 3, 0);
-		mutation = registerPotion(false, 0xFF8132, "potion.hbm_mutation", 2, 0);
-		radx = registerPotion(false, 0x225900, "potion.hbm_radx", 5, 0);
-		lead = registerPotion(true, 0x767682, "potion.hbm_lead", 6, 0);
-		radaway = registerPotion(false, 0xFFE400, "potion.hbm_radaway", 7, 0);
-		telekinesis = registerPotion(true, 0x00F3FF, "potion.hbm_telekinesis", 0, 1);
-		phosphorus = registerPotion(true, 0xFF3A00, "potion.hbm_phosphorus", 1, 1);
-		stability = registerPotion(false, 0xD0D0D0, "potion.hbm_stability", 2, 1);
-		potionsickness = registerPotion(false, 0xFF8080, "potion.hbm_potionsickness", 3, 1);
-		death = registerPotion(false, 0x111111, "potion.hbm_death", 4, 1);
+	public static void preinit() {
+		taint = new HbmPotion(true, 8388736, "potion.hbm_taint", 0, 0);
+		radiation = new HbmPotion(true, 8700200, "potion.hbm_radiation", 1, 0);
+		bang = new HbmPotion(true, 1118481, "potion.hbm_bang", 3, 0);
+		mutation = new HbmPotion(false, 0xFF8132, "potion.hbm_mutation", 2, 0);
+		radx = new HbmPotion(false, 0x225900, "potion.hbm_radx", 5, 0);
+		lead = new HbmPotion(true, 0x767682, "potion.hbm_lead", 6, 0);
+		radaway = new HbmPotion(false, 0xFFE400, "potion.hbm_radaway", 7, 0);
+		telekinesis = new HbmPotion(true, 0x00F3FF, "potion.hbm_telekinesis", 0, 1);
+		phosphorus = new HbmPotion(true, 0xFF3A00, "potion.hbm_phosphorus", 1, 1);
+		stability = new HbmPotion(false, 0xD0D0D0, "potion.hbm_stability", 2, 1);
+		potionsickness = new HbmPotion(false, 0xFF8080, "potion.hbm_potionsickness", 3, 1);
+		death = new HbmPotion(false, 0x111111, "potion.hbm_death", 4, 1);
 	}
 
-	public static HbmPotion registerPotion(boolean isBad, int color, String name, int x, int y) {
-		
-		HbmPotion effect = new HbmPotion(isBad, color, name, x, y);
-		ForgeRegistries.POTIONS.register(effect);
-		
-		return effect;
+	public static void registerPotions(IForgeRegistry<Potion> registry) {
+		registry.register(taint);
+		registry.register(radiation);
+		registry.register(bang);
+		registry.register(mutation);
+		registry.register(radx);
+		registry.register(lead);
+		registry.register(radaway);
+		registry.register(telekinesis);
+		registry.register(phosphorus);
+		registry.register(stability);
+		registry.register(potionsickness);
+		registry.register(death);
 	}
 	
 	@Override

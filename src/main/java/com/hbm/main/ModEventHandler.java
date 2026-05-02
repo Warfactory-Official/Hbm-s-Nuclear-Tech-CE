@@ -90,6 +90,7 @@ import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.tileentity.TileEntitySign;
 import net.minecraft.util.*;
@@ -136,6 +137,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.WorldTickEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.registries.DataSerializerEntry;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.Level;
@@ -156,11 +158,6 @@ public class ModEventHandler {
 
     static {
         RBMK_COL_HEIGHT_MAP.defaultReturnValue((int) RBMKDials.RBMKKeys.KEY_COLUMN_HEIGHT.defValue);
-    }
-
-    public static boolean doesArrayContain(Object[] array, Object objectCheck) {
-        System.out.println("On Recipe Register");
-        return false;
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
@@ -223,7 +220,7 @@ public class ModEventHandler {
 
     @SubscribeEvent
     public void soundRegistering(RegistryEvent.Register<SoundEvent> evt) {
-        for (SoundEvent e : HBMSoundHandler.ALL_SOUNDS) {
+        for (SoundEvent e : HBMSoundHandler.ALL_SOUNDS.values()) {
             evt.getRegistry().register(e);
         }
     }
@@ -1508,17 +1505,22 @@ public class ModEventHandler {
 
     @SubscribeEvent
     public void onItemRegister(RegistryEvent.Register<Item> evt) {
+        ModItems.registerItems();
     }
 
     @SubscribeEvent
     public void onBlockRegister(RegistryEvent.Register<Block> evt) {
+        ModBlocks.registerBlocks();
     }
 
     @SubscribeEvent
-    public void onRecipeRegister(RegistryEvent.Register<IRecipe> evt) {
-        IRecipe[] recipes = new IRecipe[12];
-        IRecipe recipe = null;
-        doesArrayContain(recipes, recipe);
+    public void onPotionRegister(RegistryEvent.Register<Potion> evt) {
+        HbmPotion.registerPotions(evt.getRegistry());
+    }
+
+    @SubscribeEvent
+    public void onEntityRegister(RegistryEvent.Register<EntityEntry> evt) {
+        AutoRegistry.registerEntities(0);
     }
 
     /**

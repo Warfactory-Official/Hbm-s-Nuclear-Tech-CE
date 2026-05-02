@@ -197,6 +197,13 @@ public class TileEntityMachineHephaestus extends TileEntityLoadedBase implements
     }
 
     @Override
+    public void serializeInitial(ByteBuf buf) {
+        this.input.serialize(buf);
+        this.output.serialize(buf);
+        buf.writeInt(this.getTotalHeat());
+    }
+
+    @Override
     public void serialize(ByteBuf buf) {
         inputSync.serialize(buf);
         outputSync.serialize(buf);

@@ -195,6 +195,18 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITicka
     }
 
     @Override
+    public void serializeInitial(ByteBuf buf) {
+        buf.writeBoolean(hasExploded);
+        if(!this.hasExploded) {
+            buf.writeInt(this.heat);
+            this.tanks[0].serialize(buf);
+            this.tanks[1].serialize(buf);
+            buf.writeBoolean(this.muffled);
+            buf.writeBoolean(this.isOn);
+        }
+    }
+
+    @Override
     public void serialize(ByteBuf buf) {
         buf.writeBoolean(hasExploded);
         if(!this.hasExploded) {

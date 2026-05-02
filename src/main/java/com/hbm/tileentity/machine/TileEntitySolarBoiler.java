@@ -99,6 +99,15 @@ public class TileEntitySolarBoiler extends TileEntityLoadedBase implements IBufP
     }
 
     @Override
+    public void serializeInitial(ByteBuf buf) {
+        super.serialize(buf);
+        buf.writeInt(this.heat);
+        buf.writeInt(this.heatInput);
+        this.tanks[0].serialize(buf);
+        this.tanks[1].serialize(buf);
+    }
+
+    @Override
     public void serialize(ByteBuf buf) {
         super.serialize(buf);
         buf.writeInt(heatSync);

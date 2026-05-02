@@ -313,6 +313,18 @@ public class TileEntityWatz extends TileEntityMachineBase implements ITickable, 
 	}
 
 	@Override
+	public void serializeInitial(ByteBuf buf) {
+		super.serialize(buf);
+		buf.writeInt(this.heat);
+		buf.writeBoolean(isOn);
+		buf.writeBoolean(isLocked);
+		buf.writeDouble(this.fluxLastReaction + this.fluxLastBase);
+		for (FluidTankNTM tank : tanks) {
+			tank.serialize(buf);
+		}
+	}
+
+	@Override
 	public void serialize(ByteBuf buf) {
 		super.serialize(buf);
 		buf.writeInt(this.heat);
