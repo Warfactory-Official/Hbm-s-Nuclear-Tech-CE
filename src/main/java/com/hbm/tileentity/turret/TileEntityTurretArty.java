@@ -13,6 +13,7 @@ import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.particle.helper.CasingCreator;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.util.Vec3NT;
 import io.netty.buffer.ByteBuf;
@@ -370,11 +371,9 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
                 this.didJustShoot = true;
 
                 NBTTagCompound data = new NBTTagCompound();
-                data.setString("type", "vanillaExt");
-                data.setString("mode", "largeexplode");
                 data.setFloat("size", 0F);
                 data.setByte("count", (byte) 5);
-                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.x + vec.x, pos.y + vec.y, pos.z + vec.z), new TargetPoint(world.provider.getDimension(), pos.x, pos.y, pos.z, 150));
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.VanillaExt_LargeExplode, data, pos.x + vec.x, pos.y + vec.y, pos.z + vec.z), new TargetPoint(world.provider.getDimension(), pos.x, pos.y, pos.z, 150));
             }
 
             if (this.mode == MODE_MANUAL && !this.targetQueue.isEmpty()) {

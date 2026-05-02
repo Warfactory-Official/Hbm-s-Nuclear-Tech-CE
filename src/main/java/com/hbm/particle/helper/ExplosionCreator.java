@@ -33,7 +33,6 @@ public class ExplosionCreator implements IParticleCreator {
                                      int debrisCount, int debrisSize, int debrisRetry, float debrisVelocity, float debrisHorizontalDeviation, float debrisVerticalOffset, float soundRange) {
 
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "explosionLarge");
         data.setByte("cloudCount", (byte) cloudCount);
         data.setFloat("cloudScale", cloudScale);
         data.setFloat("cloudSpeedMult", cloudSpeedMult);
@@ -45,7 +44,7 @@ public class ExplosionCreator implements IParticleCreator {
         data.setFloat("debrisHorizontalDeviation", debrisHorizontalDeviation);
         data.setFloat("debrisVerticalOffset", debrisVerticalOffset);
         data.setFloat("soundRange", soundRange);
-        IParticleCreator.sendPacket(world, x, y, z, Math.max(300, (int) soundRange), data);
+        IParticleCreator.sendPacket(world, HbmEffectNT.ExplosionLarge, x, y, z, Math.max(300, (int) soundRange), data);
     }
 
     /**

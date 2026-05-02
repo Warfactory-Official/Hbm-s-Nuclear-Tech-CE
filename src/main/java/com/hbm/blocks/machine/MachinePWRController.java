@@ -6,6 +6,7 @@ import com.hbm.blocks.machine.BlockPWR.TileEntityBlockPWR;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.block.BlockBakeFrame;
 import com.hbm.render.block.RotatableStateMapper;
 import com.hbm.tileentity.machine.TileEntityPWRController;
@@ -212,12 +213,11 @@ public class MachinePWRController extends BlockContainerBakeable implements IToo
     private void sendError(World world, BlockPos pos, String message, EntityPlayer player) {
         if (player instanceof EntityPlayerMP) {
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("type", "marker");
             data.setInteger("color", 0xff0000);
             data.setInteger("expires", 5_000);
             data.setDouble("dist", 128D);
             if (message != null) data.setString("label", message);
-            PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(data, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), (EntityPlayerMP) player);
+            PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Marker, data, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), (EntityPlayerMP) player);
         }
     }
 

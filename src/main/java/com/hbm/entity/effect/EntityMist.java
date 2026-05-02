@@ -15,6 +15,7 @@ import com.hbm.inventory.fluid.trait.FluidTraitSimple.FT_Liquid;
 import com.hbm.inventory.fluid.trait.FluidTraitSimple.FT_Viscous;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
 import com.hbm.util.ContaminationUtil.HazardType;
@@ -145,16 +146,12 @@ public class EntityMist extends Entity {
 
 
                 NBTTagCompound fx = new NBTTagCompound();
-                fx.setString("type", "tower");
                 fx.setFloat("lift", 0.5F);
                 fx.setFloat("base", 0.75F);
                 fx.setFloat("max", 2F);
                 fx.setInteger("life", 50 + world.rand.nextInt(10));
                 fx.setInteger("color", getType().getColor());
-                fx.setDouble("posX", x);
-                fx.setDouble("posY", y);
-                fx.setDouble("posZ", z);
-                MainRegistry.proxy.effectNT(fx);
+                MainRegistry.proxy.effectNT(HbmEffectNT.Tower, x, y, z, fx);
             }
         }
     }

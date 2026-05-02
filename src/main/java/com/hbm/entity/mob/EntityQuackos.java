@@ -4,11 +4,11 @@ import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundEvent;
@@ -141,9 +141,7 @@ public class EntityQuackos extends EntityDuck {
 	public void despawn() {
 		if(!world.isRemote) {
 			for(int i = 0; i < 150; i++) {
-				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "bf");
-                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data,
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.BF, null,
 								posX + rand.nextDouble() * 20 - 10,
 								posY + rand.nextDouble() * 25,
 								posZ + rand.nextDouble() * 20 - 10),

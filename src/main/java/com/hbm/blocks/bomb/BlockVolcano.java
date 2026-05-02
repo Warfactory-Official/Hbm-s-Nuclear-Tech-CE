@@ -7,6 +7,7 @@ import com.hbm.explosion.ExplosionNT;
 import com.hbm.explosion.ExplosionNT.ExAttrib;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyInteger;
@@ -85,7 +86,7 @@ public class BlockVolcano extends Block {
 
 	private void blastMagmaChannel(World world, int x, int y, int z, Random rand) {
 		
-		List<ExAttrib> attribs = Arrays.asList(new ExAttrib[] {ExAttrib.NODROP, ExAttrib.LAVA_V, ExAttrib.NOSOUND, ExAttrib.ALLMOD, ExAttrib.NOHURT});
+		List<ExAttrib> attribs = Arrays.asList(ExAttrib.NODROP, ExAttrib.LAVA_V, ExAttrib.NOSOUND, ExAttrib.ALLMOD, ExAttrib.NOHURT);
 		
 		ExplosionNT explosion = new ExplosionNT(world, null, x + 0.5, y + rand.nextInt(15) + 1.5, z + 0.5, 7);
 		explosion.addAllAttrib(attribs);
@@ -124,10 +125,7 @@ public class BlockVolcano extends Block {
 	 * I SEE SMOKE, AND WHERE THERE'S SMOKE THERE'S FIRE!
 	 */
 	private void spawnSmoke(World world, int x, int y, int z, Random rand) {
-		NBTTagCompound dPart = new NBTTagCompound();
-		dPart.setString("type", "vanillaExt");
-		dPart.setString("mode", "volcano");
-		PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(dPart, x + 0.5, y + 10, z + 0.5), new TargetPoint(world.provider.getDimension(), x + 0.5, y + 10, z + 0.5, 250));
+		PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.VanillaExt_Volcano, null, x + 0.5, y + 10, z + 0.5), new TargetPoint(world.provider.getDimension(), x + 0.5, y + 10, z + 0.5, 250));
 	}
 	
 	private void updateVolcano(World world, int x, int y, int z, Random rand, int meta) {

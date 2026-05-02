@@ -9,6 +9,7 @@ import com.hbm.inventory.gui.GUIRBMKAutoloader;
 import com.hbm.items.machine.ItemRBMKRod;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -160,18 +161,14 @@ public class TileEntityRBMKAutoloader extends TileEntityMachineBase implements I
 
             if(this.renderPiston > 0.99) {
                 NBTTagCompound data = new NBTTagCompound();
-                data.setString("type", "tower");
                 data.setFloat("lift", 0F);
                 data.setFloat("base", 0.25F);
                 data.setFloat("max", 1.5F);
                 data.setInteger("life", 70 + world.rand.nextInt(30));
-                data.setDouble("posX", pos.getX() + 0.5 + world.rand.nextGaussian() * 0.125);
-                data.setDouble("posZ", pos.getZ() + 0.5 + world.rand.nextGaussian() * 0.125);
-                data.setDouble("posY", pos.getY() + 0.25);
                 data.setBoolean("noWind", true);
                 data.setFloat("alphaMod", 2F);
                 data.setFloat("strafe", 0.05F);
-                for(int i = 0; i < 3; i++) MainRegistry.proxy.effectNT(data);
+                for(int i = 0; i < 3; i++) MainRegistry.proxy.effectNT(HbmEffectNT.Tower, pos.getX() + 0.5 + world.rand.nextGaussian() * 0.125, pos.getY() + .25, pos.getZ() + 0.5 + world.rand.nextGaussian() * 0.125, data);
             }
         }
     }

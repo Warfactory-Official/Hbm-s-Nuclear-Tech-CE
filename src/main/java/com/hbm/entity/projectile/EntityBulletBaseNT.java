@@ -23,6 +23,7 @@ import com.hbm.items.weapon.sedna.ItemGunBaseSedna;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.potion.HbmPotion;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.Tuple;
@@ -261,21 +262,14 @@ public class EntityBulletBaseNT extends EntityThrowableInterp implements IBullet
 
         super.onUpdate();
 
-        if(world.isRemote && !config.vPFX.isEmpty()) {
+        if(world.isRemote && config.vPFX != null) {
 
             Vec3d vec = new Vec3d(posX - prevPosX, posY - prevPosY, posZ - prevPosZ);
             double motion = Math.max(vec.length(), 0.1);
             vec = vec.normalize();
 
-            for(double d = 0; d < motion; d += 0.5) {
-
-                NBTTagCompound nbt = new NBTTagCompound();
-                nbt.setString("type", "vanillaExt");
-                nbt.setString("mode", config.vPFX);
-                nbt.setDouble("posX", this.posX - vec.x * d);
-                nbt.setDouble("posY", this.posY - vec.y * d);
-                nbt.setDouble("posZ", this.posZ - vec.z * d);
-                MainRegistry.proxy.effectNT(nbt);
+            for (double d = 0; d < motion; d += 0.5) {
+                MainRegistry.proxy.effectNT(config.vPFX, this.posX - vec.x * d, this.posY - vec.y * d, this.posZ - vec.z * d);
             }
         }
     }
@@ -391,12 +385,10 @@ public class EntityBulletBaseNT extends EntityThrowableInterp implements IBullet
                 EntityLivingBase living = (EntityLivingBase) victim;
                 double head = living.height - living.getEyeHeight();
                 NBTTagCompound data = new NBTTagCompound();
-                data.setString("type", "vanillaburst");
                 data.setInteger("count", 15);
                 data.setDouble("motion", 0.1D);
-                data.setString("mode", "blockdust");
                 data.setInteger("block", Block.getIdFromBlock(Blocks.REDSTONE_BLOCK));
-                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, living.posX, living.posY + living.height - head, living.posZ), new NetworkRegistry.TargetPoint(living.dimension, living.posX, living.posY, living.posZ, 50));
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.VanillaBurst_BlockDust, data, living.posX, living.posY + living.height - head, living.posZ), new NetworkRegistry.TargetPoint(living.dimension, living.posX, living.posY, living.posZ, 50));
                 world.playSound(null, victim.posX, victim.posY, victim.posZ, SoundEvents.ENTITY_ZOMBIE_BREAK_DOOR_WOOD, SoundCategory.PLAYERS, 1.0F, 0.95F + rand.nextFloat() * 0.2F);
             }
         }

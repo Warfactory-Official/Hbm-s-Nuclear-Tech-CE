@@ -6,6 +6,7 @@ import com.hbm.handler.ArmorUtil;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.model.ModelArmorBJ;
 import com.hbm.util.I18nUtil;
 import com.hbm.util.Vec3NT;
@@ -55,9 +56,8 @@ public class ArmorBJJetpack extends ArmorBJ {
 			if(hasFSBArmor(player) && props.isJetpackActive()) {
 
 				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "jetpack_bj");
 				data.setInteger("player", player.getEntityId());
-				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, player.posX, player.posY, player.posZ), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 100));
+				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Jetpack_BJ, data, player.posX, player.posY, player.posZ), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 100));
 			}
 		}
 

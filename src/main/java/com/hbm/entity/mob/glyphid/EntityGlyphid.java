@@ -19,6 +19,7 @@ import com.hbm.items.ModItems;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.main.ResourceManager;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.util.DamageResistanceHandler.DamageClass;
 import net.minecraft.block.Block;
@@ -355,9 +356,8 @@ public class EntityGlyphid extends EntityMob implements IResistanceProvider {
             world.playSound(null, getPosition(), SoundEvents.ENTITY_ZOMBIE_BREAK_DOOR_WOOD, SoundCategory.HOSTILE, 2.0F, 0.95F + world.rand.nextFloat() * 0.2F);
 
             NBTTagCompound vdat = new NBTTagCompound();
-            vdat.setString("type", "giblets");
             vdat.setInteger("ent", this.getEntityId());
-            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(vdat, posX, posY + height * 0.5, posZ), new NetworkRegistry.TargetPoint(dimension, posX, posY + height * 0.5, posZ, 150));
+            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Giblets, vdat, posX, posY + height * 0.5, posZ), new NetworkRegistry.TargetPoint(dimension, posX, posY + height * 0.5, posZ, 150));
 
         }
     }

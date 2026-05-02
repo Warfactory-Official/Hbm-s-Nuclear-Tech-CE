@@ -9,6 +9,7 @@ import com.hbm.items.weapon.sedna.factory.XFactoryAccelerator;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.tileentity.IGUIProvider;
 import io.netty.buffer.ByteBuf;
@@ -144,9 +145,8 @@ public class TileEntityTurretTauon extends TileEntityTurretBaseNT implements IGU
 				vec.rotateAroundY((float) -(this.rotationYaw + Math.PI * 0.5));
 				
 				NBTTagCompound dPart = new NBTTagCompound();
-				dPart.setString("type", "tau");
 				dPart.setByte("count", (byte)5);
-				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(dPart, pos.xCoord + vec.xCoord, pos.yCoord + vec.yCoord, pos.zCoord + vec.zCoord), new TargetPoint(world.provider.getDimension(), this.pos.getX(), this.pos.getY(), this.pos.getZ(), 50));
+				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Tau, dPart, pos.xCoord + vec.xCoord, pos.yCoord + vec.yCoord, pos.zCoord + vec.zCoord), new TargetPoint(world.provider.getDimension(), this.pos.getX(), this.pos.getY(), this.pos.getZ(), 50));
 			}
 		}
 	}

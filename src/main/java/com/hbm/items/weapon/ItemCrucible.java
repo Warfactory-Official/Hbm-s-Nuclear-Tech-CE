@@ -11,6 +11,7 @@ import com.hbm.packet.toserver.AuxButtonPacket;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.particle.ParticleCrucibleLightning;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.anim.HbmAnimations;
 import com.hbm.render.anim.HbmAnimations.Animation;
 import com.hbm.render.anim.HbmAnimations.BlenderAnimation;
@@ -84,11 +85,10 @@ public class ItemCrucible extends ItemSwordCutter implements IPostRender {
 			EnumHand hand = stack == entityLiving.getHeldItemMainhand() ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND;
 			
 			NBTTagCompound nbt = new NBTTagCompound();
-			nbt.setString("type", "anim");
 			nbt.setInteger("hand", hand.ordinal());
 			nbt.setString("mode", "cSwing");
 			nbt.setString("name", this.getRegistryName().getPath());
-			PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(nbt, 0, 0, 0), (EntityPlayerMP)entityLiving);
+			PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Anim, nbt, 0, 0, 0), (EntityPlayerMP)entityLiving);
 		}
 		if(getCharges(stack) > 0)
 			entityLiving.world.playSound(null, entityLiving.posX, entityLiving.posY, entityLiving.posZ, HBMSoundHandler.crucibleSwing, SoundCategory.PLAYERS, 1, 1);
@@ -137,12 +137,10 @@ public class ItemCrucible extends ItemSwordCutter implements IPostRender {
 				int count = Math.min((int)Math.ceil(victim.getMaxHealth() / 3D), 250);
 
 				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "vanillaburst");
 				data.setInteger("count", count * 4);
 				data.setDouble("motion", 0.1D);
-				data.setString("mode", "blockdust");
 				data.setInteger("block", Block.getIdFromBlock(Blocks.REDSTONE_BLOCK));
-				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, victim.posX, victim.posY + victim.height * 0.5, victim.posZ), new TargetPoint(victim.dimension, victim.posX, victim.posY + victim.height * 0.5, victim.posZ, 50));
+				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.VanillaBurst_BlockDust, data, victim.posX, victim.posY + victim.height * 0.5, victim.posZ), new TargetPoint(victim.dimension, victim.posX, victim.posY + victim.height * 0.5, victim.posZ, 50));
 			}
 		}
 		return super.hitEntity(stack, victim, attacker);

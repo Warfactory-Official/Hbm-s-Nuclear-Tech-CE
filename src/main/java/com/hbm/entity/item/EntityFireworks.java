@@ -3,6 +3,7 @@ package com.hbm.entity.item;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.MoverType;
 import net.minecraft.init.SoundEvents;
@@ -44,10 +45,9 @@ public class EntityFireworks extends Entity {
 
 				this.setDead();
 				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "fireworks");
 				data.setInteger("color", color);
 				data.setInteger("char", character);
-				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, posX, posY, posZ), new TargetPoint(this.world.provider.getDimension(), posX, posY, posZ, 300));
+				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Fireworks, data, posX, posY, posZ), new TargetPoint(this.world.provider.getDimension(), posX, posY, posZ, 300));
 			}
 		}
 	}

@@ -12,6 +12,7 @@ import com.hbm.lib.TLPool;
 import com.hbm.lib.queues.MpscUnboundedXaddArrayLongQueue;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.saveddata.AuxSavedData;
 import com.hbm.util.DecodeException;
 import com.hbm.util.ObjectPool;
@@ -2051,9 +2052,7 @@ public final class RadiationSystemNT {
                 if (!nearGround) continue;
 
                 float fx = x + 0.5F, fy = y + 0.5F, fz = z + 0.5F;
-                NBTTagCompound tag = new NBTTagCompound();
-                tag.setString("type", "radiationfog");
-                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(tag, fx, fy, fz),
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.RadFog, null, fx, fy, fz),
                         new TargetPoint(world.provider.getDimension(), fx, fy, fz, 100));
                 break;
             }

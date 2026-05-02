@@ -18,6 +18,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
@@ -193,16 +194,12 @@ public class TileEntityMachinePyroOven extends TileEntityMachinePolluting implem
 
                 if(world.getTotalWorldTime() % 2 == 0) {
                     NBTTagCompound fx = new NBTTagCompound();
-                    fx.setString("type", "tower");
                     fx.setFloat("lift", 10F);
                     fx.setFloat("base", 0.25F);
                     fx.setFloat("max", 2.5F);
                     fx.setInteger("life", 100 + world.rand.nextInt(20));
                     fx.setInteger("color",0x202020);
-                    fx.setDouble("posX", pos.getX() + 0.5 - rot.offsetX);
-                    fx.setDouble("posY", pos.getY() + 3);
-                    fx.setDouble("posZ", pos.getZ() + 0.5 - rot.offsetZ);
-                    MainRegistry.proxy.effectNT(fx);
+                    MainRegistry.proxy.effectNT(HbmEffectNT.Tower, pos.getX() + 0.5 - rot.offsetX, pos.getY() + 3, pos.getZ() + 0.5 - rot.offsetZ, fx);
                 }
             }
         }

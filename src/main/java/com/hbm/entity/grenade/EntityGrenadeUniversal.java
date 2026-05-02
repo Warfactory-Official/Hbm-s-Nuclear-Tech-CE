@@ -10,6 +10,7 @@ import com.hbm.items.weapon.grenade.ItemGrenadeShell.EnumGrenadeShell;
 import com.hbm.items.weapon.grenade.ItemGrenadeUniversal;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.util.TrackerUtil;
 import com.hbm.util.Vec3NT;
 import net.minecraft.entity.player.EntityPlayer;
@@ -24,7 +25,6 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import org.apache.logging.log4j.Level;
 
 @AutoRegister(name = "entity_grenade_universal", trackingRange = 64)
 public class EntityGrenadeUniversal extends EntityThrowableInterp {
@@ -122,13 +122,7 @@ public class EntityGrenadeUniversal extends EntityThrowableInterp {
             }
 
             if (this.getTrail() == TRAIL_TRIPLET) {
-                NBTTagCompound data = new NBTTagCompound();
-                data.setDouble("posX", posX);
-                data.setDouble("posY", posY);
-                data.setDouble("posZ", posZ);
-                data.setString("type", "vanillaExt");
-                data.setString("mode", "flame");
-                MainRegistry.proxy.effectNT(data);
+                MainRegistry.proxy.effectNT(HbmEffectNT.VanillaExt_Flame, posX, posY, posZ);
             }
         }
     }

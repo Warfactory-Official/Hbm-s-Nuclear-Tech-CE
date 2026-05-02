@@ -20,6 +20,7 @@ import com.hbm.items.special.ItemBedrockOreNew.BedrockOreType;
 import com.hbm.lib.*;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
@@ -164,10 +165,9 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase implement
 
                     if (!e.isEntityAlive() && e instanceof EntityLivingBase) {
                         NBTTagCompound vdat = new NBTTagCompound();
-                        vdat.setString("type", "giblets");
                         vdat.setInteger("ent", e.getEntityId());
                         vdat.setInteger("cDiv", 5);
-                        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(vdat, e.posX, e.posY + e.height * 0.5, e.posZ), new NetworkRegistry.TargetPoint(e.dimension, e.posX, e.posY + e.height * 0.5, e.posZ, 150));
+                        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Giblets, vdat, e.posX, e.posY + e.height * 0.5, e.posZ), new NetworkRegistry.TargetPoint(e.dimension, e.posX, e.posY + e.height * 0.5, e.posZ, 150));
 
                         world.playSound(null, e.posX, e.posY, e.posZ, SoundEvents.ENTITY_ZOMBIE_BREAK_DOOR_WOOD, SoundCategory.BLOCKS, 2.0F, 0.95F + world.rand.nextFloat() * 0.2F);
                     }
@@ -223,14 +223,9 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase implement
 
                 if (animation == SlopperAnimation.DUMPING && MainRegistry.proxy.me().getDistance(pos.getX() + 0.5, pos.getY() + 4, pos.getZ() + 0.5) <= 50) {
                     NBTTagCompound data = new NBTTagCompound();
-                    data.setString("type", "vanillaExt");
-                    data.setString("mode", "blockdust");
                     data.setInteger("block", Block.getIdFromBlock(Blocks.IRON_BLOCK));
-                    data.setDouble("posX", pos.getX() + 0.5 + dir.offsetX + world.rand.nextGaussian() * 0.25);
-                    data.setDouble("posY", pos.getY() + 4.25);
-                    data.setDouble("posZ", pos.getZ() + 0.5 + dir.offsetZ + world.rand.nextGaussian() * 0.25);
                     data.setDouble("mY", -0.2D);
-                    MainRegistry.proxy.effectNT(data);
+                    MainRegistry.proxy.effectNT(HbmEffectNT.VanillaExt_BlockDust, pos.getX() + 0.5 + dir.offsetX + world.rand.nextGaussian() * 0.25, pos.getY() + 4.25, pos.getZ() + 0.5 + dir.offsetZ + world.rand.nextGaussian() * 0.25, data);
                 }
 
                 if (delay > 0) {

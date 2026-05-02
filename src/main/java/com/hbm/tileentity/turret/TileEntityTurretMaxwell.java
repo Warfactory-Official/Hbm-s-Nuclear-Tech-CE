@@ -10,6 +10,7 @@ import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.potion.HbmPotion;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
@@ -271,11 +272,10 @@ public class TileEntityTurretMaxwell extends TileEntityTurretBaseNT
 
       if (!this.target.isEntityAlive() && this.target instanceof EntityLivingBase) {
         NBTTagCompound nbt = new NBTTagCompound();
-        nbt.setString("type", "giblets");
         nbt.setInteger("ent", this.target.getEntityId());
         PacketThreading.createAllAroundThreadedPacket(
             new AuxParticlePacketNT(
-                nbt,
+                HbmEffectNT.Giblets, nbt,
                 this.target.posX,
                 this.target.posY + this.target.height * 0.5,
                 this.target.posZ),

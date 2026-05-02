@@ -15,6 +15,7 @@ import com.hbm.items.weapon.grenade.ItemGrenadeShell.EnumGrenadeShell;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.anim.BusAnimation;
 import com.hbm.render.anim.BusAnimationKeyframe.IType;
 import com.hbm.render.anim.BusAnimationSequence;
@@ -150,11 +151,10 @@ public class ItemGrenadeUniversal extends ItemBase implements IAnimatedItem, IEq
     private void sendEquipAnimation(EntityPlayer player, EnumHand hand) {
         if (!(player instanceof EntityPlayerMP)) return;
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "anim");
         data.setString("mode", "generic");
         data.setInteger("hand", hand.ordinal());
         data.setString("name", this.getRegistryName().getPath());
-        PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(data, 0, 0, 0), (EntityPlayerMP) player);
+        PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Anim, data, 0, 0, 0), (EntityPlayerMP) player);
     }
 
     private static EnumHand getHeldHand(EntityPlayer player, ItemStack stack) {

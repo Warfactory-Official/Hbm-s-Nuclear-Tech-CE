@@ -11,6 +11,7 @@ import com.hbm.items.weapon.sedna.factory.XFactory9mm;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.util.Vec3dUtil;
 import io.netty.buffer.ByteBuf;
@@ -174,13 +175,11 @@ public class TileEntityTurretSentry extends TileEntityTurretBaseNT implements IG
         side = side.rotateYaw((float) -(this.rotationYaw));
 
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "vanillaExt");
-        data.setString("mode", "largeexplode");
         data.setFloat("size", 1F);
         data.setByte("count", (byte) 1);
         PacketThreading.createAllAroundThreadedPacket(
             new AuxParticlePacketNT(
-                data, pos.x + vec.x + side.x, pos.y + vec.y, pos.z + vec.z + side.z),
+                HbmEffectNT.VanillaExt_LargeExplode, data, pos.x + vec.x + side.x, pos.y + vec.y, pos.z + vec.z + side.z),
             new NetworkRegistry.TargetPoint(
                 world.provider.getDimension(),
                 this.pos.getX(),

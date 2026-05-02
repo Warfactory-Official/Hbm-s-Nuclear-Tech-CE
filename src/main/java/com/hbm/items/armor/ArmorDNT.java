@@ -10,6 +10,7 @@ import com.hbm.items.gear.ArmorFSB;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.ResourceManager;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.item.ItemRenderBaseFMM;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.model.ModelArmorDNT;
@@ -93,9 +94,8 @@ public class ArmorDNT extends ArmorFSBPowered implements IItemRendererProvider {
             // JET //
             if(hasFSBArmor(player) && (props.isJetpackActive() || (!player.onGround && !player.isSneaking() && props.getEnableBackpack()))) {
                 NBTTagCompound data = new NBTTagCompound();
-                data.setString("type", "jetpack_dns");
                 data.setInteger("player", player.getEntityId());
-                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, player.posX, player.posY, player.posZ), new NetworkRegistry.TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 100));
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Jetpack_DNS, data, player.posX, player.posY, player.posZ), new NetworkRegistry.TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 100));
             }
         }
 

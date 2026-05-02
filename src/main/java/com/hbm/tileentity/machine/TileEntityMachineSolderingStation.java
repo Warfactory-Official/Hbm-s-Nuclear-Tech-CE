@@ -21,6 +21,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
@@ -189,11 +190,10 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
                         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
                         BlockPos pos = getPos();
                         NBTTagCompound dPart = new NBTTagCompound();
-                        dPart.setString("type", "tau");
                         dPart.setByte("count", (byte) 3);
                         PacketThreading.createAllAroundThreadedPacket(
                                 new AuxParticlePacketNT(
-                                        dPart,
+                                        HbmEffectNT.Tau, dPart,
                                         pos.getX() + 0.5 - dir.offsetX * 0.5 + rot.offsetX * 0.5,
                                         pos.getY() + 1.125,
                                         pos.getZ() + 0.5 - dir.offsetZ * 0.5 + rot.offsetZ * 0.5),

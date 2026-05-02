@@ -9,6 +9,7 @@ import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.packet.threading.ThreadedPacket;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -89,8 +90,7 @@ public class TileEntityGeysir extends TileEntity implements ITickable {
 				data.setDouble("moX", mx);
 				data.setDouble("moY", my);
 				data.setDouble("moZ", mz);
-				data.setString("type", "orangefx");
-				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, sx, sy, sz), new NetworkRegistry.TargetPoint(world.provider.getDimension(), sx, sy, sz, 128));
+				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.FX_Orange, data, sx, sy, sz), new NetworkRegistry.TargetPoint(world.provider.getDimension(), sx, sy, sz, 128));
 
 				EntityModFXShadow.spawn(world, EntityModFXShadow.Type.ORANGE, sx, sy, sz, mx, my, mz);
 			}
@@ -130,11 +130,10 @@ public class TileEntityGeysir extends TileEntity implements ITickable {
 
 			if(timer % 2 == 0) {
 				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "gasfire");
 				data.setDouble("mX", world.rand.nextGaussian() * 0.05);
 				data.setDouble("mY", 0.2);
 				data.setDouble("mZ", world.rand.nextGaussian() * 0.05);
-                ThreadedPacket message = new AuxParticlePacketNT(data, pos.getX() + 0.5F, pos.getY() + 1.1F, pos.getZ() + 0.5F);
+                ThreadedPacket message = new AuxParticlePacketNT(HbmEffectNT.GasFlame, data, pos.getX() + 0.5F, pos.getY() + 1.1F, pos.getZ() + 0.5F);
                 PacketThreading.createAllAroundThreadedPacket(message,
                         new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 75));
             }

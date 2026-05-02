@@ -5,6 +5,7 @@ import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.tool.ItemFertilizer;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityCreature;
@@ -164,11 +165,10 @@ public class EntityPigeon extends EntityCreature implements IFlyingCreature, IAn
 
             if (this.isFat() && this.rand.nextInt(50) == 0) {
                 NBTTagCompound nbt = new NBTTagCompound();
-                nbt.setString("type", "sweat");
                 nbt.setInteger("count", 3);
                 nbt.setInteger("block", Block.getIdFromBlock(Blocks.WOOL));
                 nbt.setInteger("entity", this.getEntityId());
-                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(nbt, 0, 0, 0), new NetworkRegistry.TargetPoint(this.dimension, this.posX, this.posY, this.posZ, 50.0D));
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Sweat, nbt, 0, 0, 0), new NetworkRegistry.TargetPoint(this.dimension, this.posX, this.posY, this.posZ, 50.0D));
 
                 int x = MathHelper.floor(this.posX);
                 int y = MathHelper.floor(this.posY) - 1;

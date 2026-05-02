@@ -22,6 +22,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.AdvancementManager;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
@@ -185,10 +186,9 @@ public class TileEntityWatz extends TileEntityMachineBase implements ITickable, 
                 ChunkRadiationManager.proxy.incrementRad(world, pos.add(0, 1, 0), 1_000F);
                 world.playSound(null, pos.getX() + 0.5, pos.getY() + 2, pos.getZ() + 0.5, HBMSoundHandler.rbmk_explosion, SoundCategory.BLOCKS, 50.0F, 1.0F);
                 NBTTagCompound data = new NBTTagCompound();
-                data.setString("type", "rbmkmush");
                 data.setFloat("scale", 5);
-                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.getX() + 0.5, pos.getY() + 2, pos.getZ() + 0.5), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 250));
-                MainRegistry.proxy.effectNT(data);
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.RBMKMush, data, pos.getX() + 0.5, pos.getY() + 2, pos.getZ() + 0.5), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 250));
+                MainRegistry.proxy.effectNT(HbmEffectNT.RBMKMush, pos.getX() + 0.5, pos.getY() + 2, pos.getZ() + 0.5, data);
 
             }
 

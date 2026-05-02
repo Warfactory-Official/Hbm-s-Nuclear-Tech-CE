@@ -6,6 +6,7 @@ import com.hbm.entity.projectile.EntityRubble;
 import com.hbm.entity.projectile.EntityShrapnel;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ParticleUtil;
 import net.minecraft.block.Block;
@@ -31,27 +32,21 @@ public class ExplosionLarge {
     public static void spawnParticlesRadial(World world, double x, double y, double z, int count) {
 
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "smoke");
-        data.setString("mode", "radial");
         data.setInteger("count", count);
-        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x, y, z), new TargetPoint(world.provider.getDimension(), x, y, z, 250));
+        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Smoke_Radial, data, x, y, z), new TargetPoint(world.provider.getDimension(), x, y, z, 250));
     }
 
     public static void spawnFoam(World world, double x, double y, double z, int count) {
 
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "smoke");
-        data.setString("mode", "foamSplash");
         data.setInteger("count", count);
-        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x, y, z), new TargetPoint(world.provider.getDimension(), x, y, z, 250));
+        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Smoke_FoamSplash, data, x, y, z), new TargetPoint(world.provider.getDimension(), x, y, z, 250));
     }
 
     public static void spawnParticles(World world, double x, double y, double z, int count) {
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "smoke");
-        data.setString("mode", "cloud");
         data.setInteger("count", count);
-        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x, y, z), new TargetPoint(world.provider.getDimension(), x, y, z, 250));
+        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Smoke_Cloud, data, x, y, z), new TargetPoint(world.provider.getDimension(), x, y, z, 250));
     }
 
     public static void spawnBurst(World world, double x, double y, double z, int count, double strength) {
@@ -69,11 +64,9 @@ public class ExplosionLarge {
     public static void spawnShock(World world, double x, double y, double z, int count, double strength) {
 
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "smoke");
-        data.setString("mode", "shock");
         data.setInteger("count", count);
         data.setDouble("strength", strength);
-        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x, y + 0.5, z), new TargetPoint(world.provider.getDimension(), x, y, z, 250));
+        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Smoke_Shock, data, x, y + 0.5, z), new TargetPoint(world.provider.getDimension(), x, y, z, 250));
     }
 
     public static void spawnRubble(World world, double x, double y, double z, int count) {

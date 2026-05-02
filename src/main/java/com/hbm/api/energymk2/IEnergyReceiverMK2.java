@@ -4,6 +4,7 @@ import com.hbm.handler.threading.PacketThreading;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.util.Compat;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -72,7 +73,6 @@ public interface IEnergyReceiverMK2 extends IEnergyHandlerMK2 {
 
         if (particleDebug) {
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("type", "network");
             data.setString("mode", "power");
             double posX = x + 0.5 + dir.offsetX * 0.5 + world.rand.nextDouble() * 0.5 - 0.25;
             double posY = y + 0.5 + dir.offsetY * 0.5 + world.rand.nextDouble() * 0.5 - 0.25;
@@ -80,7 +80,7 @@ public interface IEnergyReceiverMK2 extends IEnergyHandlerMK2 {
             data.setDouble("mX", -dir.offsetX * (red ? 0.025 : 0.1));
             data.setDouble("mY", -dir.offsetY * (red ? 0.025 : 0.1));
             data.setDouble("mZ", -dir.offsetZ * (red ? 0.025 : 0.1));
-            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, posX, posY, posZ), new NetworkRegistry.TargetPoint(world.provider.getDimension(), posX, posY, posZ, 25));
+            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Network, data, posX, posY, posZ), new NetworkRegistry.TargetPoint(world.provider.getDimension(), posX, posY, posZ, 25));
         }
     }
 

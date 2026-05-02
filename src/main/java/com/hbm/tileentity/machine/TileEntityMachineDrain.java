@@ -14,6 +14,7 @@ import com.hbm.inventory.fluid.trait.FluidTraitSimple;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IFluidCopiable;
@@ -89,22 +90,20 @@ public class TileEntityMachineDrain extends TileEntityLoadedBase implements IFlu
                 ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
 
                 NBTTagCompound data = new NBTTagCompound();
+                HbmEffectNT effect;
                 if (tank.getTankType().hasTrait(FluidTraitSimple.FT_Gaseous.class)) {
-                    data.setString("type", "tower");
+                    effect = HbmEffectNT.Tower;
                     data.setFloat("lift", 0.5F);
                     data.setFloat("base", 0.375F);
                     data.setFloat("max", 3F);
                     data.setInteger("life", 100 + world.rand.nextInt(50));
                 } else {
-                    data.setString("type", "splash");
+                    effect = HbmEffectNT.Splash;
                 }
 
                 data.setInteger("color", tank.getTankType().getColor());
-                data.setDouble("posX", pos.getX() + 0.5 - dir.offsetX * 2.5);
-                data.setDouble("posZ", pos.getZ() + 0.5 - dir.offsetZ * 2.5);
-                data.setDouble("posY", pos.getY() + 0.5);
 
-                MainRegistry.proxy.effectNT(data);
+                MainRegistry.proxy.effectNT(effect, pos.getX() + 0.5 - dir.offsetX * 2.5, pos.getY() + 0.5, pos.getZ() + 0.5 - dir.offsetZ * 2.5, data);
             }
         }
     }

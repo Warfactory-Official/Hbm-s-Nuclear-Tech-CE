@@ -8,6 +8,7 @@ import com.hbm.interfaces.IBulletUpdateBehavior;
 import com.hbm.inventory.RecipesCommon;
 import com.hbm.items.ModItems;
 import com.hbm.lib.Library;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.util.BobMathUtil;
 import net.minecraft.entity.Entity;
@@ -101,7 +102,7 @@ public class BulletConfigFactory {
 		bullet.doesBreakGlass = false;
 		bullet.style = BulletConfiguration.STYLE_GRENADE;
 		bullet.plink = BulletConfiguration.PLINK_GRENADE;
-		bullet.vPFX = "smoke";
+		bullet.vPFX = HbmEffectNT.VanillaExt_Smoke;
 		
 		return bullet;
 	}
@@ -152,7 +153,7 @@ public class BulletConfigFactory {
 		bullet.explosive = 2.5F;
 		bullet.style = BulletConfiguration.STYLE_GRENADE;
 		bullet.plink = BulletConfiguration.PLINK_GRENADE;
-		bullet.vPFX = "smoke";
+		bullet.vPFX = HbmEffectNT.VanillaExt_Smoke;
 
 		return bullet;
 	}

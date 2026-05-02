@@ -24,6 +24,7 @@ import com.hbm.lib.ModDamageSource;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.particle.bullet_hit.EntityHitDataHandler;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.potion.HbmPotion;
 import com.hbm.util.BobMathUtil;
 import net.minecraft.block.Block;
@@ -448,18 +449,14 @@ public class EntityBulletBase extends Entity implements IProjectile {
 		if (this.ticksExisted > config.maxAge || (overrideMaxAge != -1 && this.ticksExisted > overrideMaxAge))
 			this.setDead();
 
-		if(world.isRemote && !config.vPFX.isEmpty()) {
+		if(world.isRemote && config.vPFX != null) {
 			double motion = Math.min(new Vec3d(motionX, motionY, motionZ).length(), 0.1);
 
 			for (double d = 0; d < 1; d += 1 / motion) {
-
-				NBTTagCompound nbt = new NBTTagCompound();
-				nbt.setString("type", "vanillaExt");
-				nbt.setString("mode", config.vPFX);
-				nbt.setDouble("posX", (this.lastTickPosX - this.posX) * d + this.posX);
-				nbt.setDouble("posY", (this.lastTickPosY - this.posY) * d + this.posY);
-				nbt.setDouble("posZ", (this.lastTickPosZ - this.posZ) * d + this.posZ);
-				MainRegistry.proxy.effectNT(nbt);
+				MainRegistry.proxy.effectNT(config.vPFX,
+                        (this.lastTickPosX - this.posX) * d + this.posX,
+                        (this.lastTickPosY - this.posY) * d + this.posY,
+                        (this.lastTickPosZ - this.posZ) * d + this.posZ);
 			}
 		}
 	}
@@ -467,7 +464,6 @@ public class EntityBulletBase extends Entity implements IProjectile {
 	private void doHitVFX(@Nullable BlockPos pos, RayTraceResult hit){
 		if(getDataManager().get(STYLE) == BulletConfiguration.STYLE_TRACER){
 			NBTTagCompound tag = new NBTTagCompound();
-			tag.setString("type", "bimpact");
 			tag.setByte("hitType", (byte) hit.typeOfHit.ordinal());
 			Vec3d norm = Library.normalFromRayTrace(hit);
 			tag.setFloat("nX", (float) norm.x);
@@ -482,7 +478,7 @@ public class EntityBulletBase extends Entity implements IProjectile {
 				tag.setInteger("block", Block.getIdFromBlock(block));
 				tag.setByte("meta", (byte) block.getMetaFromState(blockstate));
 			}
-			PacketThreading.createSendToAllTrackingThreadedPacket(new AuxParticlePacketNT(tag, hit.hitVec.x, hit.hitVec.y, hit.hitVec.z), this);
+			PacketThreading.createSendToAllTrackingThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.BulletImpact, tag, hit.hitVec.x, hit.hitVec.y, hit.hitVec.z), this);
 			if(hit.typeOfHit == Type.ENTITY && hit.entityHit instanceof EntityLivingBase){
 				EntityHitDataHandler.addHit((EntityLivingBase) hit.entityHit, this, hit.hitVec, new Vec3d(this.motionX, this.motionY, this.motionZ).normalize());
 			}

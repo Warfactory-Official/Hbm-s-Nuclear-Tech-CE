@@ -11,6 +11,7 @@ import com.hbm.items.ModItems;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.ContaminationUtil;
@@ -97,7 +98,7 @@ public class GunNPCFactory {
 		bullet.leadChance = 0;
 		bullet.explosive = 0.5F;
 		bullet.setToBolt(BulletConfiguration.BOLT_LACUNAE);
-		bullet.vPFX = "reddust";
+		bullet.vPFX = HbmEffectNT.VanillaExt_RedDust;
 
 		return bullet;
 	}
@@ -113,7 +114,7 @@ public class GunNPCFactory {
 		bullet.wear = 10;
 		bullet.leadChance = 15;
 		bullet.style = BulletConfiguration.STYLE_FLECHETTE;
-		bullet.vPFX = "bluedust";
+		bullet.vPFX = HbmEffectNT.VanillaExt_BlueDust;
 
 		return bullet;
 	}
@@ -129,7 +130,7 @@ public class GunNPCFactory {
 		bullet.wear = 10;
 		bullet.leadChance = 0;
 		bullet.setToBolt(BulletConfiguration.BOLT_NIGHTMARE);
-		bullet.vPFX = "reddust";
+		bullet.vPFX = HbmEffectNT.VanillaExt_RedDust;
 
 		bullet.bImpact = new IBulletImpactBehavior() {
 
@@ -190,13 +191,10 @@ public class GunNPCFactory {
 				Random rand = bullet.world.rand;
 
 				for(int i = 0; i < 5; i++) {
-					NBTTagCompound nbt = new NBTTagCompound();
-					nbt.setString("type", "vanillaExt");
-					nbt.setString("mode", "flame");
-					nbt.setDouble("posX", bullet.posX + rand.nextDouble() * 0.5 - 0.25);
-					nbt.setDouble("posY", bullet.posY + rand.nextDouble() * 0.5 - 0.25);
-					nbt.setDouble("posZ", bullet.posZ + rand.nextDouble() * 0.5 - 0.25);
-					MainRegistry.proxy.effectNT(nbt);
+					MainRegistry.proxy.effectNT(HbmEffectNT.VanillaExt_Flame,
+                            bullet.posX + rand.nextDouble() * 0.5 - 0.25,
+                            bullet.posY + rand.nextDouble() * 0.5 - 0.25,
+                            bullet.posZ + rand.nextDouble() * 0.5 - 0.25);
 				}
 			}
 		};
@@ -239,8 +237,8 @@ public class GunNPCFactory {
 	public static BulletConfiguration getRocketUFOConfig() {
 		
 		BulletConfiguration bullet = GunRocketFactory.getRocketConfig();
-		
-		bullet.vPFX = "reddust";
+
+		bullet.vPFX = HbmEffectNT.VanillaExt_RedDust;
 		bullet.destroysBlocks = false;
 		bullet.explosive = 0F;
 		
@@ -329,14 +327,13 @@ public class GunNPCFactory {
 				
 				for(int i = 0; i < 3; i++) {
 					NBTTagCompound data = new NBTTagCompound();
-					data.setString("type", "plasmablast");
 					data.setFloat("r", 0.0F);
 					data.setFloat("g", 0.75F);
 					data.setFloat("b", 1.0F);
 					data.setFloat("pitch", -30F + 30F * i);
 					data.setFloat("yaw", bullet.world.rand.nextFloat() * 180F);
 					data.setFloat("scale", 5F);
-					PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, bullet.posX, bullet.posY, bullet.posZ),
+					PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.PlasmaBlast, data, bullet.posX, bullet.posY, bullet.posZ),
 							new TargetPoint(bullet.world.provider.getDimension(), bullet.posX, bullet.posY, bullet.posZ, 100));
 				}
 			}

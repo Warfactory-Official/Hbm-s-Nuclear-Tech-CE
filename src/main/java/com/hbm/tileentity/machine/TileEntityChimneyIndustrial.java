@@ -2,6 +2,7 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.fml.relauncher.Side;
@@ -15,16 +16,12 @@ public class TileEntityChimneyIndustrial extends TileEntityChimneyBase {
 
         if(world.getTotalWorldTime() % 2 == 0) {
             NBTTagCompound fx = new NBTTagCompound();
-            fx.setString("type", "tower");
             fx.setFloat("lift", 10F);
             fx.setFloat("base", 0.75F);
             fx.setFloat("max", 3F);
             fx.setInteger("life", 250 + world.rand.nextInt(50));
             fx.setInteger("color",0x404040);
-            fx.setDouble("posX", pos.getX() + 0.5);
-            fx.setDouble("posY", pos.getY() + 22);
-            fx.setDouble("posZ", pos.getZ() + 0.5);
-            MainRegistry.proxy.effectNT(fx);
+            MainRegistry.proxy.effectNT(HbmEffectNT.Tower, pos.getX() + .5, pos.getY() + 22, pos.getZ() + .5, fx);
         }
     }
 

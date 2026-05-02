@@ -17,6 +17,7 @@ import com.hbm.items.weapon.sedna.factory.Lego;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.util.DamageResistanceHandler.DamageClass;
 import com.hbm.util.Vec3NT;
 import net.minecraft.entity.EntityLivingBase;
@@ -150,10 +151,8 @@ public class ItemGrenadeFilling extends ItemEnumMulti<ItemGrenadeFilling.EnumGre
         world.spawnEntity(fire);
         igniteAround(world, grenade.posX, grenade.posY, grenade.posZ, 3);
         for (int i = 0; i < 3; i++) {
-            NBTTagCompound haze = new NBTTagCompound();
-            haze.setString("type", "haze");
             PacketThreading.createAllAroundThreadedPacket(
-                    new AuxParticlePacketNT(haze,
+                    new AuxParticlePacketNT(HbmEffectNT.Haze, null,
                             grenade.posX + world.rand.nextGaussian() * 4,
                             grenade.posY,
                             grenade.posZ + world.rand.nextGaussian() * 4),
@@ -261,10 +260,9 @@ public class ItemGrenadeFilling extends ItemEnumMulti<ItemGrenadeFilling.EnumGre
         grenade.world.playSound(null, grenade.posX, grenade.posY, grenade.posZ,
                 HBMSoundHandler.mukeExplosion, SoundCategory.HOSTILE, 15.0F, 1.0F);
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "muke");
         data.setBoolean("balefire", MainRegistry.polaroidID == 11 || grenade.world.rand.nextInt(100) == 0);
         PacketThreading.createAllAroundThreadedPacket(
-                new AuxParticlePacketNT(data, grenade.posX, grenade.posY + 0.5, grenade.posZ),
+                new AuxParticlePacketNT(HbmEffectNT.Muke, data, grenade.posX, grenade.posY + 0.5, grenade.posZ),
                 new TargetPoint(grenade.dimension, grenade.posX, grenade.posY, grenade.posZ, 250));
     }
 
@@ -282,7 +280,6 @@ public class ItemGrenadeFilling extends ItemEnumMulti<ItemGrenadeFilling.EnumGre
         float yaw = grenade.world.rand.nextFloat() * 180F;
         for (int i = 0; i < 3; i++) {
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("type", "plasmablast");
             data.setFloat("r", r);
             data.setFloat("g", g);
             data.setFloat("b", b);
@@ -290,7 +287,7 @@ public class ItemGrenadeFilling extends ItemEnumMulti<ItemGrenadeFilling.EnumGre
             data.setFloat("yaw", yaw);
             data.setFloat("scale", scale);
             PacketThreading.createAllAroundThreadedPacket(
-                    new AuxParticlePacketNT(data, grenade.posX, grenade.posY + 0.125, grenade.posZ),
+                    new AuxParticlePacketNT(HbmEffectNT.PlasmaBlast, data, grenade.posX, grenade.posY + 0.125, grenade.posZ),
                     new TargetPoint(grenade.dimension, grenade.posX, grenade.posY, grenade.posZ, 100));
         }
     }

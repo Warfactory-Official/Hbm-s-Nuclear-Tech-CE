@@ -7,6 +7,7 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.util.EntityDamageUtil;
 import net.minecraft.entity.Entity;
@@ -89,11 +90,9 @@ public class TileEntityTurretHowardDamaged extends TileEntityTurretHoward {
 				hOff.rotateAroundY((float) -(this.rotationYaw + Math.PI * 0.5));
 					
 				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "vanillaExt");
-				data.setString("mode", "largeexplode");
 				data.setFloat("size", 1.5F);
 				data.setByte("count", (byte)1);
-				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.xCoord + vec.xCoord + hOff.xCoord, pos.yCoord + vec.yCoord + hOff.yCoord, pos.zCoord + vec.zCoord + hOff.zCoord), new TargetPoint(world.provider.getDimension(), this.pos.getX(), this.pos.getY(), this.pos.getZ(), 50));
+				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.VanillaExt_LargeExplode, data, pos.xCoord + vec.xCoord + hOff.xCoord, pos.yCoord + vec.yCoord + hOff.yCoord, pos.zCoord + vec.zCoord + hOff.zCoord), new TargetPoint(world.provider.getDimension(), this.pos.getX(), this.pos.getY(), this.pos.getZ(), 50));
 			}
 		}
 	}

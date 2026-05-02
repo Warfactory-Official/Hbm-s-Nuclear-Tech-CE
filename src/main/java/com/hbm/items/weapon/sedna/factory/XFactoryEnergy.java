@@ -20,6 +20,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.anim.sedna.AnimationEnums;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna.IType;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
@@ -66,7 +67,7 @@ public class XFactoryEnergy {
 
     public static BiConsumer<EntityBulletBeamBase, RayTraceResult> LAMBDA_LIGHTNING_HIT = (beam, mop) -> {
 
-        if(mop.typeOfHit == mop.typeOfHit.BLOCK) {
+        if(mop.typeOfHit == RayTraceResult.Type.BLOCK) {
             ForgeDirection dir = ForgeDirection.getOrientation(mop.sideHit);
             mop.hitVec.add(dir.offsetX * 0.5, dir.offsetY * 0.5, dir.offsetZ * 0.5);
         }
@@ -81,18 +82,17 @@ public class XFactoryEnergy {
         float yaw = beam.world.rand.nextFloat() * 180F;
         for(int i = 0; i < 3; i++) {
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("type", "plasmablast");
             data.setFloat("r", 0.5F);
             data.setFloat("g", 0.5F);
             data.setFloat("b", 1.0F);
             data.setFloat("pitch", -60F + 60F * i);
             data.setFloat("yaw", yaw);
             data.setFloat("scale", 2F);
-            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, mop.hitVec.x, mop.hitVec.y, mop.hitVec.z),
+            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.PlasmaBlast, data, mop.hitVec.x, mop.hitVec.y, mop.hitVec.z),
                     new NetworkRegistry.TargetPoint(beam.world.provider.getDimension(), mop.hitVec.x, mop.hitVec.y, mop.hitVec.z, 100));
         }
 
-        if(mop.typeOfHit == mop.typeOfHit.ENTITY) {
+        if(mop.typeOfHit == RayTraceResult.Type.ENTITY) {
             if(mop.entityHit instanceof EntityLivingBase) {
                 ((EntityLivingBase) mop.entityHit).addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 60, 9));
                 ((EntityLivingBase) mop.entityHit).addPotionEffect(new PotionEffect(MobEffects.MINING_FATIGUE, 60, 9));
@@ -102,7 +102,7 @@ public class XFactoryEnergy {
 
     public static BiConsumer<EntityBulletBeamBase, RayTraceResult> LAMBDA_LIGHTNING_SPLIT = (beam, mop) -> {
         LAMBDA_LIGHTNING_HIT.accept(beam, mop);
-        if(mop.typeOfHit != mop.typeOfHit.ENTITY) return;
+        if(mop.typeOfHit != RayTraceResult.Type.ENTITY) return;
 
         double range = 20;
         List<EntityLivingBase> potentialTargets = beam.world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(mop.hitVec.x, mop.hitVec.y, mop.hitVec.z, mop.hitVec.x, mop.hitVec.y, mop.hitVec.z).expand(range, range, range));
@@ -125,14 +125,14 @@ public class XFactoryEnergy {
     public static BiConsumer<EntityBulletBeamBase, RayTraceResult> LAMBDA_IR_HIT = (beam, mop) -> {
         BulletConfig.LAMBDA_STANDARD_BEAM_HIT.accept(beam, mop);
 
-        if(mop.typeOfHit == mop.typeOfHit.ENTITY) {
+        if(mop.typeOfHit == RayTraceResult.Type.ENTITY) {
             if(mop.entityHit instanceof EntityLivingBase living) {
                 HbmLivingCapability.IEntityHbmProps props = HbmLivingProps.getData(living);
                 if(props.getFire() < 100) props.setFire(100);
             }
         }
 
-        if(mop.typeOfHit == mop.typeOfHit.BLOCK) {
+        if(mop.typeOfHit == RayTraceResult.Type.BLOCK) {
             World world = beam.world;
             Block b = world.getBlockState(mop.getBlockPos()).getBlock();
             ForgeDirection dir = ForgeDirection.getOrientation(mop.sideHit);

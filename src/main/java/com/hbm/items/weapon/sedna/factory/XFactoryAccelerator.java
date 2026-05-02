@@ -13,6 +13,7 @@ import com.hbm.items.weapon.sedna.mags.MagazineInfinite;
 import com.hbm.items.weapon.sedna.mags.MagazineSingleReload;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.anim.sedna.AnimationEnums;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna.IType;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
@@ -27,7 +28,6 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -63,13 +63,7 @@ public class XFactoryAccelerator {
             double dZ = entity.posZ - vec.z * d;
 
             if(entity.world.isRemote) {
-                NBTTagCompound nbt = new NBTTagCompound();
-                nbt.setString("type", "vanillaExt");
-                nbt.setString("mode", "fireworks");
-                nbt.setDouble("posX", dX);
-                nbt.setDouble("posY", dY);
-                nbt.setDouble("posZ", dZ);
-                MainRegistry.proxy.effectNT(nbt);
+                MainRegistry.proxy.effectNT(HbmEffectNT.VanillaExt_Fireworks, dX, dY, dZ);
 
             } else {
                 int x = (int) Math.floor(dX);

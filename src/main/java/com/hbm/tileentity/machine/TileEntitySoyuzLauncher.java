@@ -16,6 +16,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.IGUIProvider;
@@ -26,7 +27,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -135,15 +135,10 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase implements IT
             if (!entities.isEmpty()) {
 
                 NBTTagCompound data = new NBTTagCompound();
-                data.setString("type", "smoke");
-                data.setString("mode", "shockRand");
                 data.setInteger("count", 50);
                 data.setDouble("strength", world.rand.nextGaussian() * 3 + 6);
-                data.setDouble("posX", pos.getX() + 0.5);
-                data.setDouble("posY", pos.getY() - 3);
-                data.setDouble("posZ", pos.getZ() + 0.5);
 
-                MainRegistry.proxy.effectNT(data);
+                MainRegistry.proxy.effectNT(HbmEffectNT.Smoke_ShockRand, pos.getX() + .5, pos.getY() - 3, pos.getZ() + .5, data);
             }
         }
 

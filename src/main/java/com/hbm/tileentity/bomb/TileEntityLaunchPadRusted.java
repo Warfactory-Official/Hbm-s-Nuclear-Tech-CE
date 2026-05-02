@@ -12,6 +12,7 @@ import com.hbm.items.ModItems;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.TrackerUtil;
@@ -77,14 +78,10 @@ public class TileEntityLaunchPadRusted extends TileEntityMachineBase implements 
                     float moZ = (float) (world.rand.nextGaussian() * 0.15F + 0.75) * dir.offsetZ;
 
                     NBTTagCompound data = new NBTTagCompound();
-                    data.setDouble("posX", pos.getX() + 0.5);
-                    data.setDouble("posY", pos.getY() + 0.25);
-                    data.setDouble("posZ", pos.getZ() + 0.5);
-                    data.setString("type", "launchSmoke");
                     data.setDouble("moX", moX);
                     data.setDouble("moY", 0);
                     data.setDouble("moZ", moZ);
-                    MainRegistry.proxy.effectNT(data);
+                    MainRegistry.proxy.effectNT(HbmEffectNT.LaunchSmoke, pos.getX() + .5, pos.getY() + .25, pos.getZ() + .5, data);
 
                 }
             }

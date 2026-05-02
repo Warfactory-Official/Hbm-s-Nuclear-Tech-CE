@@ -22,6 +22,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
@@ -154,13 +155,11 @@ public class TileEntityTurretFritz extends TileEntityTurretBaseNT implements IFl
                     1F + world.rand.nextFloat() * 0.5F);
 
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("type", "vanillaburst");
-            data.setString("mode", "flame");
             data.setInteger("count", 2);
             data.setDouble("motion", 0.025D);
 
             PacketThreading.createAllAroundThreadedPacket(
-                    new AuxParticlePacketNT(data, muzzleX, muzzleY, muzzleZ),
+                    new AuxParticlePacketNT(HbmEffectNT.VanillaBurst_Flame, data, muzzleX, muzzleY, muzzleZ),
                     new TargetPoint(world.provider.getDimension(), this.pos.getX(), this.pos.getY(), this.pos.getZ(), 50)
             );
 

@@ -10,6 +10,7 @@ import com.hbm.items.weapon.sedna.factory.XFactoryTurret;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.particle.helper.CasingCreator;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.util.Vec3dUtil;
@@ -112,11 +113,9 @@ public class TileEntityTurretJeremy extends TileEntityTurretBaseNT implements IG
                 reload = 20;
 
                 NBTTagCompound data = new NBTTagCompound();
-                data.setString("type", "vanillaExt");
-                data.setString("mode", "largeexplode");
                 data.setFloat("size", 0F);
                 data.setByte("count", (byte) 5);
-                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.xCoord + vec.xCoord, pos.yCoord + vec.yCoord, pos.zCoord + vec.zCoord), new TargetPoint(world.provider.getDimension(), this.pos.getX(), this.pos.getY(), this.pos.getZ(), 50));
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.VanillaExt_LargeExplode, data, pos.xCoord + vec.xCoord, pos.yCoord + vec.yCoord, pos.zCoord + vec.zCoord), new TargetPoint(world.provider.getDimension(), this.pos.getX(), this.pos.getY(), this.pos.getZ(), 50));
             }
         }
     }

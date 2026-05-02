@@ -15,6 +15,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.particle.helper.ExplosionCreator;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.potion.HbmPotion;
 import com.hbm.render.amlfrom1710.Vec3;
 import net.minecraft.block.Block;
@@ -209,10 +210,9 @@ public class ItemAmmoHIMARS extends Item implements IMetaItemTesr {
 
   private static void standardMush(EntityArtilleryRocket entity, RayTraceResult mop, float size) {
     NBTTagCompound data = new NBTTagCompound();
-    data.setString("type", "rbmkmush");
     data.setFloat("scale", size);
     PacketThreading.createAllAroundThreadedPacket(
-        new AuxParticlePacketNT(data, mop.hitVec.x, mop.hitVec.y, mop.hitVec.z),
+        new AuxParticlePacketNT(HbmEffectNT.RBMKMush, data, mop.hitVec.x, mop.hitVec.y, mop.hitVec.z),
         new NetworkRegistry.TargetPoint(
             entity.dimension, entity.posX, entity.posY, entity.posZ, 250));
   }
@@ -322,11 +322,9 @@ public class ItemAmmoHIMARS extends Item implements IMetaItemTesr {
               }
             }
             for (int i = 0; i < 10; i++) {
-              NBTTagCompound haze = new NBTTagCompound();
-              haze.setString("type", "haze");
               PacketThreading.createAllAroundThreadedPacket(
                   new AuxParticlePacketNT(
-                      haze,
+                      HbmEffectNT.Haze, null,
                       mop.hitVec.x + rocket.world.rand.nextGaussian() * 15,
                       mop.hitVec.y,
                       mop.hitVec.z + rocket.world.rand.nextGaussian() * 15),

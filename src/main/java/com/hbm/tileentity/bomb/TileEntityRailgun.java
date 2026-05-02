@@ -24,7 +24,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
@@ -186,7 +185,7 @@ public class TileEntityRailgun extends TileEntityLoadedBase implements ITickable
 				double fY = pos.getY() + 1 + vec.y;
 				double fZ = pos.getZ() + 0.5 + vec.z;
 
-				MainRegistry.proxy.spawnSFX(world, fX, fY, fZ, 0, vec.normalize());
+				MainRegistry.proxy.spawnSpark(world, fX, fY, fZ, vec.normalize());
 			});
 		}
 	}

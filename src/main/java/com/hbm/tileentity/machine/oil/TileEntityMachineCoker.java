@@ -13,6 +13,7 @@ import com.hbm.inventory.recipes.CokerRecipes;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
@@ -121,16 +122,12 @@ public class TileEntityMachineCoker extends TileEntityMachineBase implements IFl
 
                 if(world.getTotalWorldTime() % 2 == 0) {
                     NBTTagCompound fx = new NBTTagCompound();
-                    fx.setString("type", "tower");
                     fx.setFloat("lift", 10F);
                     fx.setFloat("base", 0.75F);
                     fx.setFloat("max", 3F);
                     fx.setInteger("life", 200 + world.rand.nextInt(50));
                     fx.setInteger("color",0x404040);
-                    fx.setDouble("posX", pos.getX() + 0.5);
-                    fx.setDouble("posY", pos.getY() + 22);
-                    fx.setDouble("posZ", pos.getZ() + 0.5);
-                    MainRegistry.proxy.effectNT(fx);
+                    MainRegistry.proxy.effectNT(HbmEffectNT.Tower, pos.getX() + .5, pos.getY() + 22, pos.getZ() + .5, fx);
                 }
             }
         }

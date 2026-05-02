@@ -4,6 +4,7 @@ import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.util.Vec3NT;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
@@ -292,11 +293,9 @@ public class EntityBulletBeamBase extends Entity implements IEntityAdditionalSpa
                 world.spawnEntity(newBeam);
 
                 NBTTagCompound data = new NBTTagCompound();
-                data.setString("type", "vanillaExt");
-                data.setString("mode", "largeexplode");
                 data.setFloat("size", 1.5F);
                 data.setByte("count", (byte)1);
-                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, coinHit.hitVec.x, coinHit.hitVec.y, coinHit.hitVec.z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), coinHit.hitVec.x, coinHit.hitVec.y, coinHit.hitVec.z, 100));
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.VanillaExt_LargeExplode, data, coinHit.hitVec.x, coinHit.hitVec.y, coinHit.hitVec.z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), coinHit.hitVec.x, coinHit.hitVec.y, coinHit.hitVec.z, 100));
 
 
                 return;

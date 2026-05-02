@@ -27,6 +27,7 @@ import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.threading.ThreadedPacket;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.*;
 import com.hbm.util.*;
 import io.netty.buffer.ByteBuf;
@@ -200,13 +201,12 @@ public class TileEntityElectrolyser extends TileEntityMachineBase implements IEn
 
                 if(didPour != null) {
                     NBTTagCompound data = new NBTTagCompound();
-                    data.setString("type", "foundry");
                     data.setInteger("color", didPour.material.moltenColor);
                     data.setByte("dir", (byte) dir.ordinal());
                     data.setFloat("off", 0.625F);
                     data.setFloat("base", 0.625F);
                     data.setFloat("len", Math.max(1F, pos.getY() - (float) (Math.ceil(impact.y) - 0.875) + 2));
-                    ThreadedPacket message = new AuxParticlePacketNT(data, pos.getX() + 0.5D + dir.offsetX * 5.875D, pos.getY() + 2, pos.getZ() + 0.5D + dir.offsetZ * 5.875D);
+                    ThreadedPacket message = new AuxParticlePacketNT(HbmEffectNT.Foundry, data, pos.getX() + 0.5D + dir.offsetX * 5.875D, pos.getY() + 2, pos.getZ() + 0.5D + dir.offsetZ * 5.875D);
                     PacketThreading.createAllAroundThreadedPacket(message,
                             new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 50));
 
@@ -231,7 +231,7 @@ public class TileEntityElectrolyser extends TileEntityMachineBase implements IEn
                     data.setFloat("off", 0.625F);
                     data.setFloat("base", 0.625F);
                     data.setFloat("len", Math.max(1F, pos.getY() - (float) (Math.ceil(impact.y) - 0.875) + 2));
-                    ThreadedPacket message = new AuxParticlePacketNT(data, pos.getX() + 0.5D + dir.offsetX * 5.875D, pos.getY() + 2, pos.getZ() + 0.5D + dir.offsetZ * 5.875D);
+                    ThreadedPacket message = new AuxParticlePacketNT(HbmEffectNT.Foundry, data, pos.getX() + 0.5D + dir.offsetX * 5.875D, pos.getY() + 2, pos.getZ() + 0.5D + dir.offsetZ * 5.875D);
                     PacketThreading.createAllAroundThreadedPacket(message,
                             new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 50));
 

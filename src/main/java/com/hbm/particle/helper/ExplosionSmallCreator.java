@@ -28,12 +28,11 @@ public class ExplosionSmallCreator implements IParticleCreator {
     public static void composeEffect(World world, double x, double y, double z, int cloudCount, float cloudScale, float cloudSpeedMult) {
 
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "explosionSmall");
         data.setInteger("cloudCount", cloudCount);
         data.setFloat("cloudScale", cloudScale);
         data.setFloat("cloudSpeedMult", cloudSpeedMult);
         data.setInteger("debris", 15);
-        IParticleCreator.sendPacket(world, x, y, z, 200, data);
+        IParticleCreator.sendPacket(world, HbmEffectNT.ExplosionSmall, x, y, z, 200, data);
     }
 
     @Override

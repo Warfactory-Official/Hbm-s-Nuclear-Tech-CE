@@ -30,6 +30,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.*;
 import com.hbm.uninos.UniNodespace;
 import com.hbm.util.ParticleUtil;
@@ -349,13 +350,12 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
 
             if (world.getTotalWorldTime() % 5 == 0) {
                 NBTTagCompound data = new NBTTagCompound();
-                data.setString("type", "tower");
                 data.setFloat("lift", 1F);
                 data.setFloat("base", 1F);
                 data.setFloat("max", 5F);
                 data.setInteger("life", 100 + world.rand.nextInt(20));
                 data.setInteger("color", tank.getTankType().getColor());
-                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 150));
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Tower, data, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 150));
             }
 
             if (world.getTotalWorldTime() % 5 == 0) {

@@ -8,6 +8,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.main.AdvancementManager;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.saveddata.satellites.Satellite;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -87,17 +88,11 @@ public class EntitySoyuz extends Entity {
 	}
 	
 	private void spawnExhaust(double x, double y, double z) {
-
 		NBTTagCompound data = new NBTTagCompound();
-		data.setString("type", "exhaust");
-		data.setString("mode", "soyuz");
 		data.setInteger("count", 1);
 		data.setDouble("width", world.rand.nextDouble() * 0.25 - 0.5);
-		data.setDouble("posX", x);
-		data.setDouble("posY", y);
-		data.setDouble("posZ", z);
 		
-		MainRegistry.proxy.effectNT(data);
+		MainRegistry.proxy.effectNT(HbmEffectNT.Exhaust_Soyuz, x, y, z, data);
 	}
 	
 	private void deployPayload() {

@@ -7,6 +7,7 @@ import com.hbm.inventory.RecipesCommon;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.main.MainRegistry;
 import com.hbm.particle.SpentCasing;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
@@ -107,7 +108,7 @@ public class BulletConfiguration {
 	// ricochet sound type
 	public int plink;
 	// vanilla particle FX
-	public String vPFX = "";
+	public HbmEffectNT vPFX = null;
 	public SpentCasing spentCasing;
 
 	//energy projectiles
@@ -188,7 +189,7 @@ public class BulletConfiguration {
 		this.wear *= 0.5;
 		this.doesRicochet = false;
 		this.doesPenetrate = false;
-		this.vPFX = "greendust";
+		this.vPFX = HbmEffectNT.VanillaExt_GreenDust;
 		return this;
 	}
 	

@@ -23,6 +23,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
@@ -120,10 +121,8 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
                     steam.setFill(steam.getMaxFill());
 
                     if(ventDelay <= 0) {
-                        NBTTagCompound data = new NBTTagCompound();
-                        data.setString("type", "rbmksteam");
-                        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.getX() + 0.25 + world.rand.nextInt(2) * 0.5, pos.getY() + RBMKDials.getColumnHeight(world), pos.getZ() + 0.25 + world.rand.nextInt(2) * 0.5), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 100));
-                        MainRegistry.proxy.effectNT(data);
+                        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.RBMKSteam, new NBTTagCompound(), pos.getX() + 0.25 + world.rand.nextInt(2) * 0.5, pos.getY() + RBMKDials.getColumnHeight(world), pos.getZ() + 0.25 + world.rand.nextInt(2) * 0.5), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 100));
+                        MainRegistry.proxy.effectNT(HbmEffectNT.RBMKSteam, pos.getX() + 0.25 + world.rand.nextInt(2) * 0.5, pos.getY() + RBMKDials.getColumnHeight(world), pos.getZ() + 0.25 + world.rand.nextInt(2) * 0.5);
                         this.ventDelay = 20 + world.rand.nextInt(10);
                         this.world.playSound(null, pos.getX(), pos.getY() + RBMKDials.getColumnHeight(world), pos.getZ(), HBMSoundHandler.steamEngineOperate, SoundCategory.BLOCKS, 2F, 1F + world.rand.nextFloat() * 0.25F);
                     }

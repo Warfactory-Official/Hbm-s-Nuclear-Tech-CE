@@ -17,6 +17,7 @@ import com.hbm.packet.toclient.GunFXPacket.FXType;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.packet.toclient.GunAnimationPacket;
 import com.hbm.packet.toserver.GunButtonPacket;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.anim.BusAnimation;
 import com.hbm.render.anim.HbmAnimations;
 import com.hbm.render.anim.HbmAnimations.AnimType;
@@ -238,9 +239,8 @@ public class ItemGunBase extends Item implements IHoldableWeapon, IItemHUD {
 
 		if(player.getDisplayName().equals("Vic4Games")) {
 			NBTTagCompound nbt = new NBTTagCompound();
-			nbt.setString("type", "justTilt");
 			nbt.setInteger("time", mainConfig.rateOfFire + 1);
-			PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(nbt, player.posX, player.posY, player.posZ), (EntityPlayerMP) player);
+			PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.JustTilt, nbt, player.posX, player.posY, player.posZ), (EntityPlayerMP) player);
 		}
 	}
 	

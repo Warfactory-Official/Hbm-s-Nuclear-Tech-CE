@@ -19,6 +19,7 @@ import com.hbm.items.weapon.ItemMissile.FuelType;
 import com.hbm.items.weapon.ItemMissile.PartSize;
 import com.hbm.items.weapon.ItemMissile.WarheadType;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.util.MutableVec3d;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
@@ -155,27 +156,21 @@ public class EntityMissileCustom extends EntityMissileBaseNT implements IChunkLo
 	@Override
 	protected void spawnContrail() {
 		Vec3d v = new Vec3d(motionX, motionY, motionZ).normalize();
-		String smoke = "";
+		HbmEffectNT smoke = null;
 		ItemMissile part = (ItemMissile) Item.getItemById(this.dataManager.get(FUSELAGE));
 		FuelType type = (FuelType) part.attributes[0];
 
 		switch(type) {
-			case BALEFIRE: smoke = "exBalefire"; break;
-			case HYDROGEN: smoke = "exHydrogen"; break;
-			case KEROSENE: smoke = "exKerosene"; break;
-			case SOLID: smoke = "exSolid"; break;
+			case BALEFIRE: smoke = HbmEffectNT.ExBalefire; break;
+			case HYDROGEN: smoke = HbmEffectNT.ExHydrogen; break;
+			case KEROSENE, METHALOX: smoke = HbmEffectNT.ExKerosene; break;
+			case SOLID: smoke = HbmEffectNT.ExSolid; break;
 			case XENON: break;
-			case METHALOX: smoke = "exKerosene"; break;
-		}
+        }
 
-		if(!smoke.isEmpty()) {
+		if(smoke != null) {
 			for (int i = 0; i < velocity; i++) {
-				NBTTagCompound data = new NBTTagCompound();
-				data.setDouble("posX", posX - v.x * i);
-				data.setDouble("posY", posY - v.y * i);
-				data.setDouble("posZ", posZ - v.z * i);
-				data.setString("type", smoke);
-				MainRegistry.proxy.effectNT(data);
+				MainRegistry.proxy.effectNT(smoke, posX - v.x * i, posY - v.y * i, posZ - v.z * i);
 			}
 		}
 	}

@@ -20,6 +20,7 @@ import com.hbm.inventory.recipes.CrucibleRecipes;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IConfigurableMachine;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IMetalCopiable;
@@ -179,7 +180,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
                     data.setFloat("off", 0.625F);
                     data.setFloat("base", 0.625F);
                     data.setFloat("len", Math.max(1F, pos.getY() - (float) (Math.ceil(impact.y) - 0.875)));
-                    PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, sx, pos.getY(), sz), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 50));
+                    PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Foundry, data, sx, pos.getY(), sz), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 50));
                 }
 
                 PollutionHandler.incrementPollution(world, pos, PollutionHandler.PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND / 20F);
@@ -214,13 +215,12 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
 
                 if(didPour != null) {
                     NBTTagCompound data = new NBTTagCompound();
-                    data.setString("type", "foundry");
                     data.setInteger("color", didPour.material.moltenColor);
                     data.setByte("dir", (byte) dir.ordinal());
                     data.setFloat("off", 0.625F);
                     data.setFloat("base", 0.625F);
                     data.setFloat("len", Math.max(1F, pos.getY() - (float) (Math.ceil(impact.y) - 0.875)));
-                    PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, sx, pos.getY(), sz), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 50));
+                    PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Foundry, data, sx, pos.getY(), sz), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 50));
                 }
 
                 PollutionHandler.incrementPollution(world, pos, PollutionHandler.PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND / 20F);
@@ -238,16 +238,12 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
 
                 if(world.getTotalWorldTime() % 10 == 0) {
                     NBTTagCompound fx = new NBTTagCompound();
-                    fx.setString("type", "tower");
                     fx.setFloat("lift", 10F);
                     fx.setFloat("base", 0.75F);
                     fx.setFloat("max", 3.5F);
                     fx.setInteger("life", 100 + world.rand.nextInt(20));
                     fx.setInteger("color",0x202020);
-                    fx.setDouble("posX", pos.getX() + 0.5);
-                    fx.setDouble("posY", pos.getY() + 1);
-                    fx.setDouble("posZ", pos.getZ() + 0.5);
-                    MainRegistry.proxy.effectNT(fx);
+                    MainRegistry.proxy.effectNT(HbmEffectNT.Tower, pos.getX() + .5, pos.getY() + 1, pos.getZ() + .5, fx);
                 }
             }
         }

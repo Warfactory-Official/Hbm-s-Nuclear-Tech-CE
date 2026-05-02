@@ -52,6 +52,7 @@ import com.hbm.packet.threading.ThreadedPacket;
 import com.hbm.packet.toclient.*;
 import com.hbm.particle.bullet_hit.EntityHitDataHandler;
 import com.hbm.particle.helper.BlackPowderCreator;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.potion.HbmDetox;
 import com.hbm.potion.HbmPotion;
 import com.hbm.tileentity.machine.TileEntityMachineRadarNT;
@@ -716,12 +717,10 @@ public class ModEventHandler {
             EntityPlayer attacker = (EntityPlayer) event.getSource().getImmediateSource();
 
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("type", "vanillaburst");
             data.setInteger("count", (int) Math.min(e.getMaxHealth() / 2F, 250));
             data.setDouble("motion", 0.1D);
-            data.setString("mode", "blockdust");
             data.setInteger("block", Block.getIdFromBlock(Blocks.REDSTONE_BLOCK));
-            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, e.posX, e.posY + e.height * 0.5, e.posZ), new TargetPoint(e.dimension, e.posX, e.posY, e.posZ, 50));
+            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.VanillaBurst_BlockDust, data, e.posX, e.posY + e.height * 0.5, e.posZ), new TargetPoint(e.dimension, e.posX, e.posY, e.posZ, 50));
 
             if (attacker.getDistanceSq(e) < 25) {
                 attacker.heal(event.getAmount() * 0.5F);
@@ -1117,9 +1116,8 @@ public class ModEventHandler {
         if (EntityDamageUtil.wasAttackedByV1(event.getSource())) {
 
             NBTTagCompound vdat = new NBTTagCompound();
-            vdat.setString("type", "giblets");
             vdat.setInteger("ent", entity.getEntityId());
-            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(vdat, entity.posX, entity.posY + entity.height * 0.5, entity.posZ), new TargetPoint(entity.dimension, entity.posX, entity.posY + entity.height * 0.5, entity.posZ, 150));
+            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Giblets, vdat, entity.posX, entity.posY + entity.height * 0.5, entity.posZ), new TargetPoint(entity.dimension, entity.posX, entity.posY + entity.height * 0.5, entity.posZ, 150));
 
             entity.world.playSound(null, entity.posX, entity.posY, entity.posZ, SoundEvents.ENTITY_ZOMBIE_BREAK_DOOR_WOOD, SoundCategory.HOSTILE, 2.0F, 0.95F + entity.world.rand.nextFloat() * 0.2F);
 

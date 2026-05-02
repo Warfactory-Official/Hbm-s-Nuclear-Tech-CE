@@ -9,6 +9,7 @@ import com.hbm.entity.projectile.rocketbehavior.RocketTargetingPredictive;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.weapon.ItemAmmoHIMARS;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
@@ -136,13 +137,7 @@ public class EntityArtilleryRocket extends EntityThrowableNT
       int offset = 6;
       if (velocity > 1) {
         for (int i = offset; i < velocity + offset; i++) {
-//          NBTTagCompound data = new NBTTagCompound();
-//          data.setDouble("posX", posX + v.x * i);
-//          data.setDouble("posY", posY + v.y * i);
-//          data.setDouble("posZ", posZ + v.z * i);
-//          data.setString("type", "exKerosene");
-//          MainRegistry.proxy.effectNT(data);
-           MainRegistry.proxy.spawnParticle(posX + v.x * i, posY + v.y * i, posZ + v.z * i, "exKerosene", null);
+           MainRegistry.proxy.effectNT(HbmEffectNT.ExKeroseneOld, posX + v.x * i, posY + v.y * i, posZ + v.z * i);
         }
       }
     }
