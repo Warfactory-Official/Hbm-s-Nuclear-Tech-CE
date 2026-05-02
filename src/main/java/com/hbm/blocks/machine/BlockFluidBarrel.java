@@ -11,13 +11,17 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.block.ItemBlockBase;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.lib.InventoryHelper;
+import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.IPersistentNBT;
 import com.hbm.tileentity.machine.TileEntityBarrel;
 import com.hbm.util.I18nUtil;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.BlockFaceShape;
+import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityLivingBase;
@@ -44,6 +48,12 @@ import java.util.List;
 
 
 public class BlockFluidBarrel extends BlockContainer implements ITooltipProvider, IPersistentInfoProvider, ICustomBlockItem {
+
+    public static final PropertyBool CONN_POS_X = PropertyBool.create("conn_pos_x");
+    public static final PropertyBool CONN_NEG_X = PropertyBool.create("conn_neg_x");
+    public static final PropertyBool CONN_POS_Z = PropertyBool.create("conn_pos_z");
+    public static final PropertyBool CONN_NEG_Z = PropertyBool.create("conn_neg_z");
+
     public static boolean keepInventory;
     private int capacity;
 
@@ -52,6 +62,11 @@ public class BlockFluidBarrel extends BlockContainer implements ITooltipProvider
         this.setTranslationKey(s);
         this.setRegistryName(s);
         capacity = cap;
+        this.setDefaultState(this.blockState.getBaseState()
+                .withProperty(CONN_POS_X, false)
+                .withProperty(CONN_NEG_X, false)
+                .withProperty(CONN_POS_Z, false)
+                .withProperty(CONN_NEG_Z, false));
 
         ModBlocks.ALL_BLOCKS.add(this);
     }
@@ -67,6 +82,40 @@ public class BlockFluidBarrel extends BlockContainer implements ITooltipProvider
             return teBarrel.tankNew.getRedstoneComparatorPower();
         }
         return 0;
+    }
+
+    @Override
+    protected BlockStateContainer createBlockState() {
+        return new BlockStateContainer(this, CONN_POS_X, CONN_NEG_X, CONN_POS_Z, CONN_NEG_Z);
+    }
+
+    @Override
+    public IBlockState getStateFromMeta(int meta) {
+        return getDefaultState();
+    }
+
+    @Override
+    public int getMetaFromState(IBlockState state) {
+        return 0;
+    }
+
+    @Override
+    public IBlockState getActualState(IBlockState state, IBlockAccess world, BlockPos pos) {
+        TileEntity te = world.getTileEntity(pos);
+        FluidType type = (te instanceof TileEntityBarrel barrel) ? barrel.tankNew.getTankType() : Fluids.NONE;
+        if (type == Fluids.NONE) {
+            return state
+                    .withProperty(CONN_POS_X, false)
+                    .withProperty(CONN_NEG_X, false)
+                    .withProperty(CONN_POS_Z, false)
+                    .withProperty(CONN_NEG_Z, false);
+        }
+        int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+        return state
+                .withProperty(CONN_POS_X, Library.canConnectFluid(world, x + 1, y, z, Library.POS_X, type))
+                .withProperty(CONN_NEG_X, Library.canConnectFluid(world, x - 1, y, z, Library.NEG_X, type))
+                .withProperty(CONN_POS_Z, Library.canConnectFluid(world, x, y, z + 1, Library.POS_Z, type))
+                .withProperty(CONN_NEG_Z, Library.canConnectFluid(world, x, y, z - 1, Library.NEG_Z, type));
     }
 
     @Override
@@ -190,6 +239,14 @@ public class BlockFluidBarrel extends BlockContainer implements ITooltipProvider
     @Override
     public void onBlockHarvested(World world, BlockPos pos, IBlockState state, EntityPlayer player) {
         IPersistentNBT.onBlockHarvested(world, pos, player);
+    }
+
+    @Override
+    public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
+        super.neighborChanged(state, world, pos, blockIn, fromPos);
+        if (world.isRemote) {
+            world.markBlockRangeForRenderUpdate(pos, pos);
+        }
     }
 
     @Override
