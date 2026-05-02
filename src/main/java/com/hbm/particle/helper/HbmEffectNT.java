@@ -1469,7 +1469,6 @@ public enum HbmEffectNT {
         });
     }
 
-    public static final Class<?>[] PARAM_TYPES = {EffectHandler.class};
     private Object handler;
 
     @SideOnly(Side.CLIENT)
@@ -1482,8 +1481,8 @@ public enum HbmEffectNT {
         ((EffectHandler) handler).summonParticle(world, x, y, z, data == null ? new NBTTagCompound() : data);
     }
 
-    public static HbmEffectNT registerEffect(String name, EffectHandler handler) {
-        return EnumHelper.addEnum(HbmEffectNT.class, name, PARAM_TYPES, handler);
+    public static HbmEffectNT registerEffect(String name) {
+        return EnumHelper.addEnum(HbmEffectNT.class, name, new Class[0]);
     }
     
     @FunctionalInterface
