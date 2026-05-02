@@ -2,18 +2,18 @@ package com.hbm.particle.tau;
 
 import com.hbm.main.ResourceManager;
 import com.hbm.particle.ParticleFirstPerson;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import com.hbm.util.BobMathUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.DestFactor;
 import net.minecraft.client.renderer.GlStateManager.SourceFactor;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 public class ParticleTauLightning extends ParticleFirstPerson {
 
@@ -81,14 +81,15 @@ public class ParticleTauLightning extends ParticleFirstPerson {
         GlStateManager.translate(f5, f6, f7);
         GlStateManager.scale(f4, f4, f4);
 		GL11.glRotated(this.particleAngle+timeScale*rotationOverLife, 1, 0, 0);
-        Tessellator.getInstance().getBuffer().begin(GL11.GL_QUADS, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
-        
-        buffer.pos(0, 0.5, 0.5).tex(1, 1).color(this.particleRed, this.particleGreen, this.particleBlue, this.workingAlpha).lightmap(240, 240).endVertex();
-        buffer.pos(0, 0.5, -0.5).tex(1, 0).color(this.particleRed, this.particleGreen, this.particleBlue, this.workingAlpha).lightmap(240, 240).endVertex();
-        buffer.pos(0, -0.5, -0.5).tex(0, 0).color(this.particleRed, this.particleGreen, this.particleBlue, this.workingAlpha).lightmap(240, 240).endVertex();
-        buffer.pos(0, -0.5, 0.5).tex(0, 1).color(this.particleRed, this.particleGreen, this.particleBlue, this.workingAlpha).lightmap(240, 240).endVertex();
-	
-        Tessellator.getInstance().draw();
+        NTMBufferBuilder fastBuffer = NTMImmediate.INSTANCE.beginParticlePositionTexColorLmap(GL11.GL_QUADS, 4);
+        int packedColor = NTMBufferBuilder.packColor(this.particleRed, this.particleGreen, this.particleBlue, this.workingAlpha);
+        int packedLightmap = NTMBufferBuilder.packLightmap(240, 240);
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked(0, 0.5F, 0.5F, 1, 1, packedColor, packedLightmap);
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked(0, 0.5F, -0.5F, 1, 0, packedColor, packedLightmap);
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked(0, -0.5F, -0.5F, 0, 0, packedColor, packedLightmap);
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked(0, -0.5F, 0.5F, 0, 1, packedColor, packedLightmap);
+
+        NTMImmediate.INSTANCE.draw();
         
         GlStateManager.enableAlpha();
         GlStateManager.depthMask(true);

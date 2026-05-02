@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.albion.TileEntityPADipole;
@@ -14,6 +15,11 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerPADipole extends Container {
 
     private final TileEntityPADipole quadrupole;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(2)
+                                                                              .rule(0, 1, Library::isBattery)
+                                                                              .genericMachineRange(1)
+                                                                              .build();
 
     public ContainerPADipole(InventoryPlayer playerInv, TileEntityPADipole tile) {
         quadrupole = tile;
@@ -41,8 +47,6 @@ public class ContainerPADipole extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 2,
-                Library::isBattery, 1
-        );
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 }

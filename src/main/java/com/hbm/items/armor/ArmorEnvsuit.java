@@ -4,6 +4,7 @@ import com.google.common.collect.Multimap;
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.items.ModItems;
 import com.hbm.main.ResourceManager;
+import com.hbm.render.item.ItemRenderBaseFMM;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.model.ModelArmorEnvsuit;
 import com.hbm.render.tileentity.IItemRendererProvider;
@@ -70,7 +71,7 @@ public class ArmorEnvsuit extends ArmorFSBPowered implements IItemRendererProvid
   private static final UUID speed = UUID.fromString("6ab858ba-d712-485c-bae9-e5e765fc555a");
 
   @Override
-  public void onArmorTick(World world, EntityPlayer player, ItemStack stack) {
+  public void onArmorTick(@NotNull World world, @NotNull EntityPlayer player, @NotNull ItemStack stack) {
 
     super.onArmorTick(world, player, stack);
 
@@ -128,7 +129,7 @@ public class ArmorEnvsuit extends ArmorFSBPowered implements IItemRendererProvid
   @Override
   @SideOnly(Side.CLIENT)
   public ItemRenderBase getRenderer(Item item) {
-    return new ItemRenderBase() {
+    return new ItemRenderBaseFMM() {
       public void renderInventory() {
         setupRenderInv();
       }

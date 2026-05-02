@@ -44,6 +44,7 @@ public abstract class EntityMissileBaseNT extends EntityThrowableInterp implemen
     public int health = 50;
     List<ChunkPos> loadedChunks = new ArrayList<>();
     private Ticket loaderTicket;
+    private boolean awaitingTicketRestore;
 
     public EntityMissileBaseNT(World world) {
         super(world);
@@ -97,7 +98,6 @@ public abstract class EntityMissileBaseNT extends EntityThrowableInterp implemen
     @Override
     protected void entityInit() {
         super.entityInit();
-        init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, Type.ENTITY));
     }
 
     @Override
@@ -112,6 +112,9 @@ public abstract class EntityMissileBaseNT extends EntityThrowableInterp implemen
 
     @Override
     public void onUpdate() {
+        if (!world.isRemote) {
+            requestChunkLoaderTicketIfNeeded();
+        }
         this.prevPosX = this.posX;
         this.prevPosY = this.posY;
         this.prevPosZ = this.posZ;
@@ -211,6 +214,7 @@ public abstract class EntityMissileBaseNT extends EntityThrowableInterp implemen
     @Override
     public void readEntityFromNBT(NBTTagCompound nbt) {
         super.readEntityFromNBT(nbt);
+        awaitingTicketRestore = true;
         motionX = nbt.getDouble("moX");
         motionY = nbt.getDouble("moY");
         motionZ = nbt.getDouble("moZ");
@@ -322,6 +326,8 @@ public abstract class EntityMissileBaseNT extends EntityThrowableInterp implemen
                     loaderTicket = ticket;
                     loaderTicket.bindEntity(this);
                     loaderTicket.getModData();
+                } else if(loaderTicket != ticket) {
+                    ForgeChunkManager.releaseTicket(ticket);
                 }
 
                 ForgeChunkManager.forceChunk(loaderTicket, new ChunkPos(chunkCoordX, chunkCoordZ));
@@ -351,6 +357,11 @@ public abstract class EntityMissileBaseNT extends EntityThrowableInterp implemen
             for (ChunkPos chunk : loadedChunks) {
                 ForgeChunkManager.unforceChunk(loaderTicket, chunk);
             }
+            loadedChunks.clear();
+            if(this.isDead) {
+                ForgeChunkManager.releaseTicket(loaderTicket);
+                loaderTicket = null;
+            }
         }
     }
 
@@ -358,6 +369,15 @@ public abstract class EntityMissileBaseNT extends EntityThrowableInterp implemen
     public void setDead() {
         super.setDead();
         this.clearChunkLoader();
+    }
+
+    protected final void requestChunkLoaderTicketIfNeeded() {
+        if(world.isRemote || loaderTicket != null) return;
+        if(awaitingTicketRestore) {
+            awaitingTicketRestore = false;
+            return;
+        }
+        init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, Type.ENTITY));
     }
 
     public void explodeStandard(float strength, int resolution, boolean fire) {

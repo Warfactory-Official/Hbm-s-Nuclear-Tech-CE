@@ -4,8 +4,10 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.ModItems;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.item.TEISRBase;
+import com.hbm.render.model.BakedModelTransforms;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import org.lwjgl.opengl.GL11;
 @AutoRegister(item = "wood_gavel")
@@ -13,6 +15,11 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister(item = "diamond_gavel")
 @AutoRegister(item = "mese_gavel")
 public class ItemRenderGavel extends TEISRBase {
+
+	@Override
+	public ModelBinding createModelBinding(Item item) {
+		return ModelBinding.inventoryWithGuiModel(item, BakedModelTransforms.defaultItemTransforms());
+	}
 
 	@Override
 	public void renderByItem(ItemStack item) {

@@ -53,7 +53,7 @@ import java.util.List;
 
 @AutoRegister
 public class TileEntityElectrolyser extends TileEntityMachineBase implements IEnergyReceiverMK2, IFluidStandardTransceiver, IControlReceiver,
-        IGUIProvider, IUpgradeInfoProvider, IFluidCopiable, IMetalCopiable, ITickable {
+        IGUIProvider, IUpgradeInfoProvider, IFluidCopiable, IMetalCopiable, ITickable, IConnectionAnchors {
 
     public long power;
     public static final long maxPower = 20000000;
@@ -104,10 +104,10 @@ public class TileEntityElectrolyser extends TileEntityMachineBase implements IEn
         };
 
         tanks = new FluidTankNTM[4];
-        tanks[0] = new FluidTankNTM(Fluids.WATER, 16000);
-        tanks[1] = new FluidTankNTM(Fluids.HYDROGEN, 16000);
-        tanks[2] = new FluidTankNTM(Fluids.OXYGEN, 16000);
-        tanks[3] = new FluidTankNTM(Fluids.NITRIC_ACID, 16000);
+        tanks[0] = new FluidTankNTM(Fluids.WATER, 16000).withOwner(this);
+        tanks[1] = new FluidTankNTM(Fluids.HYDROGEN, 16000).withOwner(this);
+        tanks[2] = new FluidTankNTM(Fluids.OXYGEN, 16000).withOwner(this);
+        tanks[3] = new FluidTankNTM(Fluids.NITRIC_ACID, 16000).withOwner(this);
     }
 
     @Override

@@ -1,55 +1,78 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.blocks.generic.BlockStorageCrate;
-import com.hbm.config.MachineConfig;
+import com.hbm.inventory.container.ContainerCrateBase;
+import com.hbm.inventory.gui.GUICrateBase;
 import com.hbm.hazard.HazardSystem;
 import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemKeyPin;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.lib.Library;
-import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IPersistentNBT;
 import com.hbm.tileentity.machine.storage.TileEntityCrateBase;
-import io.netty.buffer.ByteBuf;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ITickable;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
+public abstract class TileEntityCrate extends TileEntityCrateBase implements IGUIProvider, IPersistentNBT {
 
-// mlbv: I tried overriding markDirty to calculate the changes but somehow it always delays by one operation.
-// also, implementing ITickable is a bad idea, remove it if you can find a better way.
-public abstract class TileEntityCrate extends TileEntityCrateBase implements IGUIProvider, ITickable, IPersistentNBT {
-
-
-    private final AtomicBoolean isCheckScheduled = new AtomicBoolean(false);
-    public float fillPercentage = 0.0F;
+    protected boolean suppressInventoryCallbacks = false;
     protected String name;
-    boolean needsUpdate = false;
-    private boolean needsSync = false;
+    private final int crateColumns;
+    private final int crateRows;
+    private final int crateX;
+    private final int crateY;
+    private final int playerInventoryX;
+    private final int playerInventoryY;
+    private final int hotbarY;
+    private final int guiWidth;
+    private final int guiHeight;
+    private final int inventoryLabelX;
+    private final int titleColor;
+    private final int inventoryLabelColor;
+    private final ResourceLocation texture;
     private boolean destroyedByCreativePlayer = false;
-    public transient ItemStack boundItem = ItemStack.EMPTY;
 
     private record CrateDropData(NBTTagCompound persistentData, double radiation) {
     }
 
-    public TileEntityCrate(int scount, String name) {
+    public TileEntityCrate(int scount, String name, int crateColumns, int crateRows, int crateX, int crateY,
+                           int playerInventoryX, int playerInventoryY, int hotbarY, int guiWidth, int guiHeight,
+                           int inventoryLabelX, int titleColor, int inventoryLabelColor, ResourceLocation texture) {
         super(scount);
         this.name = name;
+        this.crateColumns = crateColumns;
+        this.crateRows = crateRows;
+        this.crateX = crateX;
+        this.crateY = crateY;
+        this.playerInventoryX = playerInventoryX;
+        this.playerInventoryY = playerInventoryY;
+        this.hotbarY = hotbarY;
+        this.guiWidth = guiWidth;
+        this.guiHeight = guiHeight;
+        this.inventoryLabelX = inventoryLabelX;
+        this.titleColor = titleColor;
+        this.inventoryLabelColor = inventoryLabelColor;
+        this.texture = texture;
     }
 
     @Override
-    protected ItemStackHandler getNewInventory(int scount, int slotlimit){
-        return new ItemStackHandler(scount){
+    protected ItemStackHandler getNewInventory(int scount, int slotlimit) {
+        return new ItemStackHandler(scount) {
             @Override
             public @NotNull ItemStack getStackInSlot(int slot) {
                 ensureFilled();
@@ -63,25 +86,12 @@ public abstract class TileEntityCrate extends TileEntityCrateBase implements IGU
             }
 
             @Override
-            public boolean isItemValid(int slot, @NotNull ItemStack stack) {
-                if (!boundItem.isEmpty() && (stack == boundItem || ItemStack.areItemStacksEqual(stack, boundItem))) {
-                    return false;
-                }
-                return super.isItemValid(slot, stack);
-            }
-
-
-            @Override
             protected void onContentsChanged(int slot) {
                 super.onContentsChanged(slot);
-                markDirty();
-                needsUpdate = true;
-
-                if (!boundItem.isEmpty()) {
-                    NBTTagCompound nbt = boundItem.hasTagCompound() ? boundItem.getTagCompound() : new NBTTagCompound();
-                    writeNBT(nbt);
-                    boundItem.setTagCompound(nbt);
+                if (suppressInventoryCallbacks) {
+                    return;
                 }
+                markDirty();
             }
 
             @Override
@@ -92,47 +102,46 @@ public abstract class TileEntityCrate extends TileEntityCrateBase implements IGU
     }
 
     @Override
-    public void update() {
-        if (world.isRemote) return;
-        if (needsUpdate && world.getTotalWorldTime() % 5 == 4) {
-            scheduleCheck();
-            needsUpdate = false;
+    public void fillWithLoot(@Nullable EntityPlayer player) {
+        if (this.lootTable == null || !(this.world instanceof WorldServer)) {
+            return;
         }
-        if (needsSync) {
-            networkPackNT(10);
-            needsSync = false;
+
+        suppressInventoryCallbacks = true;
+        try {
+            super.fillWithLoot(player);
+        } finally {
+            suppressInventoryCallbacks = false;
+        }
+
+        markDirty();
+    }
+
+    private static void applyDropData(NBTTagCompound nbt, CrateDropData data) {
+        if (!data.persistentData.isEmpty()) {
+            nbt.setTag(NBT_PERSISTENT_KEY, data.persistentData);
+        } else {
+            nbt.removeTag(NBT_PERSISTENT_KEY);
+        }
+
+        if (data.radiation > 0D) {
+            nbt.setDouble(BlockStorageCrate.CRATE_RAD_KEY, data.radiation);
+        } else {
+            nbt.removeTag(BlockStorageCrate.CRATE_RAD_KEY);
         }
     }
 
-    void scheduleCheck() {
-        if (this.isCheckScheduled.compareAndSet(false, true)) {
-            CompletableFuture.supplyAsync(this::getSize).whenComplete((currentSize, error) -> {
-                try {
-                    if (error != null) {
-                        MainRegistry.logger.error("Error checking crate size at {}", pos, error);
-                        return;
-                    }
-                    if (currentSize > MachineConfig.crateByteSize * 2L) {
-                        ((WorldServer) world).addScheduledTask(this::ejectAndClearInventory);
-                    } else {
-                        this.fillPercentage = (float) currentSize / MachineConfig.crateByteSize * 100F;
-                    }
-                } finally {
-                    this.isCheckScheduled.set(false);
-                    needsSync = true;
-                }
-            });
-        }
-    }
-
-    private void ejectAndClearInventory() {
+    protected final void ejectAndClearInventory() {
         InventoryHelper.dropInventoryItems(world, pos, this);
-        for (int i = 0; i < inventory.getSlots(); i++) {
-            inventory.setStackInSlot(i, ItemStack.EMPTY);
+        suppressInventoryCallbacks = true;
+        try {
+            for (int i = 0; i < inventory.getSlots(); i++) {
+                inventory.setStackInSlot(i, ItemStack.EMPTY);
+            }
+        } finally {
+            suppressInventoryCallbacks = false;
         }
-        this.fillPercentage = 0.0F;
         super.markDirty();
-        MainRegistry.logger.debug("Crate at {} was oversized and has been emptied to prevent data corruption.", pos);
     }
 
     public long getSize() {
@@ -144,7 +153,9 @@ public abstract class TileEntityCrate extends TileEntityCrateBase implements IGU
         double radiation = 0D;
         for (int i = 0; i < inventory.getSlots(); i++) {
             ItemStack stack = inventory.getStackInSlot(i);
-            if (stack.isEmpty()) continue;
+            if (stack.isEmpty()) {
+                continue;
+            }
 
             radiation += HazardSystem.getTotalRadsFromStack(stack) * stack.getCount();
             NBTTagCompound slot = new NBTTagCompound();
@@ -196,33 +207,71 @@ public abstract class TileEntityCrate extends TileEntityCrateBase implements IGU
         return this.hasCustomName() ? this.customName : name;
     }
 
-    @Override
-    public void readFromNBT(NBTTagCompound compound) {
-        super.readFromNBT(compound);
-        fillPercentage = compound.getFloat("fill");
+    public int getCrateColumns() {
+        return crateColumns;
+    }
+
+    public int getCrateRows() {
+        return crateRows;
+    }
+
+    public int getCrateX() {
+        return crateX;
+    }
+
+    public int getCrateY() {
+        return crateY;
+    }
+
+    public int getPlayerInventoryX() {
+        return playerInventoryX;
+    }
+
+    public int getPlayerInventoryY() {
+        return playerInventoryY;
+    }
+
+    public int getHotbarY() {
+        return hotbarY;
+    }
+
+    public int getGuiWidth() {
+        return guiWidth;
+    }
+
+    public int getGuiHeight() {
+        return guiHeight;
+    }
+
+    public int getInventoryLabelX() {
+        return inventoryLabelX;
+    }
+
+    public int getTitleColor() {
+        return titleColor;
+    }
+
+    public int getInventoryLabelColor() {
+        return inventoryLabelColor;
+    }
+
+    public ResourceLocation getTexture() {
+        return texture;
     }
 
     @Override
-    public @NotNull NBTTagCompound writeToNBT(NBTTagCompound compound) {
-        super.writeToNBT(compound);
-        compound.setFloat("fill", fillPercentage);
-        return compound;
+    public void readFromNBT(NBTTagCompound compound) {
+        suppressInventoryCallbacks = true;
+        try {
+            super.readFromNBT(compound);
+        } finally {
+            suppressInventoryCallbacks = false;
+        }
     }
 
     @Override
     public void writeNBT(NBTTagCompound nbt) {
-        CrateDropData data = buildDropData();
-        NBTTagCompound dropTag = assembleDropTag(data);
-        if (world != null && !world.isRemote && Library.getCompressedNbtSize(dropTag) > MachineConfig.crateByteSize) {
-            InventoryHelper.dropInventoryItems(world, pos, this);
-            return;
-        }
-
-        if (!data.persistentData.isEmpty()) nbt.setTag(NBT_PERSISTENT_KEY, data.persistentData);
-        else nbt.removeTag(NBT_PERSISTENT_KEY);
-
-        if (data.radiation > 0D) nbt.setDouble(BlockStorageCrate.CRATE_RAD_KEY, data.radiation);
-        else nbt.removeTag(BlockStorageCrate.CRATE_RAD_KEY);
+        applyDropData(nbt, buildDropData());
     }
 
     @Override
@@ -233,13 +282,18 @@ public abstract class TileEntityCrate extends TileEntityCrateBase implements IGU
             this.setMod(data.getDouble("lockMod"));
             this.lock();
         }
-        for (int i = 0; i < inventory.getSlots(); i++) {
-            String key = "slot" + i;
-            if (data.hasKey(key)) {
-                inventory.setStackInSlot(i, new ItemStack(data.getCompoundTag(key)));
-            } else {
-                inventory.setStackInSlot(i, ItemStack.EMPTY);
+        suppressInventoryCallbacks = true;
+        try {
+            for (int i = 0; i < inventory.getSlots(); i++) {
+                String key = "slot" + i;
+                if (data.hasKey(key)) {
+                    inventory.setStackInSlot(i, new ItemStack(data.getCompoundTag(key)));
+                } else {
+                    inventory.setStackInSlot(i, ItemStack.EMPTY);
+                }
             }
+        } finally {
+            suppressInventoryCallbacks = false;
         }
     }
 
@@ -254,25 +308,19 @@ public abstract class TileEntityCrate extends TileEntityCrateBase implements IGU
     }
 
     @Override
-    public void serialize(ByteBuf buf) {
-        buf.writeFloat(this.fillPercentage);
-    }
-
-    @Override
-    public void deserialize(ByteBuf buf) {
-        this.fillPercentage = buf.readFloat();
-    }
-
-    @Override
-    protected boolean checkLock(EnumFacing facing){
+    protected boolean checkLock(EnumFacing facing) {
         return facing == null || !isLocked();
     }
 
     @Override
-    public boolean isUseableByPlayer(EntityPlayer player) {
-        if (boundItem != null && !boundItem.isEmpty()) {
-            return player.getHeldItemMainhand() == boundItem;
-        }
-        return super.isUseableByPlayer(player);
+    public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
+        return new ContainerCrateBase(player.inventory, this);
     }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
+        return new GUICrateBase(player.inventory, this);
+    }
+
 }

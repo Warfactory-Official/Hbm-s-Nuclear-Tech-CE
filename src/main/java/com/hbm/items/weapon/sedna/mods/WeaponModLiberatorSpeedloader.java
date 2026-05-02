@@ -6,10 +6,10 @@ import com.hbm.items.weapon.sedna.factory.XFactory12ga;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
 import com.hbm.items.weapon.sedna.mags.MagazineFullReload;
 import com.hbm.items.weapon.sedna.mags.MagazineSingleReload;
+import com.hbm.render.anim.sedna.AnimationEnums;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna.IType;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
 import com.hbm.render.anim.sedna.BusAnimationSequenceSedna;
-import com.hbm.render.anim.sedna.HbmAnimationsSedna;
 import net.minecraft.item.ItemStack;
 
 import java.util.Objects;
@@ -35,7 +35,7 @@ public class WeaponModLiberatorSpeedloader extends WeaponModBase {
 		return base;
 	}
 
-	@SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_LIBERATOR_ANIMS = (stack, type) -> switch (type) {
+	@SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> LAMBDA_LIBERATOR_ANIMS = (stack, type) -> switch (type) {
 		case RELOAD -> new BusAnimationSedna()
 				.addBus("LATCH", new BusAnimationSequenceSedna().addPos(15, 0, 0, 100))
 				.addBus("BREAK", new BusAnimationSequenceSedna().addPos(0, 0, 0, 100).addPos(60, 0, 0, 350, IType.SIN_DOWN))

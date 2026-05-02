@@ -4,6 +4,7 @@ import com.hbm.Tags;
 import com.hbm.blocks.BlockEnums;
 import com.hbm.render.loader.HFRWavefrontObject;
 import com.hbm.render.model.BlockDecoBakedModel;
+import com.hbm.world.gen.nbt.INBTBlockTransformable;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -13,17 +14,26 @@ import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Collections;
+import java.util.List;
 
 public class BlockDecoCRT extends BlockDecoModel<BlockEnums.DecoCRTEnum> {
 
@@ -42,20 +52,31 @@ public class BlockDecoCRT extends BlockDecoModel<BlockEnums.DecoCRTEnum> {
     }
 
     @Override
+    public @NotNull IBlockState getStateForPlacement(@NotNull World worldIn, @NotNull BlockPos pos, @NotNull EnumFacing facing,
+                                                     float hitX, float hitY, float hitZ, int meta, @NotNull EntityLivingBase placer, @NotNull EnumHand hand) {
+        int i = MathHelper.floor(placer.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
+        return this.getDefaultState().withProperty(META, (meta << 2) | i);
+    }
+
+    @Override
     @SideOnly(Side.CLIENT)
     public void bakeModel(ModelBakeEvent event) {
         HFRWavefrontObject wavefront = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/blocks/crt.obj"));
         TextureMap atlas = Minecraft.getMinecraft().getTextureMapBlocks();
-
         String[] variants = new String[]{"crt_clean", "crt_broken", "crt_blinking", "crt_bsod"};
-        for (int m = 0; m < variants.length; m++) {
-            TextureAtlasSprite sprite = atlas.getAtlasSprite(new ResourceLocation(Tags.MODID, "blocks/" + variants[m]).toString());
-            IBakedModel bakedWorld = BlockDecoBakedModel.forBlock(wavefront, sprite, -0.5F, -1);
-            ModelResourceLocation mrlWorld = new ModelResourceLocation(getRegistryName(), "meta=" + m);
-            event.getModelRegistry().putObject(mrlWorld, bakedWorld);
 
-            IBakedModel bakedItem = new BlockDecoBakedModel(wavefront, sprite, false, 1.0F, 0.0F, -0.5F, 0.0F, 2);
-            ModelResourceLocation mrlItem = new ModelResourceLocation(new ResourceLocation(Tags.MODID, getRegistryName().getPath() + "_item_" + m), "inventory");
+        for (int v = 0; v < variants.length; v++) {
+            TextureAtlasSprite sprite = atlas.getAtlasSprite(new ResourceLocation(Tags.MODID, "blocks/" + variants[v]).toString());
+            IBakedModel bakedWorld = new BlockDecoBakedModel(wavefront, sprite, true, 1.0F, 0.0F, -0.5F, 0.0F, 0, true);
+
+            for (int r = 0; r < 4; r++) {
+                int meta = (v << 2) | r;
+                ModelResourceLocation mrlWorld = new ModelResourceLocation(getRegistryName(), "meta=" + meta);
+                event.getModelRegistry().putObject(mrlWorld, bakedWorld);
+            }
+
+            IBakedModel bakedItem = new BlockDecoBakedModel(wavefront, sprite, false, 1.0F, 0.0F, -0.25F, 0.0F, 2, true);
+            ModelResourceLocation mrlItem = new ModelResourceLocation(new ResourceLocation(Tags.MODID, getRegistryName().getPath() + "_item_" + v), "inventory");
             event.getModelRegistry().putObject(mrlItem, bakedItem);
         }
     }
@@ -65,16 +86,20 @@ public class BlockDecoCRT extends BlockDecoModel<BlockEnums.DecoCRTEnum> {
     public StateMapperBase getStateMapper(ResourceLocation loc) {
         return new StateMapperBase() {
             @Override
-            protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
-                int meta = state.getValue(META) & 3;
-                return new ModelResourceLocation(loc, "meta=" + meta);
+            protected @NotNull ModelResourceLocation getModelResourceLocation(@NotNull IBlockState state) {
+                return new ModelResourceLocation(loc, "meta=" + state.getValue(META));
             }
         };
     }
 
     @Override
-    public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
-        return new ItemStack(Item.getItemFromBlock(this), 1, state.getValue(META) & 3);
+    public @NotNull ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
+        return new ItemStack(Item.getItemFromBlock(this), 1, state.getValue(META) >> 2);
+    }
+
+    @Override
+    public @NotNull List<ItemStack> getDrops(IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
+        return Collections.singletonList(new ItemStack(Item.getItemFromBlock(this), 1, state.getValue(META) >> 2));
     }
 
     @Override
@@ -87,6 +112,9 @@ public class BlockDecoCRT extends BlockDecoModel<BlockEnums.DecoCRTEnum> {
             ModelLoader.setCustomModelResourceLocation(item, m, inv);
         }
     }
+
+    @Override
+    public int transformMeta(int meta, int coordBaseMode) {
+        return INBTBlockTransformable.transformMetaDecoModelLow(meta, coordBaseMode);
+    }
 }
-
-

@@ -31,12 +31,13 @@ public class TileEntityRefueler extends TileEntityLoadedBase implements IFluidSt
 
     private boolean isOperating = false;
     private int operatingTime;
+    private AxisAlignedBB bb;
 
     public FluidTankNTM tank;
 
     public TileEntityRefueler() {
         super();
-        tank = new FluidTankNTM(Fluids.KEROSENE, 100);
+        tank = new FluidTankNTM(Fluids.KEROSENE, 100).withOwner(this);
     }
 
     @Override
@@ -155,5 +156,11 @@ public class TileEntityRefueler extends TileEntityLoadedBase implements IFluidSt
     @Override
     public FluidTankNTM[] getReceivingTanks() {
         return new FluidTankNTM[] { tank };
+    }
+
+    @Override
+    public AxisAlignedBB getRenderBoundingBox() {
+        if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+        return bb;
     }
 }

@@ -7,6 +7,7 @@ import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.IPersistentNBT;
 import com.hbm.tileentity.machine.TileEntityMachineBattery;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.material.Material;
@@ -117,7 +118,6 @@ public class MachineBattery extends BlockContainer implements ILookOverlay {
 
 	@Override
 	public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-		worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
         IPersistentNBT.onBlockPlacedBy(worldIn, pos, stack);
 	}
 
@@ -179,6 +179,12 @@ public class MachineBattery extends BlockContainer implements ILookOverlay {
 			return 0;
 
         return (int)battery.getPowerRemainingScaled(15L);
+	}
+
+	@Override
+	public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
+		TileEntityMachineBattery battery = (TileEntityMachineBattery) world.getTileEntity(pos);
+		battery.isIndirectlyPowered = world.isBlockPowered(pos);
 	}
 
 	@Override

@@ -32,8 +32,10 @@ public class BlockSpotlightBakedModel extends AbstractWavefrontBakedModel {
     private final List<BakedQuad>[][] cache = new List[64][6];
     private List<BakedQuad> inventoryCache;
 
-    public BlockSpotlightBakedModel(HFRWavefrontObject model, TextureAtlasSprite sprite, boolean isInventory, LightType type, float baseScale, float tx, float ty, float tz, float itemYaw) {
-        super(model, isInventory ? DefaultVertexFormats.ITEM : DefaultVertexFormats.BLOCK, baseScale, tx, ty, tz, makeItemTransforms(type));
+    public BlockSpotlightBakedModel(HFRWavefrontObject model, TextureAtlasSprite sprite, boolean isInventory,
+                                    LightType type, float baseScale, float tx, float ty, float tz, float itemYaw) {
+        super(model, isInventory ? DefaultVertexFormats.ITEM : DefaultVertexFormats.BLOCK, baseScale, tx, ty, tz,
+                makeItemTransforms(type));
 
         this.sprite = sprite;
         this.isInventory = isInventory;
@@ -43,7 +45,8 @@ public class BlockSpotlightBakedModel extends AbstractWavefrontBakedModel {
 
     @SuppressWarnings("deprecation")
     private static ItemCameraTransforms makeItemTransforms(LightType type) {
-        ItemTransformVec3f gui = new ItemTransformVec3f(new Vector3f(30, 45, 0), new Vector3f(0.15f, 0.05f, 0), new Vector3f(1.5f, 1.5f, 1.5f));
+        ItemTransformVec3f gui = new ItemTransformVec3f(new Vector3f(30, 45, 0), new Vector3f(0.15f, 0.05f, 0),
+                new Vector3f(1.5f, 1.5f, 1.5f));
 
         switch (type) {
             case HALOGEN -> {
@@ -56,20 +59,28 @@ public class BlockSpotlightBakedModel extends AbstractWavefrontBakedModel {
             }
         }
 
-        ItemTransformVec3f thirdPersonLeft = new ItemTransformVec3f(new Vector3f(45, 90, 0), new Vector3f(0, -0.015f, 0.1f), new Vector3f(0.45f, 0.45f, 0.45f));
-        ItemTransformVec3f thirdPersonRight = new ItemTransformVec3f(new Vector3f(45, -90, 0), new Vector3f(0, -0.015f, 0.1f), new Vector3f(0.45f, 0.45f, 0.45f));
-        ItemTransformVec3f firstPersonLeft = new ItemTransformVec3f(new Vector3f(0, -135, 0), new Vector3f(0.03f, 0.1f, 0), new Vector3f(0.5f, 0.5f, 0.5f));
-        ItemTransformVec3f firstPersonRight = new ItemTransformVec3f(new Vector3f(0, 45, 0), new Vector3f(0.1f, 0.1f, 0), new Vector3f(0.5f, 0.5f, 0.5f));
-        ItemTransformVec3f ground = new ItemTransformVec3f(new Vector3f(0, 0, 0), new Vector3f(0, 0.25f, 0), new Vector3f(0.5f, 0.5f, 0.5f));
+        ItemTransformVec3f thirdPersonLeft = new ItemTransformVec3f(new Vector3f(45, 90, 0),
+                new Vector3f(0, -0.015f, 0.1f), new Vector3f(0.45f, 0.45f, 0.45f));
+        ItemTransformVec3f thirdPersonRight = new ItemTransformVec3f(new Vector3f(45, -90, 0),
+                new Vector3f(0, -0.015f, 0.1f), new Vector3f(0.45f, 0.45f, 0.45f));
+        ItemTransformVec3f firstPersonLeft = new ItemTransformVec3f(new Vector3f(0, -135, 0),
+                new Vector3f(0.03f, 0.1f, 0), new Vector3f(0.5f, 0.5f, 0.5f));
+        ItemTransformVec3f firstPersonRight = new ItemTransformVec3f(new Vector3f(0, 45, 0),
+                new Vector3f(0.1f, 0.1f, 0), new Vector3f(0.5f, 0.5f, 0.5f));
+        ItemTransformVec3f ground = new ItemTransformVec3f(new Vector3f(0, 0, 0), new Vector3f(0, 0.25f, 0),
+                new Vector3f(0.5f, 0.5f, 0.5f));
 
-        return new ItemCameraTransforms(thirdPersonLeft, thirdPersonRight, firstPersonLeft, firstPersonRight, BakedModelTransforms.standardBlock().head, gui, ground, BakedModelTransforms.standardBlock().fixed);
+        return new ItemCameraTransforms(thirdPersonLeft, thirdPersonRight, firstPersonLeft, firstPersonRight,
+                BakedModelTransforms.standardBlock().head, gui, ground, BakedModelTransforms.standardBlock().fixed);
     }
 
-    public static BlockSpotlightBakedModel forBlock(HFRWavefrontObject model, TextureAtlasSprite sprite, LightType type) {
+    public static BlockSpotlightBakedModel forBlock(HFRWavefrontObject model, TextureAtlasSprite sprite,
+                                                    LightType type) {
         return new BlockSpotlightBakedModel(model, sprite, false, type, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F);
     }
 
-    public static BlockSpotlightBakedModel forItem(HFRWavefrontObject model, TextureAtlasSprite sprite, LightType type) {
+    public static BlockSpotlightBakedModel forItem(HFRWavefrontObject model, TextureAtlasSprite sprite,
+                                                   LightType type) {
         return new BlockSpotlightBakedModel(model, sprite, true, type, 0.9F, 0.0F, 0.0F, 0.0F, (float) Math.PI);
     }
 
@@ -93,9 +104,9 @@ public class BlockSpotlightBakedModel extends AbstractWavefrontBakedModel {
         float pitch = FacingUtil.getPitch(facing);
         float yaw = FacingUtil.getYaw(facing);
 
-        tx = 0.5F - facing.getXOffset() * 0.5F;
-        ty = 0.5F - facing.getYOffset() * 0.5F;
-        tz = 0.5F - facing.getZOffset() * 0.5F;
+        float extraTx = 0.5F - facing.getXOffset() * 0.5F;
+        float extraTy = 0.5F - facing.getYOffset() * 0.5F;
+        float extraTz = 0.5F - facing.getZOffset() * 0.5F;
 
         int connectionCount = 0;
         int mask = 0;
@@ -132,11 +143,16 @@ public class BlockSpotlightBakedModel extends AbstractWavefrontBakedModel {
         }
 
         if (cache[mask][facing.getIndex()] != null) return cache[mask][facing.getIndex()];
-        return cache[mask][facing.getIndex()] = Collections.unmodifiableList(buildWorldQuads(spotlight.getPartName(connectionCount), roll, pitch, yaw));
+        return cache[mask][facing.getIndex()] = Collections.unmodifiableList(
+                buildWorldQuads(spotlight.getPartName(connectionCount), roll, pitch, yaw, extraTx, extraTy, extraTz)
+        );
     }
 
-    private List<BakedQuad> buildWorldQuads(String partName, float roll, float pitch, float yaw) {
-        return new ArrayList<>(bakeSimpleQuads(Collections.singleton(partName), roll, pitch, yaw, false, false, sprite));
+    private List<BakedQuad> buildWorldQuads(String partName, float roll, float pitch, float yaw,
+                                            float extraTx, float extraTy, float extraTz) {
+        return new ArrayList<>(
+                bakeSimpleQuads(Collections.singleton(partName), roll, pitch, yaw, true, false, sprite, -1, extraTx,
+                        extraTy, extraTz));
     }
 
     private List<BakedQuad> buildItemQuads() {
@@ -148,7 +164,7 @@ public class BlockSpotlightBakedModel extends AbstractWavefrontBakedModel {
             default -> partName;
         };
 
-        return new ArrayList<>(bakeSimpleQuads(Collections.singleton(partName), 0, 0, itemYaw, false, true, sprite));
+        return new ArrayList<>(bakeSimpleQuads(Collections.singleton(partName), 0, 0, itemYaw, true, true, sprite));
     }
 
     @Override

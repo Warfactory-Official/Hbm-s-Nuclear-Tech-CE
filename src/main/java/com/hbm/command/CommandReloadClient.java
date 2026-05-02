@@ -8,6 +8,7 @@ import com.hbm.config.RunningConfig.ConfigWrapper;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.client.ClientCommandHandler;
@@ -28,6 +29,11 @@ public class CommandReloadClient extends CommandReloadConfig {
     @Override
     public @NotNull String getUsage(@NotNull ICommandSender sender) {
         return "/ntmclient help";
+    }
+
+    @Override
+    public boolean checkPermission(@NotNull MinecraftServer server, @NotNull ICommandSender sender) {
+        return true;
     }
 
     @Override public void help(ICommandSender sender, String[] args) {

@@ -2,6 +2,8 @@ package com.hbm.particle.book;
 
 import com.hbm.main.ResourceManager;
 import com.hbm.render.NTMRenderHelper;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import com.hbm.tileentity.machine.TileEntityBlackBook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
@@ -10,11 +12,9 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.DestFactor;
 import net.minecraft.client.renderer.GlStateManager.SourceFactor;
 import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 public class ParticleBookCircle extends Particle {
 
@@ -76,12 +76,12 @@ public class ParticleBookCircle extends Particle {
         GlStateManager.translate(f5, f6, f7);
         
         float scale = particleScale;
-		buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-		buffer.pos(-0.5*scale, 0, -0.5*scale).tex(0, 0).endVertex();
-		buffer.pos(0.5*scale, 0, -0.5*scale).tex(1, 0).endVertex();
-		buffer.pos(0.5*scale, 0, 0.5*scale).tex(1, 1).endVertex();
-		buffer.pos(-0.5*scale, 0, 0.5*scale).tex(0, 1).endVertex();
-		Tessellator.getInstance().draw();
+		NTMBufferBuilder fastBuffer = NTMImmediate.INSTANCE.beginPositionTex(GL11.GL_QUADS, 4);
+		fastBuffer.appendPositionTexUnchecked(-0.5F * scale, 0, -0.5F * scale, 0, 0);
+		fastBuffer.appendPositionTexUnchecked(0.5F * scale, 0, -0.5F * scale, 1, 0);
+		fastBuffer.appendPositionTexUnchecked(0.5F * scale, 0, 0.5F * scale, 1, 1);
+		fastBuffer.appendPositionTexUnchecked(-0.5F * scale, 0, 0.5F * scale, 0, 1);
+		NTMImmediate.INSTANCE.draw();
 		
 		GlStateManager.disablePolygonOffset();
 		NTMRenderHelper.resetColor();

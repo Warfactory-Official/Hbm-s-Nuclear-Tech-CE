@@ -30,6 +30,7 @@ public final class AutoRegisterProcessor extends AbstractProcessor {
     private static final String TE_FQN = "net.minecraft.tileentity.TileEntity";
     private static final String ENTITY_FQN = "net.minecraft.entity.Entity";
     private static final String ICONFIGURABLE_FQN = "com.hbm.tileentity.IConfigurableMachine";
+    private static final String ITEM_RENDERER_PROVIDER_FQN = "com.hbm.render.tileentity.IItemRendererProvider";
     private static final String RENDER_FQN = "net.minecraft.client.renderer.entity.Render";
     private static final String TEISR_FQN = "net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer";
     private static final String OBJECT_FQN = "java.lang.Object";
@@ -44,7 +45,7 @@ public final class AutoRegisterProcessor extends AbstractProcessor {
     private final Map<String, ClassName> tileEntityIdOwners = new HashMap<>(512);
 
     private final Map<ClassName, EntityRendererInfo> entityRenderersByEntity = new HashMap<>(256);
-    private final Map<ClassName, ClassName> tileEntityRenderers = new HashMap<>(512);
+    private final Map<ClassName, TileEntityRendererInfo> tileEntityRenderers = new HashMap<>(512);
     private final Map<String, TeisrInfo> itemRenderersByItemField = new HashMap<>(128);
 
     private final Set<ClassName> configurableMachines = new HashSet<>(64);
@@ -61,6 +62,7 @@ public final class AutoRegisterProcessor extends AbstractProcessor {
     private TypeMirror teType;
     private TypeMirror entityType;
     private TypeMirror configurableType;
+    private TypeMirror itemRendererProviderType;
     private TypeMirror objectType;
 
     private static String generateRegistrationId(String name) {
@@ -83,6 +85,7 @@ public final class AutoRegisterProcessor extends AbstractProcessor {
         teType = typeMirrorOrNull(TE_FQN);
         entityType = typeMirrorOrNull(ENTITY_FQN);
         configurableType = typeMirrorOrNull(ICONFIGURABLE_FQN);
+        itemRendererProviderType = typeMirrorOrNull(ITEM_RENDERER_PROVIDER_FQN);
         objectType = typeMirrorOrNull(OBJECT_FQN);
     }
 
@@ -135,9 +138,10 @@ public final class AutoRegisterProcessor extends AbstractProcessor {
                 return;
             }
 
-            var prev = tileEntityRenderers.putIfAbsent(teClass, annotatedClass);
-            if (prev != null && !prev.equals(annotatedClass)) {
-                messager.printMessage(Diagnostic.Kind.ERROR, "Duplicate TESR registration: " + teClass.canonicalName() + " already has renderer " + prev.canonicalName() + ", cannot also register " + annotatedClass.canonicalName() + ".", annotatedElement);
+            var info = new TileEntityRendererInfo(annotatedClass, isSubtypeErased(annotatedElement, itemRendererProviderType));
+            var prev = tileEntityRenderers.putIfAbsent(teClass, info);
+            if (prev != null && !prev.rendererType().equals(annotatedClass)) {
+                messager.printMessage(Diagnostic.Kind.ERROR, "Duplicate TESR registration: " + teClass.canonicalName() + " already has renderer " + prev.rendererType().canonicalName() + ", cannot also register " + annotatedClass.canonicalName() + ".", annotatedElement);
             }
             return;
         }
@@ -352,8 +356,19 @@ public final class AutoRegisterProcessor extends AbstractProcessor {
 
         if (!tileEntityRenderers.isEmpty()) {
             var method = MethodSpec.methodBuilder("registerTileEntityRenderers").addModifiers(Modifier.PUBLIC, Modifier.STATIC).addAnnotation(AnnotationSpec.builder(SIDE_ONLY).addMember("value", "$T.CLIENT", SIDE).build());
-
-            tileEntityRenderers.entrySet().stream().sorted(Comparator.comparing(e -> e.getKey().canonicalName())).forEach(entry -> method.addStatement("$T.bindTileEntitySpecialRenderer($T.class, new $T())", CLIENT_REGISTRY, entry.getKey(), entry.getValue()));
+            var providerRegistry = ClassName.get("com.hbm.render.tileentity", "ItemRendererProviderRegistry");
+            int[] index = {0};
+            tileEntityRenderers.entrySet().stream().sorted(Comparator.comparing(e -> e.getKey().canonicalName())).forEach(entry -> {
+                var info = entry.getValue();
+                if (info.itemRendererProvider()) {
+                    String rendererVar = "renderer" + index[0]++;
+                    method.addStatement("$T $L = new $T()", info.rendererType(), rendererVar, info.rendererType());
+                    method.addStatement("$T.bindTileEntitySpecialRenderer($T.class, $L)", CLIENT_REGISTRY, entry.getKey(), rendererVar);
+                    method.addStatement("$T.registerTileEntityProvider($L)", providerRegistry, rendererVar);
+                } else {
+                    method.addStatement("$T.bindTileEntitySpecialRenderer($T.class, new $T())", CLIENT_REGISTRY, entry.getKey(), info.rendererType());
+                }
+            });
 
             registrarBuilder.addMethod(method.build());
         }
@@ -363,9 +378,9 @@ public final class AutoRegisterProcessor extends AbstractProcessor {
 
             itemRenderersByItemField.values().stream().sorted(Comparator.comparing(TeisrInfo::itemFieldName)).forEach(info -> {
                 if (info.instanceFieldName().isBlank()) {
-                    method.addStatement("$T.$L.setTileEntityItemStackRenderer(new $T($L))", MOD_ITEMS, info.itemFieldName(), info.rendererType(), info.constructorArgs());
+                    method.addStatement("com.hbm.main.client.NTMClientRegistry.bindTeisr($T.$L, new $T($L))", MOD_ITEMS, info.itemFieldName(), info.rendererType(), info.constructorArgs());
                 } else {
-                    method.addStatement("$T.$L.setTileEntityItemStackRenderer($T.$L)", MOD_ITEMS, info.itemFieldName(), info.rendererType(), info.instanceFieldName());
+                    method.addStatement("com.hbm.main.client.NTMClientRegistry.bindTeisr($T.$L, $T.$L)", MOD_ITEMS, info.itemFieldName(), info.rendererType(), info.instanceFieldName());
                 }
             });
 
@@ -467,6 +482,9 @@ public final class AutoRegisterProcessor extends AbstractProcessor {
     }
 
     private record EntityRendererInfo(ClassName entityType, ClassName rendererType, String factoryFieldName) {
+    }
+
+    private record TileEntityRendererInfo(ClassName rendererType, boolean itemRendererProvider) {
     }
 
     private record TeisrInfo(ClassName rendererType, String itemFieldName, String constructorArgs,

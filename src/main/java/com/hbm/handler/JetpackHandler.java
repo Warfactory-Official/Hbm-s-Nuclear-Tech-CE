@@ -599,7 +599,7 @@ public class JetpackHandler {
 				float amount = MathHelper.clamp(MathHelper.sqrt(motionX*motionX+motionZ*motionZ), 0, 2);
 				GL11.glRotated(amount*22.5, Math.toDegrees(MathHelper.sin(angle)), 0, Math.toDegrees(MathHelper.cos(angle)));
 			}
-		} else if(!player.onGround && j != null && j.failureTicks <= 0 && getTank(player).getFluidAmount() > 0) {
+		} else if(!player.isElytraFlying() && !player.onGround && j != null && j.failureTicks <= 0 && getTank(player).getFluidAmount() > 0) {
 			Vec3d look = player.getLook(MainRegistry.proxy.partialTicks());
 			float renderYaw = interpolateRotation(player.prevRenderYawOffset, player.renderYawOffset, MainRegistry.proxy.partialTicks());
 			GlStateManager.rotate(180.0F - renderYaw, 0.0F, 1.0F, 0.0F);
@@ -657,7 +657,7 @@ public class JetpackHandler {
 				info.trails[0] = null;
 				info.trails[1] = null;
 			}
-			player.ticksElytraFlying = 0;
+			if(!player.isElytraFlying()) player.ticksElytraFlying = 0;
 		}
 		GlStateManager.popMatrix();
 	}

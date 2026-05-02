@@ -52,7 +52,7 @@ public class BlockWandLogic extends BlockContainerBakeable implements ILookOverl
     public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
 
     public BlockWandLogic(String s) {
-            super(Material.IRON, s, new BlockBakeFrame("wand_logic_top", "wand_logic"));
+            super(Material.IRON, s, BlockBakeFrame.column("wand_logic_top", "wand_logic"));
             this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
         }
 
@@ -228,7 +228,9 @@ public class BlockWandLogic extends BlockContainerBakeable implements ILookOverl
 
             private void replace() {
                 if (!(world.getBlockState(pos).getBlock() instanceof BlockWandLogic)) {
-                    MainRegistry.logger.warn("Somehow the block at: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + " isn't a logic block but we're doing a TE update as if it is, cancelling!");
+                    MainRegistry.logger.warn(
+                            "Somehow the block at: {}, {}, {} isn't a logic block but we're doing a TE update as if it is, cancelling!",
+                            pos.getX(), pos.getY(), pos.getZ());
                     return;
                 }
                 world.setBlockState(pos, ModBlocks.logic_block.getDefaultState(), 2);

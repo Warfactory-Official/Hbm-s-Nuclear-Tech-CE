@@ -9,10 +9,10 @@ import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.mags.MagazineFullReload;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.particle.SpentCasing;
+import com.hbm.render.anim.sedna.AnimationEnums;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna.IType;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
 import com.hbm.render.anim.sedna.BusAnimationSequenceSedna;
-import com.hbm.render.anim.sedna.HbmAnimationsSedna;
 import com.hbm.render.misc.RenderScreenOverlay;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -96,7 +96,7 @@ public class XFactory10ga {
             } else {
 
                 if(rec.getDoesDryFire(stack)) {
-                    ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.GunAnimation.CYCLE_DRY, index);
+                    ItemGunBaseNT.playAnimation(player, stack, AnimationEnums.GunAnimation.CYCLE_DRY, index);
                     ItemGunBaseNT.setState(stack, index, rec.getRefireAfterDry(stack) ? ItemGunBaseNT.GunState.COOLDOWN : ItemGunBaseNT.GunState.DRAWING);
                     ItemGunBaseNT.setTimer(stack, index, rec.getDelayAfterDryFire(stack));
                 }
@@ -108,7 +108,7 @@ public class XFactory10ga {
         }
     };
     
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_DOUBLE_BARREL_ANIMS = (stack, type) -> switch (type) {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> LAMBDA_DOUBLE_BARREL_ANIMS = (stack, type) -> switch (type) {
         case EQUIP -> new BusAnimationSedna()
                 .addBus("EQUIP", new BusAnimationSequenceSedna().addPos(-60, 0, 0, 0).addPos(0, 0, -3, 500, IType.SIN_DOWN));
         case CYCLE -> new BusAnimationSedna()

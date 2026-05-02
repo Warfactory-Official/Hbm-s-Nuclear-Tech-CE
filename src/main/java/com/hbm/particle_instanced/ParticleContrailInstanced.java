@@ -88,7 +88,7 @@ public class ParticleContrailInstanced extends ParticleInstanced {
         this.move(this.motionX, this.motionY, this.motionZ);
 	}
 
-	private byte getColor(int index){
+	private float getColor(int index){
 		float pColor = 0;
 		if(index == 0){
 			if(doFlames){
@@ -112,43 +112,22 @@ public class ParticleContrailInstanced extends ParticleInstanced {
 			}
 			this.particleBlue = pColor;
 		}
-		return (byte)(MathHelper.clamp(pColor, 0, 1)*255);
+		return MathHelper.clamp(pColor, 0, 1);
 	}
 	
 	@Override
 	public void addDataToBuffer(ByteBuffer buf, float partialTicks) {
-		float x = (float) ((this.prevPosX + (this.posX - this.prevPosX) * (double) partialTicks - interpPosX));
-		float y = (float) ((this.prevPosY + (this.posY - this.prevPosY) * (double) partialTicks - interpPosY));
-		float z = (float) ((this.prevPosZ + (this.posZ - this.prevPosZ) * (double) partialTicks - interpPosZ));
+		float x = getInterpX(partialTicks);
+		float y = getInterpY(partialTicks);
+		float z = getInterpZ(partialTicks);
 		this.particleScale = (1-particleAlpha * particleAlpha)*4F * this.scale + 0.25F;
 		for(int ii = 0; ii < 6; ii++){
 			
-			buf.putFloat(x+vals[ii*4]);
-			buf.putFloat(y+vals[ii*4+1]);
-			buf.putFloat(z+vals[ii*4+2]);
-			
-			buf.putFloat(this.particleScale);
-			
-			buf.putFloat(this.particleTexture.getMinU());
-			buf.putFloat(this.particleTexture.getMinV());
-			buf.putFloat(this.particleTexture.getMaxU()-this.particleTexture.getMinU());
-			buf.putFloat(this.particleTexture.getMaxV()-this.particleTexture.getMinV());
-			
-			byte r = getColor(0);
-			byte g = getColor(1);
-			byte b = getColor(2);
-			byte a = (byte) (this.particleAlpha*255);
-			buf.put(r);
-			buf.put(g);
-			buf.put(b);
-			buf.put(a);
-			
-			//int i = this.getBrightnessForRender(partialTicks);
-			//int j = i >> 16 & 65535;
-			//int k = i & 65535;
-			//Bruh I have no clue how these lightmap coords work. They don't seem to be like regular uvs.
-			buf.put((byte) 240);
-			buf.put((byte) 240);
+			float red = getColor(0);
+			float green = getColor(1);
+			float blue = getColor(2);
+			writeFullbrightBillboard(buf, x + vals[ii * 4], y + vals[ii * 4 + 1], z + vals[ii * 4 + 2], this.particleScale,
+					red, green, blue, this.particleAlpha);
 		}
 	}
 	

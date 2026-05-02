@@ -20,12 +20,13 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.render.anim.sedna.AnimationEnums;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna.IType;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
 import com.hbm.render.anim.sedna.BusAnimationSequenceSedna;
-import com.hbm.render.anim.sedna.HbmAnimationsSedna;
 import com.hbm.render.misc.RenderScreenOverlay.Crosshair;
 import com.hbm.util.DamageResistanceHandler;
+import com.hbm.util.Vec3NT;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.Blocks;
@@ -36,10 +37,14 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -49,6 +54,8 @@ public class XFactoryEnergy {
 
     public static BulletConfig energy_tesla;
     public static BulletConfig energy_tesla_overcharge;
+    public static BulletConfig energy_tesla_ir;
+    public static BulletConfig energy_tesla_ir_sub;
 
     public static BulletConfig energy_las;
     public static BulletConfig energy_las_overcharge;
@@ -93,6 +100,28 @@ public class XFactoryEnergy {
         }
     };
 
+    public static BiConsumer<EntityBulletBeamBase, RayTraceResult> LAMBDA_LIGHTNING_SPLIT = (beam, mop) -> {
+        LAMBDA_LIGHTNING_HIT.accept(beam, mop);
+        if(mop.typeOfHit != mop.typeOfHit.ENTITY) return;
+
+        double range = 20;
+        List<EntityLivingBase> potentialTargets = beam.world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(mop.hitVec.x, mop.hitVec.y, mop.hitVec.z, mop.hitVec.x, mop.hitVec.y, mop.hitVec.z).expand(range, range, range));
+        Collections.shuffle(potentialTargets);
+
+        for(EntityLivingBase target : potentialTargets) {
+            if(target == beam.thrower) continue;
+            if(target == mop.entityHit) continue;
+
+            Vec3NT delta = new Vec3NT(target.posX - mop.hitVec.x, target.posY + target.height / 2 - mop.hitVec.y, target.posZ - mop.hitVec.z);
+            if(delta.length() > 20) continue;
+            EntityBulletBeamBase sub = new EntityBulletBeamBase(beam.thrower, energy_tesla_ir_sub, beam.damage);
+            sub.setPosition(mop.hitVec.x, mop.hitVec.y, mop.hitVec.z);
+            sub.setRotationsFromVector(delta);
+            sub.performHitscanExternal(delta.length());
+            beam.world.spawnEntity(sub);
+        }
+    };
+
     public static BiConsumer<EntityBulletBeamBase, RayTraceResult> LAMBDA_IR_HIT = (beam, mop) -> {
         BulletConfig.LAMBDA_STANDARD_BEAM_HIT.accept(beam, mop);
 
@@ -126,6 +155,10 @@ public class XFactoryEnergy {
                 .setOnBeamImpact(LAMBDA_LIGHTNING_HIT);
         energy_tesla_overcharge = new BulletConfig().setItem(GunFactory.EnumAmmo.CAPACITOR_OVERCHARGE).setCasing(new ItemStack(ModItems.ingot_polymer, 2), 4).setupDamageClass(DamageResistanceHandler.DamageClass.ELECTRIC).setBeam().setSpread(0.0F).setLife(5).setRenderRotations(false).setDoesPenetrate(true)
                 .setDamage(1.5F).setOnBeamImpact(LAMBDA_LIGHTNING_HIT);
+        energy_tesla_ir = new BulletConfig().setItem(GunFactory.EnumAmmo.CAPACITOR_IR).setCasing(new ItemStack(ModItems.ingot_polymer, 2), 4).setupDamageClass(DamageResistanceHandler.DamageClass.ELECTRIC).setBeam().setSpread(0.0F).setLife(5).setRenderRotations(false)
+                .setDamage(0.8F).setOnBeamImpact(LAMBDA_LIGHTNING_SPLIT);
+        energy_tesla_ir_sub = new BulletConfig().setItem(GunFactory.EnumAmmo.CAPACITOR_IR).setupDamageClass(DamageResistanceHandler.DamageClass.ELECTRIC).setBeam().setSpread(0.0F).setLife(3).setWear(3F).setRenderRotations(false).setDoesPenetrate(true)
+                .setDamage(0.5F).setOnBeamImpact(BulletConfig.LAMBDA_STANDARD_BEAM_HIT);
 
         energy_las = new BulletConfig().setItem(GunFactory.EnumAmmo.CAPACITOR).setCasing(new ItemStack(ModItems.ingot_polymer, 2), 4).setupDamageClass(DamageResistanceHandler.DamageClass.LASER).setBeam().setSpread(0.0F).setLife(5).setRenderRotations(false).setOnBeamImpact(BulletConfig.LAMBDA_STANDARD_BEAM_HIT);
         energy_las_overcharge = new BulletConfig().setItem(GunFactory.EnumAmmo.CAPACITOR_OVERCHARGE).setCasing(new ItemStack(ModItems.ingot_polymer, 2), 4).setupDamageClass(DamageResistanceHandler.DamageClass.LASER).setBeam().setSpread(0.0F).setLife(5).setRenderRotations(false).setDoesPenetrate(true).setOnBeamImpact(BulletConfig.LAMBDA_STANDARD_BEAM_HIT);
@@ -139,7 +172,7 @@ public class XFactoryEnergy {
                 .dura(2_000).draw(10).inspect(33).reloadSequential(true).crosshair(Crosshair.CIRCLE)
                 .rec(new Receiver(0)
                         .dmg(35F).delay(20).reload(44).jam(19).sound(HBMSoundHandler.fireTesla, 1.0F, 1.0F)
-                        .mag(new MagazineBelt().addConfigs(energy_tesla, energy_tesla_overcharge))
+                        .mag(new MagazineBelt().addConfigs(energy_tesla, energy_tesla_overcharge, energy_tesla_ir))
                         .offset(0.75, 0, -0.375).offsetScoped(0.75, 0, -0.25)
                         .setupStandardFire().recoil(LAMBDA_RECOIL_ENERGY))
                 .setupStandardConfiguration()
@@ -191,7 +224,7 @@ public class XFactoryEnergy {
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_RECOIL_ENERGY = (stack, ctx) -> { };
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_TESLA_ANIMS = (stack, type) -> {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> LAMBDA_TESLA_ANIMS = (stack, type) -> {
         int amount = ((ItemGunBaseNT) stack.getItem()).getConfig(stack, 0).getReceivers(stack)[0].getMagazine(stack).getAmount(stack, MainRegistry.proxy.me().inventory);
         return switch (type) {
             case EQUIP -> new BusAnimationSedna()
@@ -210,7 +243,7 @@ public class XFactoryEnergy {
 
     };
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_LASER_PISTOL = (stack, type) -> {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> LAMBDA_LASER_PISTOL = (stack, type) -> {
         switch(type) {
             case EQUIP: return new BusAnimationSedna()
                     .addBus("EQUIP", new BusAnimationSequenceSedna().addPos(60, 0, 0, 0).addPos(0, 0, 0, 500, IType.SIN_DOWN));
@@ -231,7 +264,7 @@ public class XFactoryEnergy {
         return null;
     };
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_LASRIFLE = (stack, type) -> {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> LAMBDA_LASRIFLE = (stack, type) -> {
         int amount = ((ItemGunBaseNT) stack.getItem()).getConfig(stack, 0).getReceivers(stack)[0].getMagazine(stack).getAmount(stack, MainRegistry.proxy.me().inventory);
         return switch (type) {
             case EQUIP -> new BusAnimationSedna()

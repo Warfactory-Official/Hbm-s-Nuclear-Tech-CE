@@ -7,26 +7,28 @@ import com.hbm.blocks.generic.WasteLog;
 import com.hbm.config.CompatibilityConfig;
 import com.hbm.config.VersatileConfig;
 import com.hbm.entity.effect.EntityBlackHole;
-import com.hbm.entity.grenade.EntityGrenadeASchrab;
-import com.hbm.entity.grenade.EntityGrenadeNuclear;
+import com.hbm.entity.grenade.EntityGrenadeUniversal;
+import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.entity.projectile.EntityBulletBaseNT;
 import com.hbm.entity.projectile.EntityExplosiveBeam;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.interfaces.Spaghetti;
 import com.hbm.items.ModItems;
+import com.hbm.items.weapon.sedna.factory.ConfettiUtil;
 import com.hbm.lib.Library;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.main.MainRegistry;
 import com.hbm.util.Compat;
+import com.hbm.util.EntityDamageUtil;
 import com.hbm.util.MutableVec3d;
 import com.hbm.world.WorldUtil;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.passive.EntityOcelot;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -103,14 +105,24 @@ public class ExplosionNukeGeneric {
 
                 if (!isExplosionExempt(e) && !Library.isObstructed(world, x, y, z, entX, entY, entZ)) {
 
+                    boolean doKnockback = true;
                     double damage = maxDamage * (radius - dist) / radius;
-                    e.attackEntityFrom(ModDamageSource.nuclearBlast, (float) damage);
+                    if (e instanceof EntityLivingBase living && e.isEntityAlive()) {
+                        doKnockback = EntityDamageUtil.attackEntityFromNT(living, ModDamageSource.nuclearBlast,
+                                (float) damage, true, true, 0, 100F, 0);
+                        if (!e.isEntityAlive()) ConfettiUtil.decideConfetti(living, ModDamageSource.nuclearBlast);
+                    } else {
+                        e.attackEntityFrom(ModDamageSource.nuclearBlast, (float) damage);
+                    }
+
                     e.setFire(5);
 
-                    knock.set(e.posX - x, e.posY + e.getEyeHeight() - y, e.posZ - z).normalizeSelf();
-                    e.motionX += knock.x * 0.2D;
-                    e.motionY += knock.y * 0.2D;
-                    e.motionZ += knock.z * 0.2D;
+                    if (doKnockback) {
+                        knock.set(e.posX - x, e.posY + e.getEyeHeight() - y, e.posZ - z).normalizeSelf();
+                        e.motionX += knock.x * 0.2D;
+                        e.motionY += knock.y * 0.2D;
+                        e.motionZ += knock.z * 0.2D;
+                    }
                 }
             }
         }
@@ -125,20 +137,12 @@ public class ExplosionNukeGeneric {
         dealDamage(world, list, x, y, z, radius, maxDamage);
     }
 
-    @Spaghetti("just look at it") //mlbv: how about updating to jdk21 then use pattern matching for switch
     private static boolean isExplosionExempt(Entity e) {
-
         if (e instanceof EntityOcelot ||
-            e instanceof EntityGrenadeASchrab ||
-            e instanceof EntityGrenadeNuclear ||
             e instanceof EntityExplosiveBeam ||
             e instanceof EntityBulletBaseNT ||
-            e instanceof EntityPlayer &&
-            ArmorUtil.checkArmor((EntityPlayer) e, ModItems.euphemium_helmet, ModItems.euphemium_plate, ModItems.euphemium_legs, ModItems.euphemium_boots)) {
-            return true;
-        }
-
-        if (e instanceof EntityPlayerMP && ((EntityPlayerMP)e).interactionManager.isCreative()) {
+                e instanceof EntityBulletBaseMK4 ||
+                e instanceof EntityGrenadeUniversal) {
             return true;
         }
 
@@ -264,6 +268,9 @@ public class ExplosionNukeGeneric {
         int r = radius;
         int r2 = r * r;
         int r22 = r2 / 2;
+        //mlbv: we use it in com.hbm.hazard.type.HazardTypeContaminating which may have a very low radius
+        int bound = r22 / 5;
+        if (bound == 0) return;
         for (int xx = -r; xx < r; xx++) {
             int X = xx + x;
             int XX = xx * xx;
@@ -273,7 +280,7 @@ public class ExplosionNukeGeneric {
                 for (int zz = -r; zz < r; zz++) {
                     int Z = zz + z;
                     int ZZ = YY + zz * zz;
-                    if (ZZ < r22 + world.rand.nextInt(r22 / 5)) {
+                    if (ZZ < r22 + world.rand.nextInt(bound)) {
                         if (world.getBlockState(pos.setPos(X, Y, Z)).getBlock() != Blocks.AIR) wasteDest(world, pos);
                     }
                 }
@@ -454,7 +461,7 @@ public class ExplosionNukeGeneric {
             if (!CompatibilityConfig.isWarDim(world)) {
                 return;
             }
-            TileEntity te = world.getTileEntity(pos);
+            TileEntity te = Compat.getTileStandard(world, pos.getX(), pos.getY(), pos.getZ());
             if (te == null) return;
             if (te instanceof IEnergyReceiverMK2 r) {
                 r.setPower(0);

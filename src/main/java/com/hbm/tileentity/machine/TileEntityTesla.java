@@ -160,7 +160,7 @@ public class TileEntityTesla extends TileEntityMachineBase implements ITickable,
 	
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		return new AxisAlignedBB(pos.getX() - range, pos.getY() - range, pos.getZ() - range, pos.getX() + 1 + range, pos.getY() + 1 + range, pos.getZ() + 1 + range);
 	}
 	
 	@Override

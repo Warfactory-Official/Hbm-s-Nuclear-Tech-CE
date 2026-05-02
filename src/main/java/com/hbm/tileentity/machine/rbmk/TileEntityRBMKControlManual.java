@@ -1,13 +1,14 @@
 package com.hbm.tileentity.machine.rbmk;
 
+import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.blocks.machine.rbmk.RBMKControl;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.interfaces.ICopiable;
 import com.hbm.inventory.container.ContainerRBMKControl;
 import com.hbm.inventory.control_panel.ControlEvent;
-import com.hbm.inventory.control_panel.DataValue;
-import com.hbm.inventory.control_panel.DataValueFloat;
+import com.hbm.inventory.control_panel.types.DataValue;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
 import com.hbm.inventory.gui.GUIRBMKControl;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.tileentity.IGUIProvider;
@@ -34,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 @AutoRegister
-public class TileEntityRBMKControlManual extends TileEntityRBMKControl implements IControlReceiver, IGUIProvider, ICopiable {
+public class TileEntityRBMKControlManual extends TileEntityRBMKControl implements IControlReceiver, IGUIProvider, ICopiable, IRORInteractive {
 
     public RBMKColor color;
     public double startingLevel;
@@ -137,18 +138,15 @@ public class TileEntityRBMKControlManual extends TileEntityRBMKControl implement
     public void serialize(ByteBuf buf) {
         super.serialize(buf);
         buf.writeDouble(this.startingLevel);
-        if (this.color != null)
-            buf.writeInt(this.color.ordinal());
+        buf.writeByte(this.color != null ? this.color.ordinal() : -1);
     }
 
     @Override
     public void deserialize(ByteBuf buf) {
         super.deserialize(buf);
         this.startingLevel = buf.readDouble();
-        if (buf.isReadable(1)) {
-            int color = buf.readInt();
-            this.color = RBMKColor.VALUES[MathHelper.clamp(color, 0, RBMKColor.VALUES.length)];
-        }
+        int color = buf.readByte();
+        this.color = color >= 0 ? RBMKColor.VALUES[MathHelper.clamp(color, 0, RBMKColor.VALUES.length - 1)] : null;
     }
 
     @Override
@@ -221,7 +219,27 @@ public class TileEntityRBMKControlManual extends TileEntityRBMKControl implement
 
     @Override
     public void pasteSettings(NBTTagCompound nbt, int index, World world, EntityPlayer player, int x, int y, int z) {
-        if (nbt.hasKey("color")) color = EnumUtil.grabEnumSafely(RBMKColor.values(), nbt.getInteger("color"));
+        if (nbt.hasKey("color")) color = EnumUtil.grabEnumSafely(RBMKColor.VALUES, nbt.getInteger("color"));
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+
+        if((PREFIX_FUNCTION + "setrods").equals(name) && params.length > 0) {
+            int percent = IRORInteractive.parseInt(params[0], 0, 100);
+            this.targetLevel = percent / 100D;
+            this.markDirty();
+            return null;
+        }
+
+        if((PREFIX_FUNCTION + "extendrods").equals(name) && params.length > 0) {
+            int percent = IRORInteractive.parseInt(params[0], -100, 100);
+            this.targetLevel = MathHelper.clamp(this.targetLevel + percent / 100D, 0D, 1D);
+            this.markDirty();
+            return null;
+        }
+
+        return null;
     }
 
     public enum RBMKColor {
@@ -246,7 +264,7 @@ public class TileEntityRBMKControlManual extends TileEntityRBMKControl implement
     public Object[] setColor(Context context, Arguments args) {
         int colorI = args.checkInteger(0);
         colorI = MathHelper.clamp(colorI, 0, 4);
-        this.color = RBMKColor.values()[colorI];
+        this.color = RBMKColor.VALUES[colorI];
         return new Object[] {true};
     }
 }

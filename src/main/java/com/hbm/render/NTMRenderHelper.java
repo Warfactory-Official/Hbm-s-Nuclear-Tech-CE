@@ -8,6 +8,8 @@ import com.hbm.lib.Library;
 import com.hbm.main.ClientProxy;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import com.hbm.util.BobMathUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
@@ -157,14 +159,17 @@ public class NTMRenderHelper {
 	}
 
 	//TODO: add some documentation
-	public static void addQuad(BufferBuilder buffer, double x1, double y1, double z1, double x2, double y2, double z2,
-                               double x3, double y3, double z3, double x4, double y4, double z4, int r, int g, int b) {
-		buffer.pos(x1, y1, z1).color(r, g, b, 255).endVertex();
-		buffer.pos(x2, y2, z2).color(r, g, b, 255).endVertex();
-		buffer.pos(x3, y3, z3).color(r, g, b, 255).endVertex();
-		buffer.pos(x4, y4, z4).color(r, g, b, 255).endVertex();
+	public static void addQuad(BufferBuilder buffer, float x1, float y1, float z1, float x2, float y2, float z2,
+                               float x3, float y3, float z3, float x4, float y4, float z4, int r, int g, int b) {
+		((NTMBufferBuilder) buffer).appendPositionColorQuadUnchecked(
+				x1, y1, z1,
+				x2, y2, z2,
+				x3, y3, z3,
+				x4, y4, z4,
+				NTMBufferBuilder.packColor(r, g, b, 255)
+		);
 	}
-	
+
 	public static TextureAtlasSprite getItemTexture(Item item){
 		return getItemTexture(item, 0);
 	}
@@ -173,35 +178,34 @@ public class NTMRenderHelper {
 		return Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(item, null, null).getParticleTexture();
 	}
 	
-	public static void addVertexWithUV(double x, double y, double z, double u, double v){
+	public static void addVertexWithUV(float x, float y, float z, float u, float v){
 		addVertexWithUV(x, y, z, u, v, Tessellator.getInstance());
 	}
-	public static void addVertex(double x, double y, double z){
-		Tessellator.getInstance().getBuffer().pos(x, y, z).endVertex();
+	public static void addVertex(float x, float y, float z){
+		((NTMBufferBuilder) Tessellator.getInstance().getBuffer()).appendPosition(x, y, z);
 	}
-	
-	public static void addVertexWithUV(double x, double y, double z, double u, double v, Tessellator tes){
-		BufferBuilder buf = tes.getBuffer();
-		buf.pos(x, y, z).tex(u, v).endVertex();
+
+	public static void addVertexWithUV(float x, float y, float z, float u, float v, Tessellator tes){
+		((NTMBufferBuilder) tes.getBuffer()).appendPositionTex(x, y, z, u, v);
 	}
 
 	public static void startDrawingTexturedQuads(){
 		startDrawingTexturedQuads(Tessellator.getInstance());
 	}
 	public static void startDrawingQuads(){
-		Tessellator.getInstance().getBuffer().begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION);
+		NTMImmediate.INSTANCE.beginPositionQuads(1);
 	}
 	public static void startDrawingTexturedQuads(Tessellator tes){
-		tes.getBuffer().begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+		NTMImmediate.INSTANCE.beginPositionTexQuads(1);
 	}
 	public static void startDrawingColoredTriangles(Tessellator tes){
-		tes.getBuffer().begin(GL11.GL_TRIANGLE_FAN, DefaultVertexFormats.POSITION_COLOR);
+		NTMImmediate.INSTANCE.beginPositionColor(GL11.GL_TRIANGLE_FAN, 0);
 	}
 	public static void draw(){
 		draw(Tessellator.getInstance());
 	}
 	public static void draw(Tessellator tes){
-		tes.draw();
+		NTMImmediate.INSTANCE.draw();
 	}
 	
 	public static void bindTexture(ResourceLocation resource){
@@ -230,7 +234,7 @@ public class NTMRenderHelper {
 		addVertexWithUV(posX, posY, zLevel, left, down);
 	}
 
-	public static void drawFullTexture(TextureAtlasSprite icon, double posX, double posY, double sizeX, double sizeY, double zLevel, boolean flipped){
+	public static void drawFullTexture(TextureAtlasSprite icon, float posX, float posY, float sizeX, float sizeY, float zLevel, boolean flipped){
 		float up = icon.getInterpolatedV(0);
 		float down = icon.getInterpolatedV(16);
 		float left = icon.getInterpolatedU(0);
@@ -247,7 +251,7 @@ public class NTMRenderHelper {
 			addVertexWithUV(posX, posY, zLevel, left, down);
 		}
 	}
-	
+
 	//Drillgon200: using GLStateManager for this because it caches color values
 	public static void setColor(int color) {
 
@@ -274,16 +278,16 @@ public class NTMRenderHelper {
 		Tessellator.getInstance().getBuffer().begin(i, DefaultVertexFormats.POSITION_COLOR);
 	}
 	
-	public static void addVertexColor(double x, double y, double z, int red, int green, int blue, int alpha){
-		Tessellator.getInstance().getBuffer().pos(x, y, z).color(red, green, blue, alpha).endVertex();
-	}
-	
-	public static void addVertexColor(double x, double y, double z, float red, float green, float blue, float alpha){
-		Tessellator.getInstance().getBuffer().pos(x, y, z).color(red, green, blue, alpha).endVertex();
+	public static void addVertexColor(float x, float y, float z, int red, int green, int blue, int alpha){
+		((NTMBufferBuilder) Tessellator.getInstance().getBuffer()).appendPositionColor(x, y, z, NTMBufferBuilder.packColor(red, green, blue, alpha));
 	}
 
-	public static void addVertexColor(double x, double y, double z, float red, float green, float blue, float alpha, Tessellator tess){
-		tess.getBuffer().pos(x, y, z).color(red, green, blue, alpha).endVertex();
+	public static void addVertexColor(float x, float y, float z, float red, float green, float blue, float alpha){
+		((NTMBufferBuilder) Tessellator.getInstance().getBuffer()).appendPositionColor(x, y, z, NTMBufferBuilder.packColor(red, green, blue, alpha));
+	}
+
+	public static void addVertexColor(float x, float y, float z, float red, float green, float blue, float alpha, Tessellator tess){
+		((NTMBufferBuilder) tess.getBuffer()).appendPositionColor(x, y, z, NTMBufferBuilder.packColor(red, green, blue, alpha));
 	}
 
 	public static void renderAll(IBakedModel boxcar) {
@@ -339,43 +343,47 @@ public class NTMRenderHelper {
 	}
 	
 	public static void drawGuiRect(float x, float y, float u, float v, float width, float height, float uMax, float vMax){
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferbuilder = tessellator.getBuffer();
-        bufferbuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-        bufferbuilder.pos(x, y + height, 0.0D).tex(u, vMax).endVertex();
-        bufferbuilder.pos(x + width, y + height, 0.0D).tex(uMax, vMax).endVertex();
-        bufferbuilder.pos(x + width, y, 0.0D).tex(uMax, v).endVertex();
-        bufferbuilder.pos(x, y, 0.0D).tex(u, v).endVertex();
-        tessellator.draw();
+        NTMBufferBuilder bufferbuilder = NTMImmediate.INSTANCE.beginPositionTexQuads(1);
+        bufferbuilder.appendPositionTexQuadUnchecked(
+                x, y + height, 0.0F, u, vMax,
+                x + width, y + height, 0.0F, uMax, vMax,
+                x + width, y, 0.0F, uMax, v,
+                x, y, 0.0F, u, v
+        );
+        NTMImmediate.INSTANCE.draw();
 	}
 	
 	public static void drawGuiRectColor(float x, float y, float u, float v, float width, float height, float uMax, float vMax, float r, float g, float b, float a){
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferbuilder = tessellator.getBuffer();
-        bufferbuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
-        bufferbuilder.pos(x, y + height, 0.0D).tex(u, vMax).color(r, g, b, a).endVertex();
-        bufferbuilder.pos(x + width, y + height, 0.0D).tex(uMax, vMax).color(r, g, b, a).endVertex();
-        bufferbuilder.pos(x + width, y, 0.0D).tex(uMax, v).color(r, g, b, a).endVertex();
-        bufferbuilder.pos(x, y, 0.0D).tex(u, v).color(r, g, b, a).endVertex();
-        tessellator.draw();
+        NTMBufferBuilder bufferbuilder = NTMImmediate.INSTANCE.beginPositionTexColorQuads(1);
+        int packedColor = NTMBufferBuilder.packColor(r, g, b, a);
+        bufferbuilder.appendPositionTexColorQuadUnchecked(
+                x, y + height, 0.0F, u, vMax, packedColor,
+                x + width, y + height, 0.0F, uMax, vMax, packedColor,
+                x + width, y, 0.0F, uMax, v, packedColor,
+                x, y, 0.0F, u, v, packedColor
+        );
+        NTMImmediate.INSTANCE.draw();
 	}
 	
 	public static void drawGuiRectBatched(float x, float y, float u, float v, float width, float height, float uMax, float vMax){
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferbuilder = tessellator.getBuffer();
-        bufferbuilder.pos(x, y + height, 0.0D).tex(u, vMax).endVertex();
-        bufferbuilder.pos(x + width, y + height, 0.0D).tex(uMax, vMax).endVertex();
-        bufferbuilder.pos(x + width, y, 0.0D).tex(uMax, v).endVertex();
-        bufferbuilder.pos(x, y, 0.0D).tex(u, v).endVertex();
+        NTMBufferBuilder bufferbuilder = (NTMBufferBuilder) Tessellator.getInstance().getBuffer();
+        bufferbuilder.appendPositionTexQuadUnchecked(
+                x, y + height, 0.0F, u, vMax,
+                x + width, y + height, 0.0F, uMax, vMax,
+                x + width, y, 0.0F, uMax, v,
+                x, y, 0.0F, u, v
+        );
 	}
 	
 	public static void drawGuiRectBatchedColor(float x, float y, float u, float v, float width, float height, float uMax, float vMax, float r, float g, float b, float a){
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferbuilder = tessellator.getBuffer();
-        bufferbuilder.pos(x, y + height, 0.0D).tex(u, vMax).color(r, g, b, a).endVertex();
-        bufferbuilder.pos(x + width, y + height, 0.0D).tex(uMax, vMax).color(r, g, b, a).endVertex();
-        bufferbuilder.pos(x + width, y, 0.0D).tex(uMax, v).color(r, g, b, a).endVertex();
-        bufferbuilder.pos(x, y, 0.0D).tex(u, v).color(r, g, b, a).endVertex();
+        NTMBufferBuilder bufferbuilder = (NTMBufferBuilder) Tessellator.getInstance().getBuffer();
+        int packedColor = NTMBufferBuilder.packColor(r, g, b, a);
+        bufferbuilder.appendPositionTexColorQuadUnchecked(
+                x, y + height, 0.0F, u, vMax, packedColor,
+                x + width, y + height, 0.0F, uMax, vMax, packedColor,
+                x + width, y, 0.0F, uMax, v, packedColor,
+                x, y, 0.0F, u, v, packedColor
+        );
 	}
 	
 	@Deprecated
@@ -951,13 +959,11 @@ public class NTMRenderHelper {
         GlStateManager.enableColorMaterial();
 
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferbuilder = tessellator.getBuffer();
-        bufferbuilder.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX);
-        bufferbuilder.pos(-1, -1, 0.0D).tex(0, 0).endVertex();
-        bufferbuilder.pos(3, -1, 0.0D).tex(2, 0).endVertex();
-        bufferbuilder.pos(-1, 3, 0.0D).tex(0, 2).endVertex();
-        tessellator.draw();
+        NTMBufferBuilder bufferbuilder = NTMImmediate.INSTANCE.beginPositionTex(GL11.GL_TRIANGLES, 3);
+        bufferbuilder.appendPositionTex(-1, -1, 0.0F, 0, 0);
+        bufferbuilder.appendPositionTex(3, -1, 0.0F, 2, 0);
+        bufferbuilder.appendPositionTex(-1, 3, 0.0F, 0, 2);
+        NTMImmediate.INSTANCE.draw();
         GlStateManager.depthMask(true);
         GlStateManager.enableDepth();
         GlStateManager.enableAlpha();

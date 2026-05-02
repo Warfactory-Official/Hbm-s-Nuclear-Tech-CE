@@ -1,6 +1,7 @@
 package com.hbm.tileentity.deco;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.entity.particle.EntityModFXShadow;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
@@ -24,56 +25,40 @@ public class TileEntityVent extends TileEntity implements ITickable {
 			Block b = world.getBlockState(pos).getBlock();
 
 			if(b == ModBlocks.vent_chlorine) {
-				//if(rand.nextInt(1) == 0) {
-					double x = rand.nextGaussian() * 1.5;
-					double y = rand.nextGaussian() * 1.5;
-					double z = rand.nextGaussian() * 1.5;
-
-					if(!world.getBlockState(new BlockPos(pos.getX() + (int)x, pos.getY() + (int)y, pos.getZ() + (int)z)).isNormalCube()) {
-
-						NBTTagCompound data = new NBTTagCompound();
-						data.setDouble("moX", x / 2.0D);
-						data.setDouble("moY", y / 2.0D);
-						data.setDouble("moZ", z / 2.0D);
-						data.setString("type", "chlorinefx");
-						PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.getX() + (int) x, pos.getY() + (int) y, pos.getZ() + (int) z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + (int) x, pos.getY() + (int) y, pos.getZ() + (int) z, 128));
-					}
-				//}
+				emit(1.5D, "chlorinefx", EntityModFXShadow.Type.CHLORINE);
 			}
 			if(b == ModBlocks.vent_cloud) {
-				//if(rand.nextInt(50) == 0) {
-				double x = rand.nextGaussian() * 1.75;
-				double y = rand.nextGaussian() * 1.75;
-				double z = rand.nextGaussian() * 1.75;
-
-				if(!world.getBlockState(new BlockPos(pos.getX() + (int)x, pos.getY() + (int)y, pos.getZ() + (int)z)).isNormalCube()) {
-
-					NBTTagCompound data = new NBTTagCompound();
-					data.setDouble("moX", x / 2.0D);
-					data.setDouble("moY", y / 2.0D);
-					data.setDouble("moZ", z / 2.0D);
-					data.setString("type", "cloudfx");
-					PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.getX() + (int) x, pos.getY() + (int) y, pos.getZ() + (int) z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + (int) x, pos.getY() + (int) y, pos.getZ() + (int) z, 128));
-				}
-				//}
+				emit(1.75D, "cloudfx", EntityModFXShadow.Type.CLOUD);
 			}
 			if(b == ModBlocks.vent_pink_cloud) {
-				//if(rand.nextInt(65) == 0) {
-				double x = rand.nextGaussian() * 2;
-				double y = rand.nextGaussian() * 2;
-				double z = rand.nextGaussian() * 2;
-
-				if(!world.getBlockState(new BlockPos(pos.getX() + (int)x, pos.getY() + (int)y, pos.getZ() + (int)z)).isNormalCube()) {
-
-					NBTTagCompound data = new NBTTagCompound();
-					data.setDouble("moX", x / 2.0D);
-					data.setDouble("moY", y / 2.0D);
-					data.setDouble("moZ", z / 2.0D);
-					data.setString("type", "pinkcloudfx");
-					PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.getX() + (int) x, pos.getY() + (int) y, pos.getZ() + (int) z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + (int) x, pos.getY() + (int) y, pos.getZ() + (int) z, 128));
-				}
+				emit(2D, "pinkcloudfx", EntityModFXShadow.Type.PINK_CLOUD);
 			}
 		}
+	}
+
+	private void emit(double spread, String particleType, EntityModFXShadow.Type shadowType) {
+		double x = rand.nextGaussian() * spread;
+		double y = rand.nextGaussian() * spread;
+		double z = rand.nextGaussian() * spread;
+
+		int px = pos.getX() + (int) x;
+		int py = pos.getY() + (int) y;
+		int pz = pos.getZ() + (int) z;
+
+		if (world.getBlockState(new BlockPos(px, py, pz)).isNormalCube()) return;
+
+		double mx = x / 2.0D;
+		double my = y / 2.0D;
+		double mz = z / 2.0D;
+
+		NBTTagCompound data = new NBTTagCompound();
+		data.setDouble("moX", mx);
+		data.setDouble("moY", my);
+		data.setDouble("moZ", mz);
+		data.setString("type", particleType);
+		PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, px, py, pz), new NetworkRegistry.TargetPoint(world.provider.getDimension(), px, py, pz, 128));
+
+		EntityModFXShadow.spawn(world, shadowType, px, py, pz, mx, my, mz);
 	}
 
 }

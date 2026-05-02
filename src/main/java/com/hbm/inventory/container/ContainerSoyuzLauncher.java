@@ -1,6 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.api.item.IDesignatorItem;
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.ModItems;
@@ -19,9 +20,19 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerSoyuzLauncher extends Container {
 
 	private TileEntitySoyuzLauncher launcher;
-	
+    private final TransferStrategy transferStrategy = TransferStrategy.builder(27)
+                                                                      .rule(0, 1, s -> s.getItem() instanceof ItemSoyuz)
+                                                                      .rule(1, 2, s -> s.getItem() instanceof IDesignatorItem)
+                                                                      .rule(2, 3, s -> s.getItem() instanceof ItemSatellite)
+                                                                      .rule(3, 4, s -> s.getItem() == ModItems.missile_soyuz_lander)
+                                                                      .rule(4, 6, s -> Library.isStackDrainableForTank(s, launcher.tanks[0]))
+                                                                      .rule(6, 8, s -> Library.isStackDrainableForTank(s, launcher.tanks[1]))
+                                                                      .rule(8, 9, Library::isBattery)
+                                                                      .genericMachineRange(9)
+                                                                      .build();
+
 	public ContainerSoyuzLauncher(InventoryPlayer invPlayer, TileEntitySoyuzLauncher tedf) {
-		
+
 		launcher = tedf;
 
 		//Soyuz
@@ -42,7 +53,7 @@ public class ContainerSoyuzLauncher extends Container {
 		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 7, 26, 108));
 		//Battery
 		this.addSlotToContainer(new SlotBattery(tedf.inventory, 8, 44, 108));
-		
+
 		for(int i = 0; i < 3; i++)
 		{
 			for(int j = 0; j < 6; j++)
@@ -50,7 +61,7 @@ public class ContainerSoyuzLauncher extends Container {
 				this.addSlotToContainer(new SlotItemHandler(tedf.inventory, j + i * 6 + 9, 62 + j * 18, 72 + i * 18));
 			}
 		}
-		
+
 		for(int i = 0; i < 3; i++)
 		{
 			for(int j = 0; j < 9; j++)
@@ -58,24 +69,16 @@ public class ContainerSoyuzLauncher extends Container {
 				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18 + 56));
 			}
 		}
-		
+
 		for(int i = 0; i < 9; i++)
 		{
 			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 142 + 56));
 		}
 	}
-	
+
 	@Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 27,
-                s -> s.getItem() instanceof ItemSoyuz, 1,
-                s -> s.getItem() instanceof IDesignatorItem, 2,
-                s -> s.getItem() instanceof ItemSatellite, 3,
-                s -> s.getItem() == ModItems.missile_soyuz_lander, 4,
-                s -> Library.isStackDrainableForTank(s, launcher.tanks[0]), 6,
-                s -> Library.isStackDrainableForTank(s, launcher.tanks[1]), 8,
-                Library::isBattery, 9
-        );
+		return InventoryUtil.transferStack(this.inventorySlots, index, this.transferStrategy, player);
     }
 
 	@Override

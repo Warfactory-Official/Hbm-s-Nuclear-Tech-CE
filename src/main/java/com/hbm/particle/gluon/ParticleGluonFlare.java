@@ -5,14 +5,14 @@ import com.hbm.lib.Library;
 import com.hbm.main.ClientProxy;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.misc.LensVisibilityHandler;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.DestFactor;
 import net.minecraft.client.renderer.GlStateManager.SourceFactor;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.MathHelper;
@@ -21,7 +21,7 @@ import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 public class ParticleGluonFlare extends Particle {
 
@@ -137,19 +137,22 @@ public class ParticleGluonFlare extends Particle {
             }
         }
 
-        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
-        buffer.pos(avec3d[0].x, avec3d[0].y, avec3d[0].z).tex(1, 1).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha*visibility*visibility*0.8F).lightmap(240, 240).endVertex();
-        buffer.pos(avec3d[1].x, avec3d[1].y, avec3d[1].z).tex(1, 0).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha*visibility*visibility*0.8F).lightmap(240, 240).endVertex();
-        buffer.pos(avec3d[2].x, avec3d[2].y, avec3d[2].z).tex(0, 0).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha*visibility*visibility*0.8F).lightmap(240, 240).endVertex();
-        buffer.pos(avec3d[3].x, avec3d[3].y, avec3d[3].z).tex(0, 1).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha*visibility*visibility*0.8F).lightmap(240, 240).endVertex();
-		Tessellator.getInstance().draw();
+        NTMBufferBuilder fastBuffer = NTMImmediate.INSTANCE.beginParticlePositionTexColorLmap(GL11.GL_QUADS, 4);
+        int packedLightmap = NTMBufferBuilder.packLightmap(240, 240);
+        int packedColor = NTMBufferBuilder.packColor(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha*visibility*visibility*0.8F);
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked((float) avec3d[0].x, (float) avec3d[0].y, (float) avec3d[0].z, 1, 1, packedColor, packedLightmap);
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked((float) avec3d[1].x, (float) avec3d[1].y, (float) avec3d[1].z, 1, 0, packedColor, packedLightmap);
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked((float) avec3d[2].x, (float) avec3d[2].y, (float) avec3d[2].z, 0, 0, packedColor, packedLightmap);
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked((float) avec3d[3].x, (float) avec3d[3].y, (float) avec3d[3].z, 0, 1, packedColor, packedLightmap);
+		NTMImmediate.INSTANCE.draw();
 		Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.fresnel_ms);
-		buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
-		buffer.pos(avec3d2[0].x, avec3d2[0].y, avec3d2[0].z).tex(1, 1).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha*visibility*0.2F).lightmap(240, 240).endVertex();
-        buffer.pos(avec3d2[1].x, avec3d2[1].y, avec3d2[1].z).tex(1, 0).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha*visibility*0.2F).lightmap(240, 240).endVertex();
-        buffer.pos(avec3d2[2].x, avec3d2[2].y, avec3d2[2].z).tex(0, 0).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha*visibility*0.2F).lightmap(240, 240).endVertex();
-        buffer.pos(avec3d2[3].x, avec3d2[3].y, avec3d2[3].z).tex(0, 1).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha*visibility*0.2F).lightmap(240, 240).endVertex();
-        Tessellator.getInstance().draw();
+		fastBuffer = NTMImmediate.INSTANCE.beginParticlePositionTexColorLmap(GL11.GL_QUADS, 4);
+        packedColor = NTMBufferBuilder.packColor(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha*visibility*0.2F);
+		fastBuffer.appendParticlePositionTexColorLmapUnchecked((float) avec3d2[0].x, (float) avec3d2[0].y, (float) avec3d2[0].z, 1, 1, packedColor, packedLightmap);
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked((float) avec3d2[1].x, (float) avec3d2[1].y, (float) avec3d2[1].z, 1, 0, packedColor, packedLightmap);
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked((float) avec3d2[2].x, (float) avec3d2[2].y, (float) avec3d2[2].z, 0, 0, packedColor, packedLightmap);
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked((float) avec3d2[3].x, (float) avec3d2[3].y, (float) avec3d2[3].z, 0, 1, packedColor, packedLightmap);
+        NTMImmediate.INSTANCE.draw();
 		GlStateManager.disableBlend();
 		GlStateManager.enableDepth();
 		GlStateManager.enableAlpha();

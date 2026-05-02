@@ -24,10 +24,10 @@ import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.particle.SpentCasing;
+import com.hbm.render.anim.sedna.AnimationEnums;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna.IType;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
 import com.hbm.render.anim.sedna.BusAnimationSequenceSedna;
-import com.hbm.render.anim.sedna.HbmAnimationsSedna;
 import com.hbm.render.misc.RenderScreenOverlay.Crosshair;
 import com.hbm.util.*;
 import net.minecraft.block.Block;
@@ -104,7 +104,7 @@ public class XFactory12ga {
             int projectiles = submunition.projectilesMin;
             if(submunition.projectilesMax > submunition.projectilesMin) projectiles += beam.world.rand.nextInt(submunition.projectilesMax - submunition.projectilesMin + 1);
 
-            if(mop.typeOfHit == mop.typeOfHit.BLOCK) {
+            if(mop.typeOfHit == RayTraceResult.Type.BLOCK) {
 
                 ForgeDirection dir = ForgeDirection.getOrientation(mop.sideHit);
 
@@ -131,7 +131,7 @@ public class XFactory12ga {
                 }
             }
 
-            if(mop.typeOfHit == mop.typeOfHit.ENTITY) {
+            if(mop.typeOfHit == RayTraceResult.Type.ENTITY) {
 
                 spawnPulse(beam.world, mop, beam.rotationYaw, beam.rotationPitch);
 
@@ -154,7 +154,7 @@ public class XFactory12ga {
     //this sucks
     public static BiConsumer<EntityBulletBaseMK4, RayTraceResult> LAMBDA_SHREDDER_RICOCHET = (bullet, mop) -> {
 
-        if(mop.typeOfHit == mop.typeOfHit.BLOCK) {
+        if(mop.typeOfHit == RayTraceResult.Type.BLOCK) {
             IBlockState bs = bullet.world.getBlockState(mop.getBlockPos());
             Block b = bs.getBlock();
             if(b.getMaterial(bs) == Material.GLASS) {
@@ -219,7 +219,7 @@ public class XFactory12ga {
         double y = mop.hitVec.y;
         double z = mop.hitVec.z;
 
-        if(mop.typeOfHit == mop.typeOfHit.BLOCK) {
+        if(mop.typeOfHit == RayTraceResult.Type.BLOCK) {
             if(mop.sideHit.getIndex() == ForgeDirection.UP.ordinal()) { yaw = 0F; pitch = 0F; }
             if(mop.sideHit.getIndex() == ForgeDirection.DOWN.ordinal()) { yaw = 0F; pitch = 0F; }
             if(mop.sideHit.getIndex() == ForgeDirection.NORTH.ordinal()) { yaw = 0F; pitch = 90F; }
@@ -331,7 +331,7 @@ public class XFactory12ga {
         ).setDefaultAmmo(GunFactory.EnumAmmo.G12, 12);
 
         ModItems.gun_spas12 = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_spas12", new GunConfig()
-                .dura(600).draw(20).inspect(39).reloadSequential(true).crosshair(Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
+                .dura(600).draw(20).inspect(39).reloadSequential(true).reloadChangeType(true).crosshair(Crosshair.L_CIRCLE).smoke(Lego.LAMBDA_STANDARD_SMOKE)
                 .rec(new Receiver(0)
                         .dmg(32F).spreadHipfire(0F).delay(20).reload(5, 10, 10, 10, 0).jam(36).sound(HBMSoundHandler.shotgunShoot, 1.0F, 1.0F)
                         .mag(new MagazineSingleReload(0, 8).addConfigs(all))
@@ -408,7 +408,7 @@ public class XFactory12ga {
                 ItemGunBaseNT.setTimer(stack, index, 20);
             } else {
                 if(rec.getDoesDryFire(stack)) {
-                    ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.GunAnimation.CYCLE_DRY, index);
+                    ItemGunBaseNT.playAnimation(player, stack, AnimationEnums.GunAnimation.CYCLE_DRY, index);
                     ItemGunBaseNT.setState(stack, index, ItemGunBaseNT.GunState.DRAWING);
                     ItemGunBaseNT.setTimer(stack, index, rec.getDelayAfterDryFire(stack));
                 }
@@ -419,7 +419,7 @@ public class XFactory12ga {
         }
     };
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_MARESLEG_ANIMS = (stack, type) -> {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> LAMBDA_MARESLEG_ANIMS = (stack, type) -> {
         switch (type) {
             case EQUIP -> {
                 return new BusAnimationSedna()
@@ -477,7 +477,7 @@ public class XFactory12ga {
         return null;
     };
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_MARESLEG_SHORT_ANIMS = (stack, type) -> switch (type) {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> LAMBDA_MARESLEG_SHORT_ANIMS = (stack, type) -> switch (type) {
         case EQUIP -> new BusAnimationSedna()
                 .addBus("EQUIP", new BusAnimationSequenceSedna().addPos(-60, 0, 0, 0).addPos(0, 0, -3, 250, IType.SIN_DOWN));
         case CYCLE -> new BusAnimationSedna()
@@ -500,7 +500,7 @@ public class XFactory12ga {
     };
 
     /** This fucking sucks */
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_LIBERATOR_ANIMS = (stack, type) -> {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> LAMBDA_LIBERATOR_ANIMS = (stack, type) -> {
         int ammo = ((ItemGunBaseNT) stack.getItem()).getConfig(stack, 0).getReceivers(stack)[0].getMagazine(stack).getAmount(stack, MainRegistry.proxy.me().inventory);
         switch(type) {
             case EQUIP: return new BusAnimationSedna()
@@ -597,7 +597,7 @@ public class XFactory12ga {
         return null;
     };
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_SPAS_ANIMS = (stack, type) -> {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> LAMBDA_SPAS_ANIMS = (stack, type) -> {
         switch (type) {
             case EQUIP -> {
                 return new BusAnimationSedna()
@@ -633,7 +633,7 @@ public class XFactory12ga {
         return null;
     };
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_SHREDDER_ANIMS = (stack, type) -> switch (type) {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> LAMBDA_SHREDDER_ANIMS = (stack, type) -> switch (type) {
         case EQUIP -> new BusAnimationSedna()
                 .addBus("EQUIP", new BusAnimationSequenceSedna().addPos(60, 0, 0, 0).addPos(0, 0, 0, 500, IType.SIN_DOWN));
         case CYCLE -> new BusAnimationSedna()
@@ -656,7 +656,7 @@ public class XFactory12ga {
         default -> null;
     };
     // TODO: port AnimationEnums
-	@SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_SEXY_ANIMS = (stack, type) -> {
+	@SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> LAMBDA_SEXY_ANIMS = (stack, type) -> {
         switch (type) {
             case EQUIP -> {
                 return new BusAnimationSedna()

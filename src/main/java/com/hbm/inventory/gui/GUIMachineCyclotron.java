@@ -2,18 +2,12 @@ package com.hbm.inventory.gui;
 
 import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerMachineCyclotron;
-import com.hbm.packet.PacketDispatcher;
-import com.hbm.packet.toserver.AuxButtonPacket;
 import com.hbm.tileentity.machine.TileEntityMachineCyclotron;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
-
-import java.io.IOException;
-
-import static com.hbm.util.SoundUtil.playClickSound;
 
 public class GUIMachineCyclotron extends GuiInfoContainer {
 
@@ -53,17 +47,6 @@ public class GUIMachineCyclotron extends GuiInfoContainer {
 
 		this.fontRenderer.drawString(name, this.xSize / 2 - this.fontRenderer.getStringWidth(name) / 2, 6, 4210752);
 		this.fontRenderer.drawString(I18n.format("container.inventory"), 15, this.ySize - 96 + 2, 4210752);
-	}
-	
-	@Override
-	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-		super.mouseClicked(mouseX, mouseY, mouseButton);
-
-    	if(guiLeft + 97 <= mouseX && guiLeft + 97 + 18 > mouseX && guiTop + 107 < mouseY && guiTop + 107 + 18 >= mouseY) {
-
-			playClickSound();
-    		PacketDispatcher.wrapper.sendToServer(new AuxButtonPacket(cyclotron.getPos(), 0, 0));
-    	}
 	}
 
 	@Override

@@ -25,7 +25,7 @@ public class TileEntityRBMKOutlet extends TileEntityLoadedBase implements ITicka
     public FluidTankNTM steam;
 
     public TileEntityRBMKOutlet() {
-        steam = new FluidTankNTM(Fluids.SUPERHOTSTEAM, 32000);
+        steam = new FluidTankNTM(Fluids.SUPERHOTSTEAM, 32000).withOwner(this);
     }
 
     @Override
@@ -67,7 +67,6 @@ public class TileEntityRBMKOutlet extends TileEntityLoadedBase implements ITicka
         this.steam.writeToNBT(nbt, "tank");
         return nbt;
     }
-
 
     public void fillFluidInit() {
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)

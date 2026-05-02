@@ -1,8 +1,6 @@
 package com.hbm.entity.particle;
 
 import com.hbm.items.ModItems;
-import com.hbm.packet.PacketDispatcher;
-import com.hbm.packet.toserver.ModFXCollidePacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -64,11 +62,6 @@ public class EntityChlorineFX extends Particle {
         this.prevPosX = this.posX;
         this.prevPosY = this.posY;
         this.prevPosZ = this.posZ;
-
-        if (this.rand.nextInt(50) == 0 && this.world.isRemote) {
-            BlockPos p = new BlockPos((int) this.posX, (int) this.posY, (int) this.posZ);
-            PacketDispatcher.wrapper.sendToServer(new ModFXCollidePacket(ModFXCollidePacket.Action.EXPLOSION_POISON, p, 2));
-        }
 
         this.particleAge++;
         if (this.particleAge >= this.particleMaxAge) {

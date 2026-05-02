@@ -58,6 +58,7 @@ import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -117,6 +118,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 	public int stattrak;
 	public int casingDelay;
 	protected SpentCasing cachedCasingConfig = null;
+	protected List<String> cachedWhitelist = null;
 
 	/**
 	 * X
@@ -128,6 +130,23 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 
 	public TileEntityTurretBaseNT(){
 		super(11, false, true);
+	}
+
+	@Override
+	protected ItemStackHandler getNewInventory(int scount, int slotlimit) {
+		return new ItemStackHandler(scount) {
+			@Override
+			protected void onContentsChanged(int slot) {
+				super.onContentsChanged(slot);
+				markDirty();
+				if(slot == 0) cachedWhitelist = null;
+			}
+
+			@Override
+			public int getSlotLimit(int slot) {
+				return slotlimit;
+			}
+		};
 	}
 
 	@Override
@@ -386,6 +405,9 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 	 */
 	public List<String> getWhitelist() {
 
+		if(cachedWhitelist != null)
+			return cachedWhitelist;
+
 		if(inventory.getStackInSlot(0).getItem() == ModItems.turret_chip) {
 
 			String[] array = ItemTurretBiometry.getNames(inventory.getStackInSlot(0));
@@ -393,7 +415,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 			if(array == null)
 				return null;
 
-			return Arrays.asList(ItemTurretBiometry.getNames(inventory.getStackInSlot(0)));
+			return cachedWhitelist = new ArrayList<>(Arrays.asList(array));
 		}
 
 		return null;
@@ -407,6 +429,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 
 		if(inventory.getStackInSlot(0).getItem() == ModItems.turret_chip) {
 			ItemTurretBiometry.addName(inventory.getStackInSlot(0), name);
+			if(cachedWhitelist != null) cachedWhitelist.add(name);
 		}
 	}
 
@@ -430,6 +453,8 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 
 			for(String name : names)
 				ItemTurretBiometry.addName(inventory.getStackInSlot(0), name);
+
+			if(cachedWhitelist != null) cachedWhitelist.remove(index);
 		}
 	}
 
@@ -856,7 +881,9 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		double r = getBarrelLength() + 2;
+		double h = getHeightOffset();
+		return new AxisAlignedBB(pos.getX() - r, pos.getY(), pos.getZ() - r, pos.getX() + 1 + r, pos.getY() + h + r + 1, pos.getZ() + 1 + r);
 	}
 
 	@Override

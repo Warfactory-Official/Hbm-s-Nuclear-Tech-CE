@@ -3,10 +3,12 @@ package com.hbm.render.item.weapon;
 import com.hbm.Tags;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.render.item.TEISRBase;
+import com.hbm.render.model.BakedModelTransforms;
 import com.hbm.render.model.ModelBigSword;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
@@ -17,6 +19,11 @@ public class ItemRenderBigSword extends TEISRBase {
 
 	public ItemRenderBigSword() {
 		bigSwordModel = new ModelBigSword();
+	}
+
+	@Override
+	public ModelBinding createModelBinding(Item item) {
+		return ModelBinding.inventoryWithGuiModel(item, BakedModelTransforms.defaultItemTransforms(), new ResourceLocation(Tags.MODID, "items/big_sword"));
 	}
 
 	@Override

@@ -16,6 +16,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -41,7 +42,7 @@ public class ArmorFSBPowered extends ArmorFSB implements IBatteryItem {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
+    public void addInformation(@NotNull ItemStack stack, World worldIn, @NotNull List<String> list, @NotNull ITooltipFlag flagIn) {
         list.add("Charge: " + BobMathUtil.getShortNumber(getCharge(stack)) + " / " + BobMathUtil.getShortNumber(getMaxCharge(stack)));
     	super.addInformation(stack, worldIn, list, flagIn);
     }
@@ -98,7 +99,7 @@ public class ArmorFSBPowered extends ArmorFSB implements IBatteryItem {
     }
 
 	@Override
-	public void onArmorTick(World world, EntityPlayer player, ItemStack stack) {
+	public void onArmorTick(@NotNull World world, @NotNull EntityPlayer player, @NotNull ItemStack stack) {
     	if(!player.capabilities.isCreativeMode && this.drain > 0 && ArmorFSB.hasFSBArmor(player)) {
     		long netto_drain = drain;
     		ItemSelfcharger sc_battery = this.getHeldSCBattery(player);

@@ -6,7 +6,7 @@ import com.hbm.interfaces.ICustomSelectionBox;
 import com.hbm.inventory.control_panel.Control;
 import com.hbm.inventory.control_panel.ControlEvent;
 import com.hbm.inventory.control_panel.ControlPanel;
-import com.hbm.inventory.control_panel.DataValueFloat;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
 import com.hbm.items.ModItems;
 import com.hbm.main.ClientProxy;
 import com.hbm.main.MainRegistry;

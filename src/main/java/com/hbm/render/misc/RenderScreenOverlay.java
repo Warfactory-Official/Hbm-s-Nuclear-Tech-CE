@@ -457,11 +457,15 @@ public class RenderScreenOverlay {
 		Minecraft.getMinecraft().entityRenderer.setupOverlayRendering();
 
 		GlStateManager.enableBlend();
-		GL11.glDisable(GL11.GL_DEPTH_TEST);
+		GlStateManager.disableLighting();
+		GlStateManager.disableCull();
+		GlStateManager.disableDepth();
 		GlStateManager.depthMask(false);
-		OpenGlHelper.glBlendFunc(770, 771, 1, 0);
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-		GL11.glDisable(GL11.GL_ALPHA_TEST);
+
+		OpenGlHelper.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
+
+		GlStateManager.disableAlpha();
 
 		Minecraft.getMinecraft().renderEngine.bindTexture(misc);
 
@@ -480,11 +484,13 @@ public class RenderScreenOverlay {
 		if(true328) { gui.drawTexturedModalRect(offsetX, offsetY, 0, 242, 24, 8); offsetX += width; }
 
 		Minecraft.getMinecraft().renderEngine.bindTexture(Gui.ICONS);
-
+		OpenGlHelper.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
+		GlStateManager.enableAlpha();
+		GlStateManager.disableBlend();
+		GlStateManager.enableCull();
+		GlStateManager.enableDepth();
 		GlStateManager.depthMask(true);
-		GL11.glEnable(GL11.GL_DEPTH_TEST);
-		GL11.glEnable(GL11.GL_ALPHA_TEST);
-		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+		GlStateManager.color(1F, 1F, 1F, 1F);
 		GlStateManager.popMatrix();
 	}
 	

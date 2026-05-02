@@ -65,7 +65,7 @@ public class MapGenNTMFeatures extends MapGenStructure {
 			Biome biome = this.world.getBiome(new BlockPos(k * 16 + 8, 0, l * 16 + 8));
 
 			if (biomelist == null) {
-				biomelist = Arrays.asList(Biomes.OCEAN, Biomes.RIVER, Biomes.FROZEN_OCEAN, Biomes.FROZEN_RIVER, Biomes.DEEP_OCEAN);
+				biomelist = Arrays.asList(Biomes.OCEAN, Biomes.RIVER, Biomes.FROZEN_OCEAN, Biomes.FROZEN_RIVER, Biomes.DEEP_OCEAN, Biomes.VOID);
 			}
 
 			for (Biome disallowed : biomelist) {

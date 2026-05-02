@@ -2,17 +2,18 @@ package com.hbm.inventory.gui;
 
 import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerMachineMissileAssembly;
-import com.hbm.packet.toserver.AuxButtonPacket;
 import com.hbm.packet.PacketDispatcher;
+import com.hbm.packet.toserver.AuxButtonPacket;
 import com.hbm.render.misc.MissileMultipart;
 import com.hbm.render.misc.MissilePart;
 import com.hbm.render.misc.MissilePronter;
 import com.hbm.tileentity.machine.TileEntityMachineMissileAssembly;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 
@@ -83,16 +84,16 @@ public class GUIMachineMissileAssembly extends GuiInfoContainer {
 
 		MissileMultipart missile = new MissileMultipart();
 		
-		if(assembler.inventory.getStackInSlot(1) != null)
+		if(!assembler.inventory.getStackInSlot(1).isEmpty())
 			missile.warhead = MissilePart.getPart(assembler.inventory.getStackInSlot(1).getItem());
-		
-		if(assembler.inventory.getStackInSlot(2) != null)
+
+		if(!assembler.inventory.getStackInSlot(2).isEmpty())
 			missile.fuselage = MissilePart.getPart(assembler.inventory.getStackInSlot(2).getItem());
-		
-		if(assembler.inventory.getStackInSlot(3) != null)
+
+		if(!assembler.inventory.getStackInSlot(3).isEmpty())
 			missile.fins = MissilePart.getPart(assembler.inventory.getStackInSlot(3).getItem());
-		
-		if(assembler.inventory.getStackInSlot(4) != null)
+
+		if(!assembler.inventory.getStackInSlot(4).isEmpty())
 			missile.thruster = MissilePart.getPart(assembler.inventory.getStackInSlot(4).getItem());
 		
 		GlStateManager.translate(guiLeft + 88, guiTop + 98, 100);

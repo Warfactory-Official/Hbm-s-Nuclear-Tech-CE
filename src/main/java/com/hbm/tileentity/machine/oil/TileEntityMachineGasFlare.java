@@ -19,6 +19,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
@@ -30,10 +31,10 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -54,7 +55,7 @@ import java.util.List;
 public class TileEntityMachineGasFlare extends TileEntityMachineBase
         implements ITickable, IEnergyProviderMK2,
         IFluidStandardReceiver, IGUIProvider,
-        IControlReceiver, IFluidCopiable, IUpgradeInfoProvider {
+        IControlReceiver, IFluidCopiable, IUpgradeInfoProvider, IConnectionAnchors {
     public static final long maxPower = 1000000;
     private final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
     public long power;
@@ -76,7 +77,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
             }
 
             @Override
-            public void setStackInSlot(int slot, ItemStack stack) {
+            public void setStackInSlot(int slot, @NotNull ItemStack stack) {
                 super.setStackInSlot(slot, stack);
                 if (Library.isMachineUpgrade(stack) && slot >= 4 && slot <= 5)
                     SoundUtil.playUpgradePlugSound(world, pos);
@@ -84,7 +85,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         };
 
         tankType = Fluids.GAS.getFF();
-        tank = new FluidTankNTM(Fluids.GAS, 64000);
+        tank = new FluidTankNTM(Fluids.GAS, 64000).withOwner(this);
     }
 
     @Override
@@ -137,8 +138,8 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
             if (isOn && tank.getFill() > 0) {
                 upgradeManager.checkSlots(inventory, 4, 5);
 
-                int burn = Math.min(upgradeManager.getLevel(UpgradeType.SPEED), 6);
-                int yield = Math.min(upgradeManager.getLevel(UpgradeType.EFFECT), 6);
+                int burn = upgradeManager.getLevel(UpgradeType.SPEED);
+                int yield = upgradeManager.getLevel(UpgradeType.EFFECT);
 
                 maxVent += maxVent * burn;
                 maxBurn += maxBurn * burn;
@@ -150,6 +151,13 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
                         this.fluidUsed = eject;
                         tank.setFill(tank.getFill() - eject);
                         tank.getTankType().onFluidRelease(this, tank, eject);
+
+                        if(world.getTotalWorldTime() % 7 == 0)
+                            this.world.playSound(null, this.pos.getX(), this.pos.getY() + 11, this.pos.getZ(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, getVolume(1.5F), 0.5F);
+
+                        if(world.getTotalWorldTime() % 5 == 0 && eject > 0) {
+                            FT_Polluting.pollute(world, pos.getX(), pos.getY(), pos.getZ(), tank.getTankType(), FluidTrait.FluidReleaseType.SPILL, eject * 5);
+                        }
                     }
                 } else {
 
@@ -173,9 +181,6 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
                             power = maxPower;
 
                         ParticleUtil.spawnGasFlame(world, pos.getX() + 0.5F, pos.getY() + 11.75F, pos.getZ() + 0.5F, world.rand.nextGaussian() * 0.15, 0.2, world.rand.nextGaussian() * 0.15);
-
-                        if (this.world.getTotalWorldTime() % 5 == 0)
-                            this.world.playSound(null, pos.getX(), pos.getY() + 11, pos.getZ(), HBMSoundHandler.flamethrowerShoot, SoundCategory.BLOCKS, 1.5F, 1F);
 
                         List<Entity> list = world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(pos.add(-1, 12, -2), pos.add(2, 17, 2)));
                         for (Entity e : list) {
@@ -275,16 +280,6 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         };
     }
 
-    @Override
-    public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
-    }
-
-    @Override
-    @SideOnly(Side.CLIENT)
-    public double getMaxRenderDistanceSquared() {
-        return 65536.0D;
-    }
 
     @Override
     public FluidTankNTM[] getReceivingTanks() {
@@ -379,5 +374,11 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         upgrades.put(UpgradeType.SPEED, 3);
         upgrades.put(UpgradeType.EFFECT, 3);
         return upgrades;
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public double getMaxRenderDistanceSquared() {
+        return 65536.0D;
     }
 }

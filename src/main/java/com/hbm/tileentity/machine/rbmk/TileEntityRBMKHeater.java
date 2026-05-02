@@ -1,21 +1,23 @@
 package com.hbm.tileentity.machine.rbmk;
 
-import com.hbm.api.fluid.IFluidStandardTransceiver;
+import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.capability.NTMFluidHandlerWrapper;
 import com.hbm.entity.projectile.EntityRBMKDebris.DebrisType;
 import com.hbm.handler.CompatHandler;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.container.ContainerRBMKHeater;
-import com.hbm.inventory.control_panel.DataValue;
-import com.hbm.inventory.control_panel.DataValueFloat;
-import com.hbm.inventory.control_panel.DataValueString;
+import com.hbm.inventory.control_panel.types.DataValue;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
+import com.hbm.inventory.control_panel.types.DataValueString;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FT_Heatable;
 import com.hbm.inventory.gui.GUIRBMKHeater;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.machine.rbmk.RBMKColumn.ColumnType;
 import io.netty.buffer.ByteBuf;
@@ -40,15 +42,15 @@ import javax.annotation.Nullable;
 import java.util.Map;
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 @AutoRegister
-public class TileEntityRBMKHeater extends TileEntityRBMKSlottedBase implements IFluidStandardTransceiver, IGUIProvider, SimpleComponent, CompatHandler.OCComponent {
+public class TileEntityRBMKHeater extends TileEntityRBMKSlottedBase implements IFluidStandardTransceiverMK2, IGUIProvider, SimpleComponent, CompatHandler.OCComponent, IConnectionAnchors, IRORValueProvider {
 
 	public FluidTankNTM feed;
 	public FluidTankNTM steam;
 	
 	public TileEntityRBMKHeater() {
 		super(1);
-		this.feed = new FluidTankNTM(Fluids.COOLANT, 16_000);
-		this.steam = new FluidTankNTM(Fluids.COOLANT_HOT, 16_000);
+		this.feed = new FluidTankNTM(Fluids.COOLANT, 16_000).withOwner(this);
+		this.steam = new FluidTankNTM(Fluids.COOLANT_HOT, 16_000).withOwner(this);
 	}
 
 	@Override
@@ -82,20 +84,26 @@ public class TileEntityRBMKHeater extends TileEntityRBMKSlottedBase implements I
 					this.heat -= (step.heatReq * ops / TU_PER_DEGREE) * trait.getEfficiency(FT_Heatable.HeatingType.HEATEXCHANGER);
 				}
 
+				if(eff <= 0) {
+					feed.setTankType(Fluids.NONE);
+					steam.setTankType(Fluids.NONE);
+				}
+
 			} else {
+				feed.setTankType(Fluids.NONE);
 				steam.setTankType(Fluids.NONE);
 			}
 
 			this.trySubscribe(feed.getTankType(), world, pos.getX(), pos.getY() - 1, pos.getZ(), Library.NEG_Y);
-			for(DirPos pos : getOutputPos()) {
-				if(this.steam.getFill() > 0) this.sendFluid(steam, world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
+			for(DirPos pos : getConPos()) {
+				if(this.steam.getFill() > 0) this.tryProvide(steam, world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
 			}
 		}
 		
 		super.update();
 	}
 
-	protected DirPos[] getOutputPos() {
+	public DirPos[] getConPos() {
 
 		if(world.getBlockState(pos.add(0, -1, 0)).getBlock() == ModBlocks.rbmk_loader) {
 			return new DirPos[] {
@@ -301,5 +309,20 @@ public class TileEntityRBMKHeater extends TileEntityRBMKSlottedBase implements I
 	@SideOnly(Side.CLIENT)
 	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		return new GUIRBMKHeater(player.inventory, this);
+	}
+
+	@Override
+	public String[] getFunctionInfo() {
+		return new String[] {
+				PREFIX_VALUE + "in",
+				PREFIX_VALUE + "out"
+		};
+	}
+
+	@Override
+	public String provideRORValue(String name) {
+		if((PREFIX_VALUE + "in").equals(name))  return "" + this.feed.getFill();
+		if((PREFIX_VALUE + "out").equals(name)) return "" + this.steam.getFill();
+		return null;
 	}
 }

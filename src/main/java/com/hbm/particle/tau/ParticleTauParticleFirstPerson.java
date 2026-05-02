@@ -2,6 +2,8 @@ package com.hbm.particle.tau;
 
 import com.hbm.main.ResourceManager;
 import com.hbm.particle.ParticleFirstPerson;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import com.hbm.util.BobMathUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -9,12 +11,10 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.DestFactor;
 import net.minecraft.client.renderer.GlStateManager.SourceFactor;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 public class ParticleTauParticleFirstPerson extends ParticleFirstPerson {
 
@@ -86,17 +86,19 @@ public class ParticleTauParticleFirstPerson extends ParticleFirstPerson {
         GlStateManager.translate(f5, f6, f7);
         GL11.glScaled(f4, f4, f4);
         
-        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
+        NTMBufferBuilder fastBuffer = NTMImmediate.INSTANCE.beginParticlePositionTexColorLmap(GL11.GL_QUADS, MathHelper.ceil(workingAlpha) * 4);
         
         while(workingAlpha > 0){
-        	buffer.pos(0, 0.5, 0.5).tex(1, 1).color(this.particleRed, this.particleGreen, this.particleBlue, Math.min(workingAlpha, 1)).lightmap(240, 240).endVertex();
-        	buffer.pos(0, 0.5, -0.5).tex(1, 0).color(this.particleRed, this.particleGreen, this.particleBlue, Math.min(workingAlpha, 1)).lightmap(240, 240).endVertex();
-        	buffer.pos(0, -0.5, -0.5).tex(0, 0).color(this.particleRed, this.particleGreen, this.particleBlue, Math.min(workingAlpha, 1)).lightmap(240, 240).endVertex();
-        	buffer.pos(0, -0.5, 0.5).tex(0, 1).color(this.particleRed, this.particleGreen, this.particleBlue, Math.min(workingAlpha, 1)).lightmap(240, 240).endVertex();
+        	int packedColor = NTMBufferBuilder.packColor(this.particleRed, this.particleGreen, this.particleBlue, Math.min(workingAlpha, 1));
+        	int packedLightmap = NTMBufferBuilder.packLightmap(240, 240);
+        	fastBuffer.appendParticlePositionTexColorLmapUnchecked(0, 0.5F, 0.5F, 1, 1, packedColor, packedLightmap);
+        	fastBuffer.appendParticlePositionTexColorLmapUnchecked(0, 0.5F, -0.5F, 1, 0, packedColor, packedLightmap);
+        	fastBuffer.appendParticlePositionTexColorLmapUnchecked(0, -0.5F, -0.5F, 0, 0, packedColor, packedLightmap);
+        	fastBuffer.appendParticlePositionTexColorLmapUnchecked(0, -0.5F, 0.5F, 0, 1, packedColor, packedLightmap);
         	workingAlpha -= 1;
         }
         
-        Tessellator.getInstance().draw();
+        NTMImmediate.INSTANCE.draw();
         
         GlStateManager.enableAlpha();
         GlStateManager.enableCull();

@@ -32,4 +32,8 @@ public class SubElement {
 	}
 	public void onClose(){
 	}
+	public void onElementOpen() {
+	}
+	public void onElementClose() {
+	}
 }

@@ -5,7 +5,6 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.container.ContainerCraneInserter;
 import com.hbm.inventory.gui.GUICraneInserter;
 import com.hbm.tileentity.IGUIProvider;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -23,10 +22,17 @@ import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
 public class TileEntityCraneInserter extends TileEntityCraneBase implements IGUIProvider, IControlReceiver {
+    public boolean isIndirectlyPowered;
     public boolean destroyer = true;
 
     public TileEntityCraneInserter() {
         super(21);
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if(!world.isRemote) isIndirectlyPowered = world.isBlockPowered(pos);
     }
 
     @Override
@@ -37,10 +43,8 @@ public class TileEntityCraneInserter extends TileEntityCraneBase implements IGUI
     @Override
     public void update() {
         super.update();
-        if(!world.isRemote) {
-
+        if(!world.isRemote && !isIndirectlyPowered) {
             tryFillTe();
-
         }
     }
 
@@ -135,16 +139,6 @@ public class TileEntityCraneInserter extends TileEntityCraneBase implements IGUI
     @SideOnly(Side.CLIENT)
     public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
         return new GUICraneInserter(player.inventory, this);
-    }
-
-    @Override
-    public void serialize(ByteBuf buf) {
-        buf.writeBoolean(destroyer);
-    }
-
-    @Override
-    public void deserialize(ByteBuf buf) {
-        this.destroyer = buf.readBoolean();
     }
 
     @Override

@@ -11,13 +11,10 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
@@ -67,31 +64,6 @@ public class TileEntityRadioTorchReader extends TileEntityLoadedBase implements 
 
             networkPackNT(50);
         }
-    }
-
-    @Override
-    public @NotNull NBTTagCompound getUpdateTag() {
-        NBTTagCompound nbt = super.getUpdateTag();
-        writeToNBT(nbt);
-        return nbt;
-    }
-
-    @Override
-    public void handleUpdateTag(@NotNull NBTTagCompound tag) {
-        super.handleUpdateTag(tag);
-        readFromNBT(tag);
-    }
-
-    @Override
-    public @Nullable SPacketUpdateTileEntity getUpdatePacket() {
-        NBTTagCompound nbt = new NBTTagCompound();
-        this.writeToNBT(nbt);
-        return new SPacketUpdateTileEntity(this.pos, 0, nbt);
-    }
-
-    @Override
-    public void onDataPacket(@NotNull NetworkManager net, SPacketUpdateTileEntity pkt) {
-        this.readFromNBT(pkt.getNbtCompound());
     }
 
     @Override

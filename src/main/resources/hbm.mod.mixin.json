@@ -1,0 +1,30 @@
+{
+  "required": true,
+  "package": "com.hbm.mixin.mod",
+  "plugin": "com.hbm.core.ModMixinConfigPlugin",
+  "refmap": "mixins.hbm.refmap.json",
+  "compatibilityLevel": "JAVA_8",
+  "priority": 1100,
+  "mixinPriority": 1100,
+  "target": "@env(MOD)",
+  "client": [
+    "celeritas.MixinBuiltRenderSectionData",
+    "celeritas.MixinCameraTransform",
+    "celeritas.MixinCeleritasWorldRenderer",
+    "celeritas.MixinChunkBuilderMeshingTask",
+    "celeritas.MixinDefaultChunkRenderer",
+    "celeritas.MixinOcclusionCuller",
+    "celeritas.MixinRenderSectionManager",
+    "celeritas.MixinViewport",
+    "neonium.MixinChunkGraphNode",
+    "neonium.MixinChunkRenderRebuildTask",
+    "nothirium.MixinAbstractRenderChunk",
+    "nothirium.MixinRenderChunkTaskCompile",
+    "nothirium.MixinVisibilitySet",
+    "optifine.MixinRenderItem"
+  ],
+  "mixins": [],
+  "server": [],
+  "setSourceFile": true,
+  "minVersion": "0.8.7"
+}

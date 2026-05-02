@@ -14,6 +14,7 @@ import com.hbm.inventory.fluid.trait.FluidTraitSimple;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.main.MainRegistry;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.TileEntityLoadedBase;
@@ -35,13 +36,13 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 
 @AutoRegister
-public class TileEntityMachineDrain extends TileEntityLoadedBase implements IFluidStandardReceiver, IBufPacketReceiver, IFluidCopiable, ITickable {
+public class TileEntityMachineDrain extends TileEntityLoadedBase implements IFluidStandardReceiver, IBufPacketReceiver, IFluidCopiable, ITickable, IConnectionAnchors {
 
     public FluidTankNTM tank;
     AxisAlignedBB bb = null;
 
     public TileEntityMachineDrain() {
-        this.tank = new FluidTankNTM(Fluids.NONE, 2_000);
+        this.tank = new FluidTankNTM(Fluids.NONE, 2_000).withOwner(this);
     }
 
     @Override

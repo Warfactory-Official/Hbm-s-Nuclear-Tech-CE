@@ -27,8 +27,10 @@ public class BlockScaffoldBakedModel extends AbstractWavefrontBakedModel {
     private final List<BakedQuad>[] cache = new List[4];
     private List<BakedQuad> inventoryCache;
 
-    public BlockScaffoldBakedModel(HFRWavefrontObject model, TextureAtlasSprite sprite, boolean isInventory, float baseScale, float tx, float ty, float tz) {
-        super(model, isInventory ? DefaultVertexFormats.ITEM : DefaultVertexFormats.BLOCK, baseScale, tx, ty, tz, makeItemTransforms());
+    public BlockScaffoldBakedModel(HFRWavefrontObject model, TextureAtlasSprite sprite, boolean isInventory,
+                                   float baseScale, float tx, float ty, float tz) {
+        super(model, isInventory ? DefaultVertexFormats.ITEM : DefaultVertexFormats.BLOCK, baseScale, tx, ty, tz,
+                makeItemTransforms());
 
         this.sprite = sprite;
         this.isInventory = isInventory;
@@ -36,14 +38,21 @@ public class BlockScaffoldBakedModel extends AbstractWavefrontBakedModel {
 
     @SuppressWarnings("deprecation")
     private static ItemCameraTransforms makeItemTransforms() {
-        ItemTransformVec3f gui = new ItemTransformVec3f(new Vector3f(30, 45, 0), new Vector3f(0.0f, -0.03f, 0), new Vector3f(0.6f, 0.6f, 0.6f));
-        ItemTransformVec3f thirdPersonLeft = new ItemTransformVec3f(new Vector3f(75, 45, 0), new Vector3f(0, 0.15f, 0.1f), new Vector3f(0.35f, 0.35f, 0.35f));
-        ItemTransformVec3f thirdPersonRight = new ItemTransformVec3f(new Vector3f(75, -45, 0), new Vector3f(0, 0.15f, -0.1f), new Vector3f(0.35f, 0.35f, 0.35f));
-        ItemTransformVec3f firstPersonLeft = new ItemTransformVec3f(new Vector3f(0, -135, 0), new Vector3f(0.03f, 0.1f, 0), new Vector3f(0.35f, 0.35f, 0.35f));
-        ItemTransformVec3f firstPersonRight = new ItemTransformVec3f(new Vector3f(0, 45, 0), new Vector3f(0.0f, 0.1f, 0), new Vector3f(0.35f, 0.35f, 0.35f));
-        ItemTransformVec3f ground = new ItemTransformVec3f(new Vector3f(0, 0, 0), new Vector3f(0, 0.25f, 0), new Vector3f(0.3f, 0.3f, 0.3f));
+        ItemTransformVec3f gui = new ItemTransformVec3f(new Vector3f(30, 45, 0), new Vector3f(0.0f, -0.03f, 0),
+                new Vector3f(0.6f, 0.6f, 0.6f));
+        ItemTransformVec3f thirdPersonLeft = new ItemTransformVec3f(new Vector3f(75, 45, 0),
+                new Vector3f(0, 0.15f, 0.1f), new Vector3f(0.35f, 0.35f, 0.35f));
+        ItemTransformVec3f thirdPersonRight = new ItemTransformVec3f(new Vector3f(75, -45, 0),
+                new Vector3f(0, 0.15f, -0.1f), new Vector3f(0.35f, 0.35f, 0.35f));
+        ItemTransformVec3f firstPersonLeft = new ItemTransformVec3f(new Vector3f(0, -135, 0),
+                new Vector3f(0.03f, 0.1f, 0), new Vector3f(0.35f, 0.35f, 0.35f));
+        ItemTransformVec3f firstPersonRight = new ItemTransformVec3f(new Vector3f(0, 45, 0),
+                new Vector3f(0.0f, 0.1f, 0), new Vector3f(0.35f, 0.35f, 0.35f));
+        ItemTransformVec3f ground = new ItemTransformVec3f(new Vector3f(0, 0, 0), new Vector3f(0, 0.25f, 0),
+                new Vector3f(0.3f, 0.3f, 0.3f));
 
-        return new ItemCameraTransforms(thirdPersonLeft, thirdPersonRight, firstPersonLeft, firstPersonRight, BakedModelTransforms.standardBlock().head, gui, ground, BakedModelTransforms.standardBlock().fixed);
+        return new ItemCameraTransforms(thirdPersonLeft, thirdPersonRight, firstPersonLeft, firstPersonRight,
+                BakedModelTransforms.standardBlock().head, gui, ground, BakedModelTransforms.standardBlock().fixed);
     }
 
     public static BlockScaffoldBakedModel forBlock(HFRWavefrontObject model, TextureAtlasSprite sprite) {
@@ -72,24 +81,24 @@ public class BlockScaffoldBakedModel extends AbstractWavefrontBakedModel {
 
         float yaw = (float) (-Math.PI * 0.5);
         float pitch = 0.0f;
-        tx = 0.0f;
-        ty = -0.5f;
-        tz = 0.0f;
+        float extraTx = 0.0f;
+        float extraTy = -0.5f;
+        float extraTz = 0.0f;
 
         switch (orient) {
             case VERTICAL_EW:
                 pitch = (float) (Math.PI * -0.5);
                 yaw = (float) (-Math.PI);
-                tx = -0.5f;
-                ty = 0.0f;
+                extraTx = -0.5f;
+                extraTy = 0.0f;
                 break;
             case HORIZONTAL_EW:
                 yaw = (float) (-Math.PI);
                 break;
             case VERTICAL_NS:
                 pitch = (float) (Math.PI * -0.5);
-                ty = 0.0f;
-                tz = 0.5f;
+                extraTy = 0.0f;
+                extraTz = 0.5f;
                 break;
             case HORIZONTAL_NS:
             default:
@@ -97,15 +106,19 @@ public class BlockScaffoldBakedModel extends AbstractWavefrontBakedModel {
         }
 
         if (cache[orientIndex] != null) return cache[orientIndex];
-        return cache[orientIndex] = Collections.unmodifiableList(buildWorldQuads(pitch, yaw));
+        return cache[orientIndex] = Collections.unmodifiableList(
+                buildWorldQuads(pitch, yaw, extraTx, extraTy, extraTz));
     }
 
-    private List<BakedQuad> buildWorldQuads(float pitch, float yaw) {
-        return new ArrayList<>(bakeSimpleQuads(Collections.singleton("Scaffold"), 0, pitch, yaw, false, true, sprite));
+    private List<BakedQuad> buildWorldQuads(float pitch, float yaw, float extraTx, float extraTy, float extraTz) {
+        return new ArrayList<>(
+                bakeSimpleQuads(Collections.singleton("Scaffold"), 0, pitch, yaw, true, true, sprite, -1, extraTx,
+                        extraTy, extraTz));
     }
 
     private List<BakedQuad> buildItemQuads() {
-        return new ArrayList<>(bakeSimpleQuads(Collections.singleton("Scaffold"), 0, 0, (float) Math.PI, false, true, sprite));
+        return new ArrayList<>(
+                bakeSimpleQuads(Collections.singleton("Scaffold"), 0, 0, (float) Math.PI, true, true, sprite));
     }
 
     @Override

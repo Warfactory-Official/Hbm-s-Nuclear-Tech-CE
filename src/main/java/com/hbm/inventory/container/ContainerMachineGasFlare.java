@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.slot.SlotUpgrade;
@@ -18,9 +19,16 @@ import org.jetbrains.annotations.NotNull;
 public class ContainerMachineGasFlare extends Container {
 
 	private final TileEntityMachineGasFlare gasFlare;
-	
-	public ContainerMachineGasFlare(InventoryPlayer invPlayer, TileEntityMachineGasFlare te) {
+    private final TransferStrategy transferStrategy;
+
+    public ContainerMachineGasFlare(InventoryPlayer invPlayer, TileEntityMachineGasFlare te) {
 		gasFlare = te;
+        transferStrategy = TransferStrategy.builder(6)
+                                           .rule(0, 1, Library::isBattery)
+                                           .rule(1, 3, s -> Library.isStackFillableForTank(s, gasFlare.tank))
+                                           .rule(3, 4, s -> s.getItem() instanceof IItemFluidIdentifier)
+                                           .rule(4, 6, Library::isMachineUpgrade)
+                                           .build();
 
 		//Battery
 		this.addSlotToContainer(new SlotBattery(te.inventory, 0, 143, 71));
@@ -42,21 +50,17 @@ public class ContainerMachineGasFlare extends Container {
 				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18 + offset));
 			}
 		}
-		
+
 		for(int i = 0; i < 9; i++)
 		{
 			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 142 + offset));
 		}
 	}
-	
-	@Override
+
+    @Override
     public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index)
     {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 6,
-                Library::isBattery, 1,
-                s -> Library.isStackFillableForTank(s, gasFlare.tank), 3,
-                s -> s.getItem() instanceof IItemFluidIdentifier, 4,
-                Library::isMachineUpgrade, 6);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.transferStrategy, player);
     }
 
 	@Override

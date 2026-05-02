@@ -1,8 +1,5 @@
 package com.hbm.tileentity.machine;
 
-import java.io.IOException;
-import java.util.Random;
-
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import com.hbm.blocks.BlockDummyable;
@@ -18,12 +15,15 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.IConfigurableMachine;
-
 import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import org.jetbrains.annotations.NotNull;
+
+import java.io.IOException;
+import java.util.Random;
+
 @AutoRegister
 public class TileEntityMachineIndustrialTurbine extends TileEntityTurbineBase implements IConfigurableMachine {
 
@@ -63,8 +63,8 @@ public class TileEntityMachineIndustrialTurbine extends TileEntityTurbineBase im
 
     public TileEntityMachineIndustrialTurbine() {
         tanks = new FluidTankNTM[2];
-        tanks[0] = new FluidTankNTM(Fluids.STEAM, inputTankSize);
-        tanks[1] = new FluidTankNTM(Fluids.SPENTSTEAM, outputTankSize);
+        tanks[0] = new FluidTankNTM(Fluids.STEAM, inputTankSize).withOwner(this);
+        tanks[1] = new FluidTankNTM(Fluids.SPENTSTEAM, outputTankSize).withOwner(this);
 
         Random rand = new Random();
         audioDesync = rand.nextFloat() * 0.05F;
@@ -174,6 +174,12 @@ public class TileEntityMachineIndustrialTurbine extends TileEntityTurbineBase im
     }
 
     @Override
+    public void serializeInitial(ByteBuf buf) {
+        super.serializeInitial(buf);
+        buf.writeDouble(this.spin);
+    }
+
+    @Override
     public void serialize(ByteBuf buf) {
         super.serialize(buf);
         buf.writeDouble(this.spin);
@@ -238,5 +244,20 @@ public class TileEntityMachineIndustrialTurbine extends TileEntityTurbineBase im
         }
 
         return bb;
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[] {
+                PREFIX_VALUE + "output",
+                PREFIX_VALUE + "flywheel"
+        };
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "output").equals(name))   return "" + (int) this.powerBuffer;
+        if ((PREFIX_VALUE + "flywheel").equals(name)) return "" + (int) (spin * 100);
+        return null;
     }
 }

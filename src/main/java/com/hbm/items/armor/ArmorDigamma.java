@@ -2,6 +2,7 @@ package com.hbm.items.armor;
 
 import com.hbm.items.ModItems;
 import com.hbm.main.ResourceManager;
+import com.hbm.render.item.ItemRenderBaseFMM;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.model.ModelArmorDigamma;
 import com.hbm.render.tileentity.IItemRendererProvider;
@@ -68,7 +69,7 @@ public class ArmorDigamma extends ArmorFSBPowered implements IItemRendererProvid
   @Override
   @SideOnly(Side.CLIENT)
   public ItemRenderBase getRenderer(Item item) {
-    return new ItemRenderBase() {
+    return new ItemRenderBaseFMM() {
       public void renderInventory() {
         if (armorType == EntityEquipmentSlot.MAINHAND) {
           GlStateManager.scale(0.875, 0.875, 0.875);

@@ -23,7 +23,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import org.jetbrains.annotations.NotNull;
@@ -39,7 +38,7 @@ public class RBMKConsole extends BlockDummyable implements ITooltipProvider {
 	}
 
 	@Override
-	public TileEntity createNewTileEntity(World world, int meta) {
+	public TileEntity createNewTileEntity(@NotNull World world, int meta) {
 		if(meta >= offset)
 			return new TileEntityRBMKConsole();
 		return null;
@@ -68,36 +67,12 @@ public class RBMKConsole extends BlockDummyable implements ITooltipProvider {
 	}
 
 	@Override
-	public EnumBlockRenderType getRenderType(IBlockState state) {
+	public @NotNull EnumBlockRenderType getRenderType(@NotNull IBlockState state) {
 		return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
 	}
 
-	@Override
-	public boolean isOpaqueCube(@NotNull IBlockState state) {
-		return false;
-	}
-
-	@Override
-	public boolean isBlockNormalCube(@NotNull IBlockState state) {
-		return false;
-	}
-
-	@Override
-	public boolean isNormalCube(@NotNull IBlockState state) {
-		return false;
-	}
-
-	@Override
-	public boolean isNormalCube(@NotNull IBlockState state, @NotNull IBlockAccess world, @NotNull BlockPos pos) {
-		return false;
-	}
-	@Override
-	public boolean shouldSideBeRendered(@NotNull IBlockState blockState, @NotNull IBlockAccess blockAccess, @NotNull BlockPos pos, @NotNull EnumFacing side) {
-		return false;
-	}
-
-	@Override
-	public boolean onBlockActivated(World world, BlockPos bpos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ){
+    @Override
+	public boolean onBlockActivated(@NotNull World world, @NotNull BlockPos bpos, @NotNull IBlockState state, EntityPlayer player, @NotNull EnumHand hand, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ){
 		if(!player.isSneaking()) {
 
 			BossSpawnHandler.markFBI(player);
@@ -169,7 +144,7 @@ public class RBMKConsole extends BlockDummyable implements ITooltipProvider {
 	}
 
 	@Override
-	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
+	public void addInformation(@NotNull ItemStack stack, World worldIn, @NotNull List<String> list, @NotNull ITooltipFlag flagIn) {
 		this.addStandardInfo(list);
 		super.addInformation(stack, worldIn, list, flagIn);
 	}

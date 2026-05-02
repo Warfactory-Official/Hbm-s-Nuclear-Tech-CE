@@ -4,7 +4,8 @@ import com.hbm.handler.radiation.RadiationSystemNT.WorldRadiationData.MultiSecti
 import com.hbm.handler.radiation.RadiationSystemNT.WorldRadiationData.SectionRef;
 import com.hbm.handler.radiation.RadiationSystemNT.WorldRadiationData.SingleMaskedSectionRef;
 import com.hbm.lib.Library;
-import com.hbm.render.util.PositionColorVertexWriter;
+import com.hbm.render.util.NTMImmediate;
+import com.hbm.render.util.NTMBufferBuilder;
 import com.hbm.util.RenderUtil;
 import com.hbm.util.SectionKeyHash;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -13,9 +14,7 @@ import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenCustomHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
@@ -141,61 +140,58 @@ public final class RadVisOverlay {
         };
     }
 
-    private static void drawPackedQuads(BufferBuilder buf, int baseX, int baseY, int baseZ, long[] quads, int quadCount,
-                                        int packedColor, float inset, int[] quadVertexDataScratch) {
+    private static void drawPackedQuads(NTMBufferBuilder buf, int baseX, int baseY, int baseZ, long[] quads, int quadCount,
+                                        int packedColor, float inset) {
+        buf.reservePositionColorQuads(quadCount);
         for (int i = 0; i < quadCount; i++) {
-            emitPackedPocketQuad(buf, baseX, baseY, baseZ, packedColor, inset, quads[i], quadVertexDataScratch);
+            emitPackedPocketQuad(buf, baseX, baseY, baseZ, packedColor, inset, quads[i]);
         }
     }
 
-    private static void drawPackedQuads(BufferBuilder buf, int baseX, int baseY, int baseZ, long[] quads, float r,
-                                        float g, float b, float a, float inset, int[] quadVertexDataScratch) {
-        int packedColor = PositionColorVertexWriter.packRgbaColorToNativeInt(r, g, b, a);
-        drawPackedQuads(buf, baseX, baseY, baseZ, quads, quads.length, packedColor, inset, quadVertexDataScratch);
+    private static void drawPackedQuads(NTMBufferBuilder buf, int baseX, int baseY, int baseZ, long[] quads, float r,
+                                        float g, float b, float a, float inset) {
+        int packedColor = NTMBufferBuilder.packColor(r, g, b, a);
+        drawPackedQuads(buf, baseX, baseY, baseZ, quads, quads.length, packedColor, inset);
     }
 
-    private static void drawPackedQuads(BufferBuilder buf, int baseX, int baseY, int baseZ, LongArrayList quads,
-                                        float r, float g, float b, float a, float inset,
-                                        int[] quadVertexDataScratch) {
+    private static void drawPackedQuads(NTMBufferBuilder buf, int baseX, int baseY, int baseZ, LongArrayList quads,
+                                        float r, float g, float b, float a, float inset) {
         long[] arr = quads.elements();
-        int packedColor = PositionColorVertexWriter.packRgbaColorToNativeInt(r, g, b, a);
-        drawPackedQuads(buf, baseX, baseY, baseZ, arr, quads.size(), packedColor, inset, quadVertexDataScratch);
+        int packedColor = NTMBufferBuilder.packColor(r, g, b, a);
+        drawPackedQuads(buf, baseX, baseY, baseZ, arr, quads.size(), packedColor, inset);
     }
 
-    private static void emitPackedPocketQuad(BufferBuilder buf, int baseX, int baseY, int baseZ, int packedColor,
-                                             float inset, long q, int[] quadVertexDataScratch) {
+    private static void emitPackedPocketQuad(NTMBufferBuilder buf, int baseX, int baseY, int baseZ, int packedColor,
+                                             float inset, long q) {
         int face = (int) ((q >>> 11) & 7);
         int plane = (int) ((q >>> 14) & 31);
         int u0 = (int) ((q >>> 19) & 31);
         int v0 = (int) ((q >>> 24) & 31);
         int u1 = (int) ((q >>> 29) & 31);
         int v1 = (int) ((q >>> 34) & 31);
-        emitPocketQuad(buf, baseX, baseY, baseZ, face, plane, u0, v0, u1, v1, packedColor, inset,
-                quadVertexDataScratch);
+        emitPocketQuad(buf, baseX, baseY, baseZ, face, plane, u0, v0, u1, v1, packedColor, inset);
     }
 
-    private static void emitPocketQuad(BufferBuilder buf, int baseX, int baseY, int baseZ, int face, int plane, int u0,
-                                       int v0, int u1, int v1, int packedColor, float inset,
-                                       int[] quadVertexDataScratch) {
+    private static void emitPocketQuad(NTMBufferBuilder buf, int baseX, int baseY, int baseZ, int face, int plane, int u0,
+                                       int v0, int u1, int v1, int packedColor, float inset) {
         if (face < 0 || face > 5) return;
 
         int planeAxis = FACE_PLANE_AXIS[face];
-        double planeBase = planeAxis == 0 ? baseX : planeAxis == 1 ? baseY : baseZ;
-        double planeCoord = planeBase + plane + (inset * FACE_INSET_SIGN[face]);
+        float planeBase = planeAxis == 0 ? baseX : planeAxis == 1 ? baseY : baseZ;
+        float planeCoord = planeBase + plane + (inset * FACE_INSET_SIGN[face]);
 
         int uAxis = FACE_U_AXIS[face];
         int vAxis = FACE_V_AXIS[face];
-        double uBase = uAxis == 0 ? baseX : baseZ;
-        double vBase = vAxis == 1 ? baseY : baseZ;
+        float uBase = uAxis == 0 ? baseX : baseZ;
+        float vBase = vAxis == 1 ? baseY : baseZ;
 
         emitPocketQuadVertices(buf, planeAxis, planeCoord, uBase + u0, vBase + v0, uBase + u1, vBase + v1,
-                FACE_VERTEX_ORDER[face], packedColor, quadVertexDataScratch);
+                FACE_VERTEX_ORDER[face], packedColor);
     }
 
-    private static void emitPocketQuadVertices(BufferBuilder buf, int planeAxis, double planeCoord, double u0,
-                                               double v0, double u1, double v1, int order, int packedColor,
-                                               int[] quadVertexDataScratch) {
-        double p0u, p0v, p1u, p1v, p2u, p2v, p3u, p3v;
+    private static void emitPocketQuadVertices(NTMBufferBuilder buf, int planeAxis, float planeCoord, float u0,
+                                               float v0, float u1, float v1, int order, int packedColor) {
+        float p0u, p0v, p1u, p1v, p2u, p2v, p3u, p3v;
         switch (order) {//@formatter:off
             case 1 -> {p0u = u0;p0v = v1;p1u = u1;p1v = v1;p2u = u1;p2v = v0;p3u = u0;p3v = v0;}
             case 2 -> {p0u = u1;p0v = v0;p1u = u0;p1v = v0;p2u = u0;p2v = v1;p3u = u1;p3v = v1;}
@@ -203,19 +199,19 @@ public final class RadVisOverlay {
         }//@formatter:on
 
         switch (planeAxis) {
-            case 0 -> PositionColorVertexWriter.appendPositionColorQuad(buf, quadVertexDataScratch,
+            case 0 -> buf.appendPositionColorQuad(
                     planeCoord, p0v, p0u,
                     planeCoord, p1v, p1u,
                     planeCoord, p2v, p2u,
                     planeCoord, p3v, p3u,
                     packedColor);
-            case 1 -> PositionColorVertexWriter.appendPositionColorQuad(buf, quadVertexDataScratch,
+            case 1 -> buf.appendPositionColorQuad(
                     p0u, planeCoord, p0v,
                     p1u, planeCoord, p1v,
                     p2u, planeCoord, p2v,
                     p3u, planeCoord, p3v,
                     packedColor);
-            default -> PositionColorVertexWriter.appendPositionColorQuad(buf, quadVertexDataScratch,
+            default -> buf.appendPositionColorQuad(
                     p0u, p0v, planeCoord,
                     p1u, p1v, planeCoord,
                     p2u, p2v, planeCoord,
@@ -599,9 +595,8 @@ public final class RadVisOverlay {
     private static void renderWire(WorldRadiationData data, int pcx, int pcz, int radius, FocusFilter filter) {
         GlStateManager.disableTexture2D();
         GlStateManager.depthMask(false);
-        Tessellator tess = Tessellator.getInstance();
-        BufferBuilder buf = tess.getBuffer();
-        buf.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
+        NTMBufferBuilder buf = NTMImmediate.INSTANCE.getBuffer();
+        buf.beginFast(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR, 0);
 
         Sec sec = new Sec();
 
@@ -625,7 +620,7 @@ public final class RadVisOverlay {
             }
         }
 
-        tess.draw();
+        NTMImmediate.INSTANCE.draw();
         GlStateManager.depthMask(true);
     }
 
@@ -638,13 +633,12 @@ public final class RadVisOverlay {
 
         depthAndPolygon(Mode.SLICE);
 
-        Tessellator tess = Tessellator.getInstance();
-        BufferBuilder buf = tess.getBuffer();
-        buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+        NTMBufferBuilder buf = NTMImmediate.INSTANCE.getBuffer();
+        buf.beginFast(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR, 0);
 
         int localY = sliceY & 15;
         int idxBase = localY << 8;
-        double y = sliceY + 0.02;
+        float y = sliceY + 0.02F;
 
         float baseAlpha = MathHelper.clamp(CONFIG.alpha, 0.0f, 1.0f);
 
@@ -714,19 +708,24 @@ public final class RadVisOverlay {
                             }
                         }
 
-                        double x0 = baseX + x;
-                        double z0 = baseZ + z;
+                        float x0 = baseX + x;
+                        float z0 = baseZ + z;
+                        float y0 = y;
 
-                        buf.pos(x0, y, z0).color(r, g, b, a).endVertex();
-                        buf.pos(x0 + 1, y, z0).color(r, g, b, a).endVertex();
-                        buf.pos(x0 + 1, y, z0 + 1).color(r, g, b, a).endVertex();
-                        buf.pos(x0, y, z0 + 1).color(r, g, b, a).endVertex();
+                        int packedColor = NTMBufferBuilder.packColor(r, g, b, a);
+                        buf.appendPositionColorQuad(
+                                x0, y0, z0,
+                                x0 + 1, y0, z0,
+                                x0 + 1, y0, z0 + 1,
+                                x0, y0, z0 + 1,
+                                packedColor
+                        );
                     }
                 }
             }
         }
 
-        tess.draw();
+        NTMImmediate.INSTANCE.draw();
         cleanDepthAndPolygon();
     }
 
@@ -734,13 +733,11 @@ public final class RadVisOverlay {
         GlStateManager.disableTexture2D();
         depthAndPolygon(Mode.SECTIONS);
 
-        Tessellator tess = Tessellator.getInstance();
-        BufferBuilder buf = tess.getBuffer();
-        buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+        NTMBufferBuilder buf = NTMImmediate.INSTANCE.getBuffer();
+        buf.beginFast(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR, 0);
 
         float inset = Mode.SECTIONS.inset;
         float a = CONFIG.alpha * 0.5f;
-        int[] quadVertexDataScratch = TL_RENDER_SCRATCH.get().quadVertexDataScratch;
 
         Sec sec = new Sec();
         Sec nei = new Sec();
@@ -771,8 +768,7 @@ public final class RadVisOverlay {
                         for (int face = 0; face < 6; face++) {
                             long[] quads = mesh.sectionFaceQuads[face];
                             if (quads.length == 0) continue;
-                            drawPackedQuads(buf, baseX, baseY, baseZ, quads, col[0], col[1], col[2], a, inset,
-                                    quadVertexDataScratch);
+                            drawPackedQuads(buf, baseX, baseY, baseZ, quads, col[0], col[1], col[2], a, inset);
                         }
                         continue;
                     }
@@ -796,14 +792,13 @@ public final class RadVisOverlay {
                         }
 
                         float[] col = leakRisk ? COLOR_WARN : kindColor(kind);
-                        drawPackedQuads(buf, baseX, baseY, baseZ, quads, col[0], col[1], col[2], a, inset,
-                                quadVertexDataScratch);
+                        drawPackedQuads(buf, baseX, baseY, baseZ, quads, col[0], col[1], col[2], a, inset);
                     }
                 }
             }
         }
 
-        tess.draw();
+        NTMImmediate.INSTANCE.draw();
         cleanDepthAndPolygon();
     }
 
@@ -811,9 +806,8 @@ public final class RadVisOverlay {
         GlStateManager.disableTexture2D();
         depthAndPolygon(Mode.POCKETS);
 
-        Tessellator tess = Tessellator.getInstance();
-        BufferBuilder buf = tess.getBuffer();
-        buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+        NTMBufferBuilder buf = NTMImmediate.INSTANCE.getBuffer();
+        buf.beginFast(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR, 0);
 
         float baseAlpha = MathHelper.clamp(CONFIG.alpha, 0.0f, 1.0f);
         float inset = Mode.POCKETS.inset;
@@ -823,8 +817,6 @@ public final class RadVisOverlay {
         boolean[] active = scratch.active;
         float[] radAlpha = scratch.radAlpha;
         int[] packedPocketColor = scratch.packedPocketColor;
-        int[] quadVertexDataScratch = scratch.quadVertexDataScratch;
-
         Sec sec = new Sec();
 
         for (int cx = pcx - radius; cx <= pcx + radius; cx++) {
@@ -850,12 +842,11 @@ public final class RadVisOverlay {
                         active[pi] = readActive(sec, pi);
                         radAlpha[pi] = computeRadAlpha(rad[pi], baseAlpha, active[pi]);
                         if (!active[pi] && Math.abs(rad[pi]) > 1.0e-6) {
-                            packedPocketColor[pi] = PositionColorVertexWriter.packRgbaColorToNativeInt(
+                            packedPocketColor[pi] = NTMBufferBuilder.packColor(
                                     COLOR_INACTIVE[0], COLOR_INACTIVE[1], COLOR_INACTIVE[2], baseAlpha);
                         } else {
                             float[] c = POCKET_COLORS[pi & 2047];
-                            packedPocketColor[pi] = PositionColorVertexWriter.packRgbaColorToNativeInt(c[0], c[1],
-                                    c[2], radAlpha[pi]);
+                            packedPocketColor[pi] = NTMBufferBuilder.packColor(c[0], c[1], c[2], radAlpha[pi]);
                         }
                     }
 
@@ -866,14 +857,13 @@ public final class RadVisOverlay {
                     for (long q : quads) {
                         int pi = (int) (q & 0x7FFL);
                         if (pi >= pocketCount) continue;
-                        emitPackedPocketQuad(buf, baseX, baseY, baseZ, packedPocketColor[pi], inset, q,
-                                quadVertexDataScratch);
+                        emitPackedPocketQuad(buf, baseX, baseY, baseZ, packedPocketColor[pi], inset, q);
                     }
                 }
             }
         }
 
-        tess.draw();
+        NTMImmediate.INSTANCE.draw();
         cleanDepthAndPolygon();
     }
 
@@ -881,12 +871,10 @@ public final class RadVisOverlay {
         GlStateManager.disableTexture2D();
         depthAndPolygon(Mode.ERRORS);
 
-        Tessellator tess = Tessellator.getInstance();
-        BufferBuilder buf = tess.getBuffer();
+        NTMBufferBuilder buf = NTMImmediate.INSTANCE.getBuffer();
 
         float inset = Mode.ERRORS.inset;
         float a = CONFIG.alpha * 0.5f;
-        int[] quadVertexDataScratch = TL_RENDER_SCRATCH.get().quadVertexDataScratch;
 
         Sec sec = new Sec();
         Sec nei = new Sec();
@@ -894,7 +882,7 @@ public final class RadVisOverlay {
         int[] crossData = new int[128];
         int crossCount = 0;
 
-        buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+        buf.beginFast(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR, 0);
 
         for (int cx = pcx - radius; cx <= pcx + radius; cx++) {
             for (int cz = pcz - radius; cz <= pcz + radius; cz++) {
@@ -926,7 +914,7 @@ public final class RadVisOverlay {
                         if (!resolveSection(data, neighborKey, nei) || nei.kind != KIND_UNI) continue;
 
                         drawPackedQuads(buf, baseX, baseY, baseZ, warnQuads, COLOR_WARN[0], COLOR_WARN[1],
-                                COLOR_WARN[2], a, inset, quadVertexDataScratch);
+                                COLOR_WARN[2], a, inset);
 
                         int[] facePockets = mesh.facePockets[face];
                         if (facePockets != null && facePockets.length > 1) {
@@ -989,14 +977,14 @@ public final class RadVisOverlay {
                     greedyMeshPlane(tmp, 0, 0, face, boundaryPlaneForFace(face), QUADS_TEMP2);
                     if (!QUADS_TEMP2.isEmpty())
                         drawPackedQuads(buf, baseX, baseY, baseZ, QUADS_TEMP2, COLOR_ERR[0], COLOR_ERR[1], COLOR_ERR[2],
-                                a, inset, quadVertexDataScratch);
+                                a, inset);
                 }
             }
         }
 
-        tess.draw();
+        NTMImmediate.INSTANCE.draw();
 
-        buf.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
+        buf.beginFast(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR, 0);
 
         for (int i = 0; i < crossCount; i++) {
             int off = i * 4;
@@ -1015,7 +1003,7 @@ public final class RadVisOverlay {
             }
         }
 
-        tess.draw();
+        NTMImmediate.INSTANCE.draw();
         cleanDepthAndPolygon();
     }
 
@@ -1649,7 +1637,7 @@ public final class RadVisOverlay {
         };
     }
 
-    private static void addBoxLines(BufferBuilder buf, double x1, double y1, double z1, double x2, double y2, double z2,
+    private static void addBoxLines(NTMBufferBuilder buf, double x1, double y1, double z1, double x2, double y2, double z2,
                                     float r, float g, float b, float a) {
         addLine(buf, x1, y1, z1, x2, y1, z1, r, g, b, a);
         addLine(buf, x1, y1, z1, x1, y2, z1, r, g, b, a);
@@ -1669,7 +1657,7 @@ public final class RadVisOverlay {
         addLine(buf, x1, y1, z2, x1, y2, z2, r, g, b, a);
     }
 
-    private static void addCross(BufferBuilder buf, double x, double y, double z, int face, double size, float r,
+    private static void addCross(NTMBufferBuilder buf, double x, double y, double z, int face, double size, float r,
                                  float g, float b, float a) {
         double s = size * 0.5;
         switch (face) {
@@ -1691,10 +1679,11 @@ public final class RadVisOverlay {
         }
     }
 
-    private static void addLine(BufferBuilder buf, double x1, double y1, double z1, double x2, double y2, double z2,
+    private static void addLine(NTMBufferBuilder buf, double x1, double y1, double z1, double x2, double y2, double z2,
                                 float r, float g, float b, float a) {
-        buf.pos(x1, y1, z1).color(r, g, b, a).endVertex();
-        buf.pos(x2, y2, z2).color(r, g, b, a).endVertex();
+        int packedColor = NTMBufferBuilder.packColor(r, g, b, a);
+        buf.appendPositionColor((float) x1, (float) y1, (float) z1, packedColor);
+        buf.appendPositionColor((float) x2, (float) y2, (float) z2, packedColor);
     }
 
     private static Vec3d sectionCenter(long sectionKey) {
@@ -1777,7 +1766,6 @@ public final class RadVisOverlay {
         final boolean[] active = new boolean[MAX_POCKETS];
         final double[] rad = new double[MAX_POCKETS];
         final int[] packedPocketColor = new int[MAX_POCKETS];
-        final int[] quadVertexDataScratch = new int[PositionColorVertexWriter.QUAD_VERTEX_DATA_INTS];
         final Long2IntOpenHashMap counts = new Long2IntOpenHashMap();
         final Long2IntOpenHashMap samplesA = new Long2IntOpenHashMap();
         final Long2IntOpenHashMap samplesB = new Long2IntOpenHashMap();

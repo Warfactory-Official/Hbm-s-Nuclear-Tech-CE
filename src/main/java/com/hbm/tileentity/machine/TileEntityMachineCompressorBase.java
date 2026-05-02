@@ -13,12 +13,8 @@ import com.hbm.inventory.recipes.CompressorRecipes;
 import com.hbm.inventory.recipes.CompressorRecipes.CompressorRecipe;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.DirPos;
-import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
-import com.hbm.tileentity.IFluidCopiable;
-import com.hbm.tileentity.IGUIProvider;
-import com.hbm.tileentity.IUpgradeInfoProvider;
-import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.tileentity.*;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.I18nUtil;
 import com.hbm.util.SoundUtil;
@@ -30,7 +26,6 @@ import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ITickable;
-import net.minecraft.util.SoundCategory;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -41,7 +36,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.List;
 
-public abstract class TileEntityMachineCompressorBase extends TileEntityMachineBase implements IGUIProvider, IControlReceiver, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, IFluidCopiable, ITickable {
+public abstract class TileEntityMachineCompressorBase extends TileEntityMachineBase implements IGUIProvider, IControlReceiver, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, IFluidCopiable, ITickable, IConnectionAnchors {
 
     public FluidTankNTM[] tanks;
     public long power;
@@ -74,8 +69,8 @@ public abstract class TileEntityMachineCompressorBase extends TileEntityMachineB
         };
 
         this.tanks = new FluidTankNTM[2];
-        this.tanks[0] = new FluidTankNTM(Fluids.NONE, 16_000);
-        this.tanks[1] = new FluidTankNTM(Fluids.NONE, 16_000).withPressure(1);
+        this.tanks[0] = new FluidTankNTM(Fluids.NONE, 16_000).withOwner(this);
+        this.tanks[1] = new FluidTankNTM(Fluids.NONE, 16_000).withOwner(this).withPressure(1);
     }
 
     @Override

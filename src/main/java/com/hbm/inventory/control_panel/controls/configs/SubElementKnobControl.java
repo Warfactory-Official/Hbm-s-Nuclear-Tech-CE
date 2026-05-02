@@ -1,17 +1,17 @@
 package com.hbm.inventory.control_panel.controls.configs;
 
-import com.hbm.inventory.control_panel.DataValue;
-import com.hbm.inventory.control_panel.DataValueFloat;
+import com.hbm.inventory.control_panel.types.DataValue;
 import com.hbm.inventory.control_panel.GuiControlEdit;
 import net.minecraftforge.fml.client.config.GuiSlider;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class SubElementKnobControl extends SubElementBaseConfig {
 
+    private static final int[] TRANSFORM = {149, 64, 88, 88};
     private int positions;
-
     GuiSlider slidePositions;
 
     public SubElementKnobControl(GuiControlEdit gui, Map<String, DataValue> map) {
@@ -27,10 +27,8 @@ public class SubElementKnobControl extends SubElementBaseConfig {
     }
 
     @Override
-    public Map<String, DataValue> getConfigs() {
-        Map<String, DataValue> m = new HashMap<>();
-        m.put("positions", new DataValueFloat(positions));
-        return m;
+    public void fillConfigs(Map<String, DataValue> configs) {
+        putFloatConfig(configs, "positions", positions);
     }
 
     @Override
@@ -42,5 +40,11 @@ public class SubElementKnobControl extends SubElementBaseConfig {
     public void enableButtons(boolean enable) {
         slidePositions.visible = enable;
         slidePositions.enabled = enable;
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public int[] getPreviewTransform() {
+        return TRANSFORM;
     }
 }

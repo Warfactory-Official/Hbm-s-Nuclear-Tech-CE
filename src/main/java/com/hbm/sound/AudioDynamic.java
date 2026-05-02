@@ -3,6 +3,7 @@ package com.hbm.sound;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.ISound;
 import net.minecraft.client.audio.MovingSound;
+import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.SoundCategory;
@@ -95,7 +96,12 @@ public class AudioDynamic extends MovingSound {
 
 	
 	public void start() {
-		Minecraft.getMinecraft().getSoundHandler().playSound(this);
+		// SoundManager.isSoundPlaying() can return false while `this` is still a value in
+		// playingSounds (Paulscode dropped the source but the 20-tick stop-time grace hasn't
+		// elapsed). Re-entering playSound() then crashes HashBiMap with "value already present".
+		SoundHandler handler = Minecraft.getMinecraft().getSoundHandler();
+		if(handler.sndManager.invPlayingSounds.containsKey(this)) return;
+		handler.playSound(this);
 	}
 	
 	public void stop() {

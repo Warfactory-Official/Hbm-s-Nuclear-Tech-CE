@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL11;
 
 import java.util.function.Consumer;
@@ -26,12 +25,6 @@ public class RenderLaunchPad extends TileEntitySpecialRenderer<TileEntityLaunchP
   public static final float h_2 = 1F;
   public static final float h_3 = 0.8F;
   public static final float w_2 = 1F;
-
-  @Override
-  public boolean isGlobalRenderer(@NotNull TileEntityLaunchPad te) {
-    return true;
-  }
-
   @Override
   public void render(TileEntityLaunchPad te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
     GlStateManager.pushMatrix();

@@ -3,9 +3,9 @@ package com.hbm.inventory.gui;
 import com.hbm.Tags;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerCraneExtractor;
+import com.hbm.modules.ModulePatternMatcher;
 import com.hbm.packet.toserver.NBTControlPacket;
 import com.hbm.tileentity.network.TileEntityCraneExtractor;
-import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
@@ -17,7 +17,6 @@ import net.minecraft.util.text.TextFormatting;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 
 import static com.hbm.util.SoundUtil.playClickSound;
 
@@ -37,32 +36,19 @@ public class GUICraneExtractor extends GuiInfoContainer {
     @Override
     public void drawScreen(int x, int y, float interp) {
         super.drawScreen(x, y, interp);
-        
-        if(this.mc.player.getHeldItemMainhand().isEmpty()) {
+
+        if(this.mc.player.inventory.getItemStack().isEmpty()) {
             for(int i = 0; i < 9; ++i) {
                 Slot slot = this.inventorySlots.inventorySlots.get(i);
 
                 if(this.isMouseOverSlot(slot, x, y) && ejector.matcher.modes[i] != null) {
-
-                    String label = TextFormatting.YELLOW + "";
-
-                    switch(ejector.matcher.modes[i]) {
-                        case "exact": label += I18nUtil.resolveKey("desc.exact"); break;
-                        case "wildcard": label += I18nUtil.resolveKey("desc.wildcard"); break;
-                        default: label += I18nUtil.resolveKey("desc.oredictmatch")+" " + ejector.matcher.modes[i]; break;
-                    }
-
-                    this.drawHoveringText(Arrays.asList(TextFormatting.RED + I18nUtil.resolveKey("desc.rcchange"), label), x, y - 30);
+                    this.drawHoveringText(Arrays.asList(TextFormatting.RED + "Right click to change", ModulePatternMatcher.getLabel(ejector.matcher.modes[i])), x, y - 30);
                 }
             }
         }
 
         if(guiLeft + 187 <= x && guiLeft + 187 + 18 > x && guiTop + 34 < y && guiTop + 34 + 18 >= y) {
-            this.drawHoveringText(
-                    List.of("Only take maximum possible: " + (ejector.maxEject ? TextFormatting.GREEN + "ON" : TextFormatting.RED + "OFF")),
-                    x,
-                    y
-            );
+            this.drawHoveringText(Arrays.asList("Only take maximum possible: " + (ejector.maxEject ? TextFormatting.GREEN + "ON" : TextFormatting.RED + "OFF")), x, y);
         }
 
         this.renderHoveredToolTip(x, y);
@@ -80,10 +66,9 @@ public class GUICraneExtractor extends GuiInfoContainer {
         }
 
         if(guiLeft + 128 <= x && guiLeft + 128 + 14 > x && guiTop + 30 < y && guiTop + 30 + 26 >= y) {
-
             playClickSound();
             NBTTagCompound data = new NBTTagCompound();
-            data.setBoolean("isWhitelist", true);
+            data.setBoolean("whitelist", true);
             PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, ejector.getPos()));
         }
     }
@@ -92,7 +77,7 @@ public class GUICraneExtractor extends GuiInfoContainer {
     protected void drawGuiContainerForegroundLayer(int i, int j) {
         String name = this.ejector.hasCustomName() ? this.ejector.getName() : I18n.format(this.ejector.getName());
         this.fontRenderer.drawString(name, this.xSize / 2 - this.fontRenderer.getStringWidth(name) / 2, 6, 4210752);
-        this.fontRenderer.drawString(I18n.format("container.inventory"), 26, this.ySize - 96 + 2, 4210752);
+        this.fontRenderer.drawString(I18n.format("container.inventory"), 8, this.ySize - 96 + 2, 4210752);
     }
 
     @Override

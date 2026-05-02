@@ -126,22 +126,7 @@ public class BlockStorageCrate extends BlockContainer implements ICustomBlockIte
 
 		} else if(!player.isSneaking()) {
 			TileEntity entity = world.getTileEntity(pos);
-			if(entity instanceof TileEntityCrateIron && ((TileEntityCrateIron)entity).canAccess(player)) {
-				FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
-			}
-			if(entity instanceof TileEntityCrateSteel && ((TileEntityCrateSteel)entity).canAccess(player)) {
-				FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
-			}
-			if(entity instanceof TileEntityCrateTungsten && ((TileEntityCrateTungsten)entity).canAccess(player)) {
-				FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
-			}
-			if(entity instanceof TileEntityCrateTemplate && ((TileEntityCrateTemplate)entity).canAccess(player)) {
-				FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
-			}
-			if(entity instanceof TileEntityCrateDesh && ((TileEntityCrateDesh)entity).canAccess(player)) {
-				FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
-			}
-			if(entity instanceof TileEntitySafe && ((TileEntitySafe)entity).canAccess(player)) {
+			if(entity instanceof TileEntityLockableBase lockable && lockable.canAccess(player)) {
 				FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
 			}
 			return true;
@@ -154,8 +139,6 @@ public class BlockStorageCrate extends BlockContainer implements ICustomBlockIte
 	public void onBlockPlacedBy(@NotNull World world, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull EntityLivingBase placer, @NotNull ItemStack stack){
 
 		IPersistentNBT.onBlockPlacedBy(world, pos, stack);
-		if(this == ModBlocks.safe)
-			world.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
 	}
 
 	@Override

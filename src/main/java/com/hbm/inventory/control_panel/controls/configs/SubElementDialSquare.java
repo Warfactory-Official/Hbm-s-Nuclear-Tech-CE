@@ -1,19 +1,17 @@
 package com.hbm.inventory.control_panel.controls.configs;
 
-import com.hbm.inventory.control_panel.DataValue;
-import com.hbm.inventory.control_panel.DataValueString;
+import com.hbm.inventory.control_panel.types.DataValue;
 import com.hbm.inventory.control_panel.GuiControlEdit;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiTextField;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class SubElementDialSquare extends SubElementBaseConfig {
 
     private String text;
-
     GuiTextField textField;
+    private static final int[] TRANSFORM = {18, 69, 88, 88};
 
     public SubElementDialSquare(GuiControlEdit gui, Map<String, DataValue> map) {
         super(gui,map);
@@ -21,10 +19,8 @@ public class SubElementDialSquare extends SubElementBaseConfig {
     }
 
     @Override
-    public Map<String, DataValue> getConfigs() {
-        Map<String, DataValue> m = new HashMap<>();
-        m.put("label", new DataValueString(text));
-        return m;
+    public void fillConfigs(Map<String, DataValue> configs) {
+        putStringConfig(configs, "label", text);
     }
 
     @Override
@@ -66,5 +62,10 @@ public class SubElementDialSquare extends SubElementBaseConfig {
     public void enableButtons(boolean enable) {
         textField.setEnabled(enable);
         textField.setVisible(enable);
+    }
+
+    @Override
+    public int[] getPreviewTransform() {
+        return TRANSFORM;
     }
 }

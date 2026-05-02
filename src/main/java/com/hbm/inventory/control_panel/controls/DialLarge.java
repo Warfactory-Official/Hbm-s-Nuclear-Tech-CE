@@ -2,10 +2,15 @@ package com.hbm.inventory.control_panel.controls;
 
 import com.hbm.inventory.control_panel.controls.configs.SubElementBaseConfig;
 import com.hbm.inventory.control_panel.controls.configs.SubElementDialSquare;
+import com.hbm.inventory.control_panel.types.DataValue;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
+import com.hbm.inventory.control_panel.types.DataValueString;
 import com.hbm.render.loader.WaveFrontObjectVAO;
 import com.hbm.inventory.control_panel.*;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.loader.IModelCustom;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
@@ -46,9 +51,7 @@ public class DialLarge extends Control {
     }
 
     @Override
-    public void applyConfigs(Map<String, DataValue> configs) {
-        super.applyConfigs(configs);
-
+    protected void onConfigMapChanged() {
         for (Map.Entry<String, DataValue> e : configMap.entrySet()) {
             switch (e.getKey()) {
                 case "label": {
@@ -113,6 +116,7 @@ public class DialLarge extends Control {
 
 
     @Override
+    @SideOnly(Side.CLIENT)
     public IModelCustom getModel() {
         return ResourceManager.ctrl_dial_large;
     }
@@ -120,6 +124,15 @@ public class DialLarge extends Control {
     @Override
     public ResourceLocation getGuiTexture() {
         return ResourceManager.ctrl_dial_large_gui_tex;
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public void renderControl(float[] renderBox,Control selectedControl,GuiControlEdit gui) {
+        NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionTexColorQuads(1);
+        int packedColor = NTMBufferBuilder.packColor(1.0F, this == selectedControl ? 0.8F : 1.0F, 1.0F, 1.0F);
+        appendGuiQuad(buf, renderBox[0], renderBox[1], renderBox[2], renderBox[3], 0.0F, 0.0F, 1.0F, 0.5F, packedColor);
+        NTMImmediate.INSTANCE.draw();
     }
 
     @Override

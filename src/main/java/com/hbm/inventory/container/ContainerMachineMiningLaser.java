@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.lib.Library;
@@ -16,7 +17,13 @@ public class ContainerMachineMiningLaser extends Container {
 
 	private TileEntityMachineMiningLaser laser;
 
-	public ContainerMachineMiningLaser(InventoryPlayer invPlayer, TileEntityMachineMiningLaser tedf) {
+    private final TransferStrategy transferStrategy = TransferStrategy.builder(() -> this.laser.inventory.getSlots())
+                                                                      .rule(0, 1, Library::isBattery)
+                                                                      .rule(1, 9, Library::isMachineUpgrade)
+                                                                      .genericMachineRange(9)
+                                                                      .build();
+
+    public ContainerMachineMiningLaser(InventoryPlayer invPlayer, TileEntityMachineMiningLaser tedf) {
 		laser = tedf;
 
 		//Battery
@@ -41,9 +48,7 @@ public class ContainerMachineMiningLaser extends Container {
 	@Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		return InventoryUtil.transferStack(this.inventorySlots, index, laser.inventory.getSlots(),
-                Library::isBattery, 1,
-                Library::isMachineUpgrade, 9);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.transferStrategy, player);
     }
 
 	@Override

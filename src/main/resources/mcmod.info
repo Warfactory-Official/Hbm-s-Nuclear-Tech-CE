@@ -7,7 +7,7 @@
     "credits": "\n\nHBMMods: creator\nDrillgon200: original 1.12.2 port\nTheOriginalGolem: 1.12.2 bug fixing\nAlcater: Custom 1.12.2 version, updating and texturing\n\nSten89: bug tester\nGB_Doge_9000: bug tester\nHoboy: textures and models\nDoctor17: Russian translations\ngrangerave\nrodolphito\nmexikoedi: log spam fix\nCrowbar Collective: gluon gun sounds\n70000HP: MIRV and configs\n",
     "logoFile": "assets/hbm/textures/logo.png",
     "mcversion": "${mcversion}",
-    "url": "https://github.com/MisterNorwood/Hbm-s-Nuclear-Tech-CE",
+    "url": "https://github.com/Warfactory-Official/Hbm-s-Nuclear-Tech-CE",
     "updateUrl": "",
     "authorList": [
       "MrNorwood",
@@ -21,7 +21,8 @@
     "parent": "",
     "screenshots": [],
     "dependencies": [
-      "mod_MinecraftForge"
+      "mod_MinecraftForge",
+      "mixinbooter"
     ]
   }
 ]

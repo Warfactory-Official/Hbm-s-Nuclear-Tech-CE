@@ -6,6 +6,7 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.spongepowered.asm.transformers.MixinClassWriter;
 
 import static com.hbm.core.HbmCorePlugin.coreLogger;
 import static com.hbm.core.HbmCorePlugin.fail;
@@ -32,7 +33,7 @@ final class BlockDummyAirTransformer {
 				}
 			}
 
-			ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+			ClassWriter writer = new MixinClassWriter(classReader, ClassWriter.COMPUTE_MAXS);
 			classNode.accept(writer);
 			return writer.toByteArray();
 		} catch (Throwable t) {

@@ -10,6 +10,7 @@ import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class ItemLemon extends ItemFood {
 	}
 	
 	@Override
-	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
+	public void addInformation(@NotNull ItemStack stack, World worldIn, @NotNull List<String> list, @NotNull ITooltipFlag flagIn) {
 		if(this == ModItems.lemon) {
 			list.add("Eh, good enough.");
 		}
@@ -79,7 +80,7 @@ public class ItemLemon extends ItemFood {
 	
 	
 	@Override
-	protected void onFoodEaten(ItemStack stack, World worldIn, EntityPlayer player) {
+	protected void onFoodEaten(@NotNull ItemStack stack, @NotNull World worldIn, @NotNull EntityPlayer player) {
 		if(this == ModItems.med_ipecac || this == ModItems.med_ptsd) {
 			player.addPotionEffect(new PotionEffect(MobEffects.HUNGER, 50, 49));
 		}
@@ -93,18 +94,12 @@ public class ItemLemon extends ItemFood {
 	}
 	
 	@Override
-	public ItemStack onItemUseFinish(ItemStack stack, World worldIn, EntityLivingBase entityLiving) {
+	public @NotNull ItemStack onItemUseFinish(@NotNull ItemStack stack, @NotNull World worldIn, @NotNull EntityLivingBase entityLiving) {
 		ItemStack sta = super.onItemUseFinish(stack, worldIn, entityLiving);
         
         if(this == ModItems.loop_stew)
         	return new ItemStack(Items.BOWL);
         
         return sta;
-	}
-
-	public static void tryAddItem(EntityPlayer player, ItemStack stack) {
-		if(!player.inventory.addItemStackToInventory(stack)) {
-			player.dropItem(stack, false);
-		}
 	}
 }

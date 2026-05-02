@@ -1,9 +1,10 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotCraftingOutput;
+import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.slot.SlotNonRetarded;
 import com.hbm.inventory.slot.SlotSmelting;
-import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -23,6 +24,9 @@ import net.minecraftforge.items.IItemHandler;
 public class ContainerBase extends Container {
 
     public IItemHandler tile;
+    protected final TransferStrategy transferStrategy = TransferStrategy.builder(() -> this.tile.getSlots())
+                                                                        .genericMachineRange(0)
+                                                                        .build();
 
     public ContainerBase(InventoryPlayer invPlayer, IItemHandler handler) {
         this.tile = handler;
@@ -41,7 +45,7 @@ public class ContainerBase extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, this.tile.getSlots());
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.transferStrategy, player);
     }
 
     /** Standard player inventory with default hotbar offset */

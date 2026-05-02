@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "hbm:block/filing_cabinet"
+    "layer0": "hbm:blocks/filing_cabinet"
   }
 }

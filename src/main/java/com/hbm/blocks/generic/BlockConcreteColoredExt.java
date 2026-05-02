@@ -7,8 +7,6 @@ import net.minecraft.block.material.Material;
 
 import java.util.Locale;
 
-import static com.hbm.render.block.BlockBakeFrame.BlockForm.FULL_CUSTOM;
-
 public class BlockConcreteColoredExt extends BlockEnumMeta<BlockConcreteColoredExt.EnumConcreteType> {
 
     public BlockConcreteColoredExt(Material material, SoundType type, String name, EnumConcreteType[] enumValues, boolean multiName, boolean multiTex) {
@@ -22,7 +20,7 @@ public class BlockConcreteColoredExt extends BlockEnumMeta<BlockConcreteColoredE
             String name = registryName + "." + type.name().toLowerCase(Locale.US);
             if (type == EnumConcreteType.MACHINE_STRIPE) {
                 String machine = registryName + "." + EnumConcreteType.MACHINE.name().toLowerCase(Locale.US);
-                frames[type.ordinal()] = new BlockBakeFrame(FULL_CUSTOM,
+                frames[type.ordinal()] = BlockBakeFrame.cube(
                         machine, // up
                         machine, // down
                         name,  // north
@@ -31,7 +29,7 @@ public class BlockConcreteColoredExt extends BlockEnumMeta<BlockConcreteColoredE
                         name   // east
                 );
             } else {
-                frames[type.ordinal()] = new BlockBakeFrame(name);
+                frames[type.ordinal()] = BlockBakeFrame.cubeAll(name);
             }
         }
         return frames;

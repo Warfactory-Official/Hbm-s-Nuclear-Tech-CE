@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.fusion;
 
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerFusionTorus;
@@ -18,7 +19,6 @@ import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.tileentity.machine.albion.TileEntityCooledBase;
-import com.hbm.uninos.GenNode;
 import com.hbm.uninos.INetworkProvider;
 import com.hbm.uninos.UniNodespace;
 import com.hbm.uninos.networkproviders.KlystronNetwork;
@@ -45,7 +45,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Map;
 
 @AutoRegister
-public class TileEntityFusionTorus extends TileEntityCooledBase implements ITickable, IGUIProvider, IControlReceiver {
+public class TileEntityFusionTorus extends TileEntityCooledBase implements ITickable, IGUIProvider, IControlReceiver, IRORValueProvider {
 
     public boolean didProcess = false;
 
@@ -78,10 +78,10 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements ITick
 
         this.tanks = new FluidTankNTM[4];
 
-        this.tanks[0] = new FluidTankNTM(Fluids.NONE, 4_000);
-        this.tanks[1] = new FluidTankNTM(Fluids.NONE, 4_000);
-        this.tanks[2] = new FluidTankNTM(Fluids.NONE, 4_000);
-        this.tanks[3] = new FluidTankNTM(Fluids.NONE, 4_000);
+        this.tanks[0] = new FluidTankNTM(Fluids.NONE, 4_000).withOwner(this);
+        this.tanks[1] = new FluidTankNTM(Fluids.NONE, 4_000).withOwner(this);
+        this.tanks[2] = new FluidTankNTM(Fluids.NONE, 4_000).withOwner(this);
+        this.tanks[3] = new FluidTankNTM(Fluids.NONE, 4_000).withOwner(this);
 
         this.fusionModule = new ModuleMachineFusion(0, this, inventory)
                 .fluidInput(tanks[0], tanks[1], tanks[2])
@@ -183,6 +183,9 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements ITick
 
             double outputIntensity = getOuputIntensity(receiverCount);
             double outputFlux = recipe != null ? recipe.neutronFlux * factor : 0D;
+            float r = recipe != null ? recipe.r : 0F;
+            float g = recipe != null ? recipe.g : 0F;
+            float b = recipe != null ? recipe.b : 0F;
 
             if(this.plasmaEnergy > 0) for(int i = 0; i < 4; i++) {
 
@@ -191,7 +194,7 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements ITick
                     for(Map.Entry<TileEntity, Long> o : plasmaNodes[i].net.receiverEntries.entrySet()) {
                         if(o.getKey() instanceof IFusionPowerReceiver receiver) {
                             long powerReceived = (long) Math.ceil(this.plasmaEnergy * outputIntensity);
-                            receiver.receiveFusionPower(powerReceived, outputFlux);
+                            receiver.receiveFusionPower(powerReceived, outputFlux, r, g, b);
                         }
                     }
                 }
@@ -473,5 +476,20 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements ITick
                 this.markChanged();
             }
         }
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[] {
+                PREFIX_VALUE + "plasma",
+                PREFIX_VALUE + "consumption"
+        };
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "plasma").equals(name))      return "" + this.plasmaEnergy;
+        if ((PREFIX_VALUE + "consumption").equals(name)) return "" + (int) (this.fuelConsumption * 100);
+        return null;
     }
 }

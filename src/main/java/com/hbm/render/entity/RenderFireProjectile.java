@@ -116,10 +116,10 @@ public class RenderFireProjectile extends Render<EntityFire> {
         NTMRenderHelper.startDrawingTexturedQuads(tes);
         //Drillgon200: I hope this setNormal isn't needed for anything
         //p_77026_1_.setNormal(0.0F, 1.0F, 0.0F);
-        NTMRenderHelper.addVertexWithUV(0.0F - f5, 0.0F - f6, 0.0D, f, f3, tes);
-        NTMRenderHelper.addVertexWithUV(f4 - f5, 0.0F - f6, 0.0D, f1, f3, tes);
-        NTMRenderHelper.addVertexWithUV(f4 - f5, f4 - f6, 0.0D, f1, f2, tes);
-        NTMRenderHelper.addVertexWithUV(0.0F - f5, f4 - f6, 0.0D, f, f2, tes);
+        NTMRenderHelper.addVertexWithUV(0.0F - f5, 0.0F - f6, 0.0F, f, f3, tes);
+        NTMRenderHelper.addVertexWithUV(f4 - f5, 0.0F - f6, 0.0F, f1, f3, tes);
+        NTMRenderHelper.addVertexWithUV(f4 - f5, f4 - f6, 0.0F, f1, f2, tes);
+        NTMRenderHelper.addVertexWithUV(0.0F - f5, f4 - f6, 0.0F, f, f2, tes);
         tes.draw();
     }
 	

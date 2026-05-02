@@ -38,8 +38,8 @@ public class TileEntityStorageDrum extends TileEntityMachineBase implements ITic
 	public TileEntityStorageDrum() {
 		super(24, 1, true, false);
 		tanks = new FluidTankNTM[2];
-		tanks[0] = new FluidTankNTM(Fluids.WASTEFLUID, 16000);
-		tanks[1] = new FluidTankNTM(Fluids.WASTEGAS, 16000);
+		tanks[0] = new FluidTankNTM(Fluids.WASTEFLUID, 16000).withOwner(this);
+		tanks[1] = new FluidTankNTM(Fluids.WASTEGAS, 16000).withOwner(this);
 	}
 
 	@Override

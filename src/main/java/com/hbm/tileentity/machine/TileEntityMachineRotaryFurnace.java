@@ -26,6 +26,7 @@ import com.hbm.main.MainRegistry;
 import com.hbm.modules.ModuleBurnTime;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.tileentity.IConfigurableMachine;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.util.CrucibleUtil;
@@ -41,7 +42,6 @@ import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
@@ -52,7 +52,7 @@ import java.io.IOException;
 import java.util.Random;
 
 @AutoRegister
-public class TileEntityMachineRotaryFurnace extends TileEntityMachinePolluting implements IFluidStandardTransceiver, IGUIProvider, IFluidCopiable, IConfigurableMachine, ITickable {
+public class TileEntityMachineRotaryFurnace extends TileEntityMachinePolluting implements IFluidStandardTransceiver, IGUIProvider, IFluidCopiable, IConfigurableMachine, ITickable, IConnectionAnchors {
 
     public FluidTankNTM[] tanks;
     public boolean isProgressing;
@@ -83,9 +83,9 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachinePolluting i
     public TileEntityMachineRotaryFurnace() {
         super(5, 50, true, false);
         tanks = new FluidTankNTM[3];
-        tanks[0] = new FluidTankNTM(Fluids.NONE, 16_000);
-        tanks[1] = new FluidTankNTM(Fluids.STEAM, 12_000);
-        tanks[2] = new FluidTankNTM(Fluids.SPENTSTEAM, 120);
+        tanks[0] = new FluidTankNTM(Fluids.NONE, 16_000).withOwner(this);
+        tanks[1] = new FluidTankNTM(Fluids.STEAM, 12_000).withOwner(this);
+        tanks[2] = new FluidTankNTM(Fluids.SPENTSTEAM, 120).withOwner(this);
     }
 
     @Override
@@ -325,6 +325,19 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachinePolluting i
         };
     }
 
+    @Override
+    public DirPos[] getConPos() {
+        ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
+        ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
+        DirPos[] steam = getSteamPos();
+        DirPos[] fluid = getFluidPos();
+        DirPos[] result = new DirPos[steam.length + fluid.length + 1];
+        System.arraycopy(steam, 0, result, 0, steam.length);
+        System.arraycopy(fluid, 0, result, steam.length, fluid.length);
+        result[steam.length + fluid.length] = new DirPos(pos.getX() + rot.offsetX, pos.getY() + 5, pos.getZ() + rot.offsetZ, Library.POS_Y);
+        return result;
+    }
+
     public boolean canProcess(RotaryFurnaceRecipe recipe) {
 
         if (this.burnTime <= 0) return false;
@@ -342,7 +355,7 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachinePolluting i
 
         if (this.output != null) {
             if (this.output.material != recipe.output.material) return false;
-            if (this.output.amount + recipe.output.amount > maxOutput) return false;
+            return this.output.amount + recipe.output.amount <= maxOutput;
         }
 
         return true;

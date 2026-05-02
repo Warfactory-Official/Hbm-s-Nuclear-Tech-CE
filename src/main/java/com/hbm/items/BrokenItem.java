@@ -5,6 +5,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.*;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -15,6 +16,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.commons.lang3.tuple.Pair;
@@ -76,15 +78,15 @@ public class BrokenItem extends ItemBakedBase {
     @Override
     @SideOnly(Side.CLIENT)
     public void bakeModel(ModelBakeEvent event) {
-        super.bakeModel(event);
         try {
             ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, ROOT_PATH + this.texturePath);
             ModelResourceLocation bakedModelLocation = new ModelResourceLocation(spriteLoc, "inventory");
 
             IBakedModel original = event.getModelRegistry().getObject(bakedModelLocation);
-            if(original != null) {
-                event.getModelRegistry().putObject(bakedModelLocation, new BrokenItemModel(original));
+            if(original == null) {
+                original = loadModel(bakedModelLocation).bake(ModelRotation.X0_Y0, DefaultVertexFormats.ITEM, ModelLoader.defaultTextureGetter());
             }
+            event.getModelRegistry().putObject(bakedModelLocation, new BrokenItemModel(original));
         } catch(Exception e) {
             e.printStackTrace();
         }

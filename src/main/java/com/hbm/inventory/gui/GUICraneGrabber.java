@@ -3,9 +3,9 @@ package com.hbm.inventory.gui;
 import com.hbm.Tags;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerCraneGrabber;
+import com.hbm.modules.ModulePatternMatcher;
 import com.hbm.packet.toserver.NBTControlPacket;
 import com.hbm.tileentity.network.TileEntityCraneGrabber;
-import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
@@ -36,24 +36,16 @@ public class GUICraneGrabber extends GuiInfoContainer {
     public void drawScreen(int x, int y, float interp) {
         super.drawScreen(x, y, interp);
 
-        if(this.mc.player.getHeldItemMainhand().isEmpty()) {
+        if(this.mc.player.inventory.getItemStack().isEmpty()) {
             for(int i = 0; i < 9; ++i) {
-                Slot slot = (Slot) this.inventorySlots.inventorySlots.get(i);
+                Slot slot = this.inventorySlots.inventorySlots.get(i);
 
                 if(this.isMouseOverSlot(slot, x, y) && grabber.matcher.modes[i] != null) {
-
-                    String label = TextFormatting.YELLOW + "";
-
-                    switch(grabber.matcher.modes[i]) {
-                        case "exact": label += I18nUtil.resolveKey("desc.exact"); break;
-                        case "wildcard": label += I18nUtil.resolveKey("desc.wildcard"); break;
-                        default: label += I18nUtil.resolveKey("desc.oredictmatch")+" " + grabber.matcher.modes[i]; break;
-                    }
-
-                    this.drawHoveringText(Arrays.asList(new String[] { TextFormatting.RED + I18nUtil.resolveKey("desc.rcchange"), label }), x, y - 30);
+                    this.drawHoveringText(Arrays.asList(TextFormatting.RED + "Right click to change", ModulePatternMatcher.getLabel(grabber.matcher.modes[i])), x, y - 30);
                 }
             }
         }
+
         this.renderHoveredToolTip(x, y);
     }
 
@@ -62,10 +54,9 @@ public class GUICraneGrabber extends GuiInfoContainer {
         super.mouseClicked(x, y, i);
 
         if(guiLeft + 97 <= x && guiLeft + 97 + 14 > x && guiTop + 30 < y && guiTop + 30 + 26 >= y) {
-
             playClickSound();
             NBTTagCompound data = new NBTTagCompound();
-            data.setBoolean("isWhitelist", true);
+            data.setBoolean("whitelist", true);
             PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, grabber.getPos()));
         }
     }

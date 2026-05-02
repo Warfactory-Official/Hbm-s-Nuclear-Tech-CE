@@ -1,6 +1,10 @@
 package com.hbm.inventory.control_panel;
 
 import com.hbm.Tags;
+import com.hbm.inventory.control_panel.types.DataValue;
+import com.hbm.inventory.control_panel.types.DataValueComposite;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
+import com.hbm.inventory.control_panel.types.DataValueString;
 import com.hbm.render.NTMRenderHelper;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiTextField;
@@ -12,8 +16,7 @@ import org.lwjgl.input.Keyboard;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.hbm.inventory.control_panel.DataValue.DataType.ENUM;
-import static com.hbm.inventory.control_panel.DataValue.DataType.NUMBER;
+import static com.hbm.inventory.control_panel.types.DataValue.DataType.*;
 
 // sorry.
 public class SubElementVariables extends SubElement {
@@ -23,6 +26,7 @@ public class SubElementVariables extends SubElement {
     GuiButton btn_back;
     GuiButton btn_newNumber;
     GuiButton btn_newString;
+    GuiButton btn_newComposite;
     GuiButton btn_local;
     GuiButton btn_global;
     GuiButton btn_confirmNewVar;
@@ -56,8 +60,9 @@ public class SubElementVariables extends SubElement {
         int gTop = gui.getGuiTop();
 
         btn_back = gui.addButton(new GuiButton(gui.currentButtonId(), gLeft+7, gTop+13, 30, 20, "Back"));
-        btn_newString = gui.addButton(new GuiButton(gui.currentButtonId(), gLeft+7, gTop+68, 43, 20, "String"));
-        btn_newNumber = gui.addButton(new GuiButton(gui.currentButtonId(), gLeft+7, gTop+91, 43, 20, "Number"));
+        btn_newString = gui.addButton(new GuiButton(gui.currentButtonId(), gLeft+7, gTop+45, 43, 20, "String"));
+        btn_newNumber = gui.addButton(new GuiButton(gui.currentButtonId(), gLeft+7, gTop+68, 43, 20, "Number"));
+        btn_newComposite = gui.addButton(new GuiButton(gui.currentButtonId(), gLeft+7, gTop+91, 43, 20, "Pack"));
         btn_local = gui.addButton(new GuiButton(gui.currentButtonId(), gLeft+59, gTop+17, 65, 20, "Local"));
         btn_global = gui.addButton(new GuiButton(gui.currentButtonId(), gLeft+59, gTop+17, 65, 20, "Global"));
         btn_clearAll = gui.addButton(new GuiButton(gui.currentButtonId(), gLeft+132, gTop+17, 43, 20, "Clear"));
@@ -132,7 +137,7 @@ public class SubElementVariables extends SubElement {
         String text;
         int i = 0;
 
-        for (Map.Entry<String, DataValue> e : varList.entrySet()) {
+        for (Map.Entry<String,DataValue> e : varList.entrySet()) {
             int j = i%6;
             text = e.getKey();
 
@@ -168,6 +173,7 @@ public class SubElementVariables extends SubElement {
                                 break;
                             }
                             case STRING: varList.put(e.getKey(), new DataValueString(txts_var_data.get(e.getKey()).getText())); break;
+                            case COMPOSITE: txts_var_data.get(e.getKey()).setFocused(false); break; // nope
                         }
                     }
                 } else {
@@ -193,11 +199,12 @@ public class SubElementVariables extends SubElement {
     protected void drawCreateVar() {
         int cY = gui.height/2;
 
-        String text = "";
-        switch (newVarData.getType()) {
-            case NUMBER : text = "N : "; break;
-            case STRING : text = "S : "; break;
-        }
+        String text = switch (newVarData.getType()) {
+            case NUMBER -> "N : ";
+            case STRING -> "S : ";
+            case COMPOSITE -> "P : ";
+            default -> "";
+        };
         gui.getFontRenderer().drawString(text, gui.getGuiLeft()+60, (cY-74), 0xFFFFFFFF, false);
         txt_newVarName.drawTextBox();
         gui.getFontRenderer().drawString(" = ", gui.getGuiLeft()+138, (cY-74), 0xFFFFFFFF, false);
@@ -239,16 +246,32 @@ public class SubElementVariables extends SubElement {
         }
     }
 
+    boolean shouldHideVarConfigs = false;
+
+    protected void updateVarConfigVisibility() {
+        txt_newVarData.setVisible(!shouldHideVarConfigs);
+        txt_newVarData.setEnabled(!shouldHideVarConfigs);
+        if (shouldHideVarConfigs) {
+            txt_newVarData.setFocused(false);
+        }
+    }
+
     @Override
     protected void actionPerformed(GuiButton button) {
-        if (button == btn_newNumber) {
-            newVarData = new DataValueFloat(0);
-            txt_newVarData.setText(newVarData.toString());
-            isCreatingNewVar = true;
-        }
-        else if (button == btn_newString) {
-            newVarData = new DataValueString("");
-            txt_newVarData.setText(newVarData.toString());
+        if (button == btn_newNumber || button == btn_newString || button == btn_newComposite) {
+            if (button == btn_newNumber) {
+                newVarData = new DataValueFloat(0);
+                txt_newVarData.setText(newVarData.toString());
+                shouldHideVarConfigs = false;
+            } else if (button == btn_newString) {
+                newVarData = new DataValueString("");
+                txt_newVarData.setText(newVarData.toString());
+                shouldHideVarConfigs = false;
+            } else {
+                newVarData = new DataValueComposite();
+                shouldHideVarConfigs = true;
+            }
+            updateVarConfigVisibility();
             isCreatingNewVar = true;
         }
         else if (button == btn_prevPage) {
@@ -280,8 +303,11 @@ public class SubElementVariables extends SubElement {
             gui.popElement();
         }
         else if (button == btn_confirmNewVar) {
-            if (txt_newVarName.getText().isEmpty() || txt_newVarData.getText().isEmpty()) {
+            if (txt_newVarName.getText().isEmpty())
                 return;
+            if (!shouldHideVarConfigs) {
+                if (txt_newVarData.getText().isEmpty())
+                    return;
             }
             isCreatingNewVar = false;
             if (isGlobalScope) {
@@ -299,6 +325,10 @@ public class SubElementVariables extends SubElement {
                         gui.control.panel.globalVars.put(txt_newVarName.getText(), new DataValueString(txt_newVarData.getText()));
                         break;
                     }
+                    case COMPOSITE: {
+                        gui.control.panel.globalVars.put(txt_newVarName.getText(), new DataValueComposite());
+                        break;
+                    }
                 }
             } else {
                 switch (newVarData.getType()) {
@@ -314,6 +344,11 @@ public class SubElementVariables extends SubElement {
                     }
                     case STRING: {
                         gui.currentEditControl.vars.put(txt_newVarName.getText(), new DataValueString(txt_newVarData.getText()));
+                        gui.currentEditControl.customVarNames.add(txt_newVarName.getText());
+                        break;
+                    }
+                    case COMPOSITE: {
+                        gui.currentEditControl.vars.put(txt_newVarName.getText(), new DataValueComposite());
                         gui.currentEditControl.customVarNames.add(txt_newVarName.getText());
                         break;
                     }
@@ -366,6 +401,7 @@ public class SubElementVariables extends SubElement {
         btn_back.enabled = enable;
         btn_back.visible = enable;
         if (enable) {
+            updateVarConfigVisibility();
             btn_prevPage.visible = numPages > 1 && currentPage > 1;
             btn_prevPage.enabled = btn_prevPage.visible;
             btn_nextPage.visible = numPages > 1 && currentPage < numPages;
@@ -375,22 +411,24 @@ public class SubElementVariables extends SubElement {
             btn_nextPage.visible = false;
             btn_prevPage.enabled = false;
             btn_prevPage.visible = false;
+
+            txt_newVarData.setEnabled(false);
+            txt_newVarData.setVisible(false);
         }
         btn_newNumber.enabled = enable;
         btn_newNumber.visible = enable;
         btn_newString.enabled = enable;
         btn_newString.visible = enable;
+        btn_newComposite.enabled = enable;
+        btn_newComposite.visible = enable;
         btn_local.enabled = enable;
         btn_local.visible = enable;
         btn_global.enabled = enable;
         btn_global.visible = enable;
         btn_confirmNewVar.enabled = enable;
         btn_confirmNewVar.visible = enable;
-
         txt_newVarName.setEnabled(enable);
         txt_newVarName.setVisible(enable);
-        txt_newVarData.setEnabled(enable);
-        txt_newVarData.setVisible(enable);
 
         for (Map.Entry<String, GuiTextField> e : txts_var_data.entrySet()) {
             e.getValue().setEnabled(enable);

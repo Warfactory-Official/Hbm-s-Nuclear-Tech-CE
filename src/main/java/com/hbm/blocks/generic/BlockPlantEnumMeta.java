@@ -1,7 +1,6 @@
 package com.hbm.blocks.generic;
 
 import com.google.common.collect.ImmutableMap;
-import com.hbm.Tags;
 import com.hbm.blocks.BlockEnumMeta;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.render.block.BlockBakeFrame;
@@ -28,13 +27,15 @@ import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.EnumPlantType;
+import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.*;
 
-public abstract class BlockPlantEnumMeta<E extends Enum<E>> extends BlockEnumMeta<E> {
+public abstract class BlockPlantEnumMeta<E extends Enum<E>> extends BlockEnumMeta<E> implements IPlantable {
 
     public static Set<Block> PLANTABLE_BLOCKS = new HashSet<>();
 
@@ -43,16 +44,13 @@ public abstract class BlockPlantEnumMeta<E extends Enum<E>> extends BlockEnumMet
         this.setTickRandomly(true);
     }
 
-    public static void initPlacables(){
-    }
-
     @Override
     protected BlockBakeFrame[] generateBlockFrames(String registryName) {
         return Arrays.stream(blockEnum)
                 .sorted(Comparator.comparing(Enum::ordinal))
                 .map(Enum::name)
                 .map(name -> registryName + "_" + name.toLowerCase(Locale.US))
-                .map(texture -> new BlockBakeFrame(BlockBakeFrame.BlockForm.CROSS, texture))
+                .map(BlockBakeFrame::cross)
                 .toArray(BlockBakeFrame[]::new);
     }
 
@@ -61,21 +59,21 @@ public abstract class BlockPlantEnumMeta<E extends Enum<E>> extends BlockEnumMet
      * transparency (glass, reeds), TRANSLUCENT for fully blended transparency (stained glass)
      */
     @SideOnly(Side.CLIENT)
-    public BlockRenderLayer getRenderLayer() {
+    public @NotNull BlockRenderLayer getRenderLayer() {
         return BlockRenderLayer.CUTOUT;
     }
 
-    public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
+    public @NotNull BlockFaceShape getBlockFaceShape(@NotNull IBlockAccess worldIn, @NotNull IBlockState state, @NotNull BlockPos pos, @NotNull EnumFacing face) {
         return BlockFaceShape.UNDEFINED;
     }
 
     @Override
-    public boolean canPlaceBlockAt(World world, BlockPos pos) {
+    public boolean canPlaceBlockAt(@NotNull World world, @NotNull BlockPos pos) {
         return this.canBlockStay(world, pos, world.getBlockState(pos));
     }
 
 
-     public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos)
+     public void neighborChanged(@NotNull IBlockState state, @NotNull World worldIn, @NotNull BlockPos pos, @NotNull Block blockIn, @NotNull BlockPos fromPos)
     {
         super.neighborChanged(state, worldIn, pos, blockIn, fromPos);
         this.checkAndDropBlock(worldIn, pos, state);
@@ -95,31 +93,32 @@ public abstract class BlockPlantEnumMeta<E extends Enum<E>> extends BlockEnumMet
     }
 
     @Override
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+    public @NotNull AxisAlignedBB getBoundingBox(@NotNull IBlockState state, @NotNull IBlockAccess source, @NotNull BlockPos pos) {
         return new AxisAlignedBB(0.09999999403953552D, 0.0D, 0.09999999403953552D, 0.8999999761581421D, 0.4000000059604645D, 0.8999999761581421D);
     }
 
     @Nullable
     @Override
-    public AxisAlignedBB getCollisionBoundingBox(IBlockState blockState, IBlockAccess worldIn, BlockPos pos) {
+    public AxisAlignedBB getCollisionBoundingBox(@NotNull IBlockState blockState, @NotNull IBlockAccess worldIn, @NotNull BlockPos pos) {
         return NULL_AABB;
     }
 
     @Override
-    public boolean isFullCube(IBlockState state) {
+    public boolean isFullCube(@NotNull IBlockState state) {
         return false;
     }
 
     @Override
-    public boolean isOpaqueCube(IBlockState state) {
+    public boolean isOpaqueCube(@NotNull IBlockState state) {
         return false;
     }
 
-
+    @Override
     public EnumPlantType getPlantType(IBlockAccess world, BlockPos pos) {
-        return net.minecraftforge.common.EnumPlantType.Plains; //TODO: Make custom one for custom plants
+        return EnumPlantType.Plains; //TODO: Make custom one for custom plants
     }
 
+    @Override
     public IBlockState getPlant(IBlockAccess world, BlockPos pos) {
         IBlockState state = world.getBlockState(pos);
         if (state.getBlock() != this) return getDefaultState();
@@ -155,7 +154,7 @@ public abstract class BlockPlantEnumMeta<E extends Enum<E>> extends BlockEnumMet
         for (int meta = 0; meta <= META_COUNT - 1; meta++) {
             BlockBakeFrame blockFrame = blockFrames[meta % blockFrames.length];
             try {
-                IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation(blockFrame.getBaseModel()));
+                IModel baseModel = ModelLoaderRegistry.getModel(blockFrame.getBaseModelLocation());
                 ImmutableMap.Builder<String, String> textureMap = ImmutableMap.builder();
 
                 blockFrame.putTextures(textureMap);
@@ -169,7 +168,7 @@ public abstract class BlockPlantEnumMeta<E extends Enum<E>> extends BlockEnumMet
 
                 IModel itemModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/generated"));
                 ImmutableMap.Builder<String, String> itemTextureMap = ImmutableMap.builder();
-                ResourceLocation itemTexture = new ResourceLocation(Tags.MODID, BlockBakeFrame.ROOT_PATH + blockFrame.textureArray[0]);
+                ResourceLocation itemTexture = blockFrame.getTextureLocation(0);
                 itemTextureMap.put("layer0", itemTexture.toString());
                 IModel retexturedItemModel = itemModel.retexture(itemTextureMap.build());
                 IBakedModel bakedItemModel = retexturedItemModel.bake(
@@ -188,7 +187,7 @@ public abstract class BlockPlantEnumMeta<E extends Enum<E>> extends BlockEnumMet
     @Override
     @SideOnly(Side.CLIENT)
     public void registerModel() {
-        for (int meta = 0; meta <= this.META_COUNT; meta++) {
+        for (int meta = 0; meta < this.META_COUNT; meta++) {
             ModelLoader.setCustomModelResourceLocation(
                     Item.getItemFromBlock(this),
                     meta,

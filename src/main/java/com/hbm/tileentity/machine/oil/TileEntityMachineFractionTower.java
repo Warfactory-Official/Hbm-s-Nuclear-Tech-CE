@@ -11,6 +11,7 @@ import com.hbm.inventory.recipes.FractionRecipes;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.packet.toclient.BufPacket;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.util.Tuple;
@@ -30,7 +31,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 
 @AutoRegister
-public class TileEntityMachineFractionTower extends TileEntityLoadedBase implements IBufPacketReceiver, IFluidStandardTransceiver, ITickable {
+public class TileEntityMachineFractionTower extends TileEntityLoadedBase implements IBufPacketReceiver, IFluidStandardTransceiver, ITickable, IConnectionAnchors {
 	
 	public FluidTankNTM[] tanks;
 	
@@ -38,9 +39,9 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
 		super();
 
 		tanks = new FluidTankNTM[3];
-		tanks[0] = new FluidTankNTM(Fluids.HEAVYOIL, 4000);
-		tanks[1] = new FluidTankNTM(Fluids.BITUMEN, 4000);
-		tanks[2] = new FluidTankNTM(Fluids.SMEAR, 4000);
+		tanks[0] = new FluidTankNTM(Fluids.HEAVYOIL, 4000).withOwner(this);
+		tanks[1] = new FluidTankNTM(Fluids.BITUMEN, 4000).withOwner(this);
+		tanks[2] = new FluidTankNTM(Fluids.SMEAR, 4000).withOwner(this);
 	}
 	
 	@Override
@@ -125,7 +126,7 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
 		}
 	}
 
-	private DirPos[] getConPos() {
+	public DirPos[] getConPos() {
 		return new DirPos[] {
 				new DirPos(pos.getX() + 2, pos.getY(), pos.getZ(), Library.POS_X),
 				new DirPos(pos.getX() - 2, pos.getY(), pos.getZ(), Library.NEG_X),

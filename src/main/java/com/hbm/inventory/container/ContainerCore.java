@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.tileentity.machine.TileEntityCore;
 import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
@@ -13,7 +14,11 @@ public class ContainerCore extends Container {
 
 	private TileEntityCore core;
 
-	public ContainerCore(InventoryPlayer invPlayer, TileEntityCore tedf) {
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(3)
+                                                                              .genericMachineRange(0)
+                                                                              .build();
+
+    public ContainerCore(InventoryPlayer invPlayer, TileEntityCore tedf) {
 
 		core = tedf;
 
@@ -34,7 +39,7 @@ public class ContainerCore extends Container {
 
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 3);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
 	}
 
 	@Override

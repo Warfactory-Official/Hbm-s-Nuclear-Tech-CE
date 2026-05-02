@@ -8,7 +8,6 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModItems;
 import com.hbm.main.MainRegistry;
-import com.hbm.util.ChunkShapeHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -16,11 +15,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.ForgeChunkManager.Ticket;
 import net.minecraftforge.common.ForgeChunkManager.Type;
 import net.minecraftforge.items.ItemStackHandler;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @AutoRegister(name = "entity_delivery_drone", sendVelocityUpdates = false)
 public class EntityDeliveryDrone extends EntityDroneBase implements IInventory, IChunkLoader {
@@ -67,8 +70,10 @@ public class EntityDeliveryDrone extends EntityDroneBase implements IInventory, 
     }
 
     public void setChunkLoading() {
-        init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, Type.ENTITY));
         this.chunkLoading = true;
+        if(!world.isRemote && this.loaderTicket == null) {
+            init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, Type.ENTITY));
+        }
     }
 
     @Override
@@ -129,7 +134,7 @@ public class EntityDeliveryDrone extends EntityDroneBase implements IInventory, 
         }
 
         this.dataManager.set(IS_EXPRESS, nbt.getBoolean("load"));
-        if(nbt.getBoolean("chunkLoading")) this.setChunkLoading();
+        this.chunkLoading = nbt.getBoolean("chunkLoading");
     }
 
     @Override
@@ -206,9 +211,28 @@ public class EntityDeliveryDrone extends EntityDroneBase implements IInventory, 
                 ForgeChunkManager.unforceChunk(loaderTicket, chunk);
             }
 
-            // This is the lowest padding that worked with my drone waypoint path. if they stop getting loaded crank up paddingSize
-            for (ChunkPos chunk : ChunkShapeHelper.getChunksAlongLineSegment((int) this.posX, (int) this.posZ, (int) (this.posX + this.motionX), (int) (this.posZ + this.motionZ), 4)){
+            Set<ChunkPos> chunksToLoad = new LinkedHashSet<>();
+            int chunkX = MathHelper.floor(this.posX / 16.0D);
+            int chunkZ = MathHelper.floor(this.posZ / 16.0D);
+            this.addChunkArea(chunksToLoad, chunkX, chunkZ);
+
+            if(this.motionX * this.motionX + this.motionZ * this.motionZ > 0.0001D) {
+                int lookAheadChunkX = MathHelper.floor((this.posX + this.motionX * 16.0D) / 16.0D);
+                int lookAheadChunkZ = MathHelper.floor((this.posZ + this.motionZ * 16.0D) / 16.0D);
+                this.addChunkArea(chunksToLoad, lookAheadChunkX, lookAheadChunkZ);
+            }
+
+            // Keep waypoints and crates ticking before the drone reaches the chunk border.
+            for(ChunkPos chunk : chunksToLoad) {
                 ForgeChunkManager.forceChunk(loaderTicket, chunk);
+            }
+        }
+    }
+
+    private void addChunkArea(Set<ChunkPos> chunksToLoad, int centerChunkX, int centerChunkZ) {
+        for(int chunkOffsetX = -1; chunkOffsetX <= 1; chunkOffsetX++) {
+            for(int chunkOffsetZ = -1; chunkOffsetZ <= 1; chunkOffsetZ++) {
+                chunksToLoad.add(new ChunkPos(centerChunkX + chunkOffsetX, centerChunkZ + chunkOffsetZ));
             }
         }
     }
@@ -238,6 +262,8 @@ public class EntityDeliveryDrone extends EntityDroneBase implements IInventory, 
                 loaderTicket = ticket;
                 loaderTicket.bindEntity(this);
                 loaderTicket.getModData();
+            } else if(loaderTicket != ticket) {
+                ForgeChunkManager.releaseTicket(ticket);
             }
             this.loadNeighboringChunks();
         }

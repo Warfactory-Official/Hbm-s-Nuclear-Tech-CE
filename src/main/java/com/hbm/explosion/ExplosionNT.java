@@ -265,6 +265,8 @@ public class ExplosionNT extends Explosion {
 						}
 					} else if(has(ExAttrib.LAVA_V)) {
 						this.worldObj.setBlockState(new BlockPos(i, j, k), ModBlocks.volcanic_lava_block.getDefaultState());
+					} else if(has(ExAttrib.LAVA_R)) {
+						this.worldObj.setBlockState(new BlockPos(i, j, k), ModBlocks.rad_lava_block.getDefaultState());
 					}
 				}
 			}
@@ -319,6 +321,7 @@ public class ExplosionNT extends Explosion {
 		DIGAMMA_CIRCUIT,
 		LAVA,		//again the same thing but lava
 		LAVA_V,		//again the same thing but volcaniclava
+		LAVA_R,		//again the same thing but radioactive lava
 		ERRODE,		//will turn select blocks into gravel or sand
 		ALLMOD,		//block placer attributes like fire are applied for all destroyed blocks
 		ALLDROP,	//miner TNT!

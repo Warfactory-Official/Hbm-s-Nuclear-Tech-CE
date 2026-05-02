@@ -48,24 +48,15 @@ public class ShadyUtil {
     public static final UUID ege444             = UUID.fromString("42ee978c-442a-4cd8-95b6-29e469b6df10");
     public static final UUID Golem              = UUID.fromString("058b52a6-05b7-4d11-8cfa-2db665d9a521");
     public static final UUID LePeeperSauvage    = UUID.fromString("433c2bb7-018c-4d51-acfe-27f907432b5e");
+    public static final UUID movblock           = UUID.fromString("d45aac48-013d-4efd-aa4d-bc40d6b6026d");
+    public static final UUID Hacker6329         = UUID.fromString("a53a3807-cd85-4833-b791-0c27705bb6fd");
+    public static final UUID EOS                = UUID.fromString("cac1f285-001c-47dc-94a3-44052fb7e4e8");
 
     public static final Set<String> hashes = new HashSet<>();
     static {
         hashes.add("41de5c372b0589bbdb80571e87efa95ea9e34b0d74c6005b8eab495b7afd9994");
         hashes.add("31da6223a100ed348ceb3254ceab67c9cc102cb2a04ac24de0df3ef3479b1036");
     }
-
-    public static final int c = 0x3d;
-    public static final String initializer = "Ur bp7mN-@UFZKXBx9N[/>M'k\\7\\9m3b";
-    public static final String signature   = "dYPq\\YzrNpfn[ZDxdk7PS2jhTY72cZT7SoH|\\WL3dIznfC";
-    public static final String mask        = "E#?V,%l!nb4 ik_wJ@(&k4o>Wq";
-    public static final String checksum    = "dpXt\\Xnr\\Yzm";
-    public static final String testCase    = "dYPq\\YzrNm3FUH;P[ZTq";
-    public static final String testValue   = "WGm?";
-    public static final String smTest1     = "hgwS";
-    public static final String smTest2     = "8Sfw";
-    public static final String smTest3     = "j11D";
-    public static final String smTest4     = "s783";
 
     public static final Set<UUID> contributors = Sets.newHashSet(
             UUID.fromString("06ab7c03-55ce-43f8-9d3c-2850e3c652de"), // mustang_rudolf
@@ -74,18 +65,10 @@ public class ShadyUtil {
     );
 
     // simple cryptographic utils
-    public static String encode(String msg) { return Base64.getEncoder().encodeToString(msg.getBytes()); }
-    public static String decode(String msg) { return new String(Base64.getDecoder().decode(msg)); }
+    @Deprecated public static String encode(String msg) { return Base64.getEncoder().encodeToString(msg.getBytes()); }
+    @Deprecated public static String decode(String msg) { return new String(Base64.getDecoder().decode(msg)); }
 
-    public static String offset(String msg, int o) {
-        byte[] bytes = msg.getBytes();
-        for (int i = 0; i < bytes.length; i++) {
-            bytes[i] += o;
-        }
-        return new String(bytes);
-    }
-
-    /** Encryptor for the h-cat answer strings */
+    /** complete fucking shit */
     public static String smoosh(String s1, String s2, String s3, String s4) {
         Random rand = new Random();
         String s = "";
@@ -127,23 +110,4 @@ public class ShadyUtil {
         return "";
     }
 
-    // mlbv: I doubt if it would work on 1.12.2
-//    public static void test() {
-//        if(!GeneralConfig.enableDebugMode) return; //only run in debug mode
-//
-//        //unit test for smooshing
-//        MainRegistry.logger.debug(smoosh(smTest1, smTest2, smTest3, smTest4));
-//
-//        try {
-//            Class test = Class.forName(decode(offset(signature, -2)));
-//            Field field = ReflectionHelper.findField(test, decode(offset(checksum, -2)));
-//            if(field != null) {
-//                System.out.println("TEST SECTION START");
-//                //Class toLoad = Class.forName(decode(offset(testCase, -2)));
-//                //Field toRead = ReflectionHelper.findField(toLoad, decode(offset(testValue, -2)));
-//                //ModEventHandler.reference = toRead;
-//                System.out.println("TEST SECTION END");
-//            }
-//        } catch(Throwable e) { }
-//    }
 }

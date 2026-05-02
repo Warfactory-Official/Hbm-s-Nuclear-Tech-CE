@@ -15,12 +15,45 @@ import org.lwjgl.input.Keyboard;
 import java.util.HashMap;
 import java.util.Map;
 
-//Modified vesion of LeafiaGripOffsetHelper.java by abysschroma
-//https://github.com/abysschroma/NTM-but-uncomfortable/blob/main/src/main/java/com/leafia/dev/items/LeafiaGripOffsetHelper.java
+/**
+ * Interactive transform debugger for item and view-model renderers.
+ *
+ * <p>Typical usage is:
+ * <pre>{@code
+ * private final ViewModelPositonDebugger offsets = new ViewModelPositonDebugger()
+ *         .get(ItemCameraTransforms.TransformType.GUI)
+ *         .setScale(1.0D).setPosition(0.0D, 0.0D, 0.0D).setRotation(0.0D, 0.0D, 0.0D)
+ *         .getHelper();
+ *
+ * // Inside the render path
+ * offsets.apply(type);
+ * }</pre>
+ *
+ * <p>Place the {@link #apply(TransformType)} call exactly where the corrective transform should be
+ * composed. If it should act as a final nudge over an existing baseline, call it immediately before
+ * or after that baseline depending on the coordinate frame you want to edit.
+ *
+ * <p>Controls while debugging is enabled:
+ * <ul>
+ *   <li><b>RShift / RCtrl</b>: cycle forward / backward through {@link TransformType}s</li>
+ *   <li><b>Arrow keys</b>: move on X/Y</li>
+ *   <li><b>LCtrl + Up/Down</b> or <b>, / .</b>: move on Z</li>
+ *   <li><b>[ / ]</b>: decrease / increase scale</li>
+ *   <li><b>I / J</b>: positive / negative X rotation</li>
+ *   <li><b>O / K</b>: positive / negative Y rotation</li>
+ *   <li><b>P / L</b>: positive / negative Z rotation</li>
+ *   <li><b>Tab</b>: fine adjustment step</li>
+ *   <li><b>Space</b>: print the current transform to chat</li>
+ * </ul>
+ *
+ * @author Leafia
+ * @see <a href="https://github.com/abysschroma/NTM-but-uncomfortable/blob/main/src/main/java/com/leafia/dev/items/LeafiaGripOffsetHelper.java">LeafiaGripOffsetHelper</a>
+ */
 @SideOnly(Side.CLIENT)
 public class ViewModelPositonDebugger {
     static boolean debug = false;
     static boolean blockInput = false;
+
     public Map<TransformType, offset> offsetMap;
     protected int debugIndex = 0;
     public static class offset {
@@ -94,6 +127,7 @@ public class ViewModelPositonDebugger {
         if (debug)
             tickDebug();
     }
+
     protected void tickDebug() {
         boolean[] inputs = new boolean[]{
                 Keyboard.isKeyDown(Keyboard.KEY_UP),Keyboard.isKeyDown(Keyboard.KEY_LEFT),Keyboard.isKeyDown(Keyboard.KEY_DOWN),

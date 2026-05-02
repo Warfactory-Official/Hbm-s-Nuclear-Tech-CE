@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.ModItems;
@@ -17,6 +18,16 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerMachineCatalyticReformer extends Container {
 
     private TileEntityMachineCatalyticReformer reformer;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(11)
+                                                                              .rule(0, 1, Library::isBattery)
+                                                                              .rule(1, 9,
+                                                                                      ContainerMachineCatalyticReformer::isNormal)
+                                                                              .rule(9, 10,
+                                                                                      s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                              .rule(10, 11,
+                                                                                      s -> s.getItem() == ModItems.catalytic_converter)
+                                                                              .build();
 
     public ContainerMachineCatalyticReformer(InventoryPlayer invPlayer, TileEntityMachineCatalyticReformer tedf) {
 
@@ -62,11 +73,7 @@ public class ContainerMachineCatalyticReformer extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 11,
-                Library::isBattery, 1,
-                ContainerMachineCatalyticReformer::isNormal, 9,
-                s -> s.getItem() instanceof IItemFluidIdentifier, 10,
-                s -> s.getItem() == ModItems.catalytic_converter, 11);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluid.IFluidStandardTransceiver;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.handler.CompatHandler;
 import com.hbm.handler.pollution.PollutionHandler;
@@ -22,6 +23,8 @@ import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.lib.DirPos;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -47,7 +50,7 @@ import java.util.HashMap;
 
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 @AutoRegister
-public class TileEntityMachineTurbineGas extends TileEntityMachineBase implements IFluidStandardTransceiver, IEnergyProviderMK2, IControlReceiver, IGUIProvider, SimpleComponent, CompatHandler.OCComponent, IFluidCopiable, ITickable {
+public class TileEntityMachineTurbineGas extends TileEntityMachineBase implements IFluidStandardTransceiver, IEnergyProviderMK2, IControlReceiver, IGUIProvider, SimpleComponent, CompatHandler.OCComponent, IFluidCopiable, IRORValueProvider, ITickable, IConnectionAnchors {
 
 	public long power;
 	public static final long maxPower = 1000000L;
@@ -86,10 +89,10 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase implement
 	public TileEntityMachineTurbineGas() {
 		super(2, true, true);
 		this.tanks = new FluidTankNTM[4];
-		tanks[0] = new FluidTankNTM(Fluids.GAS, 100000);
-		tanks[1] = new FluidTankNTM(Fluids.LUBRICANT, 16000);
-		tanks[2] = new FluidTankNTM(Fluids.WATER, 16000);
-		tanks[3] = new FluidTankNTM(Fluids.HOTSTEAM, 160000);
+		tanks[0] = new FluidTankNTM(Fluids.GAS, 100000).withOwner(this);
+		tanks[1] = new FluidTankNTM(Fluids.LUBRICANT, 16000).withOwner(this);
+		tanks[2] = new FluidTankNTM(Fluids.WATER, 16000).withOwner(this);
+		tanks[3] = new FluidTankNTM(Fluids.HOTSTEAM, 160000).withOwner(this);
 	}
 
 	private long powerBeforeNet;
@@ -102,7 +105,7 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase implement
 			waterToBoil = 0; //reset
 			throttle = powerSliderPos * 100 / 60;
 
-			if(inventory.getStackInSlot(1) != null && inventory.getStackInSlot(1).getItem() instanceof IItemFluidIdentifier) {
+			if(!inventory.getStackInSlot(1).isEmpty() && inventory.getStackInSlot(1).getItem() instanceof IItemFluidIdentifier) {
 				FluidType fluid = ((IItemFluidIdentifier) inventory.getStackInSlot(1).getItem()).getType(world, getPos().getX(), getPos().getY(), getPos().getZ(), inventory.getStackInSlot(1));
 				if(fluid.hasTrait(FT_Combustible.class) && fluid.getTrait(FT_Combustible.class).getGrade() == FuelGrade.GAS) {
 					tanks[0].setTankType(fluid);
@@ -411,6 +414,20 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase implement
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	@Override
+	public DirPos[] getConPos() {
+		ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
+		ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+		return new DirPos[] {
+				new DirPos(pos.getX() - dir.offsetZ * 5, pos.getY() + 1, pos.getZ() + dir.offsetX * 5, rot),
+				new DirPos(pos.getX() - dir.offsetX * 2 + rot.offsetX, pos.getY(), pos.getZ() - dir.offsetZ * 2 + rot.offsetZ, dir.getOpposite()),
+				new DirPos(pos.getX() + dir.offsetX * 2 + rot.offsetX, pos.getY(), pos.getZ() + dir.offsetZ * 2 + rot.offsetZ, dir),
+				new DirPos(pos.getX() - dir.offsetX * 2 + rot.offsetX * -4, pos.getY(), pos.getZ() - dir.offsetZ * 2 + rot.offsetZ * -4, dir.getOpposite()),
+				new DirPos(pos.getX() + dir.offsetX * 2 + rot.offsetX * -4, pos.getY(), pos.getZ() + dir.offsetZ * 2 + rot.offsetZ * -4, dir),
+				new DirPos(pos.getX() + dir.offsetZ * 6, pos.getY() + 1, pos.getZ() - dir.offsetX * 6, rot.getOpposite())
+		};
+	}
+
+	@Override
 	public void readFromNBT(NBTTagCompound nbt) {
 		super.readFromNBT(nbt);
 		this.tanks[0].readFromNBT(nbt, "gas");
@@ -699,6 +716,23 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase implement
 	@SideOnly(Side.CLIENT)
 	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		return new GUIMachineTurbineGas(player.inventory, this);
+	}
+
+	@Override
+	public String[] getFunctionInfo() {
+		return new String[] {
+				PREFIX_VALUE + "turbinepercent",
+				PREFIX_VALUE + "turbinespeed",
+				PREFIX_VALUE + "output"
+		};
+	}
+
+	@Override
+	public String provideRORValue(String name) {
+		if ((PREFIX_VALUE + "turbinepercent").equals(name)) return "" + (int) (this.powerSliderPos * 100D / 60D);
+		if ((PREFIX_VALUE + "turbinespeed").equals(name))   return "" + this.rpm;
+		if ((PREFIX_VALUE + "output").equals(name))         return "" + (int) this.instantPowerOutput;
+		return null;
 	}
 /*
 	@Override

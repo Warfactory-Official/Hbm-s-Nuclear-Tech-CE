@@ -2,6 +2,8 @@ package com.hbm.inventory.control_panel;
 
 import com.hbm.inventory.control_panel.nodes.Node;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class NodeElement {
 
@@ -10,6 +12,10 @@ public class NodeElement {
 	public int index;
 	public float offsetX;
 	public float offsetY;
+
+	@SideOnly(Side.CLIENT)
+	public void onClicked(SubElement subElement) {
+	}
 	
 	public NodeElement(Node parent, int idx){
 		this.parent = parent;

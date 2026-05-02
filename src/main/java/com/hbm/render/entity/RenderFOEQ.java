@@ -2,11 +2,13 @@ package com.hbm.render.entity;
 
 import com.hbm.entity.projectile.EntityBurningFOEQ;
 import com.hbm.interfaces.AutoRegister;
+import com.hbm.main.ClientProxy;
 import com.hbm.main.ResourceManager;
 import com.hbm.util.RenderUtil;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
 import org.lwjgl.opengl.GL11;
@@ -24,6 +26,9 @@ public class RenderFOEQ extends Render<EntityBurningFOEQ> {
 
     @Override
     public void doRender(EntityBurningFOEQ e, double x, double y, double z, float entityYaw, float partialTicks) {
+        if (!ClientProxy.renderingConstant) {
+            return;
+        }
         GlStateManager.pushMatrix();
         final boolean prevTex2D = RenderUtil.isTexture2DEnabled();
         final boolean prevCull = RenderUtil.isCullEnabled();
@@ -90,6 +95,10 @@ public class RenderFOEQ extends Render<EntityBurningFOEQ> {
         GlStateManager.color(prevR, prevG, prevB, prevA);
 
         GlStateManager.popMatrix();
+    }
+
+    @Override
+    public void doRenderShadowAndFire(Entity entityIn, double x, double y, double z, float yaw, float partialTicks) {
     }
 
     @Override

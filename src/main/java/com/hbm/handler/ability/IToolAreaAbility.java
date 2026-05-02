@@ -20,17 +20,17 @@ public interface IToolAreaAbility extends IBaseAbility {
     // Should call tool.breakExtraBlock on a bunch of blocks.
     // The initial block is implicitly broken, so don't call breakExtraBlock on it.
     // Returning true skips the reference block from being broken
-    public boolean onDig(int level, World world, BlockPos pos, EntityPlayer player, ItemToolAbility tool);
+    boolean onDig(int level, World world, BlockPos pos, EntityPlayer player, ItemToolAbility tool);
 
     // Whether breakExtraBlock is called at all. Currently only false for explosion
-    public default boolean allowsHarvest(int level) {
+    default boolean allowsHarvest(int level) {
         return true;
     }
 
-    public final static int SORT_ORDER_BASE = 0;
+    int SORT_ORDER_BASE = 0;
 
     // region handlers
-    public static final IToolAreaAbility NONE = new IToolAreaAbility() {
+    IToolAreaAbility NONE = new IToolAreaAbility() {
         @Override
         public String getName() {
             return "";
@@ -47,7 +47,7 @@ public interface IToolAreaAbility extends IBaseAbility {
         }
     };
 
-    public static final IToolAreaAbility RECURSION = new IToolAreaAbility() {
+    IToolAreaAbility RECURSION = new IToolAreaAbility() {
         @Override
         public String getName() {
             return "tool.ability.recursion";
@@ -79,7 +79,7 @@ public interface IToolAreaAbility extends IBaseAbility {
         // is a problem here, then it had already been one before
         // the refactor! The solution is to simply make this a local
         // of the onDig method and pass it around as a parameter.
-        private Set<ThreeInts> visited = new HashSet<>();
+        private final Set<ThreeInts> visited = new HashSet<>();
 
         @Override
         public boolean onDig(int level, World world, BlockPos pos, EntityPlayer player, ItemToolAbility tool) {
@@ -100,7 +100,7 @@ public interface IToolAreaAbility extends IBaseAbility {
             return false;
         }
 
-        private final List<ThreeInts> offsets = new ArrayList<ThreeInts>(3 * 3 * 3 - 1) {
+        private final List<ThreeInts> offsets = new ArrayList<>(3 * 3 * 3 - 1) {
             {
                 for (int dx = -1; dx <= 1; dx++) {
                     for (int dy = -1; dy <= 1; dy++) {
@@ -169,7 +169,7 @@ public interface IToolAreaAbility extends IBaseAbility {
         }
     };
 
-    public static final IToolAreaAbility HAMMER = new IToolAreaAbility() {
+    IToolAreaAbility HAMMER = new IToolAreaAbility() {
         @Override
         public String getName() {
             return "tool.ability.hammer";
@@ -219,7 +219,7 @@ public interface IToolAreaAbility extends IBaseAbility {
         }
     };
 
-    public static final IToolAreaAbility HAMMER_FLAT = new IToolAreaAbility() {
+    IToolAreaAbility HAMMER_FLAT = new IToolAreaAbility() {
         @Override
         public String getName() {
             return "tool.ability.hammer_flat";
@@ -270,8 +270,6 @@ public interface IToolAreaAbility extends IBaseAbility {
                     break;
                 case 2:
                 case 3:
-                    xRange = range;
-                    zRange = 0;
                     break;
                 case 4:
                 case 5:
@@ -320,7 +318,7 @@ public interface IToolAreaAbility extends IBaseAbility {
         }
     };
 
-    public static final IToolAreaAbility EXPLOSION = new IToolAreaAbility() {
+    IToolAreaAbility EXPLOSION = new IToolAreaAbility() {
         @Override
         public String getName() {
             return "tool.ability.explosion";
@@ -375,7 +373,7 @@ public interface IToolAreaAbility extends IBaseAbility {
     };
     // endregion handlers
 
-    static final IToolAreaAbility[] abilities = { NONE, RECURSION, HAMMER, HAMMER_FLAT, EXPLOSION };
+    IToolAreaAbility[] abilities = { NONE, RECURSION, HAMMER, HAMMER_FLAT, EXPLOSION };
 
     static IToolAreaAbility getByName(String name) {
         for(IToolAreaAbility ability : abilities) {

@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.lib.Library;
@@ -18,7 +19,13 @@ public class ContainerHadron extends Container {
 
 	private TileEntityHadron hadron;
 
-	public ContainerHadron(InventoryPlayer invPlayer, TileEntityHadron tedf) {
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(5)
+                                                                              .rule(0, 4,
+                                                                                      Predicate.not(Library::isBattery))
+                                                                              .rule(4, 5, Library::isBattery)
+                                                                              .build();
+
+    public ContainerHadron(InventoryPlayer invPlayer, TileEntityHadron tedf) {
 
 		hadron = tedf;
 
@@ -48,9 +55,7 @@ public class ContainerHadron extends Container {
 	@Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 5,
-                Predicate.not(Library::isBattery), 4,
-                Library::isBattery, 5);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
 	@Override

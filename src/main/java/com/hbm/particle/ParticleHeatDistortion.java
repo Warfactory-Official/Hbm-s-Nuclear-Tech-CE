@@ -3,20 +3,21 @@ package com.hbm.particle;
 import com.hbm.handler.HbmShaderManager2;
 import com.hbm.main.ClientProxy;
 import com.hbm.main.ResourceManager;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import com.hbm.util.BobMathUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
+
 import java.nio.FloatBuffer;
 
 @SideOnly(Side.CLIENT)
@@ -114,12 +115,12 @@ public class ParticleHeatDistortion extends Particle {
         float time = (System.currentTimeMillis() % 10000000) / 1000F;
         ResourceManager.heat_distortion.uniform1f("time", time + timeOffset);
 
-        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-        buffer.pos(-rotX - rotXY, -rotZ, -rotYZ - rotXZ).tex(1, 1).endVertex();
-        buffer.pos(-rotX + rotXY, rotZ, -rotYZ + rotXZ).tex(1, 0).endVertex();
-        buffer.pos(rotX + rotXY, rotZ, rotYZ + rotXZ).tex(0, 0).endVertex();
-        buffer.pos(rotX - rotXY, -rotZ, rotYZ - rotXZ).tex(0, 1).endVertex();
-        Tessellator.getInstance().draw();
+        NTMBufferBuilder fastBuffer = NTMImmediate.INSTANCE.beginPositionTex(GL11.GL_QUADS, 4);
+        fastBuffer.appendPositionTexUnchecked(-rotX - rotXY, -rotZ, -rotYZ - rotXZ, 1, 1);
+        fastBuffer.appendPositionTexUnchecked(-rotX + rotXY, rotZ, -rotYZ + rotXZ, 1, 0);
+        fastBuffer.appendPositionTexUnchecked(rotX + rotXY, rotZ, rotYZ + rotXZ, 0, 0);
+        fastBuffer.appendPositionTexUnchecked(rotX - rotXY, -rotZ, rotYZ - rotXZ, 0, 1);
+        NTMImmediate.INSTANCE.draw();
 
         HbmShaderManager2.releaseShader();
 

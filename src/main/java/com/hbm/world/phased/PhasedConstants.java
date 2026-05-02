@@ -65,6 +65,16 @@ final class PhasedConstants {
         public void size(int size) {
             throw new UnsupportedOperationException();
         }
+
+        @Override
+        public void addElements(int index, long[] a, int offset, int length) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void removeElements(int index, int to) {
+            throw new UnsupportedOperationException();
+        }
     }
 
     private PhasedConstants() {

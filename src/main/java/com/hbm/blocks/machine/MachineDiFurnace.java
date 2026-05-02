@@ -165,11 +165,6 @@ public class MachineDiFurnace extends BlockContainer {
 	   return state.withRotation(mirrorIn.toRotation((EnumFacing)state.getValue(FACING)));
 	}
 	
-	@Override
-	public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-		worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
-	}
-
 	public static void updateBlockState(boolean isProcessing, boolean ext, World world, BlockPos pos) {
 		IBlockState cur = world.getBlockState(pos);
 		TileEntity te = world.getTileEntity(pos);

@@ -8,8 +8,6 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.ModItems;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.item.ItemRenderBase;
-import com.hbm.render.loader.HFRWavefrontObject;
-import com.hbm.render.loader.IModelCustom;
 import com.hbm.render.util.HorsePronter;
 import com.hbm.util.EnumUtil;
 import net.minecraft.client.Minecraft;
@@ -26,9 +24,6 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister
 public class RenderPlushie extends TileEntitySpecialRenderer<TileEntityPlushie> implements IItemRendererProvider {
 
-    public static final IModelCustom yomiModel = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/trinkets/yomi.obj")).asVBO();
-    public static final IModelCustom hundunModel = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/trinkets/hundun.obj")).asVBO();
-    public static final IModelCustom dergModel = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/trinkets/derg.obj")).asVBO();
     public static final ResourceLocation yomiTex = new ResourceLocation(Tags.MODID, "textures/models/trinkets/yomi.png");
     public static final ResourceLocation numbernineTex = new ResourceLocation(Tags.MODID, "textures/models/horse/numbernine.png");
     public static final ResourceLocation hundunTex = new ResourceLocation(Tags.MODID, "textures/models/trinkets/hundun.png");
@@ -74,7 +69,7 @@ public class RenderPlushie extends TileEntitySpecialRenderer<TileEntityPlushie> 
                 break;
             case YOMI:
                 Minecraft.getMinecraft().getTextureManager().bindTexture(yomiTex);
-                yomiModel.renderAll();
+                ResourceManager.plushie_yomi.renderAll();
                 break;
             case NUMBERNINE:
                 GlStateManager.rotate(90, 0, 1, 0);
@@ -116,12 +111,12 @@ public class RenderPlushie extends TileEntitySpecialRenderer<TileEntityPlushie> 
                 break;
             case HUNDUN:
                 Minecraft.getMinecraft().getTextureManager().bindTexture(hundunTex);
-                hundunModel.renderPart("goober_posed");
+                ResourceManager.plushie_hundun.renderPart("goober_posed");
                 break;
             case DERG:
                 Minecraft.getMinecraft().getTextureManager().bindTexture(dergTex);
-                dergModel.renderPart("Derg");
-                dergModel.renderPart(squish ? "Blep" : "ColonThree");
+                ResourceManager.plushie_derg.renderPart("Derg");
+                ResourceManager.plushie_derg.renderPart(squish ? "Blep" : "ColonThree");
                 break;
         }
     }
@@ -149,7 +144,7 @@ public class RenderPlushie extends TileEntitySpecialRenderer<TileEntityPlushie> 
                 GlStateManager.rotate(180.0, 0, 1, 0);
                 GlStateManager.translate(0, 0.25, 0);
                 GlStateManager.enableCull();
-                PlushieType type = EnumUtil.grabEnumSafely(PlushieType.values(), item.getItemDamage());
+                PlushieType type = EnumUtil.grabEnumSafely(PlushieType.VALUES, item.getItemDamage());
 
                 switch (type) {
                     case NONE:

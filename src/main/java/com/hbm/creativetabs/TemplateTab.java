@@ -16,8 +16,8 @@ public class TemplateTab extends CreativeTabs {
 	@Override
     @SideOnly(Side.CLIENT)
 	public ItemStack createIcon() {
-		if(ModItems.crucible_template != null){
-			return new ItemStack(ModItems.crucible_template);
+		if(ModItems.blueprints != null){
+			return new ItemStack(ModItems.blueprints);
 		}
 		return new ItemStack(Items.IRON_PICKAXE);
 	}

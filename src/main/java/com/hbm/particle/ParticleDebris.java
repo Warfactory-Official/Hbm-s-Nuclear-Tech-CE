@@ -1,10 +1,14 @@
 package com.hbm.particle;
 
+import com.hbm.render.util.NTMImmediate;
 import com.hbm.wiaj.WorldInAJar;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.BlockRendererDispatcher;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
@@ -12,7 +16,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 import java.util.Random;
 
@@ -91,8 +95,7 @@ public class ParticleDebris extends Particle {
         float pY = (float) (this.prevPosY + (this.posY - this.prevPosY) * partialTicks - dY);
         float pZ = (float) (this.prevPosZ + (this.posZ - this.prevPosZ) * partialTicks - dZ);
 
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuffer();
+        BufferBuilder buffer = NTMImmediate.INSTANCE.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
 
         worldInAJar.lightlevel = world.getCombinedLight(new BlockPos((int) Math.floor(posX), (int) Math.floor(posY), (int) Math.floor(posZ)), 0);
         RenderHelper.disableStandardItemLighting();
@@ -108,8 +111,6 @@ public class ParticleDebris extends Particle {
 
         Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
-
-        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
 
         for (int x = 0; x < worldInAJar.sizeX; x++) {
             for (int y = 0; y < worldInAJar.sizeY; y++) {
@@ -129,7 +130,7 @@ public class ParticleDebris extends Particle {
             }
         }
 
-        tessellator.draw();
+        NTMImmediate.INSTANCE.draw();
         GlStateManager.shadeModel(GL11.GL_FLAT);
         GlStateManager.popMatrix();
     }

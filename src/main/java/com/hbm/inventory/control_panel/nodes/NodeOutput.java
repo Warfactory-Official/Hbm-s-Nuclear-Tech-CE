@@ -1,11 +1,10 @@
 package com.hbm.inventory.control_panel.nodes;
 
-import com.hbm.inventory.control_panel.DataValue;
+import com.hbm.inventory.control_panel.types.DataValue;
 import com.hbm.inventory.control_panel.IControllable;
 import com.hbm.inventory.control_panel.NodeSystem;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.List;
 import java.util.Map;
 
 public abstract class NodeOutput extends Node {
@@ -30,5 +29,5 @@ public abstract class NodeOutput extends Node {
 	 * explicit cancellation behavior such as {@link NodeCancelEvent}, and return {@code true}
 	 * for side effect or no-op outputs like variable assignment and redstone output.
 	 */
-	public abstract boolean doOutput(IControllable from, Map<String, NodeSystem> sendNodeMap, List<BlockPos> positions);
+	public abstract boolean doOutput(IControllable from, Map<String, NodeSystem> sendNodeMap, Map<String,BlockPos> links);
 }

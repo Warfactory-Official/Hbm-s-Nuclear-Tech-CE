@@ -14,6 +14,8 @@ import com.hbm.inventory.recipes.SILEXRecipes.SILEXRecipe;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.lib.DirPos;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.BufferUtil;
@@ -37,7 +39,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 
 @AutoRegister
-public class TileEntitySILEX extends TileEntityMachineBase implements ITickable, IFluidStandardReceiver, IFFtoNTMF, IGUIProvider {
+public class TileEntitySILEX extends TileEntityMachineBase implements ITickable, IFluidStandardReceiver, IFFtoNTMF, IGUIProvider, IConnectionAnchors {
 
 	public EnumWavelengths mode = EnumWavelengths.NULL;
 	public FluidTankNTM tank;
@@ -55,7 +57,7 @@ public class TileEntitySILEX extends TileEntityMachineBase implements ITickable,
 	public TileEntitySILEX() {
 		super(11, true, false);
 		//acid
-		tank = new FluidTankNTM(Fluids.PEROXIDE, 16000);
+		tank = new FluidTankNTM(Fluids.PEROXIDE, 16000).withOwner(this);
 	}
 
 
@@ -91,6 +93,15 @@ public class TileEntitySILEX extends TileEntityMachineBase implements ITickable,
 
 			this.mode = EnumWavelengths.NULL;
 		}
+	}
+
+	@Override
+	public DirPos[] getConPos() {
+		ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10).getRotation(ForgeDirection.UP);
+		return new DirPos[] {
+				new DirPos(pos.getX() + dir.offsetX * 2, pos.getY() + 1, pos.getZ() + dir.offsetZ * 2, dir),
+				new DirPos(pos.getX() - dir.offsetX * 2, pos.getY() + 1, pos.getZ() - dir.offsetZ * 2, dir.getOpposite())
+		};
 	}
 
 	@Override

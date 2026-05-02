@@ -1,9 +1,14 @@
 package com.hbm.render.model;
 
 import com.hbm.render.loader.ModelRendererObj;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.entity.Render;
+import net.minecraft.client.renderer.entity.RenderLivingBase;
+import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.entity.monster.EntityZombie;
@@ -47,6 +52,24 @@ public abstract class ModelArmorBase extends ModelBiped {
         dest.rotationPointZ = source.rotationPointZ;
     }
 
+    private void copyPropertiesFromBiped(ModelBiped modelBiped) {
+        copyModelAngles(modelBiped.bipedHead, this.head);
+        copyModelAngles(modelBiped.bipedBody, this.body);
+        copyModelAngles(modelBiped.bipedLeftArm, this.leftArm);
+        copyModelAngles(modelBiped.bipedRightArm, this.rightArm);
+        copyModelAngles(modelBiped.bipedLeftLeg, this.leftLeg);
+        copyModelAngles(modelBiped.bipedRightLeg, this.rightLeg);
+        copyModelAngles(modelBiped.bipedLeftLeg, this.leftFoot);
+        copyModelAngles(modelBiped.bipedRightLeg, this.rightFoot);
+
+        this.swingProgress = modelBiped.swingProgress;
+        this.isSneak = modelBiped.isSneak;
+        this.isRiding = modelBiped.isRiding;
+        this.isChild = modelBiped.isChild;
+        this.leftArmPose = modelBiped.leftArmPose;
+        this.rightArmPose = modelBiped.rightArmPose;
+    }
+
     @Override
     public void render(Entity entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch,
                        float scale) {
@@ -68,38 +91,53 @@ public abstract class ModelArmorBase extends ModelBiped {
 
     @Override
     public void setRotationAngles(float walkCycle, float walkAmplitude, float idleCycle, float headYaw, float headPitch, float scale, Entity entity) {
-        if (entity instanceof EntityArmorStand armorStand) {
-            applyArmorStand(armorStand);
-        } else {
-            super.setRotationAngles(walkCycle, walkAmplitude, idleCycle, headYaw, headPitch, scale, entity);
+        boolean copied = false;
+        Render render = Minecraft.getMinecraft().getRenderManager().getEntityRenderObject(entity);
 
-            this.isSneak = entity instanceof EntityPlayer && entity.isSneaking();
-
-            if (entity instanceof EntityZombie zombie) {
-                boolean armsRaised = zombie.isArmsRaised();
-                float armYaw = 8F * DEG_TO_RAD;
-                this.bipedLeftArm.rotateAngleY = armYaw;
-                this.bipedRightArm.rotateAngleY = -armYaw;
-
-                if (armsRaised) {
-                    float raisedAngle = -120F * DEG_TO_RAD;
-                    this.bipedLeftArm.rotateAngleX = raisedAngle;
-                    this.bipedRightArm.rotateAngleX = raisedAngle;
-                }
+        if(render instanceof RenderPlayer) {
+            this.copyPropertiesFromBiped(((RenderPlayer) render).getMainModel());
+            copied = true;
+        } else if(render instanceof RenderLivingBase) {
+            ModelBase mainModel = ((RenderLivingBase<?>) render).getMainModel();
+            if(mainModel instanceof ModelBiped) {
+                this.copyPropertiesFromBiped((ModelBiped) mainModel);
+                copied = true;
             }
         }
 
-        // Copy angles to actual renderable parts
-        copyModelAngles(this.bipedHead, this.head);
-        copyModelAngles(this.bipedBody, this.body);
-        copyModelAngles(this.bipedLeftArm, this.leftArm);
-        copyModelAngles(this.bipedRightArm, this.rightArm);
-        copyModelAngles(this.bipedLeftLeg, this.leftLeg);
-        copyModelAngles(this.bipedRightLeg, this.rightLeg);
-        copyModelAngles(this.bipedLeftLeg, this.leftFoot);
-        copyModelAngles(this.bipedRightLeg, this.rightFoot);
+        if(!copied) {
+            if(entity instanceof EntityArmorStand) {
+                applyArmorStand((EntityArmorStand) entity);
+            } else {
+                super.setRotationAngles(walkCycle, walkAmplitude, idleCycle, headYaw, headPitch, scale, entity);
 
-        if (this.isSneak) {
+                this.isSneak = entity instanceof EntityPlayer && entity.isSneaking();
+
+                if(entity instanceof EntityZombie zombie) {
+                    boolean armsRaised = zombie.isArmsRaised();
+                    float armYaw = 8F * DEG_TO_RAD;
+                    this.bipedLeftArm.rotateAngleY = armYaw;
+                    this.bipedRightArm.rotateAngleY = -armYaw;
+
+                    if(armsRaised) {
+                        float raisedAngle = -120F * DEG_TO_RAD;
+                        this.bipedLeftArm.rotateAngleX = raisedAngle;
+                        this.bipedRightArm.rotateAngleX = raisedAngle;
+                    }
+                }
+
+                copyModelAngles(this.bipedHead, this.head);
+                copyModelAngles(this.bipedBody, this.body);
+                copyModelAngles(this.bipedLeftArm, this.leftArm);
+                copyModelAngles(this.bipedRightArm, this.rightArm);
+                copyModelAngles(this.bipedLeftLeg, this.leftLeg);
+                copyModelAngles(this.bipedRightLeg, this.rightLeg);
+                copyModelAngles(this.bipedLeftLeg, this.leftFoot);
+                copyModelAngles(this.bipedRightLeg, this.rightFoot);
+            }
+        }
+
+        if(this.isSneak) {
             applySneakOffset();
         } else {
             resetOffsets();

@@ -20,6 +20,7 @@ import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.modules.machine.ModuleMachineChemplant;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -46,7 +47,7 @@ import net.minecraftforge.items.ItemStackHandler;
 import java.util.HashMap;
 import java.util.List;
 @AutoRegister
-public class TileEntityMachineChemicalPlant extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, IControlReceiver, IGUIProvider {
+public class TileEntityMachineChemicalPlant extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, IControlReceiver, IGUIProvider, IConnectionAnchors {
 
     public FluidTankNTM[] inputTanks;
     public FluidTankNTM[] outputTanks;
@@ -84,8 +85,8 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase implem
         this.inputTanks = new FluidTankNTM[3];
         this.outputTanks = new FluidTankNTM[3];
         for(int i = 0; i < 3; i++) {
-            this.inputTanks[i] = new FluidTankNTM(Fluids.NONE, 24_000);
-            this.outputTanks[i] = new FluidTankNTM(Fluids.NONE, 24_000);
+            this.inputTanks[i] = new FluidTankNTM(Fluids.NONE, 24_000).withOwner(this);
+            this.outputTanks[i] = new FluidTankNTM(Fluids.NONE, 24_000).withOwner(this);
         }
 
         this.chemplantModule = new ModuleMachineChemplant(0, this, inventory)

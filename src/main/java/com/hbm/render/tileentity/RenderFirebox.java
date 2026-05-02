@@ -16,11 +16,6 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister
 public class RenderFirebox extends TileEntitySpecialRenderer<TileEntityHeaterFirebox> implements IItemRendererProvider {
     @Override
-    public boolean isGlobalRenderer(TileEntityHeaterFirebox te) {
-        return true;
-    }
-
-    @Override
     public void render(TileEntityHeaterFirebox firebox, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
         boolean prevLighting = RenderUtil.isLightingEnabled();
         boolean prevCull = RenderUtil.isCullEnabled();

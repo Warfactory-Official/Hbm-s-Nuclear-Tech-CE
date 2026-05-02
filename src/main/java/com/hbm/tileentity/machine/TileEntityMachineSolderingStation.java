@@ -21,6 +21,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
@@ -58,7 +59,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
         IGUIProvider,
         IUpgradeInfoProvider,
         IFluidCopiable,
-        ITickable {
+        ITickable, IConnectionAnchors {
     private static final int invSize = 11;
     private final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
     public long power;
@@ -104,7 +105,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
                         }
                     }
                 };
-        this.tank = new FluidTankNTM(Fluids.NONE, 8_000);
+        this.tank = new FluidTankNTM(Fluids.NONE, 8_000).withOwner(this);
     }
 
     @Override
@@ -310,7 +311,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
         return new int[]{0, 1, 2, 3, 4, 5, 6};
     }
 
-    protected DirPos[] getConPos() {
+    public DirPos[] getConPos() {
 
         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);

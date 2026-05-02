@@ -1,7 +1,7 @@
 package com.hbm.inventory.control_panel.nodes;
 
-import com.hbm.inventory.control_panel.DataValue;
-import com.hbm.inventory.control_panel.DataValueFloat;
+import com.hbm.inventory.control_panel.types.DataValue;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
 import com.hbm.inventory.control_panel.IControllable;
 import com.hbm.inventory.control_panel.NodeConnection;
 import com.hbm.inventory.control_panel.NodeDropdown;
@@ -12,7 +12,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.List;
 import java.util.Map;
 
 public class NodeRedstoneOutput extends NodeOutput {
@@ -71,7 +70,7 @@ public class NodeRedstoneOutput extends NodeOutput {
 	}
 
 	@Override
-	public boolean doOutput(IControllable from, Map<String, NodeSystem> sendNodeMap, List<BlockPos> positions) {
+	public boolean doOutput(IControllable from, Map<String, NodeSystem> sendNodeMap, Map<String,BlockPos> positions) {
 		if(from instanceof TileEntityControlPanel panel) {
 			int strength = Math.round(inputs.get(0).evaluate().getNumber());
 			if(mode == OutputMode.WEAK) {

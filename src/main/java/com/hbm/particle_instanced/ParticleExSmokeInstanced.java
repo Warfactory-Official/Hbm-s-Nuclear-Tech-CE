@@ -62,34 +62,14 @@ public class ParticleExSmokeInstanced extends ParticleInstanced {
 	
 	@Override
 	public void addDataToBuffer(ByteBuffer buf, float partialTicks) {
-		float x = (float) ((this.prevPosX + (this.posX - this.prevPosX) * (double) partialTicks - interpPosX));
-		float y = (float) ((this.prevPosY + (this.posY - this.prevPosY) * (double) partialTicks - interpPosY));
-		float z = (float) ((this.prevPosZ + (this.posZ - this.prevPosZ) * (double) partialTicks - interpPosZ));
+		float x = getInterpX(partialTicks);
+		float y = getInterpY(partialTicks);
+		float z = getInterpZ(partialTicks);
 		
 		for(int ii = 0; ii < 6; ii ++){
-			buf.putFloat(x+vals[ii*5]);
-			buf.putFloat(y+vals[ii*5+1]);
-			buf.putFloat(z+vals[ii*5+2]);
-			
-			buf.putFloat(vals[ii*5+3]);
-			
-			buf.putFloat(this.particleTexture.getMinU());
-			buf.putFloat(this.particleTexture.getMinV());
-			buf.putFloat(this.particleTexture.getMaxU()-this.particleTexture.getMinU());
-			buf.putFloat(this.particleTexture.getMaxV()-this.particleTexture.getMinV());
-			
 			this.particleRed = this.particleGreen = this.particleBlue = vals[ii*5+4];
-			buf.put((byte) (this.particleRed*255));
-			buf.put((byte) (this.particleGreen*255));
-			buf.put((byte) (this.particleBlue*255));
-			buf.put((byte) (this.particleAlpha*255));
-			
-			//int i = this.getBrightnessForRender(partialTicks);
-			//int j = i >> 16 & 65535;
-			//int k = i & 65535;
-			//Bruh I have no clue how these lightmap coords work. They don't seem to be like regular uvs.
-			buf.put((byte) 240);
-			buf.put((byte) 240);
+			writeFullbrightBillboard(buf, x + vals[ii * 5], y + vals[ii * 5 + 1], z + vals[ii * 5 + 2], vals[ii * 5 + 3],
+					this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha);
 		}
 	}
 	

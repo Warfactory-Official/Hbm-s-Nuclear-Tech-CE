@@ -1,15 +1,10 @@
 package com.hbm.inventory.control_panel.modular.categories;
 
-import com.hbm.inventory.control_panel.DataValue;
-import com.hbm.inventory.control_panel.DataValueFloat;
 import com.hbm.inventory.control_panel.ItemList;
 import com.hbm.inventory.control_panel.SubElementNodeEditor;
 import com.hbm.inventory.control_panel.modular.INodeMenuCreator;
 import com.hbm.inventory.control_panel.nodes.*;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class NCStockMath implements INodeMenuCreator {
 	@Override

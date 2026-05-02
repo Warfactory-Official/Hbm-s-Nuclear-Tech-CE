@@ -4,6 +4,7 @@ import com.hbm.inventory.control_panel.*;
 import com.hbm.inventory.control_panel.nodes.NodeBoolean;
 import com.hbm.inventory.control_panel.nodes.NodeGetVar;
 import com.hbm.inventory.control_panel.nodes.NodeSetVar;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.loader.IModelCustom;
 import net.minecraft.client.Minecraft;

@@ -1,0 +1,22 @@
+{
+  "required": true,
+  "package": "com.hbm.mixin",
+  "refmap": "mixins.hbm.refmap.json",
+  "compatibilityLevel": "JAVA_8",
+  "target": "@env(DEFAULT)",
+  "client": [
+    "MixinCompiledChunk",
+    "MixinSetVisibility",
+    "MixinRenderChunk",
+    "MixinRenderGlobal",
+    "MixinTileEntity",
+    "MixinRenderPlayerManly"
+  ],
+  "mixins": [
+    "MixinFMLProxyPacket",
+    "MixinNetworkDispatcher"
+  ],
+  "server": [],
+  "setSourceFile": true,
+  "minVersion": "0.8.7"
+}

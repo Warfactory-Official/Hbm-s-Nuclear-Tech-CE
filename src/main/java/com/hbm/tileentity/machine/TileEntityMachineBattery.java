@@ -65,8 +65,16 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements I
 
     public byte lastRedstone = 0;
 
+    public boolean isIndirectlyPowered;
+
     public TileEntityMachineBattery() {
         super(4);
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if(!world.isRemote) isIndirectlyPowered = world.isBlockPowered(pos);
     }
 
     public static ForgeDirection[] getSendDirections() {
@@ -299,8 +307,7 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements I
 
     public short getRelevantMode(boolean useCache) {
         if (useCache) return this.modeCache;
-        boolean isPowered = world.isBlockPowered(this.pos);
-        this.modeCache = isPowered ? this.redHigh : this.redLow;
+        this.modeCache = isIndirectlyPowered ? this.redHigh : this.redLow;
         return this.modeCache;
     }
 

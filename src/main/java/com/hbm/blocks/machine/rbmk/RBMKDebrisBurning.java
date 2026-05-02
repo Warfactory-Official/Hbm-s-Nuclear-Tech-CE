@@ -13,6 +13,7 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
 
@@ -29,7 +30,7 @@ public class RBMKDebrisBurning extends RBMKDebris {
 	}
 
 	@Override
-	public void updateTick(World world, BlockPos pos, IBlockState state, Random rand){
+	public void updateTick(World world, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull Random rand){
 		if(!world.isRemote) {
 			
 			if(rand.nextInt(5) == 0) {
@@ -57,7 +58,7 @@ public class RBMKDebrisBurning extends RBMKDebris {
 	}
 
 	@Override
-	public void onBlockAdded(World world, BlockPos pos, IBlockState state){
+	public void onBlockAdded(@NotNull World world, @NotNull BlockPos pos, @NotNull IBlockState state){
 		super.onBlockAdded(world, pos, state);
 
 		if(!world.isRemote) {

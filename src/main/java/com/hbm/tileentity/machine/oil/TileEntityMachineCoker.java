@@ -13,6 +13,7 @@ import com.hbm.inventory.recipes.CokerRecipes;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -33,7 +34,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
-public class TileEntityMachineCoker extends TileEntityMachineBase implements IFluidStandardTransceiver, IGUIProvider, IFluidCopiable, ITickable {
+public class TileEntityMachineCoker extends TileEntityMachineBase implements IFluidStandardTransceiver, IGUIProvider, IFluidCopiable, ITickable, IConnectionAnchors {
 
     public boolean wasOn;
     public int progress;
@@ -48,8 +49,8 @@ public class TileEntityMachineCoker extends TileEntityMachineBase implements IFl
     public TileEntityMachineCoker() {
         super(2, true, false);
         tanks = new FluidTankNTM[2];
-        tanks[0] = new FluidTankNTM(Fluids.HEAVYOIL, 16_000);
-        tanks[1] = new FluidTankNTM(Fluids.OIL_COKER, 8_000);
+        tanks[0] = new FluidTankNTM(Fluids.HEAVYOIL, 16_000).withOwner(this);
+        tanks[1] = new FluidTankNTM(Fluids.OIL_COKER, 8_000).withOwner(this);
     }
 
     @Override

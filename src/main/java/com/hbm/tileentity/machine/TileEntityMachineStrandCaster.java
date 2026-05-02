@@ -24,8 +24,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -53,23 +51,8 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase 
 
   public TileEntityMachineStrandCaster() {
     super(invSize);
-    water = new FluidTankNTM(Fluids.WATER, 64_000);
-    steam = new FluidTankNTM(Fluids.SPENTSTEAM, 64_000);
-  }
-
-  @Override
-  public NBTTagCompound getUpdateTag() {
-    return this.writeToNBT(super.getUpdateTag());
-  }
-
-  @Override
-  public SPacketUpdateTileEntity getUpdatePacket() {
-    return new SPacketUpdateTileEntity(this.pos, 1, this.getUpdateTag());
-  }
-
-  @Override
-  public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-    this.readFromNBT(pkt.getNbtCompound());
+    water = new FluidTankNTM(Fluids.WATER, 64_000).withOwner(this);
+    steam = new FluidTankNTM(Fluids.SPENTSTEAM, 64_000).withOwner(this);
   }
 
   @Override

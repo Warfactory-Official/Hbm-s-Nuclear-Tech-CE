@@ -139,9 +139,13 @@ public class LaunchTable extends BlockContainer implements IMultiBlock, IBomb {
 	}
 	
 	@Override
+	public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
+		return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
+	}
+
+	@Override
 	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-		EnumFacing e = placer.getHorizontalFacing().getOpposite();
-		world.setBlockState(pos, state.withProperty(FACING, e));
+		EnumFacing e = state.getValue(FACING);
 		
 		for(int k = -4; k <= 4; k++)
 			for(int l = -4; l <= 4; l++)

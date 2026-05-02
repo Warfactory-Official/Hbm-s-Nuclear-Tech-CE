@@ -6,7 +6,7 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.util.EnumFacing;
-import net.minecraftforge.client.model.pipeline.UnpackedBakedQuad;
+import net.minecraftforge.client.model.pipeline.LightUtil;
 import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -145,6 +145,11 @@ public abstract class AbstractBakedModel implements IBakedModel {
 
     protected static void addLegacyBox(List<BakedQuad> quads, float minX, float minY, float minZ, float maxX, float maxY, float maxZ,
                                       TextureAtlasSprite[] sprites, boolean[] visibleFaces, int[] rotations) {
+        addLegacyBox(quads, minX, minY, minZ, maxX, maxY, maxZ, sprites, visibleFaces, rotations, -1);
+    }
+
+    protected static void addLegacyBox(List<BakedQuad> quads, float minX, float minY, float minZ, float maxX, float maxY, float maxZ,
+                                      TextureAtlasSprite[] sprites, boolean[] visibleFaces, int[] rotations, int tintIndex) {
         if (minX == maxX || minY == maxY || minZ == maxZ) return;
 
         for (EnumFacing face : EnumFacing.VALUES) {
@@ -152,12 +157,17 @@ public abstract class AbstractBakedModel implements IBakedModel {
             if (!visibleFaces[index]) continue;
             TextureAtlasSprite sprite = sprites[index];
             if (sprite == null) continue;
-            quads.add(buildLegacyQuad(face, minX, minY, minZ, maxX, maxY, maxZ, sprite, rotations[index]));
+            quads.add(buildLegacyQuad(face, minX, minY, minZ, maxX, maxY, maxZ, sprite, rotations[index], tintIndex));
         }
     }
 
     protected static BakedQuad buildLegacyQuad(EnumFacing face, float minX, float minY, float minZ, float maxX, float maxY, float maxZ,
                                               TextureAtlasSprite sprite, int rotation) {
+        return buildLegacyQuad(face, minX, minY, minZ, maxX, maxY, maxZ, sprite, rotation, -1);
+    }
+
+    protected static BakedQuad buildLegacyQuad(EnumFacing face, float minX, float minY, float minZ, float maxX, float maxY, float maxZ,
+                                              TextureAtlasSprite sprite, int rotation, int tintIndex) {
         float uMin;
         float uMax;
         float vMin;
@@ -452,45 +462,55 @@ public abstract class AbstractBakedModel implements IBakedModel {
                 break;
         }
 
-        UnpackedBakedQuad.Builder builder = new UnpackedBakedQuad.Builder(LEGACY_FORMAT);
-        builder.setQuadOrientation(face);
-        builder.setTexture(sprite);
-        builder.setApplyDiffuseLighting(true);
-
+        int[] vertexData = new int[LEGACY_FORMAT.getIntegerSize() * 4];
+        float[] scratch = new float[4];
         Vector3f normal = new Vector3f((float) face.getXOffset(), (float) face.getYOffset(), (float) face.getZOffset());
         for (int i = 0; i < 4; i++) {
-            putLegacyVertex(builder, px[i] / 16.0F, py[i] / 16.0F, pz[i] / 16.0F, uu[i], vv[i], normal, sprite);
+            putLegacyVertex(vertexData, i, px[i] / 16.0F, py[i] / 16.0F, pz[i] / 16.0F, uu[i], vv[i], normal, sprite, scratch);
         }
 
-        return builder.build();
+        return new BakedQuad(vertexData, tintIndex, face, sprite, true, LEGACY_FORMAT);
     }
 
-    private static void putLegacyVertex(UnpackedBakedQuad.Builder builder, float x, float y, float z, float u16, float v16,
-                                 Vector3f normal, TextureAtlasSprite sprite) {
+    private static void putLegacyVertex(int[] vertexData, int vertexIndex, float x, float y, float z, float u16, float v16,
+                                 Vector3f normal, TextureAtlasSprite sprite, float[] scratch) {
         for (int elementIndex = 0; elementIndex < LEGACY_FORMAT.getElementCount(); elementIndex++) {
             VertexFormatElement element = LEGACY_FORMAT.getElement(elementIndex);
             switch (element.getUsage()) {
                 case POSITION:
-                    builder.put(elementIndex, x, y, z);
+                    scratch[0] = x;
+                    scratch[1] = y;
+                    scratch[2] = z;
+                    LightUtil.pack(scratch, vertexData, LEGACY_FORMAT, vertexIndex, elementIndex);
                     break;
                 case COLOR:
-                    builder.put(elementIndex, 1.0F, 1.0F, 1.0F, 1.0F);
+                    scratch[0] = 1.0F;
+                    scratch[1] = 1.0F;
+                    scratch[2] = 1.0F;
+                    scratch[3] = 1.0F;
+                    LightUtil.pack(scratch, vertexData, LEGACY_FORMAT, vertexIndex, elementIndex);
                     break;
                 case UV:
                     if (element.getIndex() == 0) {
-                        builder.put(elementIndex, sprite.getInterpolatedU(u16), sprite.getInterpolatedV(v16));
+                        scratch[0] = sprite.getInterpolatedU(u16);
+                        scratch[1] = sprite.getInterpolatedV(v16);
                     } else {
-                        builder.put(elementIndex, 0.0F, 0.0F);
+                        scratch[0] = 0.0F;
+                        scratch[1] = 0.0F;
                     }
+                    LightUtil.pack(scratch, vertexData, LEGACY_FORMAT, vertexIndex, elementIndex);
                     break;
                 case NORMAL:
-                    builder.put(elementIndex, normal.x, normal.y, normal.z);
+                    scratch[0] = normal.x;
+                    scratch[1] = normal.y;
+                    scratch[2] = normal.z;
+                    LightUtil.pack(scratch, vertexData, LEGACY_FORMAT, vertexIndex, elementIndex);
                     break;
                 case PADDING:
-                    builder.put(elementIndex, 0.0F);
+                    scratch[0] = 0.0F;
+                    LightUtil.pack(scratch, vertexData, LEGACY_FORMAT, vertexIndex, elementIndex);
                     break;
                 default:
-                    builder.put(elementIndex);
                     break;
             }
         }

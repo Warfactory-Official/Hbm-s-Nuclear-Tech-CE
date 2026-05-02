@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.tileentity.machine.TileEntityMachineRadGen;
 import com.hbm.util.InventoryUtil;
@@ -12,10 +13,14 @@ import net.minecraftforge.items.SlotItemHandler;
 import org.jetbrains.annotations.NotNull;
 
 public class ContainerMachineRadGen extends Container {
-	
+
 	private TileEntityMachineRadGen radGen;
-	
-	public ContainerMachineRadGen(InventoryPlayer invPlayer, TileEntityMachineRadGen tedf) {
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(24)
+                                                                              .genericMachineRange(0)
+                                                                              .build();
+
+    public ContainerMachineRadGen(InventoryPlayer invPlayer, TileEntityMachineRadGen tedf) {
 		radGen = tedf;
 
 		for(int i = 0; i < 4; i++) {
@@ -39,10 +44,10 @@ public class ContainerMachineRadGen extends Container {
 			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 160));
 		}
 	}
-	
-	@Override
+
+    @Override
     public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 24);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
 	@Override

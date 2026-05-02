@@ -25,6 +25,7 @@ import com.hbm.main.MainRegistry;
 import com.hbm.packet.threading.ThreadedPacket;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -58,7 +59,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @AutoRegister
-public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IControlReceiver, IGUIProvider, IUpgradeInfoProvider {
+public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IControlReceiver, IGUIProvider, IUpgradeInfoProvider, IConnectionAnchors {
 
     public long power;
     public static final long maxPower = 2_500_000;
@@ -484,7 +485,7 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase impl
         return amount;
     }
 
-    protected DirPos[] getConPos() {
+    public DirPos[] getConPos() {
         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
 

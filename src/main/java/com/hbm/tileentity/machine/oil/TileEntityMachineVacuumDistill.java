@@ -16,6 +16,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IPersistentNBT;
@@ -35,7 +36,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
-public class TileEntityMachineVacuumDistill extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiver, IPersistentNBT, IGUIProvider, IFluidCopiable {
+public class TileEntityMachineVacuumDistill extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiver, IPersistentNBT, IGUIProvider, IFluidCopiable, IConnectionAnchors {
 
     public long power;
     public static final long maxPower = 1_000_000;
@@ -50,11 +51,11 @@ public class TileEntityMachineVacuumDistill extends TileEntityMachineBase implem
         super(10, true, true);
 
         this.tanks = new FluidTankNTM[5];
-        this.tanks[0] = new FluidTankNTM(Fluids.OIL, 64_000).withPressure(2);
-        this.tanks[1] = new FluidTankNTM(Fluids.HEAVYOIL_VACUUM, 24_000);
-        this.tanks[2] = new FluidTankNTM(Fluids.REFORMATE, 24_000);
-        this.tanks[3] = new FluidTankNTM(Fluids.LIGHTOIL_VACUUM, 24_000);
-        this.tanks[4] = new FluidTankNTM(Fluids.SOURGAS, 24_000);
+        this.tanks[0] = new FluidTankNTM(Fluids.OIL, 64_000).withOwner(this).withPressure(2);
+        this.tanks[1] = new FluidTankNTM(Fluids.HEAVYOIL_VACUUM, 24_000).withOwner(this);
+        this.tanks[2] = new FluidTankNTM(Fluids.REFORMATE, 24_000).withOwner(this);
+        this.tanks[3] = new FluidTankNTM(Fluids.LIGHTOIL_VACUUM, 24_000).withOwner(this);
+        this.tanks[4] = new FluidTankNTM(Fluids.SOURGAS, 24_000).withOwner(this);
     }
 
     @Override

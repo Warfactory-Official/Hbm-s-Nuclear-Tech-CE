@@ -3,16 +3,18 @@ package com.hbm.config;
 import com.google.common.base.Optional;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.BlockGlyphid;
 import com.hbm.blocks.generic.BlockGlyphidSpawner;
 import com.hbm.inventory.RecipesCommon;
 import com.hbm.main.MainRegistry;
+import com.hbm.util.ReferenceIntTuple;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRotatedPillar;
 import net.minecraft.block.BlockSand;
@@ -22,8 +24,8 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Tuple;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.oredict.OreDictionary;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,6 +40,7 @@ public class FalloutConfigJSON {
     public static final List<FalloutEntry> entries = new ArrayList<>();
     public static final Gson gson = new Gson();
     public static final HashBiMap<String, Material> matNames = HashBiMap.create();
+    private static volatile boolean anyOreDictMatchers = false;
 
     static {
         matNames.put("grass", Material.GRASS);
@@ -93,6 +96,8 @@ public class FalloutConfigJSON {
                 entries.addAll(conf);
             }
         }
+
+        refreshLookupFlags();
     }
 
     @SuppressWarnings({"deprecation", "ObjectAllocationInLoop"})
@@ -420,14 +425,47 @@ public class FalloutConfigJSON {
         return null;
     }
 
+    private static void refreshLookupFlags() {
+        anyOreDictMatchers = false;
+        for (FalloutEntry entry : entries) {
+            if (entry.usesOreDict()) {
+                anyOreDictMatchers = true;
+                return;
+            }
+        }
+    }
+
+    public static boolean hasOreDictMatchers() {
+        return anyOreDictMatchers;
+    }
+
+    public static final class LookupResult {
+        public static final int[] NO_ORE_IDS = new int[0];
+
+        public final Block block;
+        public final Material material;
+        public final boolean opaque;
+        public final int originalMeta;
+        public int[] oreIds;
+
+        public LookupResult(IBlockState state) {
+            this.block = state.getBlock();
+            this.material = state.getMaterial();
+            this.opaque = state.isOpaqueCube();
+            this.originalMeta = block.getMetaFromState(state);
+        }
+    }
+
     public static class FalloutEntry implements Cloneable {
         private IBlockState blockState = null;
         private Material matchesMaterial = null;
         private boolean matchState = true;
         private boolean matchesOpaque = false;
-        private IProperty<?>[] preservedProperties = null;
-        private List<Tuple<IBlockState, Integer>> primaryBlocks = Collections.emptyList();
-        private List<Tuple<IBlockState, Integer>> secondaryBlocks = Collections.emptyList();
+        private String[] preservedProperties = null;
+        private String[] matchingOreDict = null;
+        private int[] matchingOreIds = null;
+        private List<ReferenceIntTuple<IBlockState>> primaryBlocks = Collections.emptyList();
+        private List<ReferenceIntTuple<IBlockState>> secondaryBlocks = Collections.emptyList();
 
         private double primaryChance = 1.0D;
         private double minDist = 0.0D;
@@ -486,19 +524,23 @@ public class FalloutConfigJSON {
                 Material m = matNames.get(key);
                 if (m != null) b.matchingMaterial(m);
             }
+            if (obj.has("matchesOreDict")) {
+                String[] oreNames = readStringArray(obj.get("matchesOreDict"));
+                if (oreNames != null && oreNames.length > 0) b.matchingOreDict(oreNames);
+            }
             if (obj.has("restrictDepth")) b.solid(obj.get("restrictDepth").getAsBoolean());
-            if (obj.has("preserveState") && b.blockState != null) {
-                IProperty<?>[] props = readPreserveStateArray(b.blockState.getBlock(), obj.get("preserveState"));
-                if (props != null && props.length > 0) b.preserve(props);
+            if (obj.has("preserveState")) {
+                String[] props = readStringArray(obj.get("preserveState"));
+                if (props != null && props.length > 0) b.preserveNames(props);
             }
 
             if (obj.has("primarySubstitution")) {
-                List<Tuple<IBlockState, Integer>> p = readMetaArray(obj.get("primarySubstitution"));
-                if (p != null) for (Tuple<IBlockState, Integer> t : p) b.addPrimary(t.getFirst(), t.getSecond());
+                List<ReferenceIntTuple<IBlockState>> p = readMetaArray(obj.get("primarySubstitution"));
+                if (p != null) for (ReferenceIntTuple<IBlockState> t : p) b.addPrimary(t.getReference(), t.getInt());
             }
             if (obj.has("secondarySubstitutions")) {
-                List<Tuple<IBlockState, Integer>> s = readMetaArray(obj.get("secondarySubstitutions"));
-                if (s != null) for (Tuple<IBlockState, Integer> t : s) b.addSecondary(t.getFirst(), t.getSecond());
+                List<ReferenceIntTuple<IBlockState>> s = readMetaArray(obj.get("secondarySubstitutions"));
+                if (s != null) for (ReferenceIntTuple<IBlockState> t : s) b.addSecondary(t.getReference(), t.getInt());
             }
 
             if (obj.has("chance")) b.primaryChance(obj.get("chance").getAsDouble());
@@ -509,27 +551,35 @@ public class FalloutConfigJSON {
             return b.build();
         }
 
-        private static IProperty<?>[] readPreserveStateArray(Block block, JsonElement element) {
+        private static String[] readStringArray(JsonElement element) {
+            if (element == null || element.isJsonNull()) return null;
+            if (element.isJsonPrimitive()) {
+                return new String[] {normalizeNonEmptyString(element.getAsString(), "value")};
+            }
             if (!element.isJsonArray()) return null;
 
             JsonArray array = element.getAsJsonArray();
-            List<IProperty<?>> props = new ArrayList<>(array.size());
-
+            List<String> values = new ArrayList<>(array.size());
             for (int i = 0; i < array.size(); i++) {
-                String rawProperty = array.get(i).getAsString();
-                IProperty<?> property = getPropertyByName(block, rawProperty);
-                if (property != null && !props.contains(property)) {
-                    props.add(property);
-                }
+                String value = normalizeNonEmptyString(array.get(i).getAsString(), "value");
+                if (!values.contains(value)) values.add(value);
             }
-            return props.isEmpty() ? null : props.toArray(new IProperty<?>[0]);
+            return values.isEmpty() ? null : values.toArray(new String[0]);
         }
 
-        private static void writePreserveStateArray(JsonWriter writer, IProperty<?>[] properties) throws IOException {
+        private static String normalizeNonEmptyString(String raw, String kind) {
+            String normalized = raw == null ? "" : raw.trim();
+            if (normalized.isEmpty()) {
+                throw new IllegalArgumentException("Fallout config " + kind + " must not be blank");
+            }
+            return normalized;
+        }
+
+        private static void writeStringArray(JsonWriter writer, String[] values) throws IOException {
             writer.beginArray();
-            for (IProperty<?> p : properties) {
-                if (p == null) continue;
-                writer.value(p.getName());
+            for (String value : values) {
+                if (value == null || value.isEmpty()) continue;
+                writer.value(value);
             }
             writer.endArray();
         }
@@ -543,24 +593,24 @@ public class FalloutConfigJSON {
             return null;
         }
 
-        private static void writeStateArray(JsonWriter writer, List<Tuple<IBlockState, Integer>> array) throws IOException {
+        private static void writeStateArray(JsonWriter writer, List<ReferenceIntTuple<IBlockState>> array) throws IOException {
             writer.beginArray();
             writer.setIndent("");
-            for (Tuple<IBlockState, Integer> state : array) {
+            for (ReferenceIntTuple<IBlockState> state : array) {
                 writer.beginArray();
-                writer.value(stateToString(state.getFirst()));
-                writer.value(state.getSecond());
+                writer.value(stateToString(state.getReference()));
+                writer.value(state.getInt());
                 writer.endArray();
             }
             writer.endArray();
             writer.setIndent("  ");
         }
 
-        private static List<Tuple<IBlockState, Integer>> readMetaArray(JsonElement jsonElement) {
+        private static List<ReferenceIntTuple<IBlockState>> readMetaArray(JsonElement jsonElement) {
             if (!jsonElement.isJsonArray()) return null;
 
             JsonArray array = jsonElement.getAsJsonArray();
-            List<Tuple<IBlockState, Integer>> out = new ArrayList<>(array.size());
+            List<ReferenceIntTuple<IBlockState>> out = new ArrayList<>(array.size());
 
             for (int i = 0; i < array.size(); i++) {
                 JsonElement metaBlock = array.get(i);
@@ -568,7 +618,7 @@ public class FalloutConfigJSON {
                     throw new IllegalStateException("Could not read meta block " + metaBlock);
                 }
                 JsonArray mBArray = metaBlock.getAsJsonArray();
-                out.add(new Tuple<>(parseBlockState(mBArray.get(0).getAsString()), mBArray.get(1).getAsInt()));
+                out.add(new ReferenceIntTuple<>(parseBlockState(mBArray.get(0).getAsString()), mBArray.get(1).getAsInt()));
             }
             return out;
         }
@@ -678,22 +728,58 @@ public class FalloutConfigJSON {
             return null;
         }
 
-        private static RecipesCommon.MetaBlock chooseRandomOutcome(List<Tuple<IBlockState, Integer>> blocks, Random random) {
+        private static String[] propertyNames(IProperty<?>... properties) {
+            if (properties == null || properties.length == 0) return null;
+            List<String> names = new ArrayList<>(properties.length);
+            for (IProperty<?> property : properties) {
+                if (property == null) continue;
+                String name = property.getName();
+                if (!names.contains(name)) names.add(name);
+            }
+            return names.isEmpty() ? null : names.toArray(new String[0]);
+        }
+
+        private static int[] resolveOreDictIds(String[] oreNames) {
+            if (oreNames == null || oreNames.length == 0) return null;
+            IntOpenHashSet ids = new IntOpenHashSet(oreNames.length);
+            for (String oreName : oreNames) {
+                String normalized = normalizeNonEmptyString(oreName, "ore dictionary key");
+                if (!OreDictionary.doesOreNameExist(normalized)) {
+                    throw new IllegalArgumentException("Unknown ore dictionary key: " + normalized);
+                }
+                ids.add(OreDictionary.getOreID(normalized));
+            }
+            if (ids.isEmpty()) return null;
+            return ids.toIntArray();
+        }
+
+        private static boolean containsAnyOreId(int[] requiredOreIds, int[] actualOreIds) {
+            if (requiredOreIds == null || requiredOreIds.length == 0) return true;
+            if (actualOreIds == null || actualOreIds.length == 0) return false;
+            for (int requiredOreId : requiredOreIds) {
+                for (int actualOreId : actualOreIds) {
+                    if (requiredOreId == actualOreId) return true;
+                }
+            }
+            return false;
+        }
+
+        private static RecipesCommon.MetaBlock chooseRandomOutcome(List<ReferenceIntTuple<IBlockState>> blocks, Random random) {
             if (blocks == null || blocks.isEmpty()) return null;
 
             int weight = 0;
-            for (Tuple<IBlockState, Integer> choice : blocks) {
-                weight += choice.getSecond();
+            for (ReferenceIntTuple<IBlockState> choice : blocks) {
+                weight += choice.getInt();
             }
 
             int r = random.nextInt(weight);
-            for (Tuple<IBlockState, Integer> choice : blocks) {
-                r -= choice.getSecond();
+            for (ReferenceIntTuple<IBlockState> choice : blocks) {
+                r -= choice.getInt();
                 if (r <= 0) {
-                    return RecipesCommon.metaOf(choice.getFirst());
+                    return RecipesCommon.metaOf(choice.getReference());
                 }
             }
-            return RecipesCommon.metaOf(blocks.get(0).getFirst());
+            return RecipesCommon.metaOf(blocks.get(0).getReference());
         }
 
         @Override
@@ -705,6 +791,8 @@ public class FalloutConfigJSON {
                 throw new AssertionError(e);
             }
             entry.preservedProperties = this.preservedProperties == null ? null : this.preservedProperties.clone();
+            entry.matchingOreDict = this.matchingOreDict == null ? null : this.matchingOreDict.clone();
+            entry.matchingOreIds = this.matchingOreIds == null ? null : this.matchingOreIds.clone();
             entry.primaryBlocks = this.primaryBlocks.isEmpty() ? Collections.emptyList() : new ArrayList<>(this.primaryBlocks);
             entry.secondaryBlocks = this.secondaryBlocks.isEmpty() ? Collections.emptyList() : new ArrayList<>(this.secondaryBlocks);
             return entry;
@@ -761,11 +849,11 @@ public class FalloutConfigJSON {
         }
 
         public void setPreserveState(IProperty<?>... properties) {
-            this.preservedProperties = properties;
+            this.preservedProperties = propertyNames(properties);
         }
 
         public FalloutEntry withPreserveState(IProperty<?>... properties) {
-            this.preservedProperties = properties;
+            this.preservedProperties = propertyNames(properties);
             return this;
         }
 
@@ -774,23 +862,25 @@ public class FalloutConfigJSON {
          *
          * @param yGlobal    the target block's y coordinate
          * @param blockState the current block state at {@code pos} to test against this entry
+         * @param lookup     cached state-derived attributes shared across entry checks
          * @param dist       distance factor from the effect origin (same units as {@link #minDist}/{@link #maxDist}; typically a percentage)
          * @return the IBlockState if the block needs to be replaced, or null if no-op
          */
         @Nullable
-        @Contract(mutates = "param4")
-        public IBlockState eval(int yGlobal, IBlockState blockState, double dist, Random random) {
+        @Contract(mutates = "param6")
+        public IBlockState eval(int yGlobal, IBlockState blockState, LookupResult lookup, int[] oreIds, double dist, Random random) {
             if (dist > maxDist || dist < minDist) return null;
 
-            Block originalBlock = blockState.getBlock();
+            Block originalBlock = lookup.block;
             if (this.blockState != null) {
                 boolean matches = matchState
                         ? blockState.equals(this.blockState)
                         : originalBlock == this.blockState.getBlock();
                 if (!matches) return null;
             }
-            if (matchesMaterial != null && blockState.getMaterial() != matchesMaterial) return null;
-            if (matchesOpaque && !blockState.isOpaqueCube()) return null;
+            if (matchesMaterial != null && lookup.material != matchesMaterial) return null;
+            if (matchingOreIds != null && !containsAnyOreId(matchingOreIds, oreIds)) return null;
+            if (matchesOpaque && !lookup.opaque) return null;
 
             if (dist > maxDist * falloffStart) {
                 double t = (dist - maxDist * falloffStart) / (maxDist - maxDist * falloffStart);
@@ -803,8 +893,7 @@ public class FalloutConfigJSON {
                     chooseRandomOutcome((primaryChance == 1D || random.nextDouble() < primaryChance) ? primaryBlocks : secondaryBlocks, random);
 
             if (conversion == null) return null;
-
-            int originalMeta = originalBlock.getMetaFromState(blockState);
+            int originalMeta = lookup.originalMeta;
 
             if (conversion.block == ModBlocks.sellafield_slaked &&
                     originalBlock == ModBlocks.sellafield_slaked &&
@@ -829,11 +918,15 @@ public class FalloutConfigJSON {
 
             IBlockState newState = conversion.block.getStateFromMeta(conversion.meta);
             if (preservedProperties != null) {
-                for (IProperty<?> property : preservedProperties) {
-                    newState = copyProperty(blockState, newState, property.getName());
+                for (String property : preservedProperties) {
+                    newState = copyProperty(blockState, newState, property);
                 }
             }
             return newState;
+        }
+
+        public boolean usesOreDict() {
+            return matchingOreIds != null;
         }
 
         public boolean isSolid() {
@@ -858,10 +951,14 @@ public class FalloutConfigJSON {
                     writer.name("matchesMaterial").value(matName);
                 }
             }
+            if (matchingOreDict != null && matchingOreDict.length > 0) {
+                writer.name("matchesOreDict");
+                writeStringArray(writer, matchingOreDict);
+            }
             if (solid) writer.name("restrictDepth").value(true);
             if (preservedProperties != null && preservedProperties.length > 0) {
                 writer.name("preserveState");
-                writePreserveStateArray(writer, preservedProperties);
+                writeStringArray(writer, preservedProperties);
             }
 
             if (!primaryBlocks.isEmpty()) {
@@ -880,9 +977,10 @@ public class FalloutConfigJSON {
         }
 
         public static final class Builder {
-            private final List<IProperty<?>> preservedProperties = new ArrayList<>();
-            private final List<Tuple<IBlockState, Integer>> primaryBlocks = new ArrayList<>();
-            private final List<Tuple<IBlockState, Integer>> secondaryBlocks = new ArrayList<>();
+            private final List<String> preservedProperties = new ArrayList<>();
+            private final List<String> matchingOreDict = new ArrayList<>();
+            private final List<ReferenceIntTuple<IBlockState>> primaryBlocks = new ArrayList<>();
+            private final List<ReferenceIntTuple<IBlockState>> secondaryBlocks = new ArrayList<>();
             private IBlockState blockState = null;
             private Material matchesMaterial = null;
             private boolean matchState = true;
@@ -916,17 +1014,36 @@ public class FalloutConfigJSON {
             }
 
             public Builder preserve(IProperty<?>... properties) {
-                Collections.addAll(this.preservedProperties, properties);
+                String[] names = propertyNames(properties);
+                if (names != null) preserveNames(names);
+                return this;
+            }
+
+            public Builder preserveNames(String... propertyNames) {
+                if (propertyNames == null) return this;
+                for (String propertyName : propertyNames) {
+                    String normalized = normalizeNonEmptyString(propertyName, "property name");
+                    if (!this.preservedProperties.contains(normalized)) this.preservedProperties.add(normalized);
+                }
+                return this;
+            }
+
+            public Builder matchingOreDict(String... oreNames) {
+                if (oreNames == null) return this;
+                for (String oreName : oreNames) {
+                    String normalized = normalizeNonEmptyString(oreName, "ore dictionary key");
+                    if (!this.matchingOreDict.contains(normalized)) this.matchingOreDict.add(normalized);
+                }
                 return this;
             }
 
             public Builder addPrimary(IBlockState state, int weight) {
-                this.primaryBlocks.add(new Tuple<>(state, weight));
+                this.primaryBlocks.add(new ReferenceIntTuple<>(state, weight));
                 return this;
             }
 
             public Builder addSecondary(IBlockState state, int weight) {
-                this.secondaryBlocks.add(new Tuple<>(state, weight));
+                this.secondaryBlocks.add(new ReferenceIntTuple<>(state, weight));
                 return this;
             }
 
@@ -961,7 +1078,9 @@ public class FalloutConfigJSON {
                 e.matchesMaterial = this.matchesMaterial;
                 e.matchState = this.matchState;
                 e.matchesOpaque = this.matchesOpaque;
-                e.preservedProperties = this.preservedProperties.isEmpty() ? null : this.preservedProperties.toArray(new IProperty<?>[0]);
+                e.preservedProperties = this.preservedProperties.isEmpty() ? null : this.preservedProperties.toArray(new String[0]);
+                e.matchingOreDict = this.matchingOreDict.isEmpty() ? null : this.matchingOreDict.toArray(new String[0]);
+                e.matchingOreIds = resolveOreDictIds(e.matchingOreDict);
                 e.primaryBlocks = this.primaryBlocks.isEmpty() ? Collections.emptyList() : new ArrayList<>(this.primaryBlocks);
                 e.secondaryBlocks = this.secondaryBlocks.isEmpty() ? Collections.emptyList() : new ArrayList<>(this.secondaryBlocks);
                 e.primaryChance = this.primaryChance;

@@ -7,7 +7,7 @@ import net.minecraft.world.World;
 
 public class BlockSemtex extends BlockTNTBase {
 
-    private static final BlockBakeFrame frame = BlockBakeFrame.bottomTop("semtex_side", "semtex_top", "semtex_bottom");
+    private static final BlockBakeFrame frame = BlockBakeFrame.sideTopBottom("semtex_side", "semtex_top", "semtex_bottom");
 
     public BlockSemtex(String s) {
         super(s, frame, frame);

@@ -94,7 +94,7 @@ public class PedestalRecipes extends SerializableRecipe {
 
         register(new PedestalRecipe(new ItemStack(ModItems.ammo_secret, 1, EnumAmmoSecret.FOLLY_SM.ordinal()),
                 new OreDictStack(STAR.ingot(), 1),			new ComparableStack(ModItems.powder_magic),								new OreDictStack(STAR.ingot(), 1),
-                new ComparableStack(ModItems.powder_magic),	        new ComparableStack(ModItems.chunk_ore, 1, EnumChunkType.CRYOLITE/*TODO: should be moonstone*/),	new ComparableStack(ModItems.powder_magic),
+                new ComparableStack(ModItems.powder_magic),	        new ComparableStack(ModItems.chunk_ore, 1, EnumChunkType.MOONSTONE),	new ComparableStack(ModItems.powder_magic),
                 new OreDictStack(STAR.ingot(), 1),			new ComparableStack(ModItems.powder_magic),								new OreDictStack(STAR.ingot(), 1))
                 .extra(PedestalExtraCondition.FULL_MOON).set(1));
         register(new PedestalRecipe(new ItemStack(ModItems.ammo_secret, 1, EnumAmmoSecret.FOLLY_NUKE.ordinal()),

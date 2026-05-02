@@ -143,6 +143,31 @@ public class ItemBlueprints extends ItemBakedBase {
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
+    public boolean ownsModelLocation(ModelResourceLocation location) {
+        return mrlBase.equals(location) || mrlDiscover.equals(location)
+                || mrlSecret.equals(location) || mrl528.equals(location);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IModel loadModel(ModelResourceLocation location) {
+        ResourceLocation sprite;
+        if (mrlBase.equals(location)) sprite = spriteBase;
+        else if (mrlDiscover.equals(location)) sprite = spriteDiscover;
+        else if (mrlSecret.equals(location)) sprite = spriteSecret;
+        else if (mrl528.equals(location)) sprite = sprite528;
+        else return super.loadModel(location);
+
+        try {
+            IModel generated = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/generated"));
+            return generated.retexture(ImmutableMap.of("layer0", sprite.toString()));
+        } catch (Exception e) {
+            return super.loadModel(location);
+        }
+    }
+
+    @Override
     public @NotNull ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, @NotNull EnumHand hand) {
         ItemStack stack = player.getHeldItem(hand);
         if(world.isRemote) return ActionResult.newResult(EnumActionResult.PASS, player.getHeldItem(hand));

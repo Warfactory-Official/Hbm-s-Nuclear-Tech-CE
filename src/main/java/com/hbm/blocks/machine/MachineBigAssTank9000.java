@@ -1,23 +1,33 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.IPersistentInfoProvider;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.handler.MultiblockHandlerXR;
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.main.MainRegistry;
+import com.hbm.tileentity.IPersistentNBT;
 import com.hbm.tileentity.TileEntityProxyCombo;
 import com.hbm.tileentity.machine.TileEntityMachineBAT9000;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
+import org.jetbrains.annotations.NotNull;
 
-public class MachineBigAssTank9000 extends BlockDummyable {
+import java.util.List;
+
+public class MachineBigAssTank9000 extends BlockDummyable implements IPersistentInfoProvider {
 
 	public MachineBigAssTank9000(Material mat, String s) {
 		super(mat, s);
@@ -84,6 +94,28 @@ public class MachineBigAssTank9000 extends BlockDummyable {
 		return true;
 	}
 	
+	@Override
+	public void addInformation(ItemStack stack, NBTTagCompound persistentTag, EntityPlayer player, List<String> list, boolean ext) {
+		FluidTankNTM tank = new FluidTankNTM(Fluids.NONE, 0);
+		tank.readFromNBT(persistentTag, "tank");
+		list.add(TextFormatting.YELLOW + "" + tank.getFill() + "/" + tank.getMaxFill() + "mB " + tank.getTankType().getLocalizedName());
+	}
+
+	@Override
+	public void onBlockHarvested(World world, BlockPos pos, IBlockState state, EntityPlayer player) {
+		IPersistentNBT.onBlockHarvested(world, pos, player);
+	}
+
+	@Override
+	public void breakBlock(@NotNull World worldIn, @NotNull BlockPos pos, IBlockState state) {
+		IPersistentNBT.breakBlock(worldIn, pos, state);
+		super.breakBlock(worldIn, pos, state);
+	}
+
+	@Override
+	public void dropBlockAsItemWithChance(World worldIn, BlockPos pos, IBlockState state, float chance, int fortune) {
+	}
+
 	@Override
 	public boolean onBlockActivated(World world, BlockPos pos1, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ){
 		if(world.isRemote) {

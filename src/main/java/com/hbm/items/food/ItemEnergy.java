@@ -19,6 +19,7 @@ import net.minecraft.init.MobEffects;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
@@ -111,6 +112,10 @@ public class ItemEnergy extends Item {
 			if(this == ModItems.can_breen) {
 				player.addPotionEffect(new PotionEffect(MobEffects.NAUSEA, 30 * 20, 0));
 			}
+            if(this == ModItems.can_mug) {
+                player.addPotionEffect(new PotionEffect(MobEffects.RESISTANCE, 3 * 60 * 20, 2));
+                player.addPotionEffect(new PotionEffect(MobEffects.REGENERATION, 60 * 20, 2));
+            }
 			if(this == ModItems.bottle_cherry) {
 				player.heal(6F);
 				player.addPotionEffect(new PotionEffect(MobEffects.SPEED, 30 * 20, 0));

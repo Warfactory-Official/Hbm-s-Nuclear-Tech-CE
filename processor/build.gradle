@@ -25,10 +25,18 @@ dependencies {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.compilerArgs.addAll([
-            '--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
-            '--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED'
-    ])
+    def javacExportPackages = [
+            'jdk.compiler/com.sun.tools.javac.api',
+            'jdk.compiler/com.sun.tools.javac.code',
+            'jdk.compiler/com.sun.tools.javac.resources',
+            'jdk.compiler/com.sun.tools.javac.tree',
+            'jdk.compiler/com.sun.tools.javac.util'
+    ]
+    def javacExports = javacExportPackages.collect { "--add-exports=${it}=ALL-UNNAMED".toString() }
+
+    options.compilerArgs.addAll(javacExports)
+    options.fork = true
+    options.forkOptions.jvmArgs.addAll(javacExports)
 }
 
 java {

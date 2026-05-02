@@ -23,7 +23,7 @@ public class BlockWeaponTable extends BlockBakeBase implements IGUIProvider {
 
 
     public BlockWeaponTable(String s) {
-        super(Material.IRON, s, new BlockBakeFrame("gun_table_top", "gun_table_side", "gun_table_bottom"));
+        super(Material.IRON, s, BlockBakeFrame.cubeBottomTop("gun_table_top", "gun_table_side", "gun_table_bottom"));
     }
 
     @Override

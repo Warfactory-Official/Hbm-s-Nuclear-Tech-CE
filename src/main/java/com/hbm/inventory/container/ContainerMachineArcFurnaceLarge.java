@@ -1,9 +1,10 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
+import com.hbm.inventory.recipes.ArcFurnaceRecipes;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotNonRetarded;
 import com.hbm.inventory.slot.SlotUpgrade;
-import com.hbm.inventory.recipes.ArcFurnaceRecipes;
 import com.hbm.items.ModItems;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineArcFurnaceLarge;
@@ -19,6 +20,18 @@ import org.jetbrains.annotations.NotNull;
 public class ContainerMachineArcFurnaceLarge extends Container {
 
     private final TileEntityMachineArcFurnaceLarge furnace;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(30)
+                                                                              .rule(0, 3,
+                                                                                      s -> s.getItem() == ModItems.arc_electrode)
+                                                                              .rule(3, 4, Library::isBattery)
+                                                                              .rule(4, 5, Library::isMachineUpgrade)
+                                                                              .genericMachineRange(5)
+                                                                              .ruleDispatchMode(
+                                                                                      TransferStrategy.RuleDispatchMode.FALLTHROUGH_ON_FAILURE)
+                                                                              .playerFallbackMode(
+                                                                                      TransferStrategy.PlayerFallbackMode.REBALANCE_SECTIONS)
+                                                                              .build();
 
     public ContainerMachineArcFurnaceLarge(InventoryPlayer playerInv, TileEntityMachineArcFurnaceLarge tile) {
         furnace = tile;
@@ -47,10 +60,7 @@ public class ContainerMachineArcFurnaceLarge extends Container {
 
     @Override
     public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 30,
-                s -> s.getItem() == ModItems.arc_electrode, 3,
-                Library::isBattery, 4,
-                Library::isMachineUpgrade, 5);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
     @Override

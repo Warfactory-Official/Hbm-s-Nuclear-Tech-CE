@@ -177,6 +177,15 @@ public class TileEntityICFController extends TileEntityTickingBase implements IE
     }
 
     @Override
+    public void serializeInitial(ByteBuf buf) {
+        super.serialize(buf);
+        buf.writeLong(this.power);
+        buf.writeInt(this.capacitorCount);
+        buf.writeInt(this.turbochargerCount);
+        buf.writeInt(this.laserLength);
+    }
+
+    @Override
     public void serialize(ByteBuf buf) {
         super.serialize(buf);
         buf.writeLong(powerSync);

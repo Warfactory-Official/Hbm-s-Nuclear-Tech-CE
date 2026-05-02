@@ -4,7 +4,7 @@ import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
-import com.hbm.render.anim.sedna.HbmAnimationsSedna;
+import com.hbm.render.anim.sedna.AnimationEnums;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -66,19 +66,19 @@ public class GunStateDecider {
             if(!cancel && mag.canReload(stack, ctx.inventory)) {
                 ItemGunBaseNT.setState(stack, gunIndex, ItemGunBaseNT.GunState.RELOADING);
                 ItemGunBaseNT.setTimer(stack, gunIndex, rec.getReloadCycleDuration(stack));
-                ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.GunAnimation.RELOAD_CYCLE, gunIndex);
+                ItemGunBaseNT.playAnimation(player, stack, AnimationEnums.GunAnimation.RELOAD_CYCLE, gunIndex);
                 //if no more reloading can be done, go idle
             } else {
 
                 if(getStandardJamChance(stack, cfg, gunIndex) > entity.getRNG().nextFloat()) {
                     ItemGunBaseNT.setState(stack, gunIndex, ItemGunBaseNT.GunState.JAMMED);
                     ItemGunBaseNT.setTimer(stack, gunIndex, rec.getJamDuration(stack));
-                    ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.GunAnimation.JAMMED, gunIndex);
+                    ItemGunBaseNT.playAnimation(player, stack, AnimationEnums.GunAnimation.JAMMED, gunIndex);
                 } else {
                     ItemGunBaseNT.setState(stack, gunIndex, ItemGunBaseNT.GunState.DRAWING);
                     int duration = rec.getReloadEndDuration(stack) + (mag.getAmountBeforeReload(stack) <= 0 ? rec.getReloadCockOnEmptyPost(stack) : 0);
                     ItemGunBaseNT.setTimer(stack, gunIndex, duration);
-                    ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.GunAnimation.RELOAD_END, gunIndex);
+                    ItemGunBaseNT.playAnimation(player, stack, AnimationEnums.GunAnimation.RELOAD_END, gunIndex);
                 }
 
                 ItemGunBaseNT.setReloadCancel(stack, false);
@@ -121,7 +121,7 @@ public class GunStateDecider {
                     //if refire after dry is allowed, switch to COOLDOWN which will trigger a refire, otherwise switch to DRAWING
                     ItemGunBaseNT.setState(stack, gunIndex, rec.getRefireAfterDry(stack) ? ItemGunBaseNT.GunState.COOLDOWN : ItemGunBaseNT.GunState.DRAWING);
                     ItemGunBaseNT.setTimer(stack, gunIndex, rec.getDelayAfterDryFire(stack));
-                    ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.GunAnimation.CYCLE_DRY, gunIndex);
+                    ItemGunBaseNT.playAnimation(player, stack, AnimationEnums.GunAnimation.CYCLE_DRY, gunIndex);
                     //if not, revert to idle
                 } else {
                     ItemGunBaseNT.setState(stack, gunIndex, ItemGunBaseNT.GunState.IDLE);
@@ -140,7 +140,7 @@ public class GunStateDecider {
                         mag.setAmountBeforeReload(stack, loaded);
                         ItemGunBaseNT.setState(stack, ctx.configIndex, ItemGunBaseNT.GunState.RELOADING);
                         ItemGunBaseNT.setTimer(stack, ctx.configIndex, rec.getReloadBeginDuration(stack) + (loaded <= 0 ? rec.getReloadCockOnEmptyPre(stack) : 0));
-                        ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.GunAnimation.RELOAD, ctx.configIndex);
+                        ItemGunBaseNT.playAnimation(player, stack, AnimationEnums.GunAnimation.RELOAD, ctx.configIndex);
                     } else {
                         ItemGunBaseNT.setState(stack, gunIndex, ItemGunBaseNT.GunState.IDLE);
                         ItemGunBaseNT.setTimer(stack, gunIndex, 0);

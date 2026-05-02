@@ -14,6 +14,7 @@ import com.hbm.inventory.recipes.LiquefactionRecipes;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
@@ -40,7 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @AutoRegister
-public class TileEntityMachineLiquefactor extends TileEntityMachineBase implements IEnergyReceiverMK2, IFluidStandardSender, IGUIProvider, ITickable, IUpgradeInfoProvider, IFluidCopiable {
+public class TileEntityMachineLiquefactor extends TileEntityMachineBase implements IEnergyReceiverMK2, IFluidStandardSender, IGUIProvider, ITickable, IUpgradeInfoProvider, IFluidCopiable, IConnectionAnchors {
 
     public static final long maxPower = 100000;
     public static final int usageBase = 500;
@@ -71,7 +72,7 @@ public class TileEntityMachineLiquefactor extends TileEntityMachineBase implemen
             }
         };
 
-        tank = new FluidTankNTM(Fluids.NONE, 24000);
+        tank = new FluidTankNTM(Fluids.NONE, 24000).withOwner(this);
     }
 
     @Override
@@ -117,7 +118,7 @@ public class TileEntityMachineLiquefactor extends TileEntityMachineBase implemen
         }
     }
 
-    private DirPos[] getConPos() {
+    public DirPos[] getConPos() {
         return new DirPos[]{
                 new DirPos(pos.getX(), pos.getY() + 4, pos.getZ(), Library.POS_Y),
                 new DirPos(pos.getX(), pos.getY() - 1, pos.getZ(), Library.NEG_Y),

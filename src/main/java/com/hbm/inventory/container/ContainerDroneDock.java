@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.tileentity.network.TileEntityDroneDock;
 import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
@@ -11,6 +12,10 @@ import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerDroneDock extends Container {
     protected TileEntityDroneDock crate;
+
+    private final TransferStrategy transferStrategy = TransferStrategy.builder(() -> this.crate.inventory.getSlots())
+                                                                      .genericMachineRange(0)
+                                                                      .build();
 
     public ContainerDroneDock(InventoryPlayer invPlayer, TileEntityDroneDock droneDock) {
         this.crate = droneDock;
@@ -34,7 +39,7 @@ public class ContainerDroneDock extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, crate.inventory.getSlots(), true, player);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.transferStrategy, player);
     }
 
     @Override

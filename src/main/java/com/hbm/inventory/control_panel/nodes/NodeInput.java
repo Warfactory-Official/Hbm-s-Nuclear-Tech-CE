@@ -1,10 +1,11 @@
 package com.hbm.inventory.control_panel.nodes;
 
-import com.hbm.inventory.control_panel.DataValue;
+import com.hbm.inventory.control_panel.types.DataValue;
 import com.hbm.inventory.control_panel.NodeConnection;
 import com.hbm.inventory.control_panel.NodeSystem;
 import com.hbm.inventory.control_panel.modular.StockNodesRegister;
 import net.minecraft.nbt.NBTTagCompound;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -12,9 +13,9 @@ import java.util.Objects;
 
 public class NodeInput extends Node {
 
-	public String name;
+	public @NotNull String name;
 	
-	public NodeInput(float x, float y, String name){
+	public NodeInput(float x, float y, @NotNull String name){
 		super(x, y);
 		this.name = name;
 	}

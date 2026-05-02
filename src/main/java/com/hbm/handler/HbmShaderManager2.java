@@ -5,7 +5,6 @@ import com.hbm.handler.HbmShaderManager2.Shader.Uniform;
 import com.hbm.main.ClientProxy;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
-import com.hbm.particle_instanced.InstancedParticleRenderer;
 import com.hbm.render.GLCompat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
@@ -17,7 +16,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.io.IOUtils;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL14;
 import org.lwjgl.util.vector.Matrix4f;
@@ -71,8 +70,7 @@ public class HbmShaderManager2 {
 	
 	public static final Uniform INV_PLAYER_ROT_MATRIX = shader -> {
 		Entity entityIn = Minecraft.getMinecraft().getRenderViewEntity();
-		//Stupid hack to get partial ticks.
-		float partialTicks = InstancedParticleRenderer.partialTicks;
+		float partialTicks = Minecraft.getMinecraft().isGamePaused() ? Minecraft.getMinecraft().renderPartialTicksPaused : Minecraft.getMinecraft().getRenderPartialTicks();
 		float yaw = entityIn.prevRotationYaw + (entityIn.rotationYaw - entityIn.prevRotationYaw)*partialTicks;
 		float pitch = entityIn.prevRotationPitch + (entityIn.rotationPitch - entityIn.prevRotationPitch)*partialTicks;
 		Matrix4f mat = new Matrix4f();
@@ -389,7 +387,19 @@ public class HbmShaderManager2 {
     }
     
 	public static Shader loadShader(ResourceLocation file, Consumer<Integer> attribBinder) {
-		if(!GeneralConfig.useShaders2){
+		return loadShader(file, attribBinder, false);
+	}
+
+	public static Shader loadShader(ResourceLocation file, Consumer<Integer> attribBinder, boolean allowWithoutShaders2) {
+		return loadShader(file, attribBinder, allowWithoutShaders2, false);
+	}
+
+	public static Shader loadShader(ResourceLocation file, Consumer<Integer> attribBinder, boolean allowWithoutShaders2, boolean failOnError) {
+		if(!allowWithoutShaders2 && !GeneralConfig.useShaders2 || !GLCompat.error.isEmpty()){
+			if(failOnError) {
+				String reason = !GLCompat.error.isEmpty() ? "advanced rendering is not supported: " + GLCompat.error : "shader effects are disabled";
+				throw new IllegalStateException("Failed to load shader " + file + " because " + reason);
+			}
 			return new Shader(0);
 		}
 		int vertexShader = 0;
@@ -430,6 +440,9 @@ public class HbmShaderManager2 {
 		} catch(Exception x) {
 			GLCompat.deleteShader(vertexShader);
 			GLCompat.deleteShader(fragmentShader);
+			if(failOnError) {
+				throw new RuntimeException("Failed to load shader: " + file, x);
+			}
 			x.printStackTrace();
 		}
 		return new Shader(0);

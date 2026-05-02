@@ -102,7 +102,7 @@ public class BlockPlasticExplosive extends BlockDetonatable implements IBomb {
     public void bakeModel(ModelBakeEvent event) {
         var blockFrame = blockFrames[0];
         try {
-            IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation(blockFrame.getBaseModel()));
+            IModel baseModel = ModelLoaderRegistry.getModel(blockFrame.getBaseModelLocation());
 
             ImmutableMap.Builder<String, String> textureMap = ImmutableMap.builder();
             blockFrame.putTextures(textureMap);

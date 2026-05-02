@@ -6,10 +6,8 @@ import com.hbm.blocks.ICustomBlockItem;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.BlockModDoor;
 import com.hbm.blocks.machine.ItemSelfcharger;
-import com.hbm.blocks.network.FluidDuctBox;
-import com.hbm.blocks.network.FluidDuctStandard;
-import com.hbm.blocks.network.energy.PowerCableBox;
 import com.hbm.config.BombConfig;
+import com.hbm.handler.ArmorUtil;
 import com.hbm.handler.ability.IToolAreaAbility;
 import com.hbm.handler.ability.IToolHarvestAbility;
 import com.hbm.handler.ability.IWeaponAbility;
@@ -35,6 +33,7 @@ import com.hbm.items.weapon.*;
 import com.hbm.items.weapon.ItemMissile.FuelType;
 import com.hbm.items.weapon.ItemMissile.PartSize;
 import com.hbm.items.weapon.ItemMissile.Rarity;
+import com.hbm.items.weapon.grenade.*;
 import com.hbm.items.weapon.sedna.factory.GunFactory;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
@@ -64,7 +63,7 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import java.util.*;
 
 import static com.hbm.items.ItemEnums.*;
-import static com.hbm.items.weapon.ItemMissile.*;
+import static com.hbm.items.weapon.ItemMissile.WarheadType;
 
 public class ModItems {
 
@@ -107,6 +106,7 @@ public class ModItems {
     public static final Item drone_linker = new ItemDroneLinker("drone_linker").setMaxStackSize(1).setCreativeTab(MainRegistry.consumableTab);
     public static final Item radar_linker = new ItemRadarLinker("radar_linker").setMaxStackSize(1).setCreativeTab(MainRegistry.consumableTab);
     public static final Item settings_tool = new ItemSettingsTool("settings_tool").setMaxStackSize(1).setCreativeTab(MainRegistry.consumableTab);
+    public static final Item rtty_pager = new ItemRTTYPager("rtty_pager").setCreativeTab(MainRegistry.consumableTab);
     public static final Item pollution_detector = new ItemPollutionDetector("pollution_detector").setMaxStackSize(1).setCreativeTab(MainRegistry.consumableTab);
     public static final Item ore_density_scanner = new ItemOreDensityScanner("ore_density_scanner").setMaxStackSize(1).setCreativeTab(MainRegistry.consumableTab);
     public static final Item rebar_placer = new ItemRebarPlacer("rebar_placer").setMaxStackSize(1).setCreativeTab(MainRegistry.consumableTab);
@@ -148,6 +148,7 @@ public class ModItems {
     }).setCreativeTab(MainRegistry.consumableTab);
     public static final Item pill_iodine = new ItemPill(0, "pill_iodine").setCreativeTab(MainRegistry.consumableTab);
     public static final Item plan_c = new ItemPill(0, "plan_c").setCreativeTab(MainRegistry.consumableTab);
+    public static final Item pill_red = new ItemPill(0, "pill_red").setCreativeTab(MainRegistry.consumableTab);
     public static final Item iv_blood = new ItemSimpleConsumable("iv_blood").setUseActionServer((stack, user) -> {
         ItemSimpleConsumable.giveSoundAndDecrement(stack, user, HBMSoundHandler.radawayUse, new ItemStack(ModItems.iv_empty));
         user.heal(3F);
@@ -396,11 +397,14 @@ public class ModItems {
     public static final Item cell_balefire = new ItemBakedBase("cell_balefire").setCreativeTab(MainRegistry.controlTab).setContainerItem(ModItems.cell);
 
     public static final Item fluid_tank_empty = new ItemBakedBase("fluid_tank_empty").setCreativeTab(MainRegistry.controlTab);
+    public static final Item fluid_tank_v2 = new ItemFluidTankV2("fluid_tank_v2", 1000).setCreativeTab(MainRegistry.controlTab);
     public static final Item fluid_tank_full = new ItemFluidTank("fluid_tank_full", 1000).setCreativeTab(MainRegistry.controlTab);
     public static final Item fluid_tank_lead_empty = new ItemBakedBase("fluid_tank_lead_empty").setCreativeTab(MainRegistry.controlTab);
     public static final Item fluid_tank_lead_full = new ItemFluidTank("fluid_tank_lead_full", 1000).setCreativeTab(MainRegistry.controlTab);
+    public static final Item fluid_tank_lead_v2 = new ItemFluidTankV2("fluid_tank_lead_v2", 1000).setCreativeTab(MainRegistry.controlTab);
     public static final Item fluid_barrel_empty = new ItemBakedBase("fluid_barrel_empty").setCreativeTab(MainRegistry.controlTab);
     public static final Item fluid_barrel_full = new ItemFluidTank("fluid_barrel_full", 16000).setCreativeTab(MainRegistry.controlTab);
+    public static final Item fluid_barrel_v2 = new ItemFluidTankV2("fluid_barrel_v2", 16000).setCreativeTab(MainRegistry.controlTab);
     public static final Item fluid_barrel_infinite = new ItemFluidContainerInfinite(null, 1_000_000_000, "fluid_barrel_infinite").setMaxStackSize(1).setCreativeTab(MainRegistry.controlTab);
     public static final Item fluid_pack_empty = new ItemBakedBase("fluid_pack_empty").setCreativeTab(MainRegistry.controlTab);
     public static final Item fluid_pack_full = new ItemFluidTank("fluid_pack_full", 32000).setContainerItem(ModItems.fluid_pack_empty).setCreativeTab(MainRegistry.controlTab);
@@ -432,15 +436,15 @@ public class ModItems {
     public static final Item meteor_remote = new ItemMeteorRemote("meteor_remote").setMaxStackSize(1).setFull3D().setCreativeTab(MainRegistry.consumableTab);
     public static final Item anchor_remote = new ItemAnchorRemote("anchor_remote").setMaxStackSize(1).setFull3D().setCreativeTab(MainRegistry.consumableTab);
     //Armor
-    public static final Item hazmat_helmet = new ArmorGasMask(MaterialRegistry.aMatHaz, -1, EntityEquipmentSlot.HEAD, "hazmat_helmet").setMaxStackSize(1);
+    public static final Item hazmat_helmet = new ArmorHazmatMask(MaterialRegistry.aMatHaz, -1, EntityEquipmentSlot.HEAD, "hazmat_helmet").setMaxStackSize(1);
     public static final Item hazmat_plate = new ArmorHazmat(MaterialRegistry.aMatHaz, -1, EntityEquipmentSlot.CHEST, "hazmat_plate").setMaxStackSize(1);
     public static final Item hazmat_legs = new ArmorHazmat(MaterialRegistry.aMatHaz, -1, EntityEquipmentSlot.LEGS, "hazmat_legs").setMaxStackSize(1);
     public static final Item hazmat_boots = new ArmorHazmat(MaterialRegistry.aMatHaz, -1, EntityEquipmentSlot.FEET, "hazmat_boots").setMaxStackSize(1);
-    public static final Item hazmat_helmet_red = new ArmorGasMask(MaterialRegistry.aMatHaz2, -1, EntityEquipmentSlot.HEAD, "hazmat_helmet_red").setMaxStackSize(1);
+    public static final Item hazmat_helmet_red = new ArmorHazmatMask(MaterialRegistry.aMatHaz2, -1, EntityEquipmentSlot.HEAD, "hazmat_helmet_red").setMaxStackSize(1);
     public static final Item hazmat_plate_red = new ArmorHazmat(MaterialRegistry.aMatHaz2, -1, EntityEquipmentSlot.CHEST, "hazmat_plate_red").setMaxStackSize(1);
     public static final Item hazmat_legs_red = new ArmorHazmat(MaterialRegistry.aMatHaz2, -1, EntityEquipmentSlot.LEGS, "hazmat_legs_red").setMaxStackSize(1);
     public static final Item hazmat_boots_red = new ArmorHazmat(MaterialRegistry.aMatHaz2, -1, EntityEquipmentSlot.FEET, "hazmat_boots_red").setMaxStackSize(1);
-    public static final Item hazmat_helmet_grey = new ArmorGasMask(MaterialRegistry.aMatHaz3, -1, EntityEquipmentSlot.HEAD, "hazmat_helmet_grey").setMaxStackSize(1);
+    public static final Item hazmat_helmet_grey = new ArmorHazmatMask(MaterialRegistry.aMatHaz3, -1, EntityEquipmentSlot.HEAD, "hazmat_helmet_grey").setMaxStackSize(1);
     public static final Item hazmat_plate_grey = new ArmorHazmat(MaterialRegistry.aMatHaz3, -1, EntityEquipmentSlot.CHEST, "hazmat_plate_grey").setMaxStackSize(1);
     public static final Item hazmat_legs_grey = new ArmorHazmat(MaterialRegistry.aMatHaz3, -1, EntityEquipmentSlot.LEGS, "hazmat_legs_grey").setMaxStackSize(1);
     public static final Item hazmat_boots_grey = new ArmorHazmat(MaterialRegistry.aMatHaz3, -1, EntityEquipmentSlot.FEET, "hazmat_boots_grey").setMaxStackSize(1);
@@ -451,14 +455,13 @@ public class ModItems {
     public static final Item liquidator_plate = new ArmorLiquidator(MaterialRegistry.aMatLiquidator, -1, EntityEquipmentSlot.CHEST, Tags.MODID + ":textures/armor/liquidator_1.png", "liquidator_plate").cloneStats((ArmorFSB) liquidator_helmet).setMaxStackSize(1);
     public static final Item liquidator_legs = new ArmorLiquidator(MaterialRegistry.aMatLiquidator, -1, EntityEquipmentSlot.LEGS, Tags.MODID + ":textures/armor/liquidator_2.png", "liquidator_legs").cloneStats((ArmorFSB) liquidator_helmet).setMaxStackSize(1);
     public static final Item liquidator_boots = new ArmorLiquidator(MaterialRegistry.aMatLiquidator, -1, EntityEquipmentSlot.FEET, Tags.MODID + ":textures/armor/liquidator_1.png", "liquidator_boots").cloneStats((ArmorFSB) liquidator_helmet).setMaxStackSize(1);
-    public static final Item hazmat_paa_helmet = new ArmorGasMask(MaterialRegistry.aMatPaa, -1, EntityEquipmentSlot.HEAD, "hazmat_paa_helmet").setMaxStackSize(1);
+    public static final Item hazmat_paa_helmet = new ArmorHazmatMask(MaterialRegistry.aMatPaa, -1, EntityEquipmentSlot.HEAD, "hazmat_paa_helmet").setMaxStackSize(1);
     public static final Item hazmat_paa_plate = new ArmorHazmat(MaterialRegistry.aMatPaa, -1, EntityEquipmentSlot.CHEST, "hazmat_paa_plate").setMaxStackSize(1);
     public static final Item hazmat_paa_legs = new ArmorHazmat(MaterialRegistry.aMatPaa, -1, EntityEquipmentSlot.LEGS, "hazmat_paa_legs").setMaxStackSize(1);
     public static final Item hazmat_paa_boots = new ArmorHazmat(MaterialRegistry.aMatPaa, -1, EntityEquipmentSlot.FEET, "hazmat_paa_boots").setMaxStackSize(1);
-    public static final Item paa_helmet = new ArmorFSB(MaterialRegistry.aMatPaa, -1, EntityEquipmentSlot.HEAD, Tags.MODID + ":textures/armor/paa_1.png", "paa_helmet").addEffect(new PotionEffect(MobEffects.HASTE, 30, 0)).addEffect(new PotionEffect(MobEffects.SPEED, 30, 0)).addEffect(new PotionEffect(MobEffects.WATER_BREATHING, 30, 0)).setMaxStackSize(1);
-    public static final Item paa_plate = new ArmorFSB(MaterialRegistry.aMatPaa, -1, EntityEquipmentSlot.CHEST, Tags.MODID + ":textures/armor/paa_1.png", "paa_plate").cloneStats((ArmorFSB) paa_helmet).setMaxStackSize(1);
-    public static final Item paa_legs = new ArmorFSB(MaterialRegistry.aMatPaa, -1, EntityEquipmentSlot.LEGS, Tags.MODID + ":textures/armor/paa_2.png", "paa_legs").cloneStats((ArmorFSB) paa_helmet).setMaxStackSize(1);
-    public static final Item paa_boots = new ArmorFSB(MaterialRegistry.aMatPaa, -1, EntityEquipmentSlot.FEET, Tags.MODID + ":textures/armor/paa_1.png", "paa_boots").cloneStats((ArmorFSB) paa_helmet).setMaxStackSize(1);
+    public static final Item paa_plate = new ArmorFSB(MaterialRegistry.aMatPaa, -1, EntityEquipmentSlot.CHEST, Tags.MODID + ":textures/armor/paa_1.png", "paa_plate").setNoHelmet(true).addEffect(new PotionEffect(MobEffects.HASTE, 30, 0)).setMaxStackSize(1);
+    public static final Item paa_legs = new ArmorFSB(MaterialRegistry.aMatPaa, -1, EntityEquipmentSlot.LEGS, Tags.MODID + ":textures/armor/paa_2.png", "paa_legs").cloneStats((ArmorFSB) paa_plate).setMaxStackSize(1);
+    public static final Item paa_boots = new ArmorFSB(MaterialRegistry.aMatPaa, -1, EntityEquipmentSlot.FEET, Tags.MODID + ":textures/armor/paa_1.png", "paa_boots").cloneStats((ArmorFSB) paa_plate).setMaxStackSize(1);
     public static final Item australium_iii = new ItemModShield(25F, "australium_iii").setMaxStackSize(1);
     public static final Item armor_battery = new ItemModBattery(1.25D, "armor_battery");
     public static final Item armor_battery_mk2 = new ItemModBattery(1.5D, "armor_battery_mk2");
@@ -473,7 +476,6 @@ public class ModItems {
     public static final Item euphemium_boots = new ArmorEuphemium(MaterialRegistry.aMatEuph, -1, EntityEquipmentSlot.FEET, "euphemium_boots").setMaxStackSize(1);
     public static final Item jackt = new ModArmor(MaterialRegistry.aMatSteel, -1, EntityEquipmentSlot.CHEST, "jackt").setMaxStackSize(1);
     public static final Item jackt2 = new ModArmor(MaterialRegistry.aMatSteel, -1, EntityEquipmentSlot.CHEST, "jackt2").setMaxStackSize(1);
-    // TODO: item renderer for chainsaw
     public static final Item chainsaw = new ItemChainsaw("chainsaw", 25, -2.8F, -0.05, MaterialRegistry.enumToolMaterialChainsaw, EnumToolType.AXE, 5000, 1, 250,
             Fluids.DIESEL, Fluids.DIESEL_CRACK, Fluids.KEROSENE, Fluids.BIOFUEL, Fluids.GASOLINE, Fluids.GASOLINE_LEADED, Fluids.PETROIL, Fluids.PETROIL_LEADED, Fluids.COALGAS, Fluids.COALGAS_LEADED)
             .addAbility(IToolHarvestAbility.SILK, 0)
@@ -534,16 +536,18 @@ public class ModItems {
             .setHasHardLanding(true)
             .addEffect(new PotionEffect(MobEffects.STRENGTH, 20, 0))
             .setHides(IArmorDisableModel.EnumPlayerPart.HAT)
+            .setHazardClass(ArmorUtil.FULL_NO_LIGHT).setRadResist(1D /*90%*/)
             .setStep(HBMSoundHandler.metalStep)
             .setJump(HBMSoundHandler.ironJump)
             .setFall(HBMSoundHandler.ironLand);
     public static final Item t51_plate = new ArmorT51(MaterialRegistry.enumArmorMaterialT51, -1, EntityEquipmentSlot.CHEST, Tags.MODID + ":textures/armor/starmetal_1.png", 1000000, 10000, 1000, 5, "t51_plate").cloneStats((ArmorFSB) t51_helmet).setCreativeTab(CreativeTabs.COMBAT);
-    public static final Item t51_legs = new ArmorT51(MaterialRegistry.enumArmorMaterialT51, -1, EntityEquipmentSlot.LEGS, ":textures/armor/starmetal_2.png",1000000, 10000, 1000, 5, "t51_legs").cloneStats((ArmorFSB) t51_helmet).setCreativeTab(CreativeTabs.COMBAT);
-    public static final Item t51_boots = new ArmorT51(MaterialRegistry.enumArmorMaterialT51, -1, EntityEquipmentSlot.FEET, ":textures/armor/starmetal_1.png",1000000, 10000, 1000, 5, "t51_boots").cloneStats((ArmorFSB) t51_helmet).setCreativeTab(CreativeTabs.COMBAT);
+    public static final Item t51_legs = new ArmorT51(MaterialRegistry.enumArmorMaterialT51, -1, EntityEquipmentSlot.LEGS, Tags.MODID + ":textures/armor/starmetal_2.png",1000000, 10000, 1000, 5, "t51_legs").cloneStats((ArmorFSB) t51_helmet).setCreativeTab(CreativeTabs.COMBAT);
+    public static final Item t51_boots = new ArmorT51(MaterialRegistry.enumArmorMaterialT51, -1, EntityEquipmentSlot.FEET, Tags.MODID + ":textures/armor/starmetal_1.png",1000000, 10000, 1000, 5, "t51_boots").cloneStats((ArmorFSB) t51_helmet).setCreativeTab(CreativeTabs.COMBAT);
     public static final Item steamsuit_helmet = new ArmorDesh(MaterialRegistry.aMatSteamsuit, 7, EntityEquipmentSlot.HEAD, Tags.MODID + ":textures/armor/starmetal_1.png", Fluids.STEAM, 64000, 500, 50, 1, "steamsuit_helmet")
             .addEffect(new PotionEffect(MobEffects.HASTE, 30, 0))
             .setHasHardLanding(true)
             .setHides(IArmorDisableModel.EnumPlayerPart.HAT)
+            .setHazardClass(ArmorUtil.FULL_PACKAGE).setRadResist(1.3D /*95%*/)
             .setStep(HBMSoundHandler.iron) //Norwood: Upstream doesn't have it but i'll allow it
             .setJump(HBMSoundHandler.ironJump)
             .setFall(HBMSoundHandler.ironLand);
@@ -552,6 +556,8 @@ public class ModItems {
     public static final Item steamsuit_boots = new ArmorDesh(MaterialRegistry.aMatSteamsuit, 7, EntityEquipmentSlot.FEET, Tags.MODID + ":textures/armor/starmetal_1.png", Fluids.STEAM, 64000, 500, 50, 1, "steamsuit_boots").cloneStats((ArmorFSB) steamsuit_helmet);
     public static final Item trenchmaster_helmet = new ArmorTrenchmaster(MaterialRegistry.aMatTrench, -1, EntityEquipmentSlot.HEAD, Tags.MODID + ":textures/armor/starmetal_1.png", "trenchmaster_helmet")
             .setHides(IArmorDisableModel.EnumPlayerPart.HAT)
+            .setRadResist(1D /*90%*/)
+            .setHazardClass(ArmorUtil.FULL_PACKAGE)
             .addEffect(new PotionEffect(MobEffects.HASTE, 20, 1))
             .addEffect(new PotionEffect(MobEffects.STRENGTH, 20, 2))
             .addEffect(new PotionEffect(MobEffects.JUMP_BOOST, 20, 1))
@@ -561,7 +567,8 @@ public class ModItems {
     public static final Item trenchmaster_boots = new ArmorTrenchmaster(MaterialRegistry.aMatTrench, -1, EntityEquipmentSlot.FEET, Tags.MODID + ":textures/armor/starmetal_1.png", "trenchmaster_boots").cloneStats((ArmorFSB) trenchmaster_helmet).setMaxStackSize(1);
     public static final Item taurun_helmet = new ArmorTaurun(MaterialRegistry.aMatTaurun, -1, EntityEquipmentSlot.HEAD, Tags.MODID + ":textures/armor/starmetal_1.png", "taurun_helmet")
             .addEffect(new PotionEffect(MobEffects.STRENGTH, 20, 0))
-            .setHides(IArmorDisableModel.EnumPlayerPart.HAT);
+            .setHides(IArmorDisableModel.EnumPlayerPart.HAT)
+            .setHazardClass(ArmorUtil.FULL_PACKAGE).setRadResist(0.125D /*25%*/);
     public static final Item taurun_plate = new ArmorTaurun(MaterialRegistry.aMatTaurun, -1, EntityEquipmentSlot.CHEST, Tags.MODID + ":textures/armor/starmetal_1.png", "taurun_plate").cloneStats((ArmorFSB) taurun_helmet).setMaxStackSize(1);
     public static final Item taurun_legs = new ArmorTaurun(MaterialRegistry.aMatTaurun, -1, EntityEquipmentSlot.LEGS, Tags.MODID + ":textures/armor/starmetal_2.png", "taurun_legs").cloneStats((ArmorFSB) taurun_helmet).setMaxStackSize(1);
 
@@ -578,7 +585,8 @@ public class ModItems {
     public static final Item envsuit_helmet = new ArmorEnvsuit(MaterialRegistry.aMatEnvsuit, 7, EntityEquipmentSlot.HEAD, Tags.MODID + ":textures/armor/starmetal_1.png", 100000, 1000, 250, 0, "envsuit_helmet")
             .addEffect(new PotionEffect(MobEffects.JUMP_BOOST, 30, 0))
             .addEffect(new PotionEffect(MobEffects.SPEED, 30, 1))
-            .setHides(IArmorDisableModel.EnumPlayerPart.HAT);
+            .setHides(IArmorDisableModel.EnumPlayerPart.HAT)
+            .setHazardClass(ArmorUtil.FULL_PACKAGE).setRadResist(1.0D /*90%*/);
     public static final Item envsuit_plate = new ArmorEnvsuit(MaterialRegistry.aMatEnvsuit, 7, EntityEquipmentSlot.CHEST, Tags.MODID + ":textures/armor/starmetal_1.png", 100000, 1000, 250, 0, "envsuit_plate").cloneStats((ArmorFSB) envsuit_helmet);
     public static final Item envsuit_legs = new ArmorEnvsuit(MaterialRegistry.aMatEnvsuit, 7, EntityEquipmentSlot.LEGS, Tags.MODID + ":textures/armor/starmetal_2.png", 100000, 1000, 250, 0, "envsuit_legs").cloneStats((ArmorFSB) envsuit_helmet);
     public static final Item envsuit_boots = new ArmorEnvsuit(MaterialRegistry.aMatEnvsuit, 7, EntityEquipmentSlot.FEET, Tags.MODID + ":textures/armor/starmetal_1.png", 100000, 1000, 250, 0, "envsuit_boots").cloneStats((ArmorFSB) envsuit_helmet);
@@ -596,6 +604,7 @@ public class ModItems {
             .addEffect(new PotionEffect(MobEffects.JUMP_BOOST, 30, 0))
             .addEffect(new PotionEffect(MobEffects.STRENGTH, 30, 0))
             .setHides(IArmorDisableModel.EnumPlayerPart.HAT)
+            .setHazardClass(ArmorUtil.FULL_PACKAGE).setRadResist(1.3D /*95%*/)
             .setStep(HBMSoundHandler.metalStep)
             .setJump(HBMSoundHandler.ironJump)
             .setFall(HBMSoundHandler.ironLand);
@@ -609,6 +618,7 @@ public class ModItems {
             .addEffect(new PotionEffect(MobEffects.JUMP_BOOST, 30, 0))
             .addEffect(new PotionEffect(MobEffects.STRENGTH, 30, 0))
             .setHides(IArmorDisableModel.EnumPlayerPart.HAT)
+            .setHazardClass(ArmorUtil.FULL_PACKAGE).setRadResist(1.3D /*95%*/)
             .setStep(HBMSoundHandler.metalStep)
             .setJump(HBMSoundHandler.ironJump)
             .setFall(HBMSoundHandler.ironLand);
@@ -619,6 +629,7 @@ public class ModItems {
             .addEffect(new PotionEffect(MobEffects.JUMP_BOOST, 30, 0))
             .addEffect(new PotionEffect(MobEffects.SPEED, 30, 1))
             .setHides(IArmorDisableModel.EnumPlayerPart.HAT)
+            .setHazardClass(ArmorUtil.FULL_PACKAGE).setRadResist(2.3D /*99.5%*/)
             .setHasGeigerSound(true)
             .setHasCustomGeiger(true);
     public static final Item hev_plate = new ArmorHEV(MaterialRegistry.aMatHEV, 7, EntityEquipmentSlot.CHEST, Tags.MODID + ":textures/armor/starmetal_1.png", 1000000, 10000, 2500, 0, "hev_plate").cloneStats((ArmorFSB) hev_helmet);
@@ -635,7 +646,8 @@ public class ModItems {
             .addEffect(new PotionEffect(HbmPotion.radx, 30, 0))
             .setStep(HBMSoundHandler.metalStep)
             .setJump(HBMSoundHandler.ironJump)
-            .setFall(HBMSoundHandler.ironLand);
+            .setFall(HBMSoundHandler.ironLand)
+            .setRadResist(1D /*90%*/);
     public static final Item bj_plate = new ArmorBJ(MaterialRegistry.aMatBJ, 7, EntityEquipmentSlot.CHEST, Tags.MODID + ":textures/armor/starmetal_1.png", 10000000, 10000, 1000, 100, "bj_plate").cloneStats((ArmorFSB) bj_helmet);
     public static final Item bj_plate_jetpack = new ArmorBJJetpack(MaterialRegistry.aMatBJ, -1, EntityEquipmentSlot.CHEST, Tags.MODID + ":textures/armor/starmetal_1.png", 10000000, 10000, 1000, 100, "bj_plate_jetpack").cloneStats((ArmorFSB) bj_helmet);
     public static final Item bj_legs = new ArmorBJ(MaterialRegistry.aMatBJ, 7, EntityEquipmentSlot.LEGS, Tags.MODID + ":textures/armor/starmetal_2.png", 10000000, 10000, 1000, 100, "bj_legs").cloneStats((ArmorFSB) bj_helmet);
@@ -645,6 +657,7 @@ public class ModItems {
             .setHasGeigerSound(true)
             .setHasHardLanding(true)
             .setHides(IArmorDisableModel.EnumPlayerPart.HAT)
+            .setHazardClass(ArmorUtil.FULL_PACKAGE).setRadResist(2D /*99%*/)
             .setStep(HBMSoundHandler.poweredStep)
             .setJump(HBMSoundHandler.poweredStep)
             .setFall(HBMSoundHandler.poweredStep)
@@ -653,14 +666,15 @@ public class ModItems {
     public static final Item rpa_legs = new ArmorRPA(MaterialRegistry.aMatRPA, -1, EntityEquipmentSlot.LEGS, Tags.MODID + ":textures/armor/starmetal_2.png", 2500000, 10000, 10000, 25, "RPA_legs").cloneStats((ArmorFSB) rpa_helmet);
     public static final Item rpa_boots = new ArmorRPA(MaterialRegistry.aMatRPA, -1, EntityEquipmentSlot.FEET, Tags.MODID + ":textures/armor/starmetal_1.png", 2500000, 10000, 10000, 25, "RPA_boots").cloneStats((ArmorFSB) rpa_helmet);
     public static final Item ncrpa_helmet = new ArmorNCRPA(MaterialRegistry.aMatAJR, -1, EntityEquipmentSlot.HEAD, Tags.MODID + ":textures/armor/starmetal_1.png", 2500000, 10000, 2000, 25, "ncrpa_helmet")
-				.enableVATS(true)
-				.setHasGeigerSound(true)
-				.setHasHardLanding(true)
-				.addEffect(new PotionEffect(MobEffects.STRENGTH, 20, 3))
+            .enableVATS(true)
+            .setHasGeigerSound(true)
+            .setHasHardLanding(true)
+            .addEffect(new PotionEffect(MobEffects.STRENGTH, 20, 3))
             .setStep(HBMSoundHandler.poweredStep)
-				.setJump(HBMSoundHandler.poweredStep)
-				.setFall(HBMSoundHandler.poweredStep)
-				.setHides(IArmorDisableModel.EnumPlayerPart.HAT);
+            .setJump(HBMSoundHandler.poweredStep)
+            .setFall(HBMSoundHandler.poweredStep)
+            .setHides(IArmorDisableModel.EnumPlayerPart.HAT)
+            .setHazardClass(ArmorUtil.FULL_PACKAGE).setRadResist(1.7D /*97%*/);
     public static final Item ncrpa_plate = new ArmorNCRPA(MaterialRegistry.aMatAJR, -1, EntityEquipmentSlot.CHEST, Tags.MODID + ":textures/armor/starmetal_1.png", 2500000, 10000, 2000, 25, "ncrpa_plate").cloneStats((ArmorFSB) rpa_helmet);
     public static final Item ncrpa_legs = new ArmorNCRPA(MaterialRegistry.aMatAJR, -1, EntityEquipmentSlot.LEGS, Tags.MODID + ":textures/armor/starmetal_2.png", 2500000, 10000, 2000, 25, "ncrpa_legs").cloneStats((ArmorFSB) rpa_helmet);
     public static final Item ncrpa_boots = new ArmorNCRPA(MaterialRegistry.aMatAJR, -1, EntityEquipmentSlot.FEET, Tags.MODID + ":textures/armor/starmetal_1.png", 2500000, 10000, 2000, 25, "ncrpa_boots").cloneStats((ArmorFSB) rpa_helmet);
@@ -670,6 +684,7 @@ public class ModItems {
             .enableThermalSight(true)
             .setHasHardLanding(true)
             .setHides(IArmorDisableModel.EnumPlayerPart.HAT)
+            .setHazardClass(ArmorUtil.FULL_PACKAGE).setRadResist(4D /*99.99%*/)
             .setStep(HBMSoundHandler.metalStep)
             .setJump(HBMSoundHandler.ironJump)
             .setFall(HBMSoundHandler.ironLand);
@@ -685,6 +700,7 @@ public class ModItems {
             .enableThermalSight(true)
             .setHasHardLanding(true)
             .setHides(IArmorDisableModel.EnumPlayerPart.HAT)
+            .setHazardClass(ArmorUtil.FULL_PACKAGE).setRadResist(5D /*99.999%*/)
             .setStep(HBMSoundHandler.metalStep)
             .setJump(HBMSoundHandler.ironJump)
             .setFall(HBMSoundHandler.ironLand);
@@ -747,7 +763,7 @@ public class ModItems {
     public static final Item gun_moist_nugget = new ItemNugget(3, false, "gun_moist_nugget").setCreativeTab(MainRegistry.weaponTab);
     public static final Item crucible = new ItemCrucible(500, 1F, MaterialRegistry.matCrucible, "crucible").setCreativeTab(MainRegistry.weaponTab);
 
-    public static final Item stick_dynamite = new ItemGrenade(3, "stick_dynamite").setCreativeTab(MainRegistry.weaponTab);
+    public static final Item stick_dynamite = new ItemGrenadeDynamite(3, "stick_dynamite").setCreativeTab(MainRegistry.weaponTab);
     public static final Item stick_dynamite_fishing = new ItemGrenadeFishing(3, "stick_dynamite_fishing").setCreativeTab(MainRegistry.weaponTab);
     public static final Item stick_tnt = new ItemBakedBase("stick_tnt").setCreativeTab(MainRegistry.weaponTab);
     public static final Item stick_semtex = new ItemBakedBase("stick_semtex").setCreativeTab(MainRegistry.weaponTab);
@@ -869,6 +885,7 @@ public class ModItems {
     public static final Item billet_u233 = new ItemCustomLore("billet_u233").setCreativeTab(MainRegistry.partsTab);
     public static final Item billet_u235 = new ItemCustomLore("billet_u235").setCreativeTab(MainRegistry.partsTab);
     public static final Item billet_u238 = new ItemCustomLore("billet_u238").setCreativeTab(MainRegistry.partsTab);
+    public static final Item billet_uzh = new ItemCustomLore("billet_uzh").setCreativeTab(MainRegistry.partsTab);
     public static final Item billet_plutonium = new ItemCustomLore("billet_plutonium").setCreativeTab(MainRegistry.partsTab);
     public static final Item billet_pu238 = new ItemCustomLore("billet_pu238").setCreativeTab(MainRegistry.partsTab);
     public static final Item billet_pu239 = new ItemCustomLore("billet_pu239").setCreativeTab(MainRegistry.partsTab);
@@ -1404,6 +1421,7 @@ public class ModItems {
     public static final Item can_luna = new ItemEnergy("can_luna").setContainerItem(ModItems.can_empty).setCreativeTab(MainRegistry.consumableTab);
     public static final Item can_bepis = new ItemEnergy("can_bepis").setContainerItem(ModItems.can_empty).setCreativeTab(MainRegistry.consumableTab);
     public static final Item can_breen = new ItemEnergy("can_breen").setContainerItem(ModItems.can_empty).setCreativeTab(MainRegistry.consumableTab);
+    public static final Item can_mug = new ItemEnergy("can_mug").makeCan().setCreativeTab(MainRegistry.consumableTab);
     public static final Item drone = new ItemDrone("drone");
     //Tools
     public static final Item titanium_sword = new ItemSwordAbility(6.5F, 0, MaterialRegistry.enumToolMaterialTitanium, "titanium_sword");
@@ -1721,15 +1739,14 @@ public class ModItems {
     //Templates
     public static final Item blueprints = new ItemBlueprints("blueprints").setMaxStackSize(1).setCreativeTab(MainRegistry.templateTab);
     public static final Item blueprint_folder = new ItemBlueprintFolder("blueprint_folder").setCreativeTab(MainRegistry.templateTab);
-    public static final Item template_folder = new ItemTemplateFolder("template_folder").setMaxStackSize(1).setCreativeTab(MainRegistry.templateTab);
+    public static final Item template_folder = new ItemBase("template_folder").setMaxStackSize(1).setCreativeTab(MainRegistry.templateTab);
     // TODO: implment this
-    public static final Item journal_pip = new ItemTemplateFolder("journal_pip").setMaxStackSize(1).setCreativeTab(MainRegistry.templateTab);
-    public static final Item journal_bj = new ItemTemplateFolder("journal_bj").setMaxStackSize(1).setCreativeTab(MainRegistry.templateTab);
-    public static final Item journal_silver = new ItemTemplateFolder("journal_silver").setMaxStackSize(1).setCreativeTab(MainRegistry.templateTab);
+    public static final Item journal_pip = new ItemBase("journal_pip").setMaxStackSize(1).setCreativeTab(MainRegistry.templateTab);
+    public static final Item journal_bj = new ItemBase("journal_bj").setMaxStackSize(1).setCreativeTab(MainRegistry.templateTab);
+    public static final Item journal_silver = new ItemBase("journal_silver").setMaxStackSize(1).setCreativeTab(MainRegistry.templateTab);
     public static final Item bobmazon = new ItemCatalog("bobmazon").setMaxStackSize(1).setCreativeTab(MainRegistry.templateTab);
     public static final Item bobmazon_hidden = new ItemCatalog("bobmazon_hidden").setMaxStackSize(1).setCreativeTab(MainRegistry.templateTab);
     public static final Item siren_track = new ItemCassette("siren_track").setMaxStackSize(1).setCreativeTab(MainRegistry.templateTab);
-    public static final Item crucible_template = new ItemCrucibleTemplate("crucible_template").setMaxStackSize(1).setCreativeTab(MainRegistry.templateTab);
     public static final Item fluid_identifier_multi = new ItemFluidIDMulti("fluid_identifier_multi").setMaxStackSize(1).setCreativeTab(MainRegistry.templateTab);
     public static final Item fluid_duct = new ItemFFFluidDuct("ff_fluid_duct").setCreativeTab(MainRegistry.templateTab);
     public static final ToolMaterial matMeseGavel = EnumHelper.addToolMaterial("HBM_MESEGAVEL", 4, 0, 50F, 0.0F, 200).setRepairItem(new ItemStack(ModItems.plate_paa));
@@ -1936,52 +1953,13 @@ public class ModItems {
     public static final Item charge_railgun = new ItemCustomLore("charge_railgun").setMaxStackSize(1).setCreativeTab(MainRegistry.weaponTab);
     public static final Item ammo_container = new ItemAmmoContainer("ammo_container").setCreativeTab(MainRegistry.weaponTab);
     //Grenade
-    public static final Item grenade_generic = new ItemGrenade(4, "grenade_generic").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_strong = new ItemGrenade(5, "grenade_strong").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_frag = new ItemGrenade(4, "grenade_frag").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_fire = new ItemGrenade(4, "grenade_fire").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_shrapnel = new ItemGrenade(4, "grenade_shrapnel").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_cluster = new ItemGrenade(5, "grenade_cluster").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_flare = new ItemGrenade(0, "grenade_flare").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_electric = new ItemGrenade(5, "grenade_electric").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_poison = new ItemGrenade(4, "grenade_poison").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_gas = new ItemGrenade(4, "grenade_gas").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_cloud = new ItemGrenade(-1, "grenade_cloud").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_pink_cloud = new ItemGrenade(-1, "grenade_pink_cloud").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_smart = new ItemGrenade(-1, "grenade_smart").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_mirv = new ItemGrenade(1, "grenade_mirv").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_breach = new ItemGrenade(-1, "grenade_breach").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_burst = new ItemGrenade(1, "grenade_burst").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_pulse = new ItemGrenade(4, "grenade_pulse").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_plasma = new ItemGrenade(5, "grenade_plasma").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_tau = new ItemGrenade(5, "grenade_tau").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_schrabidium = new ItemGrenade(7, "grenade_schrabidium").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_nuke = new ItemGrenade(-1, "grenade_nuke").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_lemon = new ItemGrenade(4, "grenade_lemon").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_gascan = new ItemGrenade(-1, "grenade_gascan").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_kyiv = new ItemGrenadeKyiv(-1, "grenade_kyiv").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_mk2 = new ItemGrenade(5, "grenade_mk2").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_aschrab = new ItemGrenade(-1, "grenade_aschrab").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_nuclear = new ItemGrenade(7, "grenade_nuclear").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_zomg = new ItemGrenade(7, "grenade_zomg").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_solinium = new ItemGrenade(6, "grenade_solinium").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_black_hole = new ItemGrenade(7, "grenade_black_hole").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_if_generic = new ItemGrenade(4, "grenade_if_generic").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_if_he = new ItemGrenade(5, "grenade_if_he").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_if_bouncy = new ItemGrenade(4, "grenade_if_bouncy").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_if_sticky = new ItemGrenade(4, "grenade_if_sticky").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_if_impact = new ItemGrenade(-1, "grenade_if_impact").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_if_incendiary = new ItemGrenade(4, "grenade_if_incendiary").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_if_toxic = new ItemGrenade(4, "grenade_if_toxic").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_if_concussion = new ItemGrenade(4, "grenade_if_concussion").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_if_brimstone = new ItemGrenade(5, "grenade_if_brimstone").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_if_mystery = new ItemGrenade(5, "grenade_if_mystery").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_if_hopwire = new ItemGrenade(6, "grenade_if_hopwire").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_if_spark = new ItemGrenade(7, "grenade_if_spark").setCreativeTab(MainRegistry.weaponTab);
-    public static final Item grenade_if_null = new ItemGrenade(8, "grenade_if_null").setCreativeTab(MainRegistry.weaponTab);
+    public static final Item grenade_shell = new ItemGrenadeShell("grenade_shell").setCreativeTab(MainRegistry.weaponTab);
+    public static final Item grenade_filling = new ItemGrenadeFilling("grenade_filling").setCreativeTab(MainRegistry.weaponTab);
+    public static final Item grenade_fuze = new ItemGrenadeFuze("grenade_fuze").setCreativeTab(MainRegistry.weaponTab);
+    public static final Item grenade_extra = new ItemGrenadeExtra("grenade_extra").setCreativeTab(MainRegistry.weaponTab);
+    public static final Item grenade_universal = new ItemGrenadeUniversal("grenade_universal").setCreativeTab(MainRegistry.weaponTab);
     public static final Item weaponized_starblaster_cell = new WeaponizedCell("weaponized_starblaster_cell").setMaxStackSize(1).setCreativeTab(MainRegistry.weaponTab);
     //Turret
-    public static final Item turret_control = new ItemTurretControl("turret_control").setFull3D().setMaxStackSize(1).setCreativeTab(MainRegistry.weaponTab);
     public static final Item turret_chip = new ItemTurretChip("turret_chip").setMaxStackSize(1).setCreativeTab(MainRegistry.weaponTab);
     public static final Item turret_biometry = new ItemTurretBiometry("turret_biometry").setFull3D().setMaxStackSize(1).setCreativeTab(MainRegistry.weaponTab);
     public static final Item designator_arty_range = new ItemDesignatorArtyRange("designator_arty_range").setCreativeTab(MainRegistry.missileTab);
@@ -2009,6 +1987,7 @@ public class ModItems {
     public static final ItemRBMKPellet rbmk_pellet_meu = new ItemRBMKPellet("Medium Enriched Uranium-235", "rbmk_pellet_meu");
     public static final ItemRBMKPellet rbmk_pellet_heu233 = new ItemRBMKPellet("Highly Enriched Uranium-233", "rbmk_pellet_heu233");
     public static final ItemRBMKPellet rbmk_pellet_heu235 = new ItemRBMKPellet("Highly Enriched Uranium-235", "rbmk_pellet_heu235");
+    public static final ItemRBMKPellet rbmk_pellet_uzh = new ItemRBMKPellet("Uranium Zirconium Hydride", "rbmk_pellet_uzh");
     public static final ItemRBMKPellet rbmk_pellet_thmeu = new ItemRBMKPellet("Thorium with MEU Driver Fuel", "rbmk_pellet_thmeu");
     public static final ItemRBMKPellet rbmk_pellet_lep = new ItemRBMKPellet("Low Enriched Plutonium-239", "rbmk_pellet_lep");
     public static final ItemRBMKPellet rbmk_pellet_mep = new ItemRBMKPellet("Medium Enriched Plutonium-239", "rbmk_pellet_mep");
@@ -2033,6 +2012,22 @@ public class ModItems {
     public static final ItemRBMKPellet rbmk_pellet_flashlead = new ItemRBMKPellet("Antihydrogen confined by a Magnetized Gold-198 & Lead-209 Lattice", "rbmk_pellet_flashlead");
     public static final ItemRBMKPellet rbmk_pellet_balefire = new ItemRBMKPellet("Draconic Flames", "rbmk_pellet_balefire");
     public static final ItemRBMKPellet rbmk_pellet_drx = new ItemRBMKPellet(TextFormatting.OBFUSCATED + "can't you hear, can't you hear the thunder?", "rbmk_pellet_drx");
+
+    static int tintUranium = 0x868D82;
+    static int tintNeptunium = 0x757E73;
+    static int tintPlutonium = 0x656E6B;
+    static int tintAmericium = 0xA88A8F;
+    static int tintThorium = 0x665448;
+    static int tintZirconium = 0xAAA36A;
+    static int tintSchrabidium = 0x2D9A94;
+    static int tintPolonium = 0x563A26;
+    static int tintRadium = 0xB3B6AD;
+    static int tintAustralium = 0xFFEE00;
+    static int tintFlashgold = 0xDC9613;
+    static int tintFlashlead = 0x7B7B87;
+    static int tintBalefire = 0xB2FF1B;
+    static int tintDRX = 0xD77276;
+
     public static final Item rbmk_fuel_empty = new ItemBase("rbmk_fuel_empty").setMaxStackSize(1).setCreativeTab(MainRegistry.controlTab);
     public static final ItemRBMKRod rbmk_fuel_ueu = new ItemRBMKRod(rbmk_pellet_ueu, "rbmk_fuel_ueu")
            .setYield(100000000D)
@@ -2041,7 +2036,7 @@ public class ModItems {
 				.setDepletionFunction(EnumDepleteFunc.RAISING_SLOPE)
 				.setHeat(0.65) //0.5 is too much of a nerf in heat; pu239 buildup justifies it being on par with MEU ig
 				.setMeltingPoint(2865)
-            .setFuelColor(0.513F, 0.541F, 0.498F);
+            .setTint(tintUranium);
     public static final ItemRBMKRod rbmk_fuel_meu = new ItemRBMKRod(rbmk_pellet_meu, "rbmk_fuel_meu")
             .setYield(100000000D)
             .setStats(20)
@@ -2049,20 +2044,30 @@ public class ModItems {
             .setDepletionFunction(EnumDepleteFunc.RAISING_SLOPE)
             .setHeat(0.65) //0.75 was a bit too much...
             .setMeltingPoint(2865)
-            .setFuelColor(0.513F, 0.541F, 0.498F);
+            .setTint(tintUranium);
     public static final ItemRBMKRod rbmk_fuel_heu233 = new ItemRBMKRod(rbmk_pellet_heu233, "rbmk_fuel_heu233")
            .setYield(100000000D)
 				.setStats(27.5D)
 				.setFunction(EnumBurnFunc.LINEAR)
 				.setHeat(1.25D)
 				.setMeltingPoint(2865)
-            .setFuelColor(0.513F, 0.541F, 0.498F);
+            .setTint(tintUranium);
     public static final ItemRBMKRod rbmk_fuel_heu235 = new ItemRBMKRod(rbmk_pellet_heu235, "rbmk_fuel_heu235")
             .setYield(100000000D)
             .setStats(50) //Consistency with HEN; its critical mass is too high to justify a linear function
             .setFunction(EnumBurnFunc.SQUARE_ROOT)
             .setMeltingPoint(2865)
-            .setFuelColor(0.513F, 0.541F, 0.498F);
+            .setTint(tintUranium);
+    public static final ItemRBMKRod rbmk_fuel_uzh = new ItemRBMKRod(rbmk_pellet_uzh, "rbmk_fuel_uzh")
+				.setYield(50_000_000D)
+				.setStats(30)
+				.setFunction(EnumBurnFunc.LOG_TEN)
+				.setDepletionFunction(EnumDepleteFunc.GENTLE_SLOPE)
+				.setHeat(0.75)
+				.setHeatCoeff(1_000D, 500D)
+				.setDiffusion(0.1D)
+				.setMeltingPoint(1845)
+				.setTint(0x7077AF);
     public static final ItemRBMKRod rbmk_fuel_thmeu = new ItemRBMKRod(rbmk_pellet_thmeu, "rbmk_fuel_thmeu")
             .setYield(100000000D)
             .setStats(20)
@@ -2070,7 +2075,7 @@ public class ModItems {
             .setDepletionFunction(EnumDepleteFunc.BOOSTED_SLOPE)
             .setHeat(0.65D) //Consistency with MEU
             .setMeltingPoint(3350)
-            .setFuelColor(0.360F, 0.259F, 0.212F);
+            .setTint(tintThorium);
     public static final ItemRBMKRod rbmk_fuel_lep = new ItemRBMKRod(rbmk_pellet_lep, "rbmk_fuel_lep")
             .setYield(100000000D)
             .setStats(35)
@@ -2078,27 +2083,27 @@ public class ModItems {
             .setDepletionFunction(EnumDepleteFunc.RAISING_SLOPE)
             .setHeat(0.75D)
             .setMeltingPoint(2744)
-            .setFuelColor(0.314F, 0.349F, 0.337F);
+            .setTint(tintPlutonium);
     public static final ItemRBMKRod rbmk_fuel_mep = new ItemRBMKRod(rbmk_pellet_mep, "rbmk_fuel_mep")
             .setYield(100000000D)
             .setStats(35)
             .setFunction(EnumBurnFunc.SQUARE_ROOT)
             .setMeltingPoint(2744)
-            .setFuelColor(0.314F, 0.349F, 0.337F);
+            .setTint(tintPlutonium);
     public static final ItemRBMKRod rbmk_fuel_hep239 = new ItemRBMKRod(rbmk_pellet_hep239, "rbmk_fuel_hep")
             .setYield(100000000D)
             .setStats(30)
             .setFunction(EnumBurnFunc.LINEAR)
             .setHeat(1.25D)
             .setMeltingPoint(2744)
-            .setFuelColor(0.314F, 0.349F, 0.337F);
+            .setTint(tintPlutonium);
     public static final ItemRBMKRod rbmk_fuel_hep241 = new ItemRBMKRod(rbmk_pellet_hep241, "rbmk_fuel_hep241")
             .setYield(100000000D)
             .setStats(40)
             .setFunction(EnumBurnFunc.LINEAR)
             .setHeat(1.75D)
             .setMeltingPoint(2744)
-            .setFuelColor(0.314F, 0.349F, 0.337F);
+            .setTint(tintPlutonium);
     public static final ItemRBMKRod rbmk_fuel_lea = new ItemRBMKRod(rbmk_pellet_lea, "rbmk_fuel_lea")
             .setYield(100000000D)
             .setStats(60, 10)
@@ -2106,14 +2111,14 @@ public class ModItems {
             .setDepletionFunction(EnumDepleteFunc.RAISING_SLOPE)
             .setHeat(1.5D)
             .setMeltingPoint(2386)
-            .setFuelColor(0.514F, 0.467F, 0.455F);
+            .setTint(tintAmericium);
     public static final ItemRBMKRod rbmk_fuel_mea = new ItemRBMKRod(rbmk_pellet_mea, "rbmk_fuel_mea")
             .setYield(100000000D)
             .setStats(35D, 20)
             .setFunction(EnumBurnFunc.ARCH)
             .setHeat(1.75D)
             .setMeltingPoint(2386)
-            .setFuelColor(0.545F, 0.424F, 0.443F);
+            .setTint(tintAmericium);
     public static final ItemRBMKRod rbmk_fuel_hea241 = new ItemRBMKRod(rbmk_pellet_hea241, "rbmk_fuel_hea241")
             .setYield(100000000D)
             .setStats(65, 15)
@@ -2121,14 +2126,14 @@ public class ModItems {
             .setHeat(1.85D)
             .setMeltingPoint(2386)
             .setNeutronTypes(NType.FAST, NType.FAST)
-            .setFuelColor(0.545F, 0.424F, 0.443F);
+            .setTint(tintAmericium);
     public static final ItemRBMKRod rbmk_fuel_hea242 = new ItemRBMKRod(rbmk_pellet_hea242, "rbmk_fuel_hea242")
             .setYield(100000000D)
             .setStats(45)
             .setFunction(EnumBurnFunc.LINEAR)
             .setHeat(2D)
             .setMeltingPoint(3386)
-            .setFuelColor(0.545F, 0.424F, 0.443F);
+            .setTint(tintAmericium);
     public static final ItemRBMKRod rbmk_fuel_men = new ItemRBMKRod(rbmk_pellet_men, "rbmk_fuel_men")
             .setYield(100000000D)
             .setStats(30)
@@ -2137,21 +2142,21 @@ public class ModItems {
             .setHeat(0.75)
             .setMeltingPoint(2800)
             .setNeutronTypes(NType.ANY, NType.FAST)
-            .setFuelColor(0.447F, 0.482F, 0.439F);
+            .setTint(tintNeptunium);
     public static final ItemRBMKRod rbmk_fuel_hen = new ItemRBMKRod(rbmk_pellet_hen, "rbmk_fuel_hen")
             .setYield(100000000D)
             .setStats(40)
             .setFunction(EnumBurnFunc.SQUARE_ROOT)
             .setMeltingPoint(2800)
             .setNeutronTypes(NType.FAST, NType.FAST)
-            .setFuelColor(0.376F, 0.423F, 0.376F);
+            .setTint(tintNeptunium);
     public static final ItemRBMKRod rbmk_fuel_mox = new ItemRBMKRod(rbmk_pellet_mox, "rbmk_fuel_mox")
             .setYield(100000000D)
             .setStats(40)
             .setFunction(EnumBurnFunc.LOG_TEN)
             .setDepletionFunction(EnumDepleteFunc.RAISING_SLOPE)
             .setMeltingPoint(2815)
-            .setFuelColor(0.423F, 0.455F, 0.427F);
+            .setTint(tintUranium);
     public static final ItemRBMKRod rbmk_fuel_les = new ItemRBMKRod(rbmk_pellet_les, "rbmk_fuel_les")
             .setYield(100000000D)
             .setStats(50)
@@ -2159,14 +2164,14 @@ public class ModItems {
             .setHeat(1.25D)
             .setMeltingPoint(2500)
             .setNeutronTypes(NType.SLOW, NType.SLOW) //Beryllium Moderation
-            .setFuelColor(0.498F, 0.596F, 0.620F);
+            .setTint(tintSchrabidium);
     public static final ItemRBMKRod rbmk_fuel_mes = new ItemRBMKRod(rbmk_pellet_mes, "rbmk_fuel_mes")
             .setYield(100000000D)
             .setStats(75D)
             .setFunction(EnumBurnFunc.ARCH)
             .setHeat(1.5D)
             .setMeltingPoint(2750)
-            .setFuelColor(0.408F, 0.651F, 0.710F);
+            .setTint(tintSchrabidium);
     public static final ItemRBMKRod rbmk_fuel_hes = new ItemRBMKRod(rbmk_pellet_hes, "rbmk_fuel_hes")
             .setYield(100000000D)
             .setStats(90)
@@ -2174,7 +2179,7 @@ public class ModItems {
             .setDepletionFunction(EnumDepleteFunc.LINEAR)
             .setHeat(1.75D)
             .setMeltingPoint(3000)
-            .setFuelColor(0F, 0.580F, 0.651F);
+            .setTint(tintSchrabidium);
     public static final ItemRBMKRod rbmk_fuel_leaus = new ItemRBMKRod(rbmk_pellet_leaus, "rbmk_fuel_leaus")
             .setYield(100000000D)
             .setStats(30)
@@ -2183,8 +2188,7 @@ public class ModItems {
             .setXenon(0.05D, 50D)
             .setHeat(1.5D)
             .setMeltingPoint(7029)
-            .setFuelColor(0.929F, 0.812F, 0F)
-            .setCherenkovColor(1F, 0.9F, 0F);
+            .setTint(tintAustralium);
     public static final ItemRBMKRod rbmk_fuel_heaus = new ItemRBMKRod(rbmk_pellet_heaus, "rbmk_fuel_heaus")
             .setYield(100000000D)
             .setStats(35)
@@ -2192,8 +2196,7 @@ public class ModItems {
             .setXenon(0.05D, 50D)
             .setHeat(2D)
             .setMeltingPoint(5211)
-            .setFuelColor(0.929F, 0.812F, 0F)
-            .setCherenkovColor(1F, 0.9F, 0F);
+            .setTint(tintAustralium);
     public static final ItemRBMKRod rbmk_fuel_ra226be = new ItemRBMKRod(rbmk_pellet_ra226be, "rbmk_fuel_ra226be")
             .setYield(100000000D)
             .setStats(0D, 20)
@@ -2204,7 +2207,7 @@ public class ModItems {
             .setDiffusion(0.5D)
             .setMeltingPoint(700)
             .setNeutronTypes(NType.SLOW, NType.SLOW) //Beryllium Moderation
-            .setFuelColor(0.710F, 0.722F, 0.686F);
+            .setTint(tintRadium);
     public static final ItemRBMKRod rbmk_fuel_po210be = new ItemRBMKRod(rbmk_pellet_po210be, "rbmk_fuel_po210be")
             .setYield(25000000D)
             .setStats(0D, 50)
@@ -2215,7 +2218,7 @@ public class ModItems {
             .setDiffusion(0.05D)
             .setMeltingPoint(1287)
             .setNeutronTypes(NType.SLOW, NType.SLOW) //Beryllium Moderation
-            .setFuelColor(0.463F, 0.392F, 0.318F);
+            .setTint(tintPolonium);
     public static final ItemRBMKRod rbmk_fuel_pu238be = new ItemRBMKRod(rbmk_pellet_pu238be, "rbmk_fuel_pu238be")
             .setYield(50000000D)
             .setStats(40, 40)
@@ -2224,7 +2227,7 @@ public class ModItems {
             .setDiffusion(0.05D)
             .setMeltingPoint(1287)
             .setNeutronTypes(NType.SLOW, NType.SLOW) //Beryllium Moderation
-            .setFuelColor(0.459F, 0.475F, 0.443F);
+            .setTint(tintPlutonium);
     public static final ItemRBMKRod rbmk_fuel_balefire_gold = new ItemRBMKRod(rbmk_pellet_balefire_gold, "rbmk_fuel_balefire_gold")
             .setYield(100000000D)
             .setStats(50, 10)
@@ -2232,8 +2235,7 @@ public class ModItems {
             .setDepletionFunction(EnumDepleteFunc.LINEAR)
             .setXenon(0.0D, 50D)
             .setMeltingPoint(2000)
-            .setFuelColor(0.902F, 0.714F, 0.227F)
-            .setCherenkovColor(0.6F, 0F, 1F);
+            .setTint(tintFlashgold);
     public static final ItemRBMKRod rbmk_fuel_flashlead = new ItemRBMKRod(rbmk_pellet_flashlead, "rbmk_fuel_flashlead")
             .setYield(250000000D)
             .setStats(40, 50)
@@ -2241,28 +2243,27 @@ public class ModItems {
             .setDepletionFunction(EnumDepleteFunc.LINEAR)
             .setXenon(0.0D, 50D)
             .setMeltingPoint(2050)
-            .setFuelColor(0.682F, 0.521F, 0.125F)
-            .setCherenkovColor(0.6F, 0F, 1F);
+            .setTint(tintFlashlead);
     public static final ItemRBMKRod rbmk_fuel_zfb_bismuth = new ItemRBMKRod(rbmk_pellet_zfb_bismuth, "rbmk_fuel_zfb_bismuth")
             .setYield(50000000D)
             .setStats(20)
             .setFunction(EnumBurnFunc.SQUARE_ROOT)
             .setHeat(1.75D)
             .setMeltingPoint(2744)
-            .setFuelColor(0.643F, 0.620F, 0.643F);
+            .setTint(tintZirconium);
     public static final ItemRBMKRod rbmk_fuel_zfb_pu241 = new ItemRBMKRod(rbmk_pellet_zfb_pu241, "rbmk_fuel_zfb_pu241")
             .setYield(50000000D)
             .setStats(20)
             .setFunction(EnumBurnFunc.SQUARE_ROOT)
             .setMeltingPoint(2865)
-            .setFuelColor(0.462F, 0.459F, 0.384F);
+            .setTint(tintZirconium);
     public static final ItemRBMKRod rbmk_fuel_zfb_am_mix = new ItemRBMKRod(rbmk_pellet_zfb_am_mix, "rbmk_fuel_zfb_am_mix")
             .setYield(50000000D)
             .setStats(20)
             .setFunction(EnumBurnFunc.LINEAR)
             .setHeat(1.75D)
             .setMeltingPoint(2744)
-            .setFuelColor(0.600F, 0.565F, 0.525F);
+            .setTint(tintZirconium);
     public static final ItemRBMKRod rbmk_fuel_balefire = new ItemRBMKRod(rbmk_pellet_balefire, "rbmk_fuel_balefire")
             .setYield(100000000D)
             .setStats(100, 35)
@@ -2270,16 +2271,14 @@ public class ModItems {
             .setXenon(0.0D, 50D)
             .setHeat(3D)
             .setMeltingPoint(3652)
-            .setFuelColor(0.369F, 0.878F, 0F)
-            .setCherenkovColor(0.25F, 1F, 0F);
+            .setTint(tintBalefire);
     public static final ItemRBMKRod rbmk_fuel_drx = new ItemRBMKRod(rbmk_pellet_drx, "rbmk_fuel_drx")
             .setYield(100000000D)
             .setStats(1000, 10)
             .setFunction(EnumBurnFunc.QUADRATIC)
             .setHeat(0.1D)
             .setMeltingPoint(100000)
-            .setFuelColor(0.733F, 0F, 0F)
-            .setCherenkovColor(1F, 0.25F, 0F);
+            .setTint(tintDRX);
     public static final ItemRBMKRod rbmk_fuel_test = new ItemRBMKRod("THE VOICES", "rbmk_fuel_test")
             .setYield(1000000D)
             .setStats(100)
@@ -2322,7 +2321,7 @@ public class ModItems {
     public static final Item key = new ItemKey("key").setMaxStackSize(1).setCreativeTab(MainRegistry.consumableTab);
     public static final Item key_red = new ItemCustomLore("key_red").setMaxStackSize(1).setCreativeTab(null);
     public static final Item key_red_cracked = new ItemCustomLore("key_red_cracked").setMaxStackSize(1).setCreativeTab(null);
-    public static final Item key_kit = new ItemCounterfitKeys("key_kit").setMaxStackSize(1).setCreativeTab(MainRegistry.consumableTab);
+    public static final Item key_kit = new ItemCounterfeitKeys("key_kit").setMaxStackSize(1).setCreativeTab(MainRegistry.consumableTab);
     public static final Item key_fake = new ItemKey("key_fake").setMaxStackSize(1).setCreativeTab(MainRegistry.consumableTab);
     public static final Item pin = new ItemCustomLore("pin").setMaxStackSize(8).setCreativeTab(MainRegistry.consumableTab);
     public static final Item padlock_rusty = new ItemLock(1, "padlock_rusty").setMaxStackSize(1).setCreativeTab(MainRegistry.consumableTab);
@@ -2372,6 +2371,8 @@ public class ModItems {
     public static final Item man_igniter = new ItemMan("man_igniter").setMaxStackSize(1).setCreativeTab(MainRegistry.nukeTab);
     public static final Item mike_core = new ItemMike("mike_core").setMaxStackSize(1).setCreativeTab(MainRegistry.nukeTab);
     public static final Item mike_cooling_unit = new ItemMike("mike_cooling_unit").setMaxStackSize(1).setCreativeTab(MainRegistry.nukeTab);
+    //mlbv: 1.7 doesn't have a recipe for it..?
+    public static final Item tsar_core = new ItemTsar("tsar_core").setMaxStackSize(1).setCreativeTab(MainRegistry.nukeTab);
     public static final Item fleija_igniter = new ItemFleija("fleija_igniter").setMaxStackSize(1).setCreativeTab(MainRegistry.nukeTab);
     public static final Item fleija_propellant = new ItemFleija("fleija_propellant").setMaxStackSize(1).setCreativeTab(MainRegistry.nukeTab);
     public static final Item fleija_core = new ItemFleija("fleija_core").setMaxStackSize(1).setCreativeTab(MainRegistry.nukeTab);
@@ -2411,9 +2412,8 @@ public class ModItems {
     public static final Item nuke_starter_kit = new ItemStarterKit("nuke_starter_kit").setMaxStackSize(1).setCreativeTab(MainRegistry.consumableTab);
     public static final Item nuke_advanced_kit = new ItemStarterKit("nuke_advanced_kit").setMaxStackSize(1).setCreativeTab(MainRegistry.consumableTab);
     public static final Item nuke_commercially_kit = new ItemStarterKit("nuke_commercially_kit").setMaxStackSize(1).setCreativeTab(MainRegistry.consumableTab);
-    public static final Item kit_custom = new ItemKitCustom("kit_custom").setCreativeTab(MainRegistry.consumableTab);
+    public static final Item kit_custom = new ItemKitCustom("kit_custom").setCreativeTab(null);
     public static final Item toolbox = new ItemToolBox("toolbox").setCreativeTab(MainRegistry.consumableTab);
-    public static final Item legacy_toolbox = new ItemKitNBT("toolbox_legacy").setContainerItem(toolbox).setCreativeTab(MainRegistry.consumableTab);
     public static final Item loot_10 = new ItemLootCrate("loot_10").setMaxStackSize(1).setCreativeTab(MainRegistry.missileTab);
     public static final Item loot_15 = new ItemLootCrate("loot_15").setMaxStackSize(1).setCreativeTab(MainRegistry.missileTab);
     public static final Item loot_misc = new ItemLootCrate("loot_misc").setMaxStackSize(1).setCreativeTab(MainRegistry.missileTab);
@@ -2430,6 +2430,7 @@ public class ModItems {
     public static final Item sat_chip = new ItemSatellite("sat_chip").setMaxStackSize(1).setCreativeTab(MainRegistry.missileTab);
     public static final Item sat_interface = new ItemSatInterface("sat_interface").setMaxStackSize(1).setCreativeTab(MainRegistry.missileTab);
     public static final Item sat_coord = new ItemSatInterface("sat_coord").setMaxStackSize(1).setCreativeTab(MainRegistry.missileTab);
+    public static final Item sat_designator = new ItemSatDesignator("sat_designator").setFull3D().setMaxStackSize(1).setCreativeTab(MainRegistry.missileTab);
     public static final Item sat_relay = new ItemSatellite("sat_relay").setMaxStackSize(1).setCreativeTab(MainRegistry.missileTab);
     //Missiles
     public static final Item rangefinder = new ItemRangefinder("rangefinder").setMaxStackSize(1).setCreativeTab(MainRegistry.missileTab);
@@ -2802,7 +2803,7 @@ public class ModItems {
             .addAbility(IToolAreaAbility.HAMMER_FLAT, 3)
             .addAbility(IToolAreaAbility.RECURSION, 5);
 
-    public static void preInit() {
+    public static void registerItems() {
         GunFactory.init();
         excludeNEI.add(item_secret);
 
@@ -2810,10 +2811,6 @@ public class ModItems {
             if (block instanceof ICustomBlockItem) {
                 ((ICustomBlockItem) block).registerItem();
             } else if (block instanceof BlockModDoor) {
-            } else if (block instanceof FluidDuctBox || block instanceof FluidDuctStandard) {
-                ForgeRegistries.ITEMS.register(new ItemBlock(block).setRegistryName(block.getRegistryName()).setHasSubtypes(true));
-            } else if (block instanceof PowerCableBox) {
-                ForgeRegistries.ITEMS.register(new ItemBlock(block).setRegistryName(block.getRegistryName()).setHasSubtypes(true));
             } else {
                 ForgeRegistries.ITEMS.register(new ItemBlock(block).setRegistryName(block.getRegistryName()));
 

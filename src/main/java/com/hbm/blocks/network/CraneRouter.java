@@ -4,6 +4,7 @@ import com.hbm.api.conveyor.IConveyorBelt;
 import com.hbm.api.conveyor.IConveyorItem;
 import com.hbm.api.conveyor.IConveyorPackage;
 import com.hbm.api.conveyor.IEnterableBlock;
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.entity.item.EntityMovingItem;
 import com.hbm.entity.item.EntityMovingPackage;
@@ -20,17 +21,19 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class CraneRouter extends BlockContainer implements IEnterableBlock {
+public class CraneRouter extends BlockContainer implements IEnterableBlock, ITooltipProvider {
     public CraneRouter(Material materialIn, String s) {
         super(materialIn);
         this.setTranslationKey(s);
@@ -67,14 +70,10 @@ public class CraneRouter extends BlockContainer implements IEnterableBlock {
         return EnumBlockRenderType.MODEL;
     }
 
-    private static EnumFacing[] customEnumOrder = new EnumFacing[]{
-        EnumFacing.NORTH,
-        EnumFacing.UP,
-        EnumFacing.EAST,
-        EnumFacing.SOUTH,
-        EnumFacing.DOWN,
-        EnumFacing.WEST
-    };
+    @Override
+    public void addInformation(@NotNull ItemStack stack, World world, @NotNull List<String> tooltip, @NotNull ITooltipFlag flag) {
+        addStandardInfo(tooltip);
+    }
 
     @Override
     public void onItemEnter(World world, int x, int y, int z, EnumFacing dir, IConveyorItem entity) {
@@ -151,7 +150,7 @@ public class CraneRouter extends BlockContainer implements IEnterableBlock {
                     world.spawnEntity(new EntityItem(world, x + 0.5, y + 0.5, z + 0.5, stack));
                 }
             } else {
-                sendPackageOnRoute(world, x, y, z, items, customEnumOrder[i]);
+                sendPackageOnRoute(world, x, y, z, items, EnumFacing.byIndex(i));
             }
         }
     }
@@ -192,7 +191,7 @@ public class CraneRouter extends BlockContainer implements IEnterableBlock {
 
             //add dir if matches with whitelist on or doesn't match with blacklist on
             if((mode == router.MODE_WHITELIST && matchesFilter) || (mode == router.MODE_BLACKLIST && !matchesFilter)) {
-                validDirs.add(customEnumOrder[i]);
+                validDirs.add(EnumFacing.byIndex(i));
             }
         }
 
@@ -200,7 +199,7 @@ public class CraneRouter extends BlockContainer implements IEnterableBlock {
         if(validDirs.isEmpty()) {
             for(int i = 0; i<6; i++) {
                 if(router.modes[i] == router.MODE_WILDCARD) {
-                    validDirs.add(customEnumOrder[i]);
+                    validDirs.add(EnumFacing.byIndex(i));
                 }
             }
         }
@@ -213,13 +212,6 @@ public class CraneRouter extends BlockContainer implements IEnterableBlock {
         return validDirs.get(i);
     }
 
-    private static int getOutputIndex(EnumFacing side) {
-        for (int i = 0; i < 6; i++) {
-            if (customEnumOrder[i] == side) return i;
-        }
-        return 6;
-    }
-
     @SuppressWarnings("unchecked")
     public static List<ItemStack>[] sort(World world, int x, int y, int z, ItemStack... stacks) {
         List<ItemStack>[] output = new List[7];
@@ -229,7 +221,7 @@ public class CraneRouter extends BlockContainer implements IEnterableBlock {
             if (stack == null || stack.isEmpty()) continue;
 
             EnumFacing route = getOutputDir(world, x, y, z, stack.copy());
-            output[getOutputIndex(route)].add(stack.copy());
+            output[route == null ? 6 : route.getIndex()].add(stack.copy());
         }
 
         return output;

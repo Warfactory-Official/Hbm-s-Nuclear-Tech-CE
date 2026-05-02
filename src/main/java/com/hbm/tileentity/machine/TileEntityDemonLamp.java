@@ -20,6 +20,7 @@ import java.util.List;
 
 @AutoRegister
 public class TileEntityDemonLamp extends TileEntity implements ITickable {
+	private AxisAlignedBB bb;
 
 	@Override
 	public void update(){
@@ -70,7 +71,8 @@ public class TileEntityDemonLamp extends TileEntity implements ITickable {
 
 	@Override
 	public AxisAlignedBB getRenderBoundingBox(){
-		return TileEntity.INFINITE_EXTENT_AABB;
+		if (bb == null) bb = new AxisAlignedBB(pos.getX() - 16, pos.getY() - 1, pos.getZ() - 16, pos.getX() + 17, pos.getY() + 2, pos.getZ() + 17);
+		return bb;
 	}
 
 	@Override

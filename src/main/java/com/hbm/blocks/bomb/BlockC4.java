@@ -6,7 +6,7 @@ import net.minecraft.world.World;
 
 public class BlockC4 extends BlockTNTBase{
 
-    private static final BlockBakeFrame frame = BlockBakeFrame.bottomTop("c4_side", "c4_top", "c4_bottom");
+    private static final BlockBakeFrame frame = BlockBakeFrame.sideTopBottom("c4_side", "c4_top", "c4_bottom");
 
     public BlockC4(String s) {
         super(s, frame, frame);

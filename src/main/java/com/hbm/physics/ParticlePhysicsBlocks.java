@@ -1,6 +1,7 @@
 package com.hbm.physics;
 
 import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.render.util.NTMImmediate;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
@@ -18,7 +19,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 
@@ -65,15 +66,13 @@ public class ParticlePhysicsBlocks extends Particle {
 		
 		callListId = GL11.glGenLists(1);
 		GL11.glNewList(callListId, GL11.GL_COMPILE);
-		Tessellator tes = Tessellator.getInstance();
-		BufferBuilder buf = tes.getBuffer();
-		buf.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+		BufferBuilder buf = NTMImmediate.INSTANCE.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
 		for(BlockPos pos : blocks){
 			IBlockState state = world.getBlockState(pos);
 			IBakedModel model = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(state);
 			Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelRenderer().renderModelSmooth(world, model, state, pos.add(0, offsetY, 0), buf, true, MathHelper.getPositionRandom(pos));
 		}
-		tes.draw();
+		NTMImmediate.INSTANCE.draw();
 		GL11.glEndList();
 	}
 	

@@ -4,9 +4,11 @@ import com.hbm.Tags;
 import com.hbm.entity.projectile.EntityBombletZeta;
 import com.hbm.render.loader.HFRWavefrontObject;
 import com.hbm.interfaces.AutoRegister;
+import com.hbm.main.ClientProxy;
 import com.hbm.render.loader.IModelCustom;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
 import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
@@ -27,6 +29,9 @@ public class RenderBombletZeta extends Render<EntityBombletZeta> {
 	
 	@Override
 	public void doRender(EntityBombletZeta entity, double x, double y, double z, float entityYaw, float partialTicks) {
+		if (!ClientProxy.renderingConstant) {
+			return;
+		}
 		GlStateManager.pushMatrix();
         GlStateManager.translate((float)x, (float)y, (float)z);
         GlStateManager.rotate(entity.prevRotationYaw + (entity.rotationYaw - entity.prevRotationYaw) * partialTicks - 90.0F, 0.0F, 1.0F, 0.0F);
@@ -37,6 +42,10 @@ public class RenderBombletZeta extends Render<EntityBombletZeta> {
         
         boyModel.renderAll();
 		GlStateManager.popMatrix();
+	}
+
+	@Override
+	public void doRenderShadowAndFire(Entity entityIn, double x, double y, double z, float yaw, float partialTicks) {
 	}
 	
 	@Override

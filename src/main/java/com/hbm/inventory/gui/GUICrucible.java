@@ -4,6 +4,9 @@ import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerCrucible;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
+import com.hbm.inventory.recipes.CrucibleRecipe;
+import com.hbm.inventory.recipes.CrucibleRecipes;
+import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.tileentity.machine.TileEntityCrucible;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
@@ -16,6 +19,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -43,6 +47,24 @@ public class GUICrucible extends GuiInfoContainer {
 
         this.drawCustomInfoStat(x, y, guiLeft + 125, guiTop + 81, 34, 7, x, y, new String[] { String.format(Locale.US, "%,d", crucible.progress) + " / " + String.format(Locale.US, "%,d", crucible.processTime) + "TU" });
         this.drawCustomInfoStat(x, y, guiLeft + 125, guiTop + 90, 34, 7, x, y, new String[] { String.format(Locale.US, "%,d", crucible.heat) + " / " + String.format(Locale.US, "%,d", crucible.maxHeat) + "TU" });
+
+        if(guiLeft + 106 <= x && guiLeft + 106 + 18 > x && guiTop + 80 < y && guiTop + 80 + 18 >= y) {
+            if(this.crucible.recipe != null && CrucibleRecipes.INSTANCE.recipeNameMap.containsKey(this.crucible.recipe)) {
+                CrucibleRecipe recipe = CrucibleRecipes.INSTANCE.recipeNameMap.get(this.crucible.recipe);
+                this.drawHoveringText(recipe.print(), x, y);
+            } else {
+                this.drawHoveringText(TextFormatting.YELLOW + I18nUtil.resolveKey("gui.recipe.setRecipe"), x, y);
+            }
+        }
+    }
+
+    @Override
+    protected void mouseClicked(int x, int y, int button) throws IOException {
+        super.mouseClicked(x, y, button);
+
+        if(this.checkClick(x, y, 106, 80, 18, 18)) {
+            GUIScreenRecipeSelector.openSelector(CrucibleRecipes.INSTANCE, crucible, crucible.recipe, 0, null, this);
+        }
     }
 
     @Override
@@ -62,6 +84,10 @@ public class GUICrucible extends GuiInfoContainer {
         int hGauge = crucible.heat * 33 / TileEntityCrucible.maxHeat;
         if(hGauge > 0) drawTexturedModalRect(guiLeft + 126, guiTop + 91, 176, 5, hGauge, 5);
 
+        GenericRecipe recipe = CrucibleRecipes.INSTANCE.recipeNameMap.get(crucible.recipe);
+        this.renderItem(recipe != null ? recipe.getIcon() : TEMPLATE_FOLDER, 107, 81);
+
+        Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
         if(!crucible.recipeStack.isEmpty()) drawStack(crucible.recipeStack, TileEntityCrucible.recipeZCapacity, 62, 97);
         if(!crucible.wasteStack.isEmpty()) drawStack(crucible.wasteStack, TileEntityCrucible.wasteZCapacity, 17, 97);
     }

@@ -4,6 +4,7 @@ import com.hbm.handler.ArmorModHandler;
 import com.hbm.main.MainRegistry;
 import com.hbm.render.model.ModelBackTesla;
 import com.hbm.tileentity.machine.TileEntityTesla;
+import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -52,30 +53,35 @@ public class ItemModTesla extends ItemArmorMod {
 		}
 	}
 
+	// Th3_Sl1ze: Shading is a bit fucked up btw. Too lazy to deal with it myself
 	@Override
-	public void modRender(Pre event, ItemStack armor){
+	public void modRender(Pre event, ItemStack armor) {
 		if(this.modelTesla == null) {
 			this.modelTesla = new ModelBackTesla();
 		}
-		
+
 		EntityPlayer player = event.getEntityPlayer();
 
-		modelTesla.isSneak = player.isSneaking();
-		
 		float interp = event.getPartialRenderTick();
-		float yaw = player.prevRenderYawOffset + (player.renderYawOffset - player.prevRenderYawOffset)*interp;
-		float yawWrapped = MathHelper.wrapDegrees(yaw+180);
-		float pitch = player.rotationPitch;
+		float yaw = player.prevRenderYawOffset + (player.renderYawOffset - player.prevRenderYawOffset) * interp;
+		float pitch = player.prevRotationPitch + (player.rotationPitch - player.prevRotationPitch) * interp;
 
 		EntityPlayer me = MainRegistry.proxy.me();
 		boolean isMe = player == me;
-		if(!isMe){
-			GlStateManager.pushMatrix();
+
+		GlStateManager.pushMatrix();
+
+		if(!isMe) {
 			offset(player, me, interp);
 		}
-		modelTesla.render(event.getEntityPlayer(), 0.0F, 0.0F, 0, yawWrapped, pitch, 0.0625F);
-		if(!isMe){
-			GlStateManager.popMatrix();
-		}
+
+		GlStateManager.rotate(yaw + 180.0F, 0.0F, 1.0F, 0.0F);
+
+		modelTesla.render(player, 0.0F, 0.0F, 0.0F, 0.0F, pitch, 0.0625F);
+
+		GlStateManager.popMatrix();
 	}
+
+
+
 }

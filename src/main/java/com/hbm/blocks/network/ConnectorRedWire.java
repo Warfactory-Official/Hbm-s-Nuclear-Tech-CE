@@ -4,12 +4,14 @@ package com.hbm.blocks.network;
 import com.google.common.collect.ImmutableMap;
 import com.hbm.Tags;
 import com.hbm.blocks.ICustomBlockItem;
+import com.hbm.interfaces.IBlockSpecialPlacementAABB;
 import com.hbm.blocks.network.energy.PylonBase;
 import com.hbm.items.IDynamicModels;
+import com.hbm.items.block.ItemBlockSpecialAABB;
 import com.hbm.tileentity.network.TileEntityConnector;
-import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyDirection;
+import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -34,6 +36,7 @@ import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -41,7 +44,7 @@ import java.util.List;
 import static com.hbm.items.ItemEnumMulti.ROOT_PATH;
 
 //TODO: throw in dummy baked model into it to override the particles
-public class ConnectorRedWire extends PylonBase implements ICustomBlockItem {
+public class ConnectorRedWire extends PylonBase implements ICustomBlockItem, IBlockSpecialPlacementAABB {
 
     public static final PropertyDirection FACING = PropertyDirection.create("facing");
     private static final double f = 1d / 16d;
@@ -62,22 +65,28 @@ public class ConnectorRedWire extends PylonBase implements ICustomBlockItem {
     }
 
     @Override
-    public TileEntity createNewTileEntity(World world, int meta) {
+    public TileEntity createNewTileEntity(@NotNull World world, int meta) {
         return new TileEntityConnector();
     }
 
     @Override
-    public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing,
-                                            float hitX, float hitY, float hitZ,
-                                            int meta, EntityLivingBase placer) {
+    public @NotNull IBlockState getStateForPlacement(@NotNull World world, @NotNull BlockPos pos, @NotNull EnumFacing facing,
+                                                     float hitX, float hitY, float hitZ,
+                                                     int meta, @NotNull EntityLivingBase placer) {
         return this.getDefaultState().withProperty(FACING, facing);
     }
 
     @Override
-    public IBlockState getStateFromMeta(int meta) {
+    public @NotNull IBlockState getStateFromMeta(int meta) {
         EnumFacing facing = EnumFacing.byIndex(meta & 7);
         return this.getDefaultState().withProperty(FACING, facing);
     }
+
+    @Override
+    public @NotNull BlockFaceShape getBlockFaceShape(@NotNull IBlockAccess worldIn, @NotNull IBlockState state, @NotNull BlockPos pos, @NotNull EnumFacing face) {
+        return BlockFaceShape.UNDEFINED;
+    }
+
 
     @Override
     public int getMetaFromState(IBlockState state) {
@@ -85,7 +94,7 @@ public class ConnectorRedWire extends PylonBase implements ICustomBlockItem {
     }
 
     @Override
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos) {
+    public @NotNull AxisAlignedBB getBoundingBox(IBlockState state, @NotNull IBlockAccess world, @NotNull BlockPos pos) {
         EnumFacing facing = state.getValue(FACING);
         return switch (facing) {
             case NORTH -> AABB_NORTH;
@@ -99,8 +108,13 @@ public class ConnectorRedWire extends PylonBase implements ICustomBlockItem {
 
     @Nullable
     @Override
-    public AxisAlignedBB getCollisionBoundingBox(IBlockState state, IBlockAccess worldIn, BlockPos pos) {
+    public AxisAlignedBB getCollisionBoundingBox(@NotNull IBlockState state, @NotNull IBlockAccess worldIn, @NotNull BlockPos pos) {
         return this.getBoundingBox(state, worldIn, pos);
+    }
+
+    @Override
+    public AxisAlignedBB getCollisionBoundingBoxForPlacement(World worldIn, BlockPos pos, IBlockState stateForPlacement, ItemStack stack) {
+        return this.getBoundingBox(stateForPlacement, worldIn, pos);
     }
 
     @Override
@@ -109,31 +123,32 @@ public class ConnectorRedWire extends PylonBase implements ICustomBlockItem {
     }
 
     @Override
-    public boolean isFullCube(IBlockState state) {
+    public boolean isFullCube(@NotNull IBlockState state) {
         return false;
     }
 
     @Override
-    public void addInformation(ItemStack stack, World world, List<String> list, ITooltipFlag flagIn) {
+    public void addInformation(@NotNull ItemStack stack, World world, List<String> list, @NotNull ITooltipFlag flagIn) {
         list.add(TextFormatting.GOLD + "Connection Type: " + TextFormatting.YELLOW + "Single");
         list.add(TextFormatting.GOLD + "Connection Range: " + TextFormatting.YELLOW + "10m");
     }
 
     @Override
-    protected BlockStateContainer createBlockState() {
+    protected @NotNull BlockStateContainer createBlockState() {
         return new BlockStateContainer(this, FACING);
     }
 
+    @Override
     public void registerItem() {
         ItemBlock itemBlock = new DynModelBlockItem(this, "red_connector");
         itemBlock.setRegistryName(this.getRegistryName());
         ForgeRegistries.ITEMS.register(itemBlock);
     }
 
-    private static class DynModelBlockItem extends ItemBlock implements IDynamicModels {
+    private static class DynModelBlockItem extends ItemBlockSpecialAABB<ConnectorRedWire> implements IDynamicModels {
         String texturePath;
 
-        public DynModelBlockItem(Block block, String texturePath) {
+        public DynModelBlockItem(ConnectorRedWire block, String texturePath) {
             super(block);
             this.texturePath = texturePath;
             IDynamicModels.INSTANCES.add(this);

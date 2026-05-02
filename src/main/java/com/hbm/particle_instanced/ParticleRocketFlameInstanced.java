@@ -59,24 +59,14 @@ public class ParticleRocketFlameInstanced extends ParticleInstanced {
 	
 	@Override
 	public void addDataToBuffer(ByteBuffer buf, float partialTicks) {
-		float x = (float) ((this.prevPosX + (this.posX - this.prevPosX) * (double) partialTicks - interpPosX));
-		float y = (float) ((this.prevPosY + (this.posY - this.prevPosY) * (double) partialTicks - interpPosY));
-		float z = (float) ((this.prevPosZ + (this.posZ - this.prevPosZ) * (double) partialTicks - interpPosZ));
+		float x = getInterpX(partialTicks);
+		float y = getInterpY(partialTicks);
+		float z = getInterpZ(partialTicks);
 		float spread = (float) Math.pow(((float)(age) / (float)maxAge) * 4F, 1.5) + 1F;
 		float scaleLevel = ((float)(age) / (float)maxAge) * 8F;
 		this.particleAlpha = MathHelper.clamp((float) Math.pow(1 - Math.min(((float)(age) / (float)(maxAge)), 1), 0.5), 0, 1)*0.75F;
 		for(int ii = 0; ii < 10; ii ++){
-			buf.putFloat(x+vals[ii*5]*spread);
-			buf.putFloat(y+vals[ii*5+1]*spread);
-			buf.putFloat(z+vals[ii*5+2]*spread);
-			
 			float scale = vals[ii*5+3]+scaleLevel;
-			buf.putFloat(scale);
-			
-			buf.putFloat(this.particleTexture.getMinU());
-			buf.putFloat(this.particleTexture.getMinV());
-			buf.putFloat(this.particleTexture.getMaxU()-this.particleTexture.getMinU());
-			buf.putFloat(this.particleTexture.getMaxV()-this.particleTexture.getMinV());
 			
 			float add = vals[ii*5+4];
 			float dark = 1 - Math.min(((float)(age) / (float)(maxAge * 0.25F)), 1);
@@ -84,22 +74,8 @@ public class ParticleRocketFlameInstanced extends ParticleInstanced {
 	        this.particleRed = MathHelper.clamp(dark + add, 0, 1);
 	        this.particleGreen = MathHelper.clamp(0.6F * dark + add, 0, 1);
 	        this.particleBlue = add;
-			
-			byte r = (byte) (this.particleRed*255);
-			byte g = (byte) (this.particleGreen*255);
-			byte b = (byte) (this.particleBlue*255);
-			byte a = (byte) (this.particleAlpha*255);
-			buf.put(r);
-			buf.put(g);
-			buf.put(b);
-			buf.put(a);
-			
-			//int i = this.getBrightnessForRender(partialTicks);
-			//int j = i >> 16 & 65535;
-			//int k = i & 65535;
-			//Bruh I have no clue how these lightmap coords work. They don't seem to be like regular uvs.
-			buf.put((byte) 240);
-			buf.put((byte) 240);
+			writeFullbrightBillboard(buf, x + vals[ii * 5] * spread, y + vals[ii * 5 + 1] * spread, z + vals[ii * 5 + 2] * spread, scale,
+					this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha);
 		}
 	}
 	

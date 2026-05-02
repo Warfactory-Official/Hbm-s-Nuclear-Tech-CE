@@ -112,6 +112,25 @@ public class Library {
     private Library() {
     }
 
+    /// fix for mov making placing dummyables extremely annoying
+    public static boolean checkForPlayerEyePositions(World world,AxisAlignedBB aabb) {
+        // only check for players (cuz fuck off if a sheep gets in way)
+        List<EntityPlayer> entities = world.getEntitiesWithinAABB(EntityPlayer.class,aabb);
+        for (EntityPlayer player : entities) {
+            // imagine building modular turbine in LCA and you can't place large turbine blocks between others
+            if (!player.isCreative() && !player.isSpectator()) {
+                // only check for eye positions
+                if (aabb.contains(new Vec3d(player.posX,player.posY+player.eyeHeight,player.posZ))) {
+                    BlockPos above = new BlockPos(player.posX,player.posY+player.eyeHeight+1,player.posZ);
+                    // finally, if the player cannot escape the block by simply jumping
+                    if (world.getBlockState(above).getCollisionBoundingBox(world,above) != Block.NULL_AABB || aabb.contains(new Vec3d(above).add(0.5,0.5,0.5)))
+                        return false;
+                }
+            }
+        }
+        return true;
+    }
+
     static Random rand = new Random();
     public static final double DEG_TO_RAD = Math.PI / 180.0;
 
@@ -1276,6 +1295,8 @@ public class Library {
             IFluidHandlerItem handler = stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
             FluidStack test = handler.drain(Integer.MAX_VALUE, false);
             if (test == null) return false;
+            FluidType incomingType = NTMFluidCapabilityHandler.getFluidType(test.getFluid());
+            if (!NTMFluidCapabilityHandler.canForgeContainerStoreFluid(stack, incomingType)) return false;
             return tank.fill(test, false) > 0;
         } else return false;
     }
@@ -1288,6 +1309,7 @@ public class Library {
             if (!NTMFluidCapabilityHandler.isEmptyNtmFluidContainer(item)) return false;
             return FluidContainerRegistry.getFillRecipe(stack, tank.getTankType()) != null;
         } else if (stack.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
+            if (!NTMFluidCapabilityHandler.canForgeContainerStoreFluid(stack, tank.getTankType())) return false;
             IFluidHandlerItem handler = stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
             return handler.fill(new FluidStack(tank.getTankTypeFF(), Integer.MAX_VALUE), false) > 0;
         } else return false;
@@ -2230,6 +2252,10 @@ public class Library {
 
     public static long blockPosToChunkLong(long serialized) {
         return ((serialized >> 42) & 0xFFFFFFFFL) | ((serialized << 38 >> 42) << 32);
+    }
+
+    public static long chunkKey(BlockPos p) {
+        return ChunkPos.asLong(p.getX() >> 4, p.getZ() >> 4);
     }
 
     public static int getChunkPosX(long ck) {

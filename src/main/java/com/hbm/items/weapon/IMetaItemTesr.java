@@ -1,5 +1,6 @@
 package com.hbm.items.weapon;
 
+import com.hbm.render.item.TEISRBase;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
@@ -30,7 +31,11 @@ public interface IMetaItemTesr {
 
             if(itemInsance == null)
                 return;
-            ModelLoader.setCustomModelResourceLocation(itemInsance, i, new ModelResourceLocation(getResourceLocationAsString(), "inventory"));
+            ModelResourceLocation location = new ModelResourceLocation(getResourceLocationAsString(), "inventory");
+            if (itemInsance.getTileEntityItemStackRenderer() instanceof TEISRBase teisr) {
+                location = teisr.createModelBinding(itemInsance).getModelLocation();
+            }
+            ModelLoader.setCustomModelResourceLocation(itemInsance, i, location);
         }
     }
 

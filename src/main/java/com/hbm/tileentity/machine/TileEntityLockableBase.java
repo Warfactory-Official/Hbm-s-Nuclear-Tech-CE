@@ -2,30 +2,24 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.block.IToolable.ToolType;
 import com.hbm.handler.ArmorUtil;
-import com.hbm.handler.threading.PacketThreading;
 import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemKeyPin;
 import com.hbm.items.tool.ItemTooling;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
-import com.hbm.packet.toclient.BufPacket;
-import com.hbm.tileentity.IBufPacketReceiver;
+import com.hbm.tileentity.TileEntityLoadedBase;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
 
-public class TileEntityLockableBase extends TileEntity implements IBufPacketReceiver {
+public abstract class TileEntityLockableBase extends TileEntityLoadedBase {
     protected int lock;
     private boolean isLocked = false;
     protected double lockMod = 0.1D;
-    private long lastPackedBufHash = 0L;
 
     public boolean isLocked() {
         return isLocked;
@@ -39,15 +33,19 @@ public class TileEntityLockableBase extends TileEntity implements IBufPacketRece
         if(lock == 0) {
             MainRegistry.logger.error("A block has been set to locked state before setting pins, this should not happen and may cause errors! " + this.toString());
         }
-        if(!isLocked)
+        if(!isLocked) {
+            isLocked = true;
+            dataChanged();
             markDirty();
-        isLocked = true;
+        }
     }
 
     public void setPins(int pins) {
-        if(lock != pins)
+        if(lock != pins) {
+            lock = pins;
+            dataChanged();
             markDirty();
-        lock = pins;
+        }
     }
 
     public int getPins() {
@@ -55,9 +53,11 @@ public class TileEntityLockableBase extends TileEntity implements IBufPacketRece
     }
 
     public void setMod(double mod) {
-        if(lockMod != mod)
+        if(lockMod != mod) {
+            lockMod = mod;
+            dataChanged();
             markDirty();
-        lockMod = mod;
+        }
     }
 
     public double getMod() {
@@ -161,26 +161,17 @@ public class TileEntityLockableBase extends TileEntity implements IBufPacketRece
 
     @Override
     public void serialize(ByteBuf buf) {
+        super.serialize(buf);
+        buf.writeInt(lock);
         buf.writeBoolean(isLocked);
+        buf.writeDouble(lockMod);
     }
 
     @Override
     public void deserialize(ByteBuf buf) {
+        super.deserialize(buf);
+        this.lock = buf.readInt();
         this.isLocked = buf.readBoolean();
-    }
-
-    public void networkPackNT(int range) {
-        if (world.isRemote) return;
-        BufPacket packet = new BufPacket(pos.getX(), pos.getY(), pos.getZ(), this);
-        ByteBuf currentBuf = packet.getCompiledBuffer();
-        long currentHash = Library.fnv1a64(currentBuf);
-        if (currentHash == lastPackedBufHash) {
-            if (this.world.getTotalWorldTime() % 20 != 0) {
-                packet.releaseBuffer();
-                return;
-            }
-        }
-        lastPackedBufHash = currentHash;
-        PacketThreading.createAllAroundThreadedPacket(packet, new NetworkRegistry.TargetPoint(this.world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), range));
+        this.lockMod = buf.readDouble();
     }
 }

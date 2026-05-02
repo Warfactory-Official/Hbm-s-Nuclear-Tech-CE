@@ -3,6 +3,8 @@ package com.hbm.render.entity.item;
 import com.hbm.entity.item.EntityMovingItem;
 import com.hbm.interfaces.AutoRegister;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
 import net.minecraft.client.renderer.entity.Render;
@@ -18,7 +20,7 @@ import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManage
 public class RenderMovingItem extends Render<EntityMovingItem> {
 
 	public static final IRenderFactory<EntityMovingItem> FACTORY = man -> new RenderMovingItem(man);
-	
+
 	protected RenderMovingItem(RenderManager renderManager) {
 		super(renderManager);
 	}
@@ -26,6 +28,11 @@ public class RenderMovingItem extends Render<EntityMovingItem> {
 	@Override
 	public void doRender(EntityMovingItem item, double x, double y, double z, float f1, float f2) {
 
+		GlStateManager.enableRescaleNormal();
+		GlStateManager.alphaFunc(516, 0.1F);
+		GlStateManager.enableBlend();
+		RenderHelper.enableStandardItemLighting();
+		GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(x, y, z);
 
@@ -44,6 +51,9 @@ public class RenderMovingItem extends Render<EntityMovingItem> {
 		Minecraft.getMinecraft().getRenderItem().renderItem(stack, model);
 
 		GlStateManager.popMatrix();
+		GlStateManager.disableRescaleNormal();
+		GlStateManager.disableBlend();
+		RenderHelper.disableStandardItemLighting();
 	}
 
 	@Override

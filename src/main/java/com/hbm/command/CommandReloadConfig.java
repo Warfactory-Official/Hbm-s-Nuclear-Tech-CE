@@ -21,11 +21,6 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class CommandReloadConfig extends CommandBase {
 
-    @Override
-    public boolean checkPermission(@NotNull MinecraftServer server, @NotNull ICommandSender sender) {
-        return sender instanceof EntityPlayer;
-    }
-
     public abstract void help(ICommandSender sender, String[] args);
     public abstract HashMap<String, ConfigWrapper> getConfigMap();
     public abstract void refresh();

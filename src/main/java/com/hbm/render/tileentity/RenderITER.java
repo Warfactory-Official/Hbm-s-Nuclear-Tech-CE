@@ -16,12 +16,6 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister
 public class RenderITER extends TileEntitySpecialRenderer<TileEntityITER>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityITER te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityITER iter,

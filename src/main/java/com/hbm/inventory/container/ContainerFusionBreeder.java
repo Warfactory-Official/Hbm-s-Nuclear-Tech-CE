@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotCraftingOutput;
 import com.hbm.inventory.slot.SlotNonRetarded;
 import com.hbm.items.machine.IItemFluidIdentifier;
@@ -15,6 +16,12 @@ import org.jetbrains.annotations.NotNull;
 public class ContainerFusionBreeder extends Container {
 
     protected TileEntityFusionBreeder breeder;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(3)
+                                                                              .rule(0, 1,
+                                                                                      s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                              .genericMachineRange(1)
+                                                                              .build();
 
     public ContainerFusionBreeder(InventoryPlayer invPlayer, TileEntityFusionBreeder tedf) {
         this.breeder = tedf;
@@ -36,8 +43,7 @@ public class ContainerFusionBreeder extends Container {
 
     @Override
     public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 3,
-                s -> s.getItem() instanceof IItemFluidIdentifier, 1);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
     @Override

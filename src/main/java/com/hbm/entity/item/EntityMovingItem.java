@@ -72,7 +72,7 @@ public class EntityMovingItem extends EntityMovingConveyorObject implements ICon
 	@Override
 	protected void writeEntityToNBT(NBTTagCompound nbt) {
 
-        if (this.getItemStack() != null)
+        if (!this.getItemStack().isEmpty())
         	nbt.setTag("Item", this.getItemStack().writeToNBT(new NBTTagCompound()));
 
         nbt.setInteger("schedule", schedule);

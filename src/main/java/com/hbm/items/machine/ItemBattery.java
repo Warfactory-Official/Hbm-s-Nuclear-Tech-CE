@@ -3,13 +3,14 @@ package com.hbm.items.machine;
 import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.items.ModItems;
 import com.hbm.lib.Library;
-import com.hbm.main.MainRegistry;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,9 +28,21 @@ public class ItemBattery extends Item implements IBatteryItem {
         this.dischargeRate = dischargeRate;
         this.setTranslationKey(s);
         this.setRegistryName(s);
-        this.setCreativeTab(MainRegistry.controlTab);
         ModItems.ALL_ITEMS.add(this);
     }
+    // Th3_Sl1ze: this is meant to de-duplicate potato(s) battery but it actually makes all other batteries singular ones?..
+    // I'll leave it as it is since ItemBattery is deprecated anyway
+    @Override
+    public void getSubItems(@NotNull CreativeTabs tab, @NotNull NonNullList<ItemStack> items) {
+        if (this.isInCreativeTab(tab)) {
+            if(this == ModItems.battery_potato || this == ModItems.battery_potatos) items.add(getFullBattery(this));
+            else {
+                items.add(getFullBattery(this));
+                items.add(getEmptyBattery(this));
+            }
+        }
+    }
+
 
     public static ItemStack getEmptyBattery(Item item) {
 
@@ -57,7 +70,7 @@ public class ItemBattery extends Item implements IBatteryItem {
     }
 
     @Override
-    public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
+    public void addInformation(ItemStack stack, World worldIn, @NotNull List<String> list, @NotNull ITooltipFlag flagIn) {
         if (stack.getItem() == ModItems.battery_creative) return;
         long charge = maxCharge;
         if (stack.hasTagCompound()) charge = getCharge(stack);

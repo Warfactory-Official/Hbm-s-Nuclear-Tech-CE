@@ -8,7 +8,7 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.tileentity.network.TileEntityCraneBase;
 import com.hbm.tileentity.network.TileEntityCraneInserter;
-import net.minecraft.block.BlockHorizontal;
+import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.texture.TextureMap;
@@ -21,6 +21,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 
 public class CraneInserter extends BlockCraneBase implements IEnterableBlock {
@@ -69,17 +71,12 @@ public class CraneInserter extends BlockCraneBase implements IEnterableBlock {
             return;
         }
 
-        ItemStack toAdd = entity.getItemStack().copy();
-        
-        TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
-        if(te instanceof TileEntityCraneInserter inserter) {
-            boolean worked = inserter.tryFillTeDirect(toAdd);
+        BlockPos pos = new BlockPos(x, y, z);
+        TileEntity te = world.getTileEntity(pos);
+        if (!(te instanceof TileEntityCraneInserter inserter)) return;
 
-            if ((!worked || !toAdd.isEmpty()) && !inserter.destroyer) {
-                EntityItem drop = new EntityItem(world, x + 0.5, y + 0.5, z + 0.5, toAdd.copy());
-                world.spawnEntity(drop);
-            }
-        }
+        ItemStack toAdd = entity.getItemStack().copy();
+        pushIntoInserter(world, pos, inserter, toAdd);
     }
 
     @Override
@@ -93,19 +90,41 @@ public class CraneInserter extends BlockCraneBase implements IEnterableBlock {
             return;
         }
 
-        TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
+        BlockPos pos = new BlockPos(x, y, z);
+        TileEntity te = world.getTileEntity(pos);
         if (!(te instanceof TileEntityCraneInserter inserter)) return;
 
         for (ItemStack stack : entity.getItemStacks()) {
             if (stack == null || stack.isEmpty() || stack.getCount() <= 0) continue;
+            pushIntoInserter(world, pos, inserter, stack.copy());
+        }
+    }
 
-            ItemStack toAdd = stack.copy();
-            boolean worked = inserter.tryFillTeDirect(toAdd);
+    @Override
+    public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
+        TileEntityCraneInserter crane = (TileEntityCraneInserter) world.getTileEntity(pos);
+        crane.isIndirectlyPowered = world.isBlockPowered(pos);
+    }
 
-            if ((!worked || !toAdd.isEmpty()) && !inserter.destroyer) {
-                EntityItem drop = new EntityItem(world, x + 0.5, y + 0.5, z + 0.5, toAdd.copy());
-                world.spawnEntity(drop);
+    private static void pushIntoInserter(World world, BlockPos pos, TileEntityCraneInserter inserter, ItemStack toAdd) {
+        if (!inserter.isIndirectlyPowered) {
+            EnumFacing outputSide = inserter.getOutputSide();
+            TileEntity target = world.getTileEntity(pos.offset(outputSide));
+            if (target != null) {
+                IItemHandler cap = target.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, outputSide.getOpposite());
+                if (cap != null) {
+                    inserter.tryInsertItemCap(cap, toAdd);
+                }
             }
+        }
+
+        if (!toAdd.isEmpty()) {
+            inserter.tryFillTeDirect(toAdd);
+        }
+
+        if (!toAdd.isEmpty() && !inserter.destroyer) {
+            EntityItem drop = new EntityItem(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, toAdd.copy());
+            world.spawnEntity(drop);
         }
     }
 

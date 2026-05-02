@@ -1,9 +1,9 @@
 package com.hbm.tileentity.machine.rbmk;
 
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.rbmk.RBMKBase;
 import com.hbm.blocks.machine.rbmk.RBMKRod;
-import com.hbm.config.MobConfig;
 import com.hbm.entity.projectile.EntityRBMKDebris.DebrisType;
 import com.hbm.handler.CompatHandler;
 import com.hbm.handler.neutron.NeutronNodeWorld;
@@ -12,8 +12,8 @@ import com.hbm.handler.neutron.RBMKNeutronHandler;
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.container.ContainerRBMKRod;
-import com.hbm.inventory.control_panel.DataValue;
-import com.hbm.inventory.control_panel.DataValueFloat;
+import com.hbm.inventory.control_panel.types.DataValue;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
 import com.hbm.inventory.gui.GUIRBMKRod;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemRBMKRod;
@@ -32,10 +32,8 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.Container;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -50,7 +48,7 @@ import java.util.List;
 import java.util.Map;
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 @AutoRegister
-public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBMKFluxReceiver, IRBMKLoadable, IGUIProvider, SimpleComponent, CompatHandler.OCComponent {
+public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBMKFluxReceiver, IRBMKLoadable, IGUIProvider, SimpleComponent, CompatHandler.OCComponent, IRORValueProvider {
 
 	// New system!!
 	// Used for receiving flux (calculating outbound flux/burning rods)
@@ -60,6 +58,7 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 	public double lastFluxRatio;
 
 	public boolean hasRod;
+	public int rodColor = 0;
 
 	// Fuel rod item data client sync
 	private String fuelYield;
@@ -73,21 +72,6 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
             new Vec3d(-1, 0, 0)  // WEST
     };
 
-    private int cherenkovVisualTimer = 0;
-
-	@SideOnly(Side.CLIENT)
-	public float fuelR;
-	@SideOnly(Side.CLIENT)
-	public float fuelG;
-	@SideOnly(Side.CLIENT)
-	public float fuelB;
-	@SideOnly(Side.CLIENT)
-	public float cherenkovR;
-	@SideOnly(Side.CLIENT)
-	public float cherenkovG;
-	@SideOnly(Side.CLIENT)
-	public float cherenkovB;
-
 	public TileEntityRBMKRod() {
 		super(1);
 	}
@@ -99,6 +83,7 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 	
 	@Override
 	public boolean isModerated() {
+        // throws CCE if anything goes wrong
 		return ((RBMKRod)this.getBlockType()).moderated;
 	}
 
@@ -110,25 +95,45 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 		this.fluxQuantity += stream.fluxQuantity;
 		fluxFastRatio = (fastFlux + fastFluxIn) / fluxQuantity;
 	}
-	
+
+	public boolean coldEnoughForAutoloader() {
+		if(!inventory.getStackInSlot(0).isEmpty() && inventory.getStackInSlot(0).getItem() instanceof ItemRBMKRod) {
+			return ItemRBMKRod.getHullHeat(inventory.getStackInSlot(0)) <= 1_000;
+		}
+		return true;
+	}
+	public boolean coldEnoughForManual() {
+		if(!inventory.getStackInSlot(0).isEmpty() && inventory.getStackInSlot(0).getItem() instanceof ItemRBMKRod) {
+			return ItemRBMKRod.getHullHeat(inventory.getStackInSlot(0)) <= 200;
+		}
+		return true;
+	}
+
+    //mlbv: leafia told me that this override made rbmks explode on load, not sure how since 1.7 repo also has it
+    //anyway commenting out for now
+//	@Override
+//	public void invalidate() {
+//		super.invalidate();
+//
+//		if(!inventory.getStackInSlot(0).isEmpty() && inventory.getStackInSlot(0).getItem() instanceof ItemRBMKRod && ItemRBMKRod.getHullHeat(inventory.getStackInSlot(0)) >= 150) {
+//			this.meltdown();
+//		}
+//	}
+//
 	@Override
 	public void update() {
 
 		if(!world.isRemote) {
 			ItemStack stack = inventory.getStackInSlot(0).copy();
 			if(stack.getItem() instanceof ItemRBMKRod rod) {
+				this.rodColor = rod.colorTint;
 				double fluxRatioOut;
 				double fluxQuantityOut;
 				// Experimental flux ratio curve rods!
 				// Again, nothing really uses this so its just idle code at the moment.
 				if(rod.specialFluxCurve) {
-
 					fluxRatioOut = rod.fluxRatioOut(this.fluxFastRatio, ItemRBMKRod.getEnrichment(stack));
-
-					double fluxIn;
-
-					fluxIn = rod.fluxFromRatio(this.fluxQuantity, this.fluxFastRatio);
-
+					double fluxIn = rod.fluxFromRatio(this.fluxQuantity, this.fluxFastRatio);
 					fluxQuantityOut = rod.burn(world, stack, fluxIn);
 				} else {
 					NType rType = rod.rType;
@@ -144,10 +149,6 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 				rod.updateHeat(world, stack, 1.0D);
 				this.heat += rod.provideHeat(world, stack, heat, 1.0D);
 				inventory.setStackInSlot(0, stack);
-
-                if (this.fluxQuantity > 0.01) {
-                    this.cherenkovVisualTimer = 10;
-                }
 				
 				if(!this.hasLid()) {
                     ChunkRadiationManager.proxy.incrementRad(world, pos, (float) (fluxQuantity * 0.05F), (float) (fluxQuantity * 10F));
@@ -184,19 +185,9 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 
 				super.update();
 			}
-
-            if(cherenkovVisualTimer > 0) {
-                cherenkovVisualTimer--;
-            }
 		}
 	}
 
-//	@Override
-//	public boolean canExtractItem(int slot, ItemStack itemStack, int amount) {
-//		if(itemStack.getItem() instanceof ItemRBMKRod) return !(ItemRBMKRod.getMeltdownPercent(itemStack) > 0);
-//		return true;
-//	}
-	
 	/**
 	 * SLOW: full efficiency for slow neutrons, fast neutrons have half efficiency
 	 * FAST: fast neutrons have 100% efficiency, slow only 30%
@@ -252,7 +243,6 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 		this.fluxQuantity = nbt.getDouble("fluxQuantity");
 		this.fluxFastRatio = nbt.getDouble("fluxMod");
 		this.hasRod = nbt.getBoolean("hasRod");
-        this.cherenkovVisualTimer = nbt.getInteger("cherenkovTimer");
 	}
 	
 	@Override
@@ -265,7 +255,6 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 			nbt.setDouble("fluxSlow", this.fluxQuantity * (1 - fluxFastRatio));
 			nbt.setDouble("fluxFast", this.fluxQuantity * fluxFastRatio);
 		}
-        nbt.setInteger("cherenkovTimer", this.cherenkovVisualTimer);
 		return nbt;
 	}
 
@@ -275,7 +264,7 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 		buf.writeDouble(this.lastFluxQuantity);
 		buf.writeDouble(this.lastFluxRatio);
 		buf.writeBoolean(this.hasRod);
-        buf.writeInt(this.cherenkovVisualTimer);
+		buf.writeInt(this.rodColor);
 		ItemStack stack = this.inventory.getStackInSlot(0);
 		if(this.hasRod) {
 			ItemRBMKRod rod = ((ItemRBMKRod)stack.getItem());
@@ -293,18 +282,11 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 		this.fluxQuantity = buf.readDouble();
 		this.fluxFastRatio = buf.readDouble();
 		this.hasRod = buf.readBoolean();
-        this.cherenkovVisualTimer = buf.readInt();
+		this.rodColor = buf.readInt();
 		if(this.hasRod) {
 			fuelYield = BufferUtil.readString(buf);
 			fuelXenon = BufferUtil.readString(buf);
 			fuelHeat = BufferUtil.readString(buf);
-			ItemRBMKRod rod = (ItemRBMKRod) Item.getByNameOrId("hbm:" + BufferUtil.readString(buf));
-			this.fuelR = rod.fuelR;
-			this.fuelG = rod.fuelG;
-			this.fuelB = rod.fuelB;
-			this.cherenkovR = rod.cherenkovR;
-			this.cherenkovG = rod.cherenkovG;
-			this.cherenkovB = rod.cherenkovB;
 		} else {
 			fuelYield = fuelXenon = fuelHeat = null;
 		}
@@ -324,6 +306,8 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 	
 	@Override
 	public void onMelt(int reduce) {
+
+		boolean moderated = this.isModerated();
 		int h = RBMKDials.getColumnHeight(world);
 		reduce = MathHelper.clamp(reduce, 1, h);
 		
@@ -358,19 +342,20 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 		} else {
 			this.standardMelt(reduce);
 		}
+
+		if(moderated) {
+
+			int count = 2 + world.rand.nextInt(2);
+
+			for(int i = 0; i < count; i++) {
+				spawnDebris(DebrisType.GRAPHITE);
+			}
+		}
 		
 		spawnDebris(DebrisType.ELEMENT);
 		
 		if(this.getBlockMetadata() == RBMKBase.DIR_NORMAL_LID.ordinal() + RBMKBase.offset)
 			spawnDebris(DebrisType.LID);
-
-		if(MobConfig.enableElementals) {
-			List<EntityPlayer> players = world.getEntitiesWithinAABB(EntityPlayer.class, new AxisAlignedBB(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5).grow(100, 100, 100));
-
-			for(EntityPlayer player : players) {
-				player.getEntityData().getCompoundTag(EntityPlayer.PERSISTED_NBT_TAG).setBoolean("radMark", true);
-			}
-		}
 	}
 
 	@Override
@@ -428,13 +413,19 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 	@Override
 	public Map<String, DataValue> getQueryData() {
 		Map<String, DataValue> data = super.getQueryData();
+		ItemStack stack = inventory.getStackInSlot(0);
 
-		if (inventory.getStackInSlot(0).getItem() instanceof ItemRBMKRod) {
-			ItemRBMKRod rod = ((ItemRBMKRod)inventory.getStackInSlot(0).getItem());
-			data.put("enrichment", new DataValueFloat((float) ItemRBMKRod.getEnrichment(inventory.getStackInSlot(0))));
-			data.put("xenon", new DataValueFloat((float) ItemRBMKRod.getPoison(inventory.getStackInSlot(0))));
-			data.put("c_heat", new DataValueFloat((float) ItemRBMKRod.getHullHeat(inventory.getStackInSlot(0))));
-			data.put("c_coreHeat", new DataValueFloat((float) ItemRBMKRod.getCoreHeat(inventory.getStackInSlot(0))));
+		data.put("enrichment", new DataValueFloat(0));
+		data.put("xenon", new DataValueFloat(0));
+		data.put("c_heat", new DataValueFloat(0));
+		data.put("c_coreHeat", new DataValueFloat(0));
+		data.put("c_maxHeat", new DataValueFloat(0));
+
+		if (stack.getItem() instanceof ItemRBMKRod rod) {
+			data.put("enrichment", new DataValueFloat((float) ItemRBMKRod.getEnrichment(stack)));
+			data.put("xenon", new DataValueFloat((float) ItemRBMKRod.getPoison(stack)));
+			data.put("c_heat", new DataValueFloat((float) ItemRBMKRod.getHullHeat(stack)));
+			data.put("c_coreHeat", new DataValueFloat((float) ItemRBMKRod.getCoreHeat(stack)));
 			data.put("c_maxHeat", new DataValueFloat((float) rod.meltingPoint));
 		}
 		return data;
@@ -551,5 +542,32 @@ public class TileEntityRBMKRod extends TileEntityRBMKSlottedBase implements IRBM
 	@SideOnly(Side.CLIENT)
 	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		return new GUIRBMKRod(player.inventory, this);
+	}
+
+	@Override
+	public String[] getFunctionInfo() {
+		return new String[] {
+				PREFIX_VALUE + "columnheat",
+				PREFIX_VALUE + "rodheat",
+				PREFIX_VALUE + "depletion",
+				PREFIX_VALUE + "xenon",
+				PREFIX_VALUE + "fastflux",
+				PREFIX_VALUE + "slowflux",
+				PREFIX_VALUE + "flux"
+		};
+	}
+
+	@Override
+	public String provideRORValue(String name) {
+		if((PREFIX_VALUE + "columnheat").equals(name))		return "" + (int) this.heat;
+		if(inventory.getStackInSlot(0).getItem() instanceof ItemRBMKRod) {
+			if((PREFIX_VALUE + "rodheat").equals(name))		return "" + (int) ItemRBMKRod.getHullHeat(inventory.getStackInSlot(0));
+			if((PREFIX_VALUE + "depletion").equals(name))	return "" + (int) (100 - ItemRBMKRod.getEnrichment(inventory.getStackInSlot(0)) * 100);
+			if((PREFIX_VALUE + "xenon").equals(name))		return "" + (int) (ItemRBMKRod.getPoison(inventory.getStackInSlot(0)));
+		}
+		if((PREFIX_VALUE + "fastflux").equals(name))	return "" + (int) Math.ceil(fluxFromType(NType.FAST));
+		if((PREFIX_VALUE + "slowflux").equals(name))	return "" + (int) Math.ceil(fluxFromType(NType.SLOW));
+		if((PREFIX_VALUE + "flux").equals(name))		return "" + (int) Math.ceil(fluxFromType(NType.ANY));
+		return null;
 	}
 }

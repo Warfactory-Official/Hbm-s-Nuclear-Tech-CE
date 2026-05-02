@@ -7,94 +7,21 @@
 >   - For changelog updates, verify actual diffs instead of trusting commit subjects; summarize the net result as if the
 > changes were squashed into one commit. That is, fold follow-up fixes into the original feature/change entry where
 > appropriate, and omit anything that was fully reverted before release.
+>   - Avoid explaining technical details in the changelog; the target audience is end-users, not developers.
 >   - SUBSTANTIAL CHANGES are for changes that could substantially impact backward compatibility, e.g. fluid id
 > shifting. The major version number must be bumped.  
 >   - Breaking Changes are for casual breakages like the removal of a block(minor version bump), or a significant API
 > change(major API bump).  
 >   - Changes, New Features correspond to a minor bump.  
 >   - Fixes/Performance/Misc correspond to a minor or patch bump.
-> - Previous public release: 2.1.1.0
+> - Previous public release: 2.5.0.1
+> - Next release: at least 2.5.0.2
 
 ### SUBSTANTIAL CHANGES
-
 ### Breaking Changes
-- Removed legacy `machine_assembler`, `machine_assemfac`, `machine_chemplant`, and `machine_chemfac`, plus their legacy
-templates/JEI/category/render assets
-- Removed `hf_sword` and `hs_sword`
-
 ### Fixes
-- Fixed gas centrifuge fluid rendering in GUI tanks
-- Fixed chlorine/mist/chemical effects being applied to creative or spectator players
-- Fixed fence connections for yellow barrels, storage drums, and tape recorders
-- Fixed missing "too far" chat warning while linking pylons
-- Fixed beam/door pathfinding crashes by returning non-null empty AABBs
-- Fixed a possible concurrent modification while firing powered drills
-- Fixed artillery turrets not clearing invalid/dead entity targets
-- Fixed Assembly Factory upgrade info showing the Chemical Factory label
-- Fixed scraps model registration conflict (#1158)
-- Fixed precision/rounding drift in power and fluid network distribution
-- Fixed simulation side effects in power transfer paths (REDD, charger, capacitor, cable diode)
-- Fixed siren track indexing/model registration
-- Fixed `ore_oil` being unbreakable
-- Fixed MHD Turbine and Boiler missing Forge capability compatibility
-- Fixed some latent misuse issues of Vec3d methods
-- Fixed Multi Fluid ID not working when another item is held off-hand
-- Fixed Industrial Turbine not having any sound
-- Fixed gas centrifuge speed upgrades not being accepted
-- Fixed empty container returns being deleted in autocrafters
-- Fixed Heatex multiblock parts opening the wrong GUI instead of the core
-- Fixed gas mask filter removal, Mass Storage capacity sync, and Assembly Machine slot validation for meteorite alloyed
-sword recipes
-- Fixed low-pressure steam pipes not visually connecting to Industrial Steam Turbines
-- Fixed missing radiation resistance on the M1TTY Environment Suit armor set
-- Fixed special-model rendering/orientation issues across modular spotlights, scaffolds, wavefront-based models, cable
-diodes, pneumo tubes, ducts, and cables
-- Fixed keybind and sound issues around invalid overlap handling, the alternate copy-tool binding, looped sound pitch,
-and laser pistol/bobble sound registration
-- Fixed bedrock ore crumbs crystallizing with `Slop` instead of `Nitric Acid`
-- Hardened control panel save/load and editor flows so duplicated controls round-trip through serialized state, unresolved
-links are preserved, and missing controls are kept as placeholders instead of being discarded
-
+- 2.5 regression that caused boilers crashing the game on load
 ### Changes
-- Assembly Factory now exposes truly separate recipe ports using position-aware slot access
-- Starter kit now provides new assembly/chemical machine variants instead of removed legacy ones
-- Template folder now focuses on crucible templates after removing legacy assembly/chem templates
-- Reworked Conveyor blocks to match upstream behavior
-- Added `hbmClient.json` / `hbmServer.json` plus `/ntmclient` and `/ntmserver` for live-editable client/server settings
-- Reworked conveyor crane logistics toward 1.7 behavior, including package-capable routers, extractor max-stack mode,
-inserter overflow-destroy mode, and restored package flow/orientation handling
-- Crates and safes can now be opened while held, with live item-backed storage, self-insertion guards, and
-server-configurable keep-contents behavior
-- Electric Arc Furnace Large now has five buffer/queue slots and a taller GUI
-- Restored powered armor and fueled jetpack charge/fuel bars beside the armor HUD
-- Contaminating items now use waste contamination, making spontaneous U -> Sa326 transformations much less likely
-- Normalized `glowing_stew`, `balefire_scrambled`, and `balefire_and_ham` into standard soups; the balefire variants no
-longer trigger balefire/cloud effects
-- Removed phased bedrock coltan world generation from new chunks
-
 ### New Features
-- Ported colored scaffold variants and their dynamic baked model
-- Added OpenComputers callbacks for artillery turrets, including manual coordinate queueing
-- Ported plushies with per-type models, sounds, and squish animation
-- Added fake HE/RF converters (PR #1396 by Leafia)
-- Added the 528 `Annihilator` multiblock with recycling pools, payout slots, JEI support, and blueprint milestone
-rewards
-- Ported reeds with river/beach generation and proper long-distance rendering
-- Expanded Redstone-over-Radio with `Radio Torch Logic`, `Radio Torch Reader`, and `Radio Torch Controller`, broader
-machine read/write integration, and OpenComputers support for Fluid Tanks and Capacitors
-- Overhauled large animated doors with new models, skin support, screwdriver skin cycling, and a generic `vault_door`
-implementation, covering vault, airlock, containment, fire, seal, secure, QE sliding/containment, water, and vehicle
-doors (PR #1402 by Leafia)
-- Reworked `ammo_container` into a functional default-ammo refill item, including a constrained variant that skips
-high-tier ammo
-- Added control panel addon instrument support, control duplication, and the new `Indicator Lamp (RGB)` instrument
-(PR #1407 by Leafia)
-- Added control panel redstone input/output nodes, including `redstone_input` events and weak/strong redstone emission
-from panels
-
 ### Performance
-- Added baked-quad caches for Combinator Funnel and Spotlight models
-- Reduced unnecessary Hazard System inventory syncs
-
 ### Misc
-- Expanded the in-game manual with Redstone-over-Radio, crude oil, and remaining QMAW/ammo pages

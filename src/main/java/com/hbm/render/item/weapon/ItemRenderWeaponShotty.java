@@ -1,20 +1,29 @@
 package com.hbm.render.item.weapon;
 
+import com.hbm.Tags;
 import com.hbm.animloader.AnimationWrapper;
 import com.hbm.config.GeneralConfig;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.anim.HbmAnimations;
 import com.hbm.render.item.TEISRBase;
+import com.hbm.render.model.BakedModelTransforms;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 @AutoRegister(item = "gun_supershotgun")
 public class ItemRenderWeaponShotty extends TEISRBase {
+
+	@Override
+	public ModelBinding createModelBinding(Item item) {
+		return ModelBinding.inventoryWithGuiModel(item, BakedModelTransforms.defaultItemTransforms(), new ResourceLocation(Tags.MODID, "items/gun_uboinik"));
+	}
 
 	@Override
 	public void renderByItem(ItemStack item) {

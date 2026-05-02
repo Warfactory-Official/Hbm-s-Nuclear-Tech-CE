@@ -1,8 +1,0 @@
-{
-	"variants": {
-		"facing=north": { "model": "hbm:struct_plasma_core" },
-     	   	"facing=south": { "model": "hbm:struct_plasma_core", "y": 180 },
-      	  	"facing=west":  { "model": "hbm:struct_plasma_core", "y": 270 },
-      		"facing=east":  { "model": "hbm:struct_plasma_core", "y": 90 }
-	}
-}

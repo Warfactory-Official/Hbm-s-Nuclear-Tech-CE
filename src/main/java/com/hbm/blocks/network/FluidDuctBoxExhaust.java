@@ -9,8 +9,10 @@ import com.hbm.lib.Library;
 import com.hbm.render.model.DuctBakedModel;
 import com.hbm.tileentity.network.TileEntityPipeExhaust;
 import com.hbm.util.I18nUtil;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.creativetab.CreativeTabs;
@@ -69,18 +71,16 @@ public class FluidDuctBoxExhaust extends FluidDuctBox {
     }
 
     @Override
-    protected boolean canConnectTo(IBlockAccess world, int x, int y, int z, EnumFacing dir, TileEntity tile) {
-        return canConnectTo(world, x, y, z, dir, (FluidType) null);
+    protected boolean canConnectToForPlacement(IBlockAccess world, BlockPos pos, EnumFacing dir) {
+        BlockPos adj = pos.offset(dir);
+        ForgeDirection fd = ForgeDirection.getOrientation(dir);
+        return canConnectTo(world, adj, fd, Fluids.SMOKE)
+                || canConnectTo(world, adj, fd, Fluids.SMOKE_LEADED)
+                || canConnectTo(world, adj, fd, Fluids.SMOKE_POISON);
     }
 
-    @Override
-    public boolean canConnectTo(IBlockAccess world, int x, int y, int z, EnumFacing dir, FluidType ignored) {
-        BlockPos pos = new BlockPos(x, y, z);
-        BlockPos offset = pos.offset(dir);
-        EnumFacing opposite = dir.getOpposite();
-        return Library.canConnectFluid(world, offset, ForgeDirection.getOrientation(opposite), Fluids.SMOKE) ||
-                Library.canConnectFluid(world, offset, ForgeDirection.getOrientation(opposite), Fluids.SMOKE_LEADED) ||
-                Library.canConnectFluid(world, offset, ForgeDirection.getOrientation(opposite), Fluids.SMOKE_POISON);
+    private static boolean canConnectTo(IBlockAccess world, BlockPos pos, ForgeDirection dir, FluidType type) {
+        return Library.canConnectFluid(world, pos, dir, type);
     }
 
     @Override
@@ -122,6 +122,18 @@ public class FluidDuctBoxExhaust extends FluidDuctBox {
             int meta = i * 3;
             ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), meta, new ModelResourceLocation(this.getRegistryName(), "meta=" + meta));
         }
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public StateMapperBase getStateMapper(ResourceLocation loc) {
+        return new StateMapperBase() {
+            @Override
+            protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
+                int meta = state.getBlock().getMetaFromState(state);
+                return new ModelResourceLocation(loc, "meta=" + ((meta / 3) * 3));
+            }
+        };
     }
 
     @SideOnly(Side.CLIENT)

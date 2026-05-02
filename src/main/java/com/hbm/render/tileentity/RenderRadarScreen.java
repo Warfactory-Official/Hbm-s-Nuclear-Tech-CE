@@ -19,11 +19,6 @@ import org.lwjgl.opengl.GL11;
 public class RenderRadarScreen extends TileEntitySpecialRenderer<TileEntityMachineRadarScreen>
     implements IItemRendererProvider {
   @Override
-  public boolean isGlobalRenderer(TileEntityMachineRadarScreen te) {
-    return true;
-  }
-
-  @Override
   public void render(
       TileEntityMachineRadarScreen screen,
       double x,

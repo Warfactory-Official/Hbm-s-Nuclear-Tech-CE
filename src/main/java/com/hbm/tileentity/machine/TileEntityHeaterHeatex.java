@@ -15,6 +15,7 @@ import com.hbm.inventory.fluid.trait.FT_Coolable;
 import com.hbm.inventory.gui.GUIHeaterHeatex;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -37,7 +38,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nonnull;
 
 @AutoRegister
-public class TileEntityHeaterHeatex extends TileEntityMachineBase implements IHeatSource, IControlReceiver, IGUIProvider, IFluidStandardTransceiver, ITickable, IFFtoNTMF, IFluidCopiable {
+public class TileEntityHeaterHeatex extends TileEntityMachineBase implements IHeatSource, IControlReceiver, IGUIProvider, IFluidStandardTransceiver, ITickable, IFFtoNTMF, IFluidCopiable, IConnectionAnchors {
 
     public FluidTankNTM[] tanksNew;
     public FluidTank[] tanks;
@@ -52,8 +53,8 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase implements IHe
         super(1, true, false);
 
         this.tanksNew = new FluidTankNTM[2];
-        this.tanksNew[0] = new FluidTankNTM(Fluids.COOLANT_HOT, 24_000, 0);
-        this.tanksNew[1] = new FluidTankNTM(Fluids.COOLANT, 24_000, 1);
+        this.tanksNew[0] = new FluidTankNTM(Fluids.COOLANT_HOT, 24_000, 0).withOwner(this);
+        this.tanksNew[1] = new FluidTankNTM(Fluids.COOLANT, 24_000, 1).withOwner(this);
 
         this.tanks = new FluidTank[2];
         this.tankTypes = new Fluid[2];
@@ -154,7 +155,7 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase implements IHe
         this.markDirty();
     }
 
-    private DirPos[] getConPos() {
+    public DirPos[] getConPos() {
         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
 

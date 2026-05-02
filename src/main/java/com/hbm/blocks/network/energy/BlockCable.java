@@ -1,13 +1,17 @@
 package com.hbm.blocks.network.energy;
 
 import com.hbm.Tags;
+import com.hbm.blocks.ICustomBlockItem;
 import com.hbm.blocks.ModBlocks;
-import com.hbm.render.loader.HFRWavefrontObject;
+import com.hbm.interfaces.IBlockSpecialPlacementAABB;
 import com.hbm.items.IDynamicModels;
+import com.hbm.items.block.ItemBlockSpecialAABB;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.render.loader.HFRWavefrontObject;
 import com.hbm.render.model.BlockCableBakedModel;
 import com.hbm.tileentity.network.energy.TileEntityCableBaseNT;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyBool;
@@ -22,6 +26,8 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
@@ -34,13 +40,14 @@ import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class BlockCable extends BlockContainer implements IDynamicModels {
+public class BlockCable extends BlockContainer implements IDynamicModels, ICustomBlockItem, IBlockSpecialPlacementAABB {
 	// Th3_Sl1ze: believe me, this shit will inevitably cause stackoverflowexception if you're going to load a shitton of cables in a single place
 	// though, it still works and it doesn't crash
 	public static final PropertyBool POS_X = PropertyBool.create("posx");
@@ -49,6 +56,24 @@ public class BlockCable extends BlockContainer implements IDynamicModels {
 	public static final PropertyBool NEG_Y = PropertyBool.create("negy");
 	public static final PropertyBool POS_Z = PropertyBool.create("posz");
 	public static final PropertyBool NEG_Z = PropertyBool.create("negz");
+
+	private static final AxisAlignedBB[] AABB_BY_MASK = new AxisAlignedBB[64];
+	static {
+		float pixel = 0.0625F;
+		float min = pixel * 5.5F;
+		float max = pixel * 10.5F;
+		for (int m = 0; m < 64; m++) {
+			float minX = (m & (1 << EnumFacing.WEST.getIndex()))  != 0 ? 0F : min;
+			float maxX = (m & (1 << EnumFacing.EAST.getIndex()))  != 0 ? 1F : max;
+			float minY = (m & (1 << EnumFacing.DOWN.getIndex()))  != 0 ? 0F : min;
+			float maxY = (m & (1 << EnumFacing.UP.getIndex()))    != 0 ? 1F : max;
+			float minZ = (m & (1 << EnumFacing.NORTH.getIndex())) != 0 ? 0F : min;
+			float maxZ = (m & (1 << EnumFacing.SOUTH.getIndex())) != 0 ? 1F : max;
+			AABB_BY_MASK[m] = new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
+		}
+	}
+
+	private final IBlockState[] statesByMask = new IBlockState[64];
 
 	private final ResourceLocation objModelLocation = new ResourceLocation(Tags.MODID, "models/blocks/cable_neo.obj");
 	private final ResourceLocation textureLocation = new ResourceLocation(Tags.MODID, "blocks/cable_neo");
@@ -65,6 +90,15 @@ public class BlockCable extends BlockContainer implements IDynamicModels {
 				.withProperty(POS_Z, Boolean.FALSE)
 				.withProperty(NEG_Z, Boolean.FALSE);
 		this.setDefaultState(base);
+		for (int m = 0; m < 64; m++) {
+			this.statesByMask[m] = base
+					.withProperty(POS_X, (m & (1 << EnumFacing.EAST.getIndex()))  != 0)
+					.withProperty(NEG_X, (m & (1 << EnumFacing.WEST.getIndex()))  != 0)
+					.withProperty(POS_Y, (m & (1 << EnumFacing.UP.getIndex()))    != 0)
+					.withProperty(NEG_Y, (m & (1 << EnumFacing.DOWN.getIndex()))  != 0)
+					.withProperty(POS_Z, (m & (1 << EnumFacing.SOUTH.getIndex())) != 0)
+					.withProperty(NEG_Z, (m & (1 << EnumFacing.NORTH.getIndex())) != 0);
+		}
 		this.fullBlock = false;
 		this.lightOpacity = 0;
 		this.translucent = true;
@@ -97,10 +131,7 @@ public class BlockCable extends BlockContainer implements IDynamicModels {
 		return 0;
 	}
 
-	/**
-	 * Checks if it can connect to a HE or FE neighbor.
-	 */
-	private boolean canConnectToNeighbor(IBlockAccess world, BlockPos pos, ForgeDirection dir) {
+	public static boolean computeConnectToNeighbor(IBlockAccess world, BlockPos pos, ForgeDirection dir) {
 		if (Library.canConnect(world, pos, dir)) {
 			return true;
 		}
@@ -117,69 +148,68 @@ public class BlockCable extends BlockContainer implements IDynamicModels {
 		return false;
 	}
 
-	private boolean canConnect(IBlockAccess world, BlockPos pos, EnumFacing dir) {
-		return switch (dir) {
-			case EAST -> canConnectToNeighbor(world, pos, Library.POS_X);
-			case WEST -> canConnectToNeighbor(world, pos, Library.NEG_X);
-			case UP -> canConnectToNeighbor(world, pos, Library.POS_Y);
-			case DOWN -> canConnectToNeighbor(world, pos, Library.NEG_Y);
-			case SOUTH -> canConnectToNeighbor(world, pos, Library.POS_Z);
-			case NORTH -> canConnectToNeighbor(world, pos, Library.NEG_Z);
-		};
+	public static byte computeConnectionMask(IBlockAccess world, BlockPos pos) {
+		byte mask = 0;
+		for (EnumFacing facing : EnumFacing.VALUES) {
+			BlockPos adj = pos.offset(facing);
+			if (world instanceof World w && !w.isBlockLoaded(adj)) {
+				continue;
+			}
+			ForgeDirection dir = ForgeDirection.getOrientation(facing);
+			if (computeConnectToNeighbor(world, adj, dir)) {
+				mask |= (byte) (1 << facing.getIndex());
+			}
+		}
+		return mask;
 	}
 
-	private boolean getConnectAt(IBlockAccess world, BlockPos pos, EnumFacing dir) {
-		BlockPos adj = pos.offset(dir);
-		return canConnect(world, adj, dir);
+	private int resolveMask(IBlockAccess world, BlockPos pos) {
+		TileEntity te = world.getTileEntity(pos);
+		if (te instanceof TileEntityCableBaseNT) {
+			return ((TileEntityCableBaseNT) te).getCachedConnectionMask(world) & 0x3F;
+		}
+		return computeConnectionMask(world, pos) & 0x3F;
+	}
+
+	@Override
+	public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
+		super.neighborChanged(state, world, pos, blockIn, fromPos);
+		invalidateConnectionCache(world, pos);
+	}
+
+	@Override
+	public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
+		super.onNeighborChange(world, pos, neighbor);
+		invalidateConnectionCache(world, pos);
+	}
+
+	private static void invalidateConnectionCache(IBlockAccess world, BlockPos pos) {
+		TileEntity te = world.getTileEntity(pos);
+		if (te instanceof TileEntityCableBaseNT) {
+			((TileEntityCableBaseNT) te).invalidateConnectionCache();
+		}
 	}
 
 	@Override
 	public IBlockState getActualState(IBlockState state, IBlockAccess world, BlockPos pos) {
-		boolean pX = getConnectAt(world, pos, EnumFacing.EAST);
-		boolean nX = getConnectAt(world, pos, EnumFacing.WEST);
-		boolean pY = getConnectAt(world, pos, EnumFacing.UP);
-		boolean nY = getConnectAt(world, pos, EnumFacing.DOWN);
-		boolean pZ = getConnectAt(world, pos, EnumFacing.SOUTH);
-		boolean nZ = getConnectAt(world, pos, EnumFacing.NORTH);
-		return state.withProperty(POS_X, pX)
-				.withProperty(NEG_X, nX)
-				.withProperty(POS_Y, pY)
-				.withProperty(NEG_Y, nY)
-				.withProperty(POS_Z, pZ)
-				.withProperty(NEG_Z, nZ);
+		return this.statesByMask[resolveMask(world, pos)];
 	}
 
 	@Override
 	public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
-		state = getActualState(state, source, pos);
-
-		boolean posX = state.getValue(POS_X);
-		boolean negX = state.getValue(NEG_X);
-		boolean posY = state.getValue(POS_Y);
-		boolean negY = state.getValue(NEG_Y);
-		boolean posZ = state.getValue(POS_Z);
-		boolean negZ = state.getValue(NEG_Z);
-
-		float pixel = 0.0625F;
-		float min = pixel * 5.5F;
-		float max = pixel * 10.5F;
-
-		float minX = negX ? 0F : min;
-		float maxX = posX ? 1F : max;
-		float minY = negY ? 0F : min;
-		float maxY = posY ? 1F : max;
-		float minZ = negZ ? 0F : min;
-		float maxZ = posZ ? 1F : max;
-
-		return new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
+		return AABB_BY_MASK[resolveMask(source, pos)];
 	}
 
 	@Override
 	public void addCollisionBoxToList(IBlockState state, World worldIn, BlockPos pos,
 									  AxisAlignedBB entityBox, List<AxisAlignedBB> collidingBoxes,
 									  @Nullable Entity entityIn, boolean isActualState) {
-		AxisAlignedBB bb = getBoundingBox(state, worldIn, pos);
-		super.addCollisionBoxToList(pos, entityBox, collidingBoxes, bb);
+		super.addCollisionBoxToList(pos, entityBox, collidingBoxes, AABB_BY_MASK[resolveMask(worldIn, pos)]);
+	}
+
+	@Override
+	public AxisAlignedBB getCollisionBoundingBoxForPlacement(World worldIn, BlockPos pos, IBlockState stateForPlacement, ItemStack stack) {
+		return AABB_BY_MASK[resolveMask(worldIn, pos)];
 	}
 
 	@Override
@@ -260,5 +290,12 @@ public class BlockCable extends BlockContainer implements IDynamicModels {
 		Item item = Item.getItemFromBlock(this);
 		ModelResourceLocation inv = new ModelResourceLocation(this.getRegistryName(), "inventory");
 		ModelLoader.setCustomModelResourceLocation(item, 0, inv);
+	}
+
+	@Override
+	public void registerItem() {
+		ItemBlock itemBlock = new ItemBlockSpecialAABB<>(this);
+		itemBlock.setRegistryName(this.getRegistryName());
+		ForgeRegistries.ITEMS.register(itemBlock);
 	}
 }

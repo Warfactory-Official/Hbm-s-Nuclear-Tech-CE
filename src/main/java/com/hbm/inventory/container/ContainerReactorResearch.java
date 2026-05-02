@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.items.machine.ItemPlateFuel;
 import com.hbm.tileentity.machine.TileEntityReactorResearch;
 import com.hbm.util.InventoryUtil;
@@ -13,6 +14,10 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerReactorResearch extends Container {
 
     private TileEntityReactorResearch reactor;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(12)
+                                                                              .rule(0, 12, s -> s.getItem() instanceof ItemPlateFuel)
+                                                                              .build();
 
     public ContainerReactorResearch(InventoryPlayer invPlayer, TileEntityReactorResearch tedf) {
 
@@ -48,9 +53,7 @@ public class ContainerReactorResearch extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 12,
-                s -> s.getItem() instanceof ItemPlateFuel, 12
-        );
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
     @Override

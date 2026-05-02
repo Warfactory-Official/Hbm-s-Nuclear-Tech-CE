@@ -28,8 +28,8 @@ public class TileEntityTowerLarge extends TileEntityCondenser {
 	
 	public TileEntityTowerLarge() {
 		tanks = new FluidTankNTM[2];
-		tanks[0] = new FluidTankNTM(Fluids.SPENTSTEAM, inputTankSizeTL);
-		tanks[1] = new FluidTankNTM(Fluids.WATER, outputTankSizeTL);
+		tanks[0] = new FluidTankNTM(Fluids.SPENTSTEAM, inputTankSizeTL).withOwner(this);
+		tanks[1] = new FluidTankNTM(Fluids.WATER, outputTankSizeTL).withOwner(this);
 	}
 
 	@Override

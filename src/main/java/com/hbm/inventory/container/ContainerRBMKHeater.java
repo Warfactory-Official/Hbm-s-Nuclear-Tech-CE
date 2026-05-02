@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKHeater;
 import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
@@ -12,6 +13,10 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerRBMKHeater extends Container {
 
 	private TileEntityRBMKHeater rbmk;
+
+	private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(1)
+                                                                              .genericMachineRange(0)
+                                                                              .build();
 
 	public ContainerRBMKHeater(InventoryPlayer invPlayer, TileEntityRBMKHeater tile) {
 		rbmk = tile;
@@ -31,7 +36,7 @@ public class ContainerRBMKHeater extends Container {
 
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 1);
+		return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
 	}
 
 	@Override

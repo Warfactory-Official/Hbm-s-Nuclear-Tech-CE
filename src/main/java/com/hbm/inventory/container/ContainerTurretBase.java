@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.items.machine.ItemTurretBiometry;
 import com.hbm.lib.Library;
@@ -13,11 +14,17 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.function.Predicate;
-
 public class ContainerTurretBase extends Container {
 
   private final TileEntityTurretBaseNT turret;
+
+  private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(11)
+                                                                            .rule(0, 1, ContainerTurretBase::isBiometry)
+                                                                            .rule(1, 10, ContainerTurretBase::isGeneralInventoryItem)
+                                                                            .rule(10, 11, Library::isBattery)
+                                                                            .ruleDispatchMode(TransferStrategy.RuleDispatchMode.FALLTHROUGH_ON_FAILURE)
+                                                                            .playerFallbackMode(TransferStrategy.PlayerFallbackMode.REBALANCE_SECTIONS)
+                                                                            .build();
 
   public ContainerTurretBase(InventoryPlayer invPlayer, TileEntityTurretBaseNT te) {
     turret = te;
@@ -45,13 +52,17 @@ public class ContainerTurretBase extends Container {
     }
   }
 
+  private static boolean isBiometry(ItemStack stack) {
+    return stack.getItem() instanceof ItemTurretBiometry;
+  }
+
+  private static boolean isGeneralInventoryItem(ItemStack stack) {
+    return !isBiometry(stack) && !Library.isBattery(stack);
+  }
+
   @Override
   public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-    return InventoryUtil.transferStack(this.inventorySlots, index, 11,
-            s -> s.getItem() instanceof ItemTurretBiometry, 1,
-            Predicate.not(Library::isBattery), 10,
-            Library::isBattery, 11
-    );
+    return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
   }
 
   @Override

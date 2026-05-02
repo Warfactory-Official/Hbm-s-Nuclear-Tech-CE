@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.items.ISatChip;
 import com.hbm.tileentity.machine.TileEntityMachineSatDock;
 import com.hbm.util.InventoryUtil;
@@ -12,12 +13,19 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerMachineSatDock extends Container {
-	
+
 	private TileEntityMachineSatDock dock;
-	
-	public ContainerMachineSatDock(InventoryPlayer invPlayer, TileEntityMachineSatDock tedf) {
-		
-		dock = tedf;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(16)
+                                                                              .rule(0, 15,
+                                                                                      s -> !(s.getItem() instanceof ISatChip))
+                                                                              .rule(15, 16,
+                                                                                      s -> s.getItem() instanceof ISatChip)
+                                                                              .build();
+
+    public ContainerMachineSatDock(InventoryPlayer invPlayer, TileEntityMachineSatDock tedf) {
+
+        dock = tedf;
         IItemHandler inventory = tedf.getCheckedInventory();
 
 		//Storage
@@ -38,27 +46,25 @@ public class ContainerMachineSatDock extends Container {
 		this.addSlotToContainer(new SlotItemHandler(inventory, 14, 134, 53));
 		//Chip
 		this.addSlotToContainer(new SlotItemHandler(inventory, 15, 26, 35));
-		
-		for(int i = 0; i < 3; i++)
+
+        for(int i = 0; i < 3; i++)
 		{
 			for(int j = 0; j < 9; j++)
 			{
 				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
 			}
 		}
-		
-		for(int i = 0; i < 9; i++)
+
+        for(int i = 0; i < 9; i++)
 		{
 			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 142));
 		}
 	}
-	
-	@Override
+
+    @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 16,
-                s -> !(s.getItem() instanceof ISatChip), 15,
-                s -> s.getItem() instanceof ISatChip, 16);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
 	@Override

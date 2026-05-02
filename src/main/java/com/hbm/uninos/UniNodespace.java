@@ -8,6 +8,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +29,7 @@ import java.util.concurrent.Executor;
  */
 public final class UniNodespace {
 
-    private static final Object2ObjectOpenHashMap<INetworkProvider<?>, PerTypeNodeManager<?, ?, ?, ?>> managers = new Object2ObjectOpenHashMap<>();
+    private static final Reference2ObjectOpenHashMap<INetworkProvider<?>, PerTypeNodeManager<?, ?, ?, ?>> managers = new Reference2ObjectOpenHashMap<>();
     private static int reapTimer = 0;
 
     private UniNodespace() {
@@ -62,7 +63,7 @@ public final class UniNodespace {
         }
         MainRegistry.logger.warn("[UniNodeSpace] Node {} attempts to be destroyed through mismatched type provider {}", node.getClass().getName(), provider);
         // Fallback: if provider is null/mismatched or manager isn't present yet, locate the node by identity.
-        ObjectIterator<Object2ObjectMap.Entry<INetworkProvider<?>, PerTypeNodeManager<?, ?, ?, ?>>> it = managers.object2ObjectEntrySet().fastIterator();
+        ObjectIterator<Reference2ObjectMap.Entry<INetworkProvider<?>, PerTypeNodeManager<?, ?, ?, ?>>> it = managers.reference2ObjectEntrySet().fastIterator();
         while (it.hasNext()) {
             PerTypeNodeManager manager = it.next().getValue();
             if (manager.destroyNode(world, node)) return;
@@ -84,7 +85,7 @@ public final class UniNodespace {
         if (!GeneralConfig.enableThreadedNodeSpaceUpdate) {
             return CompletableFuture.runAsync(() -> {
                 for (World world : currentWorlds) {
-                    ObjectIterator<Object2ObjectMap.Entry<INetworkProvider<?>, PerTypeNodeManager<?, ?, ?, ?>>> iterator = managers.object2ObjectEntrySet()
+                    ObjectIterator<Reference2ObjectMap.Entry<INetworkProvider<?>, PerTypeNodeManager<?, ?, ?, ?>>> iterator = managers.reference2ObjectEntrySet()
                                                                                                                                    .fastIterator();
                     while (iterator.hasNext()) {
                         iterator.next().getValue().updateForWorld(world);
@@ -95,7 +96,7 @@ public final class UniNodespace {
         }
         List<CompletableFuture<Void>> phase1 = new ArrayList<>(currentWorlds.length * Math.max(1, managers.size()));
         for (World world : currentWorlds) {
-            ObjectIterator<Object2ObjectMap.Entry<INetworkProvider<?>, PerTypeNodeManager<?, ?, ?, ?>>> iterator = managers.object2ObjectEntrySet()
+            ObjectIterator<Reference2ObjectMap.Entry<INetworkProvider<?>, PerTypeNodeManager<?, ?, ?, ?>>> iterator = managers.reference2ObjectEntrySet()
                                                                                                                            .fastIterator();
             while (iterator.hasNext()) {
                 PerTypeNodeManager<?, ?, ?, ?> manager = iterator.next().getValue();
@@ -136,7 +137,7 @@ public final class UniNodespace {
 
     static void removeActiveNet(NodeNet<?, ?, ?, ?> net) {
         if (net.links.isEmpty()) {
-            ObjectIterator<Object2ObjectMap.Entry<INetworkProvider<?>, PerTypeNodeManager<?, ?, ?, ?>>> iterator = managers.object2ObjectEntrySet()
+            ObjectIterator<Reference2ObjectMap.Entry<INetworkProvider<?>, PerTypeNodeManager<?, ?, ?, ?>>> iterator = managers.reference2ObjectEntrySet()
                                                                                                                            .fastIterator();
             while (iterator.hasNext()) {
                 PerTypeNodeManager<?, ?, ?, ?> manager = iterator.next().getValue();
@@ -180,8 +181,8 @@ public final class UniNodespace {
     @SuppressWarnings("Java8CollectionRemoveIf")
     private static class PerTypeNodeManager<R, P, L extends GenNode<N>, N extends NodeNet<R, P, L, N>> {
 
-        private final Object2ObjectOpenHashMap<World, UniNodeWorld<N, L>> worlds = new Object2ObjectOpenHashMap<>();
-        private final Set<N> activeNodeNets = GeneralConfig.enableThreadedNodeSpaceUpdate ? ConcurrentHashMap.newKeySet() : new ObjectOpenHashSet<>();
+        private final Reference2ObjectOpenHashMap<World, UniNodeWorld<N, L>> worlds = new Reference2ObjectOpenHashMap<>();
+        private final Set<N> activeNodeNets = GeneralConfig.enableThreadedNodeSpaceUpdate ? ConcurrentHashMap.newKeySet() : new ReferenceOpenHashSet<>();
         private final INetworkProvider<N> provider;
 
         PerTypeNodeManager(INetworkProvider<N> provider) {
@@ -214,17 +215,18 @@ public final class UniNodespace {
         }
 
         void destroyNode(World world, BlockPos pos) {
-            L node = getNode(world, pos);
-            if (node != null) {
-                getWorldManager(world).popNode(node);
-            }
+            UniNodeWorld<N, L> nodeWorld = worlds.get(world);
+            if (nodeWorld == null) return;
+
+            L node = nodeWorld.getNode(pos);
+            if (node != null) removeNode(nodeWorld, node);
         }
 
         boolean destroyNode(World world, L node) {
             UniNodeWorld<N, L> nodeWorld = worlds.get(world);
             if (nodeWorld == null) return false;
             if (!nodeWorld.containsNode(node)) return false;
-            nodeWorld.popNode(node);
+            removeNode(nodeWorld, node);
             return true;
         }
 
@@ -318,6 +320,130 @@ public final class UniNodespace {
                 origin.net.joinLink(connection);
             }
         }
+
+        private void removeNode(UniNodeWorld<N, L> nodeWorld, L node) {
+            N oldNet = node.net;
+            nodeWorld.popNode(node);
+            if (oldNet != null) oldNet.links.remove(node);
+
+            if (oldNet == null || !oldNet.isValid()) {
+                node.setNet(null);
+                return;
+            }
+            node.setNet(null);
+            resetNetMembership(oldNet);
+
+            if (oldNet.links.isEmpty()) {
+                oldNet.destroy();
+                return;
+            }
+
+            splitNetIfNecessary(nodeWorld, node, oldNet);
+        }
+
+        /**
+         * Removing a single node can only split the graph along the removed node's incident edges.
+         * Recompute connected components locally instead of invalidating the entire net.
+         */
+        private void splitNetIfNecessary(UniNodeWorld<N, L> nodeWorld, L removedNode, N oldNet) {
+            List<L> seeds = collectAdjacentLinks(nodeWorld, removedNode, oldNet);
+            if (seeds.size() <= 1) return;
+
+            List<ReferenceOpenHashSet<L>> components = new ArrayList<>();
+            ReferenceOpenHashSet<L> visited = new ReferenceOpenHashSet<>();
+
+            for (L seed : seeds) {
+                if (seed.expired || visited.contains(seed)) continue;
+                components.add(collectComponent(nodeWorld, seed, oldNet, visited));
+            }
+
+            for (L link : oldNet.links) {
+                if (link.expired || visited.contains(link)) continue;
+                components.add(collectComponent(nodeWorld, link, oldNet, visited));
+            }
+
+            if (components.size() <= 1) return;
+
+            int keepIndex = 0;
+            int keepSize = components.get(0).size();
+
+            for (int i = 1; i < components.size(); i++) {
+                int componentSize = components.get(i).size();
+                if (componentSize > keepSize) {
+                    keepIndex = i;
+                    keepSize = componentSize;
+                }
+            }
+
+            ReferenceOpenHashSet<L> keep = components.get(keepIndex);
+
+            var oldLinks = oldNet.links.iterator();
+            while (oldLinks.hasNext()) {
+                L link = oldLinks.next();
+                if (!keep.contains(link)) oldLinks.remove();
+            }
+
+            for (L link : keep) {
+                link.recentlyChanged = false;
+            }
+
+            for (int i = 0; i < components.size(); i++) {
+                if (i == keepIndex) continue;
+
+                N splitNet = provider.get();
+                addActiveNet(splitNet);
+                resetNetMembership(splitNet);
+
+                for (L link : components.get(i)) {
+                    splitNet.forceJoinLink(link);
+                    link.recentlyChanged = false;
+                }
+            }
+        }
+
+        private List<L> collectAdjacentLinks(UniNodeWorld<N, L> nodeWorld, L node, N expectedNet) {
+            List<L> seeds = new ArrayList<>();
+            ReferenceOpenHashSet<L> seen = new ReferenceOpenHashSet<>();
+            if (node.connections == null) return seeds;
+
+            for (DirPos con : node.connections) {
+                L conNode = nodeWorld.getNode(con.getPos());
+                if (conNode == null || conNode.expired || conNode.net != expectedNet) continue;
+                if (!checkConnection(conNode, con, false) || !seen.add(conNode)) continue;
+                seeds.add(conNode);
+            }
+
+            return seeds;
+        }
+
+        private ReferenceOpenHashSet<L> collectComponent(UniNodeWorld<N, L> nodeWorld, L seed, N expectedNet, ReferenceOpenHashSet<L> visited) {
+            ReferenceOpenHashSet<L> component = new ReferenceOpenHashSet<>();
+            ArrayDeque<L> queue = new ArrayDeque<>();
+            queue.add(seed);
+            visited.add(seed);
+
+            while (!queue.isEmpty()) {
+                L current = queue.removeFirst();
+                component.add(current);
+
+                if (current.connections == null) continue;
+
+                for (DirPos con : current.connections) {
+                    L conNode = nodeWorld.getNode(con.getPos());
+                    if (conNode == null || conNode.expired || conNode.net != expectedNet) continue;
+                    if (!checkConnection(conNode, con, false) || !visited.add(conNode)) continue;
+                    queue.addLast(conNode);
+                }
+            }
+
+            return component;
+        }
+
+        private void resetNetMembership(N net) {
+            net.receiverEntries.clear();
+            net.providerEntries.clear();
+            net.resetTrackers();
+        }
     }
 
     /**
@@ -339,7 +465,6 @@ public final class UniNodespace {
 
         /** Removes the specified node from all positions from nodespace */
         void popNode(L node) {
-            if (node.net != null) node.net.destroy();
             for (BlockPos pos : node.positions) {
                 nodesByPosition.remove(pos, node);
             }

@@ -8,6 +8,7 @@ import com.hbm.main.ClientProxy;
 import com.hbm.render.NTMRenderHelper;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.input.Keyboard;
@@ -21,6 +22,7 @@ public class SubElementNodeEditor extends SubElement {
 
 	public static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/control_panel/gui_placement_front.png");
 	public static ResourceLocation grid = new ResourceLocation(Tags.MODID + ":textures/gui/control_panel/grid.png");
+	private static NBTTagCompound clipboardNodes;
 	
 	public GuiButton btn_back;
 	public GuiButton btn_variables;
@@ -59,7 +61,7 @@ public class SubElementNodeEditor extends SubElement {
 		this.sendEvents = sendEvents;
 	}
 
-	private void descendSubsystem(Node node) {
+	public void descendSubsystem(Node node) {
 		systemHistoryStack.push(currentSystem);
 		currentSystem = currentSystem.subSystems.get(node);
 
@@ -82,6 +84,23 @@ public class SubElementNodeEditor extends SubElement {
 	
 	@Override
 	protected void keyTyped(char typedChar, int code){
+		boolean isTyping = false;
+		if(currentSystem != null)
+			isTyping = currentSystem.keyTyped(typedChar, code);
+		if (isTyping) return;
+		boolean ctrl = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL);
+		if(currentSystem != null && currentSystem.currentTypingBox == null && ctrl) {
+			if(code == Keyboard.KEY_C || code == Keyboard.KEY_X) {
+				copySelectionToClipboard();
+				return;
+			}
+			if(code == Keyboard.KEY_V) {
+				if(canPasteClipboard()) {
+					pasteClipboardAtMouse();
+				}
+				return;
+			}
+		}
 		if(code == Keyboard.KEY_A && Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
 			if(addMenu != null){
 				addMenu.close();
@@ -89,6 +108,12 @@ public class SubElementNodeEditor extends SubElement {
 			addMenu = new ItemList(gui.mouseX, gui.mouseY, 32, s -> {
 				final float x = (gui.mouseX-gui.getGuiLeft())*gridScale + gui.getGuiLeft() + gridX;
 				final float y = (gui.mouseY-gui.getGuiTop())*gridScale + gui.getGuiTop() - gridY;
+				if("Paste".equals(s)) {
+					pasteClipboard(x, y);
+					addMenu.close();
+					addMenu = null;
+					return null;
+				}
 				List<INodeMenuCreator> controllers = NTMControlPanelRegistry.addMenuControl.get(s.substring(("{expandable}").length()));
 				if (controllers != null) {
 					ItemList list = new ItemList(0, 0, 32,s2 -> {
@@ -110,6 +135,9 @@ public class SubElementNodeEditor extends SubElement {
 				}
 				return null;
 			});
+			if(canPasteClipboard()) {
+				addMenu.addItems("Paste");
+			}
 			for (String item : NTMControlPanelRegistry.addMenuCategories)
 				addMenu.addItems("{expandable}"+item);
 		}
@@ -119,8 +147,53 @@ public class SubElementNodeEditor extends SubElement {
 				currentSystem.removeNode(n);
 			}
 		}
-		if(currentSystem != null){
-			currentSystem.keyTyped(typedChar, code);
+	}
+
+	private static boolean hasClipboardData() {
+		return clipboardNodes != null && !clipboardNodes.isEmpty();
+	}
+
+	private boolean canPasteClipboard() {
+		return currentSystem != null
+				&& currentEvent != null
+				&& hasClipboardData()
+				&& currentSystem.canPasteFromNBT(clipboardNodes, currentEvent, sendEvents == null);
+	}
+
+	private void copySelectionToClipboard() {
+		if(currentSystem == null || !currentSystem.hasSelectedNodes()) {
+			return;
+		}
+		NBTTagCompound tag = currentSystem.writeSelectedToNBT();
+		clipboardNodes = tag != null ? tag.copy() : null;
+	}
+
+	private void pasteClipboardAtMouse() {
+		if(currentSystem == null) {
+			return;
+		}
+		float x = (gui.mouseX-gui.getGuiLeft())*gridScale + gui.getGuiLeft() + gridX;
+		float y = (gui.mouseY-gui.getGuiTop())*gridScale + gui.getGuiTop() - gridY;
+		pasteClipboard(x, y);
+	}
+
+	private void pasteClipboard(float x, float y) {
+		if(!canPasteClipboard()) {
+			return;
+		}
+
+		List<Node> pastedNodes = currentSystem.pasteFromNBT(clipboardNodes.copy(), x, y);
+		if(pastedNodes.isEmpty()) {
+			return;
+		}
+
+		currentSystem.selectedNodes.clear();
+		currentSystem.selectedNodes.addAll(pastedNodes);
+		currentSystem.activeNode = pastedNodes.get(pastedNodes.size() - 1);
+		currentSystem.connectionInProgress = null;
+		if(currentSystem.currentTypingBox != null) {
+			currentSystem.currentTypingBox.stopTyping();
+			currentSystem.currentTypingBox = null;
 		}
 	}
 	
@@ -132,6 +205,14 @@ public class SubElementNodeEditor extends SubElement {
 	
 	@Override
 	protected void drawScreen(){
+		int cX = gui.width/2;
+		int cY = gui.height/2;
+		String hint = "Shift+A to add node";
+		gui.getFontRenderer().drawString(hint, cX - gui.getFontRenderer().getStringWidth(hint) / 2F + 45, cY-108, 0xFF777777, false);
+
+		boolean unicode = gui.getFontRenderer().getUnicodeFlag();
+		gui.getFontRenderer().setUnicodeFlag(false);
+
 		float dWheel = Mouse.getDWheel();
 		float dScale = dWheel*gridScale*0.00075F;
 		
@@ -154,8 +235,6 @@ public class SubElementNodeEditor extends SubElement {
 		}
 		GlStateManager.disableLighting();
 		GL11.glEnable(GL11.GL_SCISSOR_TEST);
-		int cX = gui.width/2;
-		int cY = gui.height/2;
 		int minX = (cX-72)*gui.res.getScaleFactor();
 		int minY = (cY-114)*gui.res.getScaleFactor();
 		int maxX = (cX+120)*gui.res.getScaleFactor();
@@ -199,6 +278,7 @@ public class SubElementNodeEditor extends SubElement {
 			addMenu.render(gui.mouseX, gui.mouseY);
 		}
 		GL11.glDisable(GL11.GL_SCISSOR_TEST);
+		gui.getFontRenderer().setUnicodeFlag(unicode);
 	}
 	
 	@Override
@@ -213,13 +293,8 @@ public class SubElementNodeEditor extends SubElement {
 		} else if(button == 0){
 			// doing this here for now cus i want buttons to be able to make gui changes
 			NodeElement pressed = currentSystem.getNodeElementPressed(mouseX, mouseY);
-			if (pressed != null) {
-				switch (pressed.name) {
-					case "Edit Body": {
-						descendSubsystem(pressed.parent);
-					}
-				}
-			}
+			if (pressed != null)
+				pressed.onClicked(this);
 			currentSystem.onClick(mouseX, mouseY);
 		}
 		if(button == 2){

@@ -1,91 +1,77 @@
 package com.hbm.particle;
 
-import com.hbm.main.client.NTMClientRegistry;
+import com.hbm.Tags;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
 
 import java.util.Random;
 
 @SideOnly(Side.CLIENT)
 public class ParticleRadiationFog extends Particle {
 
-    private static final int MAX_AGE = 400;
-    private static final int MAX_QUADS = 25;
-    private static final double[] OFF_X = new double[MAX_QUADS];
-    private static final double[] OFF_Y = new double[MAX_QUADS];
-    private static final double[] OFF_Z = new double[MAX_QUADS];
-    private static final double[] JIT_X = new double[MAX_QUADS];
-    private static final double[] JIT_Y = new double[MAX_QUADS];
-    private static final double[] JIT_Z = new double[MAX_QUADS];
-    private static final double[] SIZE_MUL = new double[MAX_QUADS];
-    private static final float[] ALPHA_LUT = new float[MAX_AGE + 1];
+    private static final ResourceLocation TEXTURE = new ResourceLocation(Tags.MODID, "textures/particle/fog.png");
+    private static final int MIN_MAX_AGE = 400;
+    private static final int QUAD_COUNT = 25;
+    private static final double[] OFF_X = new double[QUAD_COUNT];
+    private static final double[] OFF_Y = new double[QUAD_COUNT];
+    private static final double[] OFF_Z = new double[QUAD_COUNT];
+    private static final double[] JIT_X = new double[QUAD_COUNT];
+    private static final double[] JIT_Y = new double[QUAD_COUNT];
+    private static final double[] JIT_Z = new double[QUAD_COUNT];
+    private static final double[] SIZE_MUL = new double[QUAD_COUNT];
+    private static final float[] ALPHA_LUT = new float[MIN_MAX_AGE + 1];
+    private static final float COLOR_RED = 0.85F;
+    private static final float COLOR_GREEN = 0.9F;
+    private static final float COLOR_BLUE = 0.5F;
+    private static final int PACKED_FULLBRIGHT_LIGHTMAP = NTMBufferBuilder.packLightmap(240, 240);
 
     static {
-        Random r = new Random(50L);
-        for (int i = 0; i < MAX_QUADS; i++) {
-            OFF_X[i] = (r.nextGaussian() - 1D) * 2.5D;
-            OFF_Y[i] = (r.nextGaussian() - 1D) * 0.15D;
-            OFF_Z[i] = (r.nextGaussian() - 1D) * 2.5D;
-            SIZE_MUL[i] = (0.75D + r.nextDouble() * 0.5D);
-            JIT_X[i] = r.nextGaussian() * 0.5D;
-            JIT_Y[i] = r.nextGaussian() * 0.5D;
-            JIT_Z[i] = r.nextGaussian() * 0.5D;
+        Random random = new Random(50L);
+        double offX = 0D;
+        double offY = 0D;
+        double offZ = 0D;
+        for (int i = 0; i < QUAD_COUNT; i++) {
+            offX += (random.nextGaussian() - 1D) * 2.5D;
+            offY += (random.nextGaussian() - 1D) * 0.15D;
+            offZ += (random.nextGaussian() - 1D) * 2.5D;
+            OFF_X[i] = offX;
+            OFF_Y[i] = offY;
+            OFF_Z[i] = offZ;
+            SIZE_MUL[i] = random.nextDouble();
+            JIT_X[i] = random.nextGaussian() * 0.5D;
+            JIT_Y[i] = random.nextGaussian() * 0.5D;
+            JIT_Z[i] = random.nextGaussian() * 0.5D;
         }
 
-        for (int age = 0; age <= MAX_AGE; age++) {
-            float a = (float) (Math.sin(age * Math.PI / (double) MAX_AGE) * 0.25D);
-            ALPHA_LUT[age] = MathHelper.clamp(a, 0f, 1f);
+        for (int age = 0; age <= MIN_MAX_AGE; age++) {
+            ALPHA_LUT[age] = (float) (Math.sin(age * Math.PI / (double) MIN_MAX_AGE) * 0.125D);
         }
     }
-
-    private final double spawnY;
-    private final int maxAge;
-    private int rng;
 
     public ParticleRadiationFog(World worldIn, double posXIn, double posYIn, double posZIn) {
         super(worldIn, posXIn, posYIn, posZIn);
-        this.maxAge = MAX_AGE;
-        this.particleRed = 0.8F;
-        this.particleGreen = 0.8F;
-        this.particleBlue = 0.8F;
+        this.particleMaxAge = 100 + this.rand.nextInt(40);
+        this.particleRed = this.particleGreen = this.particleBlue = 0F;
         this.particleScale = 7.5F;
-        this.particleTexture = NTMClientRegistry.fog;
-        this.spawnY = posYIn;
-        int s = System.identityHashCode(this) ^ (int) Double.doubleToLongBits(posXIn * 31.0 + posZIn) ^ (int) Double.doubleToLongBits(posYIn);
-        if (s == 0) s = 0x9E3779B9;
-        this.rng = s;
-        s = xorshift32(s);
-        double nx = ((s & 0x3FF) - 512) * (1.0 / 512.0);
-        double ny = (((s >>> 10) & 0x3FF) - 512) * (1.0 / 512.0);
-        double nz = (((s >>> 20) & 0x3FF) - 512) * (1.0 / 512.0);
-        this.motionX = nx * 0.01D;
-        this.motionY = ny * 0.003D;
-        this.motionZ = nz * 0.01D;
     }
 
-    private static int chooseQuadCount(double distSq) {
-        if (distSq > (144.0 * 144.0)) return 0;
-        if (distSq > (96.0 * 96.0)) return 4;
-        if (distSq > (64.0 * 64.0)) return 8;
-        if (distSq > (32.0 * 32.0)) return 16;
-        return MAX_QUADS;
-    }
-
-    private static int xorshift32(int x) {
-        x ^= (x << 13);
-        x ^= (x >>> 17);
-        x ^= (x << 5);
-        return x;
-    }
-
-    private static double clampAbs(double v, double maxAbs) {
-        if (v > maxAbs) return maxAbs;
-        return Math.max(v, -maxAbs);
+    public ParticleRadiationFog(World worldIn, double posXIn, double posYIn, double posZIn, float red, float green, float blue, float scale) {
+        this(worldIn, posXIn, posYIn, posZIn);
+        this.particleRed = red;
+        this.particleGreen = green;
+        this.particleBlue = blue;
+        this.particleScale = scale;
     }
 
     @Override
@@ -94,100 +80,80 @@ public class ParticleRadiationFog extends Particle {
         this.prevPosY = this.posY;
         this.prevPosZ = this.posZ;
 
-        if (++this.particleAge >= this.maxAge) {
+        if (this.particleMaxAge < MIN_MAX_AGE) {
+            this.particleMaxAge = MIN_MAX_AGE;
+        }
+
+        if (++this.particleAge >= this.particleMaxAge) {
             this.setExpired();
             return;
         }
 
-        int s = (this.rng = xorshift32(this.rng));
-        double nx = ((s & 0x3FF) - 512) * (1.0 / 512.0);
-        double ny = (((s >>> 10) & 0x3FF) - 512) * (1.0 / 512.0);
-        double nz = (((s >>> 20) & 0x3FF) - 512) * (1.0 / 512.0);
+        this.motionX *= 0.9599999785423279D;
+        this.motionY *= 0.9599999785423279D;
+        this.motionZ *= 0.9599999785423279D;
 
-        this.motionX += nx * 0.0008D;
-        this.motionZ += nz * 0.0008D;
-        this.motionY += ny * 0.0002D;
-        this.motionY += (this.spawnY - this.posY) * 0.0020D;
-
-        this.motionX = clampAbs(this.motionX, 0.025D);
-        this.motionZ = clampAbs(this.motionZ, 0.025D);
-        this.motionY = clampAbs(this.motionY, 0.015D);
-        this.move(this.motionX, this.motionY, this.motionZ);
-        this.motionX *= 0.96D;
-        this.motionY *= 0.96D;
-        this.motionZ *= 0.96D;
-    }
-
-    @Override
-    public int getFXLayer() {
-        return 1;
-    }
-
-    @Override
-    public boolean shouldDisableDepth() {
-        return true;
-    }
-
-    @Override
-    public void renderParticle(BufferBuilder buffer, Entity entityIn, float partialTicks, float rotationX, float rotationZ, float rotationYZ,
-                               float rotationXY, float rotationXZ) {
-        int age = this.particleAge;
-        if (age < 0) age = 0;
-        if (age > MAX_AGE) age = MAX_AGE;
-        this.particleAlpha = ALPHA_LUT[age];
-        double dx = entityIn.posX - this.posX;
-        double dy = entityIn.posY - this.posY;
-        double dz = entityIn.posZ - this.posZ;
-        int quads = chooseQuadCount(dx * dx + dy * dy + dz * dz);
-        if (quads <= 0) return;
-        final int j = this.getBrightnessForRender(partialTicks);
-        final int k = (j >> 16) & 0xFFFF;
-        final int l = j & 0xFFFF;
-        final float u0 = this.particleTexture.getMinU();
-        final float u1 = this.particleTexture.getMaxU();
-        final float v0 = this.particleTexture.getMinV();
-        final float v1 = this.particleTexture.getMaxV();
-        final double baseX = (this.prevPosX + (this.posX - this.prevPosX) * (double) partialTicks) - interpPosX;
-        final double baseY = (this.prevPosY + (this.posY - this.prevPosY) * (double) partialTicks) - interpPosY;
-        final double baseZ = (this.prevPosZ + (this.posZ - this.prevPosZ) * (double) partialTicks) - interpPosZ;
-        final double scale = this.particleScale;
-        for (int i = 0; i < quads; i++) {
-            final double size = SIZE_MUL[i] * scale;
-            final double px = baseX + JIT_X[i];
-            final double py = baseY + JIT_Y[i];
-            final double pz = baseZ + JIT_Z[i];
-            final double ox = OFF_X[i];
-            final double oy = OFF_Y[i];
-            final double oz = OFF_Z[i];
-
-            final double rx = (double) rotationX * size;
-            final double rxy = (double) rotationXY * size;
-            final double ry = (double) rotationZ * size;
-            final double ryz = (double) rotationYZ * size;
-            final double rxz = (double) rotationXZ * size;
-
-            final double x1 = px - rx - rxy + ox;
-            final double x2 = px - rx + rxy + ox;
-            final double x3 = px + rx + rxy + ox;
-            final double x4 = px + rx - rxy + ox;
-
-            final double y1 = py - ry + oy;
-            final double y2 = py + ry + oy;
-
-            final double z1 = pz - ryz - rxz + oz;
-            final double z2 = pz - ryz + rxz + oz;
-            final double z3 = pz + ryz + rxz + oz;
-            final double z4 = pz + ryz - rxz + oz;
-
-            buffer.pos(x1, y1, z1).tex(u1, v1).color(particleRed, particleGreen, particleBlue, particleAlpha).lightmap(k, l).endVertex();
-            buffer.pos(x2, y2, z2).tex(u1, v0).color(particleRed, particleGreen, particleBlue, particleAlpha).lightmap(k, l).endVertex();
-            buffer.pos(x3, y2, z3).tex(u0, v0).color(particleRed, particleGreen, particleBlue, particleAlpha).lightmap(k, l).endVertex();
-            buffer.pos(x4, y1, z4).tex(u0, v1).color(particleRed, particleGreen, particleBlue, particleAlpha).lightmap(k, l).endVertex();
+        if (this.onGround) {
+            this.motionX *= 0.699999988079071D;
+            this.motionZ *= 0.699999988079071D;
         }
     }
 
     @Override
+    public int getFXLayer() {
+        return 3;
+    }
+
+    @Override
+    public void renderParticle(BufferBuilder unusedBuffer, Entity entityIn, float partialTicks, float rotationX, float rotationZ, float rotationYZ,
+                               float rotationXY, float rotationXZ) {
+        Minecraft.getMinecraft().getTextureManager().bindTexture(TEXTURE);
+
+        int age = this.particleAge;
+        if (age < 0) {
+            age = 0;
+        } else if (age > MIN_MAX_AGE) {
+            age = MIN_MAX_AGE;
+        }
+        float alpha = ALPHA_LUT[age];
+        this.particleAlpha = alpha;
+        double baseX = this.prevPosX + (this.posX - this.prevPosX) * (double) partialTicks - interpPosX;
+        double baseY = this.prevPosY + (this.posY - this.prevPosY) * (double) partialTicks - interpPosY;
+        double baseZ = this.prevPosZ + (this.posZ - this.prevPosZ) * (double) partialTicks - interpPosZ;
+
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.disableLighting();
+        GlStateManager.enableBlend();
+        GlStateManager.enableRescaleNormal();
+        GlStateManager.alphaFunc(GL11.GL_GREATER, 0F);
+        GlStateManager.depthMask(false);
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+        RenderHelper.disableStandardItemLighting();
+        GlStateManager.glNormal3f(0.0F, 1.0F, 0.0F);
+
+        int packedColor = NTMBufferBuilder.packColor(COLOR_RED, COLOR_GREEN, COLOR_BLUE, alpha);
+        NTMBufferBuilder buffer = NTMImmediate.INSTANCE.beginParticlePositionTexColorLmap(GL11.GL_QUADS, QUAD_COUNT * 4);
+        for (int i = 0; i < QUAD_COUNT; i++) {
+            float size = (float) (SIZE_MUL[i] * this.particleScale);
+            float pX = (float) (baseX + OFF_X[i] + JIT_X[i]);
+            float pY = (float) (baseY + OFF_Y[i] + JIT_Y[i]);
+            float pZ = (float) (baseZ + OFF_Z[i] + JIT_Z[i]);
+
+            buffer.appendParticlePositionTexColorLmapUnchecked(pX - rotationX * size - rotationXY * size, pY - rotationZ * size, pZ - rotationYZ * size - rotationXZ * size, 1.0F, 1.0F, packedColor, PACKED_FULLBRIGHT_LIGHTMAP);
+            buffer.appendParticlePositionTexColorLmapUnchecked(pX - rotationX * size + rotationXY * size, pY + rotationZ * size, pZ - rotationYZ * size + rotationXZ * size, 1.0F, 0.0F, packedColor, PACKED_FULLBRIGHT_LIGHTMAP);
+            buffer.appendParticlePositionTexColorLmapUnchecked(pX + rotationX * size + rotationXY * size, pY + rotationZ * size, pZ + rotationYZ * size + rotationXZ * size, 0.0F, 0.0F, packedColor, PACKED_FULLBRIGHT_LIGHTMAP);
+            buffer.appendParticlePositionTexColorLmapUnchecked(pX + rotationX * size - rotationXY * size, pY - rotationZ * size, pZ + rotationYZ * size - rotationXZ * size, 0.0F, 1.0F, packedColor, PACKED_FULLBRIGHT_LIGHTMAP);
+        }
+        NTMImmediate.INSTANCE.draw();
+
+        GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
+        GlStateManager.disableRescaleNormal();
+        GlStateManager.enableLighting();
+        GlStateManager.depthMask(true);
+    }
+
+    @Override
     public int getBrightnessForRender(float partialTicks) {
-        return 70;
+        return 240 | 240 << 16;
     }
 }

@@ -12,42 +12,30 @@ import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import static com.hbm.items.ItemEnumMulti.ROOT_PATH;
 
-public class ItemBakedBase extends ItemBase implements IDynamicModels {
+public class ItemBakedBase extends ItemBase implements IDynamicModels, IClaimedModelLocation {
     String texturePath;
 
     public ItemBakedBase(String s, String texturePath) {
         super(s);
         this.texturePath = texturePath;
         INSTANCES.add(this);
+        ClaimedModelLocationRegistry.register(this);
     }
 
     public ItemBakedBase(String s) {
         super(s);
         this.texturePath = s;
         INSTANCES.add(this);
+        ClaimedModelLocationRegistry.register(this);
     }
 
     @Override
     public void bakeModel(ModelBakeEvent event) {
-        try {
-            IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/generated"));
-            ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath);
-            IModel retexturedModel = baseModel.retexture(
-                    ImmutableMap.of(
-                            "layer0", spriteLoc.toString()
-                    )
-
-            );
-            IBakedModel bakedModel = retexturedModel.bake(ModelRotation.X0_Y0, DefaultVertexFormats.ITEM, ModelLoader.defaultTextureGetter());
-            ModelResourceLocation bakedModelLocation = new ModelResourceLocation(spriteLoc, "inventory");
-            event.getModelRegistry().putObject(bakedModelLocation, bakedModel);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
 
@@ -59,5 +47,25 @@ public class ItemBakedBase extends ItemBase implements IDynamicModels {
     @Override
     public void registerSprite(TextureMap map) {
         map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath));
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public boolean ownsModelLocation(ModelResourceLocation location) {
+        return IClaimedModelLocation.isInventoryLocation(
+                location,
+                new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath)
+        );
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IModel loadModel(ModelResourceLocation location) {
+        try {
+            IModel generated = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
+            return generated.retexture(ImmutableMap.of("layer0", new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath).toString()));
+        } catch (Exception e) {
+            return IClaimedModelLocation.super.loadModel(location);
+        }
     }
 }

@@ -12,6 +12,7 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.*;
 import com.hbm.main.MainRegistry;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IConfigurableMachine;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.uninos.UniNodespace;
@@ -36,7 +37,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 
 @AutoRegister
-public class TileEntityFusionMHDT extends TileEntityLoadedBase implements ITickable, IEnergyProviderMK2, IFluidStandardTransceiverMK2, IFusionPowerReceiver, IConfigurableMachine {
+public class TileEntityFusionMHDT extends TileEntityLoadedBase implements ITickable, IEnergyProviderMK2, IFluidStandardTransceiverMK2, IFusionPowerReceiver, IConfigurableMachine, IConnectionAnchors {
 
     protected PlasmaNetwork.PlasmaNode plasmaNode;
 
@@ -62,8 +63,8 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase implements ITicka
 
     public TileEntityFusionMHDT() {
         tanks = new FluidTankNTM[2];
-        tanks[0] = new FluidTankNTM(Fluids.PERFLUOROMETHYL_COLD, 4_000);
-        tanks[1] = new FluidTankNTM(Fluids.PERFLUOROMETHYL, 4_000);
+        tanks[0] = new FluidTankNTM(Fluids.PERFLUOROMETHYL_COLD, 4_000).withOwner(this);
+        tanks[1] = new FluidTankNTM(Fluids.PERFLUOROMETHYL, 4_000).withOwner(this);
     }
 
     public boolean hasMinimumPlasma() {
@@ -162,7 +163,7 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase implements ITicka
     }
 
     @Override public boolean receivesFusionPower() { return true; }
-    @Override public void receiveFusionPower(long fusionPower, double neutronPower) { plasmaEnergy = fusionPower; }
+    @Override public void receiveFusionPower(long fusionPower, double neutronPower, float r, float g, float b) { plasmaEnergy = fusionPower; }
 
     @Override
     public void serialize(ByteBuf buf) {

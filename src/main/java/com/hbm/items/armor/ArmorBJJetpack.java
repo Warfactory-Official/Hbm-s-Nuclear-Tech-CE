@@ -44,7 +44,7 @@ public class ArmorBJJetpack extends ArmorBJ {
 		return model;
 	}
 
-	public void onArmorTick(World world, EntityPlayer player, ItemStack stack) {
+	public void onArmorTick(@NotNull World world, @NotNull EntityPlayer player, @NotNull ItemStack stack) {
 		
 		super.onArmorTick(world, player, stack);
 		
@@ -93,7 +93,7 @@ public class ArmorBJJetpack extends ArmorBJ {
     }
     
 	@Override
-	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn){
+	public void addInformation(@NotNull ItemStack stack, World worldIn, @NotNull List<String> list, @NotNull ITooltipFlag flagIn){
 		super.addInformation(stack, worldIn, list, flagIn);
 		list.add(TextFormatting.RED + "  + " + I18nUtil.resolveKey("armor.electricJetpack"));
     	list.add(TextFormatting.GRAY + "  + " + I18nUtil.resolveKey("armor.glider"));

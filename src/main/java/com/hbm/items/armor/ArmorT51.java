@@ -1,6 +1,7 @@
 package com.hbm.items.armor;
 
 import com.hbm.main.ResourceManager;
+import com.hbm.render.item.ItemRenderBaseFMM;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.model.ModelArmorT51;
 import com.hbm.render.tileentity.IItemRendererProvider;
@@ -47,7 +48,7 @@ public class ArmorT51 extends ArmorFSBPowered implements IItemRendererProvider {
     @Override
     @SideOnly(Side.CLIENT)
     public ItemRenderBase getRenderer(Item item) {
-        return new ItemRenderBase() {
+        return new ItemRenderBaseFMM() {
             @Override
             public void renderInventory() {
                 setupRenderInv();

@@ -1,7 +1,9 @@
 package com.hbm.handler.neutron;
 
+import com.hbm.main.MainRegistry;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -84,8 +86,14 @@ public class NeutronNodeWorld {
             }
         }
 
-        public NeutronNode getNode(BlockPos pos) {
-            return nodeCache.get(pos);
+        public @Nullable NeutronNode getNode(BlockPos pos) {
+            NeutronNode node = nodeCache.get(pos);
+            if(node != null && node.tile.isInvalid()) {
+                MainRegistry.logger.warn("[NeutronNodeWorld] Removed invalid neutron node {} at {}", node, pos);
+                nodeCache.remove(pos);
+                return null;
+            }
+            return node;
         }
 
         public void addNode(NeutronNode node) {

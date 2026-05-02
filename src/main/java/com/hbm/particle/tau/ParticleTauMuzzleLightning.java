@@ -4,19 +4,19 @@ package com.hbm.particle.tau;
 import com.hbm.main.ResourceManager;
 import com.hbm.particle.ParticleFirstPerson;
 import com.hbm.render.NTMRenderHelper;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.DestFactor;
 import net.minecraft.client.renderer.GlStateManager.SourceFactor;
 import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,7 +89,7 @@ public class ParticleTauMuzzleLightning extends ParticleFirstPerson {
 		float lifeN = (float)(particleAge+partialTicks)/(float)particleMaxAge;
 		float fade = MathHelper.clamp(2.5F-lifeN*2.5F, 0, 1);
 		
-		buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
+		NTMBufferBuilder fastBuffer = NTMImmediate.INSTANCE.beginPositionTexColorQuads(positions.size() - 1);
 		for(int i = 0; i < positions.size()-1; i ++){
 			Vec3d current = positions.get(i);
 			Vec3d next = positions.get(i+1);
@@ -98,12 +98,27 @@ public class ParticleTauMuzzleLightning extends ParticleFirstPerson {
 			Vec3d pos1 = axis.crossProduct(toPlayer).normalize().scale(particleScale*Math.max(fade, 0.75));
 			Vec3d pos2 = pos1.scale(-1);
 			float al = i == 0 || i == 9 ? 0.5F : 1;
-			buffer.pos(pos1.x + current.x, pos1.y + current.y, pos1.z + current.z).tex(randU, 0).color(1.0F, 0.7F, 0.1F, fade*al).endVertex();
-			buffer.pos(pos2.x + current.x, pos2.y + current.y, pos2.z + current.z).tex(randU, 1).color(1.0F, 0.7F, 0.1F, fade*al).endVertex();
-			buffer.pos(pos2.x + next.x, pos2.y + next.y, pos2.z + next.z).tex(randU, 1).color(1.0F, 0.7F, 0.1F, fade*al).endVertex();
-			buffer.pos(pos1.x + next.x, pos1.y + next.y, pos1.z + next.z).tex(randU, 0).color(1.0F, 0.7F, 0.1F, fade*al).endVertex();
+			int packedColor = NTMBufferBuilder.packColor(1.0F, 0.7F, 0.1F, fade * al);
+			float pos1CurrentX = (float) (pos1.x + current.x);
+			float pos1CurrentY = (float) (pos1.y + current.y);
+			float pos1CurrentZ = (float) (pos1.z + current.z);
+			float pos2CurrentX = (float) (pos2.x + current.x);
+			float pos2CurrentY = (float) (pos2.y + current.y);
+			float pos2CurrentZ = (float) (pos2.z + current.z);
+			float pos2NextX = (float) (pos2.x + next.x);
+			float pos2NextY = (float) (pos2.y + next.y);
+			float pos2NextZ = (float) (pos2.z + next.z);
+			float pos1NextX = (float) (pos1.x + next.x);
+			float pos1NextY = (float) (pos1.y + next.y);
+			float pos1NextZ = (float) (pos1.z + next.z);
+			fastBuffer.appendPositionTexColorQuadUnchecked(
+					pos1CurrentX, pos1CurrentY, pos1CurrentZ, randU, 0, packedColor,
+					pos2CurrentX, pos2CurrentY, pos2CurrentZ, randU, 1, packedColor,
+					pos2NextX, pos2NextY, pos2NextZ, randU, 1, packedColor,
+					pos1NextX, pos1NextY, pos1NextZ, randU, 0, packedColor
+			);
 		}
-		Tessellator.getInstance().draw();
+		NTMImmediate.INSTANCE.draw();
 		
 		NTMRenderHelper.resetColor();
 		GlStateManager.enableCull();

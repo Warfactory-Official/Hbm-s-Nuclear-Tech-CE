@@ -32,6 +32,7 @@ import static com.hbm.inventory.OreDictManager.DictFrame.fromOne;
 import static com.hbm.inventory.material.MaterialShapes.*;
 import static com.hbm.items.ModItems.*;
 
+//mlbv: all future changes to this class should stay additive
 //the more i optimize this, the more it starts looking like gregtech
 public class OreDictManager {
 
@@ -394,7 +395,7 @@ public class OreDictManager {
     public static final DictFrame ANY_HIGHEXPLOSIVE = new DictFrame("AnyHighexplosive");
     public static final DictFrame ANY_COKE = new DictFrame("AnyCoke", "Coke");
     public static final DictFrame ANY_CONCRETE = new DictFrame("Concrete");            //no any prefix means that any has to be appended with the any() or anys() getters, registering works with the any (i.e. no shape) setter
-    public static final DictGroup ANY_TAR = new DictGroup("Tar", KEY_OIL_TAR, KEY_COAL_TAR, KEY_CRACK_TAR);
+    public static final DictGroup ANY_TAR = new DictGroup("Tar", KEY_OIL_TAR, KEY_COAL_TAR, KEY_CRACK_TAR, KEY_WOOD_TAR);
     /**
      * Any special psot-RBMK gating material, namely bismuth and arsenic
      */
@@ -606,6 +607,11 @@ public class OreDictManager {
         OreDictionary.registerOre(KEY_UNIVERSAL_TANK, new ItemStack(fluid_tank_full, 1, OreDictionary.WILDCARD_VALUE));
         OreDictionary.registerOre(KEY_HAZARD_TANK, new ItemStack(fluid_tank_lead_full, 1, OreDictionary.WILDCARD_VALUE));
         OreDictionary.registerOre(KEY_UNIVERSAL_BARREL, new ItemStack(fluid_barrel_full, 1, OreDictionary.WILDCARD_VALUE));
+        if (GeneralConfig.enableFluidContainersV2) {
+            OreDictionary.registerOre(KEY_UNIVERSAL_TANK, new ItemStack(fluid_tank_v2, 1, OreDictionary.WILDCARD_VALUE));
+            OreDictionary.registerOre(KEY_HAZARD_TANK, new ItemStack(fluid_tank_lead_v2, 1, OreDictionary.WILDCARD_VALUE));
+            OreDictionary.registerOre(KEY_UNIVERSAL_BARREL, new ItemStack(fluid_barrel_v2, 1, OreDictionary.WILDCARD_VALUE));
+        }
 
         /*
          * TOOLS
@@ -903,6 +909,11 @@ public class OreDictManager {
             return stacks;
         }
 
+        /**
+         * @deprecated Creates a separate HazardData per call, breaking alias sharing.
+         *             Internal callers should use {@link #buildSharedHazardData()} instead.
+         */
+        @Deprecated(forRemoval = true, since = "2.3.0.1")
         public static void registerHazards(List<HazardEntry> hazards, float hazMult, String dictKey) {
 
             if (!hazards.isEmpty() && hazMult > 0F) {
@@ -1190,17 +1201,24 @@ public class OreDictManager {
         // TODO: rethink this. currently, keys are only registered on-demand if the dict frame has a valid entry, even though we can maximize compatibility
         // by simply registereing all known shapes in the haz reg, whether it exists or not
         public DictFrame autoRegHazard(MaterialShapes shape) {
-            String tag = shape.name();
-            for(String mat : mats) {
-                registerHazards(hazards, hazMult, tag + mat);
+            HazardData sharedData = buildSharedHazardData();
+            if (sharedData != null) {
+                String tag = shape.name();
+                for (String mat : mats) {
+                    HazardSystem.register(tag + mat, sharedData);
+                }
             }
             return this;
         }
 
         public void registerStack(String tag, ItemStack stack) {
+            // All oredict aliases for the same shape share a single HazardData so that
+            // modifications through any alias key are visible through all of them.
+            HazardData sharedData = buildSharedHazardData();
+
             for (String mat : mats) {
                 OreDictionary.registerOre(tag + mat, stack);
-                registerHazards(hazards, hazMult, tag + mat);
+                if (sharedData != null) HazardSystem.register(tag + mat, sharedData);
             }
 
             /*
@@ -1210,8 +1228,26 @@ public class OreDictManager {
              * I'd imagine greg's OD system might not like things without prefixes.
              */
             if ("ingot".equals(tag)) {
-                registerStack("", stack);
+                for (String mat : mats) {
+                    OreDictionary.registerOre(mat, stack);
+                    if (sharedData != null) HazardSystem.register(mat, sharedData);
+                }
             }
+        }
+
+        /**
+         * <p>DO NOT AIM FOR UPSTREAM PARITY FOR THIS!! DO NOT REMOVE, MODIFY, OR REFACTOR</p>
+         * This supersedes {@link DictFrame#registerHazards(List, float, String)}
+         *
+         * @author movblock
+         */
+        private HazardData buildSharedHazardData() {
+            if (hazards.isEmpty() || hazMult <= 0F) return null;
+            HazardData data = new HazardData().setMutex(0b1);
+            for (HazardEntry hazard : hazards) {
+                data.addEntry(hazard.clone(hazMult));
+            }
+            return data;
         }
     }
 

@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.tileentity.machine.albion.TileEntityPARFC;
 import com.hbm.util.InventoryUtil;
@@ -13,6 +14,10 @@ import org.jetbrains.annotations.NotNull;
 public class ContainerPARFC extends Container {
 
     private final TileEntityPARFC rfc;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(1)
+                                                                              .genericMachineRange(0)
+                                                                              .build();
 
     public ContainerPARFC(InventoryPlayer playerInv, TileEntityPARFC tile) {
         rfc = tile;
@@ -38,6 +43,6 @@ public class ContainerPARFC extends Container {
 
     @Override
     public @NotNull ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 1);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 }

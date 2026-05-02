@@ -79,7 +79,6 @@ public class GunConfiguration {
 	public static final int RELOAD_SINGLE = 2;
 
 	public static SoundEvent RSOUND_REVOLVER;
-	public static SoundEvent RSOUND_RIFLE;
 	public static SoundEvent RSOUND_MAG;
 	public static SoundEvent RSOUND_SHOTGUN;
 	public static SoundEvent RSOUND_LAUNCHER;

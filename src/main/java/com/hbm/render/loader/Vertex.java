@@ -3,6 +3,7 @@ package com.hbm.render.loader;
 public class Vertex
 {
     public float x, y, z;
+    public int color = 0xFFFFFFFF;
 
     public Vertex(float x, float y)
     {

@@ -21,13 +21,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Biomes;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import net.minecraft.world.biome.Biome;
 import org.apache.logging.log4j.Level;
 
 import java.util.ArrayList;
@@ -40,11 +38,9 @@ public class EntityNukeExplosionMK5 extends EntityExplosionChunkloading {
     private int strength;
     //How many rays are calculated per tick
     private int radius;
-    private boolean spawnFire = false;
 
     private boolean fallout = true;
     private IExplosionRay explosion;
-    private boolean floodPlease = false;
     private boolean initialized = false;
     private int falloutAdd = 0;
     private int algorithm;
@@ -63,11 +59,6 @@ public class EntityNukeExplosionMK5 extends EntityExplosionChunkloading {
         this.algorithm = BombConfig.explosionAlgorithm;
     }
 
-    private static boolean isWet(World world, BlockPos pos) {
-        Biome b = world.getBiome(pos);
-        return b.getTempCategory() == Biome.TempCategory.OCEAN || b.isHighHumidity() || b == Biomes.BEACH || b == Biomes.OCEAN || b == Biomes.RIVER || b == Biomes.DEEP_OCEAN || b == Biomes.FROZEN_OCEAN || b == Biomes.FROZEN_RIVER || b == Biomes.STONE_BEACH || b == Biomes.SWAMPLAND;
-    }
-
     public static EntityNukeExplosionMK5 statFac(World world, int r, double x, double y, double z) {
         if (GeneralConfig.enableExtendedLogging && !world.isRemote)
             MainRegistry.logger.log(Level.INFO, "[NUKE] Initialized explosion at " + x + " / " + y + " / " + z + " with radius " + r + "!");
@@ -81,15 +72,7 @@ public class EntityNukeExplosionMK5 extends EntityExplosionChunkloading {
         mk5.algorithm = BombConfig.explosionAlgorithm;
 
         mk5.setPosition(x, y, z);
-        mk5.floodPlease = isWet(world, new BlockPos(x, y, z));
         if (BombConfig.disableNuclear) mk5.fallout = false;
-        return mk5;
-    }
-
-    public static EntityNukeExplosionMK5 statFacFire(World world, int r, double x, double y, double z) {
-
-        EntityNukeExplosionMK5 mk5 = statFac(world, r, x, y, z);
-        mk5.spawnFire = true;
         return mk5;
     }
 
@@ -100,17 +83,10 @@ public class EntityNukeExplosionMK5 extends EntityExplosionChunkloading {
         return mk5;
     }
 
-    public static EntityNukeExplosionMK5 statFacNoRadFire(World world, int r, double x, double y, double z) {
-
-        EntityNukeExplosionMK5 mk5 = statFac(world, r, x, y, z);
-        mk5.fallout = false;
-        mk5.spawnFire = true;
-        return mk5;
-    }
-
     @Override
     public void onUpdate() {
         if (world.isRemote) return;
+        requestChunkLoaderTicketIfNeeded();
 
         if (strength == 0 || !CompatibilityConfig.isWarDim(world)) {
             this.setDead();
@@ -156,18 +132,6 @@ public class EntityNukeExplosionMK5 extends EntityExplosionChunkloading {
                 fallout.posZ = this.posZ;
                 fallout.setScale((int)(this.radius * 2.5 + falloutAdd) * BombConfig.falloutRange / 100);
                 this.world.spawnEntity(fallout);
-//                EntityFalloutUnderGround falloutBall = new EntityFalloutUnderGround(this.world);
-//                falloutBall.posX = this.posX;
-//                falloutBall.posY = this.posY;
-//                falloutBall.posZ = this.posZ;
-//                falloutBall.setScale((int) (this.radius * (BombConfig.falloutRange / 100F) + falloutAdd));
-//
-//                falloutBall.falloutRainDoFallout = fallout && !explosion.isContained();
-//                falloutBall.falloutRainDoFlood = floodPlease;
-//                falloutBall.falloutRainFire = spawnFire;
-//                falloutBall.falloutRainRadius1 = (int) ((this.radius * 2.5F + falloutAdd) * BombConfig.falloutRange * 0.01F);
-//                falloutBall.falloutRainRadius2 = this.radius + 4;
-//                this.world.spawnEntity(falloutBall);
             }
             this.setDead();
         }
@@ -209,12 +173,11 @@ public class EntityNukeExplosionMK5 extends EntityExplosionChunkloading {
 
     @Override
     public void readEntityFromNBT(NBTTagCompound nbt) {
+        markChunkLoaderRestoredFromNBT();
         radius = nbt.getInteger("radius");
         strength = nbt.getInteger("strength");
         falloutAdd = nbt.getInteger("falloutAdd");
         fallout = nbt.getBoolean("fallout");
-        floodPlease = nbt.getBoolean("floodPlease");
-        spawnFire = nbt.getBoolean("spawnFire");
         algorithm = nbt.getInteger("algorithm");
         if (nbt.hasKey("detonator"))
             detonator = nbt.getUniqueId("detonator");
@@ -235,8 +198,6 @@ public class EntityNukeExplosionMK5 extends EntityExplosionChunkloading {
         nbt.setInteger("strength", strength);
         nbt.setInteger("falloutAdd", falloutAdd);
         nbt.setBoolean("fallout", fallout);
-        nbt.setBoolean("floodPlease", floodPlease);
-        nbt.setBoolean("spawnFire", spawnFire);
         nbt.setInteger("algorithm", algorithm);
         if (detonator != null)
             nbt.setUniqueId("detonator", detonator);

@@ -31,6 +31,7 @@ public class EntityEMP extends Entity implements IChunkLoader {
 	List<BlockPos> machines;
 	int life = 10 * 60 * 20;
 	private Ticket loaderTicket;
+	private boolean awaitingTicketRestore;
 
 	public EntityEMP(World p_i1582_1_) {
 		super(p_i1582_1_);
@@ -40,6 +41,7 @@ public class EntityEMP extends Entity implements IChunkLoader {
 	public void onUpdate() {
 		
 		if(!world.isRemote) {
+			requestChunkLoaderTicketIfNeeded();
 			if(!CompatibilityConfig.isWarDim(world)){
 				this.setDead();
 				return;
@@ -127,7 +129,6 @@ public class EntityEMP extends Entity implements IChunkLoader {
 
 	@Override
 	protected void entityInit() {
-		init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, Type.ENTITY));
 	}
 
 	@Override
@@ -141,9 +142,10 @@ public class EntityEMP extends Entity implements IChunkLoader {
                 	loaderTicket = ticket;
                 	loaderTicket.bindEntity(this);
                 	loaderTicket.getModData();
+                } else if(loaderTicket != ticket) {
+                    ForgeChunkManager.releaseTicket(ticket);
                 }
-
-                ForgeChunkManager.forceChunk(loaderTicket, new ChunkPos(chunkCoordX, chunkCoordZ));
+                loadNeighboringChunks(chunkCoordX, chunkCoordZ);
             }
         }
 	}
@@ -177,8 +179,36 @@ public class EntityEMP extends Entity implements IChunkLoader {
 	}
 
 	@Override
-	protected void readEntityFromNBT(NBTTagCompound nbt) { }
+	protected void readEntityFromNBT(NBTTagCompound nbt) {
+		awaitingTicketRestore = true;
+	}
 
 	@Override
 	protected void writeEntityToNBT(NBTTagCompound nbt) { }
+
+	@Override
+	public void setDead() {
+		super.setDead();
+		this.clearChunkLoader();
+	}
+
+	private void clearChunkLoader() {
+		if(!world.isRemote && loaderTicket != null) {
+			for(ChunkPos chunk : loadedChunks) {
+				ForgeChunkManager.unforceChunk(loaderTicket, chunk);
+			}
+			loadedChunks.clear();
+			ForgeChunkManager.releaseTicket(loaderTicket);
+			loaderTicket = null;
+		}
+	}
+
+	private void requestChunkLoaderTicketIfNeeded() {
+		if(world.isRemote || loaderTicket != null) return;
+		if(awaitingTicketRestore) {
+			awaitingTicketRestore = false;
+			return;
+		}
+		init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, Type.ENTITY));
+	}
 }

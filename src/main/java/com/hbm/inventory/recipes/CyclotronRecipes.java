@@ -6,7 +6,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import com.hbm.inventory.RecipesCommon;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
-import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.loader.SerializableRecipe;
 import com.hbm.items.ModItems;
 import com.hbm.main.MainRegistry;
@@ -93,7 +92,6 @@ public class CyclotronRecipes extends SerializableRecipe {
 		makeRecipe(new ComparableStack(ModItems.part_plutonium), new RecipesCommon.OreDictStack(PU.dust()), new ItemStack(ModItems.powder_tennessine), plA);
 		makeRecipe(new ComparableStack(ModItems.part_plutonium), new ComparableStack(ModItems.powder_tennessine), new ItemStack(ModItems.powder_australium), plA);
 		makeRecipe(new ComparableStack(ModItems.part_plutonium), new ComparableStack(ModItems.pellet_charged), new ItemStack(ModItems.nugget_schrabidium), 1000);
-		makeRecipe(new ComparableStack(ModItems.part_plutonium), new ComparableStack(ModItems.cell, 1, Fluids.AMAT.getID()), new ItemStack(ModItems.cell, 1, Fluids.ASCHRAB.getID()), 0);
 		/// PLUTONIUM END ///
 	}
 

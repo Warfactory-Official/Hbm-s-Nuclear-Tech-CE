@@ -11,8 +11,6 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.IDynamicModels;
 import com.hbm.items.ModItems;
 import com.hbm.items.block.ItemBlockSpecialAABB;
-import com.hbm.lib.ForgeDirection;
-import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.render.loader.HFRWavefrontObject;
 import com.hbm.render.model.DuctNeoBakedModel;
@@ -119,53 +117,49 @@ public class FluidDuctStandard extends FluidDuctBase implements IDynamicModels, 
 		return new TileEntityPipeBaseNT();
 	}
 
-	/**
-	 * Checks if it can connect to a fluid-capable neighbor.
-	 */
-	private boolean canConnectTo(IBlockAccess world, int x, int y, int z, ForgeDirection dir, FluidType type) {
-		return Library.canConnectFluid(world, x + dir.offsetX, y + dir.offsetY, z + dir.offsetZ, dir, type);
-	}
-
-	private boolean canConnectAt(IBlockAccess world, BlockPos pos, EnumFacing dir, FluidType type) {
-		return switch (dir) {
-			case EAST -> canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), Library.POS_X, type);
-			case WEST -> canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), Library.NEG_X, type);
-			case UP -> canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), Library.POS_Y, type);
-			case DOWN -> canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), Library.NEG_Y, type);
-			case SOUTH -> canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), Library.POS_Z, type);
-			case NORTH -> canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), Library.NEG_Z, type);
-		};
+	private int resolveMask(IBlockAccess world, BlockPos pos) {
+		TileEntity te = world.getTileEntity(pos);
+		if (te instanceof TileEntityPipeBaseNT pipe) {
+			return pipe.getCachedConnectionMask(world) & 0x3F;
+		}
+		return 0;
 	}
 
 	@Override
 	public IBlockState getActualState(IBlockState state, IBlockAccess world, BlockPos pos) {
-		TileEntity te = world.getTileEntity(pos);
-		if (te instanceof TileEntityPipeBaseNT pipe) {
-			FluidType type = pipe.getType();
-			boolean pX = canConnectAt(world, pos, EnumFacing.EAST, type);
-			boolean nX = canConnectAt(world, pos, EnumFacing.WEST, type);
-			boolean pY = canConnectAt(world, pos, EnumFacing.UP, type);
-			boolean nY = canConnectAt(world, pos, EnumFacing.DOWN, type);
-			boolean pZ = canConnectAt(world, pos, EnumFacing.SOUTH, type);
-			boolean nZ = canConnectAt(world, pos, EnumFacing.NORTH, type);
-			return state.withProperty(POS_X, pX)
-					.withProperty(NEG_X, nX)
-					.withProperty(POS_Y, pY)
-					.withProperty(NEG_Y, nY)
-					.withProperty(POS_Z, pZ)
-					.withProperty(NEG_Z, nZ);
-		}
-		return state;
+		int mask = resolveMask(world, pos);
+		return state.withProperty(POS_X, (mask & (1 << EnumFacing.EAST.getIndex()))  != 0)
+				.withProperty(NEG_X, (mask & (1 << EnumFacing.WEST.getIndex()))  != 0)
+				.withProperty(POS_Y, (mask & (1 << EnumFacing.UP.getIndex()))    != 0)
+				.withProperty(NEG_Y, (mask & (1 << EnumFacing.DOWN.getIndex()))  != 0)
+				.withProperty(POS_Z, (mask & (1 << EnumFacing.SOUTH.getIndex())) != 0)
+				.withProperty(NEG_Z, (mask & (1 << EnumFacing.NORTH.getIndex())) != 0);
 	}
 
 	@Override
 	public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
 		TileEntity te = source.getTileEntity(pos);
+		if (te == null) return DUCT_BB;
+		return computeAABB(resolveMask(source, pos));
+	}
+
+	@Override
+	public void neighborChanged(IBlockState state, World world, BlockPos pos, net.minecraft.block.Block blockIn, BlockPos fromPos) {
+		super.neighborChanged(state, world, pos, blockIn, fromPos);
+		invalidatePipeCache(world, pos);
+	}
+
+	@Override
+	public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
+		super.onNeighborChange(world, pos, neighbor);
+		invalidatePipeCache(world, pos);
+	}
+
+	private static void invalidatePipeCache(IBlockAccess world, BlockPos pos) {
+		TileEntity te = world.getTileEntity(pos);
 		if (te instanceof TileEntityPipeBaseNT pipe) {
-			FluidType type = pipe.getType();
-            return getCollisionAABB(source, pos, type);
-        }
-		return DUCT_BB;
+			pipe.invalidateConnectionCache();
+		}
 	}
 
     @Override
@@ -176,18 +170,18 @@ public class FluidDuctStandard extends FluidDuctBase implements IDynamicModels, 
     }
 
     @Override
-    public AxisAlignedBB getCollisionBoundingBoxForPlacement(World worldIn, BlockPos pos, ItemStack stack) {
-        return getCollisionAABB(worldIn, pos, Fluids.NONE);
+    public AxisAlignedBB getCollisionBoundingBoxForPlacement(World worldIn, BlockPos pos, IBlockState stateForPlacement, ItemStack stack) {
+        return computeAABB(0);
     }
 
     @NotNull
-    private AxisAlignedBB getCollisionAABB(IBlockAccess source, BlockPos pos, FluidType type) {
-        boolean nX = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), Library.NEG_X, type);
-        boolean pX = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), Library.POS_X, type);
-        boolean nY = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), Library.NEG_Y, type);
-        boolean pY = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), Library.POS_Y, type);
-        boolean nZ = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), Library.NEG_Z, type);
-        boolean pZ = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), Library.POS_Z, type);
+    private AxisAlignedBB computeAABB(int connMask) {
+        boolean nX = (connMask & (1 << EnumFacing.WEST.getIndex()))  != 0;
+        boolean pX = (connMask & (1 << EnumFacing.EAST.getIndex()))  != 0;
+        boolean nY = (connMask & (1 << EnumFacing.DOWN.getIndex()))  != 0;
+        boolean pY = (connMask & (1 << EnumFacing.UP.getIndex()))    != 0;
+        boolean nZ = (connMask & (1 << EnumFacing.NORTH.getIndex())) != 0;
+        boolean pZ = (connMask & (1 << EnumFacing.SOUTH.getIndex())) != 0;
         int mask = (pX ? 32 : 0) + (nX ? 16 : 0) + (pY ? 8 : 0) + (nY ? 4 : 0) + (pZ ? 2 : 0) + (nZ ? 1 : 0);
 
         return switch (mask) {
@@ -209,49 +203,36 @@ public class FluidDuctStandard extends FluidDuctBase implements IDynamicModels, 
 	public void addCollisionBoxToList(IBlockState state, World world, BlockPos pos,
 									  AxisAlignedBB entityBox, List<AxisAlignedBB> collidingBoxes,
 									  @Nullable Entity entity, boolean isActualState) {
-		TileEntity te = world.getTileEntity(pos);
-		if (te instanceof TileEntityPipeBaseNT pipe) {
-			FluidType type = pipe.getType();
+		int connMask = resolveMask(world, pos);
+		boolean nX = (connMask & (1 << EnumFacing.WEST.getIndex()))  != 0;
+		boolean pX = (connMask & (1 << EnumFacing.EAST.getIndex()))  != 0;
+		boolean nY = (connMask & (1 << EnumFacing.DOWN.getIndex()))  != 0;
+		boolean pY = (connMask & (1 << EnumFacing.UP.getIndex()))    != 0;
+		boolean nZ = (connMask & (1 << EnumFacing.NORTH.getIndex())) != 0;
+		boolean pZ = (connMask & (1 << EnumFacing.SOUTH.getIndex())) != 0;
+		int mask = (pX ? 32 : 0) + (nX ? 16 : 0) + (pY ? 8 : 0) + (nY ? 4 : 0) + (pZ ? 2 : 0) + (nZ ? 1 : 0);
 
-			boolean nX = canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), Library.NEG_X, type);
-			boolean pX = canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), Library.POS_X, type);
-			boolean nY = canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), Library.NEG_Y, type);
-			boolean pY = canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), Library.POS_Y, type);
-			boolean nZ = canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), Library.NEG_Z, type);
-			boolean pZ = canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), Library.POS_Z, type);
-			int mask = (pX ? 32 : 0) + (nX ? 16 : 0) + (pY ? 8 : 0) + (nY ? 4 : 0) + (pZ ? 2 : 0) + (nZ ? 1 : 0);
-
-			List<AxisAlignedBB> bbs = new ArrayList<>();
-
-			if (mask == 0) {
-				bbs.add(new AxisAlignedBB(pos.getX() + 0.6875D, pos.getY() + 0.3125D, pos.getZ() + 0.3125D, pos.getX() + 1.0D, pos.getY() + 0.6875D, pos.getZ() + 0.6875D));
-				bbs.add(new AxisAlignedBB(pos.getX() + 0.0D, pos.getY() + 0.3125D, pos.getZ() + 0.3125D, pos.getX() + 0.3125D, pos.getY() + 0.6875D, pos.getZ() + 0.6875D));
-				bbs.add(new AxisAlignedBB(pos.getX() + 0.3125D, pos.getY() + 0.6875D, pos.getZ() + 0.3125D, pos.getX() + 0.6875D, pos.getY() + 1.0D, pos.getZ() + 0.6875D));
-				bbs.add(new AxisAlignedBB(pos.getX() + 0.3125D, pos.getY() + 0.0D, pos.getZ() + 0.3125D, pos.getX() + 0.6875D, pos.getY() + 0.3125D, pos.getZ() + 0.6875D));
-				bbs.add(new AxisAlignedBB(pos.getX() + 0.3125D, pos.getY() + 0.3125D, pos.getZ() + 0.6875D, pos.getX() + 0.6875D, pos.getY() + 0.6875D, pos.getZ() + 1.0D));
-				bbs.add(new AxisAlignedBB(pos.getX() + 0.3125D, pos.getY() + 0.3125D, pos.getZ() + 0.0D, pos.getX() + 0.6875D, pos.getY() + 0.6875D, pos.getZ() + 0.3125D));
-			} else if (mask == 0b100000 || mask == 0b010000 || mask == 0b110000) {
-				bbs.add(new AxisAlignedBB(pos.getX() + 0.0D, pos.getY() + 0.3125D, pos.getZ() + 0.3125D, pos.getX() + 1.0D, pos.getY() + 0.6875D, pos.getZ() + 0.6875D));
-			} else if (mask == 0b001000 || mask == 0b000100 || mask == 0b001100) {
-				bbs.add(new AxisAlignedBB(pos.getX() + 0.3125D, pos.getY() + 0.0D, pos.getZ() + 0.3125D, pos.getX() + 0.6875D, pos.getY() + 1.0D, pos.getZ() + 0.6875D));
-			} else if (mask == 0b000010 || mask == 0b000001 || mask == 0b000011) {
-				bbs.add(new AxisAlignedBB(pos.getX() + 0.3125D, pos.getY() + 0.3125D, pos.getZ() + 0.0D, pos.getX() + 0.6875D, pos.getY() + 0.6875D, pos.getZ() + 1.0D));
-			} else {
-				bbs.add(new AxisAlignedBB(pos.getX() + 0.3125D, pos.getY() + 0.3125D, pos.getZ() + 0.3125D, pos.getX() + 0.6875D, pos.getY() + 0.6875D, pos.getZ() + 0.6875D));
-
-				if (pX) bbs.add(new AxisAlignedBB(pos.getX() + 0.6875D, pos.getY() + 0.3125D, pos.getZ() + 0.3125D, pos.getX() + 1.0D, pos.getY() + 0.6875D, pos.getZ() + 0.6875D));
-				if (nX) bbs.add(new AxisAlignedBB(pos.getX() + 0.0D, pos.getY() + 0.3125D, pos.getZ() + 0.3125D, pos.getX() + 0.3125D, pos.getY() + 0.6875D, pos.getZ() + 0.6875D));
-				if (pY) bbs.add(new AxisAlignedBB(pos.getX() + 0.3125D, pos.getY() + 0.6875D, pos.getZ() + 0.3125D, pos.getX() + 0.6875D, pos.getY() + 1.0D, pos.getZ() + 0.6875D));
-				if (nY) bbs.add(new AxisAlignedBB(pos.getX() + 0.3125D, pos.getY() + 0.0D, pos.getZ() + 0.3125D, pos.getX() + 0.6875D, pos.getY() + 0.3125D, pos.getZ() + 0.6875D));
-				if (pZ) bbs.add(new AxisAlignedBB(pos.getX() + 0.3125D, pos.getY() + 0.3125D, pos.getZ() + 0.6875D, pos.getX() + 0.6875D, pos.getY() + 0.6875D, pos.getZ() + 1.0D));
-				if (nZ) bbs.add(new AxisAlignedBB(pos.getX() + 0.3125D, pos.getY() + 0.3125D, pos.getZ() + 0.0D, pos.getX() + 0.6875D, pos.getY() + 0.6875D, pos.getZ() + 0.3125D));
-			}
-
-			for (AxisAlignedBB bb : bbs) {
-				if (entityBox.intersects(bb)) {
-					collidingBoxes.add(bb);
-				}
-			}
+		if (mask == 0) {
+			addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(0.6875D, 0.3125D, 0.3125D, 1.0D,    0.6875D, 0.6875D));
+			addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(0D,      0.3125D, 0.3125D, 0.3125D, 0.6875D, 0.6875D));
+			addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(0.3125D, 0.6875D, 0.3125D, 0.6875D, 1.0D,    0.6875D));
+			addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(0.3125D, 0D,      0.3125D, 0.6875D, 0.3125D, 0.6875D));
+			addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(0.3125D, 0.3125D, 0.6875D, 0.6875D, 0.6875D, 1.0D));
+			addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(0.3125D, 0.3125D, 0D,      0.6875D, 0.6875D, 0.3125D));
+		} else if (mask == 0b100000 || mask == 0b010000 || mask == 0b110000) {
+			addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(0D,      0.3125D, 0.3125D, 1.0D,    0.6875D, 0.6875D));
+		} else if (mask == 0b001000 || mask == 0b000100 || mask == 0b001100) {
+			addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(0.3125D, 0D,      0.3125D, 0.6875D, 1.0D,    0.6875D));
+		} else if (mask == 0b000010 || mask == 0b000001 || mask == 0b000011) {
+			addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(0.3125D, 0.3125D, 0D,      0.6875D, 0.6875D, 1.0D));
+		} else {
+			addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(0.3125D, 0.3125D, 0.3125D, 0.6875D, 0.6875D, 0.6875D));
+			if (pX) addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(0.6875D, 0.3125D, 0.3125D, 1.0D,    0.6875D, 0.6875D));
+			if (nX) addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(0D,      0.3125D, 0.3125D, 0.3125D, 0.6875D, 0.6875D));
+			if (pY) addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(0.3125D, 0.6875D, 0.3125D, 0.6875D, 1.0D,    0.6875D));
+			if (nY) addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(0.3125D, 0D,      0.3125D, 0.6875D, 0.3125D, 0.6875D));
+			if (pZ) addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(0.3125D, 0.3125D, 0.6875D, 0.6875D, 0.6875D, 1.0D));
+			if (nZ) addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(0.3125D, 0.3125D, 0D,      0.6875D, 0.6875D, 0.3125D));
 		}
 	}
 
@@ -324,12 +305,6 @@ public class FluidDuctStandard extends FluidDuctBase implements IDynamicModels, 
 			return new ItemStack(ModItems.fluid_duct, 1, retadata);
 		}
 		return super.getPickBlock(state, target, world, pos, player);
-	}
-
-	@Override
-	public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-		int meta = stack.getMetadata() % 3;
-		worldIn.setBlockState(pos, this.getDefaultState().withProperty(META, meta), 2);
 	}
 
 	@Override
@@ -444,5 +419,13 @@ public class FluidDuctStandard extends FluidDuctBase implements IDynamicModels, 
 			return type.getColor();
 		};
 		evt.getBlockColors().registerBlockColorHandler(colorHandler, ModBlocks.fluid_duct_neo); // ensure ModBlocks.fluid_duct refers to this block
+	}
+
+	@SideOnly(Side.CLIENT)
+	public static void registerItemColorHandler(ColorHandlerEvent.Item evt) {
+		evt.getItemColors().registerItemColorHandler(
+				(stack, tintIndex) -> tintIndex == 1 ? Fluids.NONE.getColor() : 0xFFFFFF,
+				Item.getItemFromBlock(ModBlocks.fluid_duct_neo)
+		);
 	}
 }

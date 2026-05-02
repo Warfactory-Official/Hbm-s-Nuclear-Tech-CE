@@ -19,6 +19,7 @@ import com.hbm.lib.*;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
@@ -50,8 +51,9 @@ import java.util.HashMap;
 import java.util.List;
 
 @AutoRegister
-public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implements ITickable, IEnergyProviderMK2, IFluidStandardTransceiver, IUpgradeInfoProvider, IGUIProvider, IFluidCopiable, IFFtoNTMF {
+public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implements ITickable, IEnergyProviderMK2, IFluidStandardTransceiver, IUpgradeInfoProvider, IGUIProvider, IFluidCopiable, IFFtoNTMF, IConnectionAnchors {
 
+	private AxisAlignedBB bb;
 	public long power;
 	public static final long maxPower = 1_000_000;
 	public FluidTankNTM tank;
@@ -93,8 +95,8 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
             }
         };
 
-		tank = new FluidTankNTM(Fluids.KEROSENE, 24000);
-		blood = new FluidTankNTM(Fluids.BLOOD, 24000);
+		tank = new FluidTankNTM(Fluids.KEROSENE, 24000).withOwner(this);
+		blood = new FluidTankNTM(Fluids.BLOOD, 24000).withOwner(this);
 		upgradeManager = new UpgradeManagerNT(this);
 	}
 
@@ -132,7 +134,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 		return (power * i) / maxPower;
 	}
 
-	protected DirPos[] getConPos() {
+	public DirPos[] getConPos() {
 
 		ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10).getRotation(ForgeDirection.UP);
 		ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
@@ -351,7 +353,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 			 * All movement related stuff has to be repeated on the client, but only for the client's player
 			 * Otherwise this could lead to desync since the motion is never sent form the server
 			 */
-			if(tank.getFill() > 0 && !MainRegistry.proxy.me().capabilities.isCreativeMode) {
+			if(wasOn && tank.getFill() > 0 && !MainRegistry.proxy.me().capabilities.isCreativeMode) {
 				ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10).getRotation(ForgeDirection.UP);
 				ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
 
@@ -463,7 +465,8 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 	@NotNull
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		if (bb == null) bb = new AxisAlignedBB(pos.getX() - 3, pos.getY(), pos.getZ() - 3, pos.getX() + 4, pos.getY() + 3, pos.getZ() + 4);
+		return bb;
 	}
 
 	@Override

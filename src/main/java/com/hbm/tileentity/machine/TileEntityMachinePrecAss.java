@@ -24,6 +24,7 @@ import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.modules.machine.ModuleMachinePrecAss;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -50,7 +51,7 @@ import org.jetbrains.annotations.NotNull;
 
 // horribly copy-pasted crap device
 @AutoRegister
-public class TileEntityMachinePrecAss extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, IControlReceiver, IGUIProvider {
+public class TileEntityMachinePrecAss extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, IControlReceiver, IGUIProvider, IConnectionAnchors {
 
     public FluidTankNTM inputTank;
     public FluidTankNTM outputTank;
@@ -82,8 +83,8 @@ public class TileEntityMachinePrecAss extends TileEntityMachineBase implements I
 
     public TileEntityMachinePrecAss() {
         super(22, true, true);
-        this.inputTank = new FluidTankNTM(Fluids.NONE, 4_000);
-        this.outputTank = new FluidTankNTM(Fluids.NONE, 4_000);
+        this.inputTank = new FluidTankNTM(Fluids.NONE, 4_000).withOwner(this);
+        this.outputTank = new FluidTankNTM(Fluids.NONE, 4_000).withOwner(this);
 
         this.assemblerModule = new ModuleMachinePrecAss(0, this, inventory)
                 .itemInput(4).itemOutput(13)

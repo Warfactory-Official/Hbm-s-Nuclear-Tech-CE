@@ -1,6 +1,6 @@
 package com.hbm.render.anim;
 
-import com.hbm.render.anim.BusAnimationKeyframe.InterpolationType;
+import com.hbm.render.anim.BusAnimationKeyframe.IType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,104 +8,162 @@ import java.util.List;
 //the actual bus, a sequence of keyframes with their own behavior and such
 public class BusAnimationSequence {
 
-	//not actually useful for anything since the renderer usually handles
-	//this part, but it's nice to have for distinction just in case
-	public static enum EnumTransformation {
-		UNDEFINED,
-		ROTATION,
-		TRANSLATION,
-		SCALE
+	public static enum Dimension {
+		TX, TY, TZ, RX, RY, RZ, SX, SY, SZ
 	}
 
-	private List<BusAnimationKeyframe> keyframes = new ArrayList<>();
-	public EnumTransformation transformationType;
+	// Storing a matrix of keyframe data, each keyframe stores a SINGLE dimension, so we can stagger frames over each parameter
+	private final List<List<BusAnimationKeyframe>> transformKeyframes = new ArrayList<>(9);
 
-	//appends a keyframe at the end of the sequence
-	public BusAnimationSequence addKeyframe(BusAnimationKeyframe keyframe) {
+	public double[] offset = new double[3];
 
-		keyframes.add(keyframe);
+	// swizzle me timbers
+	public double[] rotMode = new double[]{0, 1, 2};
 
+	public BusAnimationSequence() {
+		// Initialise our keyframe storage, since it's multidimensional
+		for (int i = 0; i < 9; i++) transformKeyframes.add(new ArrayList<>());
+	}
+
+	// Adds a keyframe to the given dimension
+	public BusAnimationSequence addKeyframe(Dimension dimension, BusAnimationKeyframe keyframe) {
+		transformKeyframes.get(dimension.ordinal()).add(keyframe);
 		return this;
+	}
+
+	public BusAnimationSequence addKeyframe(Dimension dimension, double value, int duration) {
+		return addKeyframe(dimension, new BusAnimationKeyframe(value, duration));
+	}
+
+	/** Adds a position with a duration of 0 */
+	public BusAnimationSequence setPos(double x, double y, double z) {
+		return addPos(x, y, z, 0, IType.LINEAR);
+	}
+
+	/** Adds a position with the desired duration and lininterp */
+	public BusAnimationSequence addPos(double x, double y, double z, int duration) {
+		return addPos(x, y, z, duration, IType.LINEAR);
+	}
+
+	/** Adds a position with the desired duration and interpolation type */
+	public BusAnimationSequence addPos(double x, double y, double z, int duration, IType type) {
+		addKeyframe(Dimension.TX, new BusAnimationKeyframe(x, duration, type));
+		addKeyframe(Dimension.TY, new BusAnimationKeyframe(y, duration, type));
+		addKeyframe(Dimension.TZ, new BusAnimationKeyframe(z, duration, type));
+		return this;
+	}
+
+	public BusAnimationSequence addRot(double x, double y, double z, int duration) {
+		addKeyframe(Dimension.RX, new BusAnimationKeyframe(x, duration));
+		addKeyframe(Dimension.RY, new BusAnimationKeyframe(y, duration));
+		addKeyframe(Dimension.RZ, new BusAnimationKeyframe(z, duration));
+		return this;
+	}
+
+	/** Repeats the previous keyframe with the same values using lininterp. Effectively makes the animation frame pause for the desired amount of milliseconds. */
+	public BusAnimationSequence hold(int duration) {
+		addKeyframe(Dimension.TX, new BusAnimationKeyframe(getLast(Dimension.TX), duration));
+		addKeyframe(Dimension.TY, new BusAnimationKeyframe(getLast(Dimension.TY), duration));
+		addKeyframe(Dimension.TZ, new BusAnimationKeyframe(getLast(Dimension.TZ), duration));
+		return this;
+	}
+
+	/** Repeats the previous keyframe for a duration depending on the previous keyframes. Useful for getting different buses to sync up. */
+	public BusAnimationSequence holdUntil(int end) {
+		int duration = end - getTotalTime();
+		//FIXME: holdUntil breaks as soon as the animation speed is not 1
+		return hold(duration);
+	}
+
+	public BusAnimationSequence multiplyTime(double mult) {
+		for (Dimension dim : Dimension.values()) {
+			for (BusAnimationKeyframe keyframe : transformKeyframes.get(dim.ordinal())) {
+				keyframe.duration = (int) (keyframe.originalDuration * mult);
+			}
+		}
+		return this;
+	}
+
+	public BusAnimationSequence addKeyframe(BusAnimationKeyframe keyframe) {
+		if (keyframe.legacyTriplet) {
+			addKeyframe(Dimension.TX, new BusAnimationKeyframe(keyframe.legacyX, keyframe.duration, keyframe.interpolationType));
+			addKeyframe(Dimension.TY, new BusAnimationKeyframe(keyframe.legacyY, keyframe.duration, keyframe.interpolationType));
+			addKeyframe(Dimension.TZ, new BusAnimationKeyframe(keyframe.legacyZ, keyframe.duration, keyframe.interpolationType));
+		} else {
+			addKeyframe(Dimension.TX, keyframe);
+		}
+		return this;
+	}
+
+	/** Grabs the numerical value for the most recent keyframe on the given dimension */
+	private double getLast(Dimension dim) {
+		BusAnimationKeyframe frame = getLastFrame(dim);
+		return frame != null ? frame.value : 0D;
+	}
+
+	private BusAnimationKeyframe getLastFrame(Dimension dim) {
+		List<BusAnimationKeyframe> keyframes = transformKeyframes.get(dim.ordinal());
+		if (keyframes.isEmpty()) return null;
+		return keyframes.get(keyframes.size() - 1);
 	}
 
 	//all transformation data is absolute, additive transformations have not yet been implemented
 	public double[] getTransformation(int millis) {
+		double[] transform = new double[15];
 
-		BusAnimationKeyframe frame = getFrameAtTime(millis);
+		for (int i = 0; i < 9; i++) {
+			List<BusAnimationKeyframe> keyframes = transformKeyframes.get(i);
 
-		if(frame == null)
-			return null;
+			BusAnimationKeyframe currentFrame = null;
+			BusAnimationKeyframe previousFrame = null;
 
-		//if no interpolation type is set, just return the new coords
-		if(frame.interpolationType == InterpolationType.NONE)
-			return frame.toArray();
+			int startTime = 0;
+			int endTime = 0;
+			for (BusAnimationKeyframe keyframe : keyframes) {
+				startTime = endTime;
+				endTime += keyframe.duration;
+				previousFrame = currentFrame;
+				currentFrame = keyframe;
+				if (millis < endTime) break;
+			}
 
-		//if this is the first frame, the "previous" values are 0
-		double[] previous = new double[] {0, 0, 0};
+			if (currentFrame == null) {
+				// Scale defaults to 1, others are 0
+				transform[i] = i >= 6 ? 1 : 0;
+				continue;
+			}
 
-		BusAnimationKeyframe lastFrame = getPreviousFrame(frame);
+			if (millis >= endTime || currentFrame.duration == 0) {
+				transform[i] = currentFrame.value;
+				continue;
+			}
 
-		if(lastFrame != null)
-			previous = lastFrame.toArray();
+			if (previousFrame != null && previousFrame.interpolationType == IType.CONSTANT) {
+				transform[i] = previousFrame.value;
+				continue;
+			}
 
-		//the time elapsed during the frame is the total current time minus the starting timie of the current frame
-		int frameTime = millis - getStartingTime(frame);
-		double interpolation = (double)frameTime / (double)frame.duration;
-
-		double interX = (frame.x - previous[0]) * interpolation + previous[0];
-		double interY = (frame.y - previous[1]) * interpolation + previous[1];
-		double interZ = (frame.z - previous[2]) * interpolation + previous[2];
-
-		return new double[] {interX, interY, interZ};
-	}
-
-	public BusAnimationKeyframe getFrameAtTime(int millis) {
-
-		int time = 0;
-
-		for(BusAnimationKeyframe frame : keyframes) {
-			time += frame.duration;
-
-			if(millis < time)
-				return frame;
+			transform[i] = currentFrame.interpolate(startTime, millis, previousFrame);
 		}
 
-		return null;
-	}
+		transform[9]  = offset[0];
+		transform[10] = offset[1];
+		transform[11] = offset[2];
 
-	public BusAnimationKeyframe getPreviousFrame(BusAnimationKeyframe frame) {
+		transform[12] = rotMode[0];
+		transform[13] = rotMode[1];
+		transform[14] = rotMode[2];
 
-		int index = keyframes.indexOf(frame);
-
-		if(index == 0)
-			return null;
-
-		return keyframes.get(index - 1);
-	}
-
-	public int getStartingTime(BusAnimationKeyframe start) {
-
-		int time = 0;
-
-		for(BusAnimationKeyframe frame : keyframes) {
-
-			if(frame == start)
-				break;
-
-			time += frame.duration;
-		}
-
-		return time;
+		return transform;
 	}
 
 	public int getTotalTime() {
-
-		int time = 0;
-
-		for(BusAnimationKeyframe frame : keyframes) {
-			time += frame.duration;
+		int highestTime = 0;
+		for (List<BusAnimationKeyframe> keyframes : transformKeyframes) {
+			int time = 0;
+			for (BusAnimationKeyframe frame : keyframes) time += frame.duration;
+			highestTime = Math.max(time, highestTime);
 		}
-
-		return time;
+		return highestTime;
 	}
 }

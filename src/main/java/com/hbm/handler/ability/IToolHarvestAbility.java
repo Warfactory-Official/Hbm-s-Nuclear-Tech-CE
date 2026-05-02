@@ -14,6 +14,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Enchantments;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.oredict.OreDictionary;
@@ -32,14 +33,13 @@ public interface IToolHarvestAbility extends IBaseAbility {
     }
 
     static void harvestBlock(boolean skipDefaultDrops, World world, int x, int y, int z, EntityPlayer player) {
-        if(skipDefaultDrops) {
-            // Emulate the block breaking without drops
-            world.setBlockToAir(new BlockPos(x, y, z));
-            ItemStack stack = player.getHeldItemMainhand();
-            if(!stack.isEmpty()) stack.damageItem(1, player);
-        } else if(player instanceof EntityPlayerMP) {
-            // Break the block conventionally
-            ItemToolAbility.standardDigPost(world, x, y, z, (EntityPlayerMP) player);
+        NonNullList<ItemStack> drops = ItemToolAbility.harvestAndCapture(world, new BlockPos(x, y, z), (EntityPlayerMP) player);
+
+        if(!skipDefaultDrops) {
+            BlockPos dropPos = new BlockPos(ItemToolAbility.dropX, ItemToolAbility.dropY, ItemToolAbility.dropZ);
+            for(ItemStack stack : drops) {
+                Block.spawnAsEntity(world, dropPos, stack);
+            }
         }
     }
 

@@ -4,6 +4,7 @@ import com.hbm.items.ModItems;
 import com.hbm.items.gear.ArmorFSB;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.main.ResourceManager;
+import com.hbm.render.item.ItemRenderBaseFMM;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.model.ModelArmorBJ;
 import com.hbm.render.tileentity.IItemRendererProvider;
@@ -66,7 +67,7 @@ public class ArmorBJ extends ArmorFSBPowered implements IItemRendererProvider {
   }
 
   @Override
-  public void onArmorTick(World world, EntityPlayer player, ItemStack itemStack) {
+  public void onArmorTick(@NotNull World world, @NotNull EntityPlayer player, @NotNull ItemStack itemStack) {
     super.onArmorTick(world, player, itemStack);
 
     if (this == ModItems.bj_helmet
@@ -91,7 +92,7 @@ public class ArmorBJ extends ArmorFSBPowered implements IItemRendererProvider {
   @Override
   @SideOnly(Side.CLIENT)
   public ItemRenderBase getRenderer(Item item) {
-    return new ItemRenderBase() {
+    return new ItemRenderBaseFMM() {
       public void renderInventory() {
         setupRenderInv();
       }

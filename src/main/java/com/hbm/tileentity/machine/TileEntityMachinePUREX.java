@@ -18,6 +18,7 @@ import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.modules.machine.ModuleMachinePUREX;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -45,7 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @AutoRegister
-public class TileEntityMachinePUREX extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, IControlReceiver, IGUIProvider {
+public class TileEntityMachinePUREX extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, IControlReceiver, IGUIProvider, IConnectionAnchors {
 
     public FluidTankNTM[] inputTanks;
     public FluidTankNTM[] outputTanks;
@@ -82,9 +83,9 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase implements ITi
         this.inputTanks = new FluidTankNTM[3];
         this.outputTanks = new FluidTankNTM[1];
         for(int i = 0; i < 3; i++) {
-            this.inputTanks[i] = new FluidTankNTM(Fluids.NONE, 24_000);
+            this.inputTanks[i] = new FluidTankNTM(Fluids.NONE, 24_000).withOwner(this);
         }
-        this.outputTanks[0] = new FluidTankNTM(Fluids.NONE, 24_000);
+        this.outputTanks[0] = new FluidTankNTM(Fluids.NONE, 24_000).withOwner(this);
 
         this.purexModule = new ModuleMachinePUREX(0, this, inventory)
                 .itemInput(4).itemOutput(7)

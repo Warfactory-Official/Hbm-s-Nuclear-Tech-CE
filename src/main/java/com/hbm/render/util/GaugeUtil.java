@@ -3,13 +3,9 @@ package com.hbm.render.util;
 import com.hbm.Tags;
 import com.hbm.util.MutableVec3d;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11;
 
 public class GaugeUtil {
@@ -45,22 +41,26 @@ public class GaugeUtil {
 	 * @param z The z-level (from GUI.zLevel)
 	 * @param progress Double from 0-1 how far the gauge has progressed
 	 */
-	public static void renderGauge(Gauge gauge, double x, double y, double z, double progress) {
+	public static void renderGauge(Gauge gauge, float x, float y, float z, float progress) {
 
 		Minecraft.getMinecraft().renderEngine.bindTexture(gauge.texture);
 
 		int frameNum = (int) Math.round((gauge.count - 1) * progress);
-		double singleFrame = 1D / (double)gauge.count;
-		double frameOffset = singleFrame * frameNum;
+		float singleFrame = 1F / gauge.count;
+		float frameOffset = singleFrame * frameNum;
 
-		Tessellator tess = Tessellator.getInstance();
-		BufferBuilder buf = tess.getBuffer();
-		buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-		buf.pos(x, 				 y + gauge.height, 	z).tex(0, 	frameOffset + singleFrame).endVertex();
-		buf.pos(x + gauge.width, y + gauge.height,  z).tex(1, 	frameOffset + singleFrame).endVertex();
-		buf.pos(x + gauge.width, y, 				z).tex(1, 	frameOffset).endVertex();
-		buf.pos(x, 				 y, 				z).tex(0, 	frameOffset).endVertex();
-		tess.draw();
+		NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionTexQuads(1);
+		buf.appendPositionTexQuadUnchecked(
+				x, y + gauge.height, z, 0, frameOffset + singleFrame,
+				x + gauge.width, y + gauge.height, z, 1, frameOffset + singleFrame,
+				x + gauge.width, y, z, 1, frameOffset,
+				x, y, z, 0, frameOffset
+		);
+		NTMImmediate.INSTANCE.draw();
+	}
+
+	public static void renderGauge(Gauge gauge, double x, double y, double z, double progress) {
+		renderGauge(gauge, (float) x, (float) y, (float) z, (float) progress);
 	}
 
 	public static void drawSmoothGauge(int x, int y, double z, double progress, double tipLength, double backLength, double backSide, int color) {
@@ -81,8 +81,7 @@ public class GaugeUtil {
 		left.rotateRollSelf(angle);
 		right.rotateRollSelf(angle);
 
-		Tessellator tessellator = Tessellator.getInstance();
-		BufferBuilder bufferbuilder = tessellator.getBuffer();
+		NTMBufferBuilder bufferbuilder = NTMImmediate.INSTANCE.beginPositionColor(GL11.GL_TRIANGLES, 6);
 
 		float r_outer = (float)(colorOuter >> 16 & 255) / 255.0F;
 		float g_outer = (float)(colorOuter >> 8 & 255) / 255.0F;
@@ -92,18 +91,27 @@ public class GaugeUtil {
 		float g_inner = (float)(color >> 8 & 255) / 255.0F;
 		float b_inner = (float)(color & 255) / 255.0F;
 
-		bufferbuilder.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_COLOR);
+		float xBase = (float) x;
+		float yBase = (float) y;
+		float zBase = (float) z;
+		float mult = 1.5F;
+		int outerColor = NTMBufferBuilder.packColor(r_outer, g_outer, b_outer, 1.0F);
+		int innerColor = NTMBufferBuilder.packColor(r_inner, g_inner, b_inner, 1.0F);
+		float tx = (float) tip.x;
+		float ty = (float) tip.y;
+		float lx = (float) left.x;
+		float ly = (float) left.y;
+		float rx = (float) right.x;
+		float ry = (float) right.y;
+		bufferbuilder.appendPositionColor(xBase + tx * mult, yBase + ty * mult, zBase, outerColor);
+		bufferbuilder.appendPositionColor(xBase + lx * mult, yBase + ly * mult, zBase, outerColor);
+		bufferbuilder.appendPositionColor(xBase + rx * mult, yBase + ry * mult, zBase, outerColor);
 
-		double mult = 1.5;
-		bufferbuilder.pos(x + tip.x * mult, y + tip.y * mult, z).color(r_outer, g_outer, b_outer, 1.0F).endVertex();
-		bufferbuilder.pos(x + left.x * mult, y + left.y * mult, z).color(r_outer, g_outer, b_outer, 1.0F).endVertex();
-		bufferbuilder.pos(x + right.x * mult, y + right.y * mult, z).color(r_outer, g_outer, b_outer, 1.0F).endVertex();
+		bufferbuilder.appendPositionColor(xBase + tx, yBase + ty, zBase, innerColor);
+		bufferbuilder.appendPositionColor(xBase + lx, yBase + ly, zBase, innerColor);
+		bufferbuilder.appendPositionColor(xBase + rx, yBase + ry, zBase, innerColor);
 
-		bufferbuilder.pos(x + tip.x, y + tip.y, z).color(r_inner, g_inner, b_inner, 1.0F).endVertex();
-		bufferbuilder.pos(x + left.x, y + left.y, z).color(r_inner, g_inner, b_inner, 1.0F).endVertex();
-		bufferbuilder.pos(x + right.x, y + right.y, z).color(r_inner, g_inner, b_inner, 1.0F).endVertex();
-
-		tessellator.draw();
+		NTMImmediate.INSTANCE.draw();
 
 		GlStateManager.enableTexture2D();
 	}

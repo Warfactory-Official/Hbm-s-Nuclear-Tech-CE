@@ -1,0 +1,6 @@
+{
+    "variants": {
+        "half=bottom,variant=default": { "model": "hbm:half_slab_brick_fire" },
+        "half=top,variant=default": { "model": "hbm:upper_slab_brick_fire" }
+    }
+}

@@ -20,6 +20,7 @@ import com.hbm.items.special.ItemBedrockOreNew.BedrockOreType;
 import com.hbm.lib.*;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
@@ -53,7 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @AutoRegister
-public class TileEntityMachineOreSlopper extends TileEntityMachineBase implements IEnergyReceiverMK2, IFluidStandardTransceiver, IGUIProvider, IFluidCopiable, ITickable, IUpgradeInfoProvider {
+public class TileEntityMachineOreSlopper extends TileEntityMachineBase implements IEnergyReceiverMK2, IFluidStandardTransceiver, IGUIProvider, IFluidCopiable, ITickable, IUpgradeInfoProvider, IConnectionAnchors {
 
     public static final long maxPower = 100_000;
     public static final int waterUsedBase = 1_000;
@@ -98,8 +99,8 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase implement
         };
         
         tanks = new FluidTankNTM[2];
-        tanks[0] = new FluidTankNTM(Fluids.WATER, 16_000);
-        tanks[1] = new FluidTankNTM(Fluids.SLOP, 16_000);
+        tanks[0] = new FluidTankNTM(Fluids.WATER, 16_000).withOwner(this);
+        tanks[1] = new FluidTankNTM(Fluids.SLOP, 16_000).withOwner(this);
     }
 
     @Override

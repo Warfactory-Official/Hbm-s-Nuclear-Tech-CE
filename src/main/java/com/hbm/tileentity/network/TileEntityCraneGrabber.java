@@ -15,9 +15,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.inventory.Container;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -37,6 +35,7 @@ import java.util.List;
 
 @AutoRegister
 public class TileEntityCraneGrabber extends TileEntityCraneBase implements IGUIProvider, IControlReceiver {
+    public boolean isIndirectlyPowered;
     public boolean isWhitelist = false;
     public ModulePatternMatcher matcher;
     private int tickCounter = 0;
@@ -64,6 +63,12 @@ public class TileEntityCraneGrabber extends TileEntityCraneBase implements IGUIP
     }
 
     @Override
+    public void onLoad() {
+        super.onLoad();
+        if(!world.isRemote) isIndirectlyPowered = world.isBlockPowered(pos);
+    }
+
+    @Override
     public String getDefaultName() {
         return "container.craneGrabber";
     }
@@ -74,7 +79,7 @@ public class TileEntityCraneGrabber extends TileEntityCraneBase implements IGUIP
         if(!world.isRemote) {
             tickCounter++;
 
-            if(tickCounter >= this.delay && !this.world.isBlockPowered(pos)) {
+            if(tickCounter >= this.delay && !isIndirectlyPowered) {
                 tickCounter = 0;
                 int amount = 1;
                 if(!inventory.getStackInSlot(9).isEmpty()){
@@ -144,33 +149,51 @@ public class TileEntityCraneGrabber extends TileEntityCraneBase implements IGUIP
     }
 
     //Unloads output into chests. Capability version.
-    public boolean tryInsertItemCap(IItemHandler chest, ItemStack stack) {
-        //Check if we have something to output
-        if(stack.isEmpty()){
-            return false;
-        }
+    public static boolean tryInsertItemCap(IItemHandler chest, ItemStack stack) {
+        if(stack.isEmpty()) return false;
 
-        for(int i = 0; i < chest.getSlots(); i++) {
+        boolean movedAny = false;
 
-            ItemStack outputStack = stack.copy();
-            if(outputStack.isEmpty() || outputStack.getCount() == 0)
-                return true;
+        for(int i = 0; i < chest.getSlots() && !stack.isEmpty(); i++) {
+            ItemStack probe = stack.copy();
+            probe.setCount(1);
+            ItemStack simOne = chest.insertItem(i, probe, true);
+            if(!simOne.isEmpty()) continue;
 
-            ItemStack chestItem = chest.getStackInSlot(i).copy();
-            if(chestItem.isEmpty() || (Library.areItemStacksCompatible(outputStack, chestItem, false) && chestItem.getCount() < chestItem.getMaxStackSize())) {
-                int fillAmount = Math.min(chestItem.getMaxStackSize()-chestItem.getCount(), outputStack.getCount());
+            int maxTry = Math.min(stack.getCount(), chest.getSlotLimit(i));
+            int accepted = findMaxInsertable(chest, i, stack, maxTry);
 
-                outputStack.setCount(fillAmount);
+            if(accepted > 0) {
+                ItemStack toInsert = stack.copy();
+                toInsert.setCount(accepted);
+                ItemStack rest = chest.insertItem(i, toInsert, false);
 
-                ItemStack rest = chest.insertItem(i, outputStack, true);
-                if(rest.getItem() == Item.getItemFromBlock(Blocks.AIR)){
-                    stack.shrink(outputStack.getCount());
-                    chest.insertItem(i, outputStack, false);
+                int actuallyInserted = accepted - (!rest.isEmpty() ? rest.getCount() : 0);
+                if(actuallyInserted > 0) {
+                    stack.shrink(actuallyInserted);
+                    movedAny = true;
                 }
             }
         }
 
-        return false;
+        return movedAny;
+    }
+
+    private static int findMaxInsertable(IItemHandler target, int slot, ItemStack stack, int upperBound) {
+        int lo = 0;
+        int hi = upperBound;
+        while (lo < hi) {
+            int mid = (lo + hi + 1) >>> 1;
+            ItemStack test = stack.copy();
+            test.setCount(mid);
+            ItemStack res = target.insertItem(slot, test, true);
+            if (res.isEmpty()) {
+                lo = mid;
+            } else {
+                hi = mid - 1;
+            }
+        }
+        return lo;
     }
 
     @Override
@@ -237,7 +260,7 @@ public class TileEntityCraneGrabber extends TileEntityCraneBase implements IGUIP
 
     @Override
     public void receiveControl(NBTTagCompound data) {
-        if(data.hasKey("isWhitelist")) {
+        if(data.hasKey("whitelist")) {
             this.isWhitelist = !this.isWhitelist;
         }
     }

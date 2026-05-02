@@ -20,12 +20,6 @@ import java.awt.*;
 @AutoRegister
 public class RenderFEL extends TileEntitySpecialRenderer<TileEntityFEL>
         implements IItemRendererProvider {
-
-    @Override
-    public boolean isGlobalRenderer(TileEntityFEL fel) {
-        return true;
-    }
-
     @Override
     public void render(
             TileEntityFEL fel,

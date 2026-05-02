@@ -1,13 +1,13 @@
 package com.hbm.particle;
 
 import com.hbm.Tags;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
@@ -104,32 +104,32 @@ public class ParticleMukeCloud extends Particle {
         this.particleAlpha = 1F;
         this.particleScale = 3F;
         final int j = 240, k = 240;
-        Tessellator tess = Tessellator.getInstance();
-        BufferBuilder buf = tess.getBuffer();
-        buf.begin(GL11.GL_QUADS, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
+        NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginParticlePositionTexColorLmap(GL11.GL_QUADS, 4);
         float r = 1F, g = 1F, b = 1F, a = this.particleAlpha;
-        double x0 = pX - rotationX * particleScale - rotationXY * particleScale;
-        double y0 = pY - 1 * particleScale;
-        double z0 = pZ - rotationYZ * particleScale - rotationXZ * particleScale;
+        float x0 = pX - rotationX * particleScale - rotationXY * particleScale;
+        float y0 = pY - 1 * particleScale;
+        float z0 = pZ - rotationYZ * particleScale - rotationXZ * particleScale;
 
-        double x1 = pX - rotationX * particleScale + rotationXY * particleScale;
-        double y1 = pY + 1 * particleScale;
-        double z1 = pZ - rotationYZ * particleScale + rotationXZ * particleScale;
+        float x1 = pX - rotationX * particleScale + rotationXY * particleScale;
+        float y1 = pY + 1 * particleScale;
+        float z1 = pZ - rotationYZ * particleScale + rotationXZ * particleScale;
 
-        double x2 = pX + rotationX * particleScale + rotationXY * particleScale;
-        double y2 = pY + 1 * particleScale;
-        double z2 = pZ + rotationYZ * particleScale + rotationXZ * particleScale;
+        float x2 = pX + rotationX * particleScale + rotationXY * particleScale;
+        float y2 = pY + 1 * particleScale;
+        float z2 = pZ + rotationYZ * particleScale + rotationXZ * particleScale;
 
-        double x3 = pX + rotationX * particleScale - rotationXY * particleScale;
-        double y3 = pY - 1 * particleScale;
-        double z3 = pZ + rotationYZ * particleScale - rotationXZ * particleScale;
+        float x3 = pX + rotationX * particleScale - rotationXY * particleScale;
+        float y3 = pY - 1 * particleScale;
+        float z3 = pZ + rotationYZ * particleScale - rotationXZ * particleScale;
 
-        buf.pos(x0, y0, z0).tex(uMax, vMax).color(r, g, b, a).lightmap(j, k).endVertex();
-        buf.pos(x1, y1, z1).tex(uMax, vMin).color(r, g, b, a).lightmap(j, k).endVertex();
-        buf.pos(x2, y2, z2).tex(uMin, vMin).color(r, g, b, a).lightmap(j, k).endVertex();
-        buf.pos(x3, y3, z3).tex(uMin, vMax).color(r, g, b, a).lightmap(j, k).endVertex();
+        int packedColor = NTMBufferBuilder.packColor(r, g, b, a);
+        int packedLightmap = NTMBufferBuilder.packLightmap(j, k);
+        buf.appendParticlePositionTexColorLmapUnchecked(x0, y0, z0, uMax, vMax, packedColor, packedLightmap);
+        buf.appendParticlePositionTexColorLmapUnchecked(x1, y1, z1, uMax, vMin, packedColor, packedLightmap);
+        buf.appendParticlePositionTexColorLmapUnchecked(x2, y2, z2, uMin, vMin, packedColor, packedLightmap);
+        buf.appendParticlePositionTexColorLmapUnchecked(x3, y3, z3, uMin, vMax, packedColor, packedLightmap);
 
-        tess.draw();
+        NTMImmediate.INSTANCE.draw();
 
         GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
         GlStateManager.enableLighting();

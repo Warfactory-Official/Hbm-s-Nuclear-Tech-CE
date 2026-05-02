@@ -19,7 +19,7 @@ public class TileEntityMachinePumpElectric extends TileEntityMachinePumpBase imp
 
     public TileEntityMachinePumpElectric() {
         super();
-        water = new FluidTankNTM(Fluids.WATER, electricSpeed * 100);
+        water = new FluidTankNTM(Fluids.WATER, electricSpeed * 100).withOwner(this);
     }
 
     @Override

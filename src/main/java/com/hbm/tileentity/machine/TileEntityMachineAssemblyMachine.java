@@ -20,6 +20,7 @@ import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.modules.machine.ModuleMachineAssembler;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -47,7 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 @AutoRegister
-public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, IControlReceiver, IGUIProvider {
+public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, IControlReceiver, IGUIProvider, IConnectionAnchors {
 
     public FluidTankNTM inputTank;
     public FluidTankNTM outputTank;
@@ -88,8 +89,8 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
             }
         };
 
-        this.inputTank = new FluidTankNTM(Fluids.NONE, 4_000);
-        this.outputTank = new FluidTankNTM(Fluids.NONE, 4_000);
+        this.inputTank = new FluidTankNTM(Fluids.NONE, 4_000).withOwner(this);
+        this.outputTank = new FluidTankNTM(Fluids.NONE, 4_000).withOwner(this);
 
         for(int i = 0; i < this.arms.length; i++) this.arms[i] = new AssemblerArm();
 

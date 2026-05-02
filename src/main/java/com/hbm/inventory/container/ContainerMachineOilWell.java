@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.slot.SlotUpgrade;
@@ -16,8 +17,17 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerMachineOilWell extends Container {
 
 	private TileEntityOilDrillBase oilDrill;
-	
-	public ContainerMachineOilWell(InventoryPlayer invPlayer, TileEntityOilDrillBase tedf) {
+
+    private final TransferStrategy transferStrategy = TransferStrategy.builder(8)
+                                                                      .rule(0, 1, Library::isBattery)
+                                                                      .rule(1, 3, s -> Library.isStackFillableForTank(s,
+                                                                              oilDrill.tanks[0]))
+                                                                      .rule(3, 5, s -> Library.isStackFillableForTank(s,
+                                                                              oilDrill.tanks[1]))
+                                                                      .rule(5, 8, Library::isMachineUpgrade)
+                                                                      .build();
+
+    public ContainerMachineOilWell(InventoryPlayer invPlayer, TileEntityOilDrillBase tedf) {
 		oilDrill = tedf;
 
 		// Battery
@@ -34,7 +44,7 @@ public class ContainerMachineOilWell extends Container {
 		this.addSlotToContainer(new SlotUpgrade(tedf.inventory, 5, 152, 17));
 		this.addSlotToContainer(new SlotUpgrade(tedf.inventory, 6, 152, 35));
 		this.addSlotToContainer(new SlotUpgrade(tedf.inventory, 7, 152, 53));
-		
+
 		for(int i = 0; i < 3; i++)
 		{
 			for(int j = 0; j < 9; j++)
@@ -42,21 +52,17 @@ public class ContainerMachineOilWell extends Container {
 				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
 			}
 		}
-		
-		for(int i = 0; i < 9; i++)
+
+        for(int i = 0; i < 9; i++)
 		{
 			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 142));
 		}
 	}
-	
-	@Override
+
+    @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 8,
-                Library::isBattery, 1,
-                s -> Library.isStackFillableForTank(s, oilDrill.tanks[0]), 3,
-                s -> Library.isStackFillableForTank(s, oilDrill.tanks[1]), 5,
-                Library::isMachineUpgrade, 8);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.transferStrategy, player);
     }
 
 	@Override

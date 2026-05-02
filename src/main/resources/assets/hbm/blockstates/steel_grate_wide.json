@@ -7,6 +7,8 @@
 		"height=4": { "model": "hbm:steel_grate_wide4" },
 		"height=5": { "model": "hbm:steel_grate_wide5" },
 		"height=6": { "model": "hbm:steel_grate_wide6" },
-		"height=7": { "model": "hbm:steel_grate_wide7" }
+		"height=7": { "model": "hbm:steel_grate_wide7" },
+		"height=8": { "model": "hbm:steel_grate_wide8" },
+		"height=9": { "model": "hbm:steel_grate_wide9" }
 	}
 }

@@ -113,11 +113,6 @@ public abstract class BlockCraneBase extends BlockContainer implements IToolable
     }
 
     @Override
-    public void onBlockPlacedBy(World worldIn, @NotNull BlockPos pos, IBlockState state, EntityLivingBase placer, @NotNull ItemStack stack) {
-        worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
-    }
-
-    @Override
     public boolean onScrew(World world, EntityPlayer player, int x, int y, int z, EnumFacing side, float fX, float fY, float fZ, EnumHand hand, ToolType tool) {
         if (tool != ToolType.SCREWDRIVER) return false;
         if (!(world.getTileEntity(new BlockPos(x, y, z)) instanceof TileEntityCraneBase craneTileEntity)) return false;
@@ -168,7 +163,7 @@ public abstract class BlockCraneBase extends BlockContainer implements IToolable
     }
 
     @Override
-    public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos) {
+    public @NotNull IBlockState getExtendedState(@NotNull IBlockState state, IBlockAccess world, @NotNull BlockPos pos) {
         TileEntityCraneBase te = (TileEntityCraneBase) world.getTileEntity(pos);
         if (te != null) {
             EnumFacing output = te.getOutputSide();

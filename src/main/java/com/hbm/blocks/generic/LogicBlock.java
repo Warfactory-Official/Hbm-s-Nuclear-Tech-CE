@@ -52,7 +52,7 @@ public class LogicBlock extends BlockContainerBakeable {
     public static final IUnlistedProperty<IBlockState> DISGUISED_STATE = new SimpleUnlistedProperty<>("disguised_state", IBlockState.class);
 
     public LogicBlock(String regName) {
-        super(Material.ROCK, regName, new BlockBakeFrame("logic_block"));
+        super(Material.ROCK, regName, BlockBakeFrame.cubeAll("logic_block"));
         this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
     }
 
@@ -125,7 +125,7 @@ public class LogicBlock extends BlockContainerBakeable {
     @Override
     public void bakeModel(ModelBakeEvent event) {
         try {
-            IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation(blockFrame.getBaseModel()));
+            IModel baseModel = ModelLoaderRegistry.getModel(blockFrame.getBaseModelLocation());
             ImmutableMap.Builder<String, String> textureMap = ImmutableMap.builder();
 
             blockFrame.putTextures(textureMap);

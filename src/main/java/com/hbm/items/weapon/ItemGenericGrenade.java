@@ -2,10 +2,12 @@ package com.hbm.items.weapon;
 
 import com.hbm.entity.grenade.EntityGrenadeBouncyGeneric;
 import com.hbm.entity.grenade.EntityGrenadeImpactGeneric;
+import com.hbm.items.ItemBase;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
@@ -13,10 +15,14 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.world.World;
 
-public class ItemGenericGrenade extends ItemGrenade {
+public class ItemGenericGrenade extends ItemBase {
+
+    protected int fuse = 4;
 
     public ItemGenericGrenade(int fuse, String s) {
-        super(fuse, s);
+        super(s);
+        this.maxStackSize = 16;
+        this.fuse = fuse;
     }
 
     @Override
@@ -48,5 +54,9 @@ public class ItemGenericGrenade extends ItemGrenade {
 
     public double getBounceMod() {
         return 0.5D;
+    }
+
+    public static int getFuseTicks(Item grenade) {
+        return ((ItemGenericGrenade) grenade).fuse * 20;
     }
 }

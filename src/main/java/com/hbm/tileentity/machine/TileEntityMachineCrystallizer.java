@@ -15,8 +15,8 @@ import com.hbm.inventory.recipes.CrystallizerRecipes;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
@@ -31,10 +31,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
-import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
@@ -50,11 +48,12 @@ import java.util.HashMap;
 import java.util.List;
 
 @AutoRegister
-public class TileEntityMachineCrystallizer extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardReceiver, IGUIProvider, IFFtoNTMF, IClimbable, IUpgradeInfoProvider, IFluidCopiable {
+public class TileEntityMachineCrystallizer extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardReceiver, IGUIProvider, IFFtoNTMF, IClimbable, IUpgradeInfoProvider, IFluidCopiable, IConnectionAnchors {
 
     public static final long maxPower = 1000000;
     public static final int demand = 1000;
     private static boolean converted = false;
+    private AxisAlignedBB bb;
     public long power;
     public short progress;
     public short duration = 600;
@@ -79,11 +78,11 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
             @Override
             public void setStackInSlot(int slot, ItemStack stack) {
                 super.setStackInSlot(slot, stack);
-                if (stack != ItemStack.EMPTY && slot >= 5 && slot <= 6 && stack.getItem() instanceof ItemMachineUpgrade)
+                if (!stack.isEmpty() && slot >= 5 && slot <= 6 && stack.getItem() instanceof ItemMachineUpgrade)
                     SoundUtil.playUpgradePlugSound(world, pos);
             }
         };
-        tankNew = new FluidTankNTM(Fluids.PEROXIDE, 8000);
+        tankNew = new FluidTankNTM(Fluids.PEROXIDE, 8000).withOwner(this);
         tank = new FluidTank(16000);
 
         converted = true;
@@ -102,7 +101,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
         }
     }
 
-    protected DirPos[] getConPos() {
+    public DirPos[] getConPos() {
 
         return new DirPos[]{
                 new DirPos(pos.getX() + 2, pos.getY(), pos.getZ() + 1, Library.POS_X),
@@ -295,7 +294,8 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
+        if (bb == null) bb = new AxisAlignedBB(pos.getX() - 1, pos.getY(), pos.getZ() - 1, pos.getX() + 2, pos.getY() + 6, pos.getZ() + 2);
+        return bb;
     }
 
     @Override

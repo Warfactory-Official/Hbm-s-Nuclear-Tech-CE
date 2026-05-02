@@ -22,9 +22,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.init.SoundEvents;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.*;
@@ -39,12 +37,21 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @AutoRegister
 public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IBufPacketReceiver, IFluidStandardReceiver, IFluidCopiable, ITickable {
+
+    private static final int MIN_DIST = 2;
+    private static final int MAX_DIST = 9;
+
+    private static final int FELL_HORIZONTAL_RANGE = 10;
+    private static final int FELL_BFS_RADIUS = MAX_DIST + FELL_HORIZONTAL_RANGE;
+    private static final int FELL_VERTICAL_RANGE = 32;
+    private static final int FELL_MAX_BASE_DEPTH = FELL_VERTICAL_RANGE / 2;
+
+    // 18-connectivity: 6 face-adjacent + 12 edge-adjacent (exactly one coord diff is 0)
+    private static final int[][] EIGHTEEN_DIRS = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}, {1, 1, 0}, {1, -1, 0}, {-1, 1, 0}, {-1, -1, 0}, {1, 0, 1}, {1, 0, -1}, {-1, 0, 1}, {-1, 0, -1}, {0, 1, 1}, {0, 1, -1}, {0, -1, 1}, {0, -1, -1}};
 
     public static final HashSet<FluidType> acceptedFuels = new HashSet<>();
 
@@ -76,7 +83,7 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IB
     public float lastSpin;
 
     public TileEntityMachineAutosaw() {
-        this.tank = new FluidTankNTM(Fluids.WOODOIL, 100);
+        this.tank = new FluidTankNTM(Fluids.WOODOIL, 100).withOwner(this);
     }
 
     @Override
@@ -110,22 +117,19 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IB
                 double cY = pivot.y;
                 double cZ = pivot.z + upperArm.z + lowerArm.z + armTip.z;
 
-                List<EntityLivingBase> affected = world.getEntitiesWithinAABB(EntityLivingBase.class,
-                        new AxisAlignedBB(cX - 1, cY - 0.25, cZ - 1, cX + 1, cY + 0.25, cZ + 1));
+                List<EntityLivingBase> affected = world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(cX - 1, cY - 0.25, cZ - 1, cX + 1, cY + 0.25, cZ + 1));
 
                 for (EntityLivingBase e : affected) {
                     if (e.isEntityAlive() && e.attackEntityFrom(ModDamageSource.turbofan, 100)) {
-                        world.playSound(null, e.posX, e.posY, e.posZ, SoundEvents.ENTITY_ZOMBIE_BREAK_DOOR_WOOD, SoundCategory.HOSTILE, 2.0F,
-                                0.95F + world.rand.nextFloat() * 0.2F);
+                        world.playSound(null, e.posX, e.posY, e.posZ, SoundEvents.ENTITY_ZOMBIE_BREAK_DOOR_WOOD, SoundCategory.HOSTILE, 2.0F, 0.95F + world.rand.nextFloat() * 0.2F);
                         int count = Math.min((int) Math.ceil(e.getMaxHealth() / 4), 250);
                         NBTTagCompound data = new NBTTagCompound();
                         data.setString("type", "vanillaburst");
                         data.setInteger("count", count * 4);
                         data.setDouble("motion", 0.1D);
                         data.setString("mode", "blockdust");
-                        data.setInteger("block", Block.getIdFromBlock(Blocks.REDSTONE_BLOCK));
-                        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, e.posX, e.posY + e.height * 0.5, e.posZ),
-                                new TargetPoint(e.dimension, e.posX, e.posY, e.posZ, 50));
+                        data.setInteger("block", Block.getIdFromBlock(Objects.requireNonNull(Blocks.REDSTONE_BLOCK)));
+                        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, e.posX, e.posY + e.height * 0.5, e.posZ), new TargetPoint(e.dimension, e.posX, e.posY, e.posZ, 50));
                     }
                 }
 
@@ -146,11 +150,11 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IB
                         BlockPos.MutableBlockPos scanPos = new BlockPos.MutableBlockPos();
 
                         outer:
-                        for (int dx = -9; dx <= 9; dx++) {
-                            for (int dz = -9; dz <= 9; dz++) {
+                        for (int dx = -MAX_DIST; dx <= MAX_DIST; dx++) {
+                            for (int dz = -MAX_DIST; dz <= MAX_DIST; dz++) {
                                 int sqrDst = dx * dx + dz * dz;
 
-                                if (sqrDst <= 4 || sqrDst > 81) continue;
+                                if (sqrDst <= MIN_DIST * MIN_DIST || sqrDst > MAX_DIST * MAX_DIST) continue;
 
                                 double angle = Math.atan2(dz, dx);
                                 double relAngle = Math.abs(angle - rotationYawRads);
@@ -165,7 +169,8 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IB
                                 scanPos.setPos(x, y, z);
                                 IBlockState blockState = world.getBlockState(scanPos);
                                 Material mat = blockState.getMaterial();
-                                if (!(mat == Material.WOOD || mat == Material.LEAVES || mat == Material.PLANTS)) continue;
+                                if (!(mat == Material.WOOD || mat == Material.LEAVES || mat == Material.PLANTS))
+                                    continue;
 
                                 Block block = blockState.getBlock();
                                 int meta = block.getMetaFromState(blockState);
@@ -208,8 +213,7 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IB
                 }
             }
 
-            PacketThreading.createAllAroundThreadedPacket(new BufPacket(pos.getX(), pos.getY(), pos.getZ(), this),
-                    new TargetPoint(this.world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
+            PacketThreading.createAllAroundThreadedPacket(new BufPacket(pos.getX(), pos.getY(), pos.getZ(), this), new TargetPoint(this.world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
         } else {
 
             this.lastSpin = this.spin;
@@ -303,7 +307,7 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IB
 
         world.playEvent(2001, pos, Block.getStateId(blockState));
 
-        IBlockState replacementState = Blocks.AIR.getDefaultState();
+        IBlockState replacementState = Objects.requireNonNull(Blocks.AIR).getDefaultState();
 
         if (!world.isRemote && !world.restoringBlockSnapshots) {
             NonNullList<ItemStack> drops = NonNullList.create();
@@ -343,59 +347,168 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IB
     private static final int[][] DIR = new int[][]{{0, 0}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}};
 
     // mlbv: made safe for leaves from other mods like BOP
-    protected void fellTree(BlockPos targetPos) {
-        int x = targetPos.getX();
-        int y = targetPos.getY();
-        int z = targetPos.getZ();
+    protected void fellTree(BlockPos hitPos) {
+        int hitX = hitPos.getX();
+        int hitY = hitPos.getY();
+        int hitZ = hitPos.getZ();
 
-        BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+        BlockPos hitCol = new BlockPos(hitX, -1, hitZ);
 
-        p.setPos(x, y - 1, z);
-        if (world.getBlockState(p).getMaterial() == Material.WOOD) {
-            y--;
-            p.setPos(x, y - 2, z);
-            if (world.getBlockState(p).getMaterial() == Material.WOOD) {
-                y--;
-            }
-        }
+        // Step A: Scan working area for trunks (column -> trunk base pos)
+        HashMap<BlockPos, BlockPos> trunks = new HashMap<>();
 
-        IBlockState saplingState = null;
-
-        for (int i = y; i < y + 10; i++) {
-
-            for (int[] d : DIR) {
-                p.setPos(x + d[0], i, z + d[1]);
-                IBlockState state = world.getBlockState(p);
-
-                if (state.getMaterial() == Material.WOOD) {
-                    world.destroyBlock(p, true);
+        for (int dx = -MAX_DIST; dx <= MAX_DIST; dx++) {
+            for (int dz = -MAX_DIST; dz <= MAX_DIST; dz++) {
+                if (dx * dx + dz * dz > MAX_DIST * MAX_DIST) {
                     continue;
                 }
 
-                Block b = state.getBlock();
-                if (b instanceof BlockLeaves) {
-                    if (saplingState == null) {
-                        Item saplingItem = b.getItemDropped(state, world.rand, 0);
-                        if (saplingItem != Items.AIR) {
-                            Block saplingBlock = Block.getBlockFromItem(saplingItem);
-                            if (saplingBlock != Blocks.AIR) {
-                                int sapMeta = b.damageDropped(state);
-                                saplingState = saplingBlock.getStateFromMeta(sapMeta);
-                            }
-                        }
+                int colX = getPos().getX() + dx;
+                int colZ = getPos().getZ() + dz;
+
+                if (world.getBlockState(new BlockPos(colX, hitY, colZ)).getMaterial() != Material.WOOD) {
+                    continue;
+                }
+
+                int baseY = hitY;
+                while (hitY - baseY < FELL_MAX_BASE_DEPTH && world.getBlockState(new BlockPos(colX, baseY - 1, colZ)).getMaterial() == Material.WOOD) {
+                    baseY--;
+                }
+
+                if (!canSupportSapling(world, new BlockPos(colX, baseY - 1, colZ))) {
+                    continue;
+                }
+
+                trunks.put(new BlockPos(colX, -1, colZ), new BlockPos(colX, baseY, colZ));
+            }
+        }
+
+        // Always include the hit position's trunk
+        if (!trunks.containsKey(hitCol)) {
+            int baseY = hitY;
+            while (hitY - baseY < FELL_MAX_BASE_DEPTH && world.getBlockState(new BlockPos(hitX, baseY - 1, hitZ)).getMaterial() == Material.WOOD) {
+                baseY--;
+            }
+            trunks.put(hitCol, new BlockPos(hitX, baseY, hitZ));
+        }
+
+        // Step B: 0-1 BFS from all trunks
+        // Vertical neighbors (same column) have distance 0, horizontal neighbors have distance 1
+        // blockOwner: block pos -> column of owning trunk
+        HashMap<BlockPos, BlockPos> blockOwner = new HashMap<>();
+        ArrayDeque<BlockPos[]> deque = new ArrayDeque<>();
+        int hitColCount = 1;
+
+        int minY = Math.max(0, hitY - FELL_MAX_BASE_DEPTH);
+        int maxY = Math.min(255, hitY + FELL_VERTICAL_RANGE);
+
+        for (Map.Entry<BlockPos, BlockPos> trunk : trunks.entrySet()) {
+            deque.addFirst(new BlockPos[]{trunk.getValue(), trunk.getKey()});
+        }
+
+        while (!deque.isEmpty()) {
+            BlockPos[] pair = deque.pollFirst();
+            BlockPos current = pair[0];
+            BlockPos currentCol = pair[1];
+
+            if (blockOwner.containsKey(current)) {
+                if (currentCol.equals(hitCol)) {
+                    hitColCount--;
+                    if (hitColCount == 0) {
+                        break;
                     }
-                    world.destroyBlock(p, true);
+                }
+                continue;
+            }
+            blockOwner.put(current, currentCol);
+
+            for (int[] dir : EIGHTEEN_DIRS) {
+                int neighborX = current.getX() + dir[0];
+                int neighborY = current.getY() + dir[1];
+                int neighborZ = current.getZ() + dir[2];
+
+                // Bounds check: radius FELL_BFS_RADIUS horizontal, minY to maxY vertical
+                int neighborDx = neighborX - getPos().getX();
+                int neighborDz = neighborZ - getPos().getZ();
+                if (neighborDx * neighborDx + neighborDz * neighborDz > FELL_BFS_RADIUS * FELL_BFS_RADIUS) {
+                    continue;
+                }
+                if (neighborY < minY || neighborY > maxY) {
+                    continue;
+                }
+
+                BlockPos neighborPos = new BlockPos(neighborX, neighborY, neighborZ);
+                if (blockOwner.containsKey(neighborPos)) {
+                    continue;
+                }
+
+                IBlockState state = world.getBlockState(new BlockPos(neighborX, neighborY, neighborZ));
+                Material mat = state.getMaterial();
+                if (mat != Material.WOOD && mat != Material.LEAVES && !(state.getBlock() instanceof BlockLeaves)) {
+                    continue;
+                }
+
+                boolean hasHorizontal = dir[0] != 0 || dir[2] != 0;
+                BlockPos[] entry = new BlockPos[]{neighborPos, currentCol};
+                if (!hasHorizontal) {
+                    deque.addFirst(entry);
+                } else {
+                    deque.addLast(entry);
+                }
+                if (currentCol.equals(hitCol)) {
+                    hitColCount++;
+                }
+            }
+
+            if (currentCol.equals(hitCol)) {
+                hitColCount--;
+                if (hitColCount == 0) {
+                    break; // Early exit: all hit-tree blocks processed
                 }
             }
         }
 
-        if (saplingState != null) {
-            BlockPos saplingPos = new BlockPos(x, y, z);
-            Block saplingBlock = saplingState.getBlock();
-            if (saplingBlock != Blocks.AIR && saplingBlock.canPlaceBlockAt(world, saplingPos)) {
-                world.setBlockState(saplingPos, saplingState, 3);
+        // Step C: Cut blocks assigned to the hit trunk
+        for (Map.Entry<BlockPos, BlockPos> entry : blockOwner.entrySet()) {
+            if (!entry.getValue().equals(hitCol)) {
+                continue;
+            }
+
+            BlockPos pos = entry.getKey();
+            IBlockState state = world.getBlockState(pos);
+            Block block = state.getBlock();
+
+            // Replant sapling at positions within working area
+            if (state.getMaterial() == Material.WOOD && isWithinWorkingArea(pos.getX(), pos.getZ()) && canSupportSapling(world, pos.down())) {
+                int bmeta = block.getMetaFromState(state);
+                int sapMeta = 0;
+                if (block == Blocks.LOG) {
+                    sapMeta = bmeta & 3;
+                } else if (block == Blocks.LOG2) {
+                    sapMeta = (bmeta & 3) + 4;
+                }
+
+                BlockPlanks.EnumType type = BlockPlanks.EnumType.byMetadata(sapMeta);
+
+                world.destroyBlock(pos, true);
+                world.setBlockState(pos, Objects.requireNonNull(Blocks.SAPLING).getDefaultState().withProperty(BlockSapling.TYPE, type), 3);
+            } else {
+                world.destroyBlock(pos, true);
             }
         }
+    }
+
+    private boolean isWithinWorkingArea(int x, int z) {
+        int dx = x - getPos().getX();
+        int dz = z - getPos().getZ();
+        int distSq = dx * dx + dz * dz;
+        return distSq > MIN_DIST * MIN_DIST && distSq <= MAX_DIST * MAX_DIST;
+    }
+
+    private static boolean canSupportSapling(World world, BlockPos pos) {
+        IBlockState state = world.getBlockState(pos);
+        Block block = state.getBlock();
+        return block.canSustainPlant(state, world, pos, EnumFacing.UP, (IPlantable) Blocks.SAPLING);
     }
 
     @Override

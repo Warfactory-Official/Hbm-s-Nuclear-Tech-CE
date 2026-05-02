@@ -29,7 +29,7 @@ public class TileEntityMachineBAT9000 extends TileEntityBarrel {
 	}
 
 	@Override
-	protected DirPos[] getConPos() {
+	public DirPos[] getConPos() {
 		return new DirPos[] {
 				new DirPos(pos.getX() + 1, pos.getY(), pos.getZ() + 3, Library.POS_Z),
 				new DirPos(pos.getX() - 1, pos.getY(), pos.getZ() + 3, Library.POS_Z),

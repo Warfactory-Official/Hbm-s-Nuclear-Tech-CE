@@ -30,6 +30,7 @@ import org.jetbrains.annotations.Nullable;
 @AutoRegister
 public class TileEntityMachinePress extends TileEntityMachineBase implements ITickable, IGUIProvider {
 
+	private AxisAlignedBB bb;
 	public int speed = 0;
 	public static final int maxSpeed = 400;
 	public static final int progressAtMax = 25;
@@ -45,7 +46,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements ITi
 	public ItemStack syncStack;
 
 	public TileEntityMachinePress() {
-		super(4);
+		super(13);
 	}
 
 	@Override
@@ -182,8 +183,12 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements ITi
 		speed = nbt.getInteger("speed");
 		isRetracting = nbt.getBoolean("isRetracting");
 		delay = nbt.getInteger("delay");
-		if (nbt.hasKey("inventory"))
+		if (nbt.hasKey("inventory")) {
 			inventory.deserializeNBT(nbt.getCompoundTag("inventory"));
+			if (inventory.getSlots() < 13) {
+				resizeInventory(13);
+			}
+		}
 	}
 
 	@Override
@@ -200,7 +205,8 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements ITi
 
 	@Override
 	public @NotNull AxisAlignedBB getRenderBoundingBox() {
-		return new AxisAlignedBB(pos, pos.add(1, 3, 1));
+		if (bb == null) bb = new AxisAlignedBB(pos, pos.add(1, 3, 1));
+		return bb;
 	}
 
 	@Override
@@ -233,7 +239,8 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements ITi
 			case 0 -> TileEntityFurnace.getItemBurnTime(stack) > 0;
 			case 1 -> stack.getItem() instanceof ItemStamp;
 			case 2 -> !(stack.getItem() instanceof ItemStamp) && TileEntityFurnace.getItemBurnTime(stack) <= 0;
-			default -> false;
+			case 3 -> false;
+			default -> i >= 4 && i <= 12;
 		};
 	}
 

@@ -1,18 +1,22 @@
 package com.hbm.render.item;
 
+import com.hbm.Tags;
 import com.hbm.interfaces.AutoRegister;
+import com.hbm.render.model.BakedModelTransforms;
+import com.hbm.render.util.NTMImmediate;
 import com.hbm.render.util.RenderMiscEffects;
+import com.hbm.util.RenderUtil;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.GlStateManager.DestFactor;
-import net.minecraft.client.renderer.GlStateManager.SourceFactor;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
+
 @AutoRegister(item = "meteorite_sword_seared", constructorArgsString = "1.0F, 0.5F, 0.0F")
 @AutoRegister(item = "meteorite_sword_reforged", constructorArgsString = "0.5F, 1.0F, 1.0F")
 @AutoRegister(item = "meteorite_sword_hardened", constructorArgsString = "0.25F, 0.25F, 0.25F")
@@ -37,7 +41,18 @@ public class ItemRendererMeteorSword extends TEISRBase {
     }
 
     @Override
+    public ModelBinding createModelBinding(Item item) {
+        return ModelBinding.inventoryModel(item, BakedModelTransforms.defaultItemTransforms(), new ResourceLocation(Tags.MODID, "items/meteorite_sword"));
+    }
+
+    @Override
     public void renderByItem(ItemStack stack) {
+        boolean prevBlend = RenderUtil.isBlendEnabled();
+        int prevSrc = RenderUtil.getBlendSrcFactor();
+        int prevDst = RenderUtil.getBlendDstFactor();
+        int prevSrcAlpha = RenderUtil.getBlendSrcAlphaFactor();
+        int prevDstAlpha = RenderUtil.getBlendDstAlphaFactor();
+
         GlStateManager.translate(0.5, 0.5, 0.5);
 
         Minecraft mc = Minecraft.getMinecraft();
@@ -54,8 +69,6 @@ public class ItemRendererMeteorSword extends TEISRBase {
         for (int j1 = 0; j1 < 2; ++j1) {
             GlStateManager.blendFunc(GlStateManager.SourceFactor.DST_ALPHA, GlStateManager.DestFactor.ONE);
             float f2 = (float) (Minecraft.getSystemTime() % (long) (3000 + j1 * 1873)) / (3000.0F + (float) (j1 * 1873)) / 8F;
-            Tessellator tessellator = Tessellator.getInstance();
-
 
             float in = 0.36F;
 
@@ -71,8 +84,7 @@ public class ItemRendererMeteorSword extends TEISRBase {
             GlStateManager.pushMatrix();
             GlStateManager.translate(-0.5F, -0.5F, -0.5F);
 
-            BufferBuilder bufferbuilder = tessellator.getBuffer();
-            bufferbuilder.begin(7, DefaultVertexFormats.ITEM);
+            BufferBuilder bufferbuilder = NTMImmediate.INSTANCE.begin(GL11.GL_QUADS, DefaultVertexFormats.ITEM);
 
             int color = (0xFF << 24) | ((byte) ((r * in) * 255) << 16) | ((byte) ((g * in) * 255) << 8) | ((byte) ((b * in) * 255));
 
@@ -81,7 +93,7 @@ public class ItemRendererMeteorSword extends TEISRBase {
             }
 
             Minecraft.getMinecraft().getRenderItem().renderQuads(bufferbuilder, itemModel.getQuads((IBlockState) null, (EnumFacing) null, 0L), color, stack);
-            tessellator.draw();
+            NTMImmediate.INSTANCE.draw();
 
             GlStateManager.popMatrix();
             GlStateManager.matrixMode(GL11.GL_TEXTURE);
@@ -91,9 +103,13 @@ public class ItemRendererMeteorSword extends TEISRBase {
 
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         GlStateManager.depthMask(true);
-        GlStateManager.tryBlendFuncSeparate(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ZERO);
-        GlStateManager.disableBlend();
         GlStateManager.enableLighting();
         GlStateManager.depthFunc(GL11.GL_LEQUAL);
+        GlStateManager.tryBlendFuncSeparate(prevSrc, prevDst, prevSrcAlpha, prevDstAlpha);
+        if (prevBlend) {
+            GlStateManager.enableBlend();
+        } else {
+            GlStateManager.disableBlend();
+        }
     }
 }

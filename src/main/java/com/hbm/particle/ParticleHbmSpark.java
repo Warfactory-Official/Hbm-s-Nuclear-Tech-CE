@@ -26,6 +26,15 @@ public class ParticleHbmSpark extends Particle {
 		this.particleGravity = 0.5F;
 	}
 	
+	public ParticleHbmSpark makeSmall(boolean small) {
+		if(!small) return this;
+		this.setSize(0.01F, 0.01F);
+		this.thresh = 3;
+		this.particleMaxAge = 2 + rand.nextInt(3);
+		this.motionY = -Math.abs(motionY);
+		return this;
+	}
+
 	@Override
 	public int getFXLayer(){
 		return 3;

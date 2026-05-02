@@ -1,11 +1,12 @@
 package com.hbm.inventory.control_panel;
 
 import com.hbm.inventory.control_panel.nodes.Node;
+import com.hbm.inventory.control_panel.types.DataValue;
+import com.hbm.inventory.control_panel.types.DataValueString;
 import com.hbm.render.NTMRenderHelper;
+import com.hbm.render.util.NTMImmediate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -56,12 +57,12 @@ public class NodeTextBox extends NodeElement implements ITypableNode {
 	@SideOnly(Side.CLIENT)
 	public void render(float mX, float mY){
 		Minecraft.getMinecraft().getTextureManager().bindTexture(NodeSystem.node_tex);
-		Tessellator.getInstance().getBuffer().begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
+		NTMImmediate.INSTANCE.beginPositionTexColorQuads(1);
 		float x = offsetX+38-40;
 		float y = offsetY+8;
 		float[] color = NTMRenderHelper.intersects2DBox(mX, mY, this.getValueBox()) && !isTyping ? new float[]{1, 1, 1} : new float[]{0.6F, 0.6F, 0.6F};
 		NTMRenderHelper.drawGuiRectBatchedColor(x, y-1, 0, 0.203125F, 40, 6, 0.625F, 0.296875F, color[0], color[1], color[2], 1);
-		Tessellator.getInstance().draw();
+		NTMImmediate.INSTANCE.draw();
 
 		FontRenderer font = Minecraft.getMinecraft().fontRenderer;
 		GL11.glPushMatrix();

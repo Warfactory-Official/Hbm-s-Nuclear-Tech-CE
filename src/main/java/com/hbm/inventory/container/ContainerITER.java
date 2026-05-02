@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.lib.Library;
@@ -16,7 +17,12 @@ public class ContainerITER extends Container {
 
 private TileEntityITER iter;
 
-	public ContainerITER(InventoryPlayer invPlayer, TileEntityITER tedf) {
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(5)
+                                                                              .rule(0, 1, Library::isBattery)
+                                                                              .genericMachineRange(1)
+                                                                              .build();
+
+    public ContainerITER(InventoryPlayer invPlayer, TileEntityITER tedf) {
 
 		iter = tedf;
 
@@ -48,8 +54,7 @@ private TileEntityITER iter;
 	@Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 5,
-                Library::isBattery, 1);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
 	@Override

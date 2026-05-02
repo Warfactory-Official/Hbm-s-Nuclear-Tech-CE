@@ -22,13 +22,12 @@ varying vec2 pass_lightmap;
 varying vec4 pass_color;
 
 void main(){
-	vec2 tex = texData.xy*float((pos.xy == BOTTOM_LEFT)) +
-				vec2(texData.x+texData.z, texData.y)*float((pos.xy == BOTTOM_RIGHT)) +
-				vec2(texData.x, texData.y+texData.w)*float((pos.xy == TOP_LEFT)) +
-				(texData.xy+texData.zw)*float((pos.xy == TOP_RIGHT));
+	float right = float(pos.x > 0.0);
+	float top = float(pos.y < 0.0);
+	vec2 tex = vec2(texData.x + texData.z * right, texData.y + texData.w * top);
 			
 	pass_tex = tex;
-	pass_lightmap = lightmap;
+	pass_lightmap = lightmap * (255.0 / 256.0) + (8.0 / 256.0);
 	pass_color = color;
 	
 	vec4 position = invPlayerRot * vec4(pos*scale, 1);

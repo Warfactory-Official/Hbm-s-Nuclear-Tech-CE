@@ -20,10 +20,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up JDK 25
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: graalvm
           java-version: '25'
@@ -39,16 +39,58 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew releaseBuild
+
+      - name: Prepare artifact bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          OUT_DIR="build/artifact-upload"
+          rm -rf "$OUT_DIR"
+          mkdir -p "$OUT_DIR"
+
+          for file in build/libs/*; do
+            name=$(basename "$file")
+            case "$name" in
+              *-downgraded.jar|*-dev-shadow.jar)
+                continue
+                ;;
+            esac
+            cp "$file" "$OUT_DIR/$name"
+          done
+
+          for file in build/publication-libs/*.jar; do
+            name=$(basename "$file")
+            if [[ "$name" != *-java25-publish-* ]]; then
+              echo "::error::Unexpected publication artifact name: $name"
+              exit 1
+            fi
+
+            prefix="${name%%-java25-publish-*}"
+            rest="${name#*-java25-publish-}"
+
+            case "$rest" in
+              *-dev-compile.jar)
+                continue
+                ;;
+              *-api.jar)
+                continue
+                ;;
+              *.jar)
+                version="${rest%.jar}"
+                compat_name="${prefix}-${version}-java25.jar"
+                ;;
+            esac
+            cp "$file" "$OUT_DIR/$compat_name"
+          done
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ github.event.repository.name }}
-          path: |
-            build/libs/**
-            !build/libs/**/*-downgraded.jar
-            !build/libs/**/*-dev-shadow.jar
+          path: build/artifact-upload/**
           if-no-files-found: error
 
       - name: Run server
@@ -146,7 +188,12 @@ jobs:
         env:
           MAVEN_USER: ${{ secrets.MAVEN_USER }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
-          ARTIFACT_ID: ${{ vars.ARTIFACT_ID }}
           MAVEN_URL: https://repo.warfactory.co/snapshots
         run: |
-          ./gradlew publish --stacktrace
+          ./gradlew \
+            publishMavenPublicationToMavenRepository \
+            publishMavenJava25PublicationToMavenRepository \
+            --parallel \
+            --max-workers=2 \
+            --no-daemon \
+            --stacktrace

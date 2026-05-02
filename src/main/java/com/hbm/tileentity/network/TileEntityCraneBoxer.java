@@ -6,7 +6,6 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerCraneBoxer;
 import com.hbm.inventory.gui.GUICraneBoxer;
-import com.hbm.lib.Library;
 import com.hbm.tileentity.IGUIProvider;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
@@ -161,36 +160,51 @@ public class TileEntityCraneBoxer extends TileEntityCraneBase implements IGUIPro
         return tryInsertItemCap(inventory, stack);
     }
 
-    public boolean tryInsertItemCap(IItemHandler chest, ItemStack stack) {
-        //Check if we have something to output
-        if(stack.isEmpty())
-            return false;
+    public static boolean tryInsertItemCap(IItemHandler chest, ItemStack stack) {
+        if(stack.isEmpty()) return false;
 
         boolean movedAny = false;
 
-        for(int i = 0; i < chest.getSlots(); i++) {
+        for(int i = 0; i < chest.getSlots() && !stack.isEmpty(); i++) {
+            ItemStack probe = stack.copy();
+            probe.setCount(1);
+            ItemStack simOne = chest.insertItem(i, probe, true);
+            if(!simOne.isEmpty()) continue;
 
-            if(stack.isEmpty() || stack.getCount() == 0)
-                break;
+            int maxTry = Math.min(stack.getCount(), chest.getSlotLimit(i));
+            int accepted = findMaxInsertable(chest, i, stack, maxTry);
 
-            ItemStack outputStack = stack.copy();
+            if(accepted > 0) {
+                ItemStack toInsert = stack.copy();
+                toInsert.setCount(accepted);
+                ItemStack rest = chest.insertItem(i, toInsert, false);
 
-            ItemStack chestItem = chest.getStackInSlot(i).copy();
-            if(chestItem.isEmpty() || (Library.areItemStacksCompatible(outputStack, chestItem, false) && chestItem.getCount() < chestItem.getMaxStackSize())) {
-                int fillAmount = Math.min(chestItem.getMaxStackSize()-chestItem.getCount(), outputStack.getCount());
-
-                outputStack.setCount(fillAmount);
-
-                ItemStack rest = chest.insertItem(i, outputStack, true);
-                if(rest.isEmpty()){
-                    stack.shrink(outputStack.getCount());
-                    chest.insertItem(i, outputStack, false);
+                int actuallyInserted = accepted - (!rest.isEmpty() ? rest.getCount() : 0);
+                if(actuallyInserted > 0) {
+                    stack.shrink(actuallyInserted);
                     movedAny = true;
                 }
             }
         }
 
         return movedAny;
+    }
+
+    private static int findMaxInsertable(IItemHandler target, int slot, ItemStack stack, int upperBound) {
+        int lo = 0;
+        int hi = upperBound;
+        while (lo < hi) {
+            int mid = (lo + hi + 1) >>> 1;
+            ItemStack test = stack.copy();
+            test.setCount(mid);
+            ItemStack res = target.insertItem(slot, test, true);
+            if (res.isEmpty()) {
+                lo = mid;
+            } else {
+                hi = mid - 1;
+            }
+        }
+        return lo;
     }
 
     @Override

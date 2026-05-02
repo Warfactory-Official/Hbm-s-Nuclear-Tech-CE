@@ -19,7 +19,6 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -41,167 +40,148 @@ import java.util.List;
 import java.util.Random;
 
 public class MachineFunnel extends BlockContainer implements ITooltipProvider, IDynamicModels {
-  private final ResourceLocation objModelLocation =
-      new ResourceLocation(Tags.MODID, "models/blocks/funnel.obj");
+    private final ResourceLocation objModelLocation = new ResourceLocation(Tags.MODID, "models/blocks/funnel.obj");
 
-  @SideOnly(Side.CLIENT)
-  public TextureAtlasSprite spriteTop;
+    @SideOnly(Side.CLIENT)
+    public TextureAtlasSprite spriteTop;
 
-  @SideOnly(Side.CLIENT)
-  public TextureAtlasSprite spriteSide;
+    @SideOnly(Side.CLIENT)
+    public TextureAtlasSprite spriteSide;
 
-  @SideOnly(Side.CLIENT)
-  public TextureAtlasSprite spriteBottom;
+    @SideOnly(Side.CLIENT)
+    public TextureAtlasSprite spriteBottom;
 
-  public MachineFunnel(String regName) {
-    super(Material.IRON);
-    this.setRegistryName(regName);
-    this.setTranslationKey(regName);
+    public MachineFunnel(String regName) {
+        super(Material.IRON);
+        this.setRegistryName(regName);
+        this.setTranslationKey(regName);
 
-    ModBlocks.ALL_BLOCKS.add(this);
-    IDynamicModels.INSTANCES.add(this);
-  }
+        ModBlocks.ALL_BLOCKS.add(this);
+        IDynamicModels.INSTANCES.add(this);
+    }
 
-  @Override
-  public boolean isOpaqueCube(IBlockState state) {
-    return false;
-  }
-
-  @Override
-  public boolean isFullCube(IBlockState state) {
-    return false;
-  }
-
-  @Override
-  public EnumBlockRenderType getRenderType(IBlockState state) {
-    return EnumBlockRenderType.MODEL;
-  }
-
-  @Override
-  public TileEntity createNewTileEntity(World world, int meta) {
-    return new TileEntityMachineFunnel();
-  }
-
-  @Override
-  public boolean onBlockActivated(
-      World world,
-      BlockPos pos,
-      IBlockState state,
-      EntityPlayer player,
-      EnumHand hand,
-      EnumFacing facing,
-      float hitX,
-      float hitY,
-      float hitZ) {
-    {
-      if (world.isRemote) {
-        return true;
-      } else if (!player.isSneaking()) {
-        TileEntity entity = world.getTileEntity(pos);
-        if (entity instanceof TileEntityMachineFunnel) {
-          FMLNetworkHandler.openGui(
-              player, MainRegistry.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
-        }
-        return true;
-      } else {
+    @Override
+    public boolean isOpaqueCube(@NotNull IBlockState state) {
         return false;
-      }
     }
-  }
 
-  private final Random rand = new Random();
+    @Override
+    public boolean isFullCube(@NotNull IBlockState state) {
+        return false;
+    }
 
-  @Override
-  public void breakBlock(@NotNull World world, @NotNull BlockPos pos, IBlockState state) {
-    ISidedInventory tile = (ISidedInventory) world.getTileEntity(pos);
-    if (tile != null) {
-      for (int i = 0; i < tile.getSizeInventory(); ++i) {
-        ItemStack stack = tile.getStackInSlot(i);
-        if (stack != ItemStack.EMPTY) {
-          float f = this.rand.nextFloat() * 0.8F + 0.1F;
-          float f1 = this.rand.nextFloat() * 0.8F + 0.1F;
-          float f2 = this.rand.nextFloat() * 0.8F + 0.1F;
-          while (stack.getCount() > 0) {
-            int j1 = this.rand.nextInt(21) + 10;
-            if (j1 > stack.getCount()) j1 = stack.getCount();
-            stack.shrink(j1);
-            EntityItem entityitem =
-                new EntityItem(
-                    world,
-                    pos.getX() + f,
-                    pos.getY() + f1,
-                    pos.getZ() + f2,
-                    new ItemStack(stack.getItem(), j1, stack.getItemDamage()));
-            if (stack.hasTagCompound())
-              entityitem.getItem().setTagCompound(stack.getTagCompound().copy());
-            float f3 = 0.05F;
-            entityitem.motionX = (float) this.rand.nextGaussian() * f3;
-            entityitem.motionY = (float) this.rand.nextGaussian() * f3 + 0.2F;
-            entityitem.motionZ = (float) this.rand.nextGaussian() * f3;
-            world.spawnEntity(entityitem);
-          }
+    @Override
+    public @NotNull EnumBlockRenderType getRenderType(@NotNull IBlockState state) {
+        return EnumBlockRenderType.MODEL;
+    }
+
+    @Override
+    public TileEntity createNewTileEntity(@NotNull World world, int meta) {
+        return new TileEntityMachineFunnel();
+    }
+
+    @Override
+    public boolean onBlockActivated(World world, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull EntityPlayer player, @NotNull EnumHand hand, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ) {
+        {
+            if (world.isRemote) {
+                return true;
+            } else if (!player.isSneaking()) {
+                TileEntity entity = world.getTileEntity(pos);
+                if (entity instanceof TileEntityMachineFunnel) {
+                    FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
+                }
+                return true;
+            } else {
+                return false;
+            }
         }
-      }
-
-      world.notifyNeighborsOfStateChange(pos, state.getBlock(), true);
     }
 
-    super.breakBlock(world, pos, state);
-  }
+    private final Random rand = new Random();
 
-  @Override
-  public void addInformation(
-      ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
-    this.addStandardInfo(tooltip);
-  }
+    @Override
+    public void breakBlock(@NotNull World world, @NotNull BlockPos pos, @NotNull IBlockState state) {
+        TileEntity te = world.getTileEntity(pos);
 
-  @Override
-  @SideOnly(Side.CLIENT)
-  public void registerModel() {
-    Item item = Item.getItemFromBlock(this);
-    ModelResourceLocation inv = new ModelResourceLocation(getRegistryName(), "inventory");
-    ModelLoader.setCustomModelResourceLocation(item, 0, inv);
-  }
+        if (te instanceof TileEntityMachineFunnel tile) {
 
-  @Override
-  @SideOnly(Side.CLIENT)
-  public StateMapperBase getStateMapper(ResourceLocation loc) {
-    return new StateMapperBase() {
-      @Override
-      protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
-        return new ModelResourceLocation(loc, "normal");
-      }
-    };
-  }
+            for (int i = 0; i < tile.inventory.getSlots(); ++i) {
+                ItemStack stack = tile.inventory.getStackInSlot(i);
 
-  @Override
-  @SideOnly(Side.CLIENT)
-  public void registerSprite(TextureMap map) {
-    ResourceLocation rl = getRegistryName();
-    if (rl != null) {
-      this.spriteTop =
-          map.registerSprite(new ResourceLocation(rl.getNamespace(), "blocks/machine_funnel_top"));
-      this.spriteSide =
-          map.registerSprite(new ResourceLocation(rl.getNamespace(), "blocks/machine_funnel_side"));
-      this.spriteBottom =
-          map.registerSprite(
-              new ResourceLocation(rl.getNamespace(), "blocks/machine_funnel_bottom"));
+                if (!stack.isEmpty()) {
+                    float f = this.rand.nextFloat() * 0.8F + 0.1F;
+                    float f1 = this.rand.nextFloat() * 0.8F + 0.1F;
+                    float f2 = this.rand.nextFloat() * 0.8F + 0.1F;
+                    while (stack.getCount() > 0) {
+                        int j1 = this.rand.nextInt(21) + 10;
+                        if (j1 > stack.getCount()) j1 = stack.getCount();
+                        stack.shrink(j1);
+
+                        EntityItem entityitem = new EntityItem(world, pos.getX() + f, pos.getY() + f1, pos.getZ() + f2, new ItemStack(stack.getItem(), j1, stack.getItemDamage()));
+                        if (stack.hasTagCompound()) entityitem.getItem().setTagCompound(stack.getTagCompound().copy());
+                        float f3 = 0.05F;
+                        entityitem.motionX = (float) this.rand.nextGaussian() * f3;
+                        entityitem.motionY = (float) this.rand.nextGaussian() * f3 + 0.2F;
+                        entityitem.motionZ = (float) this.rand.nextGaussian() * f3;
+                        world.spawnEntity(entityitem);
+                    }
+                }
+            }
+
+            world.notifyNeighborsOfStateChange(pos, state.getBlock(), true);
+        }
+
+        super.breakBlock(world, pos, state);
     }
-  }
 
-  @Override
-  @SideOnly(Side.CLIENT)
-  public void bakeModel(ModelBakeEvent event) {
-    HFRWavefrontObject wavefront = new HFRWavefrontObject(objModelLocation);
-    TextureAtlasSprite[] sprites = new TextureAtlasSprite[] {spriteTop, spriteSide, spriteBottom};
+    @Override
+    public void addInformation(@NotNull ItemStack stack, @Nullable World worldIn, @NotNull List<String> tooltip, @NotNull ITooltipFlag flagIn) {
+        this.addStandardInfo(tooltip);
+    }
 
-    IBakedModel blockModel = BlockFunnelBakedModel.forBlock(wavefront, sprites);
-    IBakedModel itemModel = BlockFunnelBakedModel.forItem(wavefront, sprites);
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void registerModel() {
+        Item item = Item.getItemFromBlock(this);
+        ModelResourceLocation inv = new ModelResourceLocation(getRegistryName(), "inventory");
+        ModelLoader.setCustomModelResourceLocation(item, 0, inv);
+    }
 
-    ModelResourceLocation mrlBlock = new ModelResourceLocation(getRegistryName(), "normal");
-    ModelResourceLocation mrlItem = new ModelResourceLocation(getRegistryName(), "inventory");
+    @Override
+    @SideOnly(Side.CLIENT)
+    public StateMapperBase getStateMapper(ResourceLocation loc) {
+        return new StateMapperBase() {
+            @Override
+            protected @NotNull ModelResourceLocation getModelResourceLocation(@NotNull IBlockState state) {
+                return new ModelResourceLocation(loc, "normal");
+            }
+        };
+    }
 
-    event.getModelRegistry().putObject(mrlBlock, blockModel);
-    event.getModelRegistry().putObject(mrlItem, itemModel);
-  }
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void registerSprite(TextureMap map) {
+        ResourceLocation rl = getRegistryName();
+        if (rl != null) {
+            this.spriteTop = map.registerSprite(new ResourceLocation(rl.getNamespace(), "blocks/machine_funnel_top"));
+            this.spriteSide = map.registerSprite(new ResourceLocation(rl.getNamespace(), "blocks/machine_funnel_side"));
+            this.spriteBottom = map.registerSprite(new ResourceLocation(rl.getNamespace(), "blocks/machine_funnel_bottom"));
+        }
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void bakeModel(ModelBakeEvent event) {
+        HFRWavefrontObject wavefront = new HFRWavefrontObject(objModelLocation);
+        TextureAtlasSprite[] sprites = new TextureAtlasSprite[]{spriteTop, spriteSide, spriteBottom};
+
+        IBakedModel blockModel = BlockFunnelBakedModel.forBlock(wavefront, sprites);
+        IBakedModel itemModel = BlockFunnelBakedModel.forItem(wavefront, sprites);
+
+        ModelResourceLocation mrlBlock = new ModelResourceLocation(getRegistryName(), "normal");
+        ModelResourceLocation mrlItem = new ModelResourceLocation(getRegistryName(), "inventory");
+
+        event.getModelRegistry().putObject(mrlBlock, blockModel);
+        event.getModelRegistry().putObject(mrlItem, itemModel);
+    }
 }

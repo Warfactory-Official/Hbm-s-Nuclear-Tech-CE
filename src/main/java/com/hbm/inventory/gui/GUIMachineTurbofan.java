@@ -59,7 +59,7 @@ public class GUIMachineTurbofan extends GuiInfoContainer {
 			drawTexturedModalRect(guiLeft + 98, guiTop + 44, 176, (a - 1) * 16, 16, 16);
 		}
 
-		if(turbofan.showBlood) GaugeUtil.renderGauge(GaugeUtil.Gauge.ROUND_SMALL, guiLeft + 97, guiTop + 16, this.zLevel, (double) turbofan.blood.getFill() / (double) turbofan.blood.getMaxFill());
+		if(turbofan.showBlood) GaugeUtil.renderGauge(GaugeUtil.Gauge.ROUND_SMALL, guiLeft + 97, guiTop + 16, this.zLevel, (float) turbofan.blood.getFill() / (float) turbofan.blood.getMaxFill());
 		turbofan.tank.renderTank(guiLeft + 35, guiTop + 69, this.zLevel, 34, 52);
 	}
 }

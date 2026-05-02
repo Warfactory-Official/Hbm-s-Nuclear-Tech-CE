@@ -2,10 +2,14 @@ package com.hbm.inventory.control_panel.controls;
 
 import com.hbm.inventory.control_panel.controls.configs.SubElementBaseConfig;
 import com.hbm.inventory.control_panel.controls.configs.SubElementDisplaySevenSeg;
+import com.hbm.inventory.control_panel.types.DataValue;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
 import com.hbm.render.loader.WaveFrontObjectVAO;
 import com.hbm.inventory.control_panel.*;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.loader.IModelCustom;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
@@ -52,16 +56,17 @@ public class DisplaySevenSeg extends Control {
     }
 
     @Override
-    public float[] getBox() {
+    public void fillBox(float[] box) {
         float width = getSize()[0];
         float length = getSize()[1];
-        return new float[] {posX - (width*digitCount-((digitCount-1)*.125F)) + width, posY, posX + width, posY + length};
+        box[0] = posX - (width * digitCount - ((digitCount - 1) * .125F)) + width;
+        box[1] = posY;
+        box[2] = posX + width;
+        box[3] = posY + length;
     }
 
     @Override
-    public void applyConfigs(Map<String, DataValue> configs) {
-        super.applyConfigs(configs);
-
+    protected void onConfigMapChanged() {
         for (Map.Entry<String, DataValue> e : configMap.entrySet()) {
             switch (e.getKey()) {
                 case "colorR" : {
@@ -156,6 +161,25 @@ public class DisplaySevenSeg extends Control {
     @SideOnly(Side.CLIENT)
     public ResourceLocation getGuiTexture() {
         return ResourceManager.ctrl_display_seven_seg_gui_tex;
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public void renderControl(float[] renderBox,Control selectedControl,GuiControlEdit gui) {
+        float boxMinX = renderBox[0];
+        float boxMinY = renderBox[1];
+        float boxMaxX = renderBox[2];
+        float boxMaxY = renderBox[3];
+        int digitCount = (int) getConfigs().get("digitCount").getNumber();
+        float digitWidth = (boxMaxX - boxMinX) / digitCount;
+        int packedColor = NTMBufferBuilder.packColor(1.0F, this == selectedControl ? 0.8F : 1.0F, 1.0F, 1.0F);
+        NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionTexColorQuads(digitCount);
+        for (int i = 0; i < digitCount; i++) {
+            float digitMinX = boxMinX + digitWidth * i;
+            float digitMaxX = digitMinX + digitWidth;
+            appendGuiQuad(buf, digitMinX, boxMinY, digitMaxX, boxMaxY, 0.0F, 0.0F, 1.0F, 1.0F, packedColor);
+        }
+        NTMImmediate.INSTANCE.draw();
     }
 
     @Override

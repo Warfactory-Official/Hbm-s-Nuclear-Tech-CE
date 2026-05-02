@@ -22,6 +22,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.AdvancementManager;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -53,7 +54,7 @@ import java.util.List;
 import java.util.Random;
 
 @AutoRegister
-public class TileEntityWatz extends TileEntityMachineBase implements ITickable, IFluidStandardTransceiver, IControlReceiver, IGUIProvider, IFluidCopiable {
+public class TileEntityWatz extends TileEntityMachineBase implements ITickable, IFluidStandardTransceiver, IControlReceiver, IGUIProvider, IFluidCopiable, IConnectionAnchors {
 
 	public FluidTankNTM[] tanks;
 	private FluidTankNTM[] sharedTanks;
@@ -72,13 +73,13 @@ public class TileEntityWatz extends TileEntityMachineBase implements ITickable, 
 		super(24, 1, true, false);
 		this.locks = new ItemStack[inventory.getSlots()];
 		this.tanks = new FluidTankNTM[3];
-		this.tanks[0] = new FluidTankNTM(Fluids.COOLANT, 64_000);
-		this.tanks[1] = new FluidTankNTM(Fluids.COOLANT_HOT, 64_000);
-		this.tanks[2] = new FluidTankNTM(Fluids.WATZ, 64_000);
+		this.tanks[0] = new FluidTankNTM(Fluids.COOLANT, 64_000).withOwner(this);
+		this.tanks[1] = new FluidTankNTM(Fluids.COOLANT_HOT, 64_000).withOwner(this);
+		this.tanks[2] = new FluidTankNTM(Fluids.WATZ, 64_000).withOwner(this);
 		this.sharedTanksSync = new FluidTankNTM[3];
-		this.sharedTanksSync[0] = new FluidTankNTM(Fluids.COOLANT, 0);
-		this.sharedTanksSync[1] = new FluidTankNTM(Fluids.COOLANT_HOT, 0);
-		this.sharedTanksSync[2] = new FluidTankNTM(Fluids.WATZ, 0);
+		this.sharedTanksSync[0] = new FluidTankNTM(Fluids.COOLANT, 0).withOwner(this);
+		this.sharedTanksSync[1] = new FluidTankNTM(Fluids.COOLANT_HOT, 0).withOwner(this);
+		this.sharedTanksSync[2] = new FluidTankNTM(Fluids.WATZ, 0).withOwner(this);
 		resetSharedTanks();
 	}
 
@@ -89,9 +90,9 @@ public class TileEntityWatz extends TileEntityMachineBase implements ITickable, 
 
 	private void resetSharedTanks() {
 		this.sharedTanks = new FluidTankNTM[3];
-		this.sharedTanks[0] = new FluidTankNTM(Fluids.COOLANT, 64_000);
-		this.sharedTanks[1] = new FluidTankNTM(Fluids.COOLANT_HOT, 64_000);
-		this.sharedTanks[2] = new FluidTankNTM(Fluids.WATZ, 64_000);
+		this.sharedTanks[0] = new FluidTankNTM(Fluids.COOLANT, 64_000).withOwner(this);
+		this.sharedTanks[1] = new FluidTankNTM(Fluids.COOLANT_HOT, 64_000).withOwner(this);
+		this.sharedTanks[2] = new FluidTankNTM(Fluids.WATZ, 64_000).withOwner(this);
 		this.sharedTanks[0].setFill(tanks[0].getFill());
 		this.sharedTanks[1].setFill(tanks[1].getFill());
 		this.sharedTanks[2].setFill(tanks[2].getFill());
@@ -121,7 +122,7 @@ public class TileEntityWatz extends TileEntityMachineBase implements ITickable, 
 
             /* set up shared tanks */
             this.sharedTanks = new FluidTankNTM[3];
-            for (int i = 0; i < 3; i++) this.sharedTanks[i] = new FluidTankNTM(tanks[i].getTankType(), 0);
+            for (int i = 0; i < 3; i++) this.sharedTanks[i] = new FluidTankNTM(tanks[i].getTankType(), 0).withOwner(this);
 
             for (TileEntityWatz segment : segments) {
                 segment.setupCoolant();
@@ -312,6 +313,18 @@ public class TileEntityWatz extends TileEntityMachineBase implements ITickable, 
 	}
 
 	@Override
+	public void serializeInitial(ByteBuf buf) {
+		super.serialize(buf);
+		buf.writeInt(this.heat);
+		buf.writeBoolean(isOn);
+		buf.writeBoolean(isLocked);
+		buf.writeDouble(this.fluxLastReaction + this.fluxLastBase);
+		for (FluidTankNTM tank : tanks) {
+			tank.serialize(buf);
+		}
+	}
+
+	@Override
 	public void serialize(ByteBuf buf) {
 		super.serialize(buf);
 		buf.writeInt(this.heat);
@@ -358,6 +371,22 @@ public class TileEntityWatz extends TileEntityMachineBase implements ITickable, 
 
 	private DirPos[] getSendingPos() {
 		return new DirPos[] {
+				new DirPos(pos.getX(), pos.getY() - 1, pos.getZ(), ForgeDirection.DOWN),
+				new DirPos(pos.getX() + 2, pos.getY() - 1, pos.getZ(), ForgeDirection.DOWN),
+				new DirPos(pos.getX() - 2, pos.getY() - 1, pos.getZ(), ForgeDirection.DOWN),
+				new DirPos(pos.getX(), pos.getY() - 1, pos.getZ() + 2, ForgeDirection.DOWN),
+				new DirPos(pos.getX(), pos.getY() - 1, pos.getZ() - 2, ForgeDirection.DOWN)
+		};
+	}
+
+	@Override
+	public DirPos[] getConPos() {
+		return new DirPos[] {
+				new DirPos(pos.getX(), pos.getY() + 3, pos.getZ(), ForgeDirection.UP),
+				new DirPos(pos.getX() + 2, pos.getY() + 3, pos.getZ(), ForgeDirection.UP),
+				new DirPos(pos.getX() - 2, pos.getY() + 3, pos.getZ(), ForgeDirection.UP),
+				new DirPos(pos.getX(), pos.getY() + 3, pos.getZ() + 2, ForgeDirection.UP),
+				new DirPos(pos.getX(), pos.getY() + 3, pos.getZ() - 2, ForgeDirection.UP),
 				new DirPos(pos.getX(), pos.getY() - 1, pos.getZ(), ForgeDirection.DOWN),
 				new DirPos(pos.getX() + 2, pos.getY() - 1, pos.getZ(), ForgeDirection.DOWN),
 				new DirPos(pos.getX() - 2, pos.getY() - 1, pos.getZ(), ForgeDirection.DOWN),

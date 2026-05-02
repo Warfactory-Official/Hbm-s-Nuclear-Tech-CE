@@ -1,8 +1,10 @@
 package com.hbm.inventory.control_panel.nodes;
 
 import com.hbm.inventory.control_panel.*;
-import com.hbm.inventory.control_panel.DataValue.DataType;
+import com.hbm.inventory.control_panel.types.DataValue;
+import com.hbm.inventory.control_panel.types.DataValue.DataType;
 import com.hbm.inventory.control_panel.modular.StockNodesRegister;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -49,7 +51,7 @@ public class NodeEventBroadcast extends NodeOutput {
 	}
 
 	@Override
-	public boolean doOutput(IControllable from, Map<String, NodeSystem> sendNodeMap, List<BlockPos> positions){
+	public boolean doOutput(IControllable from, Map<String, NodeSystem> sendNodeMap, Map<String,BlockPos> positions){
 		World world = from.getControlWorld();
 		ControlEvent e = ControlEvent.newEvent(eventName);
 		for(NodeConnection c : inputs){
@@ -63,21 +65,23 @@ public class NodeEventBroadcast extends NodeOutput {
 		if(sendNodeMap != null){
 			if(sendNodeMap.containsKey(e.name)){
 				NodeSystem sys = sendNodeMap.get(e.name);
+				int i = 0;
 				cont:
-				for(int i = 0; i < positions.size(); i ++){
+				for(BlockPos pos : positions.values()){
 					sys.resetCachedValues();
 					sys.setVar("receiver_id", new DataValueFloat(i));
 					for(NodeOutput o : sys.outputNodes){
 						if(!o.doOutput(from, sendNodeMap, positions))
 							continue cont;
 					}
-					ControlEventSystem.get(world).broadcastEvent(from.getControlPos(), e, positions.get(i));
+					ControlEventSystem.get(world).broadcastEvent(from.getControlPos(), e, pos);
+					i++;
 				}
 			} else {
-				ControlEventSystem.get(world).broadcastEvent(from.getControlPos(), e, positions);
+				ControlEventSystem.get(world).broadcastEvent(from.getControlPos(), e, positions.values());
 			}
 		} else {
-			ControlEventSystem.get(world).broadcastEvent(from.getControlPos(), e, positions);
+			ControlEventSystem.get(world).broadcastEvent(from.getControlPos(), e, positions.values());
 		}
 		return true;
 	}
@@ -89,7 +93,7 @@ public class NodeEventBroadcast extends NodeOutput {
 		}
 		this.inputs.clear();
 		ControlEvent evt = ControlEvent.getRegisteredEvent(name);
-		for(Entry<String, DataValue> e : evt.vars.entrySet()){
+		for(Entry<String,DataValue> e : evt.vars.entrySet()){
 			inputs.add(new NodeConnection(e.getKey(), this, inputs.size(), true, e.getValue().getType(), e.getValue().copy()));
 		}
 		inputs.add(new NodeConnection("Cancel", this, inputs.size(), true, DataType.GENERIC, new DataValueFloat(0)));

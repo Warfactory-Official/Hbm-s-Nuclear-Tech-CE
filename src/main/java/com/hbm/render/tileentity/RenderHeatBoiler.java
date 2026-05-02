@@ -14,12 +14,6 @@ import org.lwjgl.opengl.GL11;
 
 @AutoRegister
 public class RenderHeatBoiler extends TileEntitySpecialRenderer<TileEntityHeatBoiler> implements IItemRendererProvider {
-
-    @Override
-    public boolean isGlobalRenderer(TileEntityHeatBoiler te) {
-        return true;
-    }
-
     @Override
     public void render(TileEntityHeatBoiler boiler, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
         GlStateManager.pushMatrix();

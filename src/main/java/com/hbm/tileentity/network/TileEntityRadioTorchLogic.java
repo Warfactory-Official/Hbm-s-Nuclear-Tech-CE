@@ -9,13 +9,10 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import static com.hbm.blocks.network.RadioTorchBase.LIT;
 
@@ -124,11 +121,11 @@ public class TileEntityRadioTorchLogic extends TileEntityLoadedBase implements I
 
     public boolean parseSignal(String signal, int index) {
         if (conditions[index] <= 5) { //if a non-string operator
-            int sig;
-            int map;
+            long sig;
+            long map;
             try {
-                sig = Integer.parseInt(signal);
-                map = Integer.parseInt(mapping[index]);
+                sig = Long.parseLong(signal);
+                map = Long.parseLong(mapping[index]);
             } catch (Exception x) {
                 return false; //not a valid input; skip! slightly annoying about the mapping but we'll restrict input anyway
             }
@@ -181,21 +178,9 @@ public class TileEntityRadioTorchLogic extends TileEntityLoadedBase implements I
         buf.writeBoolean(this.polling);
         BufferUtil.writeString(buf, this.channel);
         buf.writeBoolean(this.descending);
+        buf.writeByte(this.lastState);
         for (int i = 0; i < MAPPING_SIZE; i++) BufferUtil.writeString(buf, this.mapping[i]);
         for (int i = 0; i < MAPPING_SIZE; i++) buf.writeInt(this.conditions[i]);
-    }
-
-    @Override
-    public @NotNull NBTTagCompound getUpdateTag() {
-        NBTTagCompound nbt = super.getUpdateTag();
-        writeToNBT(nbt);
-        return nbt;
-    }
-
-    @Override
-    public void handleUpdateTag(@NotNull NBTTagCompound tag) {
-        super.handleUpdateTag(tag);
-        readFromNBT(tag);
     }
 
     @Override
@@ -203,21 +188,9 @@ public class TileEntityRadioTorchLogic extends TileEntityLoadedBase implements I
         this.polling = buf.readBoolean();
         this.channel = BufferUtil.readString(buf);
         this.descending = buf.readBoolean();
+        this.lastState = buf.readByte();
         for (int i = 0; i < MAPPING_SIZE; i++) this.mapping[i] = BufferUtil.readString(buf);
         for (int i = 0; i < MAPPING_SIZE; i++) this.conditions[i] = buf.readInt();
-    }
-
-    @Nullable
-    @Override
-    public SPacketUpdateTileEntity getUpdatePacket() {
-        NBTTagCompound nbt = new NBTTagCompound();
-        nbt.setByte("lastState", (byte) this.lastState);
-        return new SPacketUpdateTileEntity(this.pos, 0, nbt);
-    }
-
-    @Override
-    public void onDataPacket(@NotNull NetworkManager net, SPacketUpdateTileEntity pkt) {
-        this.lastState = pkt.getNbtCompound().getByte("lastState");
     }
 
     @Override

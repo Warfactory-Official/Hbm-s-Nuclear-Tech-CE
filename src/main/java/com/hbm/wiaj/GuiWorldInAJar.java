@@ -2,6 +2,7 @@ package com.hbm.wiaj;
 
 import com.hbm.Tags;
 import com.hbm.main.MainRegistry;
+import com.hbm.render.util.NTMImmediate;
 import com.hbm.util.I18nUtil;
 import com.hbm.wiaj.actors.ActorFancyPanel;
 import com.hbm.wiaj.actors.ActorFancyPanel.Orientation;
@@ -20,7 +21,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
 import java.util.ArrayList;
@@ -195,8 +196,7 @@ public class GuiWorldInAJar extends GuiScreen {
 
         Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
-        BufferBuilder buffer = Tessellator.getInstance().getBuffer();
-        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+        BufferBuilder buffer = NTMImmediate.INSTANCE.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
 
         for (int x = 0; x < jarScript.world.sizeX; x++) {
             for (int y = 0; y < jarScript.world.sizeY; y++) {
@@ -212,7 +212,7 @@ public class GuiWorldInAJar extends GuiScreen {
             }
         }
 
-        Tessellator.getInstance().draw();
+        NTMImmediate.INSTANCE.draw();
         GlStateManager.shadeModel(GL11.GL_FLAT);
         GlStateManager.popMatrix();
 

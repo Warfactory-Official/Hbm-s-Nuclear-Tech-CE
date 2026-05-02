@@ -6,6 +6,8 @@ import com.google.common.collect.Multimap;
 import com.hbm.Tags;
 import com.hbm.handler.ability.AvailableAbilities;
 import com.hbm.handler.ability.IWeaponAbility;
+import com.hbm.items.ClaimedModelLocationRegistry;
+import com.hbm.items.IClaimedModelLocation;
 import com.hbm.items.IDynamicModels;
 import com.hbm.items.ModItems;
 import com.hbm.lib.HBMSoundHandler;
@@ -37,7 +39,7 @@ import java.util.UUID;
 
 import static com.hbm.items.ItemEnumMulti.ROOT_PATH;
 
-public class ItemSwordAbility extends ItemSword implements IDynamicModels {
+public class ItemSwordAbility extends ItemSword implements IDynamicModels, IClaimedModelLocation {
 
 	private EnumRarity rarity = EnumRarity.COMMON;
 	//was there a reason for this to be private?
@@ -58,6 +60,7 @@ public class ItemSwordAbility extends ItemSword implements IDynamicModels {
 		INSTANCES.add(this);
 
 		ModItems.ALL_ITEMS.add(this);
+        ClaimedModelLocationRegistry.register(this);
 	}
 	public ItemSwordAbility(float damage, double attackSpeed, double movement, ToolMaterial material, String s, boolean useBakedModel) {
 		super(material);
@@ -68,6 +71,7 @@ public class ItemSwordAbility extends ItemSword implements IDynamicModels {
 		this.setRegistryName(s);
 
 		ModItems.ALL_ITEMS.add(this);
+        ClaimedModelLocationRegistry.register(this);
 	}
 
 	public ItemSwordAbility(float damage, double movement, ToolMaterial material, String s, boolean useBakedModel) {
@@ -112,6 +116,12 @@ public class ItemSwordAbility extends ItemSword implements IDynamicModels {
 	@Override
 	public void registerSprite(TextureMap map) {
 		map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath));
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public boolean ownsModelLocation(ModelResourceLocation location) {
+		return IClaimedModelLocation.isInventoryLocation(location, new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath));
 	}
 
 	public ItemSwordAbility addAbility(IWeaponAbility weaponAbility, int level) {

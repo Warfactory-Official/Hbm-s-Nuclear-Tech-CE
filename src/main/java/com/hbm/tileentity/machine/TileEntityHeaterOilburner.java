@@ -13,6 +13,7 @@ import com.hbm.inventory.fluid.trait.FluidTrait;
 import com.hbm.inventory.gui.GUIOilburner;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import io.netty.buffer.ByteBuf;
@@ -28,7 +29,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
-public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implements ITickable, IGUIProvider, IHeatSource, IControlReceiver, IFluidStandardTransceiver, IFFtoNTMF, IFluidCopiable {
+public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implements ITickable, IGUIProvider, IHeatSource, IControlReceiver, IFluidStandardTransceiver, IFFtoNTMF, IFluidCopiable, IConnectionAnchors {
 
     public static final int maxHeatEnergy = 100_000;
     public boolean isOn = false;
@@ -39,7 +40,7 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
 
     public TileEntityHeaterOilburner() {
         super(3, 1000, true, false);
-        tank = new FluidTankNTM(Fluids.HEATINGOIL, 16000);
+        tank = new FluidTankNTM(Fluids.HEATINGOIL, 16000).withOwner(this);
 
     }
 

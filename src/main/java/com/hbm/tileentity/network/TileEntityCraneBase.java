@@ -4,19 +4,19 @@ import com.hbm.blocks.network.BlockCraneBase;
 import com.hbm.interfaces.ICopiable;
 import com.hbm.tileentity.IControlReceiverFilter;
 import com.hbm.tileentity.TileEntityMachineBase;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
@@ -99,8 +99,18 @@ public abstract class TileEntityCraneBase extends TileEntityMachineBase implemen
     }
 
     @Override
-    public @NotNull NBTTagCompound getUpdateTag() {
-        return writeToNBT(new NBTTagCompound());
+    public void serializeInitial(ByteBuf buf) {
+        super.serializeInitial(buf);
+        NBTTagCompound nbt = new NBTTagCompound();
+        this.writeToNBT(nbt);
+        ByteBufUtils.writeTag(buf, nbt);
+    }
+
+    @Override
+    public void deserializeInitial(ByteBuf buf) {
+        super.deserializeInitial(buf);
+        NBTTagCompound nbt = ByteBufUtils.readTag(buf);
+        if (nbt != null) this.readFromNBT(nbt);
     }
 
     protected void onBlockChanged() {
@@ -110,19 +120,6 @@ public abstract class TileEntityCraneBase extends TileEntityMachineBase implemen
         world.notifyBlockUpdate(pos, state, state, 3);
         markDirty();
     }
-
-    @Override
-    public SPacketUpdateTileEntity getUpdatePacket() {
-        NBTTagCompound nbt = new NBTTagCompound();
-        writeToNBT(nbt);
-        return new SPacketUpdateTileEntity(pos, 0, nbt);
-    }
-
-    @Override
-    public void onDataPacket(@NotNull NetworkManager net, SPacketUpdateTileEntity pkt) {
-        readFromNBT(pkt.getNbtCompound());
-    }
-
 
     @Override
     public void readFromNBT(NBTTagCompound nbt) {

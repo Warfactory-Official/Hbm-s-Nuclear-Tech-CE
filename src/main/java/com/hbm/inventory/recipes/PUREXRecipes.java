@@ -15,6 +15,7 @@ import net.minecraft.util.NonNullList;
 import net.minecraftforge.oredict.OreDictionary;
 
 import static com.hbm.inventory.OreDictManager.TH232;
+import static com.hbm.inventory.OreDictManager.ZR;
 
 public class PUREXRecipes extends GenericRecipes<GenericRecipe> {
 
@@ -53,11 +54,37 @@ public class PUREXRecipes extends GenericRecipes<GenericRecipe> {
     @Override
     public void registerDefaults() {
 
+        long pilePower = 100;
         long zirnoxPower = 1_000;
         long platePower = 1_500;
         long pwrPower = 2_500;
         long watzPower = 10_000;
         long vitrification = 1_000;
+
+        this.register(new GenericRecipe("purex.uzh").setup(600, 1_000)
+                .inputItems(new ComparableStack(ModItems.billet_uranium_fuel),
+                        new OreDictStack(ZR.billet(), 3))
+                .inputFluids(new FluidStack(Fluids.NITRIC_ACID, 1000), new FluidStack(Fluids.HYDROGEN, 4000))
+                .outputItems(new ItemStack(ModItems.billet_uzh, 4)));
+
+        //CP-1
+        String autoPile = "autoswitch.pile";
+        this.register(new GenericRecipe("purex.pilepu").setup(40, pilePower).setNameWrapper("purex.recycle").setGroup(autoPile, this)
+                .inputItems(new ComparableStack(ModItems.pile_rod_plutonium))
+                .inputFluids(new FluidStack(Fluids.SULFURIC_ACID, 100))
+                .outputItems(new ItemStack(ModItems.billet_pu_mix, 2),
+                        new ItemStack(ModItems.billet_uranium, 1),
+                        new ItemStack(ModItems.plate_iron, 2))
+                .setIconToFirstIngredient());
+
+        this.register(new GenericRecipe("purex.pilepu239").setup(40, pilePower).setNameWrapper("purex.recycle").setGroup(autoPile, this)
+                .inputItems(new ComparableStack(ModItems.pile_rod_pu239))
+                .inputFluids(new FluidStack(Fluids.SULFURIC_ACID, 100))
+                .outputItems(new ItemStack(ModItems.billet_pu239, 1),
+                        new ItemStack(ModItems.billet_pu_mix, 1),
+                        new ItemStack(ModItems.billet_uranium, 1),
+                        new ItemStack(ModItems.plate_iron, 2))
+                .setIconToFirstIngredient());
 
         // ZIRNOX
         String autoZirnox = "autoswitch.zirnox";
@@ -394,7 +421,7 @@ public class PUREXRecipes extends GenericRecipes<GenericRecipe> {
 
         NonNullList<ItemStack> naquadriaNuggets = OreDictionary.getOres("nuggetNaquadria");
         if (!naquadriaNuggets.isEmpty()) {
-            ItemStack nuggetNQR = naquadriaNuggets.get(0);
+            ItemStack nuggetNQR = naquadriaNuggets.getFirst();
             ItemStack copy = nuggetNQR.copy();
             copy.setCount(12);
 
@@ -418,10 +445,12 @@ public class PUREXRecipes extends GenericRecipes<GenericRecipe> {
 
         //ICF
         this.register(new GenericRecipe("purex.icf").setup(300, 10_000).setNameWrapper("purex.recycle")
-                                                    .inputItems(new ComparableStack(ModItems.icf_pellet_depleted))
-                                                    .outputItems(new ItemStack(ModItems.icf_pellet_empty, 1),
-                                                            new ItemStack(ModItems.pellet_charged, 1), new ItemStack(ModItems.pellet_charged, 1),
-                                                            new ItemStack(ModItems.powder_iron, 1)).setIconToFirstIngredient());
+                .inputItems(new ComparableStack(ModItems.icf_pellet_depleted))
+                .outputItems(new ItemStack(ModItems.icf_pellet_empty, 1),
+                        new ItemStack(ModItems.pellet_charged, 1),
+                        new ItemStack(ModItems.powder_iron, 1))
+                .outputFluids(new FluidStack(Fluids.HELIUM4, 1_250)) // enough for another pellet + 25% surplus
+                .setIconToFirstIngredient());
 
         /// Vitrification
         this.register(new GenericRecipe("purex.vitliquid").setup(100, vitrification).inputItems(new ComparableStack(ModBlocks.sand_lead))

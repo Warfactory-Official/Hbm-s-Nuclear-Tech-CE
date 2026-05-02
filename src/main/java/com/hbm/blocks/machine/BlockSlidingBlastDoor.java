@@ -15,6 +15,7 @@ import com.hbm.tileentity.machine.TileEntitySlidingBlastDoor;
 import com.hbm.util.I18nUtil;
 import com.hbm.util.KeypadClient;
 import micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock;
+import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
@@ -40,6 +41,13 @@ public class BlockSlidingBlastDoor extends BlockDummyable implements IRadResista
 
 	public BlockSlidingBlastDoor(Material materialIn, String s) {
 		super(materialIn, s, true);
+	}
+
+	@Override
+	protected boolean isSameMultiblock(Block other) {
+		return other == ModBlocks.sliding_blast_door_legacy
+			|| other == ModBlocks.sliding_blast_door_2
+			|| other == ModBlocks.sliding_blast_door_keypad;
 	}
 
 	public boolean isSealed(World world, BlockPos blockPos, EnumFacing direction){
@@ -74,7 +82,7 @@ public class BlockSlidingBlastDoor extends BlockDummyable implements IRadResista
 		if(hardness > 50){
 			tooltip.add("§6" + I18nUtil.resolveKey("trait.blastres", hardness));
 		}
-		if(this == ModBlocks.sliding_blast_door){
+		if(this == ModBlocks.sliding_blast_door_legacy){
 			tooltip.add(I18nUtil.resolveKey("desc.varwin"));
 		} else if(this == ModBlocks.sliding_blast_door_2){
 			tooltip.add(I18nUtil.resolveKey("desc.varkey"));

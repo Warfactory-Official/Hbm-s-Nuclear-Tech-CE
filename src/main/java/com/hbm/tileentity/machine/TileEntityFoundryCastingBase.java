@@ -13,6 +13,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
@@ -34,6 +35,7 @@ public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase
 	@NotNull
 	public ItemStackHandler inventory;
 	public int cooloff = 100;
+	private AxisAlignedBB bb;
 
 	public TileEntityFoundryCastingBase() {
 		this(2);
@@ -158,22 +160,6 @@ public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase
 			inventory.deserializeNBT(nbt.getCompoundTag("inventory"));
 	}
 
-	@NotNull
-	@Override
-	public NBTTagCompound getUpdateTag() {
-		NBTTagCompound tag = super.getUpdateTag();
-		tag.setTag("inventory", inventory.serializeNBT());
-		return tag;
-	}
-
-	@Override
-	public void handleUpdateTag(@NotNull NBTTagCompound tag)
-	{
-		super.handleUpdateTag(tag);
-		if(tag.hasKey("inventory"))
-			inventory.deserializeNBT(tag.getCompoundTag("inventory"));
-	}
-
 	public boolean isUseableByPlayer(EntityPlayer player) {
 		return false;
 	}
@@ -231,5 +217,11 @@ public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase
 		IBlockState castingBaseState = world.getBlockState(getPos());
 		world.notifyBlockUpdate(getPos(), castingBaseState, castingBaseState, 3);
 		super.onLoad();
+	}
+
+	@Override
+	public AxisAlignedBB getRenderBoundingBox() {
+		if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+		return bb;
 	}
 }

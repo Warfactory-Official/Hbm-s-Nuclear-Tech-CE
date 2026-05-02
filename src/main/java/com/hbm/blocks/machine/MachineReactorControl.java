@@ -36,7 +36,7 @@ public class MachineReactorControl extends BlockContainerBakeable {
     public static final PropertyDirection FACING = BlockHorizontal.FACING;
 
     public MachineReactorControl(String name) {
-        super(Material.IRON, name, new BlockBakeFrame(BlockBakeFrame.BlockForm.FULL_CUSTOM, "machine_controller_top", "machine_controller_top", "machine_controller_back", "machine_controller", "machine_controller_side", "machine_controller_side"));
+        super(Material.IRON, name, BlockBakeFrame.cube("machine_controller_top", "machine_controller_top", "machine_controller_back", "machine_controller", "machine_controller_side", "machine_controller_side"));
         this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
     }
 
@@ -107,8 +107,12 @@ public class MachineReactorControl extends BlockContainerBakeable {
     }
 
     @Override
+    public @NotNull IBlockState getStateForPlacement(World worldIn, @NotNull BlockPos pos, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
+        return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
+    }
+
+    @Override
     public void onBlockPlacedBy(World worldIn, @NotNull BlockPos pos, IBlockState state, EntityLivingBase placer, @NotNull ItemStack stack) {
-        worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
         if(stack.hasDisplayName())
         {
             ((TileEntityReactorControl)worldIn.getTileEntity(pos)).setCustomName(stack.getDisplayName());

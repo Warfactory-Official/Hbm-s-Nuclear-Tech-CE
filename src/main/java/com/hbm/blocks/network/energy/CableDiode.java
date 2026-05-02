@@ -24,8 +24,8 @@ import com.hbm.util.UnlistedPropertyInteger;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockDirectional;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -39,8 +39,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
@@ -120,8 +118,8 @@ public class CableDiode extends BlockContainer implements IEnergyConnectorBlock,
     }
 
     @Override
-    public void onBlockPlacedBy(World worldIn, @NotNull BlockPos pos, IBlockState state, @NotNull EntityLivingBase placer, @NotNull ItemStack stack) {
-        worldIn.setBlockState(pos, state.withProperty(FACING, EnumFacing.getDirectionFromEntityLiving(pos, placer)));
+    public @NotNull IBlockState getStateForPlacement(World worldIn, @NotNull BlockPos pos, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ, int meta, @NotNull EntityLivingBase placer) {
+        return this.getDefaultState().withProperty(FACING, EnumFacing.getDirectionFromEntityLiving(pos, placer));
     }
 
     @Override
@@ -277,28 +275,6 @@ public class CableDiode extends BlockContainer implements IEnergyConnectorBlock,
             nbt.setInteger("level", level);
             nbt.setByte("p", (byte) this.priority.ordinal());
             return super.writeToNBT(nbt);
-        }
-
-        @Override
-        public @Nullable SPacketUpdateTileEntity getUpdatePacket() {
-            NBTTagCompound nbt = new NBTTagCompound();
-            this.writeToNBT(nbt);
-            return new SPacketUpdateTileEntity(this.pos, 0, nbt);
-        }
-
-        @Override
-        public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-            this.readFromNBT(pkt.getNbtCompound());
-        }
-
-        @Override
-        public NBTTagCompound getUpdateTag() {
-            return this.writeToNBT(new NBTTagCompound());
-        }
-
-        @Override
-        public void handleUpdateTag(NBTTagCompound tag) {
-            this.readFromNBT(tag);
         }
 
         private ForgeDirection getDir() {

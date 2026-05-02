@@ -12,6 +12,8 @@ import com.hbm.inventory.gui.GUIFurnaceCombo;
 import com.hbm.inventory.recipes.CombinationRecipes;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
+import com.hbm.lib.DirPos;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.util.Tuple;
@@ -37,7 +39,7 @@ import java.util.List;
 
 @AutoRegister
 public class TileEntityFurnaceCombination extends TileEntityMachinePolluting implements ITickable, IFluidStandardSender, IGUIProvider,
-        IFluidCopiable {
+        IFluidCopiable, IConnectionAnchors {
 
     public static int processTime = 20_000;
     public static int maxHeat = 100_000;
@@ -50,7 +52,7 @@ public class TileEntityFurnaceCombination extends TileEntityMachinePolluting imp
 
     public TileEntityFurnaceCombination() {
         super(4, 50, true, false);
-        this.tank = new FluidTankNTM(Fluids.NONE, 24_000);
+        this.tank = new FluidTankNTM(Fluids.NONE, 24_000).withOwner(this);
     }
 
     @Override
@@ -270,5 +272,27 @@ public class TileEntityFurnaceCombination extends TileEntityMachinePolluting imp
     @Override
     public FluidTankNTM[] getSendingTanks() {
         return new FluidTankNTM[]{tank, smoke, smoke_leaded, smoke_poison};
+    }
+
+    @Override
+    public DirPos[] getConPos() {
+        int xCoord = pos.getX(), yCoord = pos.getY(), zCoord = pos.getZ();
+        DirPos[] result = new DirPos[24 + 9];
+        int idx = 0;
+        for (int i = 2; i < 6; i++) {
+            ForgeDirection dir = ForgeDirection.getOrientation(i);
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            for (int y = yCoord; y <= yCoord + 1; y++) {
+                for (int j = -1; j <= 1; j++) {
+                    result[idx++] = new DirPos(xCoord + dir.offsetX * 2 + rot.offsetX * j, y, zCoord + dir.offsetZ * 2 + rot.offsetZ * j, dir);
+                }
+            }
+        }
+        for (int x = xCoord - 1; x <= xCoord + 1; x++) {
+            for (int z = zCoord - 1; z <= zCoord + 1; z++) {
+                result[idx++] = new DirPos(x, yCoord + 2, z, ForgeDirection.UP);
+            }
+        }
+        return result;
     }
 }

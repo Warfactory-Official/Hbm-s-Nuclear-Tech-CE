@@ -80,12 +80,35 @@ public interface INBTBlockTransformable {
         return meta;
     }
 
-    static int transformMetaDecoModel(int meta, int coordBaseMode) {
+    static int transformMetaDecoModelHigh(int meta, int coordBaseMode) {
         if(coordBaseMode == 0) return meta;
-        int rot = (meta + coordBaseMode) % 4;
-        int type = (meta / 4) * 4;
+        int rot = (meta >> 2) & 3;
+        int type = meta & 3;
 
-        return rot | type;
+        for(int i = 0; i < coordBaseMode; i++) {
+            // CCW Rotation: S(0) -> E(3), E(3) -> N(1), N(1) -> W(2), W(2) -> S(0)
+            if(rot == 0) rot = 3;
+            else if(rot == 3) rot = 1;
+            else if(rot == 1) rot = 2;
+            else rot = 0;
+        }
+
+        return (rot << 2) | type;
+    }
+
+    static int transformMetaDecoModelLow(int meta, int coordBaseMode) {
+        if(coordBaseMode == 0) return meta;
+        int rot = meta & 3;
+        int type = meta & 12;
+
+        rot = switch (coordBaseMode) {
+            case 1 -> (rot + 1) % 4; // West
+            case 2 -> (rot + 2) % 4; // North
+            case 3 -> (rot + 3) % 4; // East
+            default -> rot;
+        };
+
+        return type | rot;
     }
 
     static int transformMetaStairs(int meta, int coordBaseMode) {

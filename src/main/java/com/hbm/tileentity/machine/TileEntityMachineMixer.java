@@ -15,6 +15,7 @@ import com.hbm.inventory.recipes.MixerRecipes.MixerRecipe;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
@@ -42,7 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @AutoRegister
-public class TileEntityMachineMixer extends TileEntityMachineBase implements IControlReceiver, ITickable, IGUIProvider, IFluidStandardTransceiver, IEnergyReceiverMK2, IUpgradeInfoProvider, IFluidCopiable {
+public class TileEntityMachineMixer extends TileEntityMachineBase implements IControlReceiver, ITickable, IGUIProvider, IFluidStandardTransceiver, IEnergyReceiverMK2, IUpgradeInfoProvider, IFluidCopiable, IConnectionAnchors {
 
     public static final long maxPower = 10_000;
     private final UpgradeManagerNT upgradeManager;
@@ -77,9 +78,9 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements ICo
 
         this.upgradeManager = new UpgradeManagerNT(this);
         this.tanks = new FluidTankNTM[3];
-        this.tanks[0] = new FluidTankNTM(Fluids.NONE, 16_000);
-        this.tanks[1] = new FluidTankNTM(Fluids.NONE, 16_000);
-        this.tanks[2] = new FluidTankNTM(Fluids.NONE, 24_000);
+        this.tanks[0] = new FluidTankNTM(Fluids.NONE, 16_000).withOwner(this);
+        this.tanks[1] = new FluidTankNTM(Fluids.NONE, 16_000).withOwner(this);
+        this.tanks[2] = new FluidTankNTM(Fluids.NONE, 24_000).withOwner(this);
     }
 
     @Override
@@ -234,7 +235,7 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements ICo
         return consumption;
     }
 
-    protected DirPos[] getConPos() {
+    public DirPos[] getConPos() {
         return new DirPos[]{
                 new DirPos(pos.add(0, -1, 0), Library.NEG_Y),
                 new DirPos(pos.add(1, 0, 0), Library.POS_X),

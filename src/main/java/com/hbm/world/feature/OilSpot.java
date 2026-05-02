@@ -74,26 +74,25 @@ public class OilSpot {
                     }
                 }
 
-                if (below == Blocks.GRASS || below == Blocks.DIRT) {
-                    pos.setPos(rX, y - 1, rZ);
+                if (ground == Blocks.GRASS || ground == Blocks.DIRT) {
+                    pos.setPos(rX, y, rZ);
                     IBlockState dirtState = world.rand.nextInt(10) == 0 ? ModBlocks.dirt_oily.getDefaultState() : ModBlocks.dirt_dead.getDefaultState();
                     world.setBlockState(pos, dirtState, 2 | 16);
 
                     if (addWillows && world.rand.nextInt(50) == 0) {
-                        pos.setPos(rX, y, rZ);
+                        pos.setPos(rX, y + 1, rZ);
                         if (ModBlocks.plant_flower.canPlaceBlockAt(world, pos)) {
-                            world.setBlockState(pos, ModBlocks.plant_flower.getDefaultState()
-                                                                           .withProperty(META, MUSTARD_WILLOW_0.ordinal()), 2 | 16);
+                            world.setBlockState(pos, ModBlocks.plant_flower.getDefaultState().withProperty(META, MUSTARD_WILLOW_0.ordinal()), 2 | 16);
                         }
                     }
 
                     break;
 
-                } else if (below == Blocks.SAND || below == ModBlocks.ore_oil_sand) {
-                    pos.setPos(rX, y - 1, rZ);
+                } else if (ground == Blocks.SAND || ground == ModBlocks.ore_oil_sand) {
+                    pos.setPos(rX, y, rZ);
                     IBlockState sandState;
 
-                    if (below == Blocks.SAND && belowState.getValue(BlockSand.VARIANT) == BlockSand.EnumType.RED_SAND) {
+                    if (ground == Blocks.SAND && groundState.getValue(BlockSand.VARIANT) == BlockSand.EnumType.RED_SAND) {
                         sandState = ModBlocks.sand_dirty_red.getDefaultState();
                     } else {
                         sandState = ModBlocks.sand_dirty.getDefaultState();
@@ -102,14 +101,15 @@ public class OilSpot {
                     world.setBlockState(pos, sandState, 2 | 16);
                     break;
 
-                } else if (below == Blocks.STONE) {
-                    pos.setPos(rX, y - 1, rZ);
+                } else if (ground == Blocks.STONE) {
+                    pos.setPos(rX, y, rZ);
                     world.setBlockState(pos, ModBlocks.stone_cracked.getDefaultState(), 2 | 16);
                     break;
 
-                } else if (belowState.getMaterial() == Material.LEAVES) {
-                    pos.setPos(rX, y - 1, rZ);
-                    world.setBlockState(pos, Blocks.AIR.getDefaultState(), 2 | 16);
+                } else if (groundState.getMaterial() == Material.LEAVES) {
+                    pos.setPos(rX, y, rZ);
+                    // Th3_Sl1ze: debatable ig. flag 3 (1+2) may probably cause cascading lag, but otherwise snow layers will be left floating (check #1184)
+                    world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
                     break;
                 }
             }

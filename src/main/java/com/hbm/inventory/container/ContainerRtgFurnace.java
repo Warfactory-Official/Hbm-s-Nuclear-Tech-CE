@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.machine.ItemRTGPellet;
 import com.hbm.tileentity.machine.TileEntityRtgFurnace;
@@ -13,13 +14,18 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerRtgFurnace extends Container {
-	
+
 	private TileEntityRtgFurnace rtgFurnace;
 	private int dualCookTime;
-	
+
+	private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(5)
+                                                                              .rule(0, 1, s -> !(s.getItem() instanceof ItemRTGPellet))
+                                                                              .rule(1, 5, s -> s.getItem() instanceof ItemRTGPellet)
+                                                                              .build();
+
 	public ContainerRtgFurnace(InventoryPlayer invPlayer, TileEntityRtgFurnace tedf) {
 		dualCookTime = 0;
-		
+
 		rtgFurnace = tedf;
 		//Ore
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 56, 17));
@@ -29,7 +35,7 @@ public class ContainerRtgFurnace extends Container {
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 3, 74, 53));
 		//Output
 		this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 4, 116, 35));
-		
+
 		for(int i = 0; i < 3; i++)
 		{
 			for(int j = 0; j < 9; j++)
@@ -37,33 +43,30 @@ public class ContainerRtgFurnace extends Container {
 				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
 			}
 		}
-		
+
 		for(int i = 0; i < 9; i++)
 		{
 			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 142));
 		}
 	}
-	
+
 	@Override
 	public void addListener(IContainerListener crafting) {
 		super.addListener(crafting);
 		crafting.sendWindowProperty(this, 0, this.rtgFurnace.dualCookTime);
 	}
-	
+
 	@Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 5,
-                s -> !(s.getItem() instanceof ItemRTGPellet), 1,
-                s -> s.getItem() instanceof ItemRTGPellet, 5
-        );
+		return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
 	@Override
 	public boolean canInteractWith(EntityPlayer player) {
 		return rtgFurnace.isUseableByPlayer(player);
 	}
-	
+
 	@Override
 	public void detectAndSendChanges() {
 		super.detectAndSendChanges();
@@ -73,10 +76,10 @@ public class ContainerRtgFurnace extends Container {
                 listener.sendWindowProperty(this, 0, this.rtgFurnace.dualCookTime);
             }
         }
-		
+
 		this.dualCookTime = this.rtgFurnace.dualCookTime;
 	}
-	
+
 	@Override
 	public void updateProgressBar(int i, int j) {
 		if(i == 0)

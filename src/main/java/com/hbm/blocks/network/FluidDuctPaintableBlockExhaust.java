@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.hbm.Tags;
 import com.hbm.api.block.IToolable;
 import com.hbm.blocks.ILookOverlay;
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModSoundTypes;
 import com.hbm.interfaces.AutoRegister;
@@ -17,11 +18,15 @@ import com.hbm.util.I18nUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.properties.PropertyBool;
+import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.*;
+import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -48,14 +53,16 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.util.vector.Vector3f;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class FluidDuctPaintableBlockExhaust extends FluidDuctBase implements IToolable, ILookOverlay, IDynamicModels {
+public class FluidDuctPaintableBlockExhaust extends FluidDuctBase implements IToolable, ILookOverlay, IDynamicModels, ITooltipProvider {
 
     public static final IUnlistedProperty<IBlockState> DISGUISED_STATE = new SimpleUnlistedProperty<>("disguised_state", IBlockState.class);
+    public static final PropertyBool DEFUSED = PropertyBool.create("defused");
 
     @SideOnly(Side.CLIENT)
     private static TextureAtlasSprite baseSprite;
@@ -66,7 +73,7 @@ public class FluidDuctPaintableBlockExhaust extends FluidDuctBase implements ITo
         super(Material.IRON);
         this.setRegistryName(Tags.MODID, name);
         this.setTranslationKey(name);
-        this.setDefaultState(this.blockState.getBaseState());
+        this.setDefaultState(this.blockState.getBaseState().withProperty(DEFUSED, false));
         this.setSoundType(ModSoundTypes.pipe);
         this.useNeighborBrightness = true;
         IDynamicModels.INSTANCES.add(this);
@@ -75,7 +82,18 @@ public class FluidDuctPaintableBlockExhaust extends FluidDuctBase implements ITo
 
     @Override
     protected BlockStateContainer createBlockState() {
-        return new ExtendedBlockState(this, new IProperty[0], new IUnlistedProperty[]{DISGUISED_STATE});
+        return new ExtendedBlockState(this, new IProperty[]{DEFUSED}, new IUnlistedProperty[]{DISGUISED_STATE});
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public StateMapperBase getStateMapper(ResourceLocation loc) {
+        return new StateMapperBase() {
+            @Override
+            protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
+                return new ModelResourceLocation(loc, "normal");
+            }
+        };
     }
 
     @Override
@@ -95,12 +113,12 @@ public class FluidDuctPaintableBlockExhaust extends FluidDuctBase implements ITo
 
     @Override
     public IBlockState getStateFromMeta(int meta) {
-        return this.getDefaultState();
+        return this.getDefaultState().withProperty(DEFUSED, meta != 0);
     }
 
     @Override
     public int getMetaFromState(IBlockState state) {
-        return 0;
+        return state.getValue(DEFUSED) ? 1 : 0;
     }
 
     @Override
@@ -141,6 +159,16 @@ public class FluidDuctPaintableBlockExhaust extends FluidDuctBase implements ITo
     }
 
     @Override
+    public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
+        return BlockFaceShape.SOLID;
+    }
+
+    @Override
+    public boolean isSideSolid(IBlockState base_state, IBlockAccess world, BlockPos pos, EnumFacing side) {
+        return true;
+    }
+
+    @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
         ItemStack stack = player.getHeldItem(hand);
 
@@ -175,21 +203,30 @@ public class FluidDuctPaintableBlockExhaust extends FluidDuctBase implements ITo
     @Override
     public boolean onScrew(World world, EntityPlayer player, int x, int y, int z, EnumFacing side, float fX, float fY, float fZ, EnumHand hand, ToolType tool) {
         BlockPos pos = new BlockPos(x, y, z);
-        if (tool != ToolType.SCREWDRIVER) {
+
+        if (tool == ToolType.SCREWDRIVER) {
+            TileEntity tile = world.getTileEntity(pos);
+            if (tile instanceof TileEntityPipeExhaustPaintable pipe && pipe.block != null) {
+                if (!world.isRemote) {
+                    pipe.block = null;
+                    pipe.meta = 0;
+                    pipe.markDirty();
+                    world.markChunkDirty(pos, pipe);
+                    world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
+                }
+                return true;
+            }
             return false;
         }
 
-        TileEntity tile = world.getTileEntity(pos);
-        if (tile instanceof TileEntityPipeExhaustPaintable pipe && pipe.block != null) {
+        if (tool == ToolType.DEFUSER) {
             if (!world.isRemote) {
-                pipe.block = null;
-                pipe.meta = 0;
-                pipe.markDirty();
-                world.markChunkDirty(pos, pipe);
-                world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
+                IBlockState state = world.getBlockState(pos);
+                world.setBlockState(pos, state.cycleProperty(DEFUSED), 3);
             }
             return true;
         }
+
         return false;
     }
 
@@ -241,6 +278,11 @@ public class FluidDuctPaintableBlockExhaust extends FluidDuctBase implements ITo
     public void registerModel() {
         ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0,
                 new ModelResourceLocation(Objects.requireNonNull(getRegistryName()), "inventory"));
+    }
+
+    @Override
+    public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+        this.addStandardInfo(tooltip);
     }
 
     @AutoRegister
@@ -363,6 +405,20 @@ public class FluidDuctPaintableBlockExhaust extends FluidDuctBase implements ITo
             BlockRenderLayer layer = MinecraftForgeClient.getRenderLayer();
             boolean renderPipe = layer == null || layer == BlockRenderLayer.CUTOUT_MIPPED;
 
+            if (state == null) {
+                if (renderPipe) {
+                    if (side == null) {
+                        quads.addAll(baseGeneral);
+                        quads.addAll(overlayGeneral);
+                    } else {
+                        quads.addAll(baseFaces.get(side));
+                        quads.addAll(overlayFaces.get(side));
+                    }
+                }
+                return quads;
+            }
+
+            boolean defused = state.getValue(DEFUSED);
             IBlockState disguiseState = null;
 
             if (state instanceof IExtendedBlockState) {
@@ -380,7 +436,7 @@ public class FluidDuctPaintableBlockExhaust extends FluidDuctBase implements ITo
                 }
             }
 
-            if (renderPipe) {
+            if (renderPipe && !defused) {
                 if (side == null) {
                     quads.addAll(overlayGeneral);
                 } else {

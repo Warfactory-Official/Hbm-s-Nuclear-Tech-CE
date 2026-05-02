@@ -1,10 +1,12 @@
 package com.hbm.entity.effect;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.bomb.BlockVolcano;
 import com.hbm.config.BombConfig;
 import com.hbm.config.CompatibilityConfig;
 import com.hbm.config.FalloutConfigJSON;
 import com.hbm.config.FalloutConfigJSON.FalloutEntry;
+import com.hbm.config.FalloutConfigJSON.LookupResult;
 import com.hbm.config.WorldConfig;
 import com.hbm.entity.logic.EntityExplosionChunkloading;
 import com.hbm.handler.threading.BombForkJoinPool;
@@ -18,12 +20,17 @@ import com.hbm.util.ChunkUtil;
 import com.hbm.world.WorldUtil;
 import com.hbm.world.biome.BiomeGenCraterBase;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityFallingBlock;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
@@ -36,17 +43,16 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.oredict.OreDictionary;
 import org.jctools.queues.MpscUnboundedXaddArrayQueue;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static com.hbm.config.BombConfig.safeCommit;
-import static com.hbm.lib.internal.UnsafeHolder.U;
-import static com.hbm.lib.internal.UnsafeHolder.fieldOffset;
+import static com.hbm.lib.internal.UnsafeHolder.*;
 
 @AutoRegister(name = "entity_fallout_rain", trackingRange = 1000)
 public class EntityFalloutRain extends EntityExplosionChunkloading implements BombForkJoinPool.IJobCancellable {
@@ -396,7 +402,7 @@ public class EntityFalloutRain extends EntityExplosionChunkloading implements Bo
                 Biome target = getBiomeChange(percent, scale, world.getBiome(TL_POS.get().setPos(x, 0, z)));
                 if (biomeChange && target != null) biomeChanges.put(ChunkPos.asLong(x, z), Biome.getIdForBiome(target));
 
-                stompColumnToUpdates(ebs, x, z, percent, updates, spawnFalling, rand);
+                stompColumnToUpdates(s, ebs, x, z, percent, updates, spawnFalling, rand);
             }
         }
 
@@ -668,10 +674,12 @@ public class EntityFalloutRain extends EntityExplosionChunkloading implements Bo
         setDead();
     }
 
-    void stompColumnToUpdates(ExtendedBlockStorage[] ebs, int x, int z, double distPercent, Long2ObjectOpenHashMap<IBlockState> updates,
-                                      Long2ObjectOpenHashMap<IBlockState> spawnFalling, ThreadLocalRandom rand) {
+    void stompColumnToUpdates(WorkerScratch scratch, ExtendedBlockStorage[] ebs, int x, int z, double distPercent,
+                              Long2ObjectOpenHashMap<IBlockState> updates, Long2ObjectOpenHashMap<IBlockState> spawnFalling,
+                              ThreadLocalRandom rand) {
 
         int solidDepth = 0;
+        boolean useOreDict = FalloutConfigJSON.hasOreDictMatchers();
         int lx = x & 15;
         int lz = z & 15;
         MutableBlockPos pos = TL_POS.get();
@@ -681,10 +689,15 @@ public class EntityFalloutRain extends EntityExplosionChunkloading implements Bo
             if (solidDepth >= MAX_SOLID_DEPTH) return;
 
             int subY = y >>> 4;
-            ExtendedBlockStorage s = ebs[subY];
-            IBlockState state = s == Chunk.NULL_BLOCK_STORAGE || s.isEmpty() ? Blocks.AIR.getDefaultState() : s.get(lx, y & 15, lz);
+            ExtendedBlockStorage storage = ebs[subY];
+            IBlockState state = storage == Chunk.NULL_BLOCK_STORAGE || storage.isEmpty() ? Blocks.AIR.getDefaultState() : storage.get(lx, y & 15, lz);
             Block block = state.getBlock();
             if (block.isAir(state, world, pos.setPos(x, y, z)) || block == ModBlocks.fallout) continue;
+
+            if (block == ModBlocks.volcano_core) {
+                updates.put(Library.blockPosToLong(x, y, z), ModBlocks.volcano_rad_core.getDefaultState().withProperty(BlockVolcano.META, state.getValue(BlockVolcano.META)));
+                continue;
+            }
 
             IBlockState stateUp = null;
             int upY = y + 1;
@@ -721,10 +734,12 @@ public class EntityFalloutRain extends EntityExplosionChunkloading implements Bo
 
             boolean transformed = false;
             List<FalloutEntry> entries = FalloutConfigJSON.entries;
+            LookupResult lookup = scratch.lookup(state);
             //noinspection ForLoopReplaceableByForEach
             for (int i = 0, entriesSize = entries.size(); i < entriesSize; i++) {
                 FalloutEntry entry = entries.get(i);
-                IBlockState result = entry.eval(y, state, distPercent, rand);
+                int[] oreIds = useOreDict && entry.usesOreDict() ? scratch.lookupOreIds(state, lookup) : null;
+                IBlockState result = entry.eval(y, state, lookup, oreIds, distPercent, rand);
                 if (result != null) {
                     updates.put(Library.blockPosToLong(x, y, z), result);
                     if (entry.isSolid()) solidDepth++;
@@ -771,6 +786,7 @@ public class EntityFalloutRain extends EntityExplosionChunkloading implements Bo
 
     @Override
     protected void readEntityFromNBT(NBTTagCompound tag) {
+        markChunkLoaderRestoredFromNBT();
         setScale(tag.getInteger("scale"));
 
         LongArrayList in = new LongArrayList();
@@ -898,8 +914,27 @@ public class EntityFalloutRain extends EntityExplosionChunkloading implements Bo
         final Long2ObjectOpenHashMap<IBlockState> updates = new Long2ObjectOpenHashMap<>(1024);
         final Long2IntOpenHashMap biomeChanges = new Long2IntOpenHashMap(256);
         final Long2ObjectOpenHashMap<IBlockState> spawnFalling = new Long2ObjectOpenHashMap<>(512);
+        final Reference2ObjectOpenHashMap<IBlockState, LookupResult> lookupByState = new Reference2ObjectOpenHashMap<>(512);
         @SuppressWarnings("unchecked")
         final Int2ObjectOpenHashMap<IBlockState>[] bucketBySub = new Int2ObjectOpenHashMap[16];
+
+        LookupResult lookup(IBlockState state) {
+            LookupResult lookup = lookupByState.get(state);
+            if (lookup != null) return lookup;
+
+            lookup = new LookupResult(state);
+            lookupByState.put(state, lookup);
+            return lookup;
+        }
+
+        int[] lookupOreIds(IBlockState state, LookupResult lookup) {
+            int[] oreIds = lookup.oreIds;
+            if (oreIds != null) return oreIds;
+
+            oreIds = SharedOreLookupHolder.INSTANCE.lookupOreIds(state);
+            lookup.oreIds = oreIds;
+            return oreIds;
+        }
 
         Int2ObjectOpenHashMap<IBlockState> bucketBySub(int subY) {
             Int2ObjectOpenHashMap<IBlockState> m = bucketBySub[subY];
@@ -915,6 +950,107 @@ public class EntityFalloutRain extends EntityExplosionChunkloading implements Bo
                 Int2ObjectOpenHashMap<IBlockState> b = bucketBySub[i];
                 if (b != null) b.clear();
             }
+        }
+    }
+
+    static final class SharedOreLookupHolder {
+        static final SharedOreLookup INSTANCE = new SharedOreLookup();
+    }
+
+    static final class SharedOreLookup {
+        // Only ore-dict results are shared across workers. Opacity, material, and raw state meta stay in the per-state L1 cache.
+        static final byte MODE_UNKNOWN = 0;
+        static final byte MODE_BLOCK_ONLY = 1;
+        static final byte MODE_BLOCK_AND_META = 2;
+
+        final byte[] modeByBlockId;
+        final Object[] oreIdsByBlockId;
+        final NonBlockingHashMapLong<int[]> oreIdsByBlockMeta = new NonBlockingHashMapLong<>();
+
+        SharedOreLookup() {
+            int maxBlockId = 0;
+            for (Block block : ForgeRegistries.BLOCKS.getValuesCollection()) {
+                maxBlockId = Math.max(maxBlockId, Block.getIdFromBlock(block));
+            }
+            this.modeByBlockId = new byte[maxBlockId + 1];
+            this.oreIdsByBlockId = new Object[maxBlockId + 1];
+        }
+
+        int[] lookupOreIds(IBlockState state) {
+            Block block = state.getBlock();
+            int blockId = Block.getIdFromBlock(block);
+            if (blockId <= 0) return LookupResult.NO_ORE_IDS;
+
+            byte mode = ensureMode(block, blockId);
+            if (mode == MODE_BLOCK_AND_META) {
+                return lookupMetaSensitive(block, blockId, state);
+            }
+            return lookupBlockStable(block, blockId, state);
+        }
+
+        private byte ensureMode(Block block, int blockId) {
+            long modeOffset = offByte(blockId);
+            byte mode = U.getByteAcquire(modeByBlockId, modeOffset);
+            if (mode != MODE_UNKNOWN) return mode;
+
+            byte computed = classifyMode(block);
+            U.putByteRelease(modeByBlockId, modeOffset, computed);
+            return computed;
+        }
+
+        private int[] lookupBlockStable(Block block, int blockId, IBlockState state) {
+            long offset = offReference(blockId);
+            int[] cached = (int[]) U.getReferenceAcquire(oreIdsByBlockId, offset);
+            if (cached != null) return cached;
+
+            int[] computed = computeOreIds(block, state);
+            if (U.compareAndSetReference(oreIdsByBlockId, offset, null, computed)) return computed;
+
+            int[] published = (int[]) U.getReferenceAcquire(oreIdsByBlockId, offset);
+            return published == null ? computed : published;
+        }
+
+        private int[] lookupMetaSensitive(Block block, int blockId, IBlockState state) {
+            int dropMeta = block.damageDropped(state);
+            long key = (((long) blockId) << 32) | (dropMeta & 0xFFFFFFFFL);
+            int[] cached = oreIdsByBlockMeta.get(key);
+            if (cached != null) return cached;
+
+            int[] computed = computeOreIds(block, state);
+            int[] previous = oreIdsByBlockMeta.putIfAbsent(key, computed);
+            return previous == null ? computed : previous;
+        }
+
+        private byte classifyMode(Block block) {
+            Item item = Item.getItemFromBlock(block);
+            if (item == Items.AIR) return MODE_BLOCK_ONLY;
+
+            Collection<IBlockState> validStates = block.getBlockState().getValidStates();
+            int[] baseline = null;
+            IntOpenHashSet seenMetas = new IntOpenHashSet();
+            for (IBlockState validState : validStates) {
+                int dropMeta = block.damageDropped(validState);
+                if (!seenMetas.add(dropMeta)) continue;
+
+                int[] oreIds = computeOreIds(item, dropMeta);
+                if (baseline == null) {
+                    baseline = oreIds;
+                    continue;
+                }
+                if (!Arrays.equals(baseline, oreIds)) return MODE_BLOCK_AND_META;
+            }
+            return MODE_BLOCK_ONLY;
+        }
+
+        private static int[] computeOreIds(Block block, IBlockState state) {
+            return computeOreIds(Item.getItemFromBlock(block), block.damageDropped(state));
+        }
+
+        private static int[] computeOreIds(Item item, int meta) {
+            if (item == Items.AIR) return LookupResult.NO_ORE_IDS;
+            ItemStack stack = new ItemStack(item, 1, meta);
+            int[] oreIds = OreDictionary.getOreIDs(stack);
+            return oreIds.length == 0 ? LookupResult.NO_ORE_IDS : oreIds;
         }
     }
 

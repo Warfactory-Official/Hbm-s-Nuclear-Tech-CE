@@ -18,9 +18,11 @@ import com.hbm.inventory.gui.GUITurretFritz;
 import com.hbm.items.ModItems;
 import com.hbm.items.weapon.sedna.factory.GunFactory;
 import com.hbm.items.weapon.sedna.factory.XFactoryFlamer;
+import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.util.Vec3NT;
@@ -46,7 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @AutoRegister
-public class TileEntityTurretFritz extends TileEntityTurretBaseNT implements IFluidStandardReceiver, IFluidCopiable, IFFtoNTMF, IGUIProvider {
+public class TileEntityTurretFritz extends TileEntityTurretBaseNT implements IFluidStandardReceiver, IFluidCopiable, IFFtoNTMF, IGUIProvider, IConnectionAnchors {
 
     public static int drain = 2;
     private static boolean converted = false;
@@ -54,7 +56,7 @@ public class TileEntityTurretFritz extends TileEntityTurretBaseNT implements IFl
 
     public TileEntityTurretFritz() {
         super();
-        this.tank = new FluidTankNTM(Fluids.DIESEL, 16000);
+        this.tank = new FluidTankNTM(Fluids.DIESEL, 16000).withOwner(this);
     }
 
     @Override
@@ -201,28 +203,28 @@ public class TileEntityTurretFritz extends TileEntityTurretBaseNT implements IFl
         tank.deserialize(buf);
     }
 
-    @Override //TODO: clean this shit up
-    protected void updateConnections() {
+    @Override
+    public DirPos[] getConPos() {
         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset).getOpposite();
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+        return new DirPos[] {
+                new DirPos(pos.getX() + dir.offsetX * -1,                    pos.getY(), pos.getZ() + dir.offsetZ * -1,                    dir.getOpposite()),
+                new DirPos(pos.getX() + dir.offsetX * -1 + rot.offsetX * -1, pos.getY(), pos.getZ() + dir.offsetZ * -1 + rot.offsetZ * -1, dir.getOpposite()),
+                new DirPos(pos.getX() + rot.offsetX * -2,                    pos.getY(), pos.getZ() + rot.offsetZ * -2,                    rot.getOpposite()),
+                new DirPos(pos.getX() + dir.offsetX * 1 + rot.offsetX * -2,  pos.getY(), pos.getZ() + dir.offsetZ * 1 + rot.offsetZ * -2,  rot.getOpposite()),
+                new DirPos(pos.getX() + rot.offsetX,                         pos.getY(), pos.getZ() + rot.offsetZ,                         rot),
+                new DirPos(pos.getX() + dir.offsetX + rot.offsetX,           pos.getY(), pos.getZ() + dir.offsetZ + rot.offsetZ,           rot),
+                new DirPos(pos.getX() + dir.offsetX * 2,                     pos.getY(), pos.getZ() + dir.offsetZ * 2,                     dir),
+                new DirPos(pos.getX() + dir.offsetX * 2 + rot.offsetX * -1,  pos.getY(), pos.getZ() + dir.offsetZ * 2 + rot.offsetZ * -1,  dir)
+        };
+    }
 
-        this.trySubscribe(world, pos.getX() + dir.offsetX * -1 + rot.offsetX * 0, pos.getY(), pos.getZ() + dir.offsetZ * -1 + rot.offsetZ * 0, dir.getOpposite());
-        this.trySubscribe(world, pos.getX() + dir.offsetX * -1 + rot.offsetX * -1, pos.getY(), pos.getZ() + dir.offsetZ * -1 + rot.offsetZ * -1, dir.getOpposite());
-        this.trySubscribe(world, pos.getX() + dir.offsetX * 0 + rot.offsetX * -2, pos.getY(), pos.getZ() + dir.offsetZ * 0 + rot.offsetZ * -2, rot.getOpposite());
-        this.trySubscribe(world, pos.getX() + dir.offsetX * 1 + rot.offsetX * -2, pos.getY(), pos.getZ() + dir.offsetZ * 1 + rot.offsetZ * -2, rot.getOpposite());
-        this.trySubscribe(world, pos.getX() + dir.offsetX * 0 + rot.offsetX * 1, pos.getY(), pos.getZ() + dir.offsetZ * 0 + rot.offsetZ * 1, rot);
-        this.trySubscribe(world, pos.getX() + dir.offsetX * 1 + rot.offsetX * 1, pos.getY(), pos.getZ() + dir.offsetZ * 1 + rot.offsetZ * 1, rot);
-        this.trySubscribe(world, pos.getX() + dir.offsetX * 2 + rot.offsetX * 0, pos.getY(), pos.getZ() + dir.offsetZ * 2 + rot.offsetZ * 0, dir);
-        this.trySubscribe(world, pos.getX() + dir.offsetX * 2 + rot.offsetX * -1, pos.getY(), pos.getZ() + dir.offsetZ * 2 + rot.offsetZ * -1, dir);
-
-        this.trySubscribe(tank.getTankType(), world, pos.getX() + dir.offsetX * -1 + rot.offsetX * 0, pos.getY(), pos.getZ() + dir.offsetZ * -1 + rot.offsetZ * 0, dir.getOpposite());
-        this.trySubscribe(tank.getTankType(), world, pos.getX() + dir.offsetX * -1 + rot.offsetX * -1, pos.getY(), pos.getZ() + dir.offsetZ * -1 + rot.offsetZ * -1, dir.getOpposite());
-        this.trySubscribe(tank.getTankType(), world, pos.getX() + dir.offsetX * 0 + rot.offsetX * -2, pos.getY(), pos.getZ() + dir.offsetZ * 0 + rot.offsetZ * -2, rot.getOpposite());
-        this.trySubscribe(tank.getTankType(), world, pos.getX() + dir.offsetX * 1 + rot.offsetX * -2, pos.getY(), pos.getZ() + dir.offsetZ * 1 + rot.offsetZ * -2, rot.getOpposite());
-        this.trySubscribe(tank.getTankType(), world, pos.getX() + dir.offsetX * 0 + rot.offsetX * 1, pos.getY(), pos.getZ() + dir.offsetZ * 0 + rot.offsetZ * 1, rot);
-        this.trySubscribe(tank.getTankType(), world, pos.getX() + dir.offsetX * 1 + rot.offsetX * 1, pos.getY(), pos.getZ() + dir.offsetZ * 1 + rot.offsetZ * 1, rot);
-        this.trySubscribe(tank.getTankType(), world, pos.getX() + dir.offsetX * 2 + rot.offsetX * 0, pos.getY(), pos.getZ() + dir.offsetZ * 2 + rot.offsetZ * 0, dir);
-        this.trySubscribe(tank.getTankType(), world, pos.getX() + dir.offsetX * 2 + rot.offsetX * -1, pos.getY(), pos.getZ() + dir.offsetZ * 2 + rot.offsetZ * -1, dir);
+    @Override
+    protected void updateConnections() {
+        for (DirPos p : getConPos()) {
+            this.trySubscribe(world, p.getPos().getX(), p.getPos().getY(), p.getPos().getZ(), p.getDir());
+            this.trySubscribe(tank.getTankType(), world, p.getPos().getX(), p.getPos().getY(), p.getPos().getZ(), p.getDir());
+        }
     }
 
     @Override

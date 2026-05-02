@@ -1,5 +1,7 @@
 package com.hbm.interfaces;
 
+/**
+ * Marker for entities that need a fallback world-entity sweep when the normal visible-chunk walk skips them.
+ */
 public interface IConstantRenderer {
-	//Dummy interface to tell the client event handler to handle rendering rather than minecraft
 }

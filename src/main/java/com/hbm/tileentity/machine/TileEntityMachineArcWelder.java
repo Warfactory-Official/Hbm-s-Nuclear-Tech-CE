@@ -20,6 +20,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
@@ -57,7 +58,7 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase
         IGUIProvider,
         IUpgradeInfoProvider,
         IFluidCopiable,
-        ITickable {
+        ITickable, IConnectionAnchors {
     private static final int invSize = 8;
     private final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
     public long power;
@@ -72,7 +73,7 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase
     public TileEntityMachineArcWelder() {
         super(invSize, true, true);
 
-        this.tank = new FluidTankNTM(Fluids.NONE, 24_000);
+        this.tank = new FluidTankNTM(Fluids.NONE, 24_000).withOwner(this);
 
         inventory =
                 new ItemStackHandler(invSize) {
@@ -283,7 +284,7 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase
         }
     }
 
-    protected DirPos[] getConPos() {
+    public DirPos[] getConPos() {
 
         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);

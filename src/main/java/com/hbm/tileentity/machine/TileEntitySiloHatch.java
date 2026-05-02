@@ -59,11 +59,6 @@ public class TileEntitySiloHatch extends TileEntityLockableBase implements ITick
                     facing = world.getBlockState(pos).getValue(BlockSiloHatch.FACING).getOpposite();
                 timer++;
                 if (state == DoorState.CLOSING) {
-                    if (timer == 1) {
-                        BlockPos hydrolics = pos.offset(facing, 5);
-                        this.world.playSound(null, hydrolics.getX(), hydrolics.getY(), hydrolics.getZ(), HBMSoundHandler.siloclose,
-								SoundCategory.BLOCKS, 3F, 1F);
-                    }
                     if (timer == 50) {
                         BlockPos mid = pos.offset(facing, 3);
                         for (int i = -1; i <= 1; i++) {
@@ -82,11 +77,6 @@ public class TileEntitySiloHatch extends TileEntityLockableBase implements ITick
                         }
                     }
                 } else if (state == DoorState.OPENING) {
-                    if (timer == 1) {
-                        BlockPos hydrolics = pos.offset(facing, 5);
-                        this.world.playSound(null, hydrolics.getX(), hydrolics.getY(), hydrolics.getZ(), HBMSoundHandler.siloopen,
-								SoundCategory.BLOCKS, 4F, 1F);
-                    }
                     if (timer == 70) {
                         BlockPos mid = pos.offset(facing, 3);
                         for (int i = -1; i <= 1; i++) {
@@ -158,7 +148,7 @@ public class TileEntitySiloHatch extends TileEntityLockableBase implements ITick
 
     @Override
     public void readFromNBT(NBTTagCompound compound) {
-        state = DoorState.values()[compound.getByte("state")];
+        state = DoorState.VALUES[compound.getByte("state")];
         wasPowered = compound.getBoolean("wasPowered");
         redstoneOnly = compound.getBoolean("redstoneOnly");
         super.readFromNBT(compound);
@@ -218,12 +208,19 @@ public class TileEntitySiloHatch extends TileEntityLockableBase implements ITick
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public void handleNewState(DoorState newState) {
-        if (this.state != newState) {
-            if (this.state.isStationaryState() && newState.isMovingState()) {
-                sysTime = System.currentTimeMillis();
+        if (state != newState) {
+            if (state.isStationaryState() && newState.isMovingState()) {
+                EnumFacing face = world.getBlockState(pos).getValue(BlockSiloHatch.FACING).getOpposite();
+                BlockPos hydraulics = pos.offset(face, 5);
+                boolean opening = newState == DoorState.OPENING;
+                world.playSound(hydraulics.getX() + 0.5, hydraulics.getY() + 0.5, hydraulics.getZ() + 0.5,
+                        opening ? HBMSoundHandler.siloopen : HBMSoundHandler.siloclose,
+                        SoundCategory.BLOCKS, opening ? 4F : 3F, 1F, false);
             }
-            this.state = newState;
+            sysTime = IAnimatedDoor.clientAnimStart(state, newState, sysTime);
+            state = newState;
         }
     }
 

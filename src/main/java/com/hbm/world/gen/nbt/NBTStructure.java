@@ -1,5 +1,6 @@
 package com.hbm.world.gen.nbt;
 
+import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.BlockWand;
 import com.hbm.blocks.generic.BlockWandTandem.TileEntityWandTandem;
@@ -11,11 +12,13 @@ import com.hbm.tileentity.TileMappings;
 import com.hbm.util.Tuple.Pair;
 import com.hbm.util.Tuple.Quartet;
 import com.hbm.world.gen.nbt.SpawnCondition.WorldCoordinate;
+import com.hbm.world.gen.nbt.selector.BiomeBlockSelector;
 import net.minecraft.block.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagInt;
@@ -56,6 +59,7 @@ public class NBTStructure {
 
 	protected static Map<Integer, List<SpawnCondition>> weightedMap = new HashMap<>();
 	protected static Map<Integer, List<SpawnCondition>> customSpawnMap = new HashMap<>();
+    private static Map<Integer, Map<Integer, WeightedSpawnList>> validBiomeCache = new HashMap<>();
 
 	private String name;
     private ResourceLocation resource;
@@ -68,16 +72,54 @@ public class NBTStructure {
 
 	private List<List<JigsawConnection>> fromConnections;
 	private Map<String, List<JigsawConnection>> toTopConnections;
-	private Map<String, List<JigsawConnection>> toBottomConnections;
-	private Map<String, List<JigsawConnection>> toHorizontalConnections;
+    private Map<String, List<JigsawConnection>> toBottomConnections;
+    private Map<String, List<JigsawConnection>> toHorizontalConnections;
     private Map<Short, String> legacyItemIdToName;
+    private static final Map<String, String> substitutions = new HashMap<String, String>() {{
+        put(Tags.MODID + ":tile.ore_coal_oil", "minecraft:coal_ore");
+        put(Tags.MODID + ":ore_coal_oil", "minecraft:coal_ore");
+        put(Tags.MODID + ":fluid_duct_neo", Tags.MODID + ":fluid_duct_mk2");
+        put(Tags.MODID + ":rail_narrow", "minecraft:rail");
+    }};
+    private static final String[] LEGACY_BRICK_SLABS = {
+            Tags.MODID + ":reinforced_stone_slab",
+            Tags.MODID + ":reinforced_brick_slab",
+            Tags.MODID + ":brick_obsidian_slab",
+            Tags.MODID + ":brick_light_slab",
+            Tags.MODID + ":brick_compound_slab",
+            Tags.MODID + ":brick_asbestos_slab",
+            Tags.MODID + ":brick_fire_slab"
+    };
+    private static final String[] LEGACY_BRICK_DOUBLE_SLABS = {
+            Tags.MODID + ":reinforced_stone_double_slab",
+            Tags.MODID + ":reinforced_brick_double_slab",
+            Tags.MODID + ":brick_obsidian_double_slab",
+            Tags.MODID + ":brick_light_double_slab",
+            Tags.MODID + ":brick_compound_double_slab",
+            Tags.MODID + ":brick_asbestos_double_slab",
+            Tags.MODID + ":brick_fire_double_slab"
+    };
+    private static final String[] LEGACY_CONCRETE_BRICK_SLABS = {
+            Tags.MODID + ":brick_concrete_slab",
+            Tags.MODID + ":brick_concrete_mossy_slab",
+            Tags.MODID + ":brick_concrete_cracked_slab",
+            Tags.MODID + ":brick_concrete_broken_slab",
+            Tags.MODID + ":ducrete_brick_slab"
+    };
+    private static final String[] LEGACY_CONCRETE_BRICK_DOUBLE_SLABS = {
+            Tags.MODID + ":brick_concrete_double_slab",
+            Tags.MODID + ":brick_concrete_mossy_double_slab",
+            Tags.MODID + ":brick_concrete_cracked_double_slab",
+            Tags.MODID + ":brick_concrete_broken_double_slab",
+            Tags.MODID + ":ducrete_brick_double_slab"
+    };
 
 	public NBTStructure(ResourceLocation resource) {
         this.resource = resource;
 		// Can't use regular resource loading, servers don't know how!
 		InputStream stream = NBTStructure.class.getResourceAsStream("/assets/" + resource.getNamespace() + "/" + resource.getPath());
 		if (stream != null) {
-			name = resource.getNamespace();
+			name = resource.getPath();
 			loadStructure(stream);
 		} else {
 			MainRegistry.logger.error("NBT Structure not found: " + resource.getPath());
@@ -103,9 +145,7 @@ public class NBTStructure {
 		}
 
 		List<SpawnCondition> weightedList = weightedMap.computeIfAbsent(dimensionId, integer -> new ArrayList<>());
-		for(int i = 0; i < spawn.spawnWeight; i++) {
-			weightedList.add(spawn);
-		}
+		weightedList.add(spawn);
 	}
 
 	public static void registerStructure(SpawnCondition spawn, int[] dimensionIds) {
@@ -123,9 +163,7 @@ public class NBTStructure {
 		SpawnCondition spawn = new SpawnCondition(weight, predicate);
 
 		List<SpawnCondition> weightedList = weightedMap.computeIfAbsent(dimensionId, k -> new ArrayList<>());
-		for (int i = 0; i < spawn.spawnWeight; i++) {
-			weightedList.add(spawn);
-		}
+		weightedList.add(spawn);
 	}
 
 	// Presents a list of all structures registered (so far)
@@ -330,6 +368,8 @@ public class NBTStructure {
 				itemPalette = null;
 			}
 
+            Map<Short, String> legacyItemIdMap = getLegacyItemIdToNameMap();
+
 			// LOAD IN BLOCKS
 			NBTTagList blockData = data.getTagList("blocks", NBT.TAG_COMPOUND);
 			blockArray = new BlockState[size.x][size.y][size.z];
@@ -344,7 +384,8 @@ public class NBTStructure {
 				BlockState blockState = new BlockState(palette[state]);
 
 				if (block.hasKey("nbt")) {
-					NBTTagCompound nbt = block.getCompoundTag("nbt");
+					NBTTagCompound nbt = block.getCompoundTag("nbt").copy();
+                    nbtFixerUpper(nbt, legacyItemIdMap);
 					blockState.nbt = nbt;
 
 					// Load in connection points for jigsaws
@@ -416,27 +457,8 @@ public class NBTStructure {
 		// hush
 	}
 
-	private HashMap<Short, Short> getWorldItemPalette() {
-		if(itemPalette == null) return null;
-
-		HashMap<Short, Short> worldItemPalette = new HashMap<>();
-
-		for(Pair<Short, String> entry : itemPalette) {
-			Item item = Item.getByNameOrId(entry.getValue());
-
-			worldItemPalette.put(entry.getKey(), (short) Item.getIdFromItem(item));
-		}
-
-		return worldItemPalette;
-	}
-
-    private TileEntity buildTileEntity(World world, Block block, HashMap<Short, Short> worldItemPalette, NBTTagCompound nbt, int coordBaseMode, String structureName) {
+	private TileEntity buildTileEntity(World world, NBTTagCompound nbt, int coordBaseMode, String structureName) {
         nbt = nbt.copy(); // wtf Bob?..
-
-//        if(worldItemPalette != null) relinkItems(worldItemPalette, nbt);
-
-        Map<Short, String> idNameMap = getLegacyItemIdToNameMap();
-        if (idNameMap != null) nbtFixerUpper(nbt, idNameMap);
 
         TileEntity te = TileMappings.create(world, nbt);
         if (te instanceof INBTTileEntityTransformable transformable) {
@@ -457,8 +479,6 @@ public class NBTStructure {
 			MainRegistry.logger.info("NBTStructure is invalid");
 			return;
 		}
-
-		HashMap<Short, Short> worldItemPalette = getWorldItemPalette();
 
 		boolean swizzle = coordBaseMode == 1 || coordBaseMode == 3;
 		x -= (swizzle ? size.z : size.x) / 2;
@@ -486,7 +506,7 @@ public class NBTStructure {
 					world.setBlockState(pos, place, 2);
 
 					if(state.nbt != null) {
-						TileEntity te = buildTileEntity(world, block, worldItemPalette, state.nbt, coordBaseMode, null);
+						TileEntity te = buildTileEntity(world, state.nbt, coordBaseMode, null);
 						world.setTileEntity(pos, te);
 					}
 				}
@@ -511,8 +531,6 @@ public class NBTStructure {
 			MainRegistry.logger.info("NBTStructure is invalid");
 			return false;
 		}
-
-		HashMap<Short, Short> worldItemPalette = getWorldItemPalette();
 
 		final int sx = blockArray.length;
 		final int sy = blockArray[0].length;
@@ -543,6 +561,24 @@ public class NBTStructure {
 		int minZ = Math.max(0, Math.min(Math.min(uz1, uz2), Math.min(uz3, uz4)));
 		int maxZ = Math.min(maxIdxZ, Math.max(Math.max(uz1, uz2), Math.max(uz3, uz4)));
 
+        if (piece.blockTable != null || piece.platform != null) {
+            int biomeX = generatingBounds.minX + (generatingBounds.maxX - generatingBounds.minX + 1) / 2;
+            int biomeZ = generatingBounds.minZ + (generatingBounds.maxZ - generatingBounds.minZ + 1) / 2;
+            Biome biome = world.getBiome(new BlockPos(biomeX, 0, biomeZ));
+
+            if (piece.blockTable != null) {
+                for (StructureComponent.BlockSelector selector : piece.blockTable.values()) {
+                    if (selector instanceof BiomeBlockSelector biomeSelector) {
+                        biomeSelector.nextBiome = biome;
+                    }
+                }
+            }
+
+            if (piece.platform instanceof BiomeBlockSelector biomeSelector) {
+                biomeSelector.nextBiome = biome;
+            }
+        }
+
 		for(int bx = minX; bx <= maxX; bx++) {
 			for(int bz = minZ; bz <= maxZ; bz++) {
 
@@ -551,6 +587,7 @@ public class NBTStructure {
 				int rx = rotateX(bx, bz, coordBaseMode) + totalBounds.minX;
 				int rz = rotateZ(bx, bz, coordBaseMode) + totalBounds.minZ;
 				int oy = piece.conformToTerrain ? world.getTopSolidOrLiquidBlock(new BlockPos(rx, 0, rz)).getY() + piece.heightOffset : totalBounds.minY;
+                boolean hasBase = false;
 
 				for(int by = 0; by < sy; by++) {
 					BlockState state = blockArray[bx][by][bz];
@@ -560,15 +597,29 @@ public class NBTStructure {
 
 					Block block = transformBlock(state.definition, piece.blockTable, world.rand);
 					int meta = transformMeta(state.definition, piece.blockTable, coordBaseMode);
+                    if (ry < 1) continue;
 
 					BlockPos pos = new BlockPos(rx, ry, rz);
 					IBlockState place = block.getStateFromMeta(meta);
 					world.setBlockState(pos, place, 2);
 
 					if(state.nbt != null) {
-						TileEntity te = buildTileEntity(world, block, worldItemPalette, state.nbt, coordBaseMode, structureName);
+						TileEntity te = buildTileEntity(world, state.nbt, coordBaseMode, structureName);
 						world.setTileEntity(pos, te);
 					}
+
+                    if (by == 0 && piece.platform != null && !place.getMaterial().isReplaceable()) {
+                        hasBase = true;
+                    }
+				}
+
+                if (hasBase && piece.platform != null && !piece.conformToTerrain) {
+                    for (int y = oy - 1; y > 0; y--) {
+                        BlockPos fillPos = new BlockPos(rx, y, rz);
+                        if (!world.getBlockState(fillPos).getMaterial().isReplaceable()) break;
+                        piece.platform.selectBlocks(world.rand, 0, 0, 0, false);
+                        world.setBlockState(fillPos, piece.platform.getBlockState(), 2);
+                    }
 				}
 			}
 		}
@@ -629,6 +680,12 @@ public class NBTStructure {
 
     private void nbtFixerUpper(NBTTagCompound teNbt, Map<Short, String> idPalette) {
         if (teNbt == null) return;
+
+        fixLegacyBlockNames(teNbt);
+        fixLegacyItemStackIds(teNbt, idPalette);
+
+        // Keep legacy lists intact: structure parity depends on many TEs still deserializing "items" or
+        // "Items" directly. If a modern inventory wrapper is absent, synthesize it additively instead.
         if (teNbt.hasKey("inventory", Constants.NBT.TAG_COMPOUND)) return;
         String listKey = null;
         if (teNbt.hasKey("items", Constants.NBT.TAG_LIST)) listKey = "items";
@@ -694,10 +751,99 @@ public class NBTStructure {
         if (newItems.tagCount() == 0) return;
         NBTTagCompound invTag = new NBTTagCompound();
         invTag.setTag("Items", newItems);
-        invTag.setInteger("Size", maxSlot + 1);
+        //invTag.setInteger("Size", maxSlot + 1);
+        // Th3_Sl1ze: problem is, if any ticking update tries to access greater slot than maxSlot + 1 (e.g. fluid tank trying to empty a fluid container),
+        // you'll get into a fucking miracle of corrupted saves
         teNbt.setTag("inventory", invTag);
-        teNbt.removeTag(listKey);
-        MainRegistry.logger.debug("[NBTStructure] Fixed NBT for TE with {} items in structure {}", newItems.tagCount(), resource);
+        MainRegistry.logger.debug("[NBTStructure] Added inventory wrapper for TE with {} items in structure {}", newItems.tagCount(), resource);
+    }
+
+    private void fixLegacyBlockNames(NBTBase tag) {
+        if (tag instanceof NBTTagCompound compound) {
+            if (compound.hasKey("block", Constants.NBT.TAG_STRING)) {
+                int meta = compound.hasKey("meta", Constants.NBT.TAG_ANY_NUMERIC) ? compound.getInteger("meta") : 0;
+                LegacyBlockDefinition remappedDefinition = remapLegacyBlockDefinition(compound.getString("block"), meta);
+                if (remappedDefinition != null) {
+                    compound.setString("block", remappedDefinition.name);
+                    compound.setInteger("meta", remappedDefinition.meta);
+                } else {
+                    String remapped = remapLegacyBlockName(compound.getString("block"));
+                    if (remapped != null) {
+                        compound.setString("block", remapped);
+                    }
+                }
+            }
+
+            for (String key : compound.getKeySet()) {
+                fixLegacyBlockNames(compound.getTag(key));
+            }
+            return;
+        }
+
+        if (tag instanceof NBTTagList list) {
+            for (int i = 0; i < list.tagCount(); i++) {
+                fixLegacyBlockNames(list.get(i));
+            }
+        }
+    }
+
+    private void fixLegacyItemStackIds(NBTBase tag, Map<Short, String> idPalette) {
+        if (tag instanceof NBTTagCompound compound) {
+            if (looksLikeLegacyItemStack(compound)) {
+                String remapped = remapLegacyItemId(compound, idPalette);
+                if (remapped != null && !remapped.isEmpty()) {
+                    compound.setString("id", remapped);
+                }
+            }
+
+            for (String key : compound.getKeySet()) {
+                fixLegacyItemStackIds(compound.getTag(key), idPalette);
+            }
+            return;
+        }
+
+        if (tag instanceof NBTTagList list) {
+            for (int i = 0; i < list.tagCount(); i++) {
+                fixLegacyItemStackIds(list.get(i), idPalette);
+            }
+        }
+    }
+
+    private boolean looksLikeLegacyItemStack(NBTTagCompound tag) {
+        if (!tag.hasKey("id")) return false;
+
+        return tag.hasKey("Count", Constants.NBT.TAG_BYTE)
+                || tag.hasKey("Damage", Constants.NBT.TAG_SHORT)
+                || tag.hasKey("tag", Constants.NBT.TAG_COMPOUND)
+                || tag.hasKey("ForgeCaps", Constants.NBT.TAG_COMPOUND)
+                || tag.hasKey("Slot", Constants.NBT.TAG_BYTE)
+                || tag.hasKey("Slot", Constants.NBT.TAG_INT)
+                || tag.hasKey("slot", Constants.NBT.TAG_BYTE)
+                || tag.hasKey("slot", Constants.NBT.TAG_INT);
+    }
+
+    private @Nullable String remapLegacyItemId(NBTTagCompound itemTag, Map<Short, String> idPalette) {
+        if (itemTag.hasKey("id", Constants.NBT.TAG_STRING)) {
+            String idString = itemTag.getString("id");
+            if (idString.isEmpty()) return null;
+
+            Item item = Item.getByNameOrId(idString);
+            if (item != null && item.getRegistryName() != null) {
+                return item.getRegistryName().toString();
+            }
+
+            return idString.contains(":") ? idString : null;
+        }
+
+        if (itemTag.hasKey("id", Constants.NBT.TAG_SHORT)) {
+            return mapId(itemTag.getShort("id"), idPalette);
+        }
+
+        if (itemTag.hasKey("id", Constants.NBT.TAG_INT)) {
+            return mapId(itemTag.getInteger("id"), idPalette);
+        }
+
+        return null;
     }
 
     private static int getSlot(NBTTagCompound tag) {
@@ -721,15 +867,90 @@ public class NBTStructure {
         return -1;
     }
 
-    private String mapId(short legacyId, Map<Short, String> idPalette) {
-        if (idPalette != null) {
-            String name = idPalette.get(legacyId);
+    private @Nullable String mapId(int legacyId, Map<Short, String> idPalette) {
+        if (legacyId >= Short.MIN_VALUE && legacyId <= Short.MAX_VALUE && idPalette != null) {
+            String name = idPalette.get((short) legacyId);
             if (name != null && !name.isEmpty()) {
                 return name;
             }
         }
+
+        Item item = Item.getItemById(legacyId);
+        //noinspection ConstantValue
+        if (item != null && item.getRegistryName() != null) {
+            return item.getRegistryName().toString();
+        }
+
         MainRegistry.logger.debug("[NBTStructure] Could not find id {} in structure {}'s item palette", legacyId, resource);
         return null;
+    }
+
+    private static Block resolveBlockName(String name) {
+        Block block = Block.getBlockFromName(name);
+        if (block != null) {
+            return block;
+        }
+
+        String remapped = remapLegacyBlockName(name);
+        if (remapped != null) {
+            block = Block.getBlockFromName(remapped);
+            if (block != null) {
+                return block;
+            }
+        }
+
+        return Blocks.AIR;
+    }
+
+    private static @Nullable LegacyBlockDefinition remapLegacyBlockDefinition(String name, int meta) {
+        String normalized = remapLegacyBlockName(name);
+        if (normalized == null) {
+            normalized = name;
+        }
+
+        return switch (normalized) {
+            case Tags.MODID + ":brick_slab" -> remapLegacySlab(meta, LEGACY_BRICK_SLABS, true);
+            case Tags.MODID + ":brick_double_slab" -> remapLegacySlab(meta, LEGACY_BRICK_DOUBLE_SLABS, false);
+            case Tags.MODID + ":concrete_brick_slab" -> remapLegacySlab(meta, LEGACY_CONCRETE_BRICK_SLABS, true);
+            case Tags.MODID + ":concrete_brick_double_slab" -> remapLegacySlab(meta, LEGACY_CONCRETE_BRICK_DOUBLE_SLABS, false);
+            default -> null;
+        };
+    }
+
+    private static @Nullable LegacyBlockDefinition remapLegacySlab(int meta, String[] variants, boolean preserveHalf) {
+        int variant = meta & 7;
+        if (variant < 0 || variant >= variants.length) {
+            return null;
+        }
+
+        return new LegacyBlockDefinition(variants[variant], preserveHalf ? meta & 8 : 0);
+    }
+
+    private static @Nullable String remapLegacyBlockName(String name) {
+        String substituted = substitutions.get(name);
+        if (substituted != null) {
+            return substituted;
+        }
+
+        String prefix = Tags.MODID + ":tile.";
+        if (name.startsWith(prefix)) {
+            String stripped = Tags.MODID + ":" + name.substring(prefix.length());
+            return substitutions.getOrDefault(stripped, stripped);
+        }
+
+        return null;
+    }
+
+    private static class LegacyBlockDefinition {
+
+        final String name;
+        final int meta;
+
+        private LegacyBlockDefinition(String name, int meta) {
+            this.name = name;
+            this.meta = meta;
+        }
+
     }
 
 	private Block transformBlock(BlockDefinition definition, Map<Block, StructureComponent.BlockSelector> blockTable, Random rand) {
@@ -760,6 +981,7 @@ public class NBTStructure {
 		if(definition.block instanceof BlockRotatedPillar) return INBTBlockTransformable.transformMetaPillar(definition.meta, coordBaseMode);
 		if(definition.block instanceof BlockDirectional) return INBTBlockTransformable.transformMetaDirectional(definition.meta, coordBaseMode);
 		if(definition.block instanceof BlockTorch) return INBTBlockTransformable.transformMetaTorch(definition.meta, coordBaseMode);
+        if(definition.block instanceof BlockButton) return INBTBlockTransformable.transformMetaTorch(definition.meta, coordBaseMode);
 		if(definition.block instanceof BlockDoor) return INBTBlockTransformable.transformMetaDoor(definition.meta, coordBaseMode);
 		if(definition.block instanceof BlockLever) return INBTBlockTransformable.transformMetaLever(definition.meta, coordBaseMode);
 		if(definition.block instanceof BlockSign) return INBTBlockTransformable.transformMetaDeco(definition.meta, coordBaseMode);
@@ -823,10 +1045,14 @@ public class NBTStructure {
 		final int meta;
 
 		BlockDefinition(String name, int meta) {
-			Block block = Block.getBlockFromName(name);
-			if(block == null) block = Blocks.AIR;
+            LegacyBlockDefinition remapped = remapLegacyBlockDefinition(name, meta);
+            if (remapped != null) {
+                this.block = resolveBlockName(remapped.name);
+                this.meta = remapped.meta;
+                return;
+            }
 
-			this.block = block;
+			this.block = resolveBlockName(name);
 			this.meta = meta;
 		}
 
@@ -936,7 +1162,9 @@ public class NBTStructure {
 
 			// now we're in the world, update minY/maxY
 			if (!piece.conformToTerrain && !heightUpdated) {
-				int y = MathHelper.clamp(getAverageHeight(world, box) + piece.heightOffset, minHeight, maxHeight);
+                int averageHeight = getAverageHeight(world, box) + piece.heightOffset;
+                boolean isFlatWorld = world.getWorldInfo().getTerrainType() == net.minecraft.world.WorldType.FLAT;
+				int y = isFlatWorld ? averageHeight : MathHelper.clamp(averageHeight, minHeight, maxHeight);
 
 				if (!piece.alignToTerrain) {
 					parent.offsetYHeight(y);
@@ -1062,6 +1290,7 @@ public class NBTStructure {
 
 			List<Component> queuedComponents = new ArrayList<>();
 			if (spawn.structure == null) queuedComponents.add(startComponent);
+            Set<JigsawPiece> requiredPieces = findRequiredPieces(spawn);
 
 			// Iterate through and build out all the components we intend to spawn
 			while (!queuedComponents.isEmpty()) {
@@ -1079,7 +1308,8 @@ public class NBTStructure {
 				if (fromComponent.piece.structure.fromConnections == null) continue;
 
 				int distance = getDistanceTo(fromComponent.getBoundingBox());
-				boolean fallbacksOnly = this.components.size() >= spawn.sizeLimit || distance >= spawn.rangeLimit;
+                boolean fallbacksOnly = (requiredPieces.isEmpty() && (this.components.size() >= spawn.sizeLimit || distance >= spawn.rangeLimit))
+                        || this.components.size() > 1024;
 
 				for (List<JigsawConnection> unshuffledList : fromComponent.piece.structure.fromConnections) {
 					List<JigsawConnection> connectionList = new ArrayList<>(unshuffledList);
@@ -1099,12 +1329,7 @@ public class NBTStructure {
 							continue;
 						}
 
-						JigsawPool nextPool = null;
-						try {
-							nextPool = spawn.getPool(fromConnection.poolName);
-						} catch (CloneNotSupportedException e) {
-							throw new RuntimeException(e);
-						}
+						JigsawPool nextPool = spawn.getPool(fromConnection.poolName);
 						if (nextPool == null) {
 							MainRegistry.logger.warn("[Jigsaw] Jigsaw block points to invalid pool: " + fromConnection.poolName);
 							continue;
@@ -1122,6 +1347,7 @@ public class NBTStructure {
 						if (nextComponent != null) {
 							addComponent(nextComponent, fromConnection.placementPriority);
 							queuedComponents.add(nextComponent);
+                            requiredPieces.remove(nextComponent.piece);
 						} else {
 							// If we failed to fit anything in, grab something from the fallback pool, ignoring bounds check
 							// unless we are perfectly abutting another piece, so grid layouts can work!
@@ -1170,12 +1396,38 @@ public class NBTStructure {
 			return new BlockPos(x, y, z);
 		}
 
+        private Set<JigsawPiece> findRequiredPieces(SpawnCondition spawn) {
+            Set<JigsawPiece> requiredPieces = new HashSet<>();
+
+            if (spawn.pools == null) return requiredPieces;
+
+            for (JigsawPool pool : spawn.pools.values()) {
+                for (Pair<JigsawPiece, Integer> weight : pool.pieces) {
+                    if (weight.getKey().required) {
+                        requiredPieces.add(weight.getKey());
+                    }
+                }
+            }
+
+            return requiredPieces;
+        }
+
 		private Component buildNextComponent(Random rand, SpawnCondition spawn, JigsawPool pool, Component fromComponent, JigsawConnection fromConnection) {
 			JigsawPiece nextPiece = pool.get(rand);
 			if (nextPiece == null) {
 				MainRegistry.logger.warn("[Jigsaw] Pool returned null piece: " + fromConnection.poolName);
 				return null;
 			}
+
+            if (nextPiece.instanceLimit > 0) {
+                int instances = 0;
+                for (StructureComponent component : this.components) {
+                    if (component instanceof Component && ((Component) component).piece == nextPiece) {
+                        instances++;
+                        if (instances >= nextPiece.instanceLimit) return null;
+                    }
+                }
+            }
 
 			List<JigsawConnection> connectionPool = nextPiece.structure.getConnectionPool(fromConnection.dir, fromConnection.targetName);
 			if (connectionPool == null || connectionPool.isEmpty()) {
@@ -1333,15 +1585,44 @@ public class NBTStructure {
 		}
 
 		private SpawnCondition findSpawn(Biome biome) {
-			List<SpawnCondition> spawnList = weightedMap.get(world.provider.getDimension());
+            int biomeId = Biome.getIdForBiome(biome);
+            Map<Integer, WeightedSpawnList> dimensionCache = validBiomeCache.computeIfAbsent(world.provider.getDimension(), integer -> new HashMap<>());
 
-			for (int i = 0; i < 64; i++) {
-				SpawnCondition spawn = spawnList.get(rand.nextInt(spawnList.size()));
-				if (spawn.isValid(biome)) return spawn;
-			}
+            WeightedSpawnList filteredList;
+            if (!dimensionCache.containsKey(biomeId)) {
+                List<SpawnCondition> spawnList = weightedMap.get(world.provider.getDimension());
 
-			return null;
+                filteredList = new WeightedSpawnList();
+                for (SpawnCondition spawn : spawnList) {
+                    if (spawn.isValid(biome)) {
+                        filteredList.add(spawn);
+                        filteredList.totalWeight += spawn.spawnWeight;
+                    }
+                }
+
+                dimensionCache.put(biomeId, filteredList);
+            } else {
+                filteredList = dimensionCache.get(biomeId);
+            }
+
+            if (filteredList.totalWeight == 0) return null;
+
+            int weight = rand.nextInt(filteredList.totalWeight);
+            for (SpawnCondition spawn : filteredList) {
+                weight -= spawn.spawnWeight;
+                if (weight < 0) {
+                    return spawn;
+                }
+            }
+
+            return null;
 		}
 	}
+
+    private static class WeightedSpawnList extends ArrayList<SpawnCondition> {
+
+        public int totalWeight = 0;
+
+    }
 
 }

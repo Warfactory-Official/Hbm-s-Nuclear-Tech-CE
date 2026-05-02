@@ -13,6 +13,7 @@ import com.hbm.inventory.recipes.SolidificationRecipes;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
@@ -40,7 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @AutoRegister
-public class TileEntityMachineSolidifier extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IUpgradeInfoProvider, IFluidStandardReceiver, IGUIProvider, IFluidCopiable {
+public class TileEntityMachineSolidifier extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IUpgradeInfoProvider, IFluidStandardReceiver, IGUIProvider, IFluidCopiable, IConnectionAnchors {
 
     public static final long maxPower = 100000;
     public static final int usageBase = 500;
@@ -72,7 +73,7 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase implement
             }
         };
 
-        tank = new FluidTankNTM(Fluids.NONE, 24_000);
+        tank = new FluidTankNTM(Fluids.NONE, 24_000).withOwner(this);
     }
 
     @Override
@@ -110,7 +111,7 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase implement
         }
     }
 
-    private DirPos[] getConPos() {
+    public DirPos[] getConPos() {
         return new DirPos[]{
                 new DirPos(pos.getX(), pos.getY() + 4, pos.getZ(), Library.POS_Y),
                 new DirPos(pos.getX(), pos.getY() - 1, pos.getZ(), Library.NEG_Y),

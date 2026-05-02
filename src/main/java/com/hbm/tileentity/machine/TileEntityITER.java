@@ -82,9 +82,9 @@ public class TileEntityITER extends TileEntityMachineBase implements ITickable, 
     public TileEntityITER() {
         super(5, true, true);
         tanks = new FluidTankNTM[2];
-        tanks[0] = new FluidTankNTM(Fluids.WATER, 1280000);
-        tanks[1] = new FluidTankNTM(Fluids.ULTRAHOTSTEAM, 128000);
-        plasma = new FluidTankNTM(Fluids.PLASMA_DT, 16000);
+        tanks[0] = new FluidTankNTM(Fluids.WATER, 1280000).withOwner(this);
+        tanks[1] = new FluidTankNTM(Fluids.ULTRAHOTSTEAM, 128000).withOwner(this);
+        plasma = new FluidTankNTM(Fluids.PLASMA_DT, 16000).withOwner(this);
     }
 
     @Override

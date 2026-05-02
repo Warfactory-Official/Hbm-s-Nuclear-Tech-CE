@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.tileentity.network.TileEntityDroneCrate;
 import com.hbm.util.InventoryUtil;
@@ -12,6 +13,13 @@ import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerDroneCrate extends Container {
     protected TileEntityDroneCrate crate;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(19)
+                                                                              .rule(0, 18,
+                                                                                      s -> !(s.getItem() instanceof IItemFluidIdentifier))
+                                                                              .rule(18, 19,
+                                                                                      s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                              .build();
 
     public ContainerDroneCrate(InventoryPlayer invPlayer, TileEntityDroneCrate crate) {
         this.crate = crate;
@@ -37,9 +45,7 @@ public class ContainerDroneCrate extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 19,
-                s -> !(s.getItem() instanceof IItemFluidIdentifier), 18,
-                s -> s.getItem() instanceof IItemFluidIdentifier, 19);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
     @Override

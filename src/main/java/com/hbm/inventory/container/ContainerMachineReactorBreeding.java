@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.machine.ItemBreedingRod;
 import com.hbm.tileentity.machine.TileEntityMachineReactorBreeding;
@@ -15,7 +16,13 @@ public class ContainerMachineReactorBreeding extends Container {
 
 	private TileEntityMachineReactorBreeding reactor;
 
-	public ContainerMachineReactorBreeding(InventoryPlayer invPlayer, TileEntityMachineReactorBreeding tedf) {
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(2)
+                                                                              .rule(0, 1,
+                                                                                      s -> s.getItem() instanceof ItemBreedingRod)
+                                                                              .genericMachineRange(1)
+                                                                              .build();
+
+    public ContainerMachineReactorBreeding(InventoryPlayer invPlayer, TileEntityMachineReactorBreeding tedf) {
 
 		reactor = tedf;
 
@@ -35,8 +42,7 @@ public class ContainerMachineReactorBreeding extends Container {
 
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 2,
-                s -> s.getItem() instanceof ItemBreedingRod, 1);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
 	}
 
 	@Override

@@ -58,7 +58,7 @@ public class TileEntityRadioTorchCounter extends TileEntityMachineBase implement
 
                 for (int i = 0; i < MAPPING_SIZE; i++) {
                     if (channel[i].isEmpty()) continue;
-                    if (inventory.getStackInSlot(i) == ItemStack.EMPTY) continue;
+                    if (inventory.getStackInSlot(i).isEmpty()) continue;
                     ItemStack pattern = inventory.getStackInSlot(i);
 
                     int count = 0;

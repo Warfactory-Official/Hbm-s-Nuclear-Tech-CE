@@ -26,13 +26,12 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -45,6 +44,8 @@ public class TileEntityPneumoTube extends TileEntityMachineBase implements IGUIP
     public ForgeDirection insertionDir = ForgeDirection.UNKNOWN;
     public ForgeDirection ejectionDir = ForgeDirection.UNKNOWN;
 
+    public boolean isIndirectlyPowered;
+
     public boolean whitelist = false;
     public boolean redstone = false;
     public byte sendOrder = 0;
@@ -56,9 +57,99 @@ public class TileEntityPneumoTube extends TileEntityMachineBase implements IGUIP
     public FluidTankNTM compair;
     protected PneumaticNode node;
 
+    private byte cachedConnMask;
+    private byte cachedConnectorMask;
+    private boolean cachedMasksValid;
+    private boolean computingClientMasks;
+
     public TileEntityPneumoTube() {
         super(15);
-        this.compair = new FluidTankNTM(Fluids.AIR, 4_000).withPressure(1);
+        this.compair = new FluidTankNTM(Fluids.AIR, 4_000).withOwner(this).withPressure(1);
+    }
+
+    public byte getCachedConnMask(IBlockAccess access) {
+        if (access instanceof World && ((World) access).isRemote) {
+            recomputeClientMasks(access);
+            return this.cachedConnMask;
+        }
+        ensureMasks(access);
+        return this.cachedConnMask;
+    }
+
+    public byte getCachedConnectorMask(IBlockAccess access) {
+        if (access instanceof World && ((World) access).isRemote) {
+            recomputeClientMasks(access);
+            return this.cachedConnectorMask;
+        }
+        ensureMasks(access);
+        return this.cachedConnectorMask;
+    }
+
+    public void invalidateConnectionCache() {
+        this.cachedMasksValid = false;
+        if (world != null && world.isRemote) {
+            world.markBlockRangeForRenderUpdate(pos, pos);
+        }
+    }
+
+    private void ensureMasks(IBlockAccess access) {
+        if (!this.cachedMasksValid) {
+            recomputeMasks(access);
+            this.cachedMasksValid = true;
+        }
+    }
+
+    private void recomputeClientMasks(IBlockAccess access) {
+        if (computingClientMasks) return;
+        computingClientMasks = true;
+        try {
+            recomputeMasks(access);
+        } finally {
+            computingClientMasks = false;
+        }
+    }
+
+    private void recomputeMasks(IBlockAccess access) {
+        byte conn = 0;
+        byte connector = 0;
+        boolean compressor = this.isCompressor();
+        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
+            int bit = 1 << dir.ordinal();
+            int ax = pos.getX() + dir.offsetX;
+            int ay = pos.getY() + dir.offsetY;
+            int az = pos.getZ() + dir.offsetZ;
+            BlockPos adj = new BlockPos(ax, ay, az);
+            if (access instanceof World w && !w.isBlockLoaded(adj)) {
+                continue;
+            }
+            TileEntity tile = access.getTileEntity(adj);
+            if (tile instanceof TileEntityPneumoTube) {
+                conn |= (byte) bit;
+            } else if (compressor && this.insertionDir != dir && this.ejectionDir != dir
+                    && Library.canConnectFluid(access, ax, ay, az, dir, Fluids.AIR)) {
+                connector |= (byte) bit;
+            }
+        }
+        this.cachedConnMask = conn;
+        this.cachedConnectorMask = connector;
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (world.isRemote) {
+            invalidateConnectionCache();
+            for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
+                BlockPos neighborPos = pos.add(dir.offsetX, dir.offsetY, dir.offsetZ);
+                if (!world.isBlockLoaded(neighborPos)) continue;
+                TileEntity te = world.getTileEntity(neighborPos);
+                if (te instanceof TileEntityPneumoTube tube) {
+                    tube.invalidateConnectionCache();
+                }
+            }
+        } else {
+            isIndirectlyPowered = world.isBlockPowered(pos);
+        }
     }
 
     public static int getRangeFromPressure(int pressure) {
@@ -114,7 +205,7 @@ public class TileEntityPneumoTube extends TileEntityMachineBase implements IGUIP
             }
         }
 
-        if (this.isCompressor() && (!this.world.isBlockPowered(pos) ^ this.redstone)) {
+        if (this.isCompressor() && (!isIndirectlyPowered ^ this.redstone)) {
 
             int randTime = Math.abs((int) (world.getTotalWorldTime() + getIdentifier(pos)));
 
@@ -153,6 +244,7 @@ public class TileEntityPneumoTube extends TileEntityMachineBase implements IGUIP
 
                     if (moved) {
                         this.compair.setFill(this.compair.getFill() - 50);
+                        this.dataChanged();
 
                         if (this.soundDelay <= 0 && !this.muffled) {
                             world.playSound(null,
@@ -181,7 +273,7 @@ public class TileEntityPneumoTube extends TileEntityMachineBase implements IGUIP
             }
         }
 
-        this.networkPackNT(15);
+        this.networkPackMK2(15);
     }
 
     @Override
@@ -235,44 +327,30 @@ public class TileEntityPneumoTube extends TileEntityMachineBase implements IGUIP
         compair.deserialize(buf);
     }
 
+    @Override
+    public void serializeInitial(ByteBuf buf) {
+        super.serializeInitial(buf);
+        buf.writeByte(insertionDir.ordinal());
+        buf.writeByte(ejectionDir.ordinal());
+    }
+
+    @Override
+    public void deserializeInitial(ByteBuf buf) {
+        super.deserializeInitial(buf);
+        this.insertionDir = EnumUtil.grabEnumSafely(ForgeDirection.VALUES, buf.readByte());
+        this.ejectionDir = EnumUtil.grabEnumSafely(ForgeDirection.VALUES, buf.readByte());
+    }
+
     public void nextMode(int index) {
         this.pattern.nextMode(world, inventory.getStackInSlot(index), index);
+        this.dataChanged();
+        this.markDirty();
     }
 
     public void initPattern(ItemStack stack, int index) {
         this.pattern.initPatternSmart(world, stack, index);
-    }
-
-    @Override
-    public SPacketUpdateTileEntity getUpdatePacket() {
-        NBTTagCompound nbt = new NBTTagCompound();
-        nbt.setByte("insertionDir", (byte) insertionDir.ordinal());
-        nbt.setByte("ejectionDir", (byte) ejectionDir.ordinal());
-        return new SPacketUpdateTileEntity(this.pos, 0, nbt);
-    }
-
-    @Override
-    public void onDataPacket(@NotNull NetworkManager net, SPacketUpdateTileEntity pkt) {
-        NBTTagCompound nbt = pkt.getNbtCompound();
-        this.insertionDir = EnumUtil.grabEnumSafely(ForgeDirection.VALUES, nbt.getByte("insertionDir"));
-        this.ejectionDir = EnumUtil.grabEnumSafely(ForgeDirection.VALUES, nbt.getByte("ejectionDir"));
-        world.markBlockRangeForRenderUpdate(pos, pos);
-    }
-
-    @Override
-    public @NotNull NBTTagCompound getUpdateTag() {
-        NBTTagCompound nbt = super.getUpdateTag();
-        nbt.setByte("insertionDir", (byte) insertionDir.ordinal());
-        nbt.setByte("ejectionDir", (byte) ejectionDir.ordinal());
-        return nbt;
-    }
-
-    @Override
-    public void handleUpdateTag(@NotNull NBTTagCompound nbt) {
-        super.handleUpdateTag(nbt);
-        this.insertionDir = EnumUtil.grabEnumSafely(ForgeDirection.VALUES, nbt.getByte("insertionDir"));
-        this.ejectionDir = EnumUtil.grabEnumSafely(ForgeDirection.VALUES, nbt.getByte("ejectionDir"));
-        world.markBlockRangeForRenderUpdate(pos, pos);
+        this.dataChanged();
+        this.markDirty();
     }
 
     @Override
@@ -289,10 +367,7 @@ public class TileEntityPneumoTube extends TileEntityMachineBase implements IGUIP
 
         this.whitelist = nbt.getBoolean("whitelist");
         this.redstone = nbt.getBoolean("redstone");
-
-        if (world != null && world.isRemote) {
-            world.markBlockRangeForRenderUpdate(pos, pos);
-        }
+        invalidateConnectionCache();
     }
 
     @Override
@@ -348,6 +423,7 @@ public class TileEntityPneumoTube extends TileEntityMachineBase implements IGUIP
             setFilterContents(data);
         }
 
+        this.dataChanged();
         this.markDirty();
     }
 
@@ -369,6 +445,13 @@ public class TileEntityPneumoTube extends TileEntityMachineBase implements IGUIP
     @Override
     public FluidTankNTM[] getReceivingTanks() {
         return new FluidTankNTM[]{compair};
+    }
+
+    @Override
+    public long transferFluid(FluidType type, int pressure, long amount) {
+        long remaining = IFluidStandardReceiverMK2.super.transferFluid(type, pressure, amount);
+        if(remaining != amount) dataChanged();
+        return remaining;
     }
 
     @Override
@@ -396,6 +479,7 @@ public class TileEntityPneumoTube extends TileEntityMachineBase implements IGUIP
         this.whitelist = nbt.getBoolean("whitelist");
         this.redstone = nbt.getBoolean("redstone");
 
+        this.dataChanged();
     }
 
     public static class PneumaticNode extends GenNode<PneumaticNetwork> {

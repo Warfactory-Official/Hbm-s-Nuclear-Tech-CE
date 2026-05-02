@@ -126,7 +126,7 @@ public class BlockScaffold extends BlockBakeBase implements ICustomBlockItem, IB
 
     @Override
     public @NotNull Item getItemDropped(IBlockState state, @NotNull Random rand, int fortune) {
-        return new ItemStack(Item.getItemFromBlock(this), state.getValue(VARIANT).ordinal()).getItem();
+        return Item.getItemFromBlock(this);
     }
 
     @Override

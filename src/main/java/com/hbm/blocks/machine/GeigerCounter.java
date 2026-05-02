@@ -13,7 +13,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -36,10 +35,12 @@ public class GeigerCounter extends BlockContainer {
 
 	public GeigerCounter(Material materialIn, String s) {
 		super(materialIn);
-		this.setTranslationKey(s);
-		this.setRegistryName(s);
-		this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
-		this.setLightOpacity(0);
+
+		setTranslationKey(s);
+		setRegistryName(s);
+		setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
+		setLightOpacity(0);
+
 		ModBlocks.ALL_BLOCKS.add(this);
 	}
 
@@ -93,18 +94,22 @@ public class GeigerCounter extends BlockContainer {
 
 	@Override
 	public EnumBlockRenderType getRenderType(IBlockState state) {
-		return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
+		return EnumBlockRenderType.MODEL;
+	}
+
+	@Override
+	public BlockRenderLayer getRenderLayer() {
+		return BlockRenderLayer.CUTOUT;
+	}
+
+	@Override
+	public boolean canRenderInLayer(IBlockState state, BlockRenderLayer layer) {
+		return layer == BlockRenderLayer.CUTOUT;
 	}
 
 	@Override
 	public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
 		return this.getDefaultState().withProperty(FACING, EnumFacing.fromAngle(placer.rotationYaw));
-	}
-
-	@Override
-	public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-		EnumFacing enumFacing = EnumFacing.fromAngle(placer.rotationYaw);
-		worldIn.setBlockState(pos, state.withProperty(FACING, enumFacing), 2);
 	}
 
 	@Override

@@ -1,10 +1,10 @@
 package com.hbm.particle;
 
 import com.hbm.main.client.NTMClientRegistry;
+import com.hbm.render.util.NTMBufferBuilder;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public class ParticleLiquidSplash extends Particle {
@@ -49,10 +49,10 @@ public class ParticleLiquidSplash extends Particle {
         boolean flipV = this.hashCode() % 4 < 2;
 
 
-        double minU = flipU ? this.particleTexture.getMaxU() : this.particleTexture.getMinU();
-        double maxU = flipU ? this.particleTexture.getMinU() : this.particleTexture.getMaxU();
-        double minV = flipV ? this.particleTexture.getMaxV() : this.particleTexture.getMinV();
-        double maxV = flipV ? this.particleTexture.getMinV() : this.particleTexture.getMaxV();
+        float minU = flipU ? this.particleTexture.getMaxU() : this.particleTexture.getMinU();
+        float maxU = flipU ? this.particleTexture.getMinU() : this.particleTexture.getMaxU();
+        float minV = flipV ? this.particleTexture.getMaxV() : this.particleTexture.getMinV();
+        float maxV = flipV ? this.particleTexture.getMinV() : this.particleTexture.getMaxV();
 
         float f5 = (float) (this.prevPosX + (this.posX - this.prevPosX) * (double) partialTicks - interpPosX);
         float f6 = (float) (this.prevPosY + (this.posY - this.prevPosY) * (double) partialTicks - interpPosY);
@@ -60,11 +60,18 @@ public class ParticleLiquidSplash extends Particle {
         int i = this.getBrightnessForRender(partialTicks);
         int j = i >> 16 & 65535;
         int k = i & 65535;
-        Vec3d[] avec3d = new Vec3d[]{new Vec3d((double) (-rotationX * f4 - rotationXY * f4), (double) (-rotationZ * f4), (double) (-rotationYZ * f4 - rotationXZ * f4)), new Vec3d((double) (-rotationX * f4 + rotationXY * f4), (double) (rotationZ * f4), (double) (-rotationYZ * f4 + rotationXZ * f4)), new Vec3d((double) (rotationX * f4 + rotationXY * f4), (double) (rotationZ * f4), (double) (rotationYZ * f4 + rotationXZ * f4)), new Vec3d((double) (rotationX * f4 - rotationXY * f4), (double) (-rotationZ * f4), (double) (rotationYZ * f4 - rotationXZ * f4))};
-        buffer.pos((double) f5 + avec3d[0].x, (double) f6 + avec3d[0].y, (double) f7 + avec3d[0].z).tex((double) maxU, (double) maxV).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j, k).endVertex();
-        buffer.pos((double) f5 + avec3d[1].x, (double) f6 + avec3d[1].y, (double) f7 + avec3d[1].z).tex((double) maxU, (double) minV).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j, k).endVertex();
-        buffer.pos((double) f5 + avec3d[2].x, (double) f6 + avec3d[2].y, (double) f7 + avec3d[2].z).tex((double) minU, (double) minV).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j, k).endVertex();
-        buffer.pos((double) f5 + avec3d[3].x, (double) f6 + avec3d[3].y, (double) f7 + avec3d[3].z).tex((double) minU, (double) maxV).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j, k).endVertex();
+        float rX = rotationX * f4;
+        float rZ = rotationZ * f4;
+        float rXY = rotationXY * f4;
+        float rYZ = rotationYZ * f4;
+        float rXZ = rotationXZ * f4;
+        NTMBufferBuilder fastBuffer = (NTMBufferBuilder) buffer;
+        int packedColor = NTMBufferBuilder.packColor(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha);
+        int packedLightmap = NTMBufferBuilder.packLightmap(j, k);
+        fastBuffer.appendParticlePositionTexColorLmap(f5 - rX - rXY, f6 - rZ, f7 - rYZ - rXZ, maxU, maxV, packedColor, packedLightmap);
+        fastBuffer.appendParticlePositionTexColorLmap(f5 - rX + rXY, f6 + rZ, f7 - rYZ + rXZ, maxU, minV, packedColor, packedLightmap);
+        fastBuffer.appendParticlePositionTexColorLmap(f5 + rX + rXY, f6 + rZ, f7 + rYZ + rXZ, minU, minV, packedColor, packedLightmap);
+        fastBuffer.appendParticlePositionTexColorLmap(f5 + rX - rXY, f6 - rZ, f7 + rYZ - rXZ, minU, maxV, packedColor, packedLightmap);
 
     }
 

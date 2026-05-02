@@ -7,6 +7,7 @@ import appeng.api.storage.IStorageChannel;
 import appeng.api.storage.channels.IItemStorageChannel;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
+import com.hbm.handler.HazmatRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -59,6 +60,39 @@ public class Compat {
         final IItemList<IAEItemStack> list = ch.createList();
         inv.getAvailableItems(list);
         return list;
+    }
+
+    public static void registerCompatHazmat() {
+
+        double helmet = 0.2D;
+        double chest = 0.4D;
+        double legs = 0.3D;
+        double boots = 0.1D;
+
+        double p90 = 1.0D; // 90%
+        double p99 = 2D; // 99%
+
+        tryRegisterHazmat("gregtech", "gt.armor.hazmat.radiation.head",		p90 * helmet);
+        tryRegisterHazmat("gregtech", "gt.armor.hazmat.radiation.chest",	p90 * chest);
+        tryRegisterHazmat("gregtech", "gt.armor.hazmat.radiation.legs",		p90 * legs);
+        tryRegisterHazmat("gregtech", "gt.armor.hazmat.radiation.boots",	p90 * boots);
+
+        tryRegisterHazmat("gregtech", "gt.armor.hazmat.universal.head",		p99 * helmet);
+        tryRegisterHazmat("gregtech", "gt.armor.hazmat.universal.chest",	p99 * chest);
+        tryRegisterHazmat("gregtech", "gt.armor.hazmat.universal.legs",		p99 * legs);
+        tryRegisterHazmat("gregtech", "gt.armor.hazmat.universal.boots",	p99 * boots);
+
+        tryRegisterHazmat("futureminecraf", "netherite_helmet", 		p90 * helmet);
+        tryRegisterHazmat("futureminecraf", "netherite_chestplate",	p90 * chest);
+        tryRegisterHazmat("futureminecraf", "netherite_leggings",		p90 * legs);
+        tryRegisterHazmat("futureminecraf", "netherite_boots",			p90 * boots);
+    }
+
+    private static void tryRegisterHazmat(String mod, String name, double resistance) {
+        Item item = Compat.tryLoadItem(mod, name);
+        if(item != null) {
+            HazmatRegistry.registerHazmat(item, resistance);
+        }
     }
 
     public static void exitOnIncompatible() {

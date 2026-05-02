@@ -13,8 +13,8 @@ import net.minecraft.client.renderer.GlStateManager;
 
 public class GUINukeFleija extends GuiContainer {
 
-	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/fleijaSchematic.png");
-	private TileEntityNukeFleija testNuke;
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/weapon/fleijaSchematic.png");
+	private final TileEntityNukeFleija testNuke;
 	
 	public GUINukeFleija(InventoryPlayer invPlayer, TileEntityNukeFleija tedf) {
 		super(new ContainerNukeFleija(invPlayer, tedf));

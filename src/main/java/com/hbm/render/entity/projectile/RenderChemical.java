@@ -3,12 +3,11 @@ package com.hbm.render.entity.projectile;
 import com.hbm.Tags;
 import com.hbm.entity.projectile.EntityChemical;
 import com.hbm.interfaces.AutoRegister;
-import net.minecraft.client.renderer.BufferBuilder;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
 import org.lwjgl.opengl.GL11;
@@ -51,8 +50,8 @@ public class RenderChemical extends Render<EntityChemical> {
 
     private void renderGasFire(EntityChemical chem, float interp) {
 
-        float exp = (float) (chem.ticksExisted + interp) / (float) chem.getMaxAge();
-        double size = 0.0 + exp * 2;
+        float exp = (chem.ticksExisted + interp) / (float) chem.getMaxAge();
+        float size = exp * 2F;
         Color color = Color.getHSBColor(Math.max((60 - exp * 100) / 360F, 0.0F), 1 - exp * 0.25F, 1 - exp * 0.5F);
 
         GlStateManager.enableBlend();
@@ -64,20 +63,20 @@ public class RenderChemical extends Render<EntityChemical> {
         GlStateManager.rotate(180.0F - this.renderManager.playerViewY, 0.0F, 1.0F, 0.0F);
         GlStateManager.rotate(-this.renderManager.playerViewX, 1.0F, 0.0F, 0.0F);
 
-        Tessellator tess = Tessellator.getInstance();
-        BufferBuilder buf = tess.getBuffer();
-
         int r = color.getRed();
         int g = color.getGreen();
         int b = color.getBlue();
         int a = (int) Math.max(255.0F * (1.0F - exp), 0.0F);
+        int packedColor = NTMBufferBuilder.packColor(r, g, b, a);
 
-        buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
-        buf.pos(-size, -size, 0.0D).tex(1.0D, 1.0D).color(r, g, b, a).endVertex();
-        buf.pos(size, -size, 0.0D).tex(0.0D, 1.0D).color(r, g, b, a).endVertex();
-        buf.pos(size, size, 0.0D).tex(0.0D, 0.0D).color(r, g, b, a).endVertex();
-        buf.pos(-size, size, 0.0D).tex(1.0D, 0.0D).color(r, g, b, a).endVertex();
-        tess.draw();
+        NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionTexColorQuads(1);
+        buf.appendPositionTexColorQuadUnchecked(
+                -size, -size, 0.0F, 1.0F, 1.0F, packedColor,
+                size, -size, 0.0F, 0.0F, 1.0F, packedColor,
+                size, size, 0.0F, 0.0F, 0.0F, packedColor,
+                -size, size, 0.0F, 1.0F, 0.0F, packedColor
+        );
+        NTMImmediate.INSTANCE.draw();
 
         GlStateManager.depthMask(true);
         GlStateManager.enableAlpha();
@@ -87,8 +86,8 @@ public class RenderChemical extends Render<EntityChemical> {
 
     private void renderGasCloud(EntityChemical chem, float interp) {
 
-        double exp = (double) (chem.ticksExisted + interp) / (double) chem.getMaxAge();
-        double size = 0.0 + exp * 10;
+        float exp = (chem.ticksExisted + interp) / (float) chem.getMaxAge();
+        float size = exp * 10F;
         int color = chem.getType().getColor();
 
         GlStateManager.enableBlend();
@@ -104,25 +103,25 @@ public class RenderChemical extends Render<EntityChemical> {
         int i = rand.nextInt(2);
         int j = rand.nextInt(2);
 
-        double u0 = 1 - i;
-        double v0 = 1 - j;
-        double u1 = i;
-        double v1 = j;
-
-        Tessellator tess = Tessellator.getInstance();
-        BufferBuilder buf = tess.getBuffer();
+        float u0 = 1 - i;
+        float v0 = 1 - j;
+        float u1 = i;
+        float v1 = j;
 
         int r = (color >> 16) & 0xFF;
         int g = (color >> 8) & 0xFF;
         int b = color & 0xFF;
         int a = (int) Math.max(127.0D * (1.0D - exp), 0.0D);
+        int packedColor = NTMBufferBuilder.packColor(r, g, b, a);
 
-        buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
-        buf.pos(-size, -size, 0.0D).tex(u0, v0).color(r, g, b, a).endVertex();
-        buf.pos(size, -size, 0.0D).tex(u1, v0).color(r, g, b, a).endVertex();
-        buf.pos(size, size, 0.0D).tex(u1, v1).color(r, g, b, a).endVertex();
-        buf.pos(-size, size, 0.0D).tex(u0, v1).color(r, g, b, a).endVertex();
-        tess.draw();
+        NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionTexColorQuads(1);
+        buf.appendPositionTexColorQuadUnchecked(
+                -size, -size, 0.0F, u0, v0, packedColor,
+                size, -size, 0.0F, u1, v0, packedColor,
+                size, size, 0.0F, u1, v1, packedColor,
+                -size, size, 0.0F, u0, v1, packedColor
+        );
+        NTMImmediate.INSTANCE.draw();
 
         GlStateManager.depthMask(true);
         GlStateManager.enableAlpha();
@@ -146,35 +145,34 @@ public class RenderChemical extends Render<EntityChemical> {
         GlStateManager.depthMask(false);
 
         double motionLen = Math.sqrt(chem.motionX * chem.motionX + chem.motionY * chem.motionY + chem.motionZ * chem.motionZ);
-        double length = motionLen * (chem.ticksExisted + interp) * 0.75D;
-        double size = 0.0625D;
+        float length = (float) (motionLen * (chem.ticksExisted + interp) * 0.75D);
+        float size = 0.0625F;
         float o = 0.2F;
+        int packedNearColor = NTMBufferBuilder.packColor(1.0F, 1.0F, 1.0F, o);
+        int packedFarColor = NTMBufferBuilder.packColor(1.0F, 1.0F, 1.0F, 0.0F);
 
-        Tessellator tess = Tessellator.getInstance();
-        BufferBuilder buf = tess.getBuffer();
-        buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+        NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionColorQuads(4);
+        buf.appendPositionColorUnchecked(-size, 0.0F, -size, packedNearColor);
+        buf.appendPositionColorUnchecked(size, 0.0F, -size, packedNearColor);
+        buf.appendPositionColorUnchecked(size, length, -size, packedFarColor);
+        buf.appendPositionColorUnchecked(-size, length, -size, packedFarColor);
 
-        buf.pos(-size, 0.0D, -size).color(1.0F, 1.0F, 1.0F, o).endVertex();
-        buf.pos(size, 0.0D, -size).color(1.0F, 1.0F, 1.0F, o).endVertex();
-        buf.pos(size, length, -size).color(1.0F, 1.0F, 1.0F, 0.0F).endVertex();
-        buf.pos(-size, length, -size).color(1.0F, 1.0F, 1.0F, 0.0F).endVertex();
+        buf.appendPositionColorUnchecked(-size, 0.0F, size, packedNearColor);
+        buf.appendPositionColorUnchecked(size, 0.0F, size, packedNearColor);
+        buf.appendPositionColorUnchecked(size, length, size, packedFarColor);
+        buf.appendPositionColorUnchecked(-size, length, size, packedFarColor);
 
-        buf.pos(-size, 0.0D, size).color(1.0F, 1.0F, 1.0F, o).endVertex();
-        buf.pos(size, 0.0D, size).color(1.0F, 1.0F, 1.0F, o).endVertex();
-        buf.pos(size, length, size).color(1.0F, 1.0F, 1.0F, 0.0F).endVertex();
-        buf.pos(-size, length, size).color(1.0F, 1.0F, 1.0F, 0.0F).endVertex();
+        buf.appendPositionColorUnchecked(-size, 0.0F, -size, packedNearColor);
+        buf.appendPositionColorUnchecked(-size, 0.0F, size, packedNearColor);
+        buf.appendPositionColorUnchecked(-size, length, size, packedFarColor);
+        buf.appendPositionColorUnchecked(-size, length, -size, packedFarColor);
 
-        buf.pos(-size, 0.0D, -size).color(1.0F, 1.0F, 1.0F, o).endVertex();
-        buf.pos(-size, 0.0D, size).color(1.0F, 1.0F, 1.0F, o).endVertex();
-        buf.pos(-size, length, size).color(1.0F, 1.0F, 1.0F, 0.0F).endVertex();
-        buf.pos(-size, length, -size).color(1.0F, 1.0F, 1.0F, 0.0F).endVertex();
+        buf.appendPositionColorUnchecked(size, 0.0F, -size, packedNearColor);
+        buf.appendPositionColorUnchecked(size, 0.0F, size, packedNearColor);
+        buf.appendPositionColorUnchecked(size, length, size, packedFarColor);
+        buf.appendPositionColorUnchecked(size, length, -size, packedFarColor);
 
-        buf.pos(size, 0.0D, -size).color(1.0F, 1.0F, 1.0F, o).endVertex();
-        buf.pos(size, 0.0D, size).color(1.0F, 1.0F, 1.0F, o).endVertex();
-        buf.pos(size, length, size).color(1.0F, 1.0F, 1.0F, 0.0F).endVertex();
-        buf.pos(size, length, -size).color(1.0F, 1.0F, 1.0F, 0.0F).endVertex();
-
-        tess.draw();
+        NTMImmediate.INSTANCE.draw();
 
         GlStateManager.depthMask(true);
         GlStateManager.shadeModel(GL11.GL_FLAT);

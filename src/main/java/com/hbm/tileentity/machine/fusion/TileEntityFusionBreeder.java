@@ -12,6 +12,7 @@ import com.hbm.inventory.recipes.OutgasserRecipes;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.uninos.networkproviders.PlasmaNetwork.PlasmaNode;
@@ -34,7 +35,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
-public class TileEntityFusionBreeder extends TileEntityMachineBase implements ITickable, IFluidStandardTransceiverMK2, IFusionPowerReceiver, IGUIProvider {
+public class TileEntityFusionBreeder extends TileEntityMachineBase implements ITickable, IFluidStandardTransceiverMK2, IFusionPowerReceiver, IGUIProvider, IConnectionAnchors {
 
     protected PlasmaNode plasmaNode;
 
@@ -49,8 +50,8 @@ public class TileEntityFusionBreeder extends TileEntityMachineBase implements IT
         super(3, true, false);
 
         tanks = new FluidTankNTM[2];
-        tanks[0] = new FluidTankNTM(Fluids.NONE, 16_000);
-        tanks[1] = new FluidTankNTM(Fluids.NONE, 16_000);
+        tanks[0] = new FluidTankNTM(Fluids.NONE, 16_000).withOwner(this);
+        tanks[1] = new FluidTankNTM(Fluids.NONE, 16_000).withOwner(this);
     }
 
     @Override
@@ -257,7 +258,7 @@ public class TileEntityFusionBreeder extends TileEntityMachineBase implements IT
     }
 
     @Override public boolean receivesFusionPower() { return false; }
-    @Override public void receiveFusionPower(long fusionPower, double neutronPower) { this.neutronEnergy = neutronPower; doProgress(); }
+    @Override public void receiveFusionPower(long fusionPower, double neutronPower, float r, float g, float b) { this.neutronEnergy = neutronPower; doProgress(); }
 
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[] {tanks[0]}; }
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[] {tanks[1]}; }

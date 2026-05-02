@@ -67,7 +67,7 @@ public class BlockWandJigsaw extends BlockContainerBakeable implements IBlockSid
     public static final PropertyDirection FACING = PropertyDirection.create("facing");
 
     public BlockWandJigsaw(String regName) {
-        this(regName, new BlockBakeFrame(BlockBakeFrame.BlockForm.FULL_CUSTOM,
+        this(regName, BlockBakeFrame.cube(
                 "wand_jigsaw_top",   // up
                 "wand_jigsaw_top",   // down
                 "wand_jigsaw_back",  // north (back)
@@ -108,12 +108,6 @@ public class BlockWandJigsaw extends BlockContainerBakeable implements IBlockSid
     public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing clickedFace, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
         EnumFacing facing = EnumFacing.getDirectionFromEntityLiving(pos, placer);
         return this.getDefaultState().withProperty(FACING, facing);
-    }
-
-    @Override
-    public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase player, ItemStack stack) {
-        EnumFacing facing = EnumFacing.getDirectionFromEntityLiving(pos, player);
-        world.setBlockState(pos, state.withProperty(FACING, facing), 2);
     }
 
     @Override
@@ -223,7 +217,7 @@ public class BlockWandJigsaw extends BlockContainerBakeable implements IBlockSid
     @Override
     public void bakeModel(ModelBakeEvent event) {
         try {
-            IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation(blockFrame.getBaseModel()));
+            IModel baseModel = ModelLoaderRegistry.getModel(blockFrame.getBaseModelLocation());
             ImmutableMap.Builder<String, String> textureMap = ImmutableMap.builder();
             blockFrame.putTextures(textureMap);
 

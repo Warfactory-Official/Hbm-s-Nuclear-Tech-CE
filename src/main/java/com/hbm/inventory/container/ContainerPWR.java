@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.tileentity.machine.TileEntityPWRController;
@@ -16,6 +17,11 @@ import org.jetbrains.annotations.NotNull;
 public class ContainerPWR extends Container {
 
     TileEntityPWRController controller;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(3)
+                                                                              .rule(0, 2, s -> !(s.getItem() instanceof IItemFluidIdentifier))
+                                                                              .rule(2, 3, s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                              .build();
 
     public ContainerPWR(InventoryPlayer invPlayer, TileEntityPWRController controller) {
         this.controller = controller;
@@ -37,10 +43,7 @@ public class ContainerPWR extends Container {
 
     @Override
     public ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 3,
-                s -> !(s.getItem() instanceof IItemFluidIdentifier), 2,
-                s -> s.getItem() instanceof IItemFluidIdentifier, 3
-        );
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
     @Override

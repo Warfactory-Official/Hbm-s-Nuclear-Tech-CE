@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.lib.Library;
@@ -16,8 +17,25 @@ import org.jetbrains.annotations.NotNull;
 public class ContainerMachineRefinery extends Container {
 
     private TileEntityMachineRefinery refinery;
-	
-	public ContainerMachineRefinery(InventoryPlayer invPlayer, TileEntityMachineRefinery tedf) {
+
+    private final TransferStrategy transferStrategy = TransferStrategy.builder(13)
+                                                                      .rule(0, 1, Library::isBattery)
+                                                                      .rule(1, 3,
+                                                                              s -> Library.isStackDrainableForTank(s,
+                                                                                      refinery.tanks[0]))
+                                                                      .rule(3, 5, s -> Library.isStackFillableForTank(s,
+                                                                              refinery.tanks[1]))
+                                                                      .rule(5, 7, s -> Library.isStackFillableForTank(s,
+                                                                              refinery.tanks[2]))
+                                                                      .rule(7, 9, s -> Library.isStackFillableForTank(s,
+                                                                              refinery.tanks[3]))
+                                                                      .rule(9, 11,
+                                                                              s -> Library.isStackFillableForTank(s,
+                                                                                      refinery.tanks[4]))
+                                                                      .genericMachineRange(11)
+                                                                      .build();
+
+    public ContainerMachineRefinery(InventoryPlayer invPlayer, TileEntityMachineRefinery tedf) {
 		refinery = tedf;
 
 		//Battery
@@ -57,16 +75,10 @@ public class ContainerMachineRefinery extends Container {
 			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 208));
 		}
 	}
-	
+
 	@Override
     public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 13,
-                Library::isBattery, 1,
-                s -> Library.isStackDrainableForTank(s, refinery.tanks[0]), 3,
-                s -> Library.isStackFillableForTank(s, refinery.tanks[1]), 5,
-                s -> Library.isStackFillableForTank(s, refinery.tanks[2]), 7,
-                s -> Library.isStackFillableForTank(s, refinery.tanks[3]), 9,
-                s -> Library.isStackFillableForTank(s, refinery.tanks[4]), 11);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.transferStrategy, player);
     }
 
 	@Override

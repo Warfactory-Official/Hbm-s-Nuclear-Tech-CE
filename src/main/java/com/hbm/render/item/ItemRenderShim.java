@@ -1,12 +1,17 @@
 package com.hbm.render.item;
 
+import com.hbm.Tags;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.ModItems;
 import com.hbm.main.ResourceManager;
+import com.hbm.render.model.BakedModelTransforms;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.util.ResourceLocation;
+import org.lwjgl.opengl.GL11;
 @AutoRegister(item = "shimmer_sledge")
 @AutoRegister(item = "shimmer_axe")
 @AutoRegister(item = "stopsign")
@@ -14,6 +19,21 @@ import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManage
 @AutoRegister(item = "chernobylsign")
 public class ItemRenderShim extends TEISRBase {
 	// Drillgon200: I hope I never have to look at this code again.
+
+	@Override
+	public ModelBinding createModelBinding(Item item) {
+		return ModelBinding.inventoryWithGuiModel(item, BakedModelTransforms.defaultItemTransforms(), getGuiTexture(item));
+	}
+
+	private ResourceLocation getGuiTexture(Item item) {
+		if (item == ModItems.shimmer_sledge) {
+			return new ResourceLocation(Tags.MODID, "items/shimmer_sledge_original");
+		}
+		if (item == ModItems.shimmer_axe) {
+			return new ResourceLocation(Tags.MODID, "items/shimmer_axe");
+		}
+		return new ResourceLocation(Tags.MODID, "items/" + item.getRegistryName().getPath());
+	}
 
 	public void renderByItem(ItemStack stack) {
 		switch(type) {

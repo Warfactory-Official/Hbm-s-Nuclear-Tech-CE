@@ -5,6 +5,7 @@ import com.hbm.Tags;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
+import com.hbm.items.IClaimedModelLocation;
 import com.hbm.items.ModItems;
 import com.hbm.items.special.ItemAutogen;
 import com.hbm.util.I18nUtil;
@@ -182,5 +183,13 @@ public class ItemScraps extends ItemAutogen {
         scrap.getTagCompound().setInteger("amount", stack.amount);
         if(liquid) scrap.getTagCompound().setBoolean("liquid", true);
         return scrap;
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public boolean ownsModelLocation(ModelResourceLocation location) {
+        return super.ownsModelLocation(location)
+                || IClaimedModelLocation.isInventoryLocation(location, new ResourceLocation(Tags.MODID, "items/scraps_liquid"))
+                || IClaimedModelLocation.isInventoryLocation(location, new ResourceLocation(Tags.MODID, "items/scraps_additive"));
     }
 }

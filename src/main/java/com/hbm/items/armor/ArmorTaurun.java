@@ -3,6 +3,7 @@ package com.hbm.items.armor;
 import com.hbm.items.ModItems;
 import com.hbm.items.gear.ArmorFSB;
 import com.hbm.main.ResourceManager;
+import com.hbm.render.item.ItemRenderBaseFMM;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.model.ModelArmorTaurun;
 import com.hbm.render.tileentity.IItemRendererProvider;
@@ -60,7 +61,7 @@ public class ArmorTaurun extends ArmorFSB implements IItemRendererProvider {
   @Override
   @SideOnly(Side.CLIENT)
   public ItemRenderBase getRenderer(Item item) {
-    return new ItemRenderBase() {
+    return new ItemRenderBaseFMM() {
       public void renderInventory() {
         if (armorType == EntityEquipmentSlot.MAINHAND) GlStateManager.translate(0, 1, 0);
         if (armorType == EntityEquipmentSlot.OFFHAND) GlStateManager.translate(0, 1.5, 0);

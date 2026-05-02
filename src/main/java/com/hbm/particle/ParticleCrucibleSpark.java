@@ -1,14 +1,15 @@
 package com.hbm.particle;
 
 import com.hbm.render.item.weapon.ItemRenderCrucible;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import com.hbm.util.BobMathUtil;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 public class ParticleCrucibleSpark extends ParticleFirstPerson {
 
@@ -109,17 +110,25 @@ public class ParticleCrucibleSpark extends ParticleFirstPerson {
         point2 = point2.add(f5, f6, f7);
         particleAxis = particleAxis.scale(stretch);
         
-        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+        NTMBufferBuilder fastBuffer = NTMImmediate.INSTANCE.beginPositionTex(GL11.GL_QUADS, MathHelper.ceil(this.particleAlpha) * 4);
         float alpha = this.particleAlpha;
+        float point1X = (float) point1.x;
+        float point1Y = (float) point1.y;
+        float point1Z = (float) point1.z;
+        float point2X = (float) point2.x;
+        float point2Y = (float) point2.y;
+        float point2Z = (float) point2.z;
+        float axisX = (float) particleAxis.x;
+        float axisY = (float) particleAxis.y;
+        float axisZ = (float) particleAxis.z;
         while(alpha > 0){
-        	buffer.pos(point2.x, point2.y, point2.z).tex(1, 0).endVertex();
-        	buffer.pos(point1.x, point1.y, point1.z).tex(1, 1).endVertex();
-        	
-        	buffer.pos(point1.x+particleAxis.x, point1.y+particleAxis.y, point1.z+particleAxis.z).tex(0, 1).endVertex();
-        	buffer.pos(point2.x+particleAxis.x, point2.y+particleAxis.y, point2.z+particleAxis.z).tex(0, 0).endVertex();
+        	fastBuffer.appendPositionTexUnchecked(point2X, point2Y, point2Z, 1, 0);
+        	fastBuffer.appendPositionTexUnchecked(point1X, point1Y, point1Z, 1, 1);
+        	fastBuffer.appendPositionTexUnchecked(point1X + axisX, point1Y + axisY, point1Z + axisZ, 0, 1);
+        	fastBuffer.appendPositionTexUnchecked(point2X + axisX, point2Y + axisY, point2Z + axisZ, 0, 0);
         	alpha -= 1;
         }
-        Tessellator.getInstance().draw();
+        NTMImmediate.INSTANCE.draw();
        
 	}
 	

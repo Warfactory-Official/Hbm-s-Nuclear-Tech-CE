@@ -8,6 +8,7 @@ import com.hbm.render.item.TEISRBase;
 import com.hbm.render.util.ViewModelPositonDebugger;
 import com.hbm.util.RenderUtil;
 import com.hbm.util.ShaderHelper;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.renderer.*;
@@ -15,17 +16,16 @@ import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.NotNull;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.Project;
 
-import java.nio.FloatBuffer;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
@@ -45,9 +45,18 @@ public abstract class ItemRenderWeaponBase extends TEISRBase {
     public static final ResourceLocation laser_flash = new ResourceLocation(Tags.MODID, "textures/models/weapons/laser_flash.png");
     public static float interp;
     public static HashMap<EntityLivingBase, Long> flashMap = new HashMap<>();
-    private static final FloatBuffer DEPTH_RANGE_BUF = BufferUtils.createFloatBuffer(16);
 
     public boolean isAkimbo() { return false; }
+
+    @Override
+    public ModelBinding createModelBinding(Item item) {
+        return ModelBinding.inventory(item, ItemCameraTransforms.DEFAULT);
+    }
+
+    @Override
+    public boolean useIdentityTransform(Item item) {
+        return true;
+    }
 
     @Override
     public void renderByItem(@NotNull ItemStack itemStackIn) {
@@ -75,9 +84,16 @@ public abstract class ItemRenderWeaponBase extends TEISRBase {
                 setupThirdPerson(stack);
                 renderEquipped(stack);
             }
-            case GROUND -> {
+            case GROUND-> {
                 offsets.apply(type);
                 setupEntity(stack);
+                renderEntity(stack);
+            }
+
+            //FIXME:Slize for the love of god why did you forget Fixed
+            case FIXED-> {
+                offsets.apply(type);
+                setupFixed(stack);
                 renderEntity(stack);
             }
             case GUI -> {
@@ -87,6 +103,7 @@ public abstract class ItemRenderWeaponBase extends TEISRBase {
                 renderInv(stack);
                 GlStateManager.enableCull();
             }
+
             default -> {
                 if (!doNullTransform()) {
                     renderOther(stack, null);
@@ -97,20 +114,20 @@ public abstract class ItemRenderWeaponBase extends TEISRBase {
         GlStateManager.popMatrix();
     }
 
+    private void setupFixed(@NotNull ItemStack stack) {
+        double scale = 1F;
+        GlStateManager.scale(scale, scale, scale);
+
+    }
+
     public void renderEquipped(ItemStack stack) { renderOther(stack, null); }
     public void renderEquippedAkimbo(ItemStack stack) { renderOther(stack, null); }
     public void renderInv(ItemStack stack) { renderOther(stack, null); }
     public void renderEntity(ItemStack stack) { renderOther(stack, null); }
 
     public void setPerspectiveAndRender(ItemStack stack, float interp) {
-        // Skip rendering during shadow pass, shaders handle this separately
-        if (ShaderHelper.isShadowPass()) {
-            return;
-        }
-
         ItemRenderWeaponBase.interp = interp;
         Minecraft mc = Minecraft.getMinecraft();
-        EntityRenderer entityRenderer = mc.entityRenderer;
         ItemCameraTransforms.TransformType prev = this.type;
         this.type = mc.player.getPrimaryHand() == EnumHandSide.RIGHT
                 ? ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND
@@ -119,50 +136,30 @@ public abstract class ItemRenderWeaponBase extends TEISRBase {
         boolean shadersActive = ShaderHelper.areShadersActive();
         float farPlaneDistance = mc.gameSettings.renderDistanceChunks * 16;
 
-        // Save depth range for shader compatibility
-        float oldNear = 0.0F;
-        float oldFar = 1.0F;
-        if (shadersActive) {
-            DEPTH_RANGE_BUF.clear();
-            GL11.glGetFloat(GL11.GL_DEPTH_RANGE, DEPTH_RANGE_BUF);
-            oldNear = DEPTH_RANGE_BUF.get(0);
-            oldFar = DEPTH_RANGE_BUF.get(1);
-            GL11.glDepthRange(0.0, 0.05);
-        } else {
+        if (!shadersActive) {
             GlStateManager.clear(GL11.GL_DEPTH_BUFFER_BIT);
         }
 
         GlStateManager.matrixMode(GL11.GL_PROJECTION);
         GlStateManager.pushMatrix();
         GlStateManager.loadIdentity();
+        if (shadersActive) {
+            ShaderHelper.applyHandDepth();
+        }
         Project.gluPerspective(this.getFOVModifier(interp, ClientConfig.GUN_MODEL_FOV.get()),
                 (float) mc.displayWidth / (float) mc.displayHeight, 0.05F, farPlaneDistance * 2.0F);
         GlStateManager.matrixMode(GL11.GL_MODELVIEW);
         GlStateManager.pushMatrix();
         GlStateManager.loadIdentity();
 
-        try {
-            if (mc.gameSettings.thirdPersonView == 0 && !mc.gameSettings.hideGUI) {
-                entityRenderer.enableLightmap();
-                this.setupTransformsAndRender(stack);
-                entityRenderer.disableLightmap();
-            }
-        } finally {
-            GlStateManager.popMatrix();
-            GlStateManager.matrixMode(GL11.GL_PROJECTION);
-            GlStateManager.popMatrix();
-            GlStateManager.matrixMode(GL11.GL_MODELVIEW);
-
-            if (shadersActive) {
-                GL11.glDepthRange(oldNear, oldFar);
-            }
-
-            this.type = prev;
+        if (mc.gameSettings.thirdPersonView == 0 && !mc.gameSettings.hideGUI) {
+            this.setupTransformsAndRender(stack);
         }
-
-        if (mc.gameSettings.thirdPersonView == 0) {
-            entityRenderer.itemRenderer.renderOverlays(interp);
-        }
+        GlStateManager.popMatrix();
+        GlStateManager.matrixMode(GL11.GL_PROJECTION);
+        GlStateManager.popMatrix();
+        GlStateManager.matrixMode(GL11.GL_MODELVIEW);
+        this.type = prev;
     }
 
     private float getFOVModifier(float interp, boolean useFOVSetting) {
@@ -174,8 +171,7 @@ public abstract class ItemRenderWeaponBase extends TEISRBase {
             float f2 = (float) entityplayer.deathTime + interp;
             fov /= (1.0F - 500.0F / (f2 + 500.0F)) * 2.0F + 1.0F;
         }
-        net.minecraft.block.state.IBlockState state =
-                ActiveRenderInfo.getBlockStateAtEntityViewpoint(mc.world, entityplayer, interp);
+        IBlockState state = ActiveRenderInfo.getBlockStateAtEntityViewpoint(mc.world, entityplayer, interp);
         if (state.getMaterial() == net.minecraft.block.material.Material.WATER) fov = fov * 60.0F / 70.0F;
         return fov;
     }

@@ -24,6 +24,7 @@ import org.gradle.internal.logging.text.StyledTextOutputFactory
 import org.jetbrains.gradle.ext.Gradle
 
 import javax.inject.Inject
+import java.util.jar.JarFile
 
 import static org.gradle.internal.logging.text.StyledTextOutput.Style
 
@@ -141,13 +142,14 @@ if (apiPackage) {
 }
 
 if (accessTransformersFile) {
+    MCPTasks mcpTasks = project.extensions.getByType(MCPTasks)
     for (atFile in accessTransformersFile.split(",")) {
         String targetFile = 'src/main/resources/' + atFile.trim()
         if (!getFile(targetFile).exists()) {
             throw new GradleException("Could not resolve \"accessTransformersFile\"! Could not find " + targetFile)
         }
-        tasks.deobfuscateMergedJarToSrg.accessTransformerFiles.from(targetFile)
-        tasks.srgifyBinpatchedJar.accessTransformerFiles.from(targetFile)
+        mcpTasks.preDecompATs.from(targetFile)
+        mcpTasks.deobfuscationATs.from(targetFile)
     }
 }
 
@@ -299,15 +301,35 @@ java {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     def suppressCheckedExceptionsPluginArg = '-Xplugin:suppress-checked-exceptions'
-    def javacExports = [
-            '--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
-            '--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED'
+    def upgradeInfoProviderSourcePluginArg = '-Xplugin:inject-upgrade-info-provider-source'
+    def vaoRenderCallsitePluginArg = '-Xplugin:inline-vao-render-callsites ' + file('src/main/resources/assets/hbm').absolutePath
+    def javacExportPackages = [
+            'jdk.compiler/com.sun.tools.javac.api',
+            'jdk.compiler/com.sun.tools.javac.code',
+            'jdk.compiler/com.sun.tools.javac.resources',
+            'jdk.compiler/com.sun.tools.javac.tree',
+            'jdk.compiler/com.sun.tools.javac.util'
     ]
-    if (name in ['compileJava', 'compileTestJava'] && !options.compilerArgs.contains(suppressCheckedExceptionsPluginArg)) {
-        options.compilerArgs.add(suppressCheckedExceptionsPluginArg)
+    def javacExports = javacExportPackages.collect { "--add-exports=${it}=ALL-UNNAMED".toString() }
+    if (name in ['compileJava', 'compileTestJava']) {
+        if (!options.compilerArgs.contains(suppressCheckedExceptionsPluginArg)) {
+            options.compilerArgs.add(suppressCheckedExceptionsPluginArg)
+        }
+        if (!options.compilerArgs.contains(upgradeInfoProviderSourcePluginArg)) {
+            options.compilerArgs.add(upgradeInfoProviderSourcePluginArg)
+        }
+        if (!options.compilerArgs.contains(vaoRenderCallsitePluginArg)) {
+            options.compilerArgs.add(vaoRenderCallsitePluginArg)
+        }
         javacExports.each { arg ->
             if (!options.compilerArgs.contains(arg)) {
                 options.compilerArgs.add(arg)
+            }
+        }
+        options.fork = true
+        javacExports.each { arg ->
+            if (!options.forkOptions.jvmArgs.contains(arg)) {
+                options.forkOptions.jvmArgs.add(arg)
             }
         }
     }
@@ -743,6 +765,9 @@ jar {
         attributes(getManifestAttributes())
     }
 
+    from sourceSets.injectedTags.output
+    dependsOn injectedTagsClasses
+
     // Add all embedded dependencies into the jar
     from provider {
         configurations.embed.collect {
@@ -801,7 +826,9 @@ def apiClassOutput = useSrcApiPath.toBoolean() ? sourceSets.api.output : sourceS
 
 if (enableModernJavaSyntax.toBoolean()) {
     tasks.register('apiJarJava25', Jar) {
-        archiveClassifier.set('api-java25')
+        destinationDirectory.set(layout.buildDirectory.dir('publication-libs'))
+        archiveBaseName.set(project.modArchivesBaseName.toString() + '-java25-publish')
+        archiveClassifier.set('api')
         from(apiJavaSources) {
             include "${modGroupPath}/${apiPackagePath}/**"
         }
@@ -845,6 +872,9 @@ if (usesShadowedDependencies.toBoolean()) {
         manifest {
             attributes(getManifestAttributes())
         }
+        from sourceSets.injectedTags.output
+        dependsOn injectedTagsClasses
+        exclude 'module-info.class'
         // Only shadow classes that are actually used, if enabled
         if (minimizeShadowedDependencies.toBoolean()) {
             minimize()
@@ -865,10 +895,6 @@ if (usesShadowedDependencies.toBoolean()) {
     def publishedDevTask = enableModernJavaSyntax.toBoolean()
             ? tasks.named('shadeDowngradedApi', Jar)
             : tasks.named('shadowJar', ShadowJar)
-    configurations.runtimeElements.outgoing.artifacts.clear()
-    configurations.apiElements.outgoing.artifacts.clear()
-    configurations.runtimeElements.outgoing.artifact(publishedDevTask)
-    configurations.apiElements.outgoing.artifact(publishedDevTask)
     tasks.named('jar', Jar) {
         enabled = false
         finalizedBy(tasks.shadowJar)
@@ -919,6 +945,10 @@ if (enableJava17RunTasks.toBoolean()) {
         spec.languageVersion.set(JavaLanguageVersion.of(21))
         spec.vendor.set(JvmVendorSpec.matching("jetbrains"))
     }
+    ext.java25Toolchain = (JavaToolchainSpec spec) -> {
+        spec.languageVersion.set(JavaLanguageVersion.of(25))
+        spec.vendor.set(JvmVendorSpec.matching("jetbrains"))
+    }
 
     ext.java17DependenciesCfg = configurations.create("java17Dependencies") {
         extendsFrom(configurations.getByName("runtimeClasspath")) // Ensure consistent transitive dependency resolution
@@ -927,15 +957,81 @@ if (enableJava17RunTasks.toBoolean()) {
     ext.java17PatchDependenciesCfg = configurations.create("java17PatchDependencies") {
         canBeConsumed = false
     }
+    ext.lwjgl3ifyAsmCfg = configurations.create("lwjgl3ifyAsm") {
+        canBeConsumed = false
+    }
+    ext.lwjgl3ifyAsmVersion = "9.9.1"
 
     dependencies {
         if (modId != 'lwjgl3ify') {
-            java17Dependencies("io.github.twilightflower:lwjgl3ify:1.0.1")
+            java17Dependencies("io.github.twilightflower:lwjgl3ify:1.0.1") {
+                transitive = false
+            }
             java17PatchDependencies("io.github.twilightflower:lwjgl3ify:1.0.1:forgePatches") {
             transitive = false
             }
         }
+        lwjgl3ifyAsm("org.ow2.asm:asm:${lwjgl3ifyAsmVersion}")
+        lwjgl3ifyAsm("org.ow2.asm:asm-commons:${lwjgl3ifyAsmVersion}")
+        lwjgl3ifyAsm("org.ow2.asm:asm-tree:${lwjgl3ifyAsmVersion}")
+        lwjgl3ifyAsm("org.ow2.asm:asm-util:${lwjgl3ifyAsmVersion}")
+        lwjgl3ifyAsm("org.ow2.asm:asm-analysis:${lwjgl3ifyAsmVersion}")
     }
+
+    def lwjgl3ifyDevJarProvider = project.provider {
+        ((Configuration) project.property("java17DependenciesCfg")).files.find {
+            it.name.startsWith("lwjgl3ify-") && it.name.endsWith("-dev.jar")
+        }
+    }
+    def lwjgl3ifyForgePatchesJarProvider = project.provider {
+        ((Configuration) project.property("java17PatchDependenciesCfg")).files.find {
+            it.name.startsWith("lwjgl3ify-") && it.name.contains("forgePatches") && it.name.endsWith(".jar")
+        }
+    }
+
+    def repackLwjgl3ifyJar = { String taskName, Provider<File> inputJarProvider, String outputArchiveFileName ->
+        tasks.register(taskName, Jar) {
+            destinationDirectory.set(layout.buildDirectory.dir("tmp/lwjgl3ify"))
+            archiveFileName.set(outputArchiveFileName)
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+            doFirst {
+                final File inputJar = inputJarProvider.get()
+                if (!inputJar.exists()) {
+                    throw new GradleException("Missing lwjgl3ify input jar for task ${taskName}")
+                }
+                final JarFile jarFile = new JarFile(inputJar)
+                try {
+                    final inputManifest = jarFile.getManifest()
+                    if (inputManifest != null) {
+                        inputManifest.mainAttributes.each { key, value ->
+                            manifest.attributes((key.toString()): value.toString())
+                        }
+                    }
+                } finally {
+                    jarFile.close()
+                }
+            }
+            from(project.provider { zipTree(inputJarProvider.get()) }) {
+                exclude "org/objectweb/asm/**"
+            }
+            from(project.provider {
+                ((Configuration) project.property("lwjgl3ifyAsmCfg")).files.collect { zipTree(it) }
+            }) {
+                include "org/objectweb/asm/**"
+            }
+        }
+    }
+
+    ext.repackLwjgl3ifyDevJar = repackLwjgl3ifyJar(
+            "repackLwjgl3ifyDevJar",
+            lwjgl3ifyDevJarProvider,
+            "lwjgl3ify-1.0.1-dev-asm-${lwjgl3ifyAsmVersion}.jar"
+    )
+    ext.repackLwjgl3ifyForgePatchesJar = repackLwjgl3ifyJar(
+            "repackLwjgl3ifyForgePatchesJar",
+            lwjgl3ifyForgePatchesJarProvider,
+            "lwjgl3ify-1.0.1-forgePatches-asm-${lwjgl3ifyAsmVersion}.jar"
+    )
 
     ext.java17JvmArgs = [
             "-Dfile.encoding=UTF-8",
@@ -946,6 +1042,7 @@ if (enableJava17RunTasks.toBoolean()) {
             "--add-opens", "java.base/java.nio=ALL-UNNAMED",
             "--add-opens", "java.base/java.io=ALL-UNNAMED",
             "--add-opens", "java.base/java.lang=ALL-UNNAMED",
+            "--add-opens", "java.base/java.lang.invoke=ALL-UNNAMED",
             "--add-opens", "java.base/java.lang.reflect=ALL-UNNAMED",
             "--add-opens", "java.base/java.text=ALL-UNNAMED",
             "--add-opens", "java.base/java.util=ALL-UNNAMED",
@@ -958,6 +1055,7 @@ if (enableJava17RunTasks.toBoolean()) {
             "--add-opens", "jdk.dynalink/jdk.dynalink.beans=ALL-UNNAMED",
             "--add-opens", "java.sql.rowset/javax.sql.rowset.serial=ALL-UNNAMED"
     ]
+    ext.java25JvmArgs = java17JvmArgs.findAll { it != "-Djava.security.manager=allow" }
 
     ext.hotswapJvmArgs = [
             // DCEVM advanced hot reload
@@ -971,6 +1069,10 @@ if (enableJava17RunTasks.toBoolean()) {
 
     ext.setupHotswapAgent21 = tasks.register("setupHotswapAgent21", SetupHotswapAgentTask, t -> {
         t.setTargetForToolchain(java21Toolchain)
+    })
+
+    ext.setupHotswapAgent25 = tasks.register("setupHotswapAgent25", SetupHotswapAgentTask, t -> {
+        t.setTargetForToolchain(java25Toolchain)
     })
 
     def runClient17Task = tasks.register("runClient17", RunHotswappableMinecraftTask, Distribution.CLIENT, "runClient")
@@ -1000,12 +1102,32 @@ if (enableJava17RunTasks.toBoolean()) {
         setup(project)
         javaLauncher = project.javaToolchains.launcherFor(project.java21Toolchain)
     }
+
+    def runClient25Task = tasks.register("runClient25", RunHotswappableMinecraftTask, Distribution.CLIENT, "runClient")
+    runClient25Task.configure {
+        dependsOn(setupHotswapAgent25)
+        jvmArgsProperty = "java25JvmArgs"
+        excludedRuntimeArtifactPrefixes = ["groovyscript-", "top-245211-"]
+        setup(project)
+        javaLauncher = project.javaToolchains.launcherFor(project.java25Toolchain)
+    }
+
+    def runServer25Task = tasks.register("runServer25", RunHotswappableMinecraftTask, Distribution.DEDICATED_SERVER, "runServer")
+    runServer25Task.configure {
+        dependsOn(setupHotswapAgent25)
+        jvmArgsProperty = "java25JvmArgs"
+        excludedRuntimeArtifactPrefixes = ["groovyscript-", "top-245211-"]
+        setup(project)
+        javaLauncher = project.javaToolchains.launcherFor(project.java25Toolchain)
+    }
 }
 
 abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
 
     // IntelliJ doesn't seem to allow pre-set commandline arguments, so we also support an env variable
     private boolean enableHotswap = Boolean.valueOf(System.getenv("HOTSWAP"))
+    private String jvmArgsProperty = "java17JvmArgs"
+    private List<String> excludedRuntimeArtifactPrefixes = []
 
     public final Distribution side
     public final String superTask
@@ -1013,6 +1135,24 @@ abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
     @Input
     boolean getEnableHotswap() {
         return enableHotswap
+    }
+
+    @Input
+    String getJvmArgsProperty() {
+        return jvmArgsProperty
+    }
+
+    void setJvmArgsProperty(String jvmArgsProperty) {
+        this.jvmArgsProperty = jvmArgsProperty
+    }
+
+    @Input
+    List<String> getExcludedRuntimeArtifactPrefixes() {
+        return excludedRuntimeArtifactPrefixes
+    }
+
+    void setExcludedRuntimeArtifactPrefixes(List<String> excludedRuntimeArtifactPrefixes) {
+        this.excludedRuntimeArtifactPrefixes = excludedRuntimeArtifactPrefixes
     }
 
     @Option(option = "hotswap", description = "Enables HotSwapAgent for enhanced class reloading under a debugger")
@@ -1035,22 +1175,35 @@ abstract class RunHotswappableMinecraftTask extends RunMinecraftTask {
         final MinecraftExtension minecraft = project.getExtensions().getByType(MinecraftExtension.class)
         final MCPTasks mcpTasks = project.getExtensions().getByType(MCPTasks.class)
         final MinecraftTasks mcTasks = project.getExtensions().getByType(MinecraftTasks.class)
+        final Configuration java17PatchDependenciesCfg = (Configuration) project.property("java17PatchDependenciesCfg")
+        final Configuration java17DependenciesCfg = (Configuration) project.property("java17DependenciesCfg")
 
-        this.getExtraJvmArgs().addAll((List<String>) project.property("java17JvmArgs"))
+        this.getExtraJvmArgs().addAll((List<String>) project.property(getJvmArgsProperty()))
         if (getEnableHotswap()) {
             this.getExtraJvmArgs().addAll((List<String>) project.property("hotswapJvmArgs"))
         }
 
-        this.classpath(project.property("java17PatchDependenciesCfg"))
+        this.classpath(project.provider {
+            java17PatchDependenciesCfg.files.findAll {
+                !(it.name.startsWith("lwjgl3ify-") && it.name.contains("forgePatches") && it.name.endsWith(".jar"))
+            } + [project.tasks.named("repackLwjgl3ifyForgePatchesJar", Jar).get().archiveFile.get().asFile]
+        })
         this.classpath(mcpTasks.getTaskPackageMcLauncher())
         this.classpath(mcpTasks.getTaskPackagePatchedMc())
         this.classpath(mcpTasks.getPatchedConfiguration())
         this.classpath(project.getTasks().named("jar"))
-        this.classpath(project.property("java17DependenciesCfg"))
+        this.classpath(project.provider {
+            java17DependenciesCfg.files.findAll {
+                !(it.name.startsWith("lwjgl3ify-") && it.name.endsWith("-dev.jar")) &&
+                        !excludedRuntimeArtifactPrefixes.any { prefix -> it.name.startsWith(prefix) }
+            } + [project.tasks.named("repackLwjgl3ifyDevJar", Jar).get().archiveFile.get().asFile]
+        })
 
         super.setup(project)
 
         dependsOn(
+                "repackLwjgl3ifyForgePatchesJar",
+                "repackLwjgl3ifyDevJar",
                 mcpTasks.getLauncherSources().getClassesTaskName(),
                 mcTasks.getTaskDownloadVanillaAssets(),
                 mcpTasks.getTaskPackagePatchedMc(),
@@ -1145,9 +1298,15 @@ idea {
                 if (enableJava17RunTasks.toBoolean()) {
                     '2a. Run Client (Java 17)'(Gradle) {
                         taskNames = ['runClient17']
+                        envs = [HOTSWAP: 'true']
                     }
                     '2b. Run Client (Java 21)'(Gradle) {
                         taskNames = ['runClient21']
+                        envs = [HOTSWAP: 'true']
+                    }
+                    '2c. Run Client (Java 25)'(Gradle) {
+                        taskNames = ['runClient25']
+                        envs = [HOTSWAP: 'true']
                     }
                 }
                 '3. Run Server'(Gradle) {
@@ -1156,9 +1315,15 @@ idea {
                 if (enableJava17RunTasks.toBoolean()) {
                     '3a. Run Server (Java 17)'(Gradle) {
                         taskNames = ['runServer17']
+                        envs = [HOTSWAP: 'true']
                     }
                     '3b. Run Server (Java 21)'(Gradle) {
                         taskNames = ['runServer21']
+                        envs = [HOTSWAP: 'true']
+                    }
+                    '3c. Run Server (Java 25)'(Gradle) {
+                        taskNames = ['runServer25']
+                        envs = [HOTSWAP: 'true']
                     }
                 }
                 '4. Run Obfuscated Client'(Gradle) {
@@ -1391,6 +1556,8 @@ if (customMavenPublishUrl) {
     afterEvaluate {
         String publishedVersion = modVersion
         String baseVersion = System.getenv('RELEASE_VERSION') ?: publishedVersion
+        String baseArtifactId = 'ntm-ce'
+        String baseGroupId = System.getenv('ARTIFACT_GROUP_ID') ?: project.mavenArtifactGroup
         def java25DevJarTask = tasks.named(usesShadowedDependencies.toBoolean() ? "shadowJarJava25" : "jarJava25")
         def java25ReobfJarTask = tasks.named("reobfJarJava25")
 
@@ -1402,17 +1569,29 @@ if (customMavenPublishUrl) {
 
                     if (apiPackage) {
                         artifact apiJar
-                        if (enableModernJavaSyntax.toBoolean()) {
+                    }
+
+                    groupId = baseGroupId
+                    artifactId = baseArtifactId
+                    version = baseVersion
+                }
+
+                if (enableModernJavaSyntax.toBoolean()) {
+                    create('mavenJava25', MavenPublication) {
+                        //noinspection GroovyAssignabilityCheck
+                        from components.findByName('java25')
+
+                        if (apiPackage) {
                             artifact apiJarJava25
                         }
-                    }
-                    artifact(java25DevJarTask)
-                    artifact(java25ReobfJarTask)
+                        if (!noPublishedSources.toBoolean()) {
+                            artifact sourcesJar
+                        }
 
-                    // providers is not available here, use System for getting env vars
-                    groupId = System.getenv('ARTIFACT_GROUP_ID') ?: project.mavenArtifactGroup
-                    artifactId = System.getenv('ARTIFACT_ID') ?: project.modArchivesBaseName
-                    version = baseVersion
+                        groupId = baseGroupId
+                        artifactId = baseArtifactId + '-java25'
+                        version = baseVersion
+                    }
                 }
             }
 
@@ -1636,6 +1815,8 @@ tasks.register('jarJava25', Jar) {
     destinationDirectory.set(layout.buildDirectory.dir("libs"))
     archiveClassifier.set('dev-java25')
     from sourceSets.main.output
+    from sourceSets.injectedTags.output
+    dependsOn injectedTagsClasses
     if (useSrcApiPath.toBoolean() && apiPackage) {
         from sourceSets.api.output
         dependsOn apiClasses
@@ -1665,6 +1846,8 @@ if (usesShadowedDependencies.toBoolean()) {
         archiveClassifier.set('dev-java25')
 
         from sourceSets.main.output
+        from sourceSets.injectedTags.output
+        dependsOn injectedTagsClasses
         if (useSrcApiPath.toBoolean() && apiPackage) {
             from sourceSets.api.output
         }
@@ -1676,6 +1859,7 @@ if (usesShadowedDependencies.toBoolean()) {
         manifest {
             attributes(getManifestAttributes())
         }
+        exclude 'module-info.class'
 
         if (minimizeShadowedDependencies.toBoolean()) {
             minimize()
@@ -1688,13 +1872,22 @@ if (usesShadowedDependencies.toBoolean()) {
     cleanroomInputTask = tasks.named('shadowJarJava25')
 }
 
+for (runTask in ['runClient25', 'runServer25']) {
+    tasks.named(runTask, RunHotswappableMinecraftTask).configure {
+        classpath = classpath.minus(project.layout.files(tasks.jar)) + project.layout.files(cleanroomInputTask)
+        dependsOn(cleanroomInputTask)
+    }
+}
+
 def mainReobfProv = tasks.named('reobfJar', ReobfuscatedJar)
 tasks.register('reobfJarJava25', ReobfuscatedJar) { t ->
     group = 'deployment'
     description = 'Creates a reobfuscated JAR with Java 25 bytecode for Cleanroom.'
 
+    destinationDirectory.set(layout.buildDirectory.dir('publication-libs'))
+    archiveBaseName.set(project.modArchivesBaseName.toString() + '-java25-publish')
     inputJar.set(cleanroomInputTask.flatMap { it.archiveFile })
-    archiveClassifier.set('java25')
+    archiveClassifier.set('')
 
     mcVersion.set(mainReobfProv.flatMap { it.mcVersion })
     srg.set(mainReobfProv.flatMap { it.srg })
@@ -1710,30 +1903,115 @@ tasks.register('reobfJarJava25', ReobfuscatedJar) { t ->
     dependsOn(cleanroomInputTask)
 }
 
-tasks.named('build').configure {
+def publishedRuntimeDevTask = enableModernJavaSyntax.toBoolean()
+        ? tasks.named(usesShadowedDependencies.toBoolean() ? 'shadeDowngradedApi' : 'jar', Jar)
+        : tasks.named(usesShadowedDependencies.toBoolean() ? 'shadowJar' : 'jar', Jar)
+def publishedApiDevTask = publishedRuntimeDevTask
+
+if (sourceSets.findByName('api') != null && !useSrcApiPath.toBoolean()) {
+    tasks.register('compileDevJar', Jar) {
+        group = 'build'
+        description = 'Packages the normal dev jar plus src/api output for compile-time consumers.'
+        destinationDirectory.set(layout.buildDirectory.dir("libs"))
+        archiveClassifier.set('dev-compile')
+        dependsOn(publishedRuntimeDevTask)
+        dependsOn(apiClasses)
+        from(provider {
+            zipTree(publishedRuntimeDevTask.get().archiveFile.get().asFile)
+        })
+        from(sourceSets.api.output)
+    }
+    publishedApiDevTask = tasks.named('compileDevJar', Jar)
+}
+
+if (enableModernJavaSyntax.toBoolean()) {
+    def publishedJava25RuntimeDevTask = cleanroomInputTask
+
+    def publishedJava25ApiDevTask = publishedJava25RuntimeDevTask
+    if (sourceSets.findByName('api') != null && !useSrcApiPath.toBoolean()) {
+        publishedJava25ApiDevTask = tasks.register('compileDevJarJava25', Jar) {
+            group = 'build'
+            description = 'Packages the Java 25 dev jar plus src/api output for compile-time consumers.'
+            destinationDirectory.set(layout.buildDirectory.dir('publication-libs'))
+            archiveBaseName.set(project.modArchivesBaseName.toString() + '-java25-publish')
+            archiveClassifier.set('dev-compile')
+            dependsOn(publishedJava25RuntimeDevTask)
+            dependsOn(apiClasses)
+            from(provider {
+                zipTree(publishedJava25RuntimeDevTask.get().archiveFile.get().asFile)
+            })
+            from(sourceSets.api.output)
+        }
+    }
+
+    def copyOutgoingAttributes = { fromCfg, toCfg ->
+        fromCfg.attributes.keySet().each { attr ->
+            toCfg.attributes.attribute(attr, fromCfg.attributes.getAttribute(attr))
+        }
+    }
+
+    def java25ApiElements = configurations.create('java25ApiElements') {
+        canBeConsumed = true
+        canBeResolved = false
+        visible = false
+        extendsFrom(configurations.apiElements)
+    }
+    def java25RuntimeElements = configurations.create('java25RuntimeElements') {
+        canBeConsumed = true
+        canBeResolved = false
+        visible = false
+        extendsFrom(configurations.runtimeElements)
+    }
+    def java25ReobfElements = configurations.create('java25ReobfElements') {
+        canBeConsumed = true
+        canBeResolved = false
+        visible = false
+    }
+    copyOutgoingAttributes(configurations.apiElements, java25ApiElements)
+    copyOutgoingAttributes(configurations.runtimeElements, java25RuntimeElements)
+    copyOutgoingAttributes(configurations.reobfElements, java25ReobfElements)
+    java25ApiElements.outgoing.artifact(publishedJava25ApiDevTask)
+    java25RuntimeElements.outgoing.artifact(publishedJava25RuntimeDevTask) {
+        classifier = 'dev'
+    }
+    java25ReobfElements.outgoing.artifact(tasks.named('reobfJarJava25'))
+
+    def softwareComponentFactory = project.services.get(org.gradle.api.component.SoftwareComponentFactory)
+    def java25Component = softwareComponentFactory.adhoc('java25')
+    components.add(java25Component)
+    java25Component.addVariantsFromConfiguration(java25ApiElements) {
+        mapToMavenScope('compile')
+    }
+    java25Component.addVariantsFromConfiguration(java25RuntimeElements) {
+        mapToMavenScope('runtime')
+    }
+    java25Component.addVariantsFromConfiguration(java25ReobfElements) {
+        mapToMavenScope('runtime')
+    }
+}
+
+configurations.runtimeElements.outgoing.artifacts.clear()
+configurations.apiElements.outgoing.artifacts.clear()
+configurations.runtimeElements.outgoing.artifact(publishedRuntimeDevTask)
+configurations.apiElements.outgoing.artifact(publishedApiDevTask)
+
+tasks.register('releaseBuild') {
+    group = 'build'
+    description = 'Runs the normal build and also produces the Java 25 reobfuscated release jar.'
+    dependsOn('build')
     dependsOn('reobfJarJava25')
 }
 // End Obfuscated Java 25 jar
 
 // GlStateManager hack
 def sourceBackupDir = file("build/tmp/sourceBackup")
+def glStateManagerSource = file("build/rfg/minecraft-src/java/net/minecraft/client/renderer/GlStateManager.java")
+def fmlTweakerSource = file("build/rfg/minecraft-src/java/net/minecraftforge/fml/common/launcher/FMLTweaker.java")
 
-tasks.register('patchAndBackupSources') {
-    group = 'build'
-
-    def targetFile = file("build/rfg/minecraft-src/java/net/minecraft/client/renderer/GlStateManager.java")
-    def backupFile = file("$sourceBackupDir/GlStateManager.java.bak")
-
-    inputs.file(targetFile).withPathSensitivity(PathSensitivity.NONE)
-    outputs.file(backupFile)
-    outputs.file(targetFile).withPropertyName("patchedSource")
-
-    doLast {
-        copy { from targetFile; into sourceBackupDir; rename { 'GlStateManager.java.bak' } }
-
-        String originalContent = targetFile.getText('UTF-8')
-        if (!originalContent.contains("public static void rotate(double")) {
-            def methodToInject = """
+def patchGlStateManagerSource = { File targetFile ->
+    String originalContent = targetFile.getText('UTF-8')
+    if (!originalContent.contains("public static void rotate(double")) {
+        def methodToInject = """
 
     @SuppressWarnings("all")
     public static void rotate(double angle, float x, float y, float z) {
@@ -1741,26 +2019,86 @@ tasks.register('patchAndBackupSources') {
     }
 
 """
-            int lastBraceIndex = originalContent.lastIndexOf('}')
-            String newContent = originalContent.substring(0, lastBraceIndex) + methodToInject + originalContent.substring(lastBraceIndex)
-            targetFile.setText(newContent, 'UTF-8')
+        int lastBraceIndex = originalContent.lastIndexOf('}')
+        String newContent = originalContent.substring(0, lastBraceIndex) + methodToInject + originalContent.substring(lastBraceIndex)
+        targetFile.setText(newContent, 'UTF-8')
+    }
+}
+
+def patchFmlTweakerSource = { File targetFile ->
+    String originalContent = targetFile.getText('UTF-8')
+    final String sentinel = 'Skipping FML security manager installation because this Java runtime no longer supports it'
+    if (originalContent.contains(sentinel)) {
+        return
+    }
+
+    final boolean usesCrlf = originalContent.contains('\r\n')
+    String normalizedContent = originalContent.replace('\r\n', '\n')
+    final String oldSnippet = """        try
+        {
+            System.setSecurityManager(new FMLSecurityManager());
         }
+        catch (SecurityException se)
+        {
+            throw new RuntimeException("FML was unable to install the security manager. The game will not start", se);
+        }"""
+    final String newSnippet = """        try
+        {
+            System.setSecurityManager(new FMLSecurityManager());
+        }
+        catch (UnsupportedOperationException ignored)
+        {
+            LogManager.getLogger("FML.TWEAK").warn("${sentinel}");
+        }
+        catch (SecurityException se)
+        {
+            throw new RuntimeException("FML was unable to install the security manager. The game will not start", se);
+        }"""
+    String newContent = normalizedContent.replace(oldSnippet, newSnippet)
+    if (newContent == normalizedContent) {
+        throw new GradleException("Failed to patch FMLTweaker.java for Java 25 security-manager compatibility")
+    }
+    if (usesCrlf) {
+        newContent = newContent.replace('\n', '\r\n')
+    }
+    targetFile.setText(newContent, 'UTF-8')
+}
+
+tasks.register('patchAndBackupSources') {
+    group = 'build'
+
+    def glStateManagerBackupFile = file("$sourceBackupDir/GlStateManager.java.bak")
+    def fmlTweakerBackupFile = file("$sourceBackupDir/FMLTweaker.java.bak")
+
+    inputs.files(glStateManagerSource, fmlTweakerSource).withPathSensitivity(PathSensitivity.NONE)
+    outputs.files(glStateManagerBackupFile, fmlTweakerBackupFile, glStateManagerSource, fmlTweakerSource)
+
+    doLast {
+        copy { from glStateManagerSource; into sourceBackupDir; rename { 'GlStateManager.java.bak' } }
+        copy { from fmlTweakerSource; into sourceBackupDir; rename { 'FMLTweaker.java.bak' } }
+
+        patchGlStateManagerSource(glStateManagerSource)
+        patchFmlTweakerSource(fmlTweakerSource)
     }
 }
 
 tasks.register('restoreOriginalSources') {
     group = 'build'
 
-    def targetFile = file("build/rfg/minecraft-src/java/net/minecraft/client/renderer/GlStateManager.java")
-    def backupFile = file("$sourceBackupDir/GlStateManager.java.bak")
+    def glStateManagerBackupFile = file("$sourceBackupDir/GlStateManager.java.bak")
+    def fmlTweakerBackupFile = file("$sourceBackupDir/FMLTweaker.java.bak")
 
-    inputs.file(backupFile)
-    outputs.file(targetFile)
+    inputs.files(glStateManagerBackupFile, fmlTweakerBackupFile)
+    outputs.files(glStateManagerSource, fmlTweakerSource)
 
     doLast {
-        if (backupFile.exists()) {
-            copy { from backupFile; into targetFile.parent; rename { 'GlStateManager.java' } }
-            delete(backupFile)
+        if (glStateManagerBackupFile.exists()) {
+            copy { from glStateManagerBackupFile; into glStateManagerSource.parent; rename { 'GlStateManager.java' } }
+            delete(glStateManagerBackupFile)
+        }
+        if (fmlTweakerBackupFile.exists()) {
+            copy { from fmlTweakerBackupFile; into fmlTweakerSource.parent; rename { 'FMLTweaker.java' } }
+            delete(fmlTweakerBackupFile)
         }
     }
 }
@@ -1768,24 +2106,11 @@ tasks.register('restoreOriginalSources') {
 tasks.register('repatchSourcesForIDE') {
     group = 'ide'
 
-    def targetFile = file("build/rfg/minecraft-src/java/net/minecraft/client/renderer/GlStateManager.java")
-    outputs.file(targetFile)
+    outputs.files(glStateManagerSource, fmlTweakerSource)
 
     doLast {
-        String originalContent = targetFile.getText('UTF-8')
-        if (!originalContent.contains("public static void rotate(double")) {
-            def methodToInject = """
-
-    @SuppressWarnings("all")
-    public static void rotate(double angle, float x, float y, float z) {
-        // This is a compile-time-only stub. The real implementation is injected by a coremod at runtime.
-    }
-
-"""
-            int lastBraceIndex = originalContent.lastIndexOf('}')
-            String newContent = originalContent.substring(0, lastBraceIndex) + methodToInject + originalContent.substring(lastBraceIndex)
-            targetFile.setText(newContent, 'UTF-8')
-        }
+        patchGlStateManagerSource(glStateManagerSource)
+        patchFmlTweakerSource(fmlTweakerSource)
     }
 }
 

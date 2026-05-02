@@ -11,8 +11,6 @@ import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.util.CrucibleUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
@@ -131,21 +129,6 @@ public class TileEntityFoundryOutlet extends TileEntityFoundryBase {
 		nbt.setBoolean("invertFilter", this.invertFilter);
 		nbt.setShort("filter", this.filter == null ? -1 : (short) this.filter.id);
 		return super.writeToNBT(nbt);
-	}
-
-	@Override
-	public @NotNull NBTTagCompound getUpdateTag() {
-		return this.writeToNBT(super.getUpdateTag());
-	}
-
-	@Override
-	public SPacketUpdateTileEntity getUpdatePacket() {
-		return new SPacketUpdateTileEntity(this.pos, 12, this.getUpdateTag());
-	}
-
-	@Override
-	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity packet) {
-		this.readFromNBT(packet.getNbtCompound());
 	}
 
 	@Override

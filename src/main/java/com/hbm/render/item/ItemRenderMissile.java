@@ -6,71 +6,89 @@ import com.hbm.render.misc.MissileMultipart;
 import com.hbm.render.misc.MissilePronter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
+import net.minecraft.client.renderer.GlStateManager;
+
 @AutoRegister(item = "missile_custom")
 public class ItemRenderMissile extends TEISRBase {
 
-	@Override
-	public void renderByItem(ItemStack item) {
-		MissileMultipart missile = MissileMultipart.loadFromStruct(ItemCustomMissile.getStruct(item));
-		if(missile == null)
-			return;
-		GlStateManager.pushMatrix();
-		//GlStateManager.translate(0.5, 0.5, 0.5);
-		switch(type) {
-		case THIRD_PERSON_LEFT_HAND:
-		case THIRD_PERSON_RIGHT_HAND:
-		case FIRST_PERSON_LEFT_HAND:
-		case FIRST_PERSON_RIGHT_HAND:
-		case GROUND:
-		case FIXED:
-		case HEAD:
-			
-			double s = 0.2;
-			GL11.glScaled(s, s, s);
-			GlStateManager.translate(2, 0, 0);
-			
-			MissilePronter.prontMissile(missile, Minecraft.getMinecraft().renderEngine);
-			
-			break;
-			
-		case GUI:
-			
-			double height = missile.getHeight();
-			
-			if(height == 0D)
-				height = 4D;
-			
-			double size = 20;
-			double scale = size / height;
-			
-			GlStateManager.translate(height / 2 * scale, 0, 0);
-			GlStateManager.translate(-9.2, 0.2, 0);
-			//System.out.println(scale/14.285714285714285);
-			GL11.glRotated(45, 0, 0, 1);
-			GL11.glRotated(45, 1, 0, 0);
-			
-			//Drillgon200: This number is what I got when I found a decent scale number (0.14) for one part, then divided scale by it.
-			//It seems to work pretty well
-			GL11.glScaled(scale/14.285714285714285, scale/14.285714285714285, scale/14.285714285714285);
-			//GL11.glRotated(135, 0, 0, 1);
-			//GL11.glRotated(215, 1, 0, 0);
-			
-			
-			//GL11.glScaled(-scale, -scale, -scale);
-			
-			/*if(part.type.name().equals(PartType.FINS.name())) {
-				GlStateManager.translate(0, 0, 0);
-				//GL11.glRotated(-45, 1, 0, 0);
-			}*/
+    @Override
+    public void renderByItem(ItemStack item) {
+        MissileMultipart missile = MissileMultipart.loadFromStruct(ItemCustomMissile.getStruct(item));
+        if (missile == null)
+            return;
+        GlStateManager.pushMatrix();
+        super.drawDebugAxes();
+        switch (type) {
+            case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND -> {
 
-			GlStateManager.rotate(System.currentTimeMillis() / 25 % 360, 0, -1, 0);
-			MissilePronter.prontMissile(missile, Minecraft.getMinecraft().renderEngine);
-			
-			break;
-		default: break;
-		}
-		
-		GlStateManager.popMatrix();
-	}
+                double s = 0.2;
+                GL11.glScaled(s, s, s);
+                GlStateManager.translate(2, 0, 0);
+                MissilePronter.prontMissile(missile, Minecraft.getMinecraft().renderEngine);
+            }
+            case HEAD, THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND -> {
+                double s = 0.2;
+                GL11.glScaled(s, s, s);
+                double height = missile.getHeight();
+
+
+                GlStateManager.translate(2, -(height * 0.25), 2);
+                MissilePronter.prontMissile(missile, Minecraft.getMinecraft().renderEngine);
+
+            }
+
+            case GROUND -> {
+                double s = 0.2;
+                GL11.glScaled(s, s, s);
+
+                GlStateManager.translate(2.5, 0, 2.5);
+                MissilePronter.prontMissile(missile, Minecraft.getMinecraft().renderEngine);
+
+            }
+
+            case  FIXED  -> {
+                double height = missile.getHeight();
+
+                if (height == 0D)
+                    height = 4D;
+
+                double size = 20;
+                double scale = size / height;
+
+                GlStateManager.translate(2.5,(height / 2) * scale, 2.5);
+
+                GL11.glScaled(scale / 14.285714285714285, scale / 14.285714285714285, scale / 14.285714285714285);
+
+
+                GlStateManager.translate(2.5, 0, 2.5);
+                MissilePronter.prontMissile(missile, Minecraft.getMinecraft().renderEngine);
+
+            }
+            case GUI -> {
+
+                double height = missile.getHeight();
+
+                if (height == 0D)
+                    height = 4D;
+
+                double size = 20;
+                double scale = size / height;
+
+                GlStateManager.translate(height / 2 * scale, 0, 0);
+                GlStateManager.translate(-9.2, 0.2, 0);
+                GL11.glRotated(45, 0, 0, 1);
+                GL11.glRotated(45, 1, 0, 0);
+
+                GL11.glScaled(scale / 14.285714285714285, scale / 14.285714285714285, scale / 14.285714285714285);
+
+                GlStateManager.rotate((float) System.currentTimeMillis() / 25 % 360, 0, -1, 0);
+                MissilePronter.prontMissile(missile, Minecraft.getMinecraft().renderEngine);
+            }
+            default -> {
+            }
+        }
+
+        GlStateManager.popMatrix();
+    }
 }

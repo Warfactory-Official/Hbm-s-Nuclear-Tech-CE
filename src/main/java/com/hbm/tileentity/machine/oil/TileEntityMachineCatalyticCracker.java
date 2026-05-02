@@ -10,6 +10,7 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CrackingRecipes;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.util.Tuple;
 import io.netty.buffer.ByteBuf;
@@ -26,7 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 
 @AutoRegister
-public class TileEntityMachineCatalyticCracker extends TileEntityLoadedBase implements ITickable, IFluidStandardTransceiver {
+public class TileEntityMachineCatalyticCracker extends TileEntityLoadedBase implements ITickable, IFluidStandardTransceiver, IConnectionAnchors {
 	
 	public FluidTankNTM[] tanks;
 	
@@ -34,15 +35,15 @@ public class TileEntityMachineCatalyticCracker extends TileEntityLoadedBase impl
 		super();
 		tanks = new FluidTankNTM[5];
 
-		tanks[0] = new FluidTankNTM(Fluids.BITUMEN, 4000);
+		tanks[0] = new FluidTankNTM(Fluids.BITUMEN, 4000).withOwner(this);
 
-		tanks[1] = new FluidTankNTM(Fluids.STEAM, 8000);
+		tanks[1] = new FluidTankNTM(Fluids.STEAM, 8000).withOwner(this);
 
-		tanks[2] = new FluidTankNTM(Fluids.OIL, 4000);
+		tanks[2] = new FluidTankNTM(Fluids.OIL, 4000).withOwner(this);
 
-		tanks[3] = new FluidTankNTM(Fluids.PETROLEUM, 4000);
+		tanks[3] = new FluidTankNTM(Fluids.PETROLEUM, 4000).withOwner(this);
 
-		tanks[4] = new FluidTankNTM(Fluids.SPENTSTEAM, 4000);
+		tanks[4] = new FluidTankNTM(Fluids.SPENTSTEAM, 4000).withOwner(this);
 	}
 
 	@Override
@@ -94,7 +95,7 @@ public class TileEntityMachineCatalyticCracker extends TileEntityLoadedBase impl
 		}
 	}
 
-	protected DirPos[] getConPos() {
+	public DirPos[] getConPos() {
 
 		ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
 		ForgeDirection rot = dir.getRotation(ForgeDirection.UP);

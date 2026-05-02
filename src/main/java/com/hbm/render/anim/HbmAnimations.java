@@ -75,7 +75,7 @@ public class HbmAnimations {
 			slot = 9;
 		ItemStack stack = player.getHeldItem(hand);
 
-		if(stack == null || stack.isEmpty())
+		if(stack.isEmpty())
 			return null;
 
 		if(hotbar[slot] == null)
@@ -106,7 +106,13 @@ public class HbmAnimations {
 					return trans;
 			}
 		}
-		return new double[] {0, 0, 0};
+		return new double[] {
+				0, 0, 0, // translation
+				0, 0, 0, // rotation
+				1, 1, 1, // scale
+				0, 0, 0, // offset
+				0, 1, 2, // XYZ rot order
+		};
 	}
 	
 	public static float getTimeDifference(String bus, EnumHand hand){

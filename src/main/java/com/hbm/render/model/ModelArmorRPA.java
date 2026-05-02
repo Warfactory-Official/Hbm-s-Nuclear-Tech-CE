@@ -40,11 +40,11 @@ public class ModelArmorRPA extends ModelArmorBase {
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
 
         switch(type) {
-            case 0 -> {
+            case 3 -> {
                 bindTexture(ResourceManager.rpa_helmet);
                 this.head.render(scaleFactor);
             }
-            case 1 -> {
+            case 2 -> {
                 bindTexture(ResourceManager.rpa_arm);
                 this.leftArm.render(scaleFactor);
                 this.rightArm.render(scaleFactor);
@@ -89,12 +89,12 @@ public class ModelArmorRPA extends ModelArmorBase {
                 GlStateManager.popMatrix();
                 // END FAN //
             }
-            case 2 -> {
+            case 1 -> {
                 bindTexture(ResourceManager.rpa_leg);
                 this.leftLeg.render(scaleFactor);
                 this.rightLeg.render(scaleFactor);
             }
-            case 3 -> {
+            case 0 -> {
                 bindTexture(ResourceManager.rpa_leg);
                 this.leftFoot.render(scaleFactor);
                 this.rightFoot.render(scaleFactor);

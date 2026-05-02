@@ -1,6 +1,6 @@
 {
 	"parent": "item/generated",
 	"textures": {
-		"layer0": "hbm:models/machines/demon_lamp"
+		"layer0": "hbm:blocks/block_steel"
 	}
 }

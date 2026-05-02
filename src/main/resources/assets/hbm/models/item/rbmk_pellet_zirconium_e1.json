@@ -1,7 +1,0 @@
-{
-	"parent": "item/generated",
-	"textures": {
-		"layer0": "hbm:items/rbmk_pellet_zirconium",
-		"layer1": "hbm:items/rbmk_pellet_overlay_e1"
-	}
-}

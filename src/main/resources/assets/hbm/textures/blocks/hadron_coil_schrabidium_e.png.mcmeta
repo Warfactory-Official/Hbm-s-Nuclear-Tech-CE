@@ -1,9 +1,0 @@
-{
-	"ctm": {
-		"ctm_version": 1,
-		"type": "CTM",
-		"textures": [
-			"hbm:blocks/hadron_coil_schrabidium_ctm_e"
-		]
-	}
-}

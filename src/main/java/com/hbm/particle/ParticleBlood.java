@@ -3,21 +3,21 @@ package com.hbm.particle;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.util.BakedModelUtil;
 import com.hbm.render.util.BakedModelUtil.DecalType;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.DestFactor;
 import net.minecraft.client.renderer.GlStateManager.SourceFactor;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 public class ParticleBlood extends Particle {
 
@@ -114,13 +114,23 @@ public class ParticleBlood extends Particle {
         int k = i & 65535;
         
         float a = MathHelper.clamp(this.particleAlpha*(1-fade*fade), 0, 1);
-        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
-        buffer.pos(point2.x, point2.y, point2.z).tex(1, 0).color(particleRed, particleGreen, particleBlue, a).lightmap(j, k).endVertex();
-        buffer.pos(point1.x, point1.y, point1.z).tex(1, 1).color(particleRed, particleGreen, particleBlue, a).lightmap(j, k).endVertex();
-        	
-        buffer.pos(point1.x+particleAxis.x, point1.y+particleAxis.y, point1.z+particleAxis.z).tex(0, 1).color(particleRed, particleGreen, particleBlue, a).lightmap(j, k).endVertex();
-        buffer.pos(point2.x+particleAxis.x, point2.y+particleAxis.y, point2.z+particleAxis.z).tex(0, 0).color(particleRed, particleGreen, particleBlue, a).lightmap(j, k).endVertex();
-        Tessellator.getInstance().draw();
+        NTMBufferBuilder fastBuffer = NTMImmediate.INSTANCE.beginParticlePositionTexColorLmap(GL11.GL_QUADS, 4);
+        int packedColor = NTMBufferBuilder.packColor(particleRed, particleGreen, particleBlue, a);
+        int packedLightmap = NTMBufferBuilder.packLightmap(j, k);
+        float point1X = (float) point1.x;
+        float point1Y = (float) point1.y;
+        float point1Z = (float) point1.z;
+        float point2X = (float) point2.x;
+        float point2Y = (float) point2.y;
+        float point2Z = (float) point2.z;
+        float axisX = (float) particleAxis.x;
+        float axisY = (float) particleAxis.y;
+        float axisZ = (float) particleAxis.z;
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked(point2X, point2Y, point2Z, 1, 0, packedColor, packedLightmap);
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked(point1X, point1Y, point1Z, 1, 1, packedColor, packedLightmap);
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked(point1X + axisX, point1Y + axisY, point1Z + axisZ, 0, 1, packedColor, packedLightmap);
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked(point2X + axisX, point2Y + axisY, point2Z + axisZ, 0, 0, packedColor, packedLightmap);
+        NTMImmediate.INSTANCE.draw();
         GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
         GlStateManager.depthMask(true);
         GlStateManager.disableBlend();

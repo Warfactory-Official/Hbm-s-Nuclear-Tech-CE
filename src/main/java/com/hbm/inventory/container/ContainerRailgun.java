@@ -1,6 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.api.item.IDesignatorItem;
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.items.ModItems;
 import com.hbm.lib.Library;
@@ -16,9 +17,17 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerRailgun extends Container {
 
 	private TileEntityRailgun diFurnace;
-	
+
+	private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(3)
+                                                                              .rule(0, 1, Library::isBattery)
+                                                                              .rule(1, 2, s -> s.getItem() instanceof IDesignatorItem)
+                                                                              .rule(2, 3, s -> s.getItem() == ModItems.charge_railgun)
+                                                                              .ruleDispatchMode(TransferStrategy.RuleDispatchMode.FALLTHROUGH_ON_FAILURE)
+                                                                              .playerFallbackMode(TransferStrategy.PlayerFallbackMode.REBALANCE_SECTIONS)
+                                                                              .build();
+
 	public ContainerRailgun(InventoryPlayer invPlayer, TileEntityRailgun tedf) {
-		
+
 		diFurnace = tedf;
 
 		//battery
@@ -27,7 +36,7 @@ public class ContainerRailgun extends Container {
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 1, 53, 17));
 		//ammo
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 2, 134, 17));
-		
+
 		for(int i = 0; i < 3; i++)
 		{
 			for(int j = 0; j < 9; j++)
@@ -35,21 +44,17 @@ public class ContainerRailgun extends Container {
 				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
 			}
 		}
-		
+
 		for(int i = 0; i < 9; i++)
 		{
 			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 142));
 		}
 	}
-	
+
 	@Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 3,
-                Library::isBattery, 1,
-                s -> s.getItem() instanceof IDesignatorItem, 2,
-                s -> s.getItem() == ModItems.charge_railgun, 3
-        );
+		return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
 	@Override

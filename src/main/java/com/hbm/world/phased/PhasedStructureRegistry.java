@@ -63,7 +63,6 @@ public final class PhasedStructureRegistry {
         register("hbm:reeds_river", PlantReeds.RIVER);
         register("hbm:reeds_beach", PlantReeds.BEACH);
         register("hbm:radio_01", Radio01.INSTANCE);
-        register("hbm:relay", Relay.INSTANCE);
         register("hbm:satellite", Satellite.INSTANCE);
         register("hbm:spaceship", Spaceship.INSTANCE);
         register("hbm:depth_deposit", DepthDeposit.class, DepthDeposit::readFromBuf, DepthDeposit::writeToBuf);

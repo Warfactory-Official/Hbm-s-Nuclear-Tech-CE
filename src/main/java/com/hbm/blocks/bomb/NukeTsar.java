@@ -71,38 +71,30 @@ public class NukeTsar extends BlockContainer implements IBomb {
 	@Override
 	public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
 		TileEntityNukeTsar entity = (TileEntityNukeTsar) worldIn.getTileEntity(pos);
-		if(worldIn.isBlockPowered(pos) && !worldIn.isRemote) {
-			boolean isReady = entity.isReady();
-			boolean isStage1Filled = entity.isStage1Filled();
-			boolean isStage2Filled = entity.isStage2Filled();
-			boolean isStage3Filled = entity.isStage3Filled();
-			if(isStage3Filled) {
+		if(entity != null && worldIn.isBlockPowered(pos) && !worldIn.isRemote) {
+			boolean ready = entity.isReady();
+			boolean filled = entity.isFilled();
+			if (ready && !filled) {
+				this.onPlayerDestroy(worldIn, pos, worldIn.getBlockState(pos));
+				entity.clearSlots();
+				worldIn.setBlockToAir(pos);
+				igniteTestBomb(worldIn, null, pos.getX(), pos.getY(), pos.getZ(), BombConfig.manRadius);
+			} else if(filled) {
 				this.onPlayerDestroy(worldIn, pos, worldIn.getBlockState(pos));
 				entity.clearSlots();
 				worldIn.setBlockToAir(pos);
 				igniteTestBomb(worldIn, null, pos.getX(), pos.getY(), pos.getZ(), BombConfig.tsarRadius);
-			}else if(isStage1Filled) {
-				this.onPlayerDestroy(worldIn, pos, worldIn.getBlockState(pos));
-				entity.clearSlots();
-				worldIn.setBlockToAir(pos);
-				igniteTestBomb(worldIn, null, pos.getX(), pos.getY(), pos.getZ(), BombConfig.tsarRadius/2);
-			}else if(isStage2Filled) {
-				this.onPlayerDestroy(worldIn, pos, worldIn.getBlockState(pos));
-				entity.clearSlots();
-				worldIn.setBlockToAir(pos);
-				igniteTestBomb(worldIn, null, pos.getX(), pos.getY(), pos.getZ(), BombConfig.tsarRadius/3);
-			}else if(isReady) {
-				this.onPlayerDestroy(worldIn, pos, worldIn.getBlockState(pos));
-				entity.clearSlots();
-				worldIn.setBlockToAir(pos);
-				igniteTestBomb(worldIn, null, pos.getX(), pos.getY(), pos.getZ(), BombConfig.tsarRadius/5);
-			}			
+			}
 		}
 	}
 
 	@Override
+	public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
+		return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
+	}
+
+	@Override
 	public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-		worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()));
 		if (worldIn.getTileEntity(pos) instanceof TileEntityNukeTsar tsar && placer instanceof EntityPlayerMP playerMP)
 			tsar.placerID = placer.getUniqueID();
 	}
@@ -125,37 +117,21 @@ public class NukeTsar extends BlockContainer implements IBomb {
 	public BombReturnCode explode(World worldIn, BlockPos pos, Entity detonator) {
 		if(!worldIn.isRemote) {
 			TileEntityNukeTsar entity = (TileEntityNukeTsar) worldIn.getTileEntity(pos);
-			boolean isReady = entity.isReady();
-			boolean isStage1Filled = entity.isStage1Filled();
-			boolean isStage2Filled = entity.isStage2Filled();
-			boolean isStage3Filled = entity.isStage3Filled();
-			if (isStage3Filled) {
-				this.onPlayerDestroy(worldIn, pos, worldIn.getBlockState(pos));
-				entity.clearSlots();
-				worldIn.setBlockToAir(pos);
-				igniteTestBomb(worldIn, detonator, pos.getX(), pos.getY(), pos.getZ(), BombConfig.tsarRadius);
-				return BombReturnCode.DETONATED;
-			} else if (isStage1Filled) {
-				this.onPlayerDestroy(worldIn, pos, worldIn.getBlockState(pos));
-				entity.clearSlots();
-				worldIn.setBlockToAir(pos);
-				igniteTestBomb(worldIn, detonator, pos.getX(), pos.getY(), pos.getZ(), BombConfig.tsarRadius / 2);
-				return BombReturnCode.DETONATED;
-			} else if (isStage2Filled) {
-				this.onPlayerDestroy(worldIn, pos, worldIn.getBlockState(pos));
-				entity.clearSlots();
-				worldIn.setBlockToAir(pos);
-				igniteTestBomb(worldIn, detonator, pos.getX(), pos.getY(), pos.getZ(), BombConfig.tsarRadius / 3);
-				return BombReturnCode.DETONATED;
-			} else if (isReady) {
-				this.onPlayerDestroy(worldIn, pos, worldIn.getBlockState(pos));
-				entity.clearSlots();
-				worldIn.setBlockToAir(pos);
-				igniteTestBomb(worldIn, detonator, pos.getX(), pos.getY(), pos.getZ(), BombConfig.tsarRadius / 5);
-				return BombReturnCode.DETONATED;
-			}
-
-			return BombReturnCode.ERROR_MISSING_COMPONENT;
+            if (entity == null || !entity.isReady()) return BombReturnCode.ERROR_MISSING_COMPONENT;
+            boolean ready = entity.isReady();
+            boolean filled = entity.isFilled();
+            if (ready && !filled) {
+                this.onPlayerDestroy(worldIn, pos, worldIn.getBlockState(pos));
+                entity.clearSlots();
+                worldIn.setBlockToAir(pos);
+                igniteTestBomb(worldIn, null, pos.getX(), pos.getY(), pos.getZ(), BombConfig.manRadius);
+            } else if(filled) {
+                this.onPlayerDestroy(worldIn, pos, worldIn.getBlockState(pos));
+                entity.clearSlots();
+                worldIn.setBlockToAir(pos);
+                igniteTestBomb(worldIn, null, pos.getX(), pos.getY(), pos.getZ(), BombConfig.tsarRadius);
+            }
+			return BombReturnCode.DETONATED;
 		}
 
 		return BombReturnCode.UNDEFINED;
@@ -163,7 +139,17 @@ public class NukeTsar extends BlockContainer implements IBomb {
 	
 	@Override
 	public EnumBlockRenderType getRenderType(IBlockState state) {
-		return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
+		return EnumBlockRenderType.MODEL;
+	}
+
+	@Override
+	public BlockRenderLayer getRenderLayer() {
+		return BlockRenderLayer.CUTOUT;
+	}
+
+	@Override
+	public boolean canRenderInLayer(IBlockState state, BlockRenderLayer layer) {
+		return layer == BlockRenderLayer.CUTOUT;
 	}
 	
 	@Override

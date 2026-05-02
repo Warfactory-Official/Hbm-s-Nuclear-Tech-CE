@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.items.tool.ItemAmmoBag;
 import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
@@ -12,9 +13,13 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerAmmoBag extends Container {
 
     private final ItemAmmoBag.InventoryAmmoBag bag;
+    private final TransferStrategy transferStrategy;
 
     public ContainerAmmoBag(InventoryPlayer invPlayer, ItemAmmoBag.InventoryAmmoBag box) {
         this.bag = box;
+        this.transferStrategy = TransferStrategy.builder(() -> this.bag.getSlots())
+                                                .genericMachineRange(0)
+                                                .build();
 
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 4; j++) {
@@ -36,7 +41,7 @@ public class ContainerAmmoBag extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, bag.getSlots(), true, player);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.transferStrategy, player);
     }
 
     @Override

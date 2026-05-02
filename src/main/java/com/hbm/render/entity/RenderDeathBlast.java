@@ -34,7 +34,7 @@ public class RenderDeathBlast extends Render<EntityDeathBlast> {
 		if(!ClientProxy.renderingConstant)
 			return;
 		GlStateManager.pushMatrix();
-    	GlStateManager.translate((float)x, (float)y, (float)z);
+		GlStateManager.translate((float)x, (float)y, (float)z);
     	GlStateManager.disableLighting();
     	GlStateManager.enableCull();
     	GlStateManager.disableTexture2D();

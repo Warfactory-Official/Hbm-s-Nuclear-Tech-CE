@@ -1,5 +1,10 @@
 {
 	"variants": {
-		"normal": { "model": "hbm:charge_semtex" }
+		"facing=down":  { "model": "hbm:charge_semtex" },
+		"facing=up":    { "model": "hbm:charge_semtex" },
+		"facing=north": { "model": "hbm:charge_semtex" },
+		"facing=south": { "model": "hbm:charge_semtex" },
+		"facing=west":  { "model": "hbm:charge_semtex" },
+		"facing=east":  { "model": "hbm:charge_semtex" }
 	}
 }

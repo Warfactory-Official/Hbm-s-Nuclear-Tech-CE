@@ -1,0 +1,15 @@
+{
+	"name": "RBMK Structural Column",
+	"icon": ["hbm:rbmk_blank", 1, 0],
+	"trigger": [["hbm:rbmk_blank"]],
+	"title": {
+		"en_us": "RBMK Structural Column",
+		"zh_cn": "RBMK反应堆结构柱",
+		"ja_jp": "RBMK空白部"
+	},
+	"content": {
+		"en_us": "RBMK structural columns, often called \"blanks\", are components of the [[RBMK]] that allow neutrons to pass and which conduct heat, but otherwise do not serve any added function. They are commonly used as filler in setups that are not very dense, and for making reactors more aesthetically pleasing.",
+		"zh_cn": "RBMK结构柱是一种[[RBMK]]部件，允许中子通过且能够传导热量，除此之外没有功能。 其常在不太紧凑的反应堆设计中用作填充物，也可用于使反应堆更加美观。",
+		"ja_jp": "RBMK空白部は、 その名の通り「空白」であり、 [[RBMK]]のパーツとして中性子線を通したり熱を通したりし、 そのほかの機能は一切ありません。 これらのパーツは熱のロスを防ぐために空いたスペースを埋めることや、 見た目を充実させるために使用されます。"
+	}
+}

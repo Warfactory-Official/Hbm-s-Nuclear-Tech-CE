@@ -1,8 +1,8 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.Tags;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.ILaserable;
-import com.hbm.inventory.container.ContainerCrateTungsten;
 import com.hbm.inventory.gui.GUICrateTungsten;
 import com.hbm.inventory.recipes.DFCRecipes;
 import com.hbm.items.ModItems;
@@ -10,16 +10,15 @@ import com.hbm.items.weapon.ItemCrucible;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.AuxParticlePacket;
 import com.hbm.tileentity.IBufPacketReceiver;
-import com.hbm.tileentity.IGUIProvider;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
@@ -27,27 +26,21 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Random;
-
 @AutoRegister
-public class TileEntityCrateTungsten extends TileEntityCrate implements IBufPacketReceiver, ITickable, ILaserable, IGUIProvider {
-    private final Random rand = new Random();
+public class TileEntityCrateTungsten extends TileEntityCrate implements IBufPacketReceiver, ITickable, ILaserable {
 
     public int heatTimer = 0;
     public int age = 0;
     public long joules = 0;
 
     public TileEntityCrateTungsten() {
-        super(27, "container.crateTungsten");
+        super(27, "container.crateTungsten", 9, 3, 8, 18, 8, 86, 144, 176, 168, 8, 0xA0A0A0, 0xA0A0A0,
+                new ResourceLocation(Tags.MODID + ":textures/gui/storage/gui_crate_tungsten.png"));
     }
 
     @Override
     public void update() {
         if (!world.isRemote) {
-            if (world.getTotalWorldTime() % 10 == 3 && needsUpdate){
-                scheduleCheck();
-                needsUpdate = false;
-            }
             if (heatTimer > 0)
                 heatTimer--;
 
@@ -80,6 +73,7 @@ public class TileEntityCrateTungsten extends TileEntityCrate implements IBufPack
     @Override
     public void addEnergy(World world, BlockPos pos, long energy, EnumFacing dir) {
         heatTimer = 5;
+        boolean changed = false;
 
         for (int i = 0; i < inventory.getSlots(); i++) {
             ItemStack stack = inventory.getStackInSlot(i);
@@ -96,6 +90,7 @@ public class TileEntityCrateTungsten extends TileEntityCrate implements IBufPack
 
             if (stack.getItem() == ModItems.crucible && ItemCrucible.getCharges(stack) < 3 && energy > 10000000) {
                 ItemCrucible.charge(stack);
+                changed = true;
             }
 
             if (!result.isEmpty()) {
@@ -105,10 +100,14 @@ public class TileEntityCrateTungsten extends TileEntityCrate implements IBufPack
                     ItemStack newStack = result.copy();
                     newStack.setCount(result.getCount() * size);
                     inventory.setStackInSlot(i, newStack);
+                    changed = true;
                 }
             }
         }
         joules = energy;
+        if (changed && !world.isRemote) {
+            markDirty();
+        }
     }
 
     @Override
@@ -122,11 +121,6 @@ public class TileEntityCrateTungsten extends TileEntityCrate implements IBufPack
     public @NotNull NBTTagCompound writeToNBT(NBTTagCompound compound) {
         compound.setInteger("heatTimer", this.heatTimer);
         return super.writeToNBT(compound);
-    }
-
-    @Override
-    public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
-        return new ContainerCrateTungsten(player.inventory, this);
     }
 
     @Override

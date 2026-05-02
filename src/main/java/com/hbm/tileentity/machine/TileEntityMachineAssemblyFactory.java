@@ -21,6 +21,7 @@ import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.modules.machine.ModuleMachineAssembler;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -49,7 +50,7 @@ import java.util.List;
 import java.util.Random;
 
 @AutoRegister
-public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, IControlReceiver, IGUIProvider, TileEntityProxyDyn.IProxyDelegateProvider {
+public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, IControlReceiver, IGUIProvider, TileEntityProxyDyn.IProxyDelegateProvider, IConnectionAnchors {
 
     public FluidTankNTM[] allTanks;
     public FluidTankNTM[] inputTanks;
@@ -80,12 +81,12 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
         this.inputTanks = new FluidTankNTM[4];
         this.outputTanks = new FluidTankNTM[4];
         for(int i = 0; i < 4; i++) {
-            this.inputTanks[i] = new FluidTankNTM(Fluids.NONE, 4_000);
-            this.outputTanks[i] = new FluidTankNTM(Fluids.NONE, 4_000);
+            this.inputTanks[i] = new FluidTankNTM(Fluids.NONE, 4_000).withOwner(this);
+            this.outputTanks[i] = new FluidTankNTM(Fluids.NONE, 4_000).withOwner(this);
         }
 
-        this.water = new FluidTankNTM(Fluids.WATER, 4_000);
-        this.lps = new FluidTankNTM(Fluids.SPENTSTEAM, 4_000);
+        this.water = new FluidTankNTM(Fluids.WATER, 4_000).withOwner(this);
+        this.lps = new FluidTankNTM(Fluids.SPENTSTEAM, 4_000).withOwner(this);
 
         this.allTanks = new FluidTankNTM[this.inputTanks.length + this.outputTanks.length + 2];
         System.arraycopy(this.inputTanks, 0, this.allTanks, 0, inputTanks.length);

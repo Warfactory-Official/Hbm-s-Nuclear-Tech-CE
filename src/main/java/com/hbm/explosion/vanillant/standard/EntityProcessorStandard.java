@@ -17,6 +17,7 @@ import net.minecraftforge.event.ForgeEventFactory;
 import java.util.HashMap;
 import java.util.List;
 
+@Deprecated // an inferior version to the cross processors, so there is no actual reason to ever use this one
 public class EntityProcessorStandard implements IEntityProcessor {
 
 	protected IEntityRangeMutator range;
@@ -91,12 +92,7 @@ public class EntityProcessorStandard implements IEntityProcessor {
 	}
 	
 	public EntityProcessorStandard withRangeMod(float mod) {
-		range = new IEntityRangeMutator() {
-			@Override
-			public float mutateRange(ExplosionVNT explosion, float range) {
-				return range * mod;
-			}
-		};
+        range = (_, range) -> range * mod;
 		return this;
 	}
 	

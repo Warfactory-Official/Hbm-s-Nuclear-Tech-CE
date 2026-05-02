@@ -3,11 +3,14 @@ package com.hbm.blocks;
 import com.google.common.collect.ImmutableMap;
 import com.hbm.handler.MultiblockHandlerXR;
 import com.hbm.interfaces.ICopiable;
+import com.hbm.items.ClaimedModelLocationRegistry;
 import com.hbm.items.IDynamicModels;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
+import com.hbm.main.client.NTMClientRegistry;
+import com.hbm.main.client.StaticTesrBakedModels;
 import com.hbm.tileentity.IPersistentNBT;
 import com.hbm.world.gen.nbt.INBTBlockTransformable;
 import net.minecraft.block.Block;
@@ -24,15 +27,14 @@ import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving.SpawnPlacementType;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.*;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -95,6 +97,10 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
         return 512;
     }
 
+    protected boolean isSameMultiblock(Block other) {
+        return other == this;
+    }
+
     private long findCoreSerialized(IBlockAccess world, BlockPos pos, BlockPos.MutableBlockPos scratch) {
         return findCoreSerialized(world, pos.getX(), pos.getY(), pos.getZ(), scratch);
     }
@@ -103,7 +109,7 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
         for (int steps = 0, max = getMaxCoreSearchSteps(); steps < max; steps++) {
             scratch.setPos(x, y, z);
             IBlockState state = world.getBlockState(scratch);
-            if (state.getBlock() != this) return NO_CORE;
+            if (!isSameMultiblock(state.getBlock())) return NO_CORE;
             int meta = state.getValue(META);
             if (meta >= 12) return Library.blockPosToLong(x, y, z);
             if (meta >= extra) meta -= extra;
@@ -159,7 +165,7 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 
         ForgeDirection dir = ForgeDirection.getOrientation(metadata).getOpposite();
         BlockPos other = pos.add(dir.offsetX, dir.offsetY, dir.offsetZ);
-        if (world.getBlockState(other).getBlock() != this) {
+        if (!isSameMultiblock(world.getBlockState(other).getBlock())) {
             world.setBlockToAir(pos);
         }
     }
@@ -176,7 +182,7 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 
         ForgeDirection dir = ForgeDirection.getOrientation(metadata).getOpposite();
         BlockPos other = pos.add(dir.offsetX, dir.offsetY, dir.offsetZ);
-        if (world.getBlockState(other).getBlock() != this) {
+        if (!isSameMultiblock(world.getBlockState(other).getBlock())) {
             world.setBlockToAir(pos);
         }
     }
@@ -276,8 +282,11 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 		return dir;
 	}
 
-	protected EnumFacing getDirModified(EnumFacing dir) {
-		return dir;
+	protected final EnumFacing getDirModified(EnumFacing dir) {
+        if (dir == null) return null;
+        ForgeDirection modified = getDirModified(ForgeDirection.getOrientation(dir));
+        EnumFacing facing = modified.toEnumFacing();
+		return facing != null ? facing : dir;
 	}
 
     public boolean checkRequirement(World world, int x, int y, int z, ForgeDirection dir, int o) {
@@ -446,6 +455,7 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 	}
 	
 	public abstract int[] getDimensions();
+
 	public abstract int getOffset();
 	
 	public int getHeightOffset() {
@@ -486,6 +496,17 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
                     coreZ - dZ + 0.5), 0, 0, 0, 1.0F);
         ICustomBlockHighlight.cleanup();
     }
+
+	@Override
+	public boolean isFullCube(IBlockState state) {
+		return false;
+	}
+
+	/// crappers spawning on large machines pmo
+	@Override
+	public boolean canCreatureSpawn(IBlockState state,IBlockAccess world,BlockPos pos,SpawnPlacementType type) {
+		return false;
+	}
 
 	@Override
 	public @NotNull AxisAlignedBB getBoundingBox(@NotNull IBlockState state, @NotNull IBlockAccess source, @NotNull BlockPos pos) {
@@ -565,16 +586,18 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 			);
 			ModelResourceLocation worldLocation = new ModelResourceLocation(getRegistryName(), "normal");
 			event.getModelRegistry().putObject(worldLocation, blockBaked);
-			IModel itemBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
-			ImmutableMap<String, String> itemTextures = ImmutableMap.of("layer0", "hbm:blocks/" + getRegistryName().getPath());
-			IModel itemRetextured = itemBaseModel.retexture(itemTextures);
-			IBakedModel itemBaked = itemRetextured.bake(
-					ModelRotation.X0_Y0,
-					DefaultVertexFormats.ITEM,
-					ModelLoader.defaultTextureGetter()
-			);
-			ModelResourceLocation inventoryLocation = new ModelResourceLocation(getRegistryName(), "inventory");
-			event.getModelRegistry().putObject(inventoryLocation, itemBaked);
+            if (!ClaimedModelLocationRegistry.hasSyntheticTeisrBinding(Item.getItemFromBlock(this))) {
+				IModel itemBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
+				ImmutableMap<String, String> itemTextures = ImmutableMap.of("layer0", "hbm:blocks/" + getRegistryName().getPath());
+				IModel itemRetextured = itemBaseModel.retexture(itemTextures);
+				IBakedModel itemBaked = itemRetextured.bake(
+						ModelRotation.X0_Y0,
+						DefaultVertexFormats.ITEM,
+						ModelLoader.defaultTextureGetter()
+				);
+				ModelResourceLocation inventoryLocation = new ModelResourceLocation(getRegistryName(), "inventory");
+				event.getModelRegistry().putObject(inventoryLocation, itemBaked);
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -585,12 +608,41 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerModel() {
-		ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0, new ModelResourceLocation(this.getRegistryName(), "inventory"));
+		Item item = Item.getItemFromBlock(this);
+		ModelResourceLocation syntheticLocation = NTMClientRegistry.getSyntheticTeisrModelLocation(item);
+		ModelLoader.setCustomModelResourceLocation(item, 0, syntheticLocation != null ? syntheticLocation : new ModelResourceLocation(this.getRegistryName(), "inventory"));
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerSprite(TextureMap map) {
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public EnumBlockRenderType getRenderType(IBlockState state) {
+		if (StaticTesrBakedModels.isManagedBlock(this)) {
+			return EnumBlockRenderType.MODEL;
+		}
+		return super.getRenderType(state);
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public BlockRenderLayer getRenderLayer() {
+		if (StaticTesrBakedModels.isManagedBlock(this)) {
+			return BlockRenderLayer.CUTOUT;
+		}
+		return super.getRenderLayer();
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public boolean canRenderInLayer(IBlockState state, BlockRenderLayer layer) {
+		if (StaticTesrBakedModels.isManagedBlock(this)) {
+			return layer == BlockRenderLayer.CUTOUT;
+		}
+		return super.canRenderInLayer(state, layer);
 	}
 
 	@Override

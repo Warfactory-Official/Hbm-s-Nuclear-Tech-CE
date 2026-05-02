@@ -27,7 +27,7 @@ public class TileEntityMachineOrbus extends TileEntityBarrel {
 	protected DirPos[] conPos;
 
 	@Override
-	protected DirPos[] getConPos() {
+	public DirPos[] getConPos() {
 
 		if(conPos != null)
 			return conPos;

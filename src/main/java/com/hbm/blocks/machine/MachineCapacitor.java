@@ -309,10 +309,16 @@ public class MachineCapacitor extends BlockContainer implements ILookOverlay, IP
 
         @Override
         public void setPower(long power) {
+            long newPower;
             if (this.maxPower > 0) {
-                this.power = Math.max(0L, Math.min(power, this.maxPower));
+                newPower = Math.max(0L, Math.min(power, this.maxPower));
             } else {
-                this.power = Math.max(0L, power);
+                newPower = Math.max(0L, power);
+            }
+            if (this.power == newPower) return;
+            this.power = newPower;
+            if (this.world != null && !this.world.isRemote) {
+                this.markChanged();
             }
         }
 

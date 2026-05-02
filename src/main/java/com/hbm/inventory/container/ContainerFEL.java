@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.items.machine.ItemFELCrystal;
 import com.hbm.lib.Library;
@@ -16,7 +17,13 @@ public class ContainerFEL extends Container {
 
 	private TileEntityFEL fel;
 
-	public ContainerFEL(InventoryPlayer invPlayer, TileEntityFEL tedf) {
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(2)
+                                                                              .rule(0, 1, Library::isBattery)
+                                                                              .rule(1, 2,
+                                                                                      s -> s.getItem() instanceof ItemFELCrystal)
+                                                                              .build();
+
+    public ContainerFEL(InventoryPlayer invPlayer, TileEntityFEL tedf) {
 
 		fel = tedf;
 
@@ -38,9 +45,7 @@ public class ContainerFEL extends Container {
 
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 2,
-                Library::isBattery, 1,
-                s -> s.getItem() instanceof ItemFELCrystal, 2);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
 	}
 
 	@Override

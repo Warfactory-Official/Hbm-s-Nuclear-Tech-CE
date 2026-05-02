@@ -1,11 +1,11 @@
 package com.hbm.handler.threading;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.hbm.config.GeneralConfig;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.NetworkHandler;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.threading.ThreadedPacket;
+import io.netty.util.concurrent.DefaultThreadFactory;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
@@ -33,7 +33,7 @@ public class PacketThreading {
      * Global lock guarding the FML channel state for outbound packets.
      */
     public static final ReentrantLock LOCK = new ReentrantLock();
-    public static final String THREAD_PREFIX = "NTM-Packet-Thread-";
+    public static final String THREAD_PREFIX = "NTM-Packet-Thread";
     private static final Object IN_FLIGHT_BASE = staticFieldBase(PacketThreading.class, "inFlightDispatch");
     private static final long IN_FILGHT_OFF = staticfieldOffset(PacketThreading.class, "inFlightDispatch");
     private static final Object LAST_S_FLUSH_BASE = staticFieldBase(PacketThreading.class, "lastServerFlushNs");
@@ -45,7 +45,7 @@ public class PacketThreading {
     // Coalesce flushes in multi-threaded mode to avoid flush storms.
     private static final long MIN_FLUSH_NS = 1_000_000L; // 1ms
 
-    private static final ThreadFactory packetThreadFactory = new ThreadFactoryBuilder().setNameFormat(THREAD_PREFIX + "%d").setDaemon(true).build();
+    private static final ThreadFactory packetThreadFactory = new DefaultThreadFactory(THREAD_PREFIX, true);
 
     private static final LongAdder totalCnt = new LongAdder();
     private static final LongAdder nanosWaited = new LongAdder();
@@ -102,8 +102,7 @@ public class PacketThreading {
             running = true;
             MpscBlockingConsumerArrayQueue<PacketTask> q = new MpscBlockingConsumerArrayQueue<>(QUEUE_CAPACITY);
             singleThreadQueue = q;
-            Thread t = new Thread(() -> processBatch(q), "NTM-Packet-Thread-0");
-            t.setDaemon(true);
+            Thread t = packetThreadFactory.newThread(() -> processBatch(q));
             singleWorkerThread = t;
             t.start();
         }

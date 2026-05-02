@@ -5,7 +5,53 @@
 		"model": "hbm:barrel_steel.obj"
 	},
 	"variants": {
-		"normal": [{}],
+		"conn_pos_x": {
+			"false": {},
+			"true": {
+				"submodel": {
+					"conn_pos_x": {
+						"model": "hbm:barrel_connector",
+						"textures": { "all": "hbm:blocks/barrel_steel_flipped" }
+					}
+				}
+			}
+		},
+		"conn_pos_z": {
+			"false": {},
+			"true": {
+				"submodel": {
+					"conn_pos_z": {
+						"model": "hbm:barrel_connector",
+						"textures": { "all": "hbm:blocks/barrel_steel_flipped" },
+						"y": 90
+					}
+				}
+			}
+		},
+		"conn_neg_x": {
+			"false": {},
+			"true": {
+				"submodel": {
+					"conn_neg_x": {
+						"model": "hbm:barrel_connector",
+						"textures": { "all": "hbm:blocks/barrel_steel_flipped" },
+						"y": 180
+					}
+				}
+			}
+		},
+		"conn_neg_z": {
+			"false": {},
+			"true": {
+				"submodel": {
+					"conn_neg_z": {
+						"model": "hbm:barrel_connector",
+						"textures": { "all": "hbm:blocks/barrel_steel_flipped" },
+						"y": 270
+					}
+				}
+			}
+		},
 		"inventory": [{ "transform": "forge:default-block" }]
 	}
 }

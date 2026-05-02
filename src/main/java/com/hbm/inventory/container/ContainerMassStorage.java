@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.tileentity.machine.storage.TileEntityMassStorage;
 import com.hbm.util.InventoryUtil;
@@ -14,6 +15,10 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerMassStorage extends Container {
 
 	private TileEntityMassStorage storage;
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(3)
+                                                                              .rule(0, 1, _ -> true)
+                                                                              .rule(1, 3, _ -> false)
+                                                                              .build();
 
 	public ContainerMassStorage(InventoryPlayer invPlayer, TileEntityMassStorage tile) {
 		this.storage = tile;
@@ -35,7 +40,7 @@ public class ContainerMassStorage extends Container {
 
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer playerIn, int index) {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 3, _ -> true, 1, _ -> false, 3);
+		return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, playerIn);
 	}
 
 	@Override

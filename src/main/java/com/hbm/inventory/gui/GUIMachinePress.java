@@ -4,10 +4,10 @@ import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerMachinePress;
 import com.hbm.render.util.GaugeUtil;
 import com.hbm.tileentity.machine.TileEntityMachinePress;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.client.renderer.GlStateManager;
 
 import java.util.Collections;
 
@@ -19,7 +19,7 @@ public class GUIMachinePress extends GuiInfoContainer {
 		super(new ContainerMachinePress(invPlayer, te));
 		this.press = te;
 		this.xSize = 176;
-		this.ySize = 166;
+		this.ySize = 202;
 	}
 
 	@Override
@@ -44,10 +44,10 @@ public class GUIMachinePress extends GuiInfoContainer {
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 		if (this.press.burnTime > 0) {
-			this.drawTexturedModalRect(guiLeft + 27, guiTop + 36, 176, 0, 14, 14);
+			this.drawTexturedModalRect(guiLeft + 27, guiTop + 36, 0, 202, 14, 14);
 		}
 		int progress = this.press.getProgressScaled(16);
-		this.drawTexturedModalRect(guiLeft + 79, guiTop + 35, 194, 0, 18, progress);
+		this.drawTexturedModalRect(guiLeft + 79, guiTop + 35, 14, 202, 18, progress);
 		double speed = (double) this.press.speed / (double) TileEntityMachinePress.maxSpeed;
 		GaugeUtil.drawSmoothGauge(guiLeft + 34, guiTop + 25, this.zLevel, speed, 5, 2, 1, 0x7f0000);
 	}

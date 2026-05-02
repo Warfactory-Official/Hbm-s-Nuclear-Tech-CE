@@ -4,15 +4,19 @@ import net.minecraft.launchwrapper.Launch;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import zone.rong.mixinbooter.IEarlyMixinLoader;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 @IFMLLoadingPlugin.MCVersion("1.12.2")
-@IFMLLoadingPlugin.TransformerExclusions({"com.hbm.core"})
+@IFMLLoadingPlugin.TransformerExclusions({"com.hbm.core", "com.hbm.mixin"})
 @IFMLLoadingPlugin.SortingIndex(2077) // mlbv: this shit must be greater than 1000, after the srg transformer
-public class HbmCorePlugin implements IFMLLoadingPlugin {
+public class HbmCorePlugin implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
     static final Logger coreLogger = LogManager.getLogger("HBM CoreMod");
+
     private static final Brand brand;
     private static boolean runtimeDeobfEnabled = false;
     private static boolean hardCrash = true;
@@ -79,6 +83,15 @@ public class HbmCorePlugin implements IFMLLoadingPlugin {
     @Override
     public String getAccessTransformerClass() {
         return null;
+    }
+
+    @Override
+    public List<String> getMixinConfigs() {
+        return Arrays.asList(
+                "hbm.common.mixin.json",
+                "hbm.mod.mixin.json",
+                "hbm.vanilla.mixin.json"
+        );
     }
 
     public enum Brand {

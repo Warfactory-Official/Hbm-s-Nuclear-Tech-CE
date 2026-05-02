@@ -101,6 +101,32 @@ public class ItemFluidTank extends ItemBakedBase {
 
 	@Override
 	@SideOnly(Side.CLIENT)
+	public boolean ownsModelLocation(ModelResourceLocation location) {
+		return this.modelLocation.equals(location);
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public IModel loadModel(ModelResourceLocation location) {
+		if (!this.modelLocation.equals(location)) {
+			return super.loadModel(location);
+		}
+
+		try {
+			IModel generated = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/generated"));
+			ImmutableMap.Builder<String, String> textures = ImmutableMap.builder();
+			textures.put("layer0", this.baseTextureLocation.toString());
+			if (this.overlayTextureLocation != null) {
+				textures.put("layer1", this.overlayTextureLocation.toString());
+			}
+			return generated.retexture(textures.build());
+		} catch (Exception e) {
+			return super.loadModel(location);
+		}
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
 	public IItemColor getItemColorHandler() {
 		return (stack, tintIndex) -> {
 			if (tintIndex == 0) {

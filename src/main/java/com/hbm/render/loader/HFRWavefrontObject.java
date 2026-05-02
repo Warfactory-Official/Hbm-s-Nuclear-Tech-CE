@@ -1,7 +1,7 @@
 package com.hbm.render.loader;
 
+import com.hbm.render.util.NTMImmediate;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.IResource;
@@ -21,7 +21,11 @@ import java.util.regex.Pattern;
 
 public class HFRWavefrontObject implements IModelCustomNamed
 {
-    private static Pattern vertexPattern = Pattern.compile("(v( (\\-){0,1}\\d+(\\.\\d+)?){3,4} *\\n)|(v( (\\-){0,1}\\d+(\\.\\d+)?){3,4} *$)");
+    /** For resource reloading */
+    //mlbv: removed. see comments at HFRModelReloader
+//    public static LinkedHashSet<HFRWavefrontObject> allModels = new LinkedHashSet();
+//    public static LinkedHashMap<WaveFrontObjectVAO, HFRWavefrontObject> allVBOs = new LinkedHashMap();
+    private static Pattern vertexPattern = Pattern.compile("(v( (\\-){0,1}\\d+(\\.\\d+)?){3,7} *\\n)|(v( (\\-){0,1}\\d+(\\.\\d+)?){3,7} *$)");
     private static Pattern vertexNormalPattern = Pattern.compile("(vn( (\\-){0,1}\\d+(\\.\\d+)?){3,4} *\\n)|(vn( (\\-){0,1}\\d+(\\.\\d+)?){3,4} *$)");
     private static Pattern textureCoordinatePattern = Pattern.compile("(vt( (\\-){0,1}\\d+\\.\\d+){2,3} *\\n)|(vt( (\\-){0,1}\\d+(\\.\\d+)?){2,3} *$)");
     private static Pattern face_V_VT_VN_Pattern = Pattern.compile("(f( \\d+/\\d+/\\d+){3,4} *\\n)|(f( \\d+/\\d+/\\d+){3,4} *$)");
@@ -39,19 +43,28 @@ public class HFRWavefrontObject implements IModelCustomNamed
     public ArrayList<TextureCoordinate> textureCoordinates = new ArrayList<TextureCoordinate>();
     public ArrayList<GroupObject> groupObjects = new ArrayList<GroupObject>();
     private GroupObject currentGroupObject;
+    public ResourceLocation resource;
     private String fileName;
+    private boolean allowMixedMode = false;
 
-    public HFRWavefrontObject(ResourceLocation resource) throws ModelFormatException
-    {
+    public HFRWavefrontObject(ResourceLocation resource) throws ModelFormatException {
+        this(resource, false);
+    }
+
+    /** Provides a way for a model to have both tris and quads, however this means it can't be rendered directly.
+     * Useful for ISBRHs which access vertices manually, allowing the quad to tri trick without forcing the entire model to be redundant tris. */
+    public void mixedMode() { this.allowMixedMode = true; }
+
+    public HFRWavefrontObject(ResourceLocation resource, boolean mixedMode) throws ModelFormatException {
+        if(mixedMode) this.mixedMode();
+
+        this.resource = resource;
         this.fileName = resource.toString();
 
-        try
-        {
+        try {
             IResource res = Minecraft.getMinecraft().getResourceManager().getResource(resource);
             loadObjModel(res.getInputStream());
-        }
-        catch (IOException e)
-        {
+        } catch(IOException e) {
             throw new ModelFormatException("IO Exception reading model format", e);
         }
     }
@@ -62,7 +75,15 @@ public class HFRWavefrontObject implements IModelCustomNamed
         loadObjModel(inputStream);
     }
 
-    private void loadObjModel(InputStream inputStream) throws ModelFormatException
+    public void destroy() {
+        vertices.clear();
+        vertexNormals.clear();
+        textureCoordinates.clear();
+        groupObjects.clear();
+        currentGroupObject = null;
+    }
+
+    public void loadObjModel(InputStream inputStream) throws ModelFormatException
     {
         BufferedReader reader = null;
 
@@ -169,20 +190,19 @@ public class HFRWavefrontObject implements IModelCustomNamed
     @SideOnly(Side.CLIENT)
     public void renderAll()
     {
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buf = tessellator.getBuffer();
+        if(allowMixedMode) throw new UnsupportedOperationException("Rendering of mixed-mode model " + this.fileName + " is not supported!");
 
         if (currentGroupObject != null)
         {
-            buf.begin(currentGroupObject.glDrawingMode, DefaultVertexFormats.POSITION_TEX_NORMAL);
+            NTMImmediate.INSTANCE.begin(currentGroupObject.glDrawingMode, DefaultVertexFormats.POSITION_TEX_NORMAL);
         }
         else
         {
-            buf.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_NORMAL);
+            NTMImmediate.INSTANCE.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_NORMAL);
         }
-        tessellateAll(tessellator);
+        tessellateAll(Tessellator.getInstance());
 
-        tessellator.draw();
+        NTMImmediate.INSTANCE.draw();
     }
 
     @SideOnly(Side.CLIENT)
@@ -198,6 +218,8 @@ public class HFRWavefrontObject implements IModelCustomNamed
     @SideOnly(Side.CLIENT)
     public void renderOnly(String... groupNames)
     {
+        if(allowMixedMode) throw new UnsupportedOperationException("Rendering of mixed-mode model " + this.fileName + " is not supported!");
+
         for (GroupObject groupObject : groupObjects)
         {
             for (String groupName : groupNames)
@@ -229,6 +251,8 @@ public class HFRWavefrontObject implements IModelCustomNamed
     @SideOnly(Side.CLIENT)
     public void renderPart(String partName)
     {
+        if(allowMixedMode) throw new UnsupportedOperationException("Rendering of mixed-mode model " + this.fileName + " is not supported!");
+
         for (GroupObject groupObject : groupObjects)
         {
             if (partName.equalsIgnoreCase(groupObject.name))
@@ -253,6 +277,8 @@ public class HFRWavefrontObject implements IModelCustomNamed
     @SideOnly(Side.CLIENT)
     public void renderAllExcept(String... excludedGroupNames)
     {
+        if(allowMixedMode) throw new UnsupportedOperationException("Rendering of mixed-mode model " + this.fileName + " is not supported!");
+
         for (GroupObject groupObject : groupObjects)
         {
             boolean skipPart=false;
@@ -310,6 +336,18 @@ public class HFRWavefrontObject implements IModelCustomNamed
                 {
                     return new Vertex(Float.parseFloat(tokens[0]), Float.parseFloat(tokens[1]), Float.parseFloat(tokens[2]));
                 }
+                else if (tokens.length == 6)
+                {
+                    Vertex v = new Vertex(Float.parseFloat(tokens[0]), Float.parseFloat(tokens[1]), Float.parseFloat(tokens[2]));
+                    v.color = packColor(Float.parseFloat(tokens[3]), Float.parseFloat(tokens[4]), Float.parseFloat(tokens[5]), 1f);
+                    return v;
+                }
+                else if (tokens.length == 7)
+                {
+                    Vertex v = new Vertex(Float.parseFloat(tokens[0]), Float.parseFloat(tokens[1]), Float.parseFloat(tokens[2]));
+                    v.color = packColor(Float.parseFloat(tokens[3]), Float.parseFloat(tokens[4]), Float.parseFloat(tokens[5]), Float.parseFloat(tokens[6]));
+                    return v;
+                }
             }
             catch (NumberFormatException e)
             {
@@ -322,6 +360,15 @@ public class HFRWavefrontObject implements IModelCustomNamed
         }
 
         return vertex;
+    }
+
+    private static int packColor(float r, float g, float b, float a)
+    {
+        int ai = (int) (a * 255f) & 0xFF;
+        int ri = (int) (r * 255f) & 0xFF;
+        int gi = (int) (g * 255f) & 0xFF;
+        int bi = (int) (b * 255f) & 0xFF;
+        return (ai << 24) | (ri << 16) | (gi << 8) | bi;
     }
 
     private Vertex parseVertexNormal(String line, int lineCount) throws ModelFormatException
@@ -392,26 +439,19 @@ public class HFRWavefrontObject implements IModelCustomNamed
             String[] tokens = trimmedLine.split(" ");
             String[] subTokens = null;
 
-            if (tokens.length == 3)
-            {
-                if (currentGroupObject.glDrawingMode == -1)
-                {
-                    currentGroupObject.glDrawingMode = GL11.GL_TRIANGLES;
-                }
-                else if (currentGroupObject.glDrawingMode != GL11.GL_TRIANGLES)
-                {
-                    throw new ModelFormatException("Error parsing entry ('" + line + "'" + ", line " + lineCount + ") in file '" + fileName + "' - Invalid number of points for face (expected 4, found " + tokens.length + ")");
-                }
-            }
-            else if (tokens.length == 4)
-            {
-                if (currentGroupObject.glDrawingMode == -1)
-                {
-                    currentGroupObject.glDrawingMode = GL11.GL_QUADS;
-                }
-                else if (currentGroupObject.glDrawingMode != GL11.GL_QUADS)
-                {
-                    throw new ModelFormatException("Error parsing entry ('" + line + "'" + ", line " + lineCount + ") in file '" + fileName + "' - Invalid number of points for face (expected 3, found " + tokens.length + ")");
+            if(!this.allowMixedMode) {
+                if (tokens.length == 3) {
+                    if (currentGroupObject.glDrawingMode == -1) {
+                        currentGroupObject.glDrawingMode = GL11.GL_TRIANGLES;
+                    } else if (currentGroupObject.glDrawingMode != GL11.GL_TRIANGLES) {
+                        throw new ModelFormatException("Error parsing entry ('" + line + "'" + ", line " + lineCount + ") in file '" + fileName + "' - Invalid number of points for face (expected 4, found " + tokens.length + ")");
+                    }
+                } else if (tokens.length == 4) {
+                    if (currentGroupObject.glDrawingMode == -1) {
+                        currentGroupObject.glDrawingMode = GL11.GL_QUADS;
+                    } else if (currentGroupObject.glDrawingMode != GL11.GL_QUADS) {
+                        throw new ModelFormatException("Error parsing entry ('" + line + "'" + ", line " + lineCount + ") in file '" + fileName + "' - Invalid number of points for face (expected 3, found " + tokens.length + ")");
+                    }
                 }
             }
 
@@ -605,7 +645,11 @@ public class HFRWavefrontObject implements IModelCustomNamed
     }
 
     public WaveFrontObjectVAO asVBO() {
-        return new WaveFrontObjectVAO(this);
+        return new WaveFrontObjectVAO(this, false);
+    }
+
+    public WaveFrontObjectVAO asColoredVAO() {
+        return new WaveFrontObjectVAO(this, true);
     }
 
     @Override

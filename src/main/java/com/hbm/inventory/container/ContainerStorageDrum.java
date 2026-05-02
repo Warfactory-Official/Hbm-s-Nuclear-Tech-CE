@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.tileentity.machine.TileEntityStorageDrum;
 import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
@@ -12,6 +13,10 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerStorageDrum extends Container {
 
 	private TileEntityStorageDrum drum;
+
+	private final TransferStrategy transferStrategy = TransferStrategy.builder(() -> this.drum.inventory.getSlots())
+                                                                      .genericMachineRange(0)
+                                                                      .build();
 
 	public ContainerStorageDrum(InventoryPlayer invPlayer, TileEntityStorageDrum drum) {
 		this.drum = drum;
@@ -40,7 +45,7 @@ public class ContainerStorageDrum extends Container {
 
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-		return InventoryUtil.transferStack(this.inventorySlots, index, drum.inventory.getSlots());
+		return InventoryUtil.transferStack(this.inventorySlots, index, this.transferStrategy, player);
 	}
 
 	@Override

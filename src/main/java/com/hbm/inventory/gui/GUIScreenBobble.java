@@ -118,6 +118,7 @@ public class GUIScreenBobble extends GuiScreen {
         return false;
     }
 
+    @SuppressWarnings("SameParameterValue")
     private String anagramIt(String from, String to) {
         double t = Math.sin((double) System.currentTimeMillis() / 1500.0) * 0.75 + 0.5;
 

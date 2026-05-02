@@ -5,6 +5,7 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.tileentity.network.TileEntityCraneBase;
 import com.hbm.tileentity.network.TileEntityCraneExtractor;
+import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.texture.TextureMap;
@@ -53,6 +54,12 @@ public class CraneExtractor extends BlockCraneBase {
     @Override
     public boolean canConnectRedstone(@NotNull IBlockState state, @NotNull IBlockAccess world, @NotNull BlockPos pos, EnumFacing side) {
         return true;
+    }
+
+    @Override
+    public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
+        TileEntityCraneExtractor crane = (TileEntityCraneExtractor) world.getTileEntity(pos);
+        crane.isIndirectlyPowered = world.isBlockPowered(pos);
     }
 
     @Override

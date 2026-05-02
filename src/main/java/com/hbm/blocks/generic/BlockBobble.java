@@ -7,7 +7,9 @@ import com.hbm.inventory.gui.GUIScreenBobble;
 import com.hbm.items.IModelRegister;
 import com.hbm.items.special.ItemPlasticScrap.ScrapType;
 import com.hbm.main.MainRegistry;
+import com.hbm.main.client.NTMClientRegistry;
 import com.hbm.tileentity.IGUIProvider;
+import com.hbm.util.ShadyUtil;
 import com.hbm.world.gen.nbt.INBTBlockTransformable;
 import com.hbm.world.gen.nbt.INBTTileEntityTransformable;
 import net.minecraft.block.Block;
@@ -46,10 +48,13 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.UUID;
+
 public class BlockBobble extends BlockContainer implements INBTBlockTransformable, ICustomBlockItem {
 
     public static final PropertyInteger META = PropertyInteger.create("rot", 0, 15);
-    private static final AxisAlignedBB BOUNDS = new AxisAlignedBB(5.5D / 16D, 0.0D, 5.5D / 16D, 1.0D - 5.5D / 16D, 0.625D, 1.0D - 5.5D / 16D);
+    private static final AxisAlignedBB BOUNDS = new AxisAlignedBB(5.5D / 16D, 0.0D, 5.5D / 16D, 1.0D - 5.5D / 16D,
+            0.625D, 1.0D - 5.5D / 16D);
 
     public BlockBobble(String name) {
         super(Material.IRON);
@@ -89,7 +94,8 @@ public class BlockBobble extends BlockContainer implements INBTBlockTransformabl
     }
 
     @Override
-    public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
+    public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos,
+                                  EntityPlayer player) {
         TileEntity te = world.getTileEntity(pos);
         if (te instanceof TileEntityBobble entity) {
             return new ItemStack(this, 1, entity.type.ordinal());
@@ -103,7 +109,8 @@ public class BlockBobble extends BlockContainer implements INBTBlockTransformabl
     }
 
     @Override
-    public void harvestBlock(World world, EntityPlayer player, BlockPos pos, IBlockState state, @Nullable TileEntity te, ItemStack tool) {
+    public void harvestBlock(World world, EntityPlayer player, BlockPos pos, IBlockState state, @Nullable TileEntity te,
+                             ItemStack tool) {
         player.addStat(StatList.getBlockStats(this));
         player.addExhaustion(0.025F);
 
@@ -116,7 +123,8 @@ public class BlockBobble extends BlockContainer implements INBTBlockTransformabl
     }
 
     @Override
-    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
+    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand,
+                                    EnumFacing side, float hitX, float hitY, float hitZ) {
         if (!world.isRemote && !player.isSneaking()) {
             FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
         }
@@ -132,9 +140,15 @@ public class BlockBobble extends BlockContainer implements INBTBlockTransformabl
     }
 
     @Override
-    public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-        int meta = MathHelper.floor((double) ((placer.rotationYaw + 180.0F) * 16.0F / 360.0F) + 0.5D) & 15;
-        world.setBlockState(pos, this.getDefaultState().withProperty(META, meta), 2);
+    public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY,
+                                            float hitZ, int meta, EntityLivingBase placer) {
+        int rotation = MathHelper.floor((double) ((placer.rotationYaw + 180.0F) * 16.0F / 360.0F) + 0.5D) & 15;
+        return this.getDefaultState().withProperty(META, rotation);
+    }
+
+    @Override
+    public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer,
+                                ItemStack stack) {
         TileEntity te = world.getTileEntity(pos);
         if (te instanceof TileEntityBobble bobble) {
             bobble.type = BobbleType.VALUES[Math.abs(stack.getItemDamage()) % BobbleType.VALUES.length];
@@ -175,23 +189,61 @@ public class BlockBobble extends BlockContainer implements INBTBlockTransformabl
         ForgeRegistries.ITEMS.register(itemBlock);
     }
 
-    private static class BlockBobbleItem extends CustomBlockItem implements IModelRegister {
-        private BlockBobbleItem(Block block) {
-            super(block);
-        }
-
-        @Override
-        @SideOnly(Side.CLIENT)
-        public void registerModels() {
-            for (int meta = 0; meta < BobbleType.VALUES.length; meta++) {
-                ModelLoader.setCustomModelResourceLocation(this, meta, new ModelResourceLocation(this.getRegistryName(), "inventory"));
-            }
-        }
-    }
-
     public enum BobbleType {
-        NONE("null", "null", null, null, false, ScrapType.BOARD_BLANK), STRENGTH("Strength", "Strength", null, "It's essential to give your arguments impact.", false, ScrapType.BRIDGE_BIOS), PERCEPTION("Perception", "Perception", null, "Only through observation will you perceive weakness.", false, ScrapType.BRIDGE_NORTH), ENDURANCE("Endurance", "Endurance", null, "Always be ready to take one for the team.", false, ScrapType.BRIDGE_SOUTH), CHARISMA("Charisma", "Charisma", null, "Nothing says pizzaz like a winning smile.", false, ScrapType.BRIDGE_IO), INTELLIGENCE("Intelligence", "Intelligence", null, "It takes the smartest individuals to realize$there's always more to learn.", false, ScrapType.BRIDGE_BUS), AGILITY("Agility", "Agility", null, "Never be afraid to dodge the sensitive issues.", false, ScrapType.BRIDGE_CHIPSET), LUCK("Luck", "Luck", null, "There's only one way to give 110%.", false, ScrapType.BRIDGE_CMOS), BOB("Robert \"The Bobcat\" Katzinsky", "HbMinecraft", "Hbm's Nuclear Tech Mod", "I know where you live, " + System.getProperty("user.name"), false, ScrapType.CPU_SOCKET), FRIZZLE("Frooz", "Frooz", "Weapon models", "BLOOD IS FUEL", true, ScrapType.CPU_CLOCK), PU238("Pu-238", "Pu-238", "Improved Tom impact mechanics", null, false, ScrapType.CPU_REGISTER), VT("VT-6/24", "VT-6/24", "Balefire warhead model and general texturework", "You cannot unfuck a horse.", true, ScrapType.CPU_EXT), DOC("The Doctor", "Doctor17PH", "Russian localization, lunar miner", "Perhaps the moon rocks were too expensive", true, ScrapType.CPU_CACHE), BLUEHAT("The Blue Hat", "The Blue Hat", "Textures", "payday 2's deagle freeaim champ of the year 2022", true, ScrapType.MEM_16K_A), PHEO("Pheo", "Pheonix", "Deuterium machines, tantalium textures, Reliant Rocket", "RUN TO THE BEDROOM, ON THE SUITCASE ON THE LEFT,$YOU'LL FIND MY FAVORITE AXE", true, ScrapType.MEM_16K_B), ADAM29("Adam29", "Adam29", "Ethanol, liquid petroleum gas", "You know, nukes are really quite beatiful.$It's like watching a star be born for a split second.", true, ScrapType.MEM_16K_C), UFFR("UFFR", "UFFR", "All sorts of things from his PR", "fried shrimp", false, ScrapType.MEM_SOCKET), VAER("vaer", "vaer", "ZIRNOX", "taken de family out to the weekend cigarette festival", true, ScrapType.MEM_16K_D), NOS("Dr Nostalgia", "Dr Nostalgia", "SSG and Vortex models", "Take a picture, I'ma pose, paparazzi$I've been drinking, moving like a zombie", true, ScrapType.BOARD_TRANSISTOR), DRILLGON("Drillgon200", "Drillgon200", "1.12 Port", null, false, ScrapType.CPU_LOGIC), CIRNO("Cirno", "Cirno", "the only multi layered skin i had", "No brain. Head empty.", true, ScrapType.BOARD_BLANK), MICROWAVE("Microwave", "Microwave", "OC Compatibility and massive RBMK/packet optimizations", "they call me the food heater$john optimization", true, ScrapType.BOARD_CONVERTER), PEEP("Peep", "LePeeperSauvage", "Coilgun, Leadburster and Congo Lake models, BDCL QC", "Fluffy ears can't hide in ash, nor snow.", true, ScrapType.CARD_BOARD), MELLOW("MELLOWARPEGGIATION", "Mellow", "NBT Structures, industrial lighting, animation tools", "Make something cool now, ask for permission later.", true, ScrapType.CARD_PROCESSOR), ABEL("Abel1502", "Abel1502", "Abilities GUI, optimizations and many QoL improvements", "NANTO SUBARASHII", true, ScrapType.CPU_REGISTER);
-
+        NONE("null", "null", null, null, false, ScrapType.BOARD_BLANK),
+        STRENGTH("Strength", "Strength", null, "It's essential to give your arguments impact.", false,
+                ScrapType.BRIDGE_BIOS),
+        PERCEPTION("Perception", "Perception", null, "Only through observation will you perceive weakness.", false,
+                ScrapType.BRIDGE_NORTH),
+        ENDURANCE("Endurance", "Endurance", null, "Always be ready to take one for the team.", false,
+                ScrapType.BRIDGE_SOUTH),
+        CHARISMA("Charisma", "Charisma", null, "Nothing says pizzaz like a winning smile.", false, ScrapType.BRIDGE_IO),
+        INTELLIGENCE("Intelligence", "Intelligence", null,
+                "It takes the smartest individuals to realize$there's always more to learn.", false,
+                ScrapType.BRIDGE_BUS),
+        AGILITY("Agility", "Agility", null, "Never be afraid to dodge the sensitive issues.", false,
+                ScrapType.BRIDGE_CHIPSET),
+        LUCK("Luck", "Luck", null, "There's only one way to give 110%.", false, ScrapType.BRIDGE_CMOS),
+        BOB("Robert \"The Bobcat\" Katzinsky", "HbMinecraft", "Hbm's Nuclear Tech Mod",
+                "I know where you live, " + System.getProperty("user.name"), false, ScrapType.CPU_SOCKET),
+        FRIZZLE("Frooz", "Frooz", "Weapon models", "BLOOD IS FUEL", true, ScrapType.CPU_CLOCK),
+        PU238("Pu-238", "Pu-238", "Improved Tom impact mechanics", null, false, ScrapType.CPU_REGISTER),
+        VT("VT-6/24", "VT-6/24", "Balefire warhead model and general texturework", "You cannot unfuck a horse.", true,
+                ScrapType.CPU_EXT),
+        DOC("The Doctor", "Doctor17PH", "Russian localization, lunar miner",
+                "Perhaps the moon rocks were too expensive", true, ScrapType.CPU_CACHE),
+        BLUEHAT("The Blue Hat", "The Blue Hat", "Textures", "payday 2's deagle freeaim champ of the year 2022", true,
+                ScrapType.MEM_16K_A),
+        PHEO("Pheo", "Pheonix", "Deuterium machines, tantalium textures, Reliant Rocket",
+                "RUN TO THE BEDROOM, ON THE SUITCASE ON THE LEFT,$YOU'LL FIND MY FAVORITE AXE", true,
+                ScrapType.MEM_16K_B),
+        ADAM29("Adam29", "Adam29", "Ethanol, liquid petroleum gas",
+                "You know, nukes are really quite beatiful.$It's like watching a star be born for a split second.",
+                true, ScrapType.MEM_16K_C),
+        UFFR("UFFR", "UFFR", "All sorts of things from his PR", "fried shrimp", false, ScrapType.MEM_SOCKET),
+        VAER("vaer", "vaer", "ZIRNOX", "taken de family out to the weekend cigarette festival", true,
+                ScrapType.MEM_16K_D),
+        NOS("Dr Nostalgia", "Dr Nostalgia", "SSG and Vortex models",
+                "Take a picture, I'ma pose, paparazzi$I've been drinking, moving like a zombie", true,
+                ScrapType.BOARD_TRANSISTOR),
+        DRILLGON("Drillgon200", "Drillgon200", "1.12 Port", null, false, ScrapType.CPU_LOGIC),
+        CIRNO("Cirno", "Cirno", "the only multi layered skin i had", "No brain. Head empty.", true,
+                ScrapType.BOARD_BLANK),
+        MICROWAVE("Microwave", "Microwave", "OC Compatibility and massive RBMK/packet optimizations",
+                "they call me the food heater$john optimization", true, ScrapType.BOARD_CONVERTER),
+        PEEP("Peep", "LePeeperSauvage", "Coilgun, Leadburster and Congo Lake models, BDCL QC",
+                "Fluffy ears can't hide in ash, nor snow.", true, ScrapType.CARD_BOARD),
+        MELLOW("MELLOWARPEGGIATION", "Mellow", "NBT Structures, industrial lighting, animation tools",
+                "Make something cool now, ask for permission later.", true, ScrapType.CARD_PROCESSOR),
+        ABEL("Abel1502", "Abel1502", "Abilities GUI, optimizations and many QoL improvements", "NANTO SUBARASHII", true,
+                ScrapType.CPU_REGISTER),
+        // CE ADDITIONS START
+        MOVBLOCK("movblock", "movblock", "Threaded MK5 and some part of 1.12.2 Community Edition", "In three dimensions!", true, ScrapType.CPU_LOGIC,
+                ShadyUtil.movblock),
+        LEAFIA("りー (Ri/Leafia)", "Leafia", "Custom Control Panel shenanigans$and porting (such as RoR panels) since 2026", "Control panel #1 sniffer$Also 1.12.2 sniffer$$This was the best I could model", false, ScrapType.BOARD_BLANK),
+        HACKER6329("Hacker6329", "Hacker6329", "Partially fillable fluid barrels and some fixes.", "\"movblock i told you my v2 system wasn't the issue.\"", true, ScrapType.CARD_BOARD, ShadyUtil.Hacker6329),
+        EOS("EOS", "EOS", "Ported some stuff. Refactor code", "string[0] = EOS;", true, ScrapType.MEM_16K_A, ShadyUtil.EOS);
+        // CE ADDITIONS END
         public static final BobbleType[] VALUES = values();
 
         public final String name;
@@ -200,20 +252,45 @@ public class BlockBobble extends BlockContainer implements INBTBlockTransformabl
         public final String inscription;
         public final boolean skinLayers;
         public final ScrapType scrap;
+        /** For skins loaded at runtime */
+        public final UUID skinUuid;
 
-        BobbleType(String name, String label, String contribution, String inscription, boolean layers, ScrapType scrap) {
+        BobbleType(String name, String label, String contribution, String inscription, boolean layers,
+                   ScrapType scrap) {
+            this(name, label, contribution, inscription, layers, scrap, null);
+        }
+
+        BobbleType(String name, String label, String contribution, String inscription, boolean layers,
+                   ScrapType scrap, UUID skinUuid) {
             this.name = name;
             this.label = label;
             this.contribution = contribution;
             this.inscription = inscription;
             this.skinLayers = layers;
             this.scrap = scrap;
+            this.skinUuid = skinUuid;
+        }
+    }
+
+    private static class BlockBobbleItem extends CustomBlockItem implements IModelRegister {
+        private BlockBobbleItem(Block block) {
+            super(block);
+        }
+
+        @Override
+        @SideOnly(Side.CLIENT)
+        public void registerModels() {
+            ModelResourceLocation syntheticLocation = NTMClientRegistry.getSyntheticTeisrModelLocation(this);
+            for (int meta = 0; meta < BobbleType.VALUES.length; meta++) {
+                ModelLoader.setCustomModelResourceLocation(this, meta, syntheticLocation);
+            }
         }
     }
 
     @AutoRegister
     public static class TileEntityBobble extends TileEntity implements IGUIProvider, INBTTileEntityTransformable {
         public BobbleType type = BobbleType.NONE;
+        private AxisAlignedBB bb;
 
         @Override
         public NBTTagCompound getUpdateTag() {
@@ -270,6 +347,12 @@ public class BlockBobble extends BlockContainer implements INBTBlockTransformabl
         @SideOnly(Side.CLIENT)
         public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
             return new GUIScreenBobble(this);
+        }
+
+        @Override
+        public AxisAlignedBB getRenderBoundingBox() {
+            if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+            return bb;
         }
     }
 }

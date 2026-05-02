@@ -91,7 +91,8 @@ public class GUIMachineArcFurnaceLarge extends GuiInfoContainer {
         if(stack.isEmpty()) list.add(TextFormatting.RED + "Empty");
         for(Mats.MaterialStack sta : stack) list.add(
                 TextFormatting.YELLOW + I18nUtil.resolveKey(sta.material.getTranslationKey()) + ": " + Mats.formatAmount(sta.amount, Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)));
-        this.drawCustomInfoStat(mouseX, mouseY, guiLeft + x, guiTop + y, 16, 70, mouseX, mouseY, list);
+        //mlbv: without the +16 offset the JEI recipe tooltip would overlap with it
+        this.drawCustomInfoStat(mouseX, mouseY, guiLeft + x, guiTop + y, 16, 70, mouseX, mouseY + 16, list);
     }
 
     protected void drawStack(List<Mats.MaterialStack> stack, int capacity, int x, int y) {

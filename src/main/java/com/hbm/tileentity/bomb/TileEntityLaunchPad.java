@@ -21,6 +21,8 @@ import java.util.List;
 
 @AutoRegister
 public class TileEntityLaunchPad extends TileEntityLaunchPadBase {
+    private AxisAlignedBB bb;
+
     public TileEntityLaunchPad() {
         super(7);
     }
@@ -154,5 +156,11 @@ public class TileEntityLaunchPad extends TileEntityLaunchPadBase {
             case "setTarget" -> setTarget(context, args);
             default -> throw new NoSuchMethodException();
         };
+    }
+
+    @Override
+    public AxisAlignedBB getRenderBoundingBox() {
+        if (bb == null) bb = new AxisAlignedBB(pos.getX() - 2, pos.getY(), pos.getZ() - 2, pos.getX() + 3, pos.getY() + 8, pos.getZ() + 3);
+        return bb;
     }
 }

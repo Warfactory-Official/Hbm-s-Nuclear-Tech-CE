@@ -13,6 +13,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.util.Vec3dUtil;
@@ -40,8 +41,9 @@ import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
-public class TileEntityRailgun extends TileEntityLoadedBase implements ITickable, IEnergyReceiverMK2, IGUIProvider {
+public class TileEntityRailgun extends TileEntityLoadedBase implements ITickable, IEnergyReceiverMK2, IGUIProvider, IConnectionAnchors {
 
+	private AxisAlignedBB bb;
 	public ItemStackHandler inventory;
 	public ICapabilityProvider specialProvider;
 	
@@ -195,7 +197,7 @@ public class TileEntityRailgun extends TileEntityLoadedBase implements ITickable
 		}
 	}
 
-	private DirPos[] getConPos() {
+	public DirPos[] getConPos() {
 		return new DirPos[] {
 				new DirPos(pos.getX(), pos.getY() - 1, pos.getZ(), Library.NEG_Y),
 				new DirPos(pos.getX() + 1, pos.getY(), pos.getZ(), Library.POS_X),
@@ -300,7 +302,8 @@ public class TileEntityRailgun extends TileEntityLoadedBase implements ITickable
 	
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		if (bb == null) bb = new AxisAlignedBB(pos.getX() - 6, pos.getY() - 3, pos.getZ() - 6, pos.getX() + 7, pos.getY() + 6, pos.getZ() + 7);
+		return bb;
 	}
 	
 	@Override

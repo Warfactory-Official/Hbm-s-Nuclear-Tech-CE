@@ -27,10 +27,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ModContext;
-import com.hbm.tileentity.IFluidCopiable;
-import com.hbm.tileentity.IGUIProvider;
-import com.hbm.tileentity.IRadarCommandReceiver;
-import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.tileentity.*;
 import com.hbm.util.TrackerUtil;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap;
@@ -56,15 +53,13 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
-public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardReceiver, IGUIProvider, IRadarCommandReceiver, SimpleComponent, CompatHandler.OCComponent, IFluidCopiable {
+public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardReceiver, IGUIProvider, IRadarCommandReceiver, SimpleComponent, CompatHandler.OCComponent, IFluidCopiable, IConnectionAnchors {
 	
 	/** Automatic instantiation of generic missiles, i.e. everything that both extends EntityMissileBaseNT and needs a designator */
 	public static final Object2ReferenceOpenHashMap<ComparableStack, MissileFactory> missiles = new Object2ReferenceOpenHashMap<>(28);
@@ -131,8 +126,8 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase impl
 	public TileEntityLaunchPadBase(int scount) {
 		super(scount, true, true);
 		this.tanks = new FluidTankNTM[2];
-		this.tanks[0] = new FluidTankNTM(Fluids.NONE, 24_000);
-		this.tanks[1] = new FluidTankNTM(Fluids.NONE, 24_000);
+		this.tanks[0] = new FluidTankNTM(Fluids.NONE, 24_000).withOwner(this);
+		this.tanks[1] = new FluidTankNTM(Fluids.NONE, 24_000).withOwner(this);
 	}
 
 	@Override

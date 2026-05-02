@@ -4,6 +4,11 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModItems;
 import com.hbm.items.special.ItemCell;
+import com.hbm.items.weapon.grenade.ItemGrenadeExtra.EnumGrenadeExtra;
+import com.hbm.items.weapon.grenade.ItemGrenadeFilling.EnumGrenadeFilling;
+import com.hbm.items.weapon.grenade.ItemGrenadeFuze.EnumGrenadeFuze;
+import com.hbm.items.weapon.grenade.ItemGrenadeShell.EnumGrenadeShell;
+import com.hbm.items.weapon.grenade.ItemGrenadeUniversal;
 import com.hbm.items.weapon.sedna.factory.GunFactory;
 import com.hbm.lib.HBMSoundHandler;
 import net.minecraft.block.BlockFalling;
@@ -20,6 +25,7 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,12 +48,12 @@ public class BlockCrate extends BlockFalling {
     }
 
     @Override
-    public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+    public @NotNull Item getItemDropped(@NotNull IBlockState state, @NotNull Random rand, int fortune) {
         return Items.AIR;
     }
 
     @Override
-    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+    public boolean onBlockActivated(@NotNull World world, @NotNull BlockPos pos, @NotNull IBlockState state, EntityPlayer player, @NotNull EnumHand hand, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ) {
         if (player.getHeldItemMainhand().getItem().equals(ModItems.crowbar)) {
             dropItems(world, pos.getX(), pos.getY(), pos.getZ());
             world.setBlockToAir(pos);
@@ -64,19 +70,18 @@ public class BlockCrate extends BlockFalling {
 
     public static void setDrops() {
 
-        crateList = new ArrayList<ItemStack>();
-        weaponList = new ArrayList<ItemStack>();
-        leadList = new ArrayList<ItemStack>();
-        metalList = new ArrayList<ItemStack>();
-        redList = new ArrayList<ItemStack>();
+        crateList = new ArrayList<>();
+        weaponList = new ArrayList<>();
+        leadList = new ArrayList<>();
+        metalList = new ArrayList<>();
+        redList = new ArrayList<>();
 
         //Supply Crate
         BlockCrate.addToListWithWeight(crateList, ModItems.syringe_metal_stimpak, 10);
         BlockCrate.addToListWithWeight(crateList, ModItems.syringe_antidote, 5);
-        BlockCrate.addToListWithWeight(crateList, ModItems.grenade_generic, 8);
-        BlockCrate.addToListWithWeight(crateList, ModItems.grenade_strong, 6);
-        BlockCrate.addToListWithWeight(crateList, ModItems.grenade_mk2, 4);
-        BlockCrate.addToListWithWeight(crateList, ModItems.grenade_flare, 4);
+        BlockCrate.addToListWithWeight(crateList, ItemGrenadeUniversal.make(EnumGrenadeShell.FRAG, EnumGrenadeFilling.HE, EnumGrenadeFuze.S3, EnumGrenadeExtra.FRAG_SLEEVE), 8);
+        BlockCrate.addToListWithWeight(crateList, ItemGrenadeUniversal.make(EnumGrenadeShell.STICK, EnumGrenadeFilling.HE, EnumGrenadeFuze.IMPACT), 6);
+        BlockCrate.addToListWithWeight(crateList, ItemGrenadeUniversal.make(EnumGrenadeShell.FRAG, EnumGrenadeFilling.INC, EnumGrenadeFuze.S7), 4);
         BlockCrate.addToListWithWeight(crateList, ModItems.ammo_container, 2);
 
         //Weapon Crate
@@ -157,7 +162,7 @@ public class BlockCrate extends BlockFalling {
 
         //setDrops();
 
-        List<ItemStack> list = new ArrayList<ItemStack>();
+        List<ItemStack> list = new ArrayList<>();
 
         int i = rand.nextInt(3) + 3;
 
@@ -185,9 +190,7 @@ public class BlockCrate extends BlockFalling {
         if (this == ModBlocks.crate_red) {
             list.clear();
 
-            for (int k = 0; k < redList.size(); k++) {
-                list.add(redList.get(k));
-            }
+            list.addAll(redList);
         }
 
         for (ItemStack stack : list) {

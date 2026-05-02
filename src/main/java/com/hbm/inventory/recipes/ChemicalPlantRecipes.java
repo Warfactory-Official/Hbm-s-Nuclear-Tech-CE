@@ -308,10 +308,10 @@ public class ChemicalPlantRecipes extends GenericRecipes<GenericRecipe> {
                 .outputItems(new ItemStack(ModItems.ingot_c4, 4)));
 
         /// GLASS ///
-        /*this.register(new GenericRecipe("chem.laminate").setup(20, 100)
+        this.register(new GenericRecipe("chem.laminate").setup(20, 100)
                 .inputFluids(new FluidStack(Fluids.XYLENE, 50), new FluidStack(Fluids.PHOSGENE, 50))
                 .inputItems(new RecipesCommon.OreDictStack(KEY_ANYGLASS), new RecipesCommon.OreDictStack(STEEL.bolt(), 4))
-                .outputItems(new ItemStack(ModBlocks.reinforced_laminate)));*/ // TODO
+                .outputItems(new ItemStack(ModBlocks.reinforced_laminate)));
 
         this.register(new GenericRecipe("chem.polarized").setup(100, 500)
                 .inputFluids(new FluidStack(Fluids.PETROLEUM, 1_000))

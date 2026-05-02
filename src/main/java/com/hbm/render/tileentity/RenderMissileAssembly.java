@@ -16,12 +16,6 @@ import net.minecraft.item.Item;
 public class RenderMissileAssembly
     extends TileEntitySpecialRenderer<TileEntityMachineMissileAssembly>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityMachineMissileAssembly te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityMachineMissileAssembly te,
@@ -58,16 +52,16 @@ public class RenderMissileAssembly
 
     if (missile != null) {
 
-      if (te.inventory.getStackInSlot(1) != null)
+      if (!te.inventory.getStackInSlot(1).isEmpty())
         missile.warhead = MissilePart.getPart(te.inventory.getStackInSlot(1).getItem());
 
-      if (te.inventory.getStackInSlot(2) != null)
+      if (!te.inventory.getStackInSlot(2).isEmpty())
         missile.fuselage = MissilePart.getPart(te.inventory.getStackInSlot(2).getItem());
 
-      if (te.inventory.getStackInSlot(3) != null)
+      if (!te.inventory.getStackInSlot(3).isEmpty())
         missile.fins = MissilePart.getPart(te.inventory.getStackInSlot(3).getItem());
 
-      if (te.inventory.getStackInSlot(4) != null)
+      if (!te.inventory.getStackInSlot(4).isEmpty())
         missile.thruster = MissilePart.getPart(te.inventory.getStackInSlot(4).getItem());
 
       int range = (int) (missile.getHeight() / 2 - 1);

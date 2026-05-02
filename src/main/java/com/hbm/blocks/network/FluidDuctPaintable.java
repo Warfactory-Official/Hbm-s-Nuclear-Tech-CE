@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.hbm.Tags;
 import com.hbm.api.block.IToolable;
 import com.hbm.blocks.ILookOverlay;
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModSoundTypes;
 import com.hbm.interfaces.AutoRegister;
@@ -14,22 +15,26 @@ import com.hbm.items.IDynamicModels;
 import com.hbm.render.model.BakedModelTransforms;
 import com.hbm.tileentity.network.TileEntityPipeBaseNT;
 import com.hbm.util.I18nUtil;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.properties.PropertyBool;
+import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.*;
+import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.client.renderer.color.IBlockColor;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
@@ -43,19 +48,22 @@ import net.minecraftforge.common.property.ExtendedBlockState;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.util.vector.Vector3f;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class FluidDuctPaintable extends FluidDuctBase implements IToolable, ILookOverlay, IDynamicModels {
+public class FluidDuctPaintable extends FluidDuctBase implements IToolable, ILookOverlay, IDynamicModels, ITooltipProvider {
 
     public static final IUnlistedProperty<IBlockState> DISGUISED_STATE = new SimpleUnlistedProperty<>("disguised_state", IBlockState.class);
+    public static final PropertyBool DEFUSED = PropertyBool.create("defused");
 
     @SideOnly(Side.CLIENT)
     private static TextureAtlasSprite baseSprite;
@@ -68,7 +76,7 @@ public class FluidDuctPaintable extends FluidDuctBase implements IToolable, ILoo
         super(Material.IRON);
         this.setRegistryName(Tags.MODID, name);
         this.setTranslationKey(name);
-        this.setDefaultState(this.blockState.getBaseState());
+        this.setDefaultState(this.blockState.getBaseState().withProperty(DEFUSED, false));
         this.setSoundType(ModSoundTypes.pipe);
         this.useNeighborBrightness = true;
         IDynamicModels.INSTANCES.add(this);
@@ -77,7 +85,18 @@ public class FluidDuctPaintable extends FluidDuctBase implements IToolable, ILoo
 
     @Override
     protected BlockStateContainer createBlockState() {
-        return new ExtendedBlockState(this, new IProperty[0], new IUnlistedProperty[]{DISGUISED_STATE});
+        return new ExtendedBlockState(this, new IProperty[]{DEFUSED}, new IUnlistedProperty[]{DISGUISED_STATE});
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public StateMapperBase getStateMapper(ResourceLocation loc) {
+        return new StateMapperBase() {
+            @Override
+            protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
+                return new ModelResourceLocation(loc, "normal");
+            }
+        };
     }
 
     @Override
@@ -97,12 +116,12 @@ public class FluidDuctPaintable extends FluidDuctBase implements IToolable, ILoo
 
     @Override
     public IBlockState getStateFromMeta(int meta) {
-        return this.getDefaultState();
+        return this.getDefaultState().withProperty(DEFUSED, meta != 0);
     }
 
     @Override
     public int getMetaFromState(IBlockState state) {
-        return 0;
+        return state.getValue(DEFUSED) ? 1 : 0;
     }
 
     @Override
@@ -139,6 +158,16 @@ public class FluidDuctPaintable extends FluidDuctBase implements IToolable, ILoo
     @Override
     @SideOnly(Side.CLIENT)
     public boolean canRenderInLayer(IBlockState state, BlockRenderLayer layer) {
+        return true;
+    }
+
+    @Override
+    public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
+        return BlockFaceShape.SOLID;
+    }
+
+    @Override
+    public boolean isSideSolid(IBlockState base_state, IBlockAccess world, BlockPos pos, EnumFacing side) {
         return true;
     }
 
@@ -187,28 +216,37 @@ public class FluidDuctPaintable extends FluidDuctBase implements IToolable, ILoo
     @Override
     public boolean onScrew(World world, EntityPlayer player, int x, int y, int z, EnumFacing side, float fX, float fY, float fZ, EnumHand hand, ToolType tool) {
         BlockPos pos = new BlockPos(x, y, z);
-        if (tool != ToolType.SCREWDRIVER) {
-            return false;
+
+        if (tool == ToolType.SCREWDRIVER) {
+            TileEntity tile = world.getTileEntity(pos);
+            if (!(tile instanceof TileEntityPipePaintable pipe)) {
+                return false;
+            }
+
+            if (pipe.block == null) {
+                return false;
+            }
+
+            if (!world.isRemote) {
+                pipe.block = null;
+                pipe.meta = 0;
+                pipe.markDirty();
+                world.markChunkDirty(pos, pipe);
+                world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
+            }
+
+            return true;
         }
 
-        TileEntity tile = world.getTileEntity(pos);
-        if (!(tile instanceof TileEntityPipePaintable pipe)) {
-            return false;
+        if (tool == ToolType.DEFUSER) {
+            if (!world.isRemote) {
+                IBlockState state = world.getBlockState(pos);
+                world.setBlockState(pos, state.cycleProperty(DEFUSED), 3);
+            }
+            return true;
         }
 
-        if (pipe.block == null) {
-            return false;
-        }
-
-        if (!world.isRemote) {
-            pipe.block = null;
-            pipe.meta = 0;
-            pipe.markDirty();
-            world.markChunkDirty(pos, pipe);
-            world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
-        }
-
-        return true;
+        return false;
     }
 
     @Override
@@ -293,6 +331,12 @@ public class FluidDuctPaintable extends FluidDuctBase implements IToolable, ILoo
 
         return extState.withProperty(DISGUISED_STATE, null);
     }
+
+    @Override
+    public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+        this.addStandardInfo(tooltip);
+    }
+
     @AutoRegister
     public static class TileEntityPipePaintable extends TileEntityPipeBaseNT implements ICopiable {
 
@@ -345,17 +389,19 @@ public class FluidDuctPaintable extends FluidDuctBase implements IToolable, ILoo
         }
 
         @Override
-        public SPacketUpdateTileEntity getUpdatePacket() {
-            NBTTagCompound nbt = new NBTTagCompound();
-            this.writeToNBT(nbt);
-            return new SPacketUpdateTileEntity(this.pos, 0, nbt);
+        public void serializeInitial(ByteBuf buf) {
+            super.serializeInitial(buf);
+            ResourceLocation key = block != null ? ForgeRegistries.BLOCKS.getKey(block) : null;
+            ByteBufUtils.writeUTF8String(buf, key != null ? key.toString() : "");
+            buf.writeInt(meta);
         }
 
         @Override
-        public NBTTagCompound getUpdateTag() {
-            NBTTagCompound nbt = super.getUpdateTag();
-            this.writeToNBT(nbt);
-            return nbt;
+        public void deserializeInitial(ByteBuf buf) {
+            super.deserializeInitial(buf);
+            String id = ByteBufUtils.readUTF8String(buf);
+            this.block = id.isEmpty() ? null : ForgeRegistries.BLOCKS.getValue(new ResourceLocation(id));
+            this.meta = buf.readInt();
         }
 
         @Override
@@ -420,6 +466,20 @@ public class FluidDuctPaintable extends FluidDuctBase implements IToolable, ILoo
             BlockRenderLayer layer = MinecraftForgeClient.getRenderLayer();
             boolean renderPipe = layer == null || layer == BlockRenderLayer.CUTOUT_MIPPED;
 
+            if (state == null) {
+                if (renderPipe) {
+                    if (side == null) {
+                        quads.addAll(baseGeneral);
+                        quads.addAll(overlayTintGeneral);
+                    } else {
+                        quads.addAll(baseFaces.get(side));
+                        quads.addAll(overlayTintFaces.get(side));
+                    }
+                }
+                return quads;
+            }
+
+            boolean defused = state.getValue(DEFUSED);
             IBlockState disguiseState = null;
 
             if (state instanceof IExtendedBlockState) {
@@ -437,7 +497,7 @@ public class FluidDuctPaintable extends FluidDuctBase implements IToolable, ILoo
                 }
             }
 
-            if (renderPipe) {
+            if (renderPipe && !defused) {
                 if (disguiseState != null) {
                     if (side == null) {
                         quads.addAll(overlayGeneral);

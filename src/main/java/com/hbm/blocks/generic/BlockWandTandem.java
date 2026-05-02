@@ -74,7 +74,7 @@ public class BlockWandTandem extends BlockContainerBakeable implements IBlockSid
     public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
 
     public BlockWandTandem(String regName) {
-        super(Material.IRON, regName, new BlockBakeFrame(BlockBakeFrame.BlockForm.FULL_CUSTOM,
+        super(Material.IRON, regName, BlockBakeFrame.cube(
                 "wand_tandem_top",
                 "wand_tandem_top",
                 "wand_tandem_back",
@@ -255,11 +255,7 @@ public class BlockWandTandem extends BlockContainerBakeable implements IBlockSid
             if (!this.isArmed || target == null || target.isEmpty() || pool == null || pool.isEmpty()) return;
 
             JigsawPool pool;
-            try {
-                pool = structure.getPool(this.pool);
-            } catch (CloneNotSupportedException e) {
-                throw new RuntimeException(e);
-            }
+            pool = structure.getPool(this.pool);
             if (pool == null) return;
 
             JigsawPiece nextPiece = pool.get(world.rand);

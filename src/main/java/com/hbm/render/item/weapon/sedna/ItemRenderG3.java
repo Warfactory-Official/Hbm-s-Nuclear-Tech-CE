@@ -197,7 +197,7 @@ public class ItemRenderG3 extends ItemRenderWeaponBase {
 		GlStateManager.translate(0, -0.875, -3.5);
 		GlStateManager.rotate(-30, 1, 0, 0);
 		GlStateManager.translate(0, 0.875, 3.5);
-		ResourceManager.g3.renderPart("Selector_Rifle.001");
+		ResourceManager.g3.renderPart("Selector");
 		GlStateManager.popMatrix();
 
 		if(silenced || isScoped) {

@@ -32,9 +32,9 @@ import java.util.Random;
 public class BlockUberConcrete extends BlockMeta {
    public static final BlockBakeFrame[] FRAMES = new BlockBakeFrame[5];
     static {
-        FRAMES[0] = new BlockBakeFrame("concrete_super");
+        FRAMES[0] = BlockBakeFrame.cubeAll("concrete_super");
         for(int i = 0; i < 4; i++) {
-            FRAMES[i+1] = new BlockBakeFrame( "concrete_super_m" + i);
+            FRAMES[i+1] = BlockBakeFrame.cubeAll("concrete_super_m" + i);
         }
     }
 
@@ -71,9 +71,9 @@ public class BlockUberConcrete extends BlockMeta {
         for (int meta = 0; meta < META_COUNT; meta++) {
             BlockBakeFrame blockFrame = blockFrames[meta % blockFrames.length];
             try {
-                IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation(blockFrame.getBaseModel()));
+                IModel baseModel = ModelLoaderRegistry.getModel(blockFrame.getBaseModelLocation());
                 ImmutableMap.Builder<String, String> textureMap = ImmutableMap.builder();
-                var texture = new ResourceLocation(Tags.MODID, BlockBakeFrame.ROOT_PATH + getIcon(meta).textureArray[0]).toString();
+                var texture = getIcon(meta).getTextureLocation(0).toString();
                 textureMap.put("all", texture);
                 textureMap.put("particle",  texture);
                 IModel retexturedModel = baseModel.retexture(textureMap.build());

@@ -2,19 +2,22 @@ package com.hbm.inventory.control_panel;
 
 import com.hbm.Tags;
 import com.hbm.inventory.control_panel.controls.configs.*;
+import com.hbm.inventory.control_panel.types.DataValue;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.NTMRenderHelper;
+import com.hbm.render.util.ControlPanelViewModelPositonDebugger;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 public class SubElementItemConfig extends SubElement {
     public static ResourceLocation bg_tex = new ResourceLocation(Tags.MODID + ":textures/gui/control_panel/gui_base.png");
+    private static final ControlPanelViewModelPositonDebugger PREVIEW_DEBUGGER = new ControlPanelViewModelPositonDebugger();
+    private final float[] previewBox = new float[4];
 
     public GuiButton btn_done;
     public GuiButton btn_next;
@@ -25,7 +28,7 @@ public class SubElementItemConfig extends SubElement {
     private int num_variants = 1;
 
     SubElementBaseConfig config_gui;
-    private Map<String, DataValue> configs;
+    private Map<String,DataValue> configs;
 
     public SubElementItemConfig(GuiControlEdit gui) {
         super(gui);
@@ -92,8 +95,14 @@ public class SubElementItemConfig extends SubElement {
 
            variants = ControlRegistry.getAllControlsOfType(gui.currentEditControl.getControlType());
         }
+        int[] previewRect = ControlPanelViewModelPositonDebugger.ENABLED
+                ? PREVIEW_DEBUGGER.tickAndResolve(this.config_gui.getClass().getSimpleName(), this.config_gui.getPreviewTransform())
+                : this.config_gui.getPreviewTransform();
+        renderPreview(gLeft + previewRect[0], gTop + previewRect[1], previewRect[2], previewRect[3], variant);
         this.config_gui.drawScreen();
-        renderPreview(gLeft + 149, gTop + 64, 88, 88, variant);
+        if(ControlPanelViewModelPositonDebugger.ENABLED) {
+            PREVIEW_DEBUGGER.renderOverlay(gui, this.config_gui.getClass().getSimpleName(), previewRect);
+        }
 
         this.last_control = variant;
     }
@@ -156,9 +165,9 @@ public class SubElementItemConfig extends SubElement {
     }
 
     private void renderPreview(int x, int y, int width, int height, Control variant) {
-        Map<String, DataValue> previewConfigs = new LinkedHashMap<>(variant.getConfigs());
-        previewConfigs.putAll(config_gui.getConfigs());
-        variant.applyConfigs(previewConfigs);
+        Map<String, DataValue> previewConfigs = variant.getConfigs();
+        config_gui.fillConfigs(previewConfigs);
+        variant.refreshConfigs();
         variant.posX = 0;
         variant.posY = 0;
 
@@ -168,11 +177,12 @@ public class SubElementItemConfig extends SubElement {
         NTMRenderHelper.drawGuiRectColor(x + 1, y + 1, 0, 0, width - 2, height - 2, 1, 1, 0.16F, 0.18F, 0.17F, 0.95F);
         GlStateManager.enableLighting();
 
-        float boxWidth = Math.max(variant.getBox()[2] - variant.getBox()[0], 0.1F);
-        float boxHeight = Math.max(variant.getBox()[3] - variant.getBox()[1], 0.1F);
+        variant.fillBox(previewBox);
+        float boxWidth = Math.max(previewBox[2] - previewBox[0], 0.1F);
+        float boxHeight = Math.max(previewBox[3] - previewBox[1], 0.1F);
         float scale = Math.min((width - 12F) / boxWidth, (height - 12F) / boxHeight);
-        float renderX = x + (width - boxWidth * scale) / 2F;
-        float renderY = y + (height - boxHeight * scale) / 2F;
+        float renderX = x + (width - boxWidth * scale) / 2F - previewBox[0] * scale;
+        float renderY = y + (height - boxHeight * scale) / 2F - previewBox[1] * scale;
 
         GlStateManager.pushMatrix();
         GlStateManager.translate(renderX, renderY, 0);

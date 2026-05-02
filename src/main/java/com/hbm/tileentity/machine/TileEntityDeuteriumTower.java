@@ -7,6 +7,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.IConnectionAnchors;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
@@ -14,12 +15,12 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @AutoRegister
-public class TileEntityDeuteriumTower extends TileEntityDeuteriumExtractor {
+public class TileEntityDeuteriumTower extends TileEntityDeuteriumExtractor implements IConnectionAnchors {
 
 	public TileEntityDeuteriumTower() {
 		super();
-		tanks[0] = new FluidTankNTM(Fluids.WATER, 50000);
-		tanks[1] = new FluidTankNTM(Fluids.HEAVYWATER, 5000);
+		tanks[0] = new FluidTankNTM(Fluids.WATER, 50000).withOwner(this);
+		tanks[1] = new FluidTankNTM(Fluids.HEAVYWATER, 5000).withOwner(this);
 	}
 
 	@Override
@@ -47,7 +48,7 @@ public class TileEntityDeuteriumTower extends TileEntityDeuteriumExtractor {
 	}
 
 
-	private DirPos[] getConPos() {
+	public DirPos[] getConPos() {
 		
 		ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
 		ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);

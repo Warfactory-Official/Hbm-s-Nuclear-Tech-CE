@@ -106,7 +106,7 @@ public class TileEntityMachineReactorBreeding extends TileEntityMachineBase impl
 
     public boolean canProcess() {
 
-        if(inventory.getStackInSlot(0) == null)
+        if(inventory.getStackInSlot(0).isEmpty())
             return false;
 
         BreederRecipes.BreederRecipe recipe = BreederRecipes.getOutput(inventory.getStackInSlot(0));

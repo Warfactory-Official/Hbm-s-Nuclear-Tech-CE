@@ -1,8 +1,10 @@
 package com.hbm.inventory.control_panel.nodes;
 
 import com.hbm.inventory.control_panel.*;
-import com.hbm.inventory.control_panel.DataValue.DataType;
+import com.hbm.inventory.control_panel.types.DataValue;
+import com.hbm.inventory.control_panel.types.DataValue.DataType;
 import com.hbm.inventory.control_panel.modular.StockNodesRegister;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
 import net.minecraft.nbt.NBTTagCompound;
 
 public class NodeGetVar extends Node {
@@ -55,6 +57,7 @@ public class NodeGetVar extends Node {
 		global = tag.getBoolean("global");
 		varName = tag.getString("varName");
 		super.readFromNBT(tag, sys);
+		refreshVariableReference();
 	}
 	
 	public void setVarSelector(){
@@ -84,8 +87,15 @@ public class NodeGetVar extends Node {
 	public NodeGetVar setData(String varName, boolean isGlobal) {
 		this.varName = varName;
 		this.global = isGlobal;
-		this.outputs.get(0).type = evaluate(0).getType();
+		refreshVariableReference();
 		return this;
+	}
+
+	private void refreshVariableReference() {
+		setVarSelector();
+		if(!varName.isEmpty()) {
+			this.outputs.get(0).type = evaluate(0).getType();
+		}
 	}
 
 	@Override

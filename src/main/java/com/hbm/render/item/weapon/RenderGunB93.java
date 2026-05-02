@@ -5,10 +5,12 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.ModItems;
 import com.hbm.items.weapon.GunB93;
 import com.hbm.render.item.TEISRBase;
+import com.hbm.render.model.BakedModelTransforms;
 import com.hbm.render.model.ModelB93;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
@@ -20,6 +22,11 @@ public class RenderGunB93 extends TEISRBase {
 	
 	public RenderGunB93(){
 		b93 = new ModelB93();
+	}
+
+	@Override
+	public ModelBinding createModelBinding(Item item) {
+		return ModelBinding.inventoryWithGuiModel(item, BakedModelTransforms.defaultItemTransforms());
 	}
 	
 	@Override

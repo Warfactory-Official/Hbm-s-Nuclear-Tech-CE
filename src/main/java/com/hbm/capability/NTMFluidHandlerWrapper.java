@@ -39,7 +39,7 @@ public class NTMFluidHandlerWrapper implements IFluidHandler {
         if (handler instanceof IFluidReceiverMK2 receiverMK2) this.receiver = receiverMK2;
         else receiver = null;
         if (receiver == null && provider == null)
-            throw new IllegalArgumentException("TileEntity must implement IFluidReceiverMK2 or IFluidProviderMK2");
+            throw new IllegalArgumentException("TileEntity " + handler.getClass().getName() + " must implement IFluidReceiverMK2 or IFluidProviderMK2");
         user = (IFluidUserMK2) handler;
         this.accessor = pos;
     }

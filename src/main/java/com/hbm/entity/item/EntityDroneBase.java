@@ -1,6 +1,5 @@
 package com.hbm.entity.item;
 
-import com.hbm.render.amlfrom1710.Vec3;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.MoverType;
 import net.minecraft.entity.player.EntityPlayer;
@@ -9,6 +8,7 @@ import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -91,13 +91,13 @@ public class EntityDroneBase extends Entity {
 
             if(this.targetY != -1) {
 
-                Vec3 dist = Vec3.createVectorHelper(targetX - posX, targetY - posY, targetZ - posZ);
+                Vec3d dist = new Vec3d(targetX - posX, targetY - posY, targetZ - posZ);
                 double speed = Math.min(getSpeed(), dist.length());
 
                 dist = dist.normalize();
-                this.motionX = dist.xCoord * speed;
-                this.motionY = dist.yCoord * speed;
-                this.motionZ = dist.zCoord * speed;
+                this.motionX = dist.x * speed;
+                this.motionY = dist.y * speed;
+                this.motionZ = dist.z * speed;
             }
             if(collidedHorizontally){
                 motionY += 1;

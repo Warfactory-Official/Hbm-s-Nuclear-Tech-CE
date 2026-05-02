@@ -90,7 +90,7 @@ public class CableDiodeBakedModel extends AbstractWavefrontBakedModel {
         List<BakedQuad> quads = new ArrayList<>();
         addLegacyBox(quads, 0.0F, 14.0F, 0.0F, 16.0F, 16.0F, 16.0F, diodeSprite, LEGACY_ALL_FACES, LEGACY_NO_ROTATION);
         addLegacyBox(quads, MIN_XYZ * 16.0F, MIN_XYZ * 16.0F, MIN_XYZ * 16.0F, MAX_XYZ * 16.0F, MAX_XYZ * 16.0F, MAX_XYZ * 16.0F, padSprite, LEGACY_ALL_FACES, LEGACY_NO_ROTATION);
-        quads.addAll(bakeSimpleQuads(Set.of("posX", "negX", "negY", "posZ", "negZ"), 0.0F, 0.0F, (float) Math.PI, false, true, cableSprite));
+        quads.addAll(bakeSimpleQuads(Set.of("posX", "negX", "negY", "posZ", "negZ"), 0.0F, 0.0F, (float) Math.PI, true, true, cableSprite));
         return quads;
     }
 

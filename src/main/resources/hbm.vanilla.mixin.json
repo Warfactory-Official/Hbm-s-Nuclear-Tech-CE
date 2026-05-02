@@ -1,0 +1,27 @@
+{
+  "required": true,
+  "package": "com.hbm.mixin.vanilla",
+  "plugin": "com.hbm.core.VanillaMixinConfigPlugin",
+  "refmap": "mixins.hbm.refmap.json",
+  "compatibilityLevel": "JAVA_8",
+  "target": "@env(DEFAULT)",
+  "client": [
+    "base.MixinBufferBuilder",
+    "MixinRenderGlobal",
+    "celeritas.MixinRenderGlobal",
+    "neonium.MixinBufferBuilder",
+    "neonium.MixinChunkRenderManager",
+    "neonium.MixinRenderGlobal",
+    "neonium.MixinSodiumWorldRenderer",
+    "nothirium.MixinBufferBuilder",
+    "nothirium.MixinBufferBuilderOptifine",
+    "nothirium.MixinAbstractChunkRenderer",
+    "nothirium.MixinRenderGlobal",
+    "optifine.MixinBufferBuilder",
+    "optifine.MixinRenderGlobal"
+  ],
+  "mixins": [],
+  "server": [],
+  "setSourceFile": true,
+  "minVersion": "0.8.7"
+}

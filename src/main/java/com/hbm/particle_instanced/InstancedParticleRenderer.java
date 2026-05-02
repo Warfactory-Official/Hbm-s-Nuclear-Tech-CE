@@ -1,15 +1,9 @@
 package com.hbm.particle_instanced;
 
-import com.google.common.collect.Queues;
 import com.hbm.Tags;
 import com.hbm.config.GeneralConfig;
-import com.hbm.handler.HbmShaderManager2;
-import com.hbm.main.ResourceManager;
-import com.hbm.render.GLCompat;
-import com.hbm.render.NTMRenderHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.DestFactor;
 import net.minecraft.client.renderer.GlStateManager.SourceFactor;
@@ -32,20 +26,12 @@ import java.util.Queue;
 @Mod.EventBusSubscriber(value = Side.CLIENT, modid = Tags.MODID)
 public class InstancedParticleRenderer {
 
-	//Position, scale, tex (texcoord offset and texcoord size), color (1 byte per channel), lightmap (two bytes).
-	private static final int BYTES_PER_PARTICLE = 3*4 + 4 + 4*4 + 4 + 2;
-
-	//Stupid hack
-	public static float partialTicks;
-	
 	private static int faceCount = 0;
-	private static int vao;
-	private static int particleDataVbo;
+	private static final int[] renderCounts = new int[ParticleInstanced.RenderType.size()];
+	private static final int[] renderOrder = new int[ParticleInstanced.RenderType.size()];
 	
-	private static ByteBuffer particleBuffer = GLAllocation.createDirectByteBuffer(0);
-	
-	protected static ArrayDeque<ParticleInstanced> particles = Queues.newArrayDeque();
-	private static final Queue<ParticleInstanced> queue = Queues.<ParticleInstanced> newArrayDeque();
+	protected static ArrayDeque<ParticleInstanced> particles = new ArrayDeque<>();
+	private static final Queue<ParticleInstanced> queue = new ArrayDeque<>();
 	
 	public static void addParticle(ParticleInstanced p) {
 		if(p != null)
@@ -76,37 +62,78 @@ public class InstancedParticleRenderer {
 	}
 	
 	public static void renderParticles(Entity entityIn, float partialTicks) {
+		if(faceCount <= 0) {
+			return;
+		}
+
 		Particle.interpPosX = entityIn.lastTickPosX + (entityIn.posX - entityIn.lastTickPosX) * (double) partialTicks;
 		Particle.interpPosY = entityIn.lastTickPosY + (entityIn.posY - entityIn.lastTickPosY) * (double) partialTicks;
 		Particle.interpPosZ = entityIn.lastTickPosZ + (entityIn.posZ - entityIn.lastTickPosZ) * (double) partialTicks;
 		Particle.cameraViewDir = entityIn.getLook(partialTicks);
-		
-		NTMRenderHelper.bindBlockTexture();
-		GlStateManager.enableBlend();
-		GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-		GlStateManager.alphaFunc(GL11.GL_GREATER, 0.003921569F);
+
 		GlStateManager.depthMask(false);
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-		
-		int bufferSize = faceCount*BYTES_PER_PARTICLE;
-		if(particleBuffer.capacity() < bufferSize)
-			particleBuffer = GLAllocation.createDirectByteBuffer(bufferSize);
-		particleBuffer.limit(bufferSize);
-		
-		for(ParticleInstanced p : particles){
-			p.addDataToBuffer(particleBuffer, partialTicks);
+
+		boolean fog = GL11.glIsEnabled(GL11.GL_FOG);
+		boolean lighting = GL11.glIsEnabled(GL11.GL_LIGHTING);
+		int renderOrderSize = 0;
+		for(ParticleInstanced particle : particles) {
+			int particleFaceCount = particle.getFaceCount();
+			if(particleFaceCount <= 0) {
+				continue;
+			}
+
+			int renderTypeId = particle.getRenderType().ordinal();
+			if(renderCounts[renderTypeId] == 0) {
+				renderOrder[renderOrderSize++] = renderTypeId;
+			}
+			renderCounts[renderTypeId] += particleFaceCount;
 		}
-		particleBuffer.rewind();
-		
-		GLCompat.bindBuffer(GLCompat.GL_ARRAY_BUFFER, particleDataVbo);
-		GLCompat.bufferData(GLCompat.GL_ARRAY_BUFFER, particleBuffer, GLCompat.GL_DYNAMIC_DRAW);
-		
-		GLCompat.bindVertexArray(vao);
-		ResourceManager.lit_particles.use();
-		GLCompat.drawArraysInstanced(GL11.GL_QUADS, 0, 4, faceCount);
-		HbmShaderManager2.releaseShader();
-		GLCompat.bindVertexArray(0);
-		GLCompat.bindBuffer(GLCompat.GL_ARRAY_BUFFER, 0);
+
+		try {
+			for(int i = 0; i < renderOrderSize; i++) {
+				int renderTypeId = renderOrder[i];
+				ParticleInstanced.RenderType renderType = ParticleInstanced.RenderType.byId(renderTypeId);
+				int renderCount = renderCounts[renderTypeId];
+
+				if(renderType.shouldDisableFog() && fog) {
+					GlStateManager.disableFog();
+				}
+				if(renderType.shouldDisableDepth()) {
+					GlStateManager.disableDepth();
+				}
+				if(renderType.shouldDisableLighting() && lighting) {
+					GlStateManager.disableLighting();
+				}
+
+				GlStateManager.enableBlend();
+				GlStateManager.blendFunc(renderType.getSourceFactor(), renderType.getDestFactor());
+				GlStateManager.alphaFunc(GL11.GL_GREATER, renderType.getAlphaThreshold());
+				renderType.bindTexture();
+
+				ByteBuffer particleBuffer = renderType.getBatch().begin(renderCount);
+				for(ParticleInstanced particle : particles){
+					if(particle.getRenderType() == renderType) {
+						particle.addDataToBuffer(particleBuffer, partialTicks);
+					}
+				}
+				renderType.getBatch().draw(renderCount);
+
+				if(renderType.shouldDisableLighting() && lighting) {
+					GlStateManager.enableLighting();
+				}
+				if(renderType.shouldDisableDepth()) {
+					GlStateManager.enableDepth();
+				}
+				if(renderType.shouldDisableFog() && fog) {
+					GlStateManager.enableFog();
+				}
+			}
+		} finally {
+			for(int i = 0; i < renderOrderSize; i++) {
+				renderCounts[renderOrder[i]] = 0;
+			}
+		}
 		
 		GlStateManager.depthMask(true);
 		GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA);
@@ -114,73 +141,16 @@ public class InstancedParticleRenderer {
 		GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
 	}
 	
-	public static void setup(){
-		int particleQuadVbo = GLCompat.genBuffers();
-		int particleDataVbo = GLCompat.genBuffers();
-		float[] vertexData = {
-				-0.5F, -0.5F, 0,
-				0.5F, -0.5F, 0,
-				0.5F, 0.5F, 0,
-				-0.5F, 0.5F, 0};
-		ByteBuffer data = GLAllocation.createDirectByteBuffer(4*vertexData.length);
-		for(float f : vertexData)
-			data.putFloat(f);
-		data.rewind();
-		GLCompat.bindBuffer(GLCompat.GL_ARRAY_BUFFER, particleQuadVbo);
-		GLCompat.bufferData(GLCompat.GL_ARRAY_BUFFER, data, GLCompat.GL_STATIC_DRAW);
-		
-		int vao = GLCompat.genVertexArrays();
-		GLCompat.bindVertexArray(vao);
-		GLCompat.vertexAttribPointer(0, 3, GL11.GL_FLOAT, false, 12, 0);
-		GLCompat.enableVertexAttribArray(0);
-		
-		GLCompat.bindBuffer(GLCompat.GL_ARRAY_BUFFER, particleDataVbo);
-		//Position, scale, tex (texcoord offset and a texcoord size), color (1 byte per channel), lightmap (two shorts).
-		GLCompat.vertexAttribPointer(1, 3, GL11.GL_FLOAT, false, BYTES_PER_PARTICLE, 0);
-		GLCompat.enableVertexAttribArray(1);
-		//Scale
-		GLCompat.vertexAttribPointer(2, 1, GL11.GL_FLOAT, false, BYTES_PER_PARTICLE, 12);
-		GLCompat.enableVertexAttribArray(2);
-		//tex
-		GLCompat.vertexAttribPointer(3, 4, GL11.GL_FLOAT, false, BYTES_PER_PARTICLE, 16);
-		GLCompat.enableVertexAttribArray(3);
-		//color
-		GLCompat.vertexAttribPointer(4, 4, GL11.GL_UNSIGNED_BYTE, true, BYTES_PER_PARTICLE, 32);
-		GLCompat.enableVertexAttribArray(4);
-		//lightmap
-		GLCompat.vertexAttribPointer(5, 2, GL11.GL_UNSIGNED_BYTE, true, BYTES_PER_PARTICLE, 36);
-		GLCompat.enableVertexAttribArray(5);
-		
-		GLCompat.vertexAttribDivisor(1, 1);
-		GLCompat.vertexAttribDivisor(2, 1);
-		GLCompat.vertexAttribDivisor(3, 1);
-		GLCompat.vertexAttribDivisor(4, 1);
-		GLCompat.vertexAttribDivisor(5, 1);
-		
-		GLCompat.bindVertexArray(0);
-		GLCompat.bindBuffer(GLCompat.GL_ARRAY_BUFFER, 0);
-		
-		InstancedParticleRenderer.vao = vao;
-		InstancedParticleRenderer.particleDataVbo = particleDataVbo;
-	}
-	
 	@SubscribeEvent
 	public static void renderLast(RenderWorldLastEvent event) {
 		if(GeneralConfig.instancedParticles){
-			partialTicks = event.getPartialTicks();
 			renderParticles(Minecraft.getMinecraft().getRenderViewEntity(), event.getPartialTicks());
 		}
 	}
-
-	private static boolean init = true;
 	
 	@SubscribeEvent
 	public static void clientTick(ClientTickEvent event) {
 		if(GeneralConfig.instancedParticles && event.phase == Phase.START) {
-			if(init){
-				setup();
-				init = false;
-			}
 			if(!Minecraft.getMinecraft().isGamePaused())
 				updateParticles();
 		}

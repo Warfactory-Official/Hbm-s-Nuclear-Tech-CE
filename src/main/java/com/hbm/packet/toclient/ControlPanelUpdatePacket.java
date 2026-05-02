@@ -1,7 +1,7 @@
 package com.hbm.packet.toclient;
 
 import com.hbm.inventory.control_panel.ControlPanel;
-import com.hbm.inventory.control_panel.DataValue;
+import com.hbm.inventory.control_panel.types.DataValue;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.threading.PrecompiledPacket;
 import com.hbm.tileentity.machine.TileEntityControlPanel;

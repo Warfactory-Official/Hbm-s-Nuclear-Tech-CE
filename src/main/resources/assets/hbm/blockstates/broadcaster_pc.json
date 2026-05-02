@@ -1,8 +1,0 @@
-{
-	"variants": {
-		"facing=north": { "model": "hbm:broadcaster_pc" },
-		"facing=south": { "model": "hbm:broadcaster_pc", "y": 180 },
-		"facing=west": { "model": "hbm:broadcaster_pc", "y": 270 },
-		"facing=east": { "model": "hbm:broadcaster_pc", "y": 90 }
-	}
-}

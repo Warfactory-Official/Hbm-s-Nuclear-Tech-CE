@@ -2,6 +2,7 @@ package com.hbm.items.machine;
 
 import com.google.common.collect.Sets;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.inventory.gui.IUpgradeInfoProviderSource;
 import com.hbm.items.ItemBakedBase;
 import com.hbm.items.ModItems;
 import com.hbm.tileentity.IUpgradeInfoProvider;
@@ -22,6 +23,7 @@ import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Set;
@@ -69,14 +71,19 @@ public class ItemMachineUpgrade extends ItemBakedBase {
 	}
 
 	@Override
-	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
+	public void addInformation(@NotNull ItemStack stack, World worldIn, @NotNull List<String> list, @NotNull ITooltipFlag flagIn) {
 		GuiScreen open = Minecraft.getMinecraft().currentScreen;
 
 		if (open instanceof GuiContainer guiContainer) {
 			Container container = guiContainer.inventorySlots;
-			if (!container.inventorySlots.isEmpty()) {
-				Slot first = container.getSlot(0);
+			IUpgradeInfoProvider provider = null;
 
+			if (open instanceof IUpgradeInfoProviderSource providerSource) {
+				provider = providerSource.getUpgradeInfoProvider();
+			}
+
+			if (provider == null && !container.inventorySlots.isEmpty()) {
+				Slot first = container.getSlot(0);
 				IItemHandler handler = null;
 
 				if (first instanceof SlotItemHandler) {
@@ -87,12 +94,16 @@ public class ItemMachineUpgrade extends ItemBakedBase {
 					}
 				}
 
-				if (handler instanceof IUpgradeInfoProvider provider) {
-					boolean advanced = flagIn.isAdvanced();
-					if (provider.canProvideInfo(this.type, this.tier, advanced)) {
-						provider.provideInfo(this.type, this.tier, list, advanced);
-						return;
-					}
+				if (handler instanceof IUpgradeInfoProvider) {
+					provider = (IUpgradeInfoProvider) handler;
+				}
+			}
+
+			if (provider != null) {
+				boolean advanced = flagIn.isAdvanced();
+				if (provider.canProvideInfo(this.type, this.tier, advanced)) {
+					provider.provideInfo(this.type, this.tier, list, advanced);
+					return;
 				}
 			}
 		}

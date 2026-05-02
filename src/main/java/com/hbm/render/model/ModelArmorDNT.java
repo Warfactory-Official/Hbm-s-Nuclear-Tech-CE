@@ -31,23 +31,23 @@ public class ModelArmorDNT extends ModelArmorBase {
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
 
         switch(type) {
-            case 0 -> {
+            case 3 -> {
                 bindTexture(ResourceManager.dnt_helmet);
                 this.head.render(scaleFactor);
             }
-            case 1 -> {
+            case 2 -> {
                 bindTexture(ResourceManager.dnt_chest);
                 this.body.render(scaleFactor);
                 bindTexture(ResourceManager.dnt_arm);
                 this.leftArm.render(scaleFactor);
                 this.rightArm.render(scaleFactor);
             }
-            case 2 -> {
+            case 1 -> {
                 bindTexture(ResourceManager.dnt_leg);
                 this.leftLeg.render(scaleFactor);
                 this.rightLeg.render(scaleFactor);
             }
-            case 3 -> {
+            case 0 -> {
                 bindTexture(ResourceManager.dnt_leg);
                 this.leftFoot.render(scaleFactor);
                 this.rightFoot.render(scaleFactor);

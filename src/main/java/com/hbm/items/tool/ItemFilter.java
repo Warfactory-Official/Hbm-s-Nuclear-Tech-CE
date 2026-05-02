@@ -63,11 +63,14 @@ public class ItemFilter extends Item {
 		ItemStack copy = filter.copy();
 		copy.setCount(1);
 		ItemStack current = ArmorUtil.getGasMaskFilter(helmet);
-		
-		if(current != null) {
+
+		filter.shrink(1);
+		if(filter.isEmpty()) {
 			filter = current;
-		} else {
-			filter.shrink(1);
+		} else if(!current.isEmpty()) {
+			if(!player.inventory.addItemStackToInventory(current)) {
+				player.dropItem(current, true, false);
+			}
 		}
 		
 		ArmorUtil.installGasMaskFilter(helmet, copy);

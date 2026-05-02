@@ -1,6 +1,6 @@
 {
-	"parent": "block/cube_all",
-	"textures": {
-		"all": "hbm:items/sliding_blast_door_window"
-	}
+  "parent": "block/cube_all",
+  "textures": {
+    "all": "hbm:blocks/sliding_blast_door"
+  }
 }

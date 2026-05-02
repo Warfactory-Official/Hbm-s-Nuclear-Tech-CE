@@ -16,11 +16,13 @@
 
 这是一个HBM的核科技mod的1.12.2**权威移植**，在所有移植中完成度最高，因其他开发者未能持续更新与维护其它fork而生。
 
-> **注意：提交问题（Issue）时请严格遵循模板**  
+> [!IMPORTANT]
+> **提交问题（Issue）时请严格遵循模板**  
 > 鉴于我们每日收到的问题数量，我们**强制**执行模板中规定的报告规范。  
 未按模板提交的问题将会**直接关闭并锁定**。该规则**不追溯既往**。请尊重我们的时间，使用英文提交**高质量**的问题报告。
 
-> **注意：如安装了 Universal Tweaks，请将 `B:"Disable Fancy Missing Model"` 设为 `false` 以修复模型旋转问题**  
+> [!NOTE]
+> 如安装了 Universal Tweaks，请将 `B:"Disable Fancy Missing Model"` 设为 `false` 以修复模型旋转问题  
 > 配置位置：`config/Universal Tweaks - Tweaks.cfg`
 
 <br>
@@ -118,11 +120,11 @@ dependencies {
     // Java 8, 未混淆
     implementation "com.hbm:ntm-ce:2.1.1.0-SNAPSHOT:dev"
     // Java 25, 未混淆
-    implementation "com.hbm:ntm-ce:2.1.1.0-SNAPSHOT:dev-java25"
+    implementation "com.hbm:ntm-ce-java25:2.1.1.0-SNAPSHOT:dev"
     // Java 8, 混淆
     implementation "com.hbm:ntm-ce:2.1.1.0-SNAPSHOT"
     // Java 25, 混淆
-    implementation "com.hbm:ntm-ce:2.1.1.0-SNAPSHOT:java25"
+    implementation "com.hbm:ntm-ce-java25:2.1.1.0-SNAPSHOT"
 }
 ```
 
@@ -148,5 +150,5 @@ dependencies {
 }
 ```
 
-一般情况下在开发环境中应使用未混淆 jar（`:dev` / `:dev-java25`）。  
+一般情况下在开发环境中应使用未混淆 jar。  
 在 Cleanroom + JDK 25 开发环境下 Java 8 和 Java 25 版本都能用；其他情况下建议使用 Java 8 版本。

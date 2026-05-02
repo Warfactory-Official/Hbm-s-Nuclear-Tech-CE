@@ -253,7 +253,7 @@ public class ExplosionLarge {
 
     public static void explodeFire(World world, Entity detonator, double x, double y, double z, float strength, boolean cloud, boolean rubble, boolean shrapnel) {
         if (CompatibilityConfig.isWarDim(world)) {
-            world.spawnEntity(EntityNukeExplosionMK5.statFacNoRadFire(world, (int) strength, x, y, z).setDetonator(detonator));
+            world.spawnEntity(EntityNukeExplosionMK5.statFacNoRad(world, (int) strength, x, y, z).setDetonator(detonator));
 
             ContaminationUtil.radiate(world, x, y, z, strength, 0, 0, strength * 20F, strength * 5F);
         }

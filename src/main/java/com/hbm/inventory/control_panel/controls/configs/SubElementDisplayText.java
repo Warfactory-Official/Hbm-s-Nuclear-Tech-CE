@@ -1,15 +1,16 @@
 package com.hbm.inventory.control_panel.controls.configs;
 
-import com.hbm.inventory.control_panel.DataValue;
-import com.hbm.inventory.control_panel.DataValueFloat;
+import com.hbm.inventory.control_panel.types.DataValue;
 import com.hbm.inventory.control_panel.GuiControlEdit;
 import net.minecraftforge.fml.client.config.GuiSlider;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class SubElementDisplayText extends SubElementBaseConfig {
 
+    private static final int[] TRANSFORM = {149, 64, 88, 88};
     private int scale;
     private int width;
 
@@ -31,11 +32,9 @@ public class SubElementDisplayText extends SubElementBaseConfig {
     }
 
     @Override
-    public Map<String, DataValue> getConfigs() {
-        Map<String, DataValue> m = new HashMap<>();
-        m.put("scale", new DataValueFloat(scale));
-        m.put("width", new DataValueFloat(width));
-        return m;
+    public void fillConfigs(Map<String, DataValue> configs) {
+        putFloatConfig(configs, "scale", scale);
+        putFloatConfig(configs, "width", width);
     }
 
     @Override
@@ -50,5 +49,11 @@ public class SubElementDisplayText extends SubElementBaseConfig {
         slideScale.enabled = enable;
         slideWidth.visible = enable;
         slideWidth.enabled = enable;
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public int[] getPreviewTransform() {
+        return TRANSFORM;
     }
 }

@@ -5,6 +5,7 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.tileentity.network.TileEntityCraneBase;
 import com.hbm.tileentity.network.TileEntityCraneGrabber;
+import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.texture.TextureMap;
@@ -45,6 +46,12 @@ public class CraneGrabber extends BlockCraneBase {
     @Override
     public TileEntityCraneBase createNewTileEntity(@NotNull World world, int meta) {
         return new TileEntityCraneGrabber();
+    }
+
+    @Override
+    public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
+        TileEntityCraneGrabber crane = (TileEntityCraneGrabber) world.getTileEntity(pos);
+        crane.isIndirectlyPowered = world.isBlockPowered(pos);
     }
 
     @Override

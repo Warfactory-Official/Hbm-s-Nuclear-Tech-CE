@@ -16,6 +16,6 @@ public class NTMLinkGenerator extends BasicLinkGenerator {
 
     @Override
     protected String domain() {
-        return "https://github.com/MisterNorwood/Hbm-s-Nuclear-Tech-CE/";
+        return "https://github.com/Warfactory-Official/Hbm-s-Nuclear-Tech-CE/";
     }
 }

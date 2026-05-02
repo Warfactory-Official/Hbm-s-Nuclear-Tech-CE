@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.items.tool.ItemCasingBag;
 import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
@@ -15,6 +16,10 @@ public class ContainerCasingBag extends Container {
 
     private ItemCasingBag.InventoryCasingBag bag;
     private EnumHand hand;
+
+    private final TransferStrategy transferStrategy = TransferStrategy.builder(() -> this.bag.getSlots())
+                                                                      .genericMachineRange(0)
+                                                                      .build();
 
     public ContainerCasingBag(InventoryPlayer invPlayer, ItemCasingBag.InventoryCasingBag bag, EnumHand hand) {
         this.bag = bag;
@@ -39,7 +44,7 @@ public class ContainerCasingBag extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, bag.getSlots(), true, player);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.transferStrategy, player);
     }
 
     @Override

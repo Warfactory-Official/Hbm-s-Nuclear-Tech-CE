@@ -1,7 +1,6 @@
 package com.hbm.inventory.control_panel.controls.configs;
 
-import com.hbm.inventory.control_panel.DataValue;
-import com.hbm.inventory.control_panel.DataValueFloat;
+import com.hbm.inventory.control_panel.types.DataValue;
 import com.hbm.inventory.control_panel.GuiControlEdit;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.NTMRenderHelper;
@@ -9,12 +8,14 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.client.config.GuiCheckBox;
 import net.minecraftforge.fml.client.config.GuiSlider;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class SubElementDisplaySevenSeg extends SubElementBaseConfig {
 
+    private static final int[] TRANSFORM = {132, 112, 88, 88};
     private float colorR;
     private float colorG;
     private float colorB;
@@ -37,14 +38,12 @@ public class SubElementDisplaySevenSeg extends SubElementBaseConfig {
     }
 
     @Override
-    public Map<String, DataValue> getConfigs() {
-        Map<String, DataValue> m = new HashMap<>();
-        m.put("colorR", new DataValueFloat(colorR));
-        m.put("colorG", new DataValueFloat(colorG));
-        m.put("colorB", new DataValueFloat(colorB));
-        m.put("digitCount", new DataValueFloat(digitCount));
-        m.put("isDecimal", new DataValueFloat(isDecimal));
-        return m;
+    public void fillConfigs(Map<String, DataValue> configs) {
+        putFloatConfig(configs, "colorR", colorR);
+        putFloatConfig(configs, "colorG", colorG);
+        putFloatConfig(configs, "colorB", colorB);
+        putFloatConfig(configs, "digitCount", digitCount);
+        putFloatConfig(configs, "isDecimal", isDecimal ? 1F : 0F);
     }
 
     @Override
@@ -91,5 +90,11 @@ public class SubElementDisplaySevenSeg extends SubElementBaseConfig {
         slide_digitCount.enabled = enable;
         check_isDecimal.visible = enable;
         check_isDecimal.enabled = enable;
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public int[] getPreviewTransform() {
+        return TRANSFORM;
     }
 }

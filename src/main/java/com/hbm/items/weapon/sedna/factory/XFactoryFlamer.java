@@ -17,10 +17,10 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
 import com.hbm.particle.helper.FlameCreator;
+import com.hbm.render.anim.sedna.AnimationEnums;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna.IType;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
 import com.hbm.render.anim.sedna.BusAnimationSequenceSedna;
-import com.hbm.render.anim.sedna.HbmAnimationsSedna;
 import com.hbm.render.misc.RenderScreenOverlay.Crosshair;
 import com.hbm.util.DamageResistanceHandler;
 import net.minecraft.block.Block;
@@ -112,13 +112,13 @@ public class XFactoryFlamer {
 
     public static void init() {
         flame_diesel = new BulletConfig().setItem(GunFactory.EnumAmmo.FLAME_DIESEL).setCasing(new ItemStack(ModItems.plate_steel, 2), 500).setupDamageClass(DamageResistanceHandler.DamageClass.FIRE).setLife(100).setVel(1F).setGrav(0.02F).setReloadCount(500).setSelfDamageDelay(20).setKnockback(0F)
-                .setOnUpdate(LAMBDA_FIRE).setOnRicochet(LAMBDA_LINGER_DIESEL);
+                .setOnImpact(LAMBDA_IGNITE_FIRE).setOnUpdate(LAMBDA_FIRE).setOnRicochet(LAMBDA_LINGER_DIESEL);
         flame_gas = new BulletConfig().setItem(GunFactory.EnumAmmo.FLAME_GAS).setCasing(new ItemStack(ModItems.plate_steel, 2), 500).setupDamageClass(DamageResistanceHandler.DamageClass.FIRE).setLife(10).setSpread(0.05F).setVel(1F).setGrav(0.0F).setReloadCount(500).setSelfDamageDelay(20).setKnockback(0F)
-                .setOnUpdate(LAMBDA_FIRE).setOnRicochet(LAMBDA_LINGER_GAS);
+                .setOnImpact(LAMBDA_IGNITE_FIRE).setOnUpdate(LAMBDA_FIRE).setOnRicochet(LAMBDA_LINGER_GAS);
         flame_napalm = new BulletConfig().setItem(GunFactory.EnumAmmo.FLAME_NAPALM).setCasing(new ItemStack(ModItems.plate_steel, 2), 500).setupDamageClass(DamageResistanceHandler.DamageClass.FIRE).setLife(200).setVel(1F).setGrav(0.02F).setReloadCount(500).setSelfDamageDelay(20).setKnockback(0F)
-                .setOnUpdate(LAMBDA_FIRE).setOnRicochet(LAMBDA_LINGER_NAPALM);
+                .setOnImpact(LAMBDA_IGNITE_FIRE).setOnUpdate(LAMBDA_FIRE).setOnRicochet(LAMBDA_LINGER_NAPALM);
         flame_balefire = new BulletConfig().setItem(GunFactory.EnumAmmo.FLAME_BALEFIRE).setCasing(new ItemStack(ModItems.plate_steel, 2), 500).setupDamageClass(DamageResistanceHandler.DamageClass.FIRE).setLife(200).setVel(1F).setGrav(0.02F).setReloadCount(500).setSelfDamageDelay(20).setKnockback(0F)
-                .setOnUpdate(LAMBDA_BALEFIRE).setOnRicochet(LAMBDA_LINGER_BALEFIRE);
+                .setOnImpact(LAMBDA_IGNITE_BALEFIRE).setOnUpdate(LAMBDA_BALEFIRE).setOnRicochet(LAMBDA_LINGER_BALEFIRE);
 
         flame_nograv = flame_diesel.clone().setGrav(0);
 
@@ -179,7 +179,7 @@ public class XFactoryFlamer {
         );
     }
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_FLAMER_ANIMS = (stack, type) -> {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> LAMBDA_FLAMER_ANIMS = (stack, type) -> {
         switch(type) {
             case EQUIP: return new BusAnimationSedna()
                     .addBus("EQUIP", new BusAnimationSequenceSedna().addPos(-45, 0, 0, 0).addPos(0, 0, 0, 500, IType.SIN_DOWN));
@@ -192,7 +192,7 @@ public class XFactoryFlamer {
         return null;
     };
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_CHEMTHROWER_ANIMS = (stack, type) -> {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> LAMBDA_CHEMTHROWER_ANIMS = (stack, type) -> {
         switch(type) {
             case EQUIP: return new BusAnimationSedna()
                     .addBus("EQUIP", new BusAnimationSequenceSedna().addPos(-45, 0, 0, 0).addPos(0, 0, 0, 500, IType.SIN_DOWN));

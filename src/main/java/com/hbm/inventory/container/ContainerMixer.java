@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.items.machine.IItemFluidIdentifier;
@@ -15,9 +16,16 @@ import net.minecraftforge.items.SlotItemHandler;
 import org.jetbrains.annotations.NotNull;
 
 public class ContainerMixer extends Container {
-	
+
 	private TileEntityMachineMixer mixer;
-	
+
+	private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(5)
+                                                                              .rule(0, 1, Library::isBattery)
+                                                                              .rule(1, 2, s -> !(s.getItem() instanceof IItemFluidIdentifier) && !Library.isMachineUpgrade(s))
+                                                                              .rule(2, 3, s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                              .rule(3, 5, Library::isMachineUpgrade)
+                                                                              .build();
+
 	public ContainerMixer(InventoryPlayer player, TileEntityMachineMixer mixer) {
 		this.mixer = mixer;
 
@@ -44,11 +52,7 @@ public class ContainerMixer extends Container {
 
 	@Override
     public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 5,
-                Library::isBattery, 1,
-                s -> !(s.getItem() instanceof IItemFluidIdentifier) && !Library.isMachineUpgrade(s), 2,
-                s -> s.getItem() instanceof IItemFluidIdentifier, 3,
-                Library::isMachineUpgrade, 5);
+		return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
 	@Override

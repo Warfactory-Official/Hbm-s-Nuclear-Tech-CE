@@ -22,6 +22,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.util.EnumUtil;
@@ -56,7 +57,7 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
         IGUIProvider,
         SimpleComponent,
         CompatHandler.OCComponent,
-        IFluidCopiable {
+        IFluidCopiable, IConnectionAnchors {
 
   public boolean isOn = false;
   public static long maxPower = 2_500_000;
@@ -75,7 +76,7 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
 
   public TileEntityMachineCombustionEngine() {
     super(5, 50, true, true);
-    this.tank = new FluidTankNTM(Fluids.DIESEL, 24_000);
+    this.tank = new FluidTankNTM(Fluids.DIESEL, 24_000).withOwner(this);
   }
 
   @Override
@@ -195,7 +196,7 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
     }
   }
 
-  private DirPos[] getConPos() {
+  public DirPos[] getConPos() {
     ForgeDirection dir =
         ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
     ForgeDirection rot = dir.getRotation(ForgeDirection.UP);

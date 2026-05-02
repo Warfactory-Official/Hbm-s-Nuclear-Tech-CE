@@ -1,8 +1,10 @@
 package com.hbm.main;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.config.GeneralConfig;
 import com.hbm.handler.ImpactWorldHandler;
 import com.hbm.saveddata.TomSaveData;
+import com.hbm.world.WorldProviderNTM;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.EntityLivingBase;
@@ -12,8 +14,12 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumSkyBlock;
+import net.minecraft.world.World;
+import net.minecraft.world.WorldProvider;
+import net.minecraft.world.WorldProviderSurface;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent.CheckSpawn;
 import net.minecraftforge.event.terraingen.BiomeEvent;
 import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
@@ -133,9 +139,35 @@ public class ModEventHandlerImpact {
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void onLoad(WorldEvent.Load event) {
 		TomSaveData.resetLastCached();
+
+		if (GeneralConfig.enableImpactWorldProvider && event.getWorld().provider.getDimension() == 0) {
+			bindImpactWorldProvider(event.getWorld());
+		}
 	}
 
-	@SubscribeEvent
+	private static void bindImpactWorldProvider(World world) {
+		int dimension = world.provider.getDimension();
+        if (world.provider instanceof WorldProviderNTM || world.provider.getClass() == WorldProviderSurface.class) {
+            if (DimensionManager.getProviderType(dimension) != WorldProviderNTM.IMPACT_TYPE) {
+                DimensionManager.unregisterDimension(dimension);
+                DimensionManager.registerDimension(dimension, WorldProviderNTM.IMPACT_TYPE);
+            }
+            if (world.provider instanceof WorldProviderNTM) return;
+            WorldProvider provider = new WorldProviderNTM();
+            provider.setDimension(dimension);
+            provider.setWorld(world);
+            world.provider = provider;
+            world.calculateInitialSkylight();
+        } else {
+            // OTG compat
+            MainRegistry.logger.warn(
+                    "Skipping impact overworld provider bind for custom provider {} in dimension {}. Leaving the existing provider and dimension registration untouched to avoid clobbering a modded overworld provider.",
+                    world.provider.getClass().getName(),
+                    dimension);
+        }
+    }
+
+    @SubscribeEvent
 	public void modifyVillageGen(BiomeEvent.GetVillageBlockID event) {
 		Block b = event.getOriginal().getBlock();
 		Material mat = event.getOriginal().getMaterial();

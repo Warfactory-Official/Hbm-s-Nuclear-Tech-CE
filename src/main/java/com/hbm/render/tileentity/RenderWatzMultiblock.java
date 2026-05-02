@@ -16,14 +16,6 @@ public class RenderWatzMultiblock extends TileEntitySpecialRenderer<TileEntityWa
     public static TextureAtlasSprite elementSpriteTop;
     public static TextureAtlasSprite elementSpriteSide;
     public static TextureAtlasSprite casingSprite;
-
-    @Override
-    public boolean isGlobalRenderer(TileEntityWatzStruct te){
-        return true;
-    }
-
-
-
     @Override
     public void render(TileEntityWatzStruct te, double x, double y, double z, float partialTicks, int destroyStage, float alpha){
         GlStateManager.pushMatrix();

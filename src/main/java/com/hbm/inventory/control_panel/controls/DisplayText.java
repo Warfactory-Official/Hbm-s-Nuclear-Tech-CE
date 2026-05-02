@@ -3,21 +3,23 @@ package com.hbm.inventory.control_panel.controls;
 import com.hbm.inventory.control_panel.*;
 import com.hbm.inventory.control_panel.controls.configs.SubElementBaseConfig;
 import com.hbm.inventory.control_panel.controls.configs.SubElementDisplayText;
+import com.hbm.inventory.control_panel.types.DataValue;
+import com.hbm.inventory.control_panel.types.DataValueEnum;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
+import com.hbm.inventory.control_panel.types.DataValueString;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.loader.IModelCustom;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.opengl.GL11;
 
 import java.util.List;
 import java.util.Map;
@@ -55,15 +57,16 @@ public class DisplayText extends Control {
     }
 
     @Override
-    public float[] getBox() {
+    public void fillBox(float[] box) {
         float d = .1F;
-        return new float[] {posX-d, posY-d, posX + (width*1.5F*scale/500F)+d, posY + (height*scale/500F)+d};
+        box[0] = posX - d;
+        box[1] = posY - d;
+        box[2] = posX + (width * 1.5F * scale / 500F) + d;
+        box[3] = posY + (height * scale / 500F) + d;
     }
 
     @Override
-    public void applyConfigs(Map<String, DataValue> configs) {
-        super.applyConfigs(configs);
-
+    protected void onConfigMapChanged() {
         for (Map.Entry<String, DataValue> e : configMap.entrySet()) {
             switch (e.getKey()) {
                 case "scale": {
@@ -121,29 +124,34 @@ public class DisplayText extends Control {
         GlStateManager.translate(0, 0, -.01F);
 
         GlStateManager.disableTexture2D();
-        Tessellator tes = Tessellator.getInstance();
-        BufferBuilder buf = tes.getBuffer();
-        buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
+        NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionTexColorQuads(2);
         float[] box = getBox();
         float[] rgb = new float[]{0, 0, 0};
         float d = 0;
-        buf.pos(box[0]-d, box[1]-d, -.01).tex(0, 0).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-        buf.pos(box[0]-d, box[3], -.01).tex(0, 1).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-        buf.pos(box[2]+d, box[3], -.01).tex(1, 1).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-        buf.pos(box[2]+d, box[1]-d, -.01).tex(1, 0).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
+        int packedColor = NTMBufferBuilder.packColor(rgb[0], rgb[1], rgb[2], 1);
+        buf.appendPositionTexColorQuadUnchecked(
+                box[0]-d, box[1]-d, -0.01F, 0, 0, packedColor,
+                box[0]-d, box[3], -0.01F, 0, 1, packedColor,
+                box[2]+d, box[3], -0.01F, 1, 1, packedColor,
+                box[2]+d, box[1]-d, -0.01F, 1, 0, packedColor
+        );
         rgb = new float[]{.3F, .3F, .3F};
         d = .05F;
-        buf.pos(box[0]-d, box[1]-d, 0).tex(0, 0).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-        buf.pos(box[0]-d, box[3]+d, 0).tex(0, 1).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-        buf.pos(box[2]+d, box[3]+d, 0).tex(1, 1).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-        buf.pos(box[2]+d, box[1]-d, 0).tex(1, 0).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-        tes.draw();
+        packedColor = NTMBufferBuilder.packColor(rgb[0], rgb[1], rgb[2], 1);
+        buf.appendPositionTexColorQuadUnchecked(
+                box[0]-d, box[1]-d, 0, 0, 0, packedColor,
+                box[0]-d, box[3]+d, 0, 0, 1, packedColor,
+                box[2]+d, box[3]+d, 0, 1, 1, packedColor,
+                box[2]+d, box[1]-d, 0, 1, 0, packedColor
+        );
+        NTMImmediate.INSTANCE.draw();
         GlStateManager.enableTexture2D();
         GlStateManager.popMatrix();
-
+        GlStateManager.color(1F, 1F, 1F, 1F);
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public IModelCustom getModel() {
         return ResourceManager.ctrl_display_seven_seg;
     }
@@ -151,6 +159,29 @@ public class DisplayText extends Control {
     @Override
     public ResourceLocation getGuiTexture() {
         return ResourceManager.ctrl_display_seven_seg_gui_tex;
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public void renderControl(float[] renderBox,Control selectedControl,GuiControlEdit gui) {
+        String text = getVar("text").toString();
+        float scale = getConfigs().get("scale").getNumber()/500F;
+
+        Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.white);
+        NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionTexColorQuads(1);
+        int packedColor = NTMBufferBuilder.packColor(0.2F, this == selectedControl ? 0.1F : 0.2F, 0.2F, 1.0F);
+        appendGuiQuad(buf, renderBox[0], renderBox[1], renderBox[2], renderBox[3], 0.0F, 0.0F, 1.0F, 1.0F, packedColor);
+        NTMImmediate.INSTANCE.draw();
+
+        EnumDyeColor dyeColor = getVar("color").getEnum(EnumDyeColor.class);
+        int color = dyeColor.getColorValue();
+
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(posX, posY, 0);
+        GlStateManager.scale(scale, scale, scale);
+        GlStateManager.translate(-posX, -posY, 0);
+        gui.getFontRenderer().drawString(text, posX, posY, color, false);
+        GlStateManager.popMatrix();
     }
 
     @Override

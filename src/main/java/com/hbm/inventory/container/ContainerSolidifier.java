@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.slot.SlotUpgrade;
@@ -17,6 +18,14 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerSolidifier extends Container {
 
     private TileEntityMachineSolidifier solidifier;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(5)
+                                                                              .rule(0, 2, Library::isBattery)
+                                                                              .rule(2, 4, Library::isMachineUpgrade)
+                                                                              .rule(4, 5, s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                              .ruleDispatchMode(TransferStrategy.RuleDispatchMode.FALLTHROUGH_ON_FAILURE)
+                                                                              .playerFallbackMode(TransferStrategy.PlayerFallbackMode.REBALANCE_SECTIONS)
+                                                                              .build();
 
     public ContainerSolidifier(InventoryPlayer playerInv, TileEntityMachineSolidifier tile) {
         solidifier = tile;
@@ -49,10 +58,6 @@ public class ContainerSolidifier extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 5,
-                Library::isBattery, 2,
-                Library::isMachineUpgrade, 4,
-                s -> s.getItem() instanceof IItemFluidIdentifier, 5
-        );
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 }

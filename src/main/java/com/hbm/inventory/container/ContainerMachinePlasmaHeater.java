@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.tileentity.machine.TileEntityMachinePlasmaHeater;
@@ -15,6 +16,10 @@ import org.jetbrains.annotations.NotNull;
 public class ContainerMachinePlasmaHeater extends Container {
 
     private final TileEntityMachinePlasmaHeater plasmaHeater;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(5)
+                                                                              .genericMachineRange(0)
+                                                                              .build();
 
     public ContainerMachinePlasmaHeater(InventoryPlayer invPlayer, TileEntityMachinePlasmaHeater tedf) {
 
@@ -39,7 +44,7 @@ public class ContainerMachinePlasmaHeater extends Container {
 
     @Override
     public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 5);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
     @Override

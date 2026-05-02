@@ -9,6 +9,7 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IConfigurableMachine;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.TileEntityLoadedBase;
@@ -31,7 +32,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.HashSet;
 
-public abstract class TileEntityMachinePumpBase extends TileEntityLoadedBase implements ITickable, IFluidStandardTransceiver, IConfigurableMachine, IFluidCopiable {
+public abstract class TileEntityMachinePumpBase extends TileEntityLoadedBase implements ITickable, IFluidStandardTransceiver, IConfigurableMachine, IFluidCopiable, IConnectionAnchors {
 
     public static final HashSet<Block> validBlocks = new HashSet();
 
@@ -161,7 +162,7 @@ public abstract class TileEntityMachinePumpBase extends TileEntityLoadedBase imp
     protected abstract boolean canOperate();
     protected abstract void operate();
 
-    protected DirPos[] getConPos() {
+    public DirPos[] getConPos() {
         return new DirPos[] {
                 new DirPos(pos.getX() + 2, pos.getY(), pos.getZ(), Library.POS_X),
                 new DirPos(pos.getX() - 2, pos.getY(), pos.getZ(), Library.NEG_X),

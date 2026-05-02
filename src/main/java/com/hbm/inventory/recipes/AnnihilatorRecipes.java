@@ -1,12 +1,5 @@
 package com.hbm.inventory.recipes;
 
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.*;
-import java.util.Map.Entry;
-
-import static com.hbm.inventory.OreDictManager.*;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -18,19 +11,25 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.inventory.recipes.loader.SerializableRecipe;
+import com.hbm.items.ItemEnums.EnumCircuitType;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.items.machine.ItemFluidIcon;
-import com.hbm.items.ItemEnums.EnumCircuitType;
 import com.hbm.items.weapon.sedna.factory.GunFactory.EnumAmmo;
 import com.hbm.util.ItemStackUtil;
 import com.hbm.util.Tuple.Pair;
-
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.*;
+import java.util.Map.Entry;
+
+import static com.hbm.inventory.OreDictManager.*;
 
 public class AnnihilatorRecipes extends SerializableRecipe {
 
@@ -83,6 +82,11 @@ public class AnnihilatorRecipes extends SerializableRecipe {
     @Override public Object getRecipeObject() { return recipes; }
     @Override public void deleteRecipes() { recipes.clear(); }
 
+    @Override
+    public boolean allowEmptyRecipeList() {
+        return true;
+    }
+
     public static HashMap<Object, Object> getRecipes() {
 
         HashMap<Object, Object> recipes = new HashMap<>();
@@ -97,10 +101,9 @@ public class AnnihilatorRecipes extends SerializableRecipe {
                 if(entry.getKey() instanceof FluidType) input = ItemFluidIcon.make((FluidType) entry.getKey(), 0);
                 if(entry.getKey() instanceof String) input = new OreDictStack((String) entry.getKey()).extractForJEI();
 
-                if(input == ItemStack.EMPTY) continue;
-
-                if(input instanceof ItemStack) {
-                    ItemStackUtil.addTooltipToStack((ItemStack) input, TextFormatting.RED + String.format(Locale.US, "%,d", milestone.getKey()));
+                if(input instanceof ItemStack stack) {
+                    if(stack.isEmpty()) continue;
+                    ItemStackUtil.addTooltipToStack(stack, TextFormatting.RED + String.format(Locale.US, "%,d", milestone.getKey()));
                 }
                 if(input instanceof List) {
                     List<ItemStack> list = (List<ItemStack>) input;

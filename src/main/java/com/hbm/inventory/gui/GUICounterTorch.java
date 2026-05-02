@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Keyboard;
@@ -72,7 +71,7 @@ public class GUICounterTorch extends GuiInfoContainer {
             drawHoveringText(List.of(new String[]{"Save Settings"}), x, y);
         }
 
-        if (this.mc.player.inventory.getItemStack() == ItemStack.EMPTY) {
+        if (this.mc.player.inventory.getItemStack().isEmpty()) {
             for (int i = 0; i < 3; ++i) {
                 Slot slot = this.inventorySlots.inventorySlots.get(i);
 

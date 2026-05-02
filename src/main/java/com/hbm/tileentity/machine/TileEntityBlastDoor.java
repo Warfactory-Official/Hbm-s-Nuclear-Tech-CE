@@ -8,14 +8,14 @@ import com.hbm.interfaces.IAnimatedDoor;
 import com.hbm.interfaces.IDoor;
 import com.hbm.inventory.control_panel.ControlEvent;
 import com.hbm.inventory.control_panel.ControlEventSystem;
-import com.hbm.inventory.control_panel.DataValueFloat;
 import com.hbm.inventory.control_panel.IControllable;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
-import com.hbm.packet.PacketDispatcher;
-import com.hbm.packet.toclient.TEVaultPacket;
+import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.longs.LongIterable;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -24,7 +24,6 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -34,6 +33,7 @@ import java.util.List;
 @AutoRegister
 public class TileEntityBlastDoor extends TileEntityLockableBase implements ITickable, IControllable, IAnimatedDoor {
 
+    private AxisAlignedBB bb;
     public IDoor.DoorState state = IDoor.DoorState.CLOSED;
     public long sysTime;
     private int timer = 0;
@@ -42,7 +42,8 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return new AxisAlignedBB(pos, pos.up(6).add(1, 1, 1)).grow(0.25F);
+        if (bb == null) bb = new AxisAlignedBB(pos, pos.up(6).add(1, 1, 1)).grow(0.25F);
+        return bb;
     }
 
     @Override
@@ -106,11 +107,9 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
                     if (state == DoorState.OPENING) {
                         state = DoorState.OPEN;
                         broadcastControlEvt();
-                        this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.reactorStop, SoundCategory.BLOCKS, 0.5F, 1.0F);
                     } else if (state == DoorState.CLOSING) {
                         state = DoorState.CLOSED;
                         broadcastControlEvt();
-                        this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.reactorStop, SoundCategory.BLOCKS, 0.5F, 1.0F);
 
                         // With door finally closed, mark chunk for rad update since door is now rad resistant
                         // No need to update when open as well, as opening door should update
@@ -119,8 +118,7 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
                 }
             }
 
-            PacketDispatcher.wrapper.sendToAllTracking(new TEVaultPacket(pos.getX(), pos.getY(), pos.getZ(), state.ordinal(), 0, 0),
-					new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 150));
+            networkPackNT(150);
         }
     }
 
@@ -317,7 +315,7 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
 
     @Override
     public void readFromNBT(NBTTagCompound compound) {
-        state = DoorState.values()[compound.getInteger("state")];
+        state = DoorState.VALUES[compound.getInteger("state")];
         sysTime = compound.getLong("sysTime");
         timer = compound.getInteger("timer");
         wasPowered = compound.getBoolean("wasPowered");
@@ -333,6 +331,28 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
         compound.setBoolean("wasPowered", wasPowered);
         compound.setBoolean("redstoneOnly", redstoneOnly);
         return super.writeToNBT(compound);
+    }
+
+    // Render/animation fields ride the per-tick BufPacket channel. networkPackNT hash-dedups on
+    // stable state, so a closed door costs 0 per-tick bandwidth. On state transition the server
+    // stamps sysTime (see toggle()), the hash flips, and the packet fires once.
+    @Override
+    public void serialize(ByteBuf buf) {
+        super.serialize(buf);
+        buf.writeByte(state.ordinal());
+        buf.writeLong(sysTime);
+    }
+
+    @Override
+    public void deserialize(ByteBuf buf) {
+        super.deserialize(buf);
+        DoorState newState = IDoor.DoorState.VALUES[buf.readByte()];
+        long syncedSysTime = buf.readLong();
+        Minecraft.getMinecraft().addScheduledTask(() -> {
+            if (world == null || !world.isRemote || isInvalid() || world.getTileEntity(pos) != this) return;
+            handleNewState(newState);
+            if (!newState.isMovingState()) sysTime = syncedSysTime;
+        });
     }
 
     @Override
@@ -395,22 +415,19 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
     public void toggle() {
         if (state == DoorState.CLOSED) {
             state = DoorState.OPENING;
-            PacketDispatcher.wrapper.sendToAllTracking(new TEVaultPacket(pos.getX(), pos.getY(), pos.getZ(), state.ordinal(), 1, 0),
-					new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 150));
+            sysTime = System.currentTimeMillis();
+            networkPackNT(150);
             closeNeigh();
             broadcastControlEvt();
-            this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.reactorStart, SoundCategory.BLOCKS, 0.5F, 0.75F);
 
             // With door opening, mark chunk for rad update
             RadiationSystemNT.markSectionsForRebuild(world, getOccupiedSections());
         } else if (state == DoorState.OPEN) {
             state = DoorState.CLOSING;
-            PacketDispatcher.wrapper.sendToAllTracking(new TEVaultPacket(pos.getX(), pos.getY(), pos.getZ(), state.ordinal(), 1, 0),
-					new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 150));
+            sysTime = System.currentTimeMillis();
+            networkPackNT(150);
             openNeigh();
             broadcastControlEvt();
-            this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.reactorStart, SoundCategory.BLOCKS, 0.5F, 0.75F);
-
 
             // With door closing, mark chunk for rad update
             RadiationSystemNT.markSectionsForRebuild(world, getOccupiedSections());
@@ -420,7 +437,15 @@ public class TileEntityBlastDoor extends TileEntityLockableBase implements ITick
     @Override
     @SideOnly(Side.CLIENT)
     public void handleNewState(DoorState newState) {
-
+        if (state != newState) {
+            if (state.isStationaryState() && newState.isMovingState()) {
+                world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.reactorStart, SoundCategory.BLOCKS, 0.5F, 0.75F, false);
+            } else if (state.isMovingState() && newState.isStationaryState()) {
+                world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.reactorStop, SoundCategory.BLOCKS, 0.5F, 1.0F, false);
+            }
+            sysTime = IAnimatedDoor.clientAnimStart(state, newState, sysTime);
+            state = newState;
+        }
     }
 
     public boolean getRedstoneOnly() {

@@ -431,14 +431,17 @@ public final class RadiationSystemNT {
 
     @ServerThread
     public static void markSectionForRebuild(World world, BlockPos pos) {
-        if (world.isRemote || !GeneralConfig.advancedRadiation) return;
+        if (world == null || world.isRemote || !GeneralConfig.advancedRadiation) return;
+        if (!(world instanceof WorldServer)) return;
         if (isOutsideWorld(pos)) return;
+
         markSectionForRebuild(world, Library.blockPosToSectionLong(pos));
     }
 
     @ServerThread
     public static void markSectionForRebuild(World world, long sck) {
-        if (world.isRemote || !GeneralConfig.advancedRadiation) return;
+        if (world == null || world.isRemote || !GeneralConfig.advancedRadiation) return;
+        if (!(world instanceof WorldServer)) return;
         WorldServer ws = (WorldServer) world;
         long ck = Library.sectionToChunkLong(sck);
         Chunk chunk = ws.getChunkProvider().loadedChunks.get(ck);
@@ -453,7 +456,8 @@ public final class RadiationSystemNT {
 
     @ServerThread
     public static void markSectionsForRebuild(World world, LongIterable sections) {
-        if (world.isRemote || !GeneralConfig.advancedRadiation) return;
+        if (world == null || world.isRemote || !GeneralConfig.advancedRadiation) return;
+        if (!(world instanceof WorldServer)) return;
         WorldServer ws = (WorldServer) world;
         WorldRadiationData data = getWorldRadData(ws);
         LongIterator it = sections.iterator();

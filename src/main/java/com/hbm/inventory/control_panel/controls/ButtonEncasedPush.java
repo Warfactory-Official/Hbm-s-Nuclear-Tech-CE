@@ -1,5 +1,7 @@
 package com.hbm.inventory.control_panel.controls;
 
+import com.hbm.inventory.control_panel.types.DataValue;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
 import com.hbm.render.loader.WaveFrontObjectVAO;
 import com.hbm.inventory.control_panel.*;
 import com.hbm.inventory.control_panel.nodes.*;
@@ -55,6 +57,7 @@ public class ButtonEncasedPush extends Control {
         // --- Base ---
         GlStateManager.pushMatrix();
         GlStateManager.translate(posX, 0, posY);
+        GlStateManager.color(1F, 1F, 1F, 1F);
         model.renderPart("base");
         GlStateManager.popMatrix();
 
@@ -77,6 +80,7 @@ public class ButtonEncasedPush extends Control {
             OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lX, lY);
         }
 
+        GlStateManager.color(1F, 1F, 1F, 1F);
         GlStateManager.enableBlend();
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
 
@@ -92,6 +96,7 @@ public class ButtonEncasedPush extends Control {
 
         GlStateManager.disableBlend();
         GlStateManager.shadeModel(GL11.GL_FLAT);
+        GlStateManager.color(1F, 1F, 1F, 1F);
     }
 
     @Override
@@ -115,7 +120,7 @@ public class ButtonEncasedPush extends Control {
     public void populateDefaultNodes(List<ControlEvent> receiveEvents) {
         NodeSystem ctrl_press = new NodeSystem(this);
         {
-            Map<String, DataValue> vars = new HashMap<>(receiveEvents.get(0).vars);
+            Map<String,DataValue> vars = new HashMap<>(receiveEvents.get(0).vars);
             vars.put("from index", new DataValueFloat(0));
             NodeInput node0 = new NodeInput(170, 100, "Event Data").setVars(vars);
             ctrl_press.addNode(node0);

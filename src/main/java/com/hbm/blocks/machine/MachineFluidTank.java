@@ -53,7 +53,7 @@ public class MachineFluidTank extends BlockDummyable implements IPersistentInfoP
 	@Override
 	public TileEntity createNewTileEntity(World world, int meta) {
 		if(meta >= 12) return new TileEntityMachineFluidTank();
-        // mlbv: added inventory support for https://github.com/MisterNorwood/Hbm-s-Nuclear-Tech-CE/issues/891
+        // mlbv: added inventory support for https://github.com/Warfactory-Official/Hbm-s-Nuclear-Tech-CE/issues/891
         if (meta >= 6) return new TileEntityProxyCombo(true, false, true);
 		return null;
 	}

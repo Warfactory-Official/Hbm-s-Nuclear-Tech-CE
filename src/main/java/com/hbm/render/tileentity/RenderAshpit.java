@@ -13,11 +13,6 @@ import net.minecraft.item.Item;
 public class RenderAshpit extends TileEntitySpecialRenderer<TileEntityAshpit>
     implements IItemRendererProvider {
   @Override
-  public boolean isGlobalRenderer(TileEntityAshpit te) {
-    return true;
-  }
-
-  @Override
   public void render(
       TileEntityAshpit oven,
       double x,

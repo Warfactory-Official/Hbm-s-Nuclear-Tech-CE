@@ -17,8 +17,6 @@ import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 
-import static com.hbm.render.block.BlockBakeFrame.BlockForm.ALL;
-
 //Simple class for my baking system, automatically bakes block models from BlockBakeFrame
 public class BlockBakeBase extends BlockBase implements IDynamicModels {
 
@@ -35,7 +33,7 @@ public class BlockBakeBase extends BlockBase implements IDynamicModels {
     public BlockBakeBase(
             Material m, String s, String texture) {
         super(m, s);
-        this.blockFrame = new BlockBakeFrame(ALL, texture);
+        this.blockFrame = BlockBakeFrame.cubeAll(texture);
         IDynamicModels.INSTANCES.add(this);
 
     }
@@ -43,7 +41,7 @@ public class BlockBakeBase extends BlockBase implements IDynamicModels {
     public BlockBakeBase(
             Material m, String s) {
         super(m, s);
-        this.blockFrame = new BlockBakeFrame(ALL, s);
+        this.blockFrame = BlockBakeFrame.cubeAll(s);
         IDynamicModels.INSTANCES.add(this);
 
     }
@@ -51,7 +49,7 @@ public class BlockBakeBase extends BlockBase implements IDynamicModels {
     public BlockBakeBase(
             Material m, String s, String textureTop, String textureSide) {
         super(m, s);
-        this.blockFrame = new BlockBakeFrame(textureTop, textureSide);
+        this.blockFrame = BlockBakeFrame.column(textureTop, textureSide);
         IDynamicModels.INSTANCES.add(this);
 
     }
@@ -60,7 +58,7 @@ public class BlockBakeBase extends BlockBase implements IDynamicModels {
     public void bakeModel(ModelBakeEvent event) {
 
             try {
-                IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation(blockFrame.getBaseModel()));
+                IModel baseModel = ModelLoaderRegistry.getModel(blockFrame.getBaseModelLocation());
                 ImmutableMap.Builder<String, String> textureMap = ImmutableMap.builder();
 
                 blockFrame.putTextures(textureMap);

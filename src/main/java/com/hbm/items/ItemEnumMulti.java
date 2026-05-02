@@ -3,11 +3,8 @@ package com.hbm.items;
 import com.google.common.collect.ImmutableMap;
 import com.hbm.Tags;
 import com.hbm.util.EnumUtil;
-import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.client.renderer.block.model.ModelRotation;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
@@ -28,7 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-public class ItemEnumMulti<E extends Enum<E>> extends ItemBase implements IDynamicModels {
+public class ItemEnumMulti<E extends Enum<E>> extends ItemBase implements IDynamicModels, IClaimedModelLocation {
 
     public static final String ROOT_PATH = "items/";
     protected String[] textures;
@@ -45,6 +42,7 @@ public class ItemEnumMulti<E extends Enum<E>> extends ItemBase implements IDynam
         this.multiName = multiName;
         this.multiTexture = multiTexture;
         INSTANCES.add(this);
+        ClaimedModelLocationRegistry.register(this);
         this.textures = Arrays.stream(theEnum)
                 .map(Enum::name)
                 .map(name -> registryName + getSeparationChar() + name.toLowerCase(Locale.US))
@@ -58,11 +56,15 @@ public class ItemEnumMulti<E extends Enum<E>> extends ItemBase implements IDynam
         this.multiName = multiName;
         this.multiTexture = false;
         INSTANCES.add(this);
+        ClaimedModelLocationRegistry.register(this);
         this.textures = new String[]{texture};
     }
 
     @SideOnly(Side.CLIENT)
     public void registerSprite(TextureMap map) {
+        if (hasSyntheticTeisrBinding()) {
+            return;
+        }
         for (String texture : textures) {
             map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + texture));
         }
@@ -70,6 +72,9 @@ public class ItemEnumMulti<E extends Enum<E>> extends ItemBase implements IDynam
 
     @SideOnly(Side.CLIENT)
     public void registerModel() {
+        if (hasSyntheticTeisrBinding()) {
+            return;
+        }
         for (int i = 0; i < theEnum.length; i++) {
             ModelLoader.setCustomModelResourceLocation(this, i, new ModelResourceLocation(new ResourceLocation(Tags.MODID, ROOT_PATH + (multiTexture ? textures[i] : textures[0])), "inventory"));
         }
@@ -87,20 +92,6 @@ public class ItemEnumMulti<E extends Enum<E>> extends ItemBase implements IDynam
 
     @SideOnly(Side.CLIENT)
     public void bakeModel(ModelBakeEvent event) {
-        try {
-            IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/generated"));
-            for (int i = 0; i < theEnum.length; i++) {
-                String textureName = multiTexture ? textures[i] : textures[0];
-                ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, ROOT_PATH + textureName);
-
-                IModel retexturedModel = baseModel.retexture(ImmutableMap.of("layer0", spriteLoc.toString()));
-                IBakedModel bakedModel = retexturedModel.bake(ModelRotation.X0_Y0, DefaultVertexFormats.ITEM, ModelLoader.defaultTextureGetter());
-                ModelResourceLocation bakedModelLocation = new ModelResourceLocation(spriteLoc, "inventory");
-                event.getModelRegistry().putObject(bakedModelLocation, bakedModel);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
 
@@ -144,6 +135,40 @@ public class ItemEnumMulti<E extends Enum<E>> extends ItemBase implements IDynam
     protected String getSeparationChar() {
         return ".";
     }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public boolean ownsModelLocation(ModelResourceLocation location) {
+        if (hasSyntheticTeisrBinding()) {
+            return false;
+        }
+        for (int i = 0; i < theEnum.length; i++) {
+            String textureName = multiTexture ? textures[i] : textures[0];
+            ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, ROOT_PATH + textureName);
+            if (IClaimedModelLocation.isInventoryLocation(location, spriteLoc)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @SideOnly(Side.CLIENT)
+    protected boolean hasSyntheticTeisrBinding() {
+        return ClaimedModelLocationRegistry.hasSyntheticTeisrBinding(this);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IModel loadModel(ModelResourceLocation location) {
+        try {
+            ResourceLocation textureLocation = new ResourceLocation(location.getNamespace(), location.getPath());
+            IModel generated = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
+            return generated.retexture(ImmutableMap.of("layer0", textureLocation.toString()));
+        } catch (Exception e) {
+            return IClaimedModelLocation.super.loadModel(location);
+        }
+    }
+
     // srsly guys, do you think I'd create separate classes just for the sake of description?
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {

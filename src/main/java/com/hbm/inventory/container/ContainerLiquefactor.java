@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.lib.Library;
@@ -15,6 +16,17 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerLiquefactor extends Container {
 
     private final TileEntityMachineLiquefactor liquefactor;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(4)
+                                                                              .rule(0, 1,
+                                                                                      ContainerLiquefactor::isNormal)
+                                                                              .rule(1, 2, Library::isBattery)
+                                                                              .rule(2, 4, Library::isMachineUpgrade)
+                                                                              .ruleDispatchMode(
+                                                                                      TransferStrategy.RuleDispatchMode.FALLTHROUGH_ON_FAILURE)
+                                                                              .playerFallbackMode(
+                                                                                      TransferStrategy.PlayerFallbackMode.REBALANCE_SECTIONS)
+                                                                              .build();
 
     public ContainerLiquefactor(InventoryPlayer playerInv, TileEntityMachineLiquefactor tile) {
         liquefactor = tile;
@@ -49,9 +61,6 @@ public class ContainerLiquefactor extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 4,
-                ContainerLiquefactor::isNormal, 1,
-                Library::isBattery, 2,
-                Library::isMachineUpgrade, 4);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 }

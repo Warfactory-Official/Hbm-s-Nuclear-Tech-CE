@@ -52,6 +52,7 @@ public class EntityArtilleryShell extends EntityThrowableNT implements IChunkLoa
     private boolean didWhistle = false;
 
     private ItemStack cargo = null;
+    private boolean awaitingTicketRestore;
 
     private static final DataParameter<Integer> TYPE = EntityDataManager.createKey(EntityArtilleryShell.class, DataSerializers.VARINT);
 
@@ -64,7 +65,6 @@ public class EntityArtilleryShell extends EntityThrowableNT implements IChunkLoa
     @Override
     protected void entityInit() {
         super.entityInit();
-        init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, ForgeChunkManager.Type.ENTITY));
         this.dataManager.register(TYPE, 0);
     }
 
@@ -115,7 +115,8 @@ public class EntityArtilleryShell extends EntityThrowableNT implements IChunkLoa
 
     @Override
     public void onUpdate() {
-        if (!world.isRemote) {            
+        if (!world.isRemote) {
+            requestChunkLoaderTicketIfNeeded();
             // Calculate direction vector to target
             double deltaX = this.targetX - this.posX;
             double deltaY = this.targetY - this.posY;
@@ -242,6 +243,8 @@ public class EntityArtilleryShell extends EntityThrowableNT implements IChunkLoa
                 loaderTicket = ticket;
                 loaderTicket.bindEntity(this);
                 loaderTicket.getModData();
+            } else if(loaderTicket != ticket) {
+                ForgeChunkManager.releaseTicket(ticket);
             }
             ForgeChunkManager.forceChunk(loaderTicket, new ChunkPos(chunkCoordX, chunkCoordZ));
         }
@@ -271,10 +274,21 @@ public class EntityArtilleryShell extends EntityThrowableNT implements IChunkLoa
         this.clearChunkLoader();
     }
 
+    @Override
+    public void setDead() {
+        super.setDead();
+        this.clearChunkLoader();
+    }
+
     public void clearChunkLoader() {
         if(!world.isRemote && loaderTicket != null) {
             for(ChunkPos chunk : loadedChunks) {
                 ForgeChunkManager.unforceChunk(loaderTicket, chunk);
+            }
+            loadedChunks.clear();
+            if(this.isDead) {
+                ForgeChunkManager.releaseTicket(loaderTicket);
+                loaderTicket = null;
             }
         }
     }
@@ -297,6 +311,7 @@ public class EntityArtilleryShell extends EntityThrowableNT implements IChunkLoa
     @Override
     public void readEntityFromNBT(NBTTagCompound nbt) {
         super.readEntityFromNBT(nbt);
+        awaitingTicketRestore = true;
 
         this.dataManager.set(TYPE, nbt.getInteger("type"));
         this.shouldWhistle = nbt.getBoolean("shouldWhistle");
@@ -352,5 +367,14 @@ public class EntityArtilleryShell extends EntityThrowableNT implements IChunkLoa
     @Override
     public RadarTargetType getTargetType() {
         return RadarTargetType.ARTILLERY;
+    }
+
+    private void requestChunkLoaderTicketIfNeeded() {
+        if(world.isRemote || loaderTicket != null) return;
+        if(awaitingTicketRestore) {
+            awaitingTicketRestore = false;
+            return;
+        }
+        init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, ForgeChunkManager.Type.ENTITY));
     }
 }

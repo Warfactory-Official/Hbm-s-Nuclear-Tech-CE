@@ -8,13 +8,16 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.bomb.DigammaMatter;
 import com.hbm.blocks.fluid.FluidFogHandler;
 import com.hbm.blocks.generic.BMPowerBox;
+import com.hbm.blocks.generic.BlockFissure;
 import com.hbm.blocks.generic.BlockModDoor;
 import com.hbm.blocks.generic.TrappedBrick;
 import com.hbm.blocks.machine.BlockSeal;
 import com.hbm.blocks.machine.rbmk.RBMKDebrisRadiating;
 import com.hbm.command.CommandRadVisClient;
 import com.hbm.config.GeneralConfig;
-import com.hbm.entity.grenade.*;
+import com.hbm.entity.grenade.EntityDisperserCanister;
+import com.hbm.entity.grenade.EntityGrenadeBouncyGeneric;
+import com.hbm.entity.grenade.EntityGrenadeImpactGeneric;
 import com.hbm.entity.particle.*;
 import com.hbm.entity.projectile.EntityAcidBomb;
 import com.hbm.entity.projectile.EntityDischarge;
@@ -22,10 +25,10 @@ import com.hbm.handler.*;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.items.IAnimatedItem;
 import com.hbm.items.ModItems;
-import com.hbm.items.RBMKItemRenderers;
 import com.hbm.items.weapon.sedna.factory.GunFactoryClient;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.RecoilHandler;
+import com.hbm.main.client.DynamicPlaceholderModelLoader;
 import com.hbm.main.client.NTMClientRegistry;
 import com.hbm.particle.*;
 import com.hbm.particle.bfg.*;
@@ -34,10 +37,7 @@ import com.hbm.particle.bullet_hit.ParticleBulletImpact;
 import com.hbm.particle.bullet_hit.ParticleHitDebris;
 import com.hbm.particle.bullet_hit.ParticleSmokeAnim;
 import com.hbm.particle.helper.ParticleCreators;
-import com.hbm.particle_instanced.InstancedParticleRenderer;
-import com.hbm.particle_instanced.ParticleContrailInstanced;
-import com.hbm.particle_instanced.ParticleExSmokeInstanced;
-import com.hbm.particle_instanced.ParticleRocketFlameInstanced;
+import com.hbm.particle_instanced.*;
 import com.hbm.qmaw.QMAWLoader;
 import com.hbm.render.GLCompat;
 import com.hbm.render.anim.BusAnimation;
@@ -50,7 +50,6 @@ import com.hbm.render.anim.sedna.BusAnimationSedna;
 import com.hbm.render.anim.sedna.BusAnimationSequenceSedna;
 import com.hbm.render.anim.sedna.HbmAnimationsSedna;
 import com.hbm.render.entity.ElectricityRenderer;
-import com.hbm.render.entity.RenderBoat;
 import com.hbm.render.entity.RenderMetaSensitiveItem;
 import com.hbm.render.item.ItemRenderMissile;
 import com.hbm.render.item.ItemRenderMissileGeneric;
@@ -60,7 +59,6 @@ import com.hbm.render.item.weapon.ItemRenderGunAnim;
 import com.hbm.render.item.weapon.sedna.*;
 import com.hbm.render.misc.MissilePart;
 import com.hbm.render.modelrenderer.EgonBackpackRenderer;
-import com.hbm.render.tileentity.IItemRendererProvider;
 import com.hbm.render.util.RenderInfoSystemLegacy;
 import com.hbm.render.util.RenderOverhead;
 import com.hbm.sound.AudioWrapper;
@@ -70,10 +68,7 @@ import com.hbm.sound.SoundLoopCrucible;
 import com.hbm.util.*;
 import com.hbm.wiaj.cannery.Jars;
 import it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockDirt;
-import net.minecraft.block.BlockStainedHardenedClay;
-import net.minecraft.block.BlockStone;
+import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -84,12 +79,11 @@ import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.statemap.StateMap;
+import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.RenderSnowball;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
@@ -102,7 +96,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -112,6 +105,7 @@ import net.minecraft.util.registry.IRegistry;
 import net.minecraft.world.World;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.model.obj.OBJLoader;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.common.MinecraftForge;
@@ -135,7 +129,6 @@ import java.io.File;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 public class ClientProxy extends ServerProxy {
@@ -159,9 +152,8 @@ public class ClientProxy extends ServerProxy {
     public RenderInfoSystemLegacy theInfoSystem = new RenderInfoSystemLegacy();
     private static final Int2LongOpenHashMap vanished = new Int2LongOpenHashMap();
 
-    public static void registerItemRenderer(Item i, TileEntityItemStackRenderer render, IRegistry<ModelResourceLocation, IBakedModel> reg) {
-        i.setTileEntityItemStackRenderer(render);
-        NTMClientRegistry.swapModels(i, reg);
+    public static void registerItemRenderer(Item i, TileEntityItemStackRenderer render) {
+        NTMClientRegistry.bindTeisr(i, render);
     }
 
     @Override
@@ -203,61 +195,18 @@ public class ClientProxy extends ServerProxy {
         Jars.initJars();
 
         ((IReloadableResourceManager) Minecraft.getMinecraft().getResourceManager()).registerReloadListener(new QMAWLoader());
+//        ((IReloadableResourceManager) Minecraft.getMinecraft().getResourceManager()).registerReloadListener(new HFRModelReloader());
 
 //        ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineAssembler.class, new RenderAssembler());
         // TODO: replace it with EntityCombineBallNT
         /*RenderingRegistry.registerEntityRenderingHandler(EntityCombineBall.class, (RenderManager man) -> {
         });*/
         RenderingRegistry.registerEntityRenderingHandler(EntityDischarge.class, ElectricityRenderer.FACTORY);
-        RenderingRegistry.registerEntityRenderingHandler(EntityGrenadeGeneric.class, (RenderManager man) -> {
-            return new RenderSnowball<EntityGrenadeGeneric>(man, ModItems.grenade_generic, Minecraft.getMinecraft().getRenderItem());
-        });
-        registerGrenadeRenderer(EntityGrenadeStrong.class, ModItems.grenade_strong);
-        registerGrenadeRenderer(EntityGrenadeFrag.class, ModItems.grenade_frag);
-        registerGrenadeRenderer(EntityGrenadeFire.class, ModItems.grenade_fire);
-        registerGrenadeRenderer(EntityGrenadeCluster.class, ModItems.grenade_cluster);
-        registerGrenadeRenderer(EntityGrenadeElectric.class, ModItems.grenade_electric);
-        registerGrenadeRenderer(EntityGrenadePoison.class, ModItems.grenade_poison);
-        registerGrenadeRenderer(EntityGrenadeGas.class, ModItems.grenade_gas);
-        registerGrenadeRenderer(EntityGrenadeSchrabidium.class, ModItems.grenade_schrabidium);
-        registerGrenadeRenderer(EntityGrenadePulse.class, ModItems.grenade_pulse);
-        registerGrenadeRenderer(EntityGrenadePlasma.class, ModItems.grenade_plasma);
-        registerGrenadeRenderer(EntityGrenadeTau.class, ModItems.grenade_tau);
-        registerGrenadeRenderer(EntityGrenadeCloud.class, ModItems.grenade_cloud);
-        registerGrenadeRenderer(EntityGrenadePC.class, ModItems.grenade_pink_cloud);
-        registerGrenadeRenderer(EntityGrenadeSmart.class, ModItems.grenade_smart);
-        registerGrenadeRenderer(EntityGrenadeMIRV.class, ModItems.grenade_mirv);
-        registerGrenadeRenderer(EntityGrenadeBreach.class, ModItems.grenade_breach);
-        registerGrenadeRenderer(EntityGrenadeBurst.class, ModItems.grenade_burst);
-        registerGrenadeRenderer(EntityGrenadeLemon.class, ModItems.grenade_lemon);
-        registerGrenadeRenderer(EntityGrenadeZOMG.class, ModItems.grenade_zomg);
-        registerGrenadeRenderer(EntityGrenadeSolinium.class, ModItems.grenade_solinium);
-        registerGrenadeRenderer(EntityGrenadeShrapnel.class, ModItems.grenade_shrapnel);
-        registerGrenadeRenderer(EntityGrenadeBlackHole.class, ModItems.grenade_black_hole);
-        registerGrenadeRenderer(EntityGrenadeGascan.class, ModItems.grenade_gascan);
-        registerGrenadeRenderer(EntityGrenadeNuke.class, ModItems.grenade_nuke);
-        registerGrenadeRenderer(EntityGrenadeNuclear.class, ModItems.grenade_nuclear);
-        registerGrenadeRenderer(EntityGrenadeIFGeneric.class, ModItems.grenade_if_generic);
-        registerGrenadeRenderer(EntityGrenadeIFHE.class, ModItems.grenade_if_he);
-        registerGrenadeRenderer(EntityGrenadeIFBouncy.class, ModItems.grenade_if_bouncy);
-        registerGrenadeRenderer(EntityGrenadeIFSticky.class, ModItems.grenade_if_sticky);
-        registerGrenadeRenderer(EntityGrenadeIFImpact.class, ModItems.grenade_if_impact);
-        registerGrenadeRenderer(EntityGrenadeIFIncendiary.class, ModItems.grenade_if_incendiary);
-        registerGrenadeRenderer(EntityGrenadeIFToxic.class, ModItems.grenade_if_toxic);
-        registerGrenadeRenderer(EntityGrenadeIFConcussion.class, ModItems.grenade_if_concussion);
-        registerGrenadeRenderer(EntityGrenadeIFBrimstone.class, ModItems.grenade_if_brimstone);
-        registerGrenadeRenderer(EntityGrenadeIFMystery.class, ModItems.grenade_if_mystery);
-        registerGrenadeRenderer(EntityGrenadeIFSpark.class, ModItems.grenade_if_spark);
-        registerGrenadeRenderer(EntityGrenadeIFHopwire.class, ModItems.grenade_if_hopwire);
-        registerGrenadeRenderer(EntityGrenadeIFNull.class, ModItems.grenade_if_null);
-        registerGrenadeRenderer(EntityGrenadeDynamite.class, ModItems.stick_dynamite);
         registerGrenadeRenderer(EntityAcidBomb.class, Items.SLIME_BALL);
         registerGrenadeRenderer(EntityGrenadeBouncyGeneric.class, ModItems.stick_dynamite_fishing);
-        registerGrenadeRenderer(EntityGrenadeImpactGeneric.class, ModItems.grenade_kyiv);
+        registerGrenadeRenderer(EntityGrenadeImpactGeneric.class, ModItems.stick_dynamite);
         registerMetaSensitiveGrenade(EntityDisperserCanister.class, ModItems.disperser_canister);
         registerMetaSensitiveGrenade(EntityDisperserCanister.class, ModItems.glyphid_gland);
-
-        AutoRegistry.registerRenderInfo();
 
         ModelLoader.setCustomStateMapper(ModBlocks.door_bunker, new StateMap.Builder().ignore(BlockModDoor.POWERED).build());
         ModelLoader.setCustomStateMapper(ModBlocks.door_metal, new StateMap.Builder().ignore(BlockModDoor.POWERED).build());
@@ -270,6 +219,8 @@ public class ClientProxy extends ServerProxy {
         ModelLoader.setCustomStateMapper(ModBlocks.schrabidic_block, new StateMap.Builder().ignore(BlockFluidClassic.LEVEL).build());
         ModelLoader.setCustomStateMapper(ModBlocks.corium_block, new StateMap.Builder().ignore(BlockFluidClassic.LEVEL).build());
         ModelLoader.setCustomStateMapper(ModBlocks.volcanic_lava_block, new StateMap.Builder().ignore(BlockFluidClassic.LEVEL).build());
+        ModelLoader.setCustomStateMapper(ModBlocks.rad_lava_block, new StateMap.Builder().ignore(BlockFluidClassic.LEVEL).build());
+        ModelLoader.setCustomStateMapper(ModBlocks.ore_volcano, new StateMap.Builder().ignore(BlockFissure.CRATER).build());
         ModelLoader.setCustomStateMapper(ModBlocks.sulfuric_acid_block, new StateMap.Builder().ignore(BlockFluidClassic.LEVEL).build());
 
         ModelLoader.setCustomStateMapper(ModBlocks.seal_controller, new StateMap.Builder().ignore(BlockSeal.ACTIVATED).build());
@@ -277,7 +228,16 @@ public class ClientProxy extends ServerProxy {
         ModelLoader.setCustomStateMapper(ModBlocks.brick_jungle_trap, new StateMap.Builder().ignore(TrappedBrick.TYPE).build());
         ModelLoader.setCustomStateMapper(ModBlocks.stone_porous, new StateMap.Builder().ignore(BlockStone.VARIANT).build());
         ModelLoader.setCustomStateMapper(ModBlocks.volcano_core, new StateMap.Builder().ignore(BlockDummyable.META).build());
+        ModelLoader.setCustomStateMapper(ModBlocks.volcano_rad_core, new StateMap.Builder().ignore(BlockDummyable.META).build());
         ModelLoader.setCustomStateMapper(ModBlocks.bm_power_box, new StateMap.Builder().ignore(BMPowerBox.FACING, BMPowerBox.IS_ON).build());
+        ModelLoader.setCustomStateMapper(ModBlocks.floodlight, new StateMap.Builder().ignore(com.hbm.blocks.machine.Floodlight.META).build());
+        ModelLoader.setCustomStateMapper(ModBlocks.spotlight_beam, new StateMap.Builder().ignore(com.hbm.blocks.machine.SpotlightBeam.META).build());
+        ModelLoader.setCustomStateMapper(ModBlocks.frozen_grass, new StateMap.Builder().ignore(com.hbm.blocks.generic.WasteEarth.META).build());
+        ModelLoader.setCustomStateMapper(ModBlocks.red_connector, new StateMap.Builder().ignore(com.hbm.blocks.network.ConnectorRedWire.FACING).build());
+        ModelLoader.setCustomStateMapper(ModBlocks.silo_hatch_drillgon, new StateMap.Builder().ignore(com.hbm.blocks.machine.BlockSiloHatch.FACING).build());
+        ModelLoader.setCustomStateMapper(ModBlocks.machine_diesel, new StateMap.Builder().ignore(BlockHorizontal.FACING).build());
+        ModelLoader.setCustomStateMapper(ModBlocks.turret_sentry, fixedModelStateMapper(new ModelResourceLocation(ModBlocks.machine_autosaw.getRegistryName(), "normal")));
+        ModelLoader.setCustomStateMapper(ModBlocks.turret_sentry_damaged, fixedModelStateMapper(new ModelResourceLocation(ModBlocks.machine_autosaw.getRegistryName(), "normal")));
         //Drillgon200: This can't be efficient, but eh.
         for (Block b : ModBlocks.ALL_BLOCKS) {
             if (b instanceof BlockDummyable || b instanceof RBMKDebrisRadiating || b instanceof DigammaMatter)
@@ -286,9 +246,8 @@ public class ClientProxy extends ServerProxy {
     }
 
     private <E extends Entity> void registerGrenadeRenderer(Class<E> clazz, Item grenade) {
-        RenderingRegistry.registerEntityRenderingHandler(clazz, (RenderManager man) -> {
-            return new RenderSnowball<E>(man, grenade, Minecraft.getMinecraft().getRenderItem());
-        });
+        RenderingRegistry.registerEntityRenderingHandler(clazz, (RenderManager man) -> new RenderSnowball<>(man,
+                grenade, Minecraft.getMinecraft().getRenderItem()));
     }
 
     private <E extends Entity & RenderMetaSensitiveItem.IHasMetaSensitiveRenderer<E>> void registerMetaSensitiveGrenade(Class<E> clazz, Item grenade) {
@@ -296,80 +255,89 @@ public class ClientProxy extends ServerProxy {
                 new RenderMetaSensitiveItem<>(man, grenade, Minecraft.getMinecraft().getRenderItem()));
     }
 
+    private static StateMapperBase fixedModelStateMapper(ModelResourceLocation location) {
+        return new StateMapperBase() {
+            @Override
+            protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
+                return location;
+            }
+        };
+    }
+
     @Override
     public void registerMissileItems(IRegistry<ModelResourceLocation, IBakedModel> reg) {
         MissilePart.registerAllParts();
 
         MissilePart.parts.values().forEach(part -> {
-            registerItemRenderer(part.part, new ItemRenderMissilePart(part), reg);
+            registerItemRenderer(part.part, new ItemRenderMissilePart(part));
         });
 
-        registerItemRenderer(ModItems.missile_custom, new ItemRenderMissile(), reg);
+        registerItemRenderer(ModItems.missile_custom, new ItemRenderMissile());
 
         ItemRenderMissileGeneric.init();
 
         // GUNS
-        registerItemRenderer(ModItems.gun_light_revolver, new ItemRenderAtlas(ResourceManager.bio_revolver_tex), reg);
-        registerItemRenderer(ModItems.gun_light_revolver_atlas, new ItemRenderAtlas(ResourceManager.bio_revolver_atlas_tex), reg);
-        registerItemRenderer(ModItems.gun_double_barrel, new ItemRenderDoubleBarrel(ResourceManager.double_barrel_tex), reg);
-        registerItemRenderer(ModItems.gun_double_barrel_sacred_dragon, new ItemRenderDoubleBarrel(ResourceManager.double_barrel_sacred_dragon_tex), reg);
-        registerItemRenderer(ModItems.gun_flamer, new ItemRenderFlamer(ResourceManager.flamethrower_tex), reg);
-        registerItemRenderer(ModItems.gun_flamer_topaz, new ItemRenderFlamer(ResourceManager.flamethrower_topaz_tex), reg);
-        registerItemRenderer(ModItems.gun_flamer_daybreaker, new ItemRenderFlamer(ResourceManager.flamethrower_daybreaker_tex), reg);
-        registerItemRenderer(ModItems.gun_heavy_revolver, new ItemRenderHeavyRevolver(ResourceManager.heavy_revolver_tex), reg);
-        registerItemRenderer(ModItems.gun_heavy_revolver_lilmac, new ItemRenderHeavyRevolver(ResourceManager.lilmac_tex), reg);
-        registerItemRenderer(ModItems.gun_heavy_revolver_protege, new ItemRenderHeavyRevolver(ResourceManager.heavy_revolver_protege_tex), reg);
-        registerItemRenderer(ModItems.gun_maresleg, new ItemRenderMaresleg(ResourceManager.maresleg_tex), reg);
-        registerItemRenderer(ModItems.gun_maresleg_broken, new ItemRenderMaresleg(ResourceManager.maresleg_broken_tex), reg);
-        registerItemRenderer(ModItems.gun_minigun, new ItemRenderMinigun(ResourceManager.minigun_tex), reg);
-        registerItemRenderer(ModItems.gun_minigun_lacunae, new ItemRenderMinigun(ResourceManager.minigun_lacunae_tex), reg);
-        registerItemRenderer(ModItems.gun_autoshotgun, new ItemRenderShredder(ResourceManager.shredder_tex), reg);
-        registerItemRenderer(ModItems.gun_autoshotgun_shredder, new ItemRenderShredder(ResourceManager.shredder_orig_tex), reg);
-        registerItemRenderer(ModItems.gun_amat, new ItemRenderAmat(ResourceManager.amat_tex), reg);
-        registerItemRenderer(ModItems.gun_amat_penance, new ItemRenderAmat(ResourceManager.amat_penance_tex), reg);
-        registerItemRenderer(ModItems.gun_amat_subtlety, new ItemRenderAmat(ResourceManager.amat_subtlety_tex), reg);
-        registerItemRenderer(ModItems.gun_g3, new ItemRenderG3(ResourceManager.g3_tex), reg);
-        registerItemRenderer(ModItems.gun_g3_zebra, new ItemRenderG3(ResourceManager.g3_zebra_tex), reg);
-        registerItemRenderer(ModItems.gun_henry, new ItemRenderHenry(ResourceManager.henry_tex), reg);
-        registerItemRenderer(ModItems.gun_henry_lincoln, new ItemRenderHenry(ResourceManager.henry_lincoln_tex), reg);
-        registerItemRenderer(ModItems.gun_laser_pistol, new ItemRenderLaserPistol(ResourceManager.laser_pistol_tex), reg);
-        registerItemRenderer(ModItems.gun_laser_pistol_pew_pew, new ItemRenderLaserPistol(ResourceManager.laser_pistol_pew_pew_tex), reg);
-        registerItemRenderer(ModItems.gun_laser_pistol_morning_glory, new ItemRenderLaserPistol(ResourceManager.laser_pistol_morning_glory_tex), reg);
-        registerItemRenderer(ModItems.gun_autoshotgun_sexy, new ItemRenderSexy(ResourceManager.sexy_tex), reg);
-        registerItemRenderer(ModItems.gun_autoshotgun_heretic, new ItemRenderSexy(ResourceManager.heretic_tex), reg);
+        registerItemRenderer(ModItems.gun_light_revolver, new ItemRenderAtlas(ResourceManager.bio_revolver_tex));
+        registerItemRenderer(ModItems.gun_light_revolver_atlas, new ItemRenderAtlas(ResourceManager.bio_revolver_atlas_tex));
+        registerItemRenderer(ModItems.gun_double_barrel, new ItemRenderDoubleBarrel(ResourceManager.double_barrel_tex));
+        registerItemRenderer(ModItems.gun_double_barrel_sacred_dragon, new ItemRenderDoubleBarrel(ResourceManager.double_barrel_sacred_dragon_tex));
+        registerItemRenderer(ModItems.gun_flamer, new ItemRenderFlamer(ResourceManager.flamethrower_tex));
+        registerItemRenderer(ModItems.gun_flamer_topaz, new ItemRenderFlamer(ResourceManager.flamethrower_topaz_tex));
+        registerItemRenderer(ModItems.gun_flamer_daybreaker, new ItemRenderFlamer(ResourceManager.flamethrower_daybreaker_tex));
+        registerItemRenderer(ModItems.gun_heavy_revolver, new ItemRenderHeavyRevolver(ResourceManager.heavy_revolver_tex));
+        registerItemRenderer(ModItems.gun_heavy_revolver_lilmac, new ItemRenderHeavyRevolver(ResourceManager.lilmac_tex));
+        registerItemRenderer(ModItems.gun_heavy_revolver_protege, new ItemRenderHeavyRevolver(ResourceManager.heavy_revolver_protege_tex));
+        registerItemRenderer(ModItems.gun_maresleg, new ItemRenderMaresleg(ResourceManager.maresleg_tex));
+        registerItemRenderer(ModItems.gun_maresleg_broken, new ItemRenderMaresleg(ResourceManager.maresleg_broken_tex));
+        registerItemRenderer(ModItems.gun_minigun, new ItemRenderMinigun(ResourceManager.minigun_tex));
+        registerItemRenderer(ModItems.gun_minigun_lacunae, new ItemRenderMinigun(ResourceManager.minigun_lacunae_tex));
+        registerItemRenderer(ModItems.gun_autoshotgun, new ItemRenderShredder(ResourceManager.shredder_tex));
+        registerItemRenderer(ModItems.gun_autoshotgun_shredder, new ItemRenderShredder(ResourceManager.shredder_orig_tex));
+        registerItemRenderer(ModItems.gun_amat, new ItemRenderAmat(ResourceManager.amat_tex));
+        registerItemRenderer(ModItems.gun_amat_penance, new ItemRenderAmat(ResourceManager.amat_penance_tex));
+        registerItemRenderer(ModItems.gun_amat_subtlety, new ItemRenderAmat(ResourceManager.amat_subtlety_tex));
+        registerItemRenderer(ModItems.gun_g3, new ItemRenderG3(ResourceManager.g3_tex));
+        registerItemRenderer(ModItems.gun_g3_zebra, new ItemRenderG3(ResourceManager.g3_zebra_tex));
+        registerItemRenderer(ModItems.gun_henry, new ItemRenderHenry(ResourceManager.henry_tex));
+        registerItemRenderer(ModItems.gun_henry_lincoln, new ItemRenderHenry(ResourceManager.henry_lincoln_tex));
+        registerItemRenderer(ModItems.gun_laser_pistol, new ItemRenderLaserPistol(ResourceManager.laser_pistol_tex));
+        registerItemRenderer(ModItems.gun_laser_pistol_pew_pew, new ItemRenderLaserPistol(ResourceManager.laser_pistol_pew_pew_tex));
+        registerItemRenderer(ModItems.gun_laser_pistol_morning_glory, new ItemRenderLaserPistol(ResourceManager.laser_pistol_morning_glory_tex));
+        registerItemRenderer(ModItems.gun_autoshotgun_sexy, new ItemRenderSexy(ResourceManager.sexy_tex));
+        registerItemRenderer(ModItems.gun_autoshotgun_heretic, new ItemRenderSexy(ResourceManager.heretic_tex));
         //
-        registerItemRenderer(ModItems.missile_taint, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER0), reg);
-        registerItemRenderer(ModItems.missile_micro, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER0), reg);
-        registerItemRenderer(ModItems.missile_bhole, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER0), reg);
-        registerItemRenderer(ModItems.missile_schrabidium, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER0), reg);
-        registerItemRenderer(ModItems.missile_emp, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER0), reg);
-        registerItemRenderer(ModItems.missile_generic, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER1), reg);
-        registerItemRenderer(ModItems.missile_decoy, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER1), reg);
-        registerItemRenderer(ModItems.missile_stealth, new ItemRenderMissileGeneric(RenderMissileType.TYPE_STEALTH), reg);
-        registerItemRenderer(ModItems.missile_incendiary, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER1), reg);
-        registerItemRenderer(ModItems.missile_cluster, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER1), reg);
-        registerItemRenderer(ModItems.missile_buster, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER1), reg);
-        registerItemRenderer(ModItems.missile_anti_ballistic, new ItemRenderMissileGeneric(RenderMissileType.TYPE_ABM), reg);
-        registerItemRenderer(ModItems.missile_strong, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER2), reg);
-        registerItemRenderer(ModItems.missile_incendiary_strong, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER2), reg);
-        registerItemRenderer(ModItems.missile_cluster_strong, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER2), reg);
-        registerItemRenderer(ModItems.missile_buster_strong, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER2), reg);
-        registerItemRenderer(ModItems.missile_emp_strong, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER2), reg);
-        registerItemRenderer(ModItems.missile_burst, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER3), reg);
-        registerItemRenderer(ModItems.missile_inferno, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER3), reg);
-        registerItemRenderer(ModItems.missile_rain, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER3), reg);
-        registerItemRenderer(ModItems.missile_drill, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER3), reg);
-        registerItemRenderer(ModItems.missile_nuclear, new ItemRenderMissileGeneric(RenderMissileType.TYPE_NUCLEAR), reg);
-        registerItemRenderer(ModItems.missile_nuclear_cluster, new ItemRenderMissileGeneric(RenderMissileType.TYPE_NUCLEAR), reg);
-        registerItemRenderer(ModItems.missile_volcano, new ItemRenderMissileGeneric(RenderMissileType.TYPE_NUCLEAR), reg);
-        registerItemRenderer(ModItems.missile_n2, new ItemRenderMissileGeneric(RenderMissileType.TYPE_NUCLEAR), reg);
-        registerItemRenderer(ModItems.missile_endo, new ItemRenderMissileGeneric(RenderMissileType.TYPE_THERMAL), reg);
-        registerItemRenderer(ModItems.missile_exo, new ItemRenderMissileGeneric(RenderMissileType.TYPE_THERMAL), reg);
-        registerItemRenderer(ModItems.missile_shuttle, new ItemRenderMissileGeneric(RenderMissileType.TYPE_ROBIN), reg);
-        registerItemRenderer(ModItems.missile_doomsday, new ItemRenderMissileGeneric(RenderMissileType.TYPE_DOOMSDAY), reg);
-        registerItemRenderer(ModItems.missile_doomsday_rusted, new ItemRenderMissileGeneric(RenderMissileType.TYPE_DOOMSDAY), reg);
-        registerItemRenderer(ModItems.missile_carrier, new ItemRenderMissileGeneric(RenderMissileType.TYPE_CARRIER), reg);
-        registerItemRenderer(ModItems.gun_b92, ItemRenderGunAnim.INSTANCE, reg);
+        registerItemRenderer(ModItems.missile_taint, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER0));
+        registerItemRenderer(ModItems.missile_micro, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER0));
+        registerItemRenderer(ModItems.missile_bhole, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER0));
+        registerItemRenderer(ModItems.missile_schrabidium, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER0));
+        registerItemRenderer(ModItems.missile_emp, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER0));
+        registerItemRenderer(ModItems.missile_generic, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER1));
+        registerItemRenderer(ModItems.missile_decoy, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER1));
+        registerItemRenderer(ModItems.missile_stealth, new ItemRenderMissileGeneric(RenderMissileType.TYPE_STEALTH));
+        registerItemRenderer(ModItems.missile_incendiary, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER1));
+        registerItemRenderer(ModItems.missile_cluster, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER1));
+        registerItemRenderer(ModItems.missile_buster, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER1));
+        registerItemRenderer(ModItems.missile_anti_ballistic, new ItemRenderMissileGeneric(RenderMissileType.TYPE_ABM));
+        registerItemRenderer(ModItems.missile_strong, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER2));
+        registerItemRenderer(ModItems.missile_incendiary_strong, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER2));
+        registerItemRenderer(ModItems.missile_cluster_strong, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER2));
+        registerItemRenderer(ModItems.missile_buster_strong, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER2));
+        registerItemRenderer(ModItems.missile_emp_strong, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER2));
+        registerItemRenderer(ModItems.missile_burst, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER3));
+        registerItemRenderer(ModItems.missile_inferno, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER3));
+        registerItemRenderer(ModItems.missile_rain, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER3));
+        registerItemRenderer(ModItems.missile_drill, new ItemRenderMissileGeneric(RenderMissileType.TYPE_TIER3));
+        registerItemRenderer(ModItems.missile_nuclear, new ItemRenderMissileGeneric(RenderMissileType.TYPE_NUCLEAR));
+        registerItemRenderer(ModItems.missile_nuclear_cluster, new ItemRenderMissileGeneric(RenderMissileType.TYPE_NUCLEAR));
+        registerItemRenderer(ModItems.missile_volcano, new ItemRenderMissileGeneric(RenderMissileType.TYPE_NUCLEAR));
+        registerItemRenderer(ModItems.missile_n2, new ItemRenderMissileGeneric(RenderMissileType.TYPE_NUCLEAR));
+        registerItemRenderer(ModItems.missile_endo, new ItemRenderMissileGeneric(RenderMissileType.TYPE_THERMAL));
+        registerItemRenderer(ModItems.missile_exo, new ItemRenderMissileGeneric(RenderMissileType.TYPE_THERMAL));
+        registerItemRenderer(ModItems.missile_shuttle, new ItemRenderMissileGeneric(RenderMissileType.TYPE_ROBIN));
+        registerItemRenderer(ModItems.missile_doomsday, new ItemRenderMissileGeneric(RenderMissileType.TYPE_DOOMSDAY));
+        registerItemRenderer(ModItems.missile_doomsday_rusted, new ItemRenderMissileGeneric(RenderMissileType.TYPE_DOOMSDAY));
+        registerItemRenderer(ModItems.missile_carrier, new ItemRenderMissileGeneric(RenderMissileType.TYPE_CARRIER));
+        registerItemRenderer(ModItems.gun_b92, ItemRenderGunAnim.INSTANCE);
     }
 
     @Override
@@ -411,9 +379,12 @@ public class ClientProxy extends ServerProxy {
                 }
                 break;
             case 3: //Rad Fog
-
-                ParticleRadiationFog fog = new ParticleRadiationFog(world, x, y, z);
-                Minecraft.getMinecraft().effectRenderer.addEffect(fog);
+                if (GeneralConfig.instancedParticles) {
+                    InstancedParticleRenderer.addParticle(new ParticleRadiationFogInstanced(world, x, y, z));
+                } else {
+                    ParticleRadiationFog fog = new ParticleRadiationFog(world, x, y, z);
+                    Minecraft.getMinecraft().effectRenderer.addEffect(fog);
+                }
                 break;
             case 4:
                 world.spawnParticle(EnumParticleTypes.FLAME, x + world.rand.nextDouble(), y + 1.1, z + world.rand.nextDouble(), 0.0, 0.0, 0.0);
@@ -608,8 +579,12 @@ public class ClientProxy extends ServerProxy {
                 Minecraft.getMinecraft().effectRenderer.addEffect(contrail);
             }
             case "radFog", "radiationfog" -> {
-                ParticleRadiationFog contrail = new ParticleRadiationFog(world, x, y, z);
-                Minecraft.getMinecraft().effectRenderer.addEffect(contrail);
+                if (GeneralConfig.instancedParticles) {
+                    InstancedParticleRenderer.addParticle(new ParticleRadiationFogInstanced(world, x, y, z));
+                } else {
+                    ParticleRadiationFog contrail = new ParticleRadiationFog(world, x, y, z);
+                    Minecraft.getMinecraft().effectRenderer.addEffect(contrail);
+                }
             }
 
             // End MK2 porting.
@@ -1236,11 +1211,26 @@ public class ClientProxy extends ServerProxy {
             case "rift" -> Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleRift(world, x, y, z));
             case "rbmkflame" -> {
                 int maxAge = data.getInteger("maxAge");
-                Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleRBMKFlame(world, x, y, z, maxAge));
+                if(GeneralConfig.instancedParticles) {
+                    InstancedParticleRenderer.addParticle(new ParticleRBMKFlameInstanced(world, x, y, z, maxAge));
+                } else {
+                    Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleRBMKFlame(world, x, y, z, maxAge));
+                }
+            }
+            case "rbmksteam" -> {
+                if(GeneralConfig.instancedParticles) {
+                    InstancedParticleRenderer.addParticle(new ParticleRBMKSteamInstanced(world, x, y, z));
+                } else {
+                    Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleRBMKSteam(world, x, y, z));
+                }
             }
             case "rbmkmush" -> {
                 float scale = data.getFloat("scale");
-                Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleRBMKMush(world, x, y, z, scale));
+                if(GeneralConfig.instancedParticles) {
+                    InstancedParticleRenderer.addParticle(new ParticleRBMKMushInstanced(world, x, y, z, scale));
+                } else {
+                    Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleRBMKMush(world, x, y, z, scale));
+                }
             }
             case "tower" -> {
                 if (particleSetting == 0 || (particleSetting == 1 && rand.nextBoolean())) {
@@ -1782,10 +1772,11 @@ public class ClientProxy extends ServerProxy {
                 }
             }
             case "tau" -> {
+                boolean small = data.getBoolean("small");
                 for (int i = 0; i < data.getByte("count"); i++)
                     Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleHbmSpark(world, x, y, z,
-                            rand.nextGaussian() * 0.05, 0.05, rand.nextGaussian() * 0.05));
-                Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleHadron(world, x, y, z));
+                            rand.nextGaussian() * 0.05, 0.05, rand.nextGaussian() * 0.05).makeSmall(small));
+                Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleHadron(world, x, y, z).makeSmall(small));
             }
             case "vanish" -> vanish(data.getInteger("ent"));
             case "giblets" -> {
@@ -1858,6 +1849,7 @@ public class ClientProxy extends ServerProxy {
             case JETPACK -> Minecraft.getMinecraft().gameSettings.keyBindJump.isKeyDown();
             case TOGGLE_JETPACK -> HbmKeybinds.jetpackKey.isKeyDown();
             case TOGGLE_HEAD -> HbmKeybinds.hudKey.isKeyDown();
+            case TOGGLE_MAGNET -> HbmKeybinds.magnetKey.isKeyDown();
             case RELOAD -> HbmKeybinds.reloadKey.isKeyDown();
             case DASH -> HbmKeybinds.dashKey.isKeyDown();
             case CRANE_UP -> HbmKeybinds.craneUpKey.isKeyDown();
@@ -1868,6 +1860,7 @@ public class ClientProxy extends ServerProxy {
             case ABILITY_CYCLE -> HbmKeybinds.abilityCycle.isKeyDown();
             case ABILITY_ALT -> HbmKeybinds.abilityAlt.isKeyDown();
             case TOOL_ALT -> HbmKeybinds.copyToolAlt.isKeyDown();
+            case TOOL_CTRL -> HbmKeybinds.copyToolCtrl.isKeyDown();
             case GUN_PRIMARY -> Mouse.isButtonDown(0);
             case GUN_SECONDARY -> HbmKeybinds.gunSecondaryKey.isKeyDown();
             case GUN_TERTIARY -> HbmKeybinds.gunTertiaryKey.isKeyDown();
@@ -1916,7 +1909,7 @@ public class ClientProxy extends ServerProxy {
 
     @Override
     public void checkGLCaps() {
-        GLCompat.error = GLCompat.init();
+        // Reading GLCompat.error triggers its <clinit>, which runs the caps probe.
         if (GLCompat.error.isEmpty()) {
             MainRegistry.logger.log(Level.INFO, "Advanced rendering fully supported");
         } else {
@@ -1930,31 +1923,11 @@ public class ClientProxy extends ServerProxy {
             SoundSystemConfig.setNumberNormalChannels(128);
         }
         OBJLoader.INSTANCE.addDomain(Tags.MODID);
+        ModelLoaderRegistry.registerLoader(DynamicPlaceholderModelLoader.INSTANCE);
 
-        AutoRegistry.preInitClient();
-        for (Map.Entry<Item, TileEntityItemStackRenderer> entry : RBMKItemRenderers.itemRenderers.entrySet()) {
-            entry.getKey().setTileEntityItemStackRenderer(entry.getValue());
-        }
+        AutoRegistry.registerRenderInfo();
 
-        for (TileEntitySpecialRenderer<? extends TileEntity> renderer : TileEntityRendererDispatcher.instance.renderers.values()) {
-            if (renderer instanceof IItemRendererProvider prov) {
-                for (Item item : prov.getItemsForRenderer()) {
-                    item.setTileEntityItemStackRenderer(prov.getRenderer(item));
-                }
-            }
-        }
-
-        // same crap but for items directly because why invent a new solution when this shit works just fine
-        for (Item renderer : Item.REGISTRY) {
-            if (renderer instanceof IItemRendererProvider provider) {
-                for (Item item : provider.getItemsForRenderer()) {
-                    item.setTileEntityItemStackRenderer(provider.getRenderer(item));
-                }
-            }
-        }
-
-        // IItemRendererProvider is not applicable to Render<T extends Entity>
-        Item.getItemFromBlock(ModBlocks.boat).setTileEntityItemStackRenderer(new RenderBoat.BoatItemRenderer());
+        ClientHttpHandler.preinit();
     }
 
     @Deprecated

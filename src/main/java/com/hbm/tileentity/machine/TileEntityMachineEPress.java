@@ -46,6 +46,7 @@ import java.util.List;
 @AutoRegister
 public class TileEntityMachineEPress extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IGUIProvider, IUpgradeInfoProvider {
 
+	private AxisAlignedBB bb;
 	public long power = 0;
 	public final static long maxPower = 50000;
 
@@ -197,17 +198,13 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements IT
 			default -> false;
 		};
 	}
-
+	@Override
 	public int[] getAccessibleSlotsFromSide(@NotNull EnumFacing side) {
-		if (side == EnumFacing.DOWN) return new int[]{3};
-		if (side == EnumFacing.UP) return new int[]{2};
-		return new int[]{0, 1, 2};
+		return new int[]{ 1, 2, 3 };
 	}
 
 	@Override
-	public boolean canExtractItem(int slot, ItemStack itemStack, int amount) {
-		return slot == 3;
-	}
+	public boolean canExtractItem(int slot, ItemStack itemStack, int amount) { return slot == 3; }
 	@NotNull
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
@@ -246,7 +243,8 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements IT
 	@NotNull
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return new AxisAlignedBB(pos, pos.add(1, 3, 1));
+		if (bb == null) bb = new AxisAlignedBB(pos, pos.add(1, 3, 1));
+		return bb;
 	}
 
 	@Override

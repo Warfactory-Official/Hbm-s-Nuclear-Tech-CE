@@ -2,10 +2,8 @@ package com.hbm.tileentity.network;
 
 import com.hbm.blocks.network.RadioTorchBase;
 import com.hbm.handler.CompatHandler;
-import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.IControlReceiver;
-import com.hbm.packet.toclient.BufPacket;
-import com.hbm.tileentity.IBufPacketReceiver;
+import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.util.BufferUtil;
 import io.netty.buffer.ByteBuf;
 import li.cil.oc.api.machine.Arguments;
@@ -14,23 +12,18 @@ import li.cil.oc.api.machine.Context;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.Optional;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
-public class TileEntityRadioTorchBase extends TileEntity implements IBufPacketReceiver, ITickable, IControlReceiver, CompatHandler.OCComponent {
+public class TileEntityRadioTorchBase extends TileEntityLoadedBase implements ITickable, IControlReceiver, CompatHandler.OCComponent {
     private static final int MAPPING_SIZE = 16;
 
     /**
@@ -114,40 +107,9 @@ public class TileEntityRadioTorchBase extends TileEntity implements IBufPacketRe
         return super.writeToNBT(nbt);
     }
 
-    public void networkPackNT(int range) {
-        if (!world.isRemote)
-            PacketThreading.createAllAroundThreadedPacket(new BufPacket(pos.getX(), pos.getY(), pos.getZ(), this), new TargetPoint(this.world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), range));
-    }
-
     @Override
     public boolean hasPermission(EntityPlayer player) {
         return new Vec3d(pos.getX() - player.posX, pos.getY() - player.posY, pos.getZ() - player.posZ).length() < 16;
-    }
-
-    @Override
-    public @NotNull NBTTagCompound getUpdateTag() {
-        NBTTagCompound nbt = super.getUpdateTag();
-        writeToNBT(nbt);
-        return nbt;
-    }
-
-    @Override
-    public void handleUpdateTag(@NotNull NBTTagCompound tag) {
-        super.handleUpdateTag(tag);
-        readFromNBT(tag);
-    }
-
-    @Nullable
-    @Override
-    public SPacketUpdateTileEntity getUpdatePacket() {
-        NBTTagCompound nbt = new NBTTagCompound();
-        nbt.setByte("lastState", (byte) this.lastState);
-        return new SPacketUpdateTileEntity(this.pos, 0, nbt);
-    }
-
-    @Override
-    public void onDataPacket(@NotNull NetworkManager net, SPacketUpdateTileEntity pkt) {
-        this.lastState = pkt.getNbtCompound().getByte("lastState");
     }
 
     @Override
@@ -166,8 +128,10 @@ public class TileEntityRadioTorchBase extends TileEntity implements IBufPacketRe
 
     @Override
     public void serialize(ByteBuf buf) {
+        super.serialize(buf);
         buf.writeBoolean(polling);
         buf.writeBoolean(customMap);
+        buf.writeInt(lastState);
         buf.writeBoolean(channel != null);
         if (channel != null) BufferUtil.writeString(buf, channel);
 
@@ -179,8 +143,10 @@ public class TileEntityRadioTorchBase extends TileEntity implements IBufPacketRe
 
     @Override
     public void deserialize(ByteBuf buf) {
+        super.deserialize(buf);
         this.polling = buf.readBoolean();
         this.customMap = buf.readBoolean();
+        this.lastState = buf.readInt();
 
         if (buf.readBoolean()) {
             this.channel = BufferUtil.readString(buf);

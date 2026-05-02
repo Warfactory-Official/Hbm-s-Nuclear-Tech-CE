@@ -4,6 +4,8 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.entity.projectile.EntityBoxcar;
 import com.hbm.entity.projectile.EntityTorpedo;
 import com.hbm.interfaces.AutoRegister;
+import com.hbm.interfaces.IConstantRenderer;
+import com.hbm.main.ClientProxy;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.tileentity.IItemRendererProvider;
@@ -29,6 +31,9 @@ public class RenderBoxcar extends Render<Entity> implements IItemRendererProvide
 
     @Override
     public void doRender(Entity entity, double x, double y, double z, float entityYaw, float partialTicks) {
+        if (entity instanceof IConstantRenderer && !ClientProxy.renderingConstant) {
+            return;
+        }
         GlStateManager.pushMatrix();
         final boolean prevCull = RenderUtil.isCullEnabled();
         final boolean prevLighting = RenderUtil.isLightingEnabled();
@@ -62,6 +67,14 @@ public class RenderBoxcar extends Render<Entity> implements IItemRendererProvide
         if (!prevCull) GlStateManager.disableCull();
 
         GlStateManager.popMatrix();
+    }
+
+    @Override
+    public void doRenderShadowAndFire(Entity entityIn, double x, double y, double z, float yaw, float partialTicks) {
+        if (entityIn instanceof IConstantRenderer) {
+            return;
+        }
+        super.doRenderShadowAndFire(entityIn, x, y, z, yaw, partialTicks);
     }
 
     @Override

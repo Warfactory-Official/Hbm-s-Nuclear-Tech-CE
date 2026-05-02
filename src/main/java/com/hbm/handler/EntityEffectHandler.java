@@ -23,8 +23,7 @@ import com.hbm.lib.ModDamageSource;
 import com.hbm.main.AdvancementManager;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
-import com.hbm.packet.toclient.ExtPropPacket;
-import com.hbm.packet.toclient.HbmCapabilityPacket;
+import com.hbm.packet.toclient.HbmPlayerSyncPacket;
 import com.hbm.particle.helper.FlameCreator;
 import com.hbm.potion.HbmPotion;
 import com.hbm.saveddata.AuxSavedData;
@@ -94,13 +93,6 @@ public class EntityEffectHandler {
                 ContaminationUtil.contaminate(entity, HazardType.RADIATION, ContaminationType.CREATIVE, (double) radiation / 20D);
             }
 			
-			if(entity instanceof EntityPlayerMP) {
-				NBTTagCompound data = new NBTTagCompound();
-				IEntityHbmProps props = HbmLivingProps.getData(entity);
-				props.saveNBTData(data);
-				PacketThreading.createSendToThreadedPacket(new ExtPropPacket(data), (EntityPlayerMP) entity);
-			}
-
 			if(entity instanceof EntityPlayerMP playerMP) {
 				HbmCapability.IHBMData cap = HbmCapability.getData(entity);
 
@@ -111,7 +103,9 @@ public class EntityEffectHandler {
 
 				if(cap.getShield() > cap.getEffectiveMaxShield(playerMP))
 					cap.setShield(cap.getEffectiveMaxShield(playerMP));
-				PacketThreading.createSendToThreadedPacket(new HbmCapabilityPacket(cap), playerMP);
+
+				IEntityHbmProps props = HbmLivingProps.getData(entity);
+				PacketThreading.createSendToThreadedPacket(new HbmPlayerSyncPacket(props, cap), playerMP);
 			}
 		} else {
             if(entity == MainRegistry.proxy.me()) {

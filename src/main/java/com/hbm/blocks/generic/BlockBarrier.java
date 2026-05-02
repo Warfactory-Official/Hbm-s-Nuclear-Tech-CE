@@ -59,13 +59,13 @@ public class BlockBarrier extends BlockBakeBase implements IDynamicModels {
   }
 
   @Override
-  public BlockFaceShape getBlockFaceShape(
-      IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
+  public @NotNull BlockFaceShape getBlockFaceShape(
+          @NotNull IBlockAccess worldIn, @NotNull IBlockState state, @NotNull BlockPos pos, @NotNull EnumFacing face) {
     return BlockFaceShape.UNDEFINED;
   }
 
   @Override
-  protected BlockStateContainer createBlockState() {
+  protected @NotNull BlockStateContainer createBlockState() {
     return new ExtendedBlockState(
             this,
             new IProperty<?>[] {FACING},
@@ -73,7 +73,7 @@ public class BlockBarrier extends BlockBakeBase implements IDynamicModels {
   }
 
   @Override
-  public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos) {
+  public @NotNull IBlockState getExtendedState(IBlockState state, @NotNull IBlockAccess world, @NotNull BlockPos pos) {
     if (!(state.getBlock() == this) || !(state.getPropertyKeys().contains(FACING))) return state;
 
     IExtendedBlockState ext = (IExtendedBlockState) state;
@@ -106,48 +106,40 @@ public class BlockBarrier extends BlockBakeBase implements IDynamicModels {
   }
 
   @Override
-  public IBlockState getStateFromMeta(int meta) {
+  public @NotNull IBlockState getStateFromMeta(int meta) {
     return getDefaultState().withProperty(FACING, EnumFacing.byHorizontalIndex(meta));
   }
 
   @Override
-  public boolean isOpaqueCube(IBlockState state) {
+  public boolean isOpaqueCube(@NotNull IBlockState state) {
     return false;
   }
 
   @Override
-  public boolean isFullCube(IBlockState state) {
+  public boolean isFullCube(@NotNull IBlockState state) {
     return false;
   }
 
   @Override
-  public boolean isNormalCube(IBlockState state) {
+  public boolean isNormalCube(@NotNull IBlockState state) {
     return false;
   }
 
   @Override
-  public void onBlockPlacedBy(
-      World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-
-    EnumFacing facing = placer.getHorizontalFacing().getOpposite();
-    worldIn.setBlockState(pos, state.withProperty(FACING, facing), 2);
-  }
-
-  @Override
-  public IBlockState getStateForPlacement(
-      World world,
-      BlockPos pos,
-      EnumFacing facing,
-      float hitX,
-      float hitY,
-      float hitZ,
-      int meta,
-      EntityLivingBase placer) {
+  public @NotNull IBlockState getStateForPlacement(
+          @NotNull World world,
+          @NotNull BlockPos pos,
+          @NotNull EnumFacing facing,
+          float hitX,
+          float hitY,
+          float hitZ,
+          int meta,
+          EntityLivingBase placer) {
     return getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
   }
 
   @Override
-  public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+  public @NotNull AxisAlignedBB getBoundingBox(IBlockState state, @NotNull IBlockAccess source, @NotNull BlockPos pos) {
 
     EnumFacing facing = state.getValue(FACING);
 
@@ -162,13 +154,13 @@ public class BlockBarrier extends BlockBakeBase implements IDynamicModels {
 
   @Override
   public void addCollisionBoxToList(
-      IBlockState state,
-      World worldIn,
-      BlockPos pos,
-      AxisAlignedBB entityBox,
-      List<AxisAlignedBB> collidingBoxes,
-      Entity entityIn,
-      boolean isActualState) {
+          IBlockState state,
+          World worldIn,
+          BlockPos pos,
+          @NotNull AxisAlignedBB entityBox,
+          @NotNull List<AxisAlignedBB> collidingBoxes,
+          Entity entityIn,
+          boolean isActualState) {
 
     EnumFacing facing = state.getValue(FACING);
 
@@ -218,7 +210,7 @@ public class BlockBarrier extends BlockBakeBase implements IDynamicModels {
   public StateMapperBase getStateMapper(ResourceLocation loc) {
     return new StateMapperBase() {
       @Override
-      protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
+      protected @NotNull ModelResourceLocation getModelResourceLocation(@NotNull IBlockState state) {
         return new ModelResourceLocation(loc, "normal");
       }
     };

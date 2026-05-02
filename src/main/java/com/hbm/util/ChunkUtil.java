@@ -38,6 +38,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.hbm.lib.queues.MpscUnboundedXaddArrayLongQueue;
+
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Arrays;
 import java.util.Objects;
@@ -265,7 +267,10 @@ public final class ChunkUtil {
         chunkMap.remove(key);
     }
 
-    public static void onServerStopping() {
+    // Must run after BombForkJoinPool cancels jobs — cancelJob() calls releaseMirrorMap(),
+    // which decrements activeTask. If we cleared activeTask before that (as in FMLServerStoppingEvent),
+    // the counter goes negative and the next acquireMirrorMap() takes the wrong branch → NPE.
+    public static void onServerStopped() {
         chunkMap.clear();
         activeTask.clear();
         if (GeneralConfig.enableExtendedLogging)

@@ -19,6 +19,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.BufferUtil;
@@ -43,8 +44,9 @@ import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
-public class TileEntityMachineGasCent extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardReceiver, IGUIProvider, IFFtoNTMF {
+public class TileEntityMachineGasCent extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardReceiver, IGUIProvider, IFFtoNTMF, IConnectionAnchors {
 
+    private AxisAlignedBB bb;
     public int progress;
     public long power;
     public boolean isProgressing;
@@ -80,7 +82,7 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
             }
         };
 
-        tank = new FluidTankNTM(Fluids.UF6, 2000);
+        tank = new FluidTankNTM(Fluids.UF6, 2000).withOwner(this);
         inputTank = new PseudoFluidTank(GasCentrifugeRecipes.PseudoFluidType.NUF6, 8000);
         outputTank = new PseudoFluidTank(GasCentrifugeRecipes.PseudoFluidType.LEUF6, 8000);
     }
@@ -330,7 +332,7 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
         }
     }
 
-    private DirPos[] getConPos() {
+    public DirPos[] getConPos() {
         return new DirPos[]{new DirPos(pos.getX(), pos.getY() - 1, pos.getZ(), Library.NEG_Y), new DirPos(pos.getX() + 1, pos.getY(), pos.getZ(), Library.POS_X), new DirPos(pos.getX() - 1, pos.getY(), pos.getZ(), Library.NEG_X), new DirPos(pos.getX(), pos.getY(), pos.getZ() + 1, Library.POS_Z), new DirPos(pos.getX(), pos.getY(), pos.getZ() - 1, Library.NEG_Z)};
     }
 
@@ -371,7 +373,8 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase implements I
 
     @Override
     public @NotNull AxisAlignedBB getRenderBoundingBox() {
-        return new AxisAlignedBB(pos, pos.add(1, 4, 1));
+        if (bb == null) bb = new AxisAlignedBB(pos, pos.add(1, 4, 1));
+        return bb;
     }
 
     @Override

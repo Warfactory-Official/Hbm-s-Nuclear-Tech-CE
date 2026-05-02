@@ -89,8 +89,8 @@ public class TileEntityMachineTurbine extends TileEntityLoadedBase implements IT
 			}
 		};
 		tanksNew = new FluidTankNTM[2];
-		tanksNew[0] = new FluidTankNTM(Fluids.STEAM, 64000, 0);
-		tanksNew[1] = new FluidTankNTM(Fluids.SPENTSTEAM, 128000, 1);
+		tanksNew[0] = new FluidTankNTM(Fluids.STEAM, 64000, 0).withOwner(this);
+		tanksNew[1] = new FluidTankNTM(Fluids.SPENTSTEAM, 128000, 1).withOwner(this);
 
 		tanks = new FluidTank[2];
 		tankTypes = new Fluid[2];

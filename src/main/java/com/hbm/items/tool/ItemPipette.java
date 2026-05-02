@@ -1,6 +1,7 @@
 package com.hbm.items.tool;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import com.hbm.Tags;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.inventory.fluid.FluidType;
@@ -28,6 +29,7 @@ import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.model.IModel;
+import net.minecraftforge.client.model.ItemLayerModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.relauncher.Side;
@@ -316,5 +318,32 @@ public class ItemPipette extends ItemBakedBase implements IFillableItem {
     @SideOnly(Side.CLIENT)
     private ModelResourceLocation getEmptyModelLocation() {
         return new ModelResourceLocation(new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_empty"), "inventory");
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public boolean ownsModelLocation(ModelResourceLocation location) {
+        return super.ownsModelLocation(location)
+                || location.equals(getFilledModelLocation())
+                || location.equals(getEmptyModelLocation());
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IModel loadModel(ModelResourceLocation location) {
+        ResourceLocation baseTexture = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath);
+        if (location.equals(getFilledModelLocation())) {
+            return new ItemLayerModel(ImmutableList.of(
+                    baseTexture,
+                    new ResourceLocation(Tags.MODID, ROOT_PATH + getOverlayTexturePath())
+            ));
+        }
+        if (location.equals(getEmptyModelLocation())) {
+            return new ItemLayerModel(ImmutableList.of(
+                    baseTexture,
+                    new ResourceLocation(Tags.MODID, ROOT_PATH + EMPTY_OVERLAY_PATH)
+            ));
+        }
+        return super.loadModel(location);
     }
 }

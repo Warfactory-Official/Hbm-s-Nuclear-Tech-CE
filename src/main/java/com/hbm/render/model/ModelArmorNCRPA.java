@@ -38,7 +38,7 @@ public class ModelArmorNCRPA extends ModelArmorBase {
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
 
         switch(type) {
-            case 0 -> {
+            case 3 -> {
                 bindTexture(ResourceManager.ncrpa_helmet);
                 this.head.render(scaleFactor);
 
@@ -54,7 +54,7 @@ public class ModelArmorNCRPA extends ModelArmorBase {
                 OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lastX, lastY);
                 // END GLOW //
             }
-            case 1 -> {
+            case 2 -> {
                 bindTexture(ResourceManager.ncrpa_arm);
                 this.leftArm.render(scaleFactor);
                 this.rightArm.render(scaleFactor);
@@ -62,12 +62,12 @@ public class ModelArmorNCRPA extends ModelArmorBase {
                 bindTexture(ResourceManager.ncrpa_chest);
                 this.body.render(scaleFactor);
             }
-            case 2 -> {
+            case 1 -> {
                 bindTexture(ResourceManager.ncrpa_leg);
                 this.leftLeg.render(scaleFactor);
                 this.rightLeg.render(scaleFactor);
             }
-            case 3 -> {
+            case 0 -> {
                 bindTexture(ResourceManager.ncrpa_leg);
                 this.leftFoot.render(scaleFactor);
                 this.rightFoot.render(scaleFactor);

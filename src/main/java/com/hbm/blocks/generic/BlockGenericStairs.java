@@ -48,17 +48,7 @@ public class BlockGenericStairs extends BlockStairs implements IDynamicModels {
     this.setRegistryName(registryName);
     this.useNeighborBrightness = true;
 
-    this.blockFrame =
-        new BlockBakeFrame(texture) {
-          @Override
-          public void putTextures(ImmutableMap.Builder<String, String> builder) {
-            String sprite = this.getSpriteLoc(0).toString();
-            builder.put("bottom", sprite);
-            builder.put("top", sprite);
-            builder.put("side", sprite);
-            builder.put("particle", sprite);
-          }
-        };
+    this.blockFrame = BlockBakeFrame.singleTexture(texture, "bottom", "top", "side");
 
     IDynamicModels.INSTANCES.add(this);
     if (recipeMeta >= 0) {

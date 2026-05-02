@@ -44,16 +44,16 @@ dependencies {
     testAnnotationProcessor project(':processor')
     //compileOnly rfg.deobf("dev.galacticraft:galacticraft-legacy:${version_gc}")
 //    compileOnly rfg.deobf("curse.maven:galacticraft-legacy-564236:6364107")
-    compileOnly rfg.deobf("com.azanor.baubles:Baubles:${version_baubles}:api")
+    compileOnlyApi "com.azanor.baubles:Baubles:${version_baubles}:api"
 //    compileOnly rfg.deobf("cofh:RedstoneFlux:1.12-${version_redstoneflux}:universal")
 //    compileOnly rfg.deobf("cofh:CoFHCore:1.12.2-${version_cofhcore}:universal")
-    compileOnly('appeng:ae2-uel:v0.56.7:api')
+    compileOnlyApi('appeng:ae2-uel:v0.56.7:api')
 //    devOnlyNonPublishable('appeng:ae2-uel:v0.56.7') { transitive false } // use this if need to test in dev env
     shadowImplementation 'org.jctools:jctools-core:4.0.5'
 
-    implementation rfg.deobf("curse.maven:opencomputers-223008:6608365")
-    implementation 'mezz:jei:[4.29.14,)'
-    implementation 'com.google.guava:guava:31.0.1-jre'
+    api rfg.deobf("curse.maven:opencomputers-223008:6608365")
+    api 'mezz:jei:[4.29.14,)'
+    compileOnlyApi 'com.google.guava:guava:31.0.1-jre'
     devOnlyNonPublishable rfg.deobf("curse.maven:inventory-bogosorter-632327:7102721")
     devOnlyNonPublishable rfg.deobf("curse.maven:key-binding-patch-928895:5951859")//required for bogosorter to launch
     devOnlyNonPublishable("com.cleanroommc:modularui:3.0.6") { transitive false }
@@ -64,6 +64,7 @@ dependencies {
     runtimeOnlyNonPublishable "com.cleanroommc:configanytime:3.0"
     runtimeOnlyNonPublishable rfg.deobf("curse.maven:flare-692142:6598523")
     runtimeOnlyNonPublishable rfg.deobf("curse.maven:ctm-267602:2915363")
+//    runtimeOnlyNonPublishable('appeng:ae2-uel:v0.56.7') { transitive false }
 //    devOnlyNonPublishable rfg.deobf("curse.maven:quark-243121:2924091")
 //    devOnlyNonPublishable rfg.deobf("curse.maven:autoreglib-250363:2746011")
 //    runtimeOnlyNonPublishable rfg.deobf("curse.maven:gregtech-ce-unofficial-557242:5519022")

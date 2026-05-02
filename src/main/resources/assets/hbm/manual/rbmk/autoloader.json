@@ -1,0 +1,14 @@
+{
+	"name": "RBMK Autoloader",
+	"icon": ["hbm:rbmk_autoloader", 1, 0],
+	"trigger": [["hbm:rbmk_autoloader"]],
+	"title": {
+		"en_us": "RBMK Autoloader",
+		"zh_cn": "RBMK燃料自动装填机",
+		"ja_jp": "RBMKオートローダー"
+	},
+	"content": {
+		"en_us": "The autoloader is an advanced component of an [[RBMK]] that can be placed on top of [[fuel channels|RBMK Fuel Channel]]. The autoloader has two inventory grids, one for fresh fuel, and one for spent fuel, as well as a selector for the fuel enrichment percentage (i.e. 100% - depletion percentage) which can be changed in 5% increments. If the [[fuel rod's|RBMK Fuel Rod]] enrichment of the connected fuel channel is lower than the configured percentage, the autoloader will drop down, remove the spent fuel and insert a new fuel rod. The autoloader can be automated using hoppers or conveyors, the item access ports are on the very top.",
+		"ja_jp": "オートローダーは[[RBMK]]の上級パーツであり、 [[燃料スロット|RBMK Fuel Channel]]の上に置くことで動作します。 オートローダーは2つのインベントリが付いており、 左側が新しい燃料、 右側が使用済み燃料の格納スロットとなっています。 オートローダーは燃料の残量 (例. 0% -- 100%枯渇) を5%の刻みで設定でき、 接続された燃料スロット内の[[燃料棒|RBMK Fuel Rod]]の残量が指定された残量を下回った際にオートローダーが下がり、 燃料を交換してくれます。 オートローダーはコンベアやホッパーを使って自動化することができます。 アイテムポートは天辺についています。"
+	}
+}

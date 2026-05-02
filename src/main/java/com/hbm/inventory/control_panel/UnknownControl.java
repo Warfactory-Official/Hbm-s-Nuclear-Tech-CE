@@ -62,8 +62,11 @@ public class UnknownControl extends Control {
 	}
 
 	@Override
-	public float[] getBox() {
-		return new float[] {boxMinX, boxMinY, boxMaxX, boxMaxY};
+	public void fillBox(float[] box) {
+		box[0] = boxMinX;
+		box[1] = boxMinY;
+		box[2] = boxMaxX;
+		box[3] = boxMaxY;
 	}
 
 	@Override

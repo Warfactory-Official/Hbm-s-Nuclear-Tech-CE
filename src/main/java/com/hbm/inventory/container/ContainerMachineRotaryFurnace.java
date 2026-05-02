@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.tileentity.machine.TileEntityMachineRotaryFurnace;
 import com.hbm.util.InventoryUtil;
@@ -15,6 +16,18 @@ import org.jetbrains.annotations.NotNull;
 public class ContainerMachineRotaryFurnace extends Container {
 
     private final TileEntityMachineRotaryFurnace furnace;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(5)
+                                                                              .rule(0, 3,
+                                                                                      ContainerMachineRotaryFurnace::isNormal)
+                                                                              .rule(3, 4,
+                                                                                      s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                              .rule(4, 5, TileEntityFurnace::isItemFuel)
+                                                                              .ruleDispatchMode(
+                                                                                      TransferStrategy.RuleDispatchMode.FALLTHROUGH_ON_FAILURE)
+                                                                              .playerFallbackMode(
+                                                                                      TransferStrategy.PlayerFallbackMode.REBALANCE_SECTIONS)
+                                                                              .build();
 
     public ContainerMachineRotaryFurnace(InventoryPlayer invPlayer, TileEntityMachineRotaryFurnace tile) {
         furnace = tile;
@@ -45,10 +58,7 @@ public class ContainerMachineRotaryFurnace extends Container {
 
     @Override
     public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 5,
-                ContainerMachineRotaryFurnace::isNormal, 3,
-                s -> s.getItem() instanceof IItemFluidIdentifier, 4,
-                TileEntityFurnace::isItemFuel, 5);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
     @Override

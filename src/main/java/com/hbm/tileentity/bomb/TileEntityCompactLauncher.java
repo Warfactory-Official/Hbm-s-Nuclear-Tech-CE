@@ -15,6 +15,7 @@ import com.hbm.items.weapon.ItemCustomMissile;
 import com.hbm.items.weapon.ItemMissile;
 import com.hbm.items.weapon.ItemMissile.FuelType;
 import com.hbm.items.weapon.ItemMissile.PartSize;
+import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
@@ -22,6 +23,7 @@ import com.hbm.main.MainRegistry;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.TEMissileMultipartPacket;
 import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import io.netty.buffer.ByteBuf;
@@ -54,8 +56,9 @@ import java.util.List;
 
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 @AutoRegister
-public class TileEntityCompactLauncher extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiver, SimpleComponent, IGUIProvider {
+public class TileEntityCompactLauncher extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiver, SimpleComponent, IGUIProvider, IConnectionAnchors {
 
+	private AxisAlignedBB bb;
 	public long power;
 	public static final long maxPower = 100000;
 	public int solid;
@@ -68,8 +71,8 @@ public class TileEntityCompactLauncher extends TileEntityMachineBase implements 
 	public TileEntityCompactLauncher() {
 		super(8, true, true);
 		tanks = new FluidTankNTM[2];
-		tanks[0] = new FluidTankNTM(Fluids.NONE, 25000);
-		tanks[1] = new FluidTankNTM(Fluids.NONE,25000);
+		tanks[0] = new FluidTankNTM(Fluids.NONE, 25000).withOwner(this);
+		tanks[1] = new FluidTankNTM(Fluids.NONE,25000).withOwner(this);
     }
 
 	@Override
@@ -168,14 +171,23 @@ public class TileEntityCompactLauncher extends TileEntityMachineBase implements 
 		tanks[1].deserialize(buf);
 	}
 
-	//TODO: replace this ugly shit with TileEntityProxyCombo
+	private static final int[][] CONN_OFFSETS = {{2,0,1},{2,0,-1},{-2,0,1},{-2,0,-1},{1,0,2},{-1,0,2},{1,0,-2},{-1,0,-2},{1,-1,1},{1,-1,-1},{-1,-1,1},{-1,-1,-1}};
+	private static final ForgeDirection[] CONN_DIRS = {ForgeDirection.EAST,ForgeDirection.EAST,ForgeDirection.WEST,ForgeDirection.WEST,ForgeDirection.NORTH,ForgeDirection.NORTH,ForgeDirection.SOUTH,ForgeDirection.SOUTH,ForgeDirection.DOWN,ForgeDirection.DOWN,ForgeDirection.DOWN,ForgeDirection.DOWN};
+
+	@Override
+	public DirPos[] getConPos() {
+		DirPos[] result = new DirPos[CONN_OFFSETS.length];
+		for (int i = 0; i < CONN_OFFSETS.length; i++) {
+			result[i] = new DirPos(pos.getX() + CONN_OFFSETS[i][0], pos.getY() + CONN_OFFSETS[i][1], pos.getZ() + CONN_OFFSETS[i][2], CONN_DIRS[i]);
+		}
+		return result;
+	}
+
 	private void updateConnections() {
-		int[][] offsets = {{2,0,1},{2,0,-1},{-2,0,1},{-2,0,-1},{1,0,2},{-1,0,2},{1,0,-2},{-1,0,-2},{1,-1,1},{1,-1,-1},{-1,-1,1},{-1,-1,-1}};
-		ForgeDirection[] dirs = {ForgeDirection.EAST,ForgeDirection.EAST,ForgeDirection.WEST,ForgeDirection.WEST,ForgeDirection.NORTH,ForgeDirection.NORTH,ForgeDirection.SOUTH,ForgeDirection.SOUTH,ForgeDirection.DOWN,ForgeDirection.DOWN,ForgeDirection.DOWN,ForgeDirection.DOWN};
-		for (int i = 0; i < offsets.length; i++) {
-			this.trySubscribe(world, pos.getX() + offsets[i][0], pos.getY() + offsets[i][1], pos.getZ() + offsets[i][2], dirs[i]);
-			this.trySubscribe(tanks[0].getTankType(), world, pos.getX() + offsets[i][0], pos.getY() + offsets[i][1], pos.getZ() + offsets[i][2], dirs[i]);
-			this.trySubscribe(tanks[1].getTankType(), world, pos.getX() + offsets[i][0], pos.getY() + offsets[i][1], pos.getZ() + offsets[i][2], dirs[i]);
+		for (DirPos p : getConPos()) {
+			this.trySubscribe(world, p.getPos().getX(), p.getPos().getY(), p.getPos().getZ(), p.getDir());
+			this.trySubscribe(tanks[0].getTankType(), world, p.getPos().getX(), p.getPos().getY(), p.getPos().getZ(), p.getDir());
+			this.trySubscribe(tanks[1].getTankType(), world, p.getPos().getX(), p.getPos().getY(), p.getPos().getZ(), p.getDir());
 		}
 	}
 
@@ -405,7 +417,8 @@ public class TileEntityCompactLauncher extends TileEntityMachineBase implements 
 
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		if (bb == null) bb = new AxisAlignedBB(pos.getX() - 2, pos.getY(), pos.getZ() - 2, pos.getX() + 3, pos.getY() + 7, pos.getZ() + 3);
+		return bb;
 	}
 
 	@Override

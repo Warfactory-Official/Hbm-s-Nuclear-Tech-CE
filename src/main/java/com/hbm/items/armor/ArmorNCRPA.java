@@ -4,8 +4,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.hbm.capability.HbmCapability;
 import com.hbm.items.ModItems;
-import com.hbm.items.gear.ArmorFSB;
 import com.hbm.main.ResourceManager;
+import com.hbm.render.item.ItemRenderBaseFMM;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.model.ModelArmorNCRPA;
 import com.hbm.render.tileentity.IItemRendererProvider;
@@ -57,7 +57,7 @@ public class ArmorNCRPA extends ArmorFSBPowered implements IItemRendererProvider
     private static final UUID speed = UUID.fromString("6ab858ba-d712-485c-bae9-e5e765fc555a");
 
     @Override
-    public void onArmorTick(World world, EntityPlayer player, ItemStack stack) {
+    public void onArmorTick(@NotNull World world, @NotNull EntityPlayer player, @NotNull ItemStack stack) {
         super.onArmorTick(world, player, stack);
 
         if(this != ModItems.ncrpa_plate) return;
@@ -86,7 +86,7 @@ public class ArmorNCRPA extends ArmorFSBPowered implements IItemRendererProvider
     @Override
     @SideOnly(Side.CLIENT)
     public ItemRenderBase getRenderer(Item item) {
-        return new ItemRenderBase( ) {
+        return new ItemRenderBaseFMM() {
             public void renderInventory() {
                 setupRenderInv();
             }

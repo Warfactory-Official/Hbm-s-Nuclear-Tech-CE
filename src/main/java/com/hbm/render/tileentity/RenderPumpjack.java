@@ -17,12 +17,6 @@ import org.lwjgl.opengl.GL11;
 
 @AutoRegister
 public class RenderPumpjack extends TileEntitySpecialRenderer<TileEntityMachinePumpjack> implements IItemRendererProvider {
-
-    @Override
-    public boolean isGlobalRenderer(TileEntityMachinePumpjack te) {
-        return true;
-    }
-
     @Override
     public void render(TileEntityMachinePumpjack pj, double x, double y, double z, float f, int destroyStage, float alpha) {
 

@@ -31,14 +31,18 @@ public class ContainerMachinePress extends Container {
         this.addSlotToContainer(new SlotItemHandler(te.inventory, 2, 80, 53));
         // Slot 3: Output
         this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 3, 140, 35));
+        // Slots 4-12: Extra storage
+        for (int i = 0; i < 9; i++) {
+            this.addSlotToContainer(new SlotItemHandler(te.inventory, 4 + i, 8 + i * 18, 84));
+        }
 
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; ++j) {
-                this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
+                this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 120 + i * 18));
             }
         }
         for (int i = 0; i < 9; i++) {
-            this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 142));
+            this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 178));
         }
     }
 
@@ -90,7 +94,8 @@ public class ContainerMachinePress extends Container {
     public ItemStack transferStackInSlot(EntityPlayer playerIn, int index) {
         ItemStack itemstack = ItemStack.EMPTY;
         Slot slot = this.inventorySlots.get(index);
-        int machineSlots = 4;
+        int machineSlots = 13;
+        int storageStart = 4;
 
         if (slot != null && slot.getHasStack()) {
             ItemStack itemstack1 = slot.getStack();
@@ -109,6 +114,10 @@ public class ContainerMachinePress extends Container {
                 }
 
                 if (!itemstack1.isEmpty() && this.press.isItemValidForSlot(2, itemstack1) && this.mergeItemStack(itemstack1, 2, 3, false)) {
+                    moved = true;
+                }
+
+                if (!itemstack1.isEmpty() && this.mergeItemStack(itemstack1, storageStart, machineSlots, false)) {
                     moved = true;
                 }
 

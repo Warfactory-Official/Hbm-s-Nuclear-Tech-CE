@@ -1,8 +1,0 @@
-{
-	"variants": {
-		"facing=north": { "model": "hbm:machine_gascent" },
-		"facing=south": { "model": "hbm:machine_gascent", "y": 180 },
-		"facing=west": { "model": "hbm:machine_gascent", "y": 270 },
-		"facing=east": { "model": "hbm:machine_gascent", "y": 90 }
-	}
-}

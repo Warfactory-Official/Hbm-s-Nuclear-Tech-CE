@@ -10,20 +10,20 @@ import com.hbm.render.GLCompat;
 import com.hbm.render.NTMRenderHelper;
 import com.hbm.render.util.BakedModelUtil;
 import com.hbm.render.util.BakedModelUtil.DecalType;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import com.hbm.util.BobMathUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.DestFactor;
 import net.minecraft.client.renderer.GlStateManager.SourceFactor;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector4f;
 
@@ -141,10 +141,13 @@ public class ParticleBulletImpact extends ParticleLayerBase {
         	GlStateManager.popMatrix();
         } else {
         	scale *= 2;
-        	buffer.pos(vertices[0].x*scale+f5, vertices[0].y*scale+f6, vertices[0].z*scale+f7).tex(0, 0).color(particleRed, particleGreen, particleBlue, particleAlpha).lightmap(j, k).endVertex();
-            buffer.pos(vertices[1].x*scale+f5, vertices[1].y*scale+f6, vertices[1].z*scale+f7).tex(1, 0).color(particleRed, particleGreen, particleBlue, particleAlpha).lightmap(j, k).endVertex();
-            buffer.pos(vertices[2].x*scale+f5, vertices[2].y*scale+f6, vertices[2].z*scale+f7).tex(1, 1).color(particleRed, particleGreen, particleBlue, particleAlpha).lightmap(j, k).endVertex();
-            buffer.pos(vertices[3].x*scale+f5, vertices[3].y*scale+f6, vertices[3].z*scale+f7).tex(0, 1).color(particleRed, particleGreen, particleBlue, particleAlpha).lightmap(j, k).endVertex();
+        	NTMBufferBuilder fastBuffer = (NTMBufferBuilder) buffer;
+            int packedColor = NTMBufferBuilder.packColor(particleRed, particleGreen, particleBlue, particleAlpha);
+            int packedLightmap = NTMBufferBuilder.packLightmap(j, k);
+        	fastBuffer.appendParticlePositionTexColorLmapUnchecked((float) vertices[0].x * scale + f5, (float) vertices[0].y * scale + f6, (float) vertices[0].z * scale + f7, 0, 0, packedColor, packedLightmap);
+            fastBuffer.appendParticlePositionTexColorLmapUnchecked((float) vertices[1].x * scale + f5, (float) vertices[1].y * scale + f6, (float) vertices[1].z * scale + f7, 1, 0, packedColor, packedLightmap);
+            fastBuffer.appendParticlePositionTexColorLmapUnchecked((float) vertices[2].x * scale + f5, (float) vertices[2].y * scale + f6, (float) vertices[2].z * scale + f7, 1, 1, packedColor, packedLightmap);
+            fastBuffer.appendParticlePositionTexColorLmapUnchecked((float) vertices[3].x * scale + f5, (float) vertices[3].y * scale + f6, (float) vertices[3].z * scale + f7, 0, 1, packedColor, packedLightmap);
         }
 	}
 
@@ -186,7 +189,7 @@ public class ParticleBulletImpact extends ParticleLayerBase {
 				ResourceManager.bimpact.uniform1i("occlusionMap", 4);
 				ResourceManager.bimpact.uniform1i("depthBuffer", 5);
 			} else {
-				Tessellator.getInstance().getBuffer().begin(GL11.GL_QUADS, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
+				NTMImmediate.INSTANCE.beginParticlePositionTexColorLmap(GL11.GL_QUADS, particles.size() * 4);
 			}
 			
 		}
@@ -196,7 +199,7 @@ public class ParticleBulletImpact extends ParticleLayerBase {
 				HbmShaderManager2.releaseShader();
 				GLCompat.bindBuffer(GLCompat.GL_ARRAY_BUFFER, 0);
 			} else {
-				Tessellator.getInstance().draw();
+				NTMImmediate.INSTANCE.draw();
 			}
 			
 			GlStateManager.disablePolygonOffset();

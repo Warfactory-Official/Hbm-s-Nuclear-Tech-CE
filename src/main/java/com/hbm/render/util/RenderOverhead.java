@@ -23,7 +23,6 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11;
-import net.minecraft.client.renderer.GlStateManager;
 import org.lwjgl.opengl.GL14;
 
 import java.util.*;
@@ -81,8 +80,7 @@ public class RenderOverhead {
 			GlStateManager.enableBlend();
 			//src alpha, one minus src alpha
 			GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-			Tessellator tessellator = Tessellator.getInstance();
-			BufferBuilder buf = tessellator.getBuffer();
+			NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionQuads(1);
 			byte heightOffset = 0;
 
 			if(name.equals("deadmau5")) {
@@ -90,14 +88,15 @@ public class RenderOverhead {
 			}
 
 			GlStateManager.disableTexture2D();
-			buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION);
 			int center = fontrenderer.getStringWidth(name) / 2;
 			GlStateManager.color(0.0F, 0.0F, 0.0F, 0.25F);
-			buf.pos(-center - 1, -1 + heightOffset, 0.0D).endVertex();
-			buf.pos(-center - 1, 8 + heightOffset, 0.0D).endVertex();
-			buf.pos(center + 1, 8 + heightOffset, 0.0D).endVertex();
-			buf.pos(center + 1, -1 + heightOffset, 0.0D).endVertex();
-			tessellator.draw();
+			buf.appendPositionQuadUnchecked(
+					-center - 1, -1 + heightOffset, 0.0F,
+					-center - 1, 8 + heightOffset, 0.0F,
+					center + 1, 8 + heightOffset, 0.0F,
+					center + 1, -1 + heightOffset, 0.0F
+			);
+			NTMImmediate.INSTANCE.draw();
 			GlStateManager.enableTexture2D();
 			fontrenderer.drawString(name, -fontrenderer.getStringWidth(name) / 2, heightOffset, 553648127);
 			GlStateManager.enableDepth();
@@ -130,8 +129,7 @@ public class RenderOverhead {
 			GlStateManager.enableBlend();
 			//src alpha, one minus src alpha
 			GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-			Tessellator tessellator = Tessellator.getInstance();
-			BufferBuilder buf = tessellator.getBuffer();
+			NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionQuads(1);
 			byte heightOffset = 0;
 
 			if(name.equals("deadmau5")) {
@@ -139,14 +137,15 @@ public class RenderOverhead {
 			}
 
 			GlStateManager.disableTexture2D();
-			buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION);
 			int center = fontrenderer.getStringWidth(name) / 2;
 			GlStateManager.color(0.0F, 0.0F, 0.0F, 0.25F);
-			buf.pos(-center - 1, -1 + heightOffset, 0.0D).endVertex();
-			buf.pos(-center - 1, 8 + heightOffset, 0.0D).endVertex();
-			buf.pos(center + 1, 8 + heightOffset, 0.0D).endVertex();
-			buf.pos(center + 1, -1 + heightOffset, 0.0D).endVertex();
-			tessellator.draw();
+			buf.appendPositionQuadUnchecked(
+					-center - 1, -1 + heightOffset, 0.0F,
+					-center - 1, 8 + heightOffset, 0.0F,
+					center + 1, 8 + heightOffset, 0.0F,
+					center + 1, -1 + heightOffset, 0.0F
+			);
+			NTMImmediate.INSTANCE.draw();
 			GlStateManager.enableTexture2D();
 			fontrenderer.drawString(name, -fontrenderer.getStringWidth(name) / 2, heightOffset, shadowColor);
 			GlStateManager.enableDepth();
@@ -495,9 +494,7 @@ public class RenderOverhead {
 		GL14.glBlendColor(r * a, g * a, b * a, a);
 		GlStateManager.tryBlendFuncSeparate(GL11.GL_CONSTANT_COLOR, GL11.GL_ONE_MINUS_CONSTANT_ALPHA, GL11.GL_CONSTANT_ALPHA, GL11.GL_ONE_MINUS_CONSTANT_ALPHA);
 		mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-		Tessellator tessellator = Tessellator.getInstance();
-		BufferBuilder buffer = tessellator.getBuffer();
-		buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+		BufferBuilder buffer = NTMImmediate.INSTANCE.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
 		buffer.setTranslation(offsetX - pX, offsetY - pY, offsetZ - pZ);
 		BlockRendererDispatcher dispatcher = mc.getBlockRendererDispatcher();
 
@@ -513,7 +510,7 @@ public class RenderOverhead {
 		}
 
 		buffer.setTranslation(0, 0, 0);
-		tessellator.draw();
+		NTMImmediate.INSTANCE.draw();
 		GL14.glBlendColor(0F, 0F, 0F, 1F);
 		GlStateManager.disableBlend();
 		GlStateManager.color(1F, 1F, 1F, 1F);

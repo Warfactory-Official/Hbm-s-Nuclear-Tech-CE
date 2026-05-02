@@ -6,26 +6,31 @@ import com.hbm.blocks.machine.VaultDoor;
 import com.hbm.handler.radiation.RadiationSystemNT;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IAnimatedDoor;
+import com.hbm.interfaces.IDoor;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
-import com.hbm.packet.PacketDispatcher;
-import com.hbm.packet.toclient.TEVaultPacket;
+import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.longs.LongIterable;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing.Axis;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @AutoRegister
 public class TileEntityVaultDoor extends TileEntityLockableBase implements ITickable, IAnimatedDoor {
+
+    private static final int ANIM_TICKS = 120;
+    private static final int[] OPENING_THUD_TICKS = {45, 55, 65, 75, 85, 95, 105, 115};
+    private static final int[] CLOSING_THUD_TICKS = {0, 10, 20, 30, 40, 50, 60, 70};
+    private static final int CLOSING_SCRAPE_TICK = 80;
 
     public static final int maxTypes = 32;
     public DoorState state = DoorState.CLOSED;
@@ -34,17 +39,7 @@ public class TileEntityVaultDoor extends TileEntityLockableBase implements ITick
     private int timer = 0;
     private boolean wasPowered = false;
     private boolean redstoneOnly = false;
-
-    @Override
-    public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
-    }
-
-    @Override
-    @SideOnly(Side.CLIENT)
-    public double getMaxRenderDistanceSquared() {
-        return 65536.0D;
-    }
+    private int lastClientAudioTick = -1;
 
     @Override
     public void update() {
@@ -77,53 +72,9 @@ public class TileEntityVaultDoor extends TileEntityLockableBase implements ITick
                 }
 
                 if (isPowered && !wasPowered) {
-                    this.tryToggle();
+                    tryToggle();
                 }
                 wasPowered = isPowered;
-            }
-
-            if (state == DoorState.OPENING && state.isMovingState()) {
-
-                if (timer == 0)
-                    this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.vaultScrapeNew, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                if (timer == 45)
-                    this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.vaultThudNew, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                if (timer == 55)
-                    this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.vaultThudNew, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                if (timer == 65)
-                    this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.vaultThudNew, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                if (timer == 75)
-                    this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.vaultThudNew, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                if (timer == 85)
-                    this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.vaultThudNew, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                if (timer == 95)
-                    this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.vaultThudNew, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                if (timer == 105)
-                    this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.vaultThudNew, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                if (timer == 115)
-                    this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.vaultThudNew, SoundCategory.BLOCKS, 1.0F, 1.0F);
-            }
-            if (state == DoorState.CLOSING && state.isMovingState()) {
-
-                if (timer == 0)
-                    this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.vaultThudNew, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                if (timer == 10)
-                    this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.vaultThudNew, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                if (timer == 20)
-                    this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.vaultThudNew, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                if (timer == 30)
-                    this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.vaultThudNew, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                if (timer == 40)
-                    this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.vaultThudNew, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                if (timer == 50)
-                    this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.vaultThudNew, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                if (timer == 60)
-                    this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.vaultThudNew, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                if (timer == 70)
-                    this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.vaultThudNew, SoundCategory.BLOCKS, 1.0F, 1.0F);
-
-                if (timer == 80)
-                    this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.vaultScrapeNew, SoundCategory.BLOCKS, 1.0F, 1.0F);
             }
 
             if (state.isStationaryState()) {
@@ -131,7 +82,7 @@ public class TileEntityVaultDoor extends TileEntityLockableBase implements ITick
             } else {
                 timer++;
 
-                if (timer >= 120) {
+                if (timer >= ANIM_TICKS) {
 
                     if (state == DoorState.OPENING) {
                         state = DoorState.OPEN;
@@ -144,9 +95,47 @@ public class TileEntityVaultDoor extends TileEntityLockableBase implements ITick
                     }
                 }
             }
-            PacketDispatcher.wrapper.sendToAllAround(new TEVaultPacket(pos.getX(), pos.getY(), pos.getZ(), state.ordinal(), 0, type),
-					new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 300));
+            networkPackNT(300);
+        } else {
+            updateClientAudio();
         }
+    }
+
+    @SideOnly(Side.CLIENT)
+    private void updateClientAudio() {
+        if (!state.isMovingState()) {
+            lastClientAudioTick = -1;
+            return;
+        }
+        int tick = (int) Math.min((long) ANIM_TICKS, Math.max(0L, System.currentTimeMillis() - sysTime) / 50L);
+        if (tick == lastClientAudioTick) return;
+
+        if (state == DoorState.OPENING) {
+            if (lastClientAudioTick < 0) {
+                playClientSound(HBMSoundHandler.vaultScrapeNew);
+            }
+            fireThuds(tick, OPENING_THUD_TICKS);
+        } else {
+            fireThuds(tick, CLOSING_THUD_TICKS);
+            if (lastClientAudioTick < CLOSING_SCRAPE_TICK && tick >= CLOSING_SCRAPE_TICK) {
+                playClientSound(HBMSoundHandler.vaultScrapeNew);
+            }
+        }
+        lastClientAudioTick = tick;
+    }
+
+    @SideOnly(Side.CLIENT)
+    private void fireThuds(int tick, int[] thudTicks) {
+        for (int t : thudTicks) {
+            if (lastClientAudioTick < t && tick >= t) {
+                playClientSound(HBMSoundHandler.vaultThudNew);
+            }
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    private void playClientSound(SoundEvent sound) {
+        world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, sound, SoundCategory.BLOCKS, 1.0F, 1.0F, false);
     }
 
     public boolean tryOpen() {
@@ -306,7 +295,7 @@ public class TileEntityVaultDoor extends TileEntityLockableBase implements ITick
 
     @Override
     public void readFromNBT(NBTTagCompound compound) {
-        state = DoorState.values()[compound.getInteger("state")];
+        state = DoorState.VALUES[compound.getInteger("state")];
         sysTime = compound.getLong("sysTime");
         timer = compound.getInteger("timer");
         wasPowered = compound.getBoolean("wasPowered");
@@ -324,6 +313,28 @@ public class TileEntityVaultDoor extends TileEntityLockableBase implements ITick
         compound.setBoolean("redstoneOnly", redstoneOnly);
         compound.setInteger("type", type);
         return super.writeToNBT(compound);
+    }
+
+    @Override
+    public void serialize(ByteBuf buf) {
+        super.serialize(buf);
+        buf.writeByte(state.ordinal());
+        buf.writeLong(sysTime);
+        buf.writeByte(type);
+    }
+
+    @Override
+    public void deserialize(ByteBuf buf) {
+        super.deserialize(buf);
+        DoorState newState = IDoor.DoorState.VALUES[buf.readByte()];
+        long syncedSysTime = buf.readLong();
+        int newType = buf.readByte();
+        Minecraft.getMinecraft().addScheduledTask(() -> {
+            if (world == null || isInvalid() || world.getTileEntity(pos) != this) return;
+            handleNewState(newState);
+            if (!newState.isMovingState()) sysTime = syncedSysTime;
+            type = newType;
+        });
     }
 
     @Override
@@ -348,18 +359,18 @@ public class TileEntityVaultDoor extends TileEntityLockableBase implements ITick
         if (state == DoorState.CLOSED) {
             state = DoorState.OPENING;
             timer = 0;
+            sysTime = System.currentTimeMillis();
             openHatch();
-            PacketDispatcher.wrapper.sendToAllAround(new TEVaultPacket(pos.getX(), pos.getY(), pos.getZ(), state.ordinal(), 1, type),
-					new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 300));
+            networkPackNT(300);
 
             // With door opening, mark chunk for rad update
             RadiationSystemNT.markSectionsForRebuild(world, getOccupiedSections());
         } else if (state == DoorState.OPEN) {
             state = DoorState.CLOSING;
             timer = 0;
+            sysTime = System.currentTimeMillis();
             closeHatch();
-            PacketDispatcher.wrapper.sendToAllAround(new TEVaultPacket(pos.getX(), pos.getY(), pos.getZ(), state.ordinal(), 1, type),
-					new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 300));
+            networkPackNT(300);
 
             // With door closing, mark chunk for rad update
             RadiationSystemNT.markSectionsForRebuild(world, getOccupiedSections());
@@ -368,8 +379,11 @@ public class TileEntityVaultDoor extends TileEntityLockableBase implements ITick
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void handleNewState(DoorState state) {
-        // TODO: Move audio into this method from update method to match sliding blast door
+    public void handleNewState(DoorState newState) {
+        if (state != newState) {
+            sysTime = IAnimatedDoor.clientAnimStart(state, newState, sysTime);
+            state = newState;
+        }
     }
 
     public boolean getRedstoneOnly() {
@@ -378,6 +392,12 @@ public class TileEntityVaultDoor extends TileEntityLockableBase implements ITick
 
     public void setRedstoneOnly(boolean redstoneOnly) {
         this.redstoneOnly = redstoneOnly;
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public double getMaxRenderDistanceSquared() {
+        return 65536.0D;
     }
 
     public LongIterable getOccupiedSections() {

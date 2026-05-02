@@ -4,10 +4,12 @@ import com.hbm.Tags;
 import com.hbm.entity.missile.EntityMIRV;
 import com.hbm.render.loader.HFRWavefrontObject;
 import com.hbm.interfaces.AutoRegister;
+import com.hbm.main.ClientProxy;
 import com.hbm.render.loader.IModelCustom;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
 @AutoRegister(factory = "FACTORY")
@@ -27,6 +29,9 @@ public class RenderMirv extends Render<EntityMIRV> {
 
 	@Override
 	public void doRender(EntityMIRV entity, double x, double y, double z, float entityYaw, float partialTicks) {
+		if (!ClientProxy.renderingConstant) {
+			return;
+		}
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(x, y, z);
         GlStateManager.rotate(entity.prevRotationYaw + (entity.rotationYaw - entity.prevRotationYaw) * partialTicks - 90.0F, 0.0F, 1.0F, 0.0F);
@@ -36,6 +41,9 @@ public class RenderMirv extends Render<EntityMIRV> {
         boyModel.renderAll();
 		GlStateManager.popMatrix();
 	}
+
+	@Override
+	public void doRenderShadowAndFire(Entity entityIn, double x, double y, double z, float yaw, float partialTicks) {}
 	
 	@Override
 	protected ResourceLocation getEntityTexture(EntityMIRV entity) {

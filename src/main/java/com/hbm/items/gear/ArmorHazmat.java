@@ -69,10 +69,10 @@ public class ArmorHazmat extends ItemArmor {
         GlStateManager.disableAlpha();
         Minecraft.getMinecraft().getTextureManager().bindTexture(hazmatBlur);
         NTMRenderHelper.startDrawingTexturedQuads();
-        NTMRenderHelper.addVertexWithUV(0.0D, (double)resolution.getScaledHeight(), -90.0D, 0.0D, 1.0D);
-        NTMRenderHelper.addVertexWithUV((double)resolution.getScaledWidth(), (double)resolution.getScaledHeight(), -90.0D, 1.0D, 1.0D);
-        NTMRenderHelper.addVertexWithUV((double)resolution.getScaledWidth(), 0.0D, -90.0D, 1.0D, 0.0D);
-        NTMRenderHelper.addVertexWithUV(0.0D, 0.0D, -90.0D, 0.0D, 0.0D);
+        NTMRenderHelper.addVertexWithUV(0F, resolution.getScaledHeight(), -90F, 0F, 1F);
+        NTMRenderHelper.addVertexWithUV(resolution.getScaledWidth(), resolution.getScaledHeight(), -90F, 1F, 1F);
+        NTMRenderHelper.addVertexWithUV(resolution.getScaledWidth(), 0F, -90F, 1F, 0F);
+        NTMRenderHelper.addVertexWithUV(0F, 0F, -90F, 0F, 0F);
         NTMRenderHelper.draw();
 		GlStateManager.depthMask(true);
         GlStateManager.enableDepth();

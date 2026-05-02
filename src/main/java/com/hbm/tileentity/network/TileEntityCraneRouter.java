@@ -1,10 +1,10 @@
 package com.hbm.tileentity.network;
 
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerCraneRouter;
 import com.hbm.inventory.gui.GUICraneRouter;
 import com.hbm.modules.ModulePatternMatcher;
+import com.hbm.tileentity.IControlReceiverFilter;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.BufferUtil;
@@ -22,7 +22,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
-public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUIProvider, IControlReceiver, ITickable {
+public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUIProvider, IControlReceiverFilter, ITickable {
     public ModulePatternMatcher[] patterns = new ModulePatternMatcher[6]; //why did i make six matchers???
     public int[] modes = new int[6];
     public static final int MODE_NONE = 0;
@@ -129,9 +129,43 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
 
     @Override
     public void receiveControl(NBTTagCompound data) {
-        int i = data.getInteger("toggle");
-        modes[i]++;
-        if(modes[i] > 3)
-            modes [i] = 0;
+        if(data.hasKey("toggle")) {
+            int i = data.getInteger("toggle");
+            modes[i]++;
+            if(modes[i] > 3)
+                modes[i] = 0;
+        }
+        if(data.hasKey("slot")) {
+            setFilterContents(data);
+        }
+    }
+
+    @Override
+    public int[] getFilterSlots() {
+        return new int[]{0, 30};
+    }
+
+    @Override
+    public NBTTagCompound getSettings(World world, int x, int y, int z) {
+        NBTTagCompound nbt = IControlReceiverFilter.super.getSettings(world, x, y, z);
+        nbt.setIntArray("modes", modes);
+        return nbt;
+    }
+
+    @Override
+    public void pasteSettings(NBTTagCompound nbt, int index, World world, EntityPlayer player, int x, int y, int z) {
+        IControlReceiverFilter.super.pasteSettings(nbt, index, world, player, x, y, z);
+        if(nbt.hasKey("modes")) {
+            modes = nbt.getIntArray("modes");
+        }
+    }
+
+    @Override
+    public String[] infoForDisplay(World world, int x, int y, int z) {
+        String[] options = new String[patterns.length];
+        for(int i = 0; i < options.length; i++) {
+            options[i] = "copytool.pattern" + i;
+        }
+        return options;
     }
 }

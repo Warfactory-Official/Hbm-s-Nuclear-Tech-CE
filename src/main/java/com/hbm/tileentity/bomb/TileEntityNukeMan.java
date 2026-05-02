@@ -12,7 +12,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.relauncher.Side;
@@ -76,26 +75,26 @@ public class TileEntityNukeMan extends TileEntity implements IGUIProvider {
 	public boolean isReady() {
 		if(this.exp1() && this.exp2() && this.exp3() && this.exp4())
 		{
-        return this.inventory.getStackInSlot(0) != ItemStack.EMPTY && this.inventory.getStackInSlot(5) != ItemStack.EMPTY && this.inventory.getStackInSlot(0).getItem() == ModItems.man_igniter && this.inventory.getStackInSlot(5).getItem() == ModItems.man_core;
+        return !this.inventory.getStackInSlot(0).isEmpty() && !this.inventory.getStackInSlot(5).isEmpty() && this.inventory.getStackInSlot(0).getItem() == ModItems.man_igniter && this.inventory.getStackInSlot(5).getItem() == ModItems.man_core;
 		}
 		
 		return false;
 	}
 	
 	public boolean exp1() {
-        return this.inventory.getStackInSlot(1) != ItemStack.EMPTY && this.inventory.getStackInSlot(1).getItem() == ModItems.early_explosive_lenses;
+        return !this.inventory.getStackInSlot(1).isEmpty() && this.inventory.getStackInSlot(1).getItem() == ModItems.early_explosive_lenses;
     }
 	
 	public boolean exp2() {
-        return this.inventory.getStackInSlot(2) != ItemStack.EMPTY && this.inventory.getStackInSlot(2).getItem() == ModItems.early_explosive_lenses;
+        return !this.inventory.getStackInSlot(2).isEmpty() && this.inventory.getStackInSlot(2).getItem() == ModItems.early_explosive_lenses;
     }
 	
 	public boolean exp3() {
-        return this.inventory.getStackInSlot(3) != ItemStack.EMPTY && this.inventory.getStackInSlot(3).getItem() == ModItems.early_explosive_lenses;
+        return !this.inventory.getStackInSlot(3).isEmpty() && this.inventory.getStackInSlot(3).getItem() == ModItems.early_explosive_lenses;
     }
 	
 	public boolean exp4() {
-        return this.inventory.getStackInSlot(4) != ItemStack.EMPTY && this.inventory.getStackInSlot(4).getItem() == ModItems.early_explosive_lenses;
+        return !this.inventory.getStackInSlot(4).isEmpty() && this.inventory.getStackInSlot(4).getItem() == ModItems.early_explosive_lenses;
     }
 	
 	public void clearSlots() {
@@ -103,16 +102,6 @@ public class TileEntityNukeMan extends TileEntity implements IGUIProvider {
 		{
 			inventory.setStackInSlot(i, ItemStack.EMPTY);
 		}
-	}
-	
-	@Override
-	public double getMaxRenderDistanceSquared() {
-		return 65536.0D;
-	}
-	
-	@Override
-	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
 	}
 	
 	@Override
@@ -134,5 +123,11 @@ public class TileEntityNukeMan extends TileEntity implements IGUIProvider {
 	@SideOnly(Side.CLIENT)
 	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		return new GUINukeMan(player.inventory, this);
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public double getMaxRenderDistanceSquared() {
+		return 65536.0D;
 	}
 }

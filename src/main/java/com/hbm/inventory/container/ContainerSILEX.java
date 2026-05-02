@@ -1,6 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.FluidContainerRegistry;
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.tileentity.machine.TileEntitySILEX;
@@ -15,6 +16,13 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerSILEX extends Container {
 
 	private TileEntitySILEX silex;
+
+	private final TransferStrategy transferStrategy = TransferStrategy.builder(11)
+                                                                      .rule(0, 1, s -> !(s.getItem() instanceof IItemFluidIdentifier) && FluidContainerRegistry.getFluidContent(s, silex.tank.getTankType()) == 0)
+                                                                      .rule(1, 2, s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                      .rule(2, 4, s -> FluidContainerRegistry.getFluidContent(s, silex.tank.getTankType()) > 0)
+                                                                      .rule(4, 11, _ -> false)
+                                                                      .build();
 
 	public ContainerSILEX(InventoryPlayer invPlayer, TileEntitySILEX te) {
 		silex = te;
@@ -35,7 +43,7 @@ public class ContainerSILEX extends Container {
 		this.addSlotToContainer(new SlotItemHandler(te.inventory, 8, 152, 90));
 		this.addSlotToContainer(new SlotItemHandler(te.inventory, 9, 134, 108));
 		this.addSlotToContainer(new SlotItemHandler(te.inventory, 10, 152, 108));
-		
+
 		for(int i = 0; i < 3; i++)
 		{
 			for(int j = 0; j < 9; j++)
@@ -43,7 +51,7 @@ public class ContainerSILEX extends Container {
 				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18 + (18 * 3) + 2));
 			}
 		}
-		
+
 		for(int i = 0; i < 9; i++)
 		{
 			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 142 + (18 * 3) + 2));
@@ -52,12 +60,7 @@ public class ContainerSILEX extends Container {
 
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 11,
-                s -> !(s.getItem() instanceof IItemFluidIdentifier) && FluidContainerRegistry.getFluidContent(s, silex.tank.getTankType()) == 0, 1,
-                s -> s.getItem() instanceof IItemFluidIdentifier, 2,
-                s -> FluidContainerRegistry.getFluidContent(s, silex.tank.getTankType()) > 0, 4,
-                _ -> false, 11
-        );
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.transferStrategy, player);
 	}
 
 	@Override

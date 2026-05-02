@@ -14,12 +14,14 @@
 
 A definitive port of HBM's Nuclear Tech Mod from 1.7.10 to 1.12.2, the most completed one among others. Came from necessity as other developers have failed to update and maintain other forks.
 
-> **IMPORTANT: FOLLOW THE ISSUE TEMPLATE WHILE REPORTING ISSUES**  
-> Due to the amount of issues we get daily, we enforce strict issue report guidelines stated in the templates. 
+> [!IMPORTANT]
+> **FOLLOW THE ISSUE TEMPLATE WHILE REPORTING ISSUES**  
+> Due to the amount of issues we get daily, we enforce strict issue report guidelines stated in the templates.  
 Failure to follow the templates will result in closing and locking of the issue without a warning. Rule does not apply
-retroacitvely. Please respect our time and make sure issue reports are of quality.
+retroactively. Please respect our time and make sure issue reports are of quality.
 
-> **IMPORTANT: If you have Universal Tweaks installed, set `B:"Disable Fancy Missing Model"` to `false` to fix model rotation**  
+> [!NOTE]
+> If you have Universal Tweaks installed, set `B:"Disable Fancy Missing Model"` to `false` to fix model rotation  
 > This can be found at `config/Universal Tweaks - Tweaks.cfg`
 
 <br>
@@ -27,49 +29,16 @@ retroacitvely. Please respect our time and make sure issue reports are of qualit
 <br>
 
 ### Is it survival ready?
-
-While there is still a lot of bugfixing to be done, the mod itself has been proven to be in a state where it can be played in
-survival without fatal crashes, though it still has many minor/substantial bugs to be fixed and some rather minor things to be ported.
-
-### Is the mod compatible with NTM: Extended edition addons/shaders?
-
-Sadly, no. Installing EE addons will most likely result in crashes, making the modpack unplayable; due to having the new gun system ported, shaders
-are also incompatible and will cause heavy visual artifacts when holding a gun. <br>
-Also shaders are incompatible with NTM skybox; this can be fixed in 'config/hbm -> hbm.cfg' by changing the line 'B:1.00_enableSkybox=true' to 'false'. <br>
-We're looking forward to fixing shader-related issues, though this will take time.
-
+Yes!
+### Is the mod compatible with NTM: Extended edition addons?
+No. It will crash.
+### Shaders?
+Should be compatible with most shaders; If you find any visual artifacts, please report them to us.
 ### How different is it from Extended edition?
-
 **Extended worlds are fully incompatible!** <br>
 We have rewritten ~75% of the entire mod, porting every single feature we can.
 The amount of changes is difficult to track at this point. I invite you to check our GitHub issues, as we use them to
 track missing/added content.
-
-### Why not improve the Extended edition?
-
-Alcater has not updated his version on Curseforge for more than 1.5 years, his version as many performance bottlenecks and weird approaches
-to implementation of some features. Not to mention his refusal to work with us, hence we decided to fork and work
-separately.
-
-### If it's in development, why publish it on CurseForge?
-
-**We seek bug reports.** <br>
-It is more than obvious to us that without presence on websites such as curse, modrinth, our reach
-is severely diminished. We want to make players aware that there is a proper port in the works, and therefore help us
-either via bug reports and directly, via pull requests.We always seek new contributors.
-
-### Will this version have modifications for specific mod pack use?
-**No!** <br>
-While the port was started as part of the warfactory project, It is maintained as a standalone mod. Any changes are
-in order to ensure compatibility, stability, or ease development for mod pack developers, however no direct changes for
-specific mod packs will be implemented.
-
-### Will you port it to 1.1x/1.2x?
-
-**We don't plan to do so, no.** <br>
-We need to stay committed to one version at a time. Fragmentation, and the insane amount of
-separate teams that worked on this mod, is what killed the mod's chance to be ported. This is why we want to centralize
-our efforts on one version at a time.
 
 <br>
 <p align="center"><img src="./github/dev_guide.png" alt="Development Guide" width="700"></p>
@@ -107,6 +76,7 @@ You can use one of the following methods:
     4. Repeat quickstart.
 
 ## Maven
+Our server is extremely unreliable and slow, curse maven is recommended for releases.
 
 ### Snapshots
 These represent the latest commit for a given version.
@@ -120,13 +90,13 @@ repositories {
 }
 dependencies {
     // Java 8, unobfuscated
-    implementation "com.hbm:ntm-ce:2.1.1.0-SNAPSHOT:dev"
+    implementation "com.hbm:ntm-ce:2.4.0.0-SNAPSHOT:dev"
     // Java 25, unobfuscated
-    implementation "com.hbm:ntm-ce:2.1.1.0-SNAPSHOT:dev-java25"
+    implementation "com.hbm:ntm-ce-java25:2.4.0.0-SNAPSHOT:dev"
     // Java 8, obfuscated
-    implementation "com.hbm:ntm-ce:2.1.1.0-SNAPSHOT"
+    implementation "com.hbm:ntm-ce:2.4.0.0-SNAPSHOT"
     // Java 25, obfuscated
-    implementation "com.hbm:ntm-ce:2.1.1.0-SNAPSHOT:java25"
+    implementation "com.hbm:ntm-ce-java25:2.4.0.0-SNAPSHOT"
 }
 ```
 
@@ -142,15 +112,15 @@ repositories {
 }
 dependencies {
     // Java 8, unobfuscated
-    implementation "com.hbm:ntm-ce:2.1.1.0:dev"
+    implementation "com.hbm:ntm-ce:2.4.0.0:dev"
     // Java 25, unobfuscated
-    implementation "com.hbm:ntm-ce:2.1.1.0:dev-java25"
+    implementation "com.hbm:ntm-ce-java25:2.4.0.0:dev"
     // Java 8, obfuscated
-    implementation "com.hbm:ntm-ce:2.1.1.0"
+    implementation "com.hbm:ntm-ce:2.4.0.0"
     // Java 25, obfuscated
-    implementation "com.hbm:ntm-ce:2.1.1.0:java25"
+    implementation "com.hbm:ntm-ce-java25:2.4.0.0"
 }
 ```
 
-Normally you should use unobfuscated jars (`:dev` / `:dev-java25`) for development.  
+Normally you should use unobfuscated jars for development.  
 If you are on Cleanroom and is using JDK 25 then both Java 8 and Java 25 variants are fine; otherwise the Java 8 ones are recommended.

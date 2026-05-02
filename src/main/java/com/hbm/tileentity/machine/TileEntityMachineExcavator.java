@@ -26,6 +26,7 @@ import com.hbm.items.special.ItemBedrockOreBase;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
@@ -64,7 +65,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 @AutoRegister
-public class TileEntityMachineExcavator extends TileEntityMachineBase implements IEnergyReceiverMK2, IFluidStandardReceiver, ITickable, IControlReceiver, IGUIProvider, IUpgradeInfoProvider, IFluidCopiable {
+public class TileEntityMachineExcavator extends TileEntityMachineBase implements IEnergyReceiverMK2, IFluidStandardReceiver, ITickable, IControlReceiver, IGUIProvider, IUpgradeInfoProvider, IFluidCopiable, IConnectionAnchors {
 
     public static final long maxPower = 10_000_000;
     private final long baseConsumption = 10_000L;
@@ -90,13 +91,13 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
     private boolean hasNullifier = false;
     private int ticksWorked = 0;
     private int targetDepth = 0; //0 is the first block below null position
+    private int prevTargetDepth = 0;
     private boolean bedrockDrilling = false;
     private int minX = 0, minY = 0, minZ = 0, maxX = 0, maxY = 0, maxZ = 0;
-    private AxisAlignedBB bb = null;
 
     public TileEntityMachineExcavator() {
         super(14, true, true);
-        this.tank = new FluidTankNTM(Fluids.NONE, 16_000);
+        this.tank = new FluidTankNTM(Fluids.NONE, 16_000).withOwner(this);
     }
 
     // 1.7 = isOre(int x ,int y, int z, Block b)
@@ -181,12 +182,18 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 
             this.prevDrillExtension = this.drillExtension;
 
+            if (prevTargetDepth != targetDepth) {
+                prevTargetDepth = targetDepth;
+                world.markBlockRangeForRenderUpdate(pos, pos);
+            }
+
             if (this.drillExtension != this.targetDepth) {
                 float diff = Math.abs(this.drillExtension - this.targetDepth);
                 float speed = Math.max(0.15F, diff / 10F);
 
                 if (diff <= speed) {
                     this.drillExtension = this.targetDepth;
+                    world.markBlockRangeForRenderUpdate(pos, pos);
                 } else {
                     float sig = Math.signum(this.drillExtension - this.targetDepth);
                     this.drillExtension -= sig * speed;
@@ -216,7 +223,7 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
         }
     }
 
-    protected DirPos[] getConPos() {
+    public DirPos[] getConPos() {
         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
 
@@ -740,10 +747,8 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 
     @Override
     public @NotNull AxisAlignedBB getRenderBoundingBox() {
-        if (bb == null) {
-            bb = new AxisAlignedBB(pos.add(-3, 0, -3), pos.add(4, 5, 4));
-        }
-        return bb;
+        return new AxisAlignedBB(pos.getX() - 3, pos.getY() - 3 - Math.max(targetDepth, drillExtension), pos.getZ() - 3,
+                pos.getX() + 4, pos.getY() + 5, pos.getZ() + 4);
     }
 
     @Override

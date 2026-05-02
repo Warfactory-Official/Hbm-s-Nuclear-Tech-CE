@@ -14,9 +14,9 @@ public class TileEntityMachinePumpSteam extends TileEntityMachinePumpBase {
 
     public TileEntityMachinePumpSteam() {
         super();
-        water = new FluidTankNTM(Fluids.WATER, steamSpeed * 100);
-        steam = new FluidTankNTM(Fluids.STEAM, 1_000);
-        lps = new FluidTankNTM(Fluids.SPENTSTEAM, 10);
+        water = new FluidTankNTM(Fluids.WATER, steamSpeed * 100).withOwner(this);
+        steam = new FluidTankNTM(Fluids.STEAM, 1_000).withOwner(this);
+        lps = new FluidTankNTM(Fluids.SPENTSTEAM, 10).withOwner(this);
     }
 
     @Override

@@ -18,11 +18,11 @@ import com.hbm.inventory.recipes.CrystallizerRecipes;
 import com.hbm.inventory.recipes.ShredderRecipes;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemMachineUpgrade;
+import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
-import com.hbm.packet.PacketDispatcher;
-import com.hbm.packet.toclient.LoopedSoundPacket;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -63,7 +63,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @AutoRegister
-public class TileEntityMachineMiningLaser extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardSender, IMiningDrill, IFFtoNTMF, IGUIProvider, IUpgradeInfoProvider {
+public class TileEntityMachineMiningLaser extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardSender, IMiningDrill, IFFtoNTMF, IGUIProvider, IUpgradeInfoProvider, IConnectionAnchors {
 
     public static final long maxPower = 100000000;
     public static final int consumption = 10000;
@@ -79,6 +79,8 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
     public int lastTargetY;
     public int lastTargetZ;
     public boolean beam;
+    private boolean prevBeam;
+    private int prevTargetX, prevTargetY, prevTargetZ;
     private double breakProgress;
     private double clientBreakProgress = 0;
 
@@ -101,7 +103,7 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
                     world.playSound(null, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5, HBMSoundHandler.upgradePlug, SoundCategory.BLOCKS, 1.0F, 1.0F);
             }
         };
-        tankNew = new FluidTankNTM(Fluids.OIL, 64000);
+        tankNew = new FluidTankNTM(Fluids.OIL, 64000).withOwner(this);
         tank = new FluidTank(64000);
     }
 
@@ -197,8 +199,15 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
             this.tryFillContainer(pos.getX(), pos.getY(), pos.getZ() + 2);
             this.tryFillContainer(pos.getX(), pos.getY(), pos.getZ() - 2);
 
-            if (beam) PacketDispatcher.wrapper.sendToAll(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()));
             networkPackNT(250);
+        } else {
+            if (prevBeam != beam || (beam && (prevTargetX != targetX || prevTargetY != targetY || prevTargetZ != targetZ))) {
+                prevBeam = beam;
+                prevTargetX = targetX;
+                prevTargetY = targetY;
+                prevTargetZ = targetZ;
+                world.markBlockRangeForRenderUpdate(pos, pos);
+            }
         }
     }
 
@@ -485,7 +494,16 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
+        if (!beam)
+            return new AxisAlignedBB(pos.getX() - 1, pos.getY() - 1, pos.getZ() - 1,
+                    pos.getX() + 2, pos.getY() + 2, pos.getZ() + 2);
+        return new AxisAlignedBB(
+                Math.min(pos.getX(), Math.min(lastTargetX, targetX)),
+                Math.min(pos.getY(), Math.min(lastTargetY, targetY)),
+                Math.min(pos.getZ(), Math.min(lastTargetZ, targetZ)),
+                Math.max(pos.getX(), Math.max(lastTargetX, targetX)) + 1,
+                Math.max(pos.getY(), Math.max(lastTargetY, targetY)) + 1,
+                Math.max(pos.getZ(), Math.max(lastTargetZ, targetZ)) + 1);
     }
 
     @Override
@@ -622,5 +640,16 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase implemen
         upgrades.put(ItemMachineUpgrade.UpgradeType.FORTUNE, 3);
         upgrades.put(ItemMachineUpgrade.UpgradeType.OVERDRIVE, 9);
         return upgrades;
+    }
+
+    @Override
+    public DirPos[] getConPos() {
+        return new DirPos[] {
+                new DirPos(pos.getX(), pos.getY() + 2, pos.getZ(), ForgeDirection.UP),
+                new DirPos(pos.getX() + 2, pos.getY(), pos.getZ(), Library.POS_X),
+                new DirPos(pos.getX() - 2, pos.getY(), pos.getZ(), Library.NEG_X),
+                new DirPos(pos.getX(), pos.getY() + 2, pos.getZ(), Library.POS_Z),
+                new DirPos(pos.getX(), pos.getY() - 2, pos.getZ(), Library.NEG_Z)
+        };
     }
 }

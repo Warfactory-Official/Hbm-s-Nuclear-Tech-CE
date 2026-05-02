@@ -2,6 +2,7 @@ package com.hbm.tileentity.deco;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.BlockGeysir;
+import com.hbm.entity.particle.EntityModFXShadow;
 import com.hbm.entity.projectile.EntityShrapnel;
 import com.hbm.entity.projectile.EntityWaterSplash;
 import com.hbm.handler.threading.PacketThreading;
@@ -73,16 +74,25 @@ public class TileEntityGeysir extends TileEntity implements ITickable {
 	}
 	
 	private void chlorine() {
-		
+
 		int particleCount = world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5).grow(range, range, range)).size();
 		if(particleCount < 25){
+			double sx = pos.getX() + 0.5;
+			double sy = pos.getY() + 1.5;
+			double sz = pos.getZ() + 0.5;
 			for(int i = 0; i < 3; i++) {
+				double mx = world.rand.nextGaussian() * 0.45;
+				double my = timer * 0.3;
+				double mz = world.rand.nextGaussian() * 0.45;
+
 				NBTTagCompound data = new NBTTagCompound();
-				data.setDouble("moX", world.rand.nextGaussian() * 0.45);
-				data.setDouble("moY", timer * 0.3);
-				data.setDouble("moZ", world.rand.nextGaussian() * 0.45);
+				data.setDouble("moX", mx);
+				data.setDouble("moY", my);
+				data.setDouble("moZ", mz);
 				data.setString("type", "orangefx");
-				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5, 128));
+				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, sx, sy, sz), new NetworkRegistry.TargetPoint(world.provider.getDimension(), sx, sy, sz, 128));
+
+				EntityModFXShadow.spawn(world, EntityModFXShadow.Type.ORANGE, sx, sy, sz, mx, my, mz);
 			}
 		}
 	}

@@ -14,12 +14,6 @@ import org.lwjgl.opengl.GL11;
 
 @AutoRegister
 public class RenderRBMKCraneConsole extends TileEntitySpecialRenderer<TileEntityRBMKCraneConsole> implements IItemRendererProvider {
-
-    @Override
-    public boolean isGlobalRenderer(TileEntityRBMKCraneConsole te) {
-        return true;
-    }
-
     @Override
     public void render(TileEntityRBMKCraneConsole console, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
 

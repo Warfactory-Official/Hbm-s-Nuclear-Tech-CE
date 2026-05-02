@@ -94,14 +94,7 @@ public class CommandHbm extends CommandBase {
 				if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
 					Minecraft.getMinecraft().addScheduledTask(() -> {
 						ResourceManager.loadAnimatedModels();
-						ResourceManager.lit_particles = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/lit_particles"), shader -> {
-							GLCompat.bindAttribLocation(shader, 0, "pos");
-							GLCompat.bindAttribLocation(shader, 1, "offsetPos");
-							GLCompat.bindAttribLocation(shader, 2, "scale");
-							GLCompat.bindAttribLocation(shader, 3, "texData");
-							GLCompat.bindAttribLocation(shader, 4, "color");
-							GLCompat.bindAttribLocation(shader, 5, "lightmap");
-						}).withUniforms(HbmShaderManager2.MODELVIEW_MATRIX, HbmShaderManager2.PROJECTION_MATRIX, HbmShaderManager2.INV_PLAYER_ROT_MATRIX, HbmShaderManager2.LIGHTMAP);
+						ResourceManager.lit_particles = ResourceManager.loadLitParticlesShader();
 
 						ResourceManager.gluon_beam = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/gluon_beam"))
 								.withUniforms(shader -> {
@@ -312,7 +305,6 @@ public class CommandHbm extends CommandBase {
 
             switch (args[1]) {
                 case "antenna" -> Antenna.INSTANCE.generate(world, rand, genPos, force);
-                case "relay" -> Relay.INSTANCE.generate(world, rand, genPos, force);
                 case "dud" -> new Dud().generate(world, rand, genPos);
                 case "barrel" -> Barrel.INSTANCE.generate(world, rand, genPos, force);
                 case "satellite" -> Satellite.INSTANCE.generate(world, rand, genPos, force);

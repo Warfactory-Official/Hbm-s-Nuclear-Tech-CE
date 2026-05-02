@@ -8,6 +8,8 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IDoor;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.item.ItemRenderBase;
+import com.hbm.render.model.BakedModelTransforms;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import com.hbm.tileentity.machine.TileEntitySiloHatch;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
@@ -16,12 +18,6 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister
 public class RenderSiloHatch extends TileEntitySpecialRenderer<TileEntitySiloHatch>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntitySiloHatch te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntitySiloHatch te,
@@ -76,6 +72,11 @@ public class RenderSiloHatch extends TileEntitySpecialRenderer<TileEntitySiloHat
   @Override
   public ItemRenderBase getRenderer(Item item) {
     return new ItemRenderBase() {
+      @Override
+      protected ItemCameraTransforms getBindingTransforms(Item item) {
+        return BakedModelTransforms.standardBlock();
+      }
+
       @Override
       public void renderInventory() {
         GlStateManager.translate(15, -10, 10);

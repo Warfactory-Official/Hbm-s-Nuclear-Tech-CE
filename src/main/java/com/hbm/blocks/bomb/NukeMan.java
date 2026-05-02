@@ -24,10 +24,7 @@ import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumBlockRenderType;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.SoundCategory;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IBlockAccess;
@@ -110,7 +107,17 @@ public class NukeMan extends BlockContainer implements IBomb {
 	
 	@Override
 	public EnumBlockRenderType getRenderType(IBlockState state) {
-		return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
+		return EnumBlockRenderType.MODEL;
+	}
+
+	@Override
+	public BlockRenderLayer getRenderLayer() {
+		return BlockRenderLayer.CUTOUT;
+	}
+
+	@Override
+	public boolean canRenderInLayer(IBlockState state, BlockRenderLayer layer) {
+		return layer == BlockRenderLayer.CUTOUT;
 	}
 	
 	@Override
@@ -160,25 +167,26 @@ public class NukeMan extends BlockContainer implements IBomb {
 	}
 	
 	@Override
-	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase player, ItemStack stack) {
+	public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase player) {
 		int i = MathHelper.floor(player.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
 		
 		if(i == 0)
 		{
-			world.setBlockState(pos, this.getDefaultState().withProperty(FACING, 5), 2);
+			return this.getDefaultState().withProperty(FACING, 5);
 		}
 		if(i == 1)
 		{
-			world.setBlockState(pos, this.getDefaultState().withProperty(FACING, 3), 2);
+			return this.getDefaultState().withProperty(FACING, 3);
 		}
 		if(i == 2)
 		{
-			world.setBlockState(pos, this.getDefaultState().withProperty(FACING, 4), 2);
+			return this.getDefaultState().withProperty(FACING, 4);
 		}
-		if(i == 3)
-		{
-			world.setBlockState(pos, this.getDefaultState().withProperty(FACING, 2), 2);
-		}
+		return this.getDefaultState().withProperty(FACING, 2);
+	}
+
+	@Override
+	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase player, ItemStack stack) {
 		if (world.getTileEntity(pos) instanceof TileEntityNukeMan man)
 			man.placerID = player.getUniqueID();
 	}

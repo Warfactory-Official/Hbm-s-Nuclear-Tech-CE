@@ -216,9 +216,7 @@ public class EntityGlyphid extends EntityMob implements IResistanceProvider {
 
     @Override
     public @Nullable EntityLivingBase getAttackTarget() {
-        if(this.isBlind()) setAttackTarget(null);
-
-        return super.getAttackTarget();
+        return isBlind() ? null : super.getAttackTarget();
     }
 
     @Override

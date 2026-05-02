@@ -17,6 +17,7 @@ import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.saveddata.TomSaveData;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IConfigurableMachine;
 import com.hbm.tileentity.IFluidCopiable;
@@ -41,7 +42,7 @@ import java.io.IOException;
 
 @AutoRegister
 public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase implements IBufPacketReceiver, ITickable, IFluidStandardTransceiver,
-        IConfigurableMachine, IFluidCopiable {
+        IConfigurableMachine, IFluidCopiable, IConnectionAnchors {
 
     /* CONFIGURABLE */
     public static int maxHeat = 12_800_000;
@@ -58,8 +59,8 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
     public TileEntityHeatBoilerIndustrial() {
         this.tanks = new FluidTankNTM[2];
         this.tanksSync = new FluidTankNTM[2];
-        this.tanks[0] = new FluidTankNTM(Fluids.WATER, 64_000);
-        this.tanks[1] = new FluidTankNTM(Fluids.STEAM, 64_000 * 100);
+        this.tanks[0] = new FluidTankNTM(Fluids.WATER, 64_000).withOwner(this);
+        this.tanks[1] = new FluidTankNTM(Fluids.STEAM, 64_000 * 100).withOwner(this);
     }
 
     @Override
@@ -143,6 +144,15 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
     }
 
     @Override
+    public void serializeInitial(ByteBuf buf) {
+        super.serialize(buf);
+        buf.writeInt(this.heat);
+        this.tanks[0].serialize(buf);
+        this.tanks[1].serialize(buf);
+        buf.writeBoolean(this.isOn);
+    }
+
+    @Override
     public void serialize(ByteBuf buf) {
         super.serialize(buf);
         buf.writeInt(this.lastHeat);
@@ -206,15 +216,16 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
             if (trait.getEfficiency(FT_Heatable.HeatingType.BOILER) > 0) {
 
                 HeatingStep entry = trait.getFirstStep();
+                int heatReq = (int) Math.max(entry.heatReq / trait.getEfficiency(HeatingType.BOILER), 1);
                 int inputOps = this.tanks[0].getFill() / entry.amountReq;
                 int outputOps = (this.tanks[1].getMaxFill() - this.tanks[1].getFill()) / entry.amountProduced;
-                int heatOps = this.heat / entry.heatReq;
+                int heatOps = this.heat / heatReq;
 
                 int ops = Math.min(inputOps, Math.min(outputOps, heatOps));
 
                 this.tanks[0].setFill(this.tanks[0].getFill() - entry.amountReq * ops);
                 this.tanks[1].setFill(this.tanks[1].getFill() + entry.amountProduced * ops);
-                this.heat -= entry.heatReq * ops;
+                this.heat -= heatReq * ops;
 
                 if (ops > 0 && world.rand.nextInt(400) == 0) {
                     world.playSound(null, pos.getX() + 0.5, pos.getY() + 2, pos.getZ() + 0.5,
@@ -242,7 +253,7 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
         }
     }
 
-    private DirPos[] getConPos() {
+    public DirPos[] getConPos() {
         double x = pos.getX();
         double y = pos.getY();
         double z = pos.getZ();

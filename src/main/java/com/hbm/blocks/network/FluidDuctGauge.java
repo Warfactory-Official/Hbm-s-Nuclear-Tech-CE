@@ -14,6 +14,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.IDynamicModels;
 import com.hbm.render.model.BakedModelTransforms;
 import com.hbm.tileentity.network.TileEntityPipeBaseNT;
+import com.hbm.util.ExponentialMovingAverage;
 import com.hbm.util.I18nUtil;
 import com.hbm.world.gen.nbt.INBTBlockTransformable;
 import io.netty.buffer.ByteBuf;
@@ -146,8 +147,8 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
     }
 
     @Override
-    public void onBlockPlacedBy(World worldIn, @NotNull BlockPos pos, IBlockState state, @NotNull EntityLivingBase placer, @NotNull ItemStack stack) {
-        worldIn.setBlockState(pos, state.withProperty(FACING, EnumFacing.getDirectionFromEntityLiving(pos, placer)), 2);
+    public @NotNull IBlockState getStateForPlacement(World worldIn, @NotNull BlockPos pos, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ, int meta, @NotNull EntityLivingBase placer) {
+        return this.getDefaultState().withProperty(FACING, EnumFacing.getDirectionFromEntityLiving(pos, placer));
     }
 
     @Override
@@ -165,7 +166,7 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
         List<String> text = new ArrayList<>();
         text.add("&[" + duct.getType().getColor() + "&]" + duct.getType().getLocalizedName());
         text.add(String.format(Locale.US, "%,d", duct.deltaTick) + " mB/t");
-        text.add(String.format(Locale.US, "%,d", duct.deltaLastSecond) + " mB/s");
+        text.add(String.format(Locale.US, "%,d", duct.lastSecond) + " mB/s");
         ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getTranslationKey() + ".name"), 0xFFFF00, 0x404000, text);
     }
 
@@ -215,7 +216,8 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
 
         private long deltaTick = 0;
         private long deltaSecond = 0;
-        private long deltaLastSecond = 0;
+        private long lastSecond = 0;
+        private final ExponentialMovingAverage secondEMA = new ExponentialMovingAverage(0.05);
 
         @Override
         public void update() {
@@ -225,7 +227,7 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
                 if (node != null && node.net != null && getType() != Fluids.NONE) {
                     deltaTick = node.net.fluidTracker;
                     if (world.getTotalWorldTime() % 20L == 0) {
-                        deltaLastSecond = deltaSecond;
+                        secondEMA.next(this.lastSecond = this.deltaSecond);
                         deltaSecond = 0;
                     }
                     deltaSecond += deltaTick;
@@ -237,13 +239,13 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
         @Override
         public void serialize(ByteBuf buf) {
             buf.writeLong(deltaTick);
-            buf.writeLong(deltaLastSecond);
+            buf.writeLong(secondEMA.getValue());
         }
 
         @Override
         public void deserialize(ByteBuf buf) {
             deltaTick = Math.max(buf.readLong(), 0);
-            deltaLastSecond = Math.max(buf.readLong(), 0);
+            lastSecond = Math.max(buf.readLong(), 0);
         }
 
         @Optional.Method(modid = "opencomputers")
@@ -254,7 +256,7 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
         @Callback(direct = true)
         @Optional.Method(modid = "opencomputers")
         public Object[] getTransfer(Context context, Arguments args) {
-            return new Object[]{deltaTick, deltaLastSecond};
+            return new Object[]{deltaTick, lastSecond};
         }
 
         @Callback(direct = true)
@@ -266,7 +268,7 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
         @Callback(direct = true)
         @Optional.Method(modid = "opencomputers")
         public Object[] getInfo(Context context, Arguments args) {
-            return new Object[]{deltaTick, deltaLastSecond, getType().getName(), pos.getX(), pos.getY(), pos.getZ()};
+            return new Object[]{deltaTick, lastSecond, getType().getName(), pos.getX(), pos.getY(), pos.getZ()};
         }
 
         @Override
@@ -277,7 +279,7 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
         @Override
         public String provideRORValue(String name) {
             if ((PREFIX_VALUE + "deltatick").equals(name)) return "" + deltaTick;
-            if ((PREFIX_VALUE + "deltasecond").equals(name)) return "" + deltaLastSecond;
+            if ((PREFIX_VALUE + "deltasecond").equals(name)) return "" + lastSecond;
             return null;
         }
     }

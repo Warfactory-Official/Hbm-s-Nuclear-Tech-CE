@@ -2,19 +2,21 @@ package com.hbm.render.tileentity;
 
 import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.generic.BlockBobble;
 import com.hbm.blocks.generic.BlockBobble.BobbleType;
 import com.hbm.blocks.generic.BlockBobble.TileEntityBobble;
-import com.hbm.render.loader.HFRWavefrontObject;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.ModItems;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.loader.IModelCustom;
 import com.hbm.render.item.ItemRenderBase;
+import com.hbm.render.skinlayer.BobbleSkinModel;
+import com.hbm.render.skinlayer.MojangSkinLoader;
+import com.hbm.util.RenderUtil;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
@@ -22,16 +24,16 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import org.lwjgl.opengl.GL11;
+
+import java.util.Map;
+import java.util.UUID;
 
 @AutoRegister
 public class RenderBobble extends TileEntitySpecialRenderer<TileEntityBobble> implements IItemRendererProvider {
 
     public static RenderBobble instance = new RenderBobble();
 
-    public static final IModelCustom bobble = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/trinkets/bobble.obj")).asVBO();
     public static final ResourceLocation socket = new ResourceLocation(Tags.MODID, "textures/models/trinkets/socket.png");
     public static final ResourceLocation glow = new ResourceLocation(Tags.MODID, "textures/models/trinkets/glow.png");
     public static final ResourceLocation lamp = new ResourceLocation(Tags.MODID, "textures/blocks/fluorescent_lamp.png");
@@ -56,6 +58,9 @@ public class RenderBobble extends TileEntitySpecialRenderer<TileEntityBobble> im
     public static final ResourceLocation bobble_mellow_glow = new ResourceLocation(Tags.MODID, "textures/models/trinkets/mellowrpg8_glow.png");
     public static final ResourceLocation bobble_abel = new ResourceLocation(Tags.MODID, "textures/models/trinkets/abel.png");
     public static final ResourceLocation bobble_abel_glow = new ResourceLocation(Tags.MODID, "textures/models/trinkets/abel_glow.png");
+    public static final ResourceLocation bobble_leafia = new ResourceLocation(Tags.MODID, "textures/models/trinkets/leafia.png");
+
+    private final Map<UUID, BobbleSkinModel> skinModelCache = new Object2ObjectOpenHashMap<>();
 
     private long time;
 
@@ -80,46 +85,69 @@ public class RenderBobble extends TileEntitySpecialRenderer<TileEntityBobble> im
     }
 
     public void renderBobble(BobbleType type) {
+        //mlbv: somehow it is leaking shading state which i currently do not want to deal with; this fixes it for now
+        RenderUtil.pushAllAttribs();
         GlStateManager.enableLighting();
         GlStateManager.enableRescaleNormal();
 
         bindTexture(socket);
-        bobble.renderPart("Socket");
+        ResourceManager.bobble.renderPart("Socket");
 
-        switch (type) {
-            case STRENGTH:
-            case PERCEPTION:
-            case ENDURANCE:
-            case CHARISMA:
-            case INTELLIGENCE:
-            case AGILITY:
-            case LUCK:
-                bindTexture(bobble_vaultboy); break;
-            case BOB: bindTexture(bobble_hbm); break;
-            case PU238: bindTexture(bobble_pu238); break;
-            case FRIZZLE: bindTexture(bobble_frizzle); break;
-            case VT: bindTexture(bobble_vt); break;
-            case DOC: bindTexture(bobble_doc); break;
-            case BLUEHAT: bindTexture(bobble_blue); break;
-            case PHEO: bindTexture(bobble_pheo); break;
-            case CIRNO: bindTexture(bobble_cirno); break;
-            case ADAM29: bindTexture(bobble_adam); break;
-            case UFFR: bindTexture(bobble_uffr); break;
-            case VAER: bindTexture(bobble_vaer); break;
-            case NOS: bindTexture(bobble_nos); break;
-            case DRILLGON: bindTexture(bobble_drillgon); break;
-            case MICROWAVE: bindTexture(bobble_microwave); break;
-            case PEEP: bindTexture(bobble_peep); break;
-            case MELLOW: bindTexture(bobble_mellow); break;
-            case ABEL: bindTexture(bobble_abel); break;
-            default: bindTexture(ResourceManager.universal);
-        }
+        if (type.skinUuid != null) {
+            MojangSkinLoader.Result result = MojangSkinLoader.get(type.skinUuid);
+            BobbleSkinModel model;
+            ResourceLocation tex;
+            if (result != null) {
+                model = skinModelCache.get(type.skinUuid);
+                if (model == null) {
+                    model = new BobbleSkinModel(result.image);
+                    skinModelCache.put(type.skinUuid, model);
+                }
+                tex = result.texture;
+            } else {
+                model = BobbleSkinModel.gray();
+                tex = BobbleSkinModel.grayTexture();
+            }
+            bindTexture(tex);
+            renderSkinGuy(type, model);
+        } else {
+            switch (type) {
+                case STRENGTH:
+                case PERCEPTION:
+                case ENDURANCE:
+                case CHARISMA:
+                case INTELLIGENCE:
+                case AGILITY:
+                case LUCK:
+                    bindTexture(bobble_vaultboy); break;
+                case BOB: bindTexture(bobble_hbm); break;
+                case PU238: bindTexture(bobble_pu238); break;
+                case FRIZZLE: bindTexture(bobble_frizzle); break;
+                case VT: bindTexture(bobble_vt); break;
+                case DOC: bindTexture(bobble_doc); break;
+                case BLUEHAT: bindTexture(bobble_blue); break;
+                case PHEO: bindTexture(bobble_pheo); break;
+                case CIRNO: bindTexture(bobble_cirno); break;
+                case ADAM29: bindTexture(bobble_adam); break;
+                case UFFR: bindTexture(bobble_uffr); break;
+                case VAER: bindTexture(bobble_vaer); break;
+                case NOS: bindTexture(bobble_nos); break;
+                case DRILLGON: bindTexture(bobble_drillgon); break;
+                case MICROWAVE: bindTexture(bobble_microwave); break;
+                case PEEP: bindTexture(bobble_peep); break;
+                case MELLOW: bindTexture(bobble_mellow); break;
+                case ABEL: bindTexture(bobble_abel); break;
+                case LEAFIA: bindTexture(bobble_leafia); break;
+                default: bindTexture(ResourceManager.universal);
+            }
 
-        switch (type) {
-            case PU238: renderPellet(type); break;
-            case UFFR: renderFumo(type); break;
-            case DRILLGON: renderDrillgon(type); break;
-            default: renderGuy(type);
+            switch (type) {
+                case PU238: renderPellet(type); break;
+                case UFFR: renderFumo(type); break;
+                case DRILLGON: renderDrillgon(type); break;
+                case LEAFIA: renderLeafia(type); break;
+                default: renderGuy(type);
+            }
         }
 
         GlStateManager.pushMatrix();
@@ -127,6 +155,8 @@ public class RenderBobble extends TileEntitySpecialRenderer<TileEntityBobble> im
         GlStateManager.popMatrix();
 
         renderSocket(type);
+
+        RenderUtil.popAttrib();
     }
 
     /* RENDER STANDARD PLAYER MODEL */
@@ -239,7 +269,7 @@ public class RenderBobble extends TileEntitySpecialRenderer<TileEntityBobble> im
         GlStateManager.pushMatrix();
         GlStateManager.rotate((float) rotBody, 0, 1, 0);
 
-        if (type == BobbleType.PEEP) bobble.renderPart("PeepTail");
+        if (type == BobbleType.PEEP) ResourceManager.bobble.renderPart("PeepTail");
 
         GlStateManager.disableCull();
 
@@ -257,7 +287,7 @@ public class RenderBobble extends TileEntitySpecialRenderer<TileEntityBobble> im
         GlStateManager.rotate((float) rotLeftLeg[1], 0, 1, 0);
         GlStateManager.rotate((float) rotLeftLeg[2], 0, 0, 1);
         GlStateManager.translate(0, -1, 0.125);
-        bobble.renderPart("LL" + suffix);
+        ResourceManager.bobble.renderPart("LL" + suffix);
         GlStateManager.popMatrix();
 
         // RIGHT LEG
@@ -267,7 +297,7 @@ public class RenderBobble extends TileEntitySpecialRenderer<TileEntityBobble> im
         GlStateManager.rotate((float) rotRightLeg[1], 0, 1, 0);
         GlStateManager.rotate((float) rotRightLeg[2], 0, 0, 1);
         GlStateManager.translate(0, -1, -0.125);
-        bobble.renderPart("RL" + suffix);
+        ResourceManager.bobble.renderPart("RL" + suffix);
         GlStateManager.popMatrix();
 
         // LEFT ARM
@@ -277,7 +307,7 @@ public class RenderBobble extends TileEntitySpecialRenderer<TileEntityBobble> im
         GlStateManager.rotate((float) rotLeftArm[1], 0, 1, 0);
         GlStateManager.rotate((float) rotLeftArm[2], 0, 0, 1);
         GlStateManager.translate(0, -1.625, 0.25);
-        bobble.renderPart("LA" + suffix);
+        ResourceManager.bobble.renderPart("LA" + suffix);
         GlStateManager.popMatrix();
 
         // RIGHT ARM
@@ -287,11 +317,11 @@ public class RenderBobble extends TileEntitySpecialRenderer<TileEntityBobble> im
         GlStateManager.rotate((float) rotRightArm[1], 0, 1, 0);
         GlStateManager.rotate((float) rotRightArm[2], 0, 0, 1);
         GlStateManager.translate(0, -1.625, -0.25);
-        bobble.renderPart("RA" + suffix);
+        ResourceManager.bobble.renderPart("RA" + suffix);
         GlStateManager.popMatrix();
 
         // BODY
-        bobble.renderPart("Body" + suffix);
+        ResourceManager.bobble.renderPart("Body" + suffix);
 
         // HEAD (light bobble)
         double speed = 0.005;
@@ -307,10 +337,10 @@ public class RenderBobble extends TileEntitySpecialRenderer<TileEntityBobble> im
         GlStateManager.rotate((float) rotHead[2], 0, 0, 1);
 
         GlStateManager.translate(0, -1.75, 0);
-        bobble.renderPart("Head" + suffix);
+        ResourceManager.bobble.renderPart("Head" + suffix);
 
-        if (type == BobbleType.VT) bobble.renderPart("Horn");
-        if (type == BobbleType.PEEP) bobble.renderPart("PeepHat");
+        if (type == BobbleType.VT) ResourceManager.bobble.renderPart("Horn");
+        if (type == BobbleType.PEEP) ResourceManager.bobble.renderPart("PeepHat");
 
         if (type == BobbleType.VAER) {
             GlStateManager.translate(0.25, 1.9, 0.075);
@@ -343,31 +373,31 @@ public class RenderBobble extends TileEntitySpecialRenderer<TileEntityBobble> im
 
         GlStateManager.pushMatrix();
         // Bright pass for glow layer
-        float lastX = net.minecraft.client.renderer.OpenGlHelper.lastBrightnessX;
-        float lastY = net.minecraft.client.renderer.OpenGlHelper.lastBrightnessY;
-        net.minecraft.client.renderer.OpenGlHelper.setLightmapTextureCoords(net.minecraft.client.renderer.OpenGlHelper.lightmapTexUnit, 240F, 240F);
+        float lastX = OpenGlHelper.lastBrightnessX;
+        float lastY = OpenGlHelper.lastBrightnessY;
+        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
         GlStateManager.disableLighting();
-        bobble.renderPart("Pellet");
+        ResourceManager.bobble.renderPart("Pellet");
 
         GlStateManager.disableTexture2D();
         GlStateManager.enableBlend();
         GlStateManager.alphaFunc(GL11.GL_GREATER, 0);
         GlStateManager.tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
         GlStateManager.color(1F, 1F, 0F, 0.1F + (float) Math.sin(time * 0.001D) * 0.05F);
-        bobble.renderPart("PelletShine");
+        ResourceManager.bobble.renderPart("PelletShine");
         GlStateManager.color(1F, 1F, 1F, 1F);
         GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
         GlStateManager.disableBlend();
         GlStateManager.enableTexture2D();
 
         GlStateManager.enableLighting();
-        net.minecraft.client.renderer.OpenGlHelper.setLightmapTextureCoords(net.minecraft.client.renderer.OpenGlHelper.lightmapTexUnit, lastX, lastY);
+        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lastX, lastY);
         GlStateManager.popMatrix();
     }
 
     public void renderFumo(BobbleType type) {
         GlStateManager.enableCull();
-        bobble.renderPart("Fumo");
+        ResourceManager.bobble.renderPart("Fumo");
 
         double speed = 0.005;
         double amplitude = 1;
@@ -379,13 +409,25 @@ public class RenderBobble extends TileEntitySpecialRenderer<TileEntityBobble> im
         GlStateManager.translate(0, -0.75, 0);
 
         GlStateManager.disableCull();
-        bobble.renderPart("FumoHead");
+        ResourceManager.bobble.renderPart("FumoHead");
 
         GlStateManager.popMatrix();
     }
 
     public void renderDrillgon(BobbleType type) {
-        bobble.renderPart("Drillgon");
+        ResourceManager.bobble.renderPart("Drillgon");
+    }
+
+    public void renderLeafia(BobbleType type) {
+        GlStateManager.shadeModel(GL11.GL_SMOOTH);
+        ResourceManager.bobble_leafia.renderPart("thislooksbad");
+        GlStateManager.shadeModel(GL11.GL_FLAT);
+    }
+
+    public void renderSkinGuy(BobbleType type, BobbleSkinModel model) {
+        resetFigurineRotation();
+        setupFigurineRotation(type);
+        model.render(time, rotLeftArm, rotRightArm, rotLeftLeg, rotRightLeg, rotBody, rotHead);
     }
 
     private final ResourceLocation shot_tex = new ResourceLocation(Tags.MODID + ":textures/models/ModelUboinik.png");
@@ -470,30 +512,30 @@ public class RenderBobble extends TileEntitySpecialRenderer<TileEntityBobble> im
                 break;
             }
             case MELLOW: {
-                float lastX = net.minecraft.client.renderer.OpenGlHelper.lastBrightnessX;
-                float lastY = net.minecraft.client.renderer.OpenGlHelper.lastBrightnessY;
-                net.minecraft.client.renderer.OpenGlHelper.setLightmapTextureCoords(net.minecraft.client.renderer.OpenGlHelper.lightmapTexUnit, 240F, 240F);
+                float lastX = OpenGlHelper.lastBrightnessX;
+                float lastY = OpenGlHelper.lastBrightnessY;
+                OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
                 bindTexture(bobble_mellow_glow);
                 renderGuy(type);
                 GlStateManager.enableBlend();
                 GlStateManager.alphaFunc(GL11.GL_GREATER, 0);
                 GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
                 this.bindTexture(lamp);
-                bobble.renderPart("Fluoro");
+                ResourceManager.bobble.renderPart("Fluoro");
                 this.bindTexture(glow);
-                bobble.renderPart("Glow");
+                ResourceManager.bobble.renderPart("Glow");
                 GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
                 GlStateManager.disableBlend();
-                net.minecraft.client.renderer.OpenGlHelper.setLightmapTextureCoords(net.minecraft.client.renderer.OpenGlHelper.lightmapTexUnit, lastX, lastY);
+                OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lastX, lastY);
                 break;
             }
             case ABEL: {
-                float lastX = net.minecraft.client.renderer.OpenGlHelper.lastBrightnessX;
-                float lastY = net.minecraft.client.renderer.OpenGlHelper.lastBrightnessY;
-                net.minecraft.client.renderer.OpenGlHelper.setLightmapTextureCoords(net.minecraft.client.renderer.OpenGlHelper.lightmapTexUnit, 240F, 240F);
+                float lastX = OpenGlHelper.lastBrightnessX;
+                float lastY = OpenGlHelper.lastBrightnessY;
+                OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
                 bindTexture(bobble_abel_glow);
                 renderGuy(type);
-                net.minecraft.client.renderer.OpenGlHelper.setLightmapTextureCoords(net.minecraft.client.renderer.OpenGlHelper.lightmapTexUnit, lastX, lastY);
+                OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lastX, lastY);
                 break;
             }
         }
@@ -505,6 +547,10 @@ public class RenderBobble extends TileEntitySpecialRenderer<TileEntityBobble> im
         GlStateManager.popMatrix();
     }
 
+    /*
+     * Creates a small diamond at 0/0, useful for figuring out where the translation is at
+     * to determine the rotation point
+     */
     public void renderOrigin() {
         GlStateManager.disableCull();
         GlStateManager.disableTexture2D();
@@ -586,7 +632,7 @@ public class RenderBobble extends TileEntitySpecialRenderer<TileEntityBobble> im
 
             public void renderCommon(ItemStack stack) {
                 GlStateManager.scale(0.5, 0.5, 0.5);
-                RenderBobble.instance.renderBobble(BobbleType.VALUES[stack.getItemDamage()]);
+                RenderBobble.instance.renderBobble(BobbleType.VALUES[Math.floorMod(stack.getItemDamage(), BobbleType.VALUES.length)]);
             }
 
             public void renderGround() {

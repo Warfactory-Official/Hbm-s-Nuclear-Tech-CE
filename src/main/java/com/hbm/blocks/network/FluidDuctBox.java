@@ -14,6 +14,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.render.model.DuctBakedModel;
+import com.hbm.tileentity.network.ICachedPipeConnections;
 import com.hbm.tileentity.network.TileEntityPipeBaseNT;
 import com.hbm.util.ColorUtil;
 import com.hbm.util.I18nUtil;
@@ -128,15 +129,46 @@ public class FluidDuctBox extends FluidDuctBase implements IDynamicModels, ILook
 
     @Override
     public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos) {
+        int mask = resolveMask(world, pos);
         IExtendedBlockState ext = (IExtendedBlockState) state;
-        TileEntity te = world.getTileEntity(pos);
-        ext = ext.withProperty(CONN_NORTH, canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.NORTH, te));
-        ext = ext.withProperty(CONN_SOUTH, canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.SOUTH, te));
-        ext = ext.withProperty(CONN_WEST, canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.WEST, te));
-        ext = ext.withProperty(CONN_EAST, canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.EAST, te));
-        ext = ext.withProperty(CONN_UP, canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.UP, te));
-        ext = ext.withProperty(CONN_DOWN, canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.DOWN, te));
+        ext = ext.withProperty(CONN_NORTH, (mask & (1 << EnumFacing.NORTH.getIndex())) != 0);
+        ext = ext.withProperty(CONN_SOUTH, (mask & (1 << EnumFacing.SOUTH.getIndex())) != 0);
+        ext = ext.withProperty(CONN_WEST,  (mask & (1 << EnumFacing.WEST.getIndex()))  != 0);
+        ext = ext.withProperty(CONN_EAST,  (mask & (1 << EnumFacing.EAST.getIndex()))  != 0);
+        ext = ext.withProperty(CONN_UP,    (mask & (1 << EnumFacing.UP.getIndex()))    != 0);
+        ext = ext.withProperty(CONN_DOWN,  (mask & (1 << EnumFacing.DOWN.getIndex()))  != 0);
         return ext;
+    }
+
+    protected int resolveMask(IBlockAccess world, BlockPos pos) {
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof ICachedPipeConnections cached) {
+            return cached.getCachedConnectionMask(world) & 0x3F;
+        }
+        return 0;
+    }
+
+    protected boolean canConnectToForPlacement(IBlockAccess world, BlockPos pos, EnumFacing dir) {
+        return Library.canConnectFluid(world, pos.offset(dir), ForgeDirection.getOrientation(dir), Fluids.NONE);
+    }
+
+    @Override
+    public void neighborChanged(IBlockState state, World world, BlockPos pos, net.minecraft.block.Block blockIn, BlockPos fromPos) {
+        super.neighborChanged(state, world, pos, blockIn, fromPos);
+        invalidatePipeCache(world, pos);
+    }
+
+    @Override
+    public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
+        super.onNeighborChange(world, pos, neighbor);
+        invalidatePipeCache(world, pos);
+    }
+
+    private static void invalidatePipeCache(IBlockAccess world, BlockPos pos) {
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof ICachedPipeConnections cached) {
+            cached.invalidateConnectionCache();
+        }
     }
 
     @Override
@@ -166,26 +198,6 @@ public class FluidDuctBox extends FluidDuctBase implements IDynamicModels, ILook
     @Override
     public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
         return new ItemStack(Item.getItemFromBlock(this), 1, this.getMetaFromState(state));
-    }
-
-    @Override
-    public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-        int meta = stack.getMetadata();
-        worldIn.setBlockState(pos, this.getStateFromMeta(meta), 3);
-    }
-
-    protected boolean canConnectTo(IBlockAccess world, int x, int y, int z, EnumFacing dir, TileEntity tile) {
-        if (tile instanceof TileEntityPipeBaseNT pipeBaseNT) {
-            FluidType type = pipeBaseNT.getType();
-            return canConnectTo(world, x, y, z, dir, type);
-        }
-        return false;
-    }
-
-    protected boolean canConnectTo(IBlockAccess world, int x, int y, int z, EnumFacing dir, FluidType type) {
-        BlockPos pos = new BlockPos(x, y, z);
-        BlockPos offset = pos.offset(dir);
-        return Library.canConnectFluid(world, offset, ForgeDirection.getOrientation(dir.getOpposite()), type);
     }
 
     @Override
@@ -235,13 +247,13 @@ public class FluidDuctBox extends FluidDuctBase implements IDynamicModels, ILook
 
     @Override
     public void addCollisionBoxToList(IBlockState state, World world, BlockPos pos, AxisAlignedBB entityBox, List<AxisAlignedBB> collidingBoxes, Entity entity, boolean isActualState) {
-        TileEntity te = world.getTileEntity(pos);
-        boolean nX = canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.WEST, te);
-        boolean pX = canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.EAST, te);
-        boolean nY = canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.DOWN, te);
-        boolean pY = canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.UP, te);
-        boolean nZ = canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.NORTH, te);
-        boolean pZ = canConnectTo(world, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.SOUTH, te);
+        int connMask = resolveMask(world, pos);
+        boolean nX = (connMask & (1 << EnumFacing.WEST.getIndex()))  != 0;
+        boolean pX = (connMask & (1 << EnumFacing.EAST.getIndex()))  != 0;
+        boolean nY = (connMask & (1 << EnumFacing.DOWN.getIndex()))  != 0;
+        boolean pY = (connMask & (1 << EnumFacing.UP.getIndex()))    != 0;
+        boolean nZ = (connMask & (1 << EnumFacing.NORTH.getIndex())) != 0;
+        boolean pZ = (connMask & (1 << EnumFacing.SOUTH.getIndex())) != 0;
 
         int mask = (pX ? 32 : 0) + (nX ? 16 : 0) + (pY ? 8 : 0) + (nY ? 4 : 0) + (pZ ? 2 : 0) + (nZ ? 1 : 0);
         int count = (pX ? 1 : 0) + (nX ? 1 : 0) + (pY ? 1 : 0) + (nY ? 1 : 0) + (pZ ? 1 : 0) + (nZ ? 1 : 0);
@@ -260,47 +272,38 @@ public class FluidDuctBox extends FluidDuctBase implements IDynamicModels, ILook
             }
         }
 
-        List<AxisAlignedBB> bbs = new ArrayList<>();
-
         if (mask == 0) {
-            bbs.add(new AxisAlignedBB(pos.getX() + jLower, pos.getY() + jLower, pos.getZ() + jLower, pos.getX() + jUpper, pos.getY() + jUpper, pos.getZ() + jUpper));
+            addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(jLower, jLower, jLower, jUpper, jUpper, jUpper));
         } else if (mask == 0b100000 || mask == 0b010000 || mask == 0b110000) {
-            bbs.add(new AxisAlignedBB(pos.getX() + 0.0D, pos.getY() + lower, pos.getZ() + lower, pos.getX() + 1.0D, pos.getY() + upper, pos.getZ() + upper));
+            addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(0D,     lower,  lower,  1.0D,   upper,  upper));
         } else if (mask == 0b001000 || mask == 0b000100 || mask == 0b001100) {
-            bbs.add(new AxisAlignedBB(pos.getX() + lower, pos.getY() + 0.0D, pos.getZ() + lower, pos.getX() + upper, pos.getY() + 1.0D, pos.getZ() + upper));
+            addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(lower,  0D,     lower,  upper,  1.0D,   upper));
         } else if (mask == 0b000010 || mask == 0b000001 || mask == 0b000011) {
-            bbs.add(new AxisAlignedBB(pos.getX() + lower, pos.getY() + lower, pos.getZ() + 0.0D, pos.getX() + upper, pos.getY() + upper, pos.getZ() + 1.0D));
+            addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(lower,  lower,  0D,     upper,  upper,  1.0D));
         } else {
             if (count != 2) {
-                bbs.add(new AxisAlignedBB(pos.getX() + jLower, pos.getY() + jLower, pos.getZ() + jLower, pos.getX() + jUpper, pos.getY() + jUpper, pos.getZ() + jUpper));
+                addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(jLower, jLower, jLower, jUpper, jUpper, jUpper));
             } else {
-                bbs.add(new AxisAlignedBB(pos.getX() + lower, pos.getY() + lower, pos.getZ() + lower, pos.getX() + upper, pos.getY() + upper, pos.getZ() + upper));
+                addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(lower,  lower,  lower,  upper,  upper,  upper));
             }
-            if (pX) bbs.add(new AxisAlignedBB(pos.getX() + upper, pos.getY() + lower, pos.getZ() + lower, pos.getX() + 1.0D, pos.getY() + upper, pos.getZ() + upper));
-            if (nX) bbs.add(new AxisAlignedBB(pos.getX() + 0.0D, pos.getY() + lower, pos.getZ() + lower, pos.getX() + lower, pos.getY() + upper, pos.getZ() + upper));
-            if (pY) bbs.add(new AxisAlignedBB(pos.getX() + lower, pos.getY() + upper, pos.getZ() + lower, pos.getX() + upper, pos.getY() + 1.0D, pos.getZ() + upper));
-            if (nY) bbs.add(new AxisAlignedBB(pos.getX() + lower, pos.getY() + 0.0D, pos.getZ() + lower, pos.getX() + upper, pos.getY() + lower, pos.getZ() + upper));
-            if (pZ) bbs.add(new AxisAlignedBB(pos.getX() + lower, pos.getY() + lower, pos.getZ() + upper, pos.getX() + upper, pos.getY() + upper, pos.getZ() + 1.0D));
-            if (nZ) bbs.add(new AxisAlignedBB(pos.getX() + lower, pos.getY() + lower, pos.getZ() + 0.0D, pos.getX() + upper, pos.getY() + upper, pos.getZ() + lower));
-        }
-
-        for (AxisAlignedBB bb : bbs) {
-            if (entityBox.intersects(bb)) {
-                collidingBoxes.add(bb);
-            }
+            if (pX) addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(upper, lower, lower, 1.0D,  upper, upper));
+            if (nX) addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(0D,    lower, lower, lower, upper, upper));
+            if (pY) addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(lower, upper, lower, upper, 1.0D,  upper));
+            if (nY) addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(lower, 0D,    lower, upper, lower, upper));
+            if (pZ) addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(lower, lower, upper, upper, upper, 1.0D));
+            if (nZ) addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(lower, lower, 0D,    upper, upper, lower));
         }
     }
 
     @Override
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
-        TileEntity te = source.getTileEntity(pos);
-
-        boolean nX = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.WEST, te);
-        boolean pX = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.EAST, te);
-        boolean nY = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.DOWN, te);
-        boolean pY = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.UP, te);
-        boolean nZ = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.NORTH, te);
-        boolean pZ = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.SOUTH, te);
+        int connMask = resolveMask(source, pos);
+        boolean nX = (connMask & (1 << EnumFacing.WEST.getIndex()))  != 0;
+        boolean pX = (connMask & (1 << EnumFacing.EAST.getIndex()))  != 0;
+        boolean nY = (connMask & (1 << EnumFacing.DOWN.getIndex()))  != 0;
+        boolean pY = (connMask & (1 << EnumFacing.UP.getIndex()))    != 0;
+        boolean nZ = (connMask & (1 << EnumFacing.NORTH.getIndex())) != 0;
+        boolean pZ = (connMask & (1 << EnumFacing.SOUTH.getIndex())) != 0;
 
         int mask = (pX ? 32 : 0) + (nX ? 16 : 0) + (pY ? 8 : 0) + (nY ? 4 : 0) + (pZ ? 2 : 0) + (nZ ? 1 : 0);
         int count = (pX ? 1 : 0) + (nX ? 1 : 0) + (pY ? 1 : 0) + (nY ? 1 : 0) + (pZ ? 1 : 0) + (nZ ? 1 : 0);
@@ -384,19 +387,18 @@ public class FluidDuctBox extends FluidDuctBase implements IDynamicModels, ILook
     }
 
     @Override
-    public AxisAlignedBB getCollisionBoundingBoxForPlacement(World source, BlockPos pos, ItemStack stack) {
-        FluidType te = Fluids.NONE;
-        boolean nX = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.WEST, te);
-        boolean pX = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.EAST, te);
-        boolean nY = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.DOWN, te);
-        boolean pY = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.UP, te);
-        boolean nZ = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.NORTH, te);
-        boolean pZ = canConnectTo(source, pos.getX(), pos.getY(), pos.getZ(), EnumFacing.SOUTH, te);
+    public AxisAlignedBB getCollisionBoundingBoxForPlacement(World source, BlockPos pos, IBlockState stateForPlacement, ItemStack stack) {
+        boolean nX = canConnectToForPlacement(source, pos, EnumFacing.WEST);
+        boolean pX = canConnectToForPlacement(source, pos, EnumFacing.EAST);
+        boolean nY = canConnectToForPlacement(source, pos, EnumFacing.DOWN);
+        boolean pY = canConnectToForPlacement(source, pos, EnumFacing.UP);
+        boolean nZ = canConnectToForPlacement(source, pos, EnumFacing.NORTH);
+        boolean pZ = canConnectToForPlacement(source, pos, EnumFacing.SOUTH);
 
         int mask = (pX ? 32 : 0) + (nX ? 16 : 0) + (pY ? 8 : 0) + (nY ? 4 : 0) + (pZ ? 2 : 0) + (nZ ? 1 : 0);
         int count = (pX ? 1 : 0) + (nX ? 1 : 0) + (pY ? 1 : 0) + (nY ? 1 : 0) + (pZ ? 1 : 0) + (nZ ? 1 : 0);
 
-        int meta = stack.getMetadata();
+        int meta = stateForPlacement.getValue(META);
         float lower = 0.125F;
         float upper = 0.875F;
         float jLower = 0.0625F;
@@ -410,28 +412,15 @@ public class FluidDuctBox extends FluidDuctBase implements IDynamicModels, ILook
             }
         }
 
-        switch (mask) {
-            case 0:
-                return new AxisAlignedBB(jLower, jLower, jLower, jUpper, jUpper, jUpper);
-            case 0b100000:
-            case 0b010000:
-            case 0b110000:
-                return new AxisAlignedBB(0F, lower, lower, 1F, upper, upper);
-            case 0b001000:
-            case 0b000100:
-            case 0b001100:
-                return new AxisAlignedBB(lower, 0F, lower, upper, 1F, upper);
-            case 0b000010:
-            case 0b000001:
-            case 0b000011:
-                return new AxisAlignedBB(lower, lower, 0F, upper, upper, 1F);
-            default:
-                if (count != 2) {
-                    return new AxisAlignedBB(nX ? 0F : jLower, nY ? 0F : jLower, nZ ? 0F : jLower, pX ? 1F : jUpper, pY ? 1F : jUpper, pZ ? 1F : jUpper);
-                } else {
-                    return new AxisAlignedBB(nX ? 0F : lower, nY ? 0F : lower, nZ ? 0F : lower, pX ? 1F : upper, pY ? 1F : upper, pZ ? 1F : upper);
-                }
-        }
+        return switch (mask) {
+            case 0 -> new AxisAlignedBB(jLower, jLower, jLower, jUpper, jUpper, jUpper);
+            case 0b100000, 0b010000, 0b110000 -> new AxisAlignedBB(0F, lower, lower, 1F, upper, upper);
+            case 0b001000, 0b000100, 0b001100 -> new AxisAlignedBB(lower, 0F, lower, upper, 1F, upper);
+            case 0b000010, 0b000001, 0b000011 -> new AxisAlignedBB(lower, lower, 0F, upper, upper, 1F);
+            default -> count != 2
+                    ? new AxisAlignedBB(nX ? 0F : jLower, nY ? 0F : jLower, nZ ? 0F : jLower, pX ? 1F : jUpper, pY ? 1F : jUpper, pZ ? 1F : jUpper)
+                    : new AxisAlignedBB(nX ? 0F : lower, nY ? 0F : lower, nZ ? 0F : lower, pX ? 1F : upper, pY ? 1F : upper, pZ ? 1F : upper);
+        };
     }
 
     @Override
@@ -499,5 +488,16 @@ public class FluidDuctBox extends FluidDuctBase implements IDynamicModels, ILook
 
         BlockColors blockColors = evt.getBlockColors();
         blockColors.registerBlockColorHandler(ductColorHandler, ModBlocks.fluid_duct_box);
+    }
+
+    @SideOnly(Side.CLIENT)
+    public static void registerItemColorHandler(ColorHandlerEvent.Item evt) {
+        evt.getItemColors().registerItemColorHandler((stack, tintIndex) -> {
+            if (tintIndex != 0 || stack.getMetadata() % 3 != 2) {
+                return 0xFFFFFF;
+            }
+
+            return ColorUtil.lightenColor(Fluids.NONE.getColor(), 0.25D);
+        }, Item.getItemFromBlock(ModBlocks.fluid_duct_box));
     }
 }

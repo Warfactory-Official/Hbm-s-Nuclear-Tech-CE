@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.tileentity.machine.TileEntityDiFurnace;
 import com.hbm.util.InventoryUtil;
@@ -12,13 +13,17 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.function.Predicate;
-
 public class ContainerDiFurnace extends Container {
   private final TileEntityDiFurnace diFurnace;
+    private final TransferStrategy transferStrategy;
 
   public ContainerDiFurnace(InventoryPlayer invPlayer, TileEntityDiFurnace tile) {
     diFurnace = tile;
+      transferStrategy = TransferStrategy.builder(4)
+                                         .rule(0, 2, stack -> !diFurnace.hasItemPower(stack))
+                                         .rule(2, 3, stack -> diFurnace.hasItemPower(stack))
+                                         .genericMachineRange(3)
+                                         .build();
 
     // Inputs
     this.addSlotToContainer(new SlotItemHandler(tile.inventory, 0, 80, 18));
@@ -62,9 +67,7 @@ public class ContainerDiFurnace extends Container {
 
   @Override
   public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-    return InventoryUtil.transferStack(this.inventorySlots, index, 4,
-            Predicate.not(diFurnace::hasItemPower), 2,
-            diFurnace::hasItemPower, 3);
+      return InventoryUtil.transferStack(this.inventorySlots, index, this.transferStrategy, player);
   }
 
   @Override

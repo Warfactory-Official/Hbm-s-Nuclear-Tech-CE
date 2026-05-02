@@ -10,7 +10,6 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.gui.GUIDroneCrate;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -27,6 +26,7 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -47,8 +47,8 @@ public class TileEntityDroneCrate extends TileEntityMachineBase implements IGUIP
     public boolean itemType = true;
 
     public TileEntityDroneCrate() {
-        super(19);
-        this.tank = new FluidTankNTM(Fluids.NONE, 64_000);
+        super(19, false, false);
+        this.tank = new FluidTankNTM(Fluids.NONE, 64_000).withOwner(this);
     }
 
     @Override
@@ -74,7 +74,7 @@ public class TileEntityDroneCrate extends TileEntityMachineBase implements IGUIP
 
                 List<EntityDeliveryDrone> drones = world.getEntitiesWithinAABB(EntityDeliveryDrone.class, new AxisAlignedBB(pos.getX(), pos.getY() + 1, pos.getZ(), pos.getX() + 1, pos.getY() + 2, pos.getZ() + 1));
                 for(EntityDeliveryDrone drone : drones) {
-                    if(Vec3.createVectorHelper(drone.motionX, drone.motionY, drone.motionZ).length() < 0.05) {
+                    if(new Vec3d(drone.motionX, drone.motionY, drone.motionZ).length() < 0.05) {
                         drone.setTarget(nextX + 0.5, nextY, nextZ + 0.5);
 
                         if(sendingMode && itemType) loadItems(drone);
@@ -223,16 +223,6 @@ public class TileEntityDroneCrate extends TileEntityMachineBase implements IGUIP
     @Override
     public int[] getAccessibleSlotsFromSide(EnumFacing e) {
         return new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 };
-    }
-
-    @Override
-    public boolean isItemValidForSlot(int i, ItemStack itemStack) {
-        return true;
-    }
-
-    @Override
-    public boolean canExtractItem(int i, ItemStack itemStack, int j) {
-        return true;
     }
 
     @Override

@@ -1,9 +1,10 @@
 package com.hbm.tileentity.machine;
 
-import java.math.BigInteger;
-
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
+import com.hbm.handler.radiation.ChunkRadiationManager;
+import com.hbm.hazard.HazardRegistry;
+import com.hbm.hazard.HazardSystem;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
@@ -11,6 +12,8 @@ import com.hbm.inventory.container.ContainerMachineAnnihilator;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.inventory.fluid.trait.FT_Polluting;
+import com.hbm.inventory.fluid.trait.FluidTrait;
 import com.hbm.inventory.gui.GUIMachineAnnihilator;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.lib.DirPos;
@@ -18,10 +21,10 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.saveddata.AnnihilatorSavedData;
 import com.hbm.saveddata.AnnihilatorSavedData.AnnihilatorPool;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.ParticleUtil;
-
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
@@ -38,8 +41,10 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigInteger;
+
 @AutoRegister
-public class TileEntityMachineAnnihilator extends TileEntityMachineBase implements ITickable, IFluidStandardReceiverMK2, IControlReceiver, IGUIProvider {
+public class TileEntityMachineAnnihilator extends TileEntityMachineBase implements ITickable, IFluidStandardReceiverMK2, IControlReceiver, IGUIProvider, IConnectionAnchors {
 
     public String pool = "Recycling";
     public int timer;
@@ -50,7 +55,7 @@ public class TileEntityMachineAnnihilator extends TileEntityMachineBase implemen
     public TileEntityMachineAnnihilator() {
         super(11, true, false);
 
-        this.tank = new FluidTankNTM(Fluids.NONE, 2_500_000);
+        this.tank = new FluidTankNTM(Fluids.NONE, 2_500_000).withOwner(this);
     }
 
     @Override
@@ -76,12 +81,14 @@ public class TileEntityMachineAnnihilator extends TileEntityMachineBase implemen
 
                 ItemStack stack0 = inventory.getStackInSlot(0);
                 if(!stack0.isEmpty()) {
+                    onDestroy(stack0);
                     tryAddPayout(data.pushToPool(pool, stack0, false));
                     this.inventory.setStackInSlot(0, ItemStack.EMPTY);
                     this.markChanged();
                     didSomething = true;
                 }
                 if(tank.getFill() > 0) {
+                    FT_Polluting.pollute(world, getPos().getX(), getPos().getY(), getPos().getZ(), tank.getTankType(), FluidTrait.FluidReleaseType.BURN, tank.getFill() * 2);
                     tryAddPayout(data.pushToPool(pool, tank.getTankType(), tank.getFill(), false));
                     tank.setFill(0);
                     this.markChanged();
@@ -126,6 +133,14 @@ public class TileEntityMachineAnnihilator extends TileEntityMachineBase implemen
             }
 
             this.networkPackNT(25);
+        }
+    }
+
+    public void onDestroy(ItemStack stack) {
+        double radiation = HazardSystem.getHazardLevelFromStack(stack, HazardRegistry.RADIATION);
+        if(radiation > 0) {
+            ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
+            ChunkRadiationManager.proxy.incrementRad(world, pos.add(-dir.offsetX * 3, 9, -dir.offsetZ * 3), Math.min(radiation * 5F, 1_000F));
         }
     }
 

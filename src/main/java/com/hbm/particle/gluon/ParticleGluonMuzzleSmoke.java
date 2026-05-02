@@ -2,6 +2,7 @@ package com.hbm.particle.gluon;
 
 import com.hbm.particle.ParticleFirstPerson;
 import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.render.util.NTMBufferBuilder;
 import com.hbm.util.BobMathUtil;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.entity.Entity;
@@ -84,15 +85,18 @@ public class ParticleGluonMuzzleSmoke extends ParticleFirstPerson {
         	vecs[i].xCoord += f5;
         	vecs[i].yCoord += f6;
         	vecs[i].zCoord += f7;
-        }
+		}
 		//GL11.glRotated(this.particleAngle+timeScale*rotationOverLife, 0, 0, 1);
         
         float a = workingAlpha;
+        NTMBufferBuilder fastBuffer = (NTMBufferBuilder) buffer;
+        int packedLightmap = NTMBufferBuilder.packLightmap(240, 240);
         for(int i = 0; i < workingAlpha; i ++){
-        	 buffer.pos(vecs[0].xCoord, vecs[0].yCoord, vecs[0].zCoord).tex(1, 1).color(this.particleRed, this.particleGreen, this.particleBlue, Math.min(a, 1)).lightmap(240, 240).endVertex();
-             buffer.pos(vecs[1].xCoord, vecs[1].yCoord, vecs[1].zCoord).tex(1, 0).color(this.particleRed, this.particleGreen, this.particleBlue, Math.min(a, 1)).lightmap(240, 240).endVertex();
-             buffer.pos(vecs[2].xCoord, vecs[2].yCoord, vecs[2].zCoord).tex(0, 0).color(this.particleRed, this.particleGreen, this.particleBlue, Math.min(a, 1)).lightmap(240, 240).endVertex();
-             buffer.pos(vecs[3].xCoord, vecs[3].yCoord, vecs[3].zCoord).tex(0, 1).color(this.particleRed, this.particleGreen, this.particleBlue, Math.min(a, 1)).lightmap(240, 240).endVertex();
+            int packedColor = NTMBufferBuilder.packColor(this.particleRed, this.particleGreen, this.particleBlue, Math.min(a, 1));
+            fastBuffer.appendParticlePositionTexColorLmap((float) vecs[0].xCoord, (float) vecs[0].yCoord, (float) vecs[0].zCoord, 1, 1, packedColor, packedLightmap);
+            fastBuffer.appendParticlePositionTexColorLmap((float) vecs[1].xCoord, (float) vecs[1].yCoord, (float) vecs[1].zCoord, 1, 0, packedColor, packedLightmap);
+            fastBuffer.appendParticlePositionTexColorLmap((float) vecs[2].xCoord, (float) vecs[2].yCoord, (float) vecs[2].zCoord, 0, 0, packedColor, packedLightmap);
+            fastBuffer.appendParticlePositionTexColorLmap((float) vecs[3].xCoord, (float) vecs[3].yCoord, (float) vecs[3].zCoord, 0, 1, packedColor, packedLightmap);
              a-=1;
         }
 	

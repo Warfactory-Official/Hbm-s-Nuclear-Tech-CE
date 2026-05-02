@@ -11,6 +11,7 @@ import com.hbm.lib.CapabilityContextProvider;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.uninos.UniNodespace;
 import com.hbm.uninos.networkproviders.PlasmaNetwork;
@@ -29,7 +30,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
-public class TileEntityFusionBoiler extends TileEntityLoadedBase implements ITickable, IFluidStandardTransceiverMK2, IFusionPowerReceiver {
+public class TileEntityFusionBoiler extends TileEntityLoadedBase implements ITickable, IFluidStandardTransceiverMK2, IFusionPowerReceiver, IConnectionAnchors {
 
     protected PlasmaNetwork.PlasmaNode plasmaNode;
 
@@ -39,8 +40,8 @@ public class TileEntityFusionBoiler extends TileEntityLoadedBase implements ITic
 
     public TileEntityFusionBoiler() {
         this.tanks = new FluidTankNTM[2];
-        this.tanks[0] = new FluidTankNTM(Fluids.WATER, 32_000);
-        this.tanks[1] = new FluidTankNTM(Fluids.SUPERHOTSTEAM, 32_000);
+        this.tanks[0] = new FluidTankNTM(Fluids.WATER, 32_000).withOwner(this);
+        this.tanks[1] = new FluidTankNTM(Fluids.SUPERHOTSTEAM, 32_000).withOwner(this);
     }
 
     @Override
@@ -91,7 +92,7 @@ public class TileEntityFusionBoiler extends TileEntityLoadedBase implements ITic
     @Override public boolean receivesFusionPower() { return true; }
 
     @Override
-    public void receiveFusionPower(long fusionPower, double neutronPower) {
+    public void receiveFusionPower(long fusionPower, double neutronPower, float r, float g, float b) {
         this.plasmaEnergy = fusionPower;
 
         int waterCycles = Math.min(tanks[0].getFill(), tanks[1].getMaxFill() - tanks[1].getFill());

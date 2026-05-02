@@ -37,6 +37,7 @@ import java.util.*;
 @AutoRegister
 public class TileEntityRBMKConsole extends TileEntityMachineBase implements IControlReceiver, IGUIProvider, ITickable, SimpleComponent, CompatHandler.OCComponent {
 
+    private AxisAlignedBB bb;
     public static final int fluxDisplayBuffer = 60;
     public int[] fluxBuffer = new int[fluxDisplayBuffer];
     // one-dimensional for simpler (de)serialization
@@ -48,7 +49,7 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
     private byte rotation;
 
     public TileEntityRBMKConsole() {
-        super(0);
+        super(0, false, false);
         for (int i = 0; i < screens.length; i++) {
             screens[i] = new RBMKScreen();
         }
@@ -301,8 +302,9 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
     }
 
     @Override
-    public AxisAlignedBB getRenderBoundingBox() {
-        return new AxisAlignedBB(pos.getX() - 2, pos.getY(), pos.getZ() - 2, pos.getX() + 3, pos.getY() + 4, pos.getZ() + 3);
+    public @NotNull AxisAlignedBB getRenderBoundingBox() {
+        if (bb == null) bb = new AxisAlignedBB(pos.getX() - 2, pos.getY(), pos.getZ() - 2, pos.getX() + 3, pos.getY() + 4, pos.getZ() + 3);
+        return bb;
     }
 
     @Override
@@ -477,8 +479,10 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
                 data_table.put("requiredFlux", irradiationChannel.duration);
             }
             if(te instanceof TileEntityRBMKCooler coolingChannel){
-                data_table.put("degreesCooledPerTick", coolingChannel.lastCooled);
-                data_table.put("cryogel", coolingChannel.tank.getFluidAmount());
+                data_table.put("coolant", coolingChannel.getAllTanks()[0].getFill());
+                data_table.put("coolantMax", coolingChannel.getAllTanks()[0].getMaxFill());
+                data_table.put("hotcoolant", coolingChannel.getAllTanks()[1].getFill());
+                data_table.put("hotcoolantMax", coolingChannel.getAllTanks()[1].getMaxFill());
             }
             if (te instanceof TileEntityRBMKHeater heaterChannel) {
                 data_table.put("coolant", heaterChannel.feed.getFill());

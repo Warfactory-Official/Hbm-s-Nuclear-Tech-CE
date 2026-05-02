@@ -1,6 +1,7 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.fluid.IFluidStandardTransceiver;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.config.MobConfig;
@@ -26,10 +27,11 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.AdvancementManager;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.EnumUtil;
+import com.hbm.util.Vec3NT;
 import io.netty.buffer.ByteBuf;
 import li.cil.oc.api.machine.Arguments;
 import li.cil.oc.api.machine.Callback;
@@ -60,12 +62,13 @@ import static com.hbm.items.machine.ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted
 
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 @AutoRegister
-public class TileEntityReactorZirnox extends TileEntityMachineBase implements ITickable, IControlReceiver, IFluidStandardTransceiver, SimpleComponent, IGUIProvider, CompatHandler.OCComponent {
+public class TileEntityReactorZirnox extends TileEntityMachineBase implements ITickable, IControlReceiver, IFluidStandardTransceiver, SimpleComponent, IGUIProvider, CompatHandler.OCComponent, IRORValueProvider, IConnectionAnchors {
 
+    private AxisAlignedBB bb;
     public static final int maxHeat = 100000;
     private boolean redstonePowered = false;
     public static final int maxPressure = 100000;
-    public static final HashMap<RecipesCommon.ComparableStack, ItemStack> fuelMap = new HashMap<RecipesCommon.ComparableStack, ItemStack>();
+    public static final HashMap<RecipesCommon.ComparableStack, ItemStack> fuelMap = new HashMap<>();
     private static final int[] slots_io = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
 
     static {
@@ -92,9 +95,9 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
 
     public TileEntityReactorZirnox() {
         super(28, true, false);
-        steam = new FluidTankNTM(Fluids.SUPERHOTSTEAM, 8000);
-        carbonDioxide = new FluidTankNTM(Fluids.CARBONDIOXIDE, 16000);
-        water = new FluidTankNTM(Fluids.WATER, 32000);
+        steam = new FluidTankNTM(Fluids.SUPERHOTSTEAM, 8000).withOwner(this);
+        carbonDioxide = new FluidTankNTM(Fluids.CARBONDIOXIDE, 16000).withOwner(this);
+        water = new FluidTankNTM(Fluids.WATER, 32000).withOwner(this);
     }
     public void setRedstonePowered(boolean powered) {
         if (!powered && this.redstonePowered) {
@@ -172,76 +175,46 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
     }
 
     public int getGaugeScaled(int i, int type) {
-        switch (type) {
-            case 0:
-                return (steam.getFill() * i) / steam.getMaxFill();
-            case 1:
-                return (carbonDioxide.getFill() * i) / carbonDioxide.getMaxFill();
-            case 2:
-                return (water.getFill() * i) / water.getMaxFill();
-            case 3:
-                return (this.heat * i) / maxHeat;
-            case 4:
-                return (this.pressure * i) / maxPressure;
-            default:
-                return 1;
-        }
+        return switch (type) {
+            case 0 -> (steam.getFill() * i) / steam.getMaxFill();
+            case 1 -> (carbonDioxide.getFill() * i) / carbonDioxide.getMaxFill();
+            case 2 -> (water.getFill() * i) / water.getMaxFill();
+            case 3 -> (this.heat * i) / maxHeat;
+            case 4 -> (this.pressure * i) / maxPressure;
+            default -> 1;
+        };
     }
 
     private int[] getNeighbouringSlots(int id) {
 
-        switch (id) {
-            case 0:
-                return new int[]{1, 7};
-            case 1:
-                return new int[]{0, 2, 8};
-            case 2:
-                return new int[]{1, 9};
-            case 3:
-                return new int[]{4, 10};
-            case 4:
-                return new int[]{3, 5, 11};
-            case 5:
-                return new int[]{4, 6, 12};
-            case 6:
-                return new int[]{5, 13};
-            case 7:
-                return new int[]{0, 8, 14};
-            case 8:
-                return new int[]{1, 7, 9, 15};
-            case 9:
-                return new int[]{2, 8, 16};
-            case 10:
-                return new int[]{3, 11, 17};
-            case 11:
-                return new int[]{4, 10, 12, 18};
-            case 12:
-                return new int[]{5, 11, 13, 19};
-            case 13:
-                return new int[]{6, 12, 20};
-            case 14:
-                return new int[]{7, 15, 21};
-            case 15:
-                return new int[]{8, 14, 16, 22};
-            case 16:
-                return new int[]{9, 15, 23};
-            case 17:
-                return new int[]{10, 18};
-            case 18:
-                return new int[]{11, 17, 19};
-            case 19:
-                return new int[]{12, 18, 20};
-            case 20:
-                return new int[]{13, 19};
-            case 21:
-                return new int[]{14, 22};
-            case 22:
-                return new int[]{15, 21, 23};
-            case 23:
-                return new int[]{16, 22};
-        }
+        return switch (id) {
+            case 0 -> new int[]{1, 7};
+            case 1 -> new int[]{0, 2, 8};
+            case 2 -> new int[]{1, 9};
+            case 3 -> new int[]{4, 10};
+            case 4 -> new int[]{3, 5, 11};
+            case 5 -> new int[]{4, 6, 12};
+            case 6 -> new int[]{5, 13};
+            case 7 -> new int[]{0, 8, 14};
+            case 8 -> new int[]{1, 7, 9, 15};
+            case 9 -> new int[]{2, 8, 16};
+            case 10 -> new int[]{3, 11, 17};
+            case 11 -> new int[]{4, 10, 12, 18};
+            case 12 -> new int[]{5, 11, 13, 19};
+            case 13 -> new int[]{6, 12, 20};
+            case 14 -> new int[]{7, 15, 21};
+            case 15 -> new int[]{8, 14, 16, 22};
+            case 16 -> new int[]{9, 15, 23};
+            case 17 -> new int[]{10, 18};
+            case 18 -> new int[]{11, 17, 19};
+            case 19 -> new int[]{12, 18, 20};
+            case 20 -> new int[]{13, 19};
+            case 21 -> new int[]{14, 22};
+            case 22 -> new int[]{15, 21, 23};
+            case 23 -> new int[]{16, 22};
+            default -> null;
+        };
 
-        return null;
     }
 
     @Override
@@ -335,8 +308,8 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
 
         int count = 0;
 
-        for (int i = 0; i < neighbours.length; i++)
-            if (hasFuelRod(neighbours[i]))
+        for (int neighbour : neighbours)
+            if (hasFuelRod(neighbour))
                 count++;
 
         return count;
@@ -457,7 +430,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
         }
     }
 
-    private DirPos[] getConPos() {
+    public DirPos[] getConPos() {
         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
 
@@ -470,7 +443,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
     }
 
     public List<FluidTankNTM> getTanks() {
-        List<FluidTankNTM> list = new ArrayList<FluidTankNTM>();
+        List<FluidTankNTM> list = new ArrayList<>();
         list.add(steam);
         list.add(carbonDioxide);
         list.add(water);
@@ -478,8 +451,9 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
         return list;
     }
 
-    public AxisAlignedBB getRenderBoundingBox() {
-        return new AxisAlignedBB(pos.getX() - 2, pos.getY(), pos.getZ() - 2, pos.getX() + 3, pos.getY() + 5, pos.getZ() + 3);
+    public @NotNull AxisAlignedBB getRenderBoundingBox() {
+        if (bb == null) bb = new AxisAlignedBB(pos.getX() - 2, pos.getY(), pos.getZ() - 2, pos.getX() + 3, pos.getY() + 5, pos.getZ() + 3);
+        return bb;
     }
 
     @SideOnly(Side.CLIENT)
@@ -489,7 +463,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
 
     @Override
     public boolean hasPermission(EntityPlayer player) {
-        return Vec3.createVectorHelper(pos.getX() - player.posX, pos.getY() - player.posY, pos.getZ() - player.posZ).length() < 20;
+        return new Vec3NT(pos.getX() - player.posX, pos.getY() - player.posY, pos.getZ() - player.posZ).length() < 20;
     }
 
     @Override
@@ -607,27 +581,18 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
     @Override
     @Optional.Method(modid = "opencomputers")
     public Object[] invoke(String method, Context context, Arguments args) throws Exception {
-        switch (method) {
-            case ("getTemp"):
-                return getTemp(context, args);
-            case ("getPressure"):
-                return getPressure(context, args);
-            case ("getWater"):
-                return getWater(context, args);
-            case ("getSteam"):
-                return getSteam(context, args);
-            case ("getCarbonDioxide"):
-                return getCarbonDioxide(context, args);
-            case ("isActive"):
-                return isActive(context, args);
-            case ("getInfo"):
-                return getInfo(context, args);
-            case ("setActive"):
-                return setActive(context, args);
-            case ("ventCarbonDioxide"):
-                return ventCarbonDioxide(context, args);
-        }
-        throw new NoSuchMethodException();
+        return switch (method) {
+            case ("getTemp") -> getTemp(context, args);
+            case ("getPressure") -> getPressure(context, args);
+            case ("getWater") -> getWater(context, args);
+            case ("getSteam") -> getSteam(context, args);
+            case ("getCarbonDioxide") -> getCarbonDioxide(context, args);
+            case ("isActive") -> isActive(context, args);
+            case ("getInfo") -> getInfo(context, args);
+            case ("setActive") -> setActive(context, args);
+            case ("ventCarbonDioxide") -> ventCarbonDioxide(context, args);
+            default -> throw new NoSuchMethodException();
+        };
     }
 
     @Override
@@ -639,5 +604,20 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
     @SideOnly(Side.CLIENT)
     public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
         return new GUIReactorZirnox(player.inventory, this);
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[] {
+                PREFIX_VALUE + "heat",
+                PREFIX_VALUE + "pressure"
+        };
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "heat").equals(name))     return "" + (int) Math.round(heat * 1.0E-5D * 780.0D + 20.0D);
+        if ((PREFIX_VALUE + "pressure").equals(name)) return "" + (int) Math.round(pressure * 1.0E-5D * 30.0D);
+        return null;
     }
 }

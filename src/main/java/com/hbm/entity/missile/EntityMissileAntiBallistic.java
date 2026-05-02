@@ -30,6 +30,7 @@ public class EntityMissileAntiBallistic extends EntityThrowableInterp implements
 	public double velocity;
 	private int activationTimer;
 	private static final double baseSpeed = 1.5D;
+    private boolean awaitingTicketRestore;
 
     public EntityMissileAntiBallistic(World world) {
 		super(world);
@@ -39,7 +40,6 @@ public class EntityMissileAntiBallistic extends EntityThrowableInterp implements
 	@Override
 	protected void entityInit() {
 		super.entityInit();
-		init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, ForgeChunkManager.Type.ENTITY));
 	}
 
 	@Override
@@ -59,6 +59,7 @@ public class EntityMissileAntiBallistic extends EntityThrowableInterp implements
 		this.prevPosZ = this.posZ;
 
 		if(!world.isRemote) {
+			requestChunkLoaderTicketIfNeeded();
 
 			if(velocity < 6) velocity += 0.1;
 
@@ -192,6 +193,7 @@ public class EntityMissileAntiBallistic extends EntityThrowableInterp implements
 	@Override
 	public void readEntityFromNBT(NBTTagCompound nbt) {
 		super.readEntityFromNBT(nbt);
+		awaitingTicketRestore = true;
 		this.velocity = nbt.getDouble("veloc");
 	}
 
@@ -209,6 +211,8 @@ public class EntityMissileAntiBallistic extends EntityThrowableInterp implements
 					loaderTicket = ticket;
 					loaderTicket.bindEntity(this);
 					loaderTicket.getModData();
+				} else if(loaderTicket != ticket) {
+					ForgeChunkManager.releaseTicket(ticket);
 				}
 				ForgeChunkManager.forceChunk(loaderTicket, new ChunkPos(chunkCoordX, chunkCoordZ));
 			}
@@ -241,6 +245,11 @@ public class EntityMissileAntiBallistic extends EntityThrowableInterp implements
 		if(!world.isRemote && loaderTicket != null) {
 			for(ChunkPos chunk : loadedChunks) {
 				ForgeChunkManager.unforceChunk(loaderTicket, chunk);
+			}
+			loadedChunks.clear();
+			if(this.isDead) {
+				ForgeChunkManager.releaseTicket(loaderTicket);
+				loaderTicket = null;
 			}
 		}
 	}
@@ -279,5 +288,14 @@ public class EntityMissileAntiBallistic extends EntityThrowableInterp implements
 	@Override
 	public boolean suppliesRedstone(RadarScanParams params) {
 		return false;
+	}
+
+	private void requestChunkLoaderTicketIfNeeded() {
+		if(world.isRemote || loaderTicket != null) return;
+		if(awaitingTicketRestore) {
+			awaitingTicketRestore = false;
+			return;
+		}
+		init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, ForgeChunkManager.Type.ENTITY));
 	}
 }

@@ -3,13 +3,15 @@ package com.hbm.inventory.control_panel.nodes;
 import com.hbm.inventory.control_panel.*;
 import com.hbm.inventory.control_panel.modular.INodeLoader;
 import com.hbm.inventory.control_panel.modular.NTMControlPanelRegistry;
+import com.hbm.inventory.control_panel.types.DataValue;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
 import com.hbm.render.NTMRenderHelper;
+import com.hbm.render.util.NTMImmediate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.nbt.NBTTagCompound;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,19 +105,19 @@ public abstract class Node {
 		if(isActive || isSelected){
 			color = isActive ? new float[]{0.7F, 0.7F, 0.7F} : new float[]{1F, 0.5F, 0.1F};
 			float edge = 0.5F;
-			Tessellator.getInstance().getBuffer().begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
+			NTMImmediate.INSTANCE.beginPositionTexColorQuads(3);
 			NTMRenderHelper.drawGuiRectBatchedColor(posX-edge, posY-edge, 0, 0.875F, 40+edge*2, 6+edge*2, 0.625F, 0.96875F, color[0], color[1], color[2], 1);
 			NTMRenderHelper.drawGuiRectBatchedColor(posX-edge, posY+6, 0, 0.96875F, 40+edge*2, size+edge, 0.625F, 0.984375F, color[0], color[1], color[2], 1);
 			NTMRenderHelper.drawGuiRectBatchedColor(posX-edge, posY+6+size, 0, 0.984375F, 40+edge*2, 1+edge, 0.625F, 1, color[0], color[1], color[2], 1);
-			Tessellator.getInstance().draw();
+			NTMImmediate.INSTANCE.draw();
 		}
 		color = getColor();
-		Tessellator.getInstance().getBuffer().begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
+		NTMImmediate.INSTANCE.beginPositionTexColorQuads(4);
 		NTMRenderHelper.drawGuiRectBatchedColor(posX, posY, 0, 0, 40, 6, 0.625F, 0.09375F, 1, 1, 1, 1);
 		NTMRenderHelper.drawGuiRectBatchedColor(posX, posY+6, 0, 0.09375F, 40, size, 0.625F, 0.109375F, 1, 1, 1, 1);
 		NTMRenderHelper.drawGuiRectBatchedColor(posX, posY+6+size, 0, 0.109375F, 40, 1, 0.625F, 0.125F, 1, 1, 1, 1);
 		NTMRenderHelper.drawGuiRectBatchedColor(posX, posY+1, 0, 0.125F, 40, 5, 0.625F, 0.203125F, color[0], color[1], color[2], 1);
-		Tessellator.getInstance().draw();
+		NTMImmediate.INSTANCE.draw();
 		
 		for(int i = inputs.size()-1; i >= 0; i --)
 			inputs.get(i).render(mX, mY);

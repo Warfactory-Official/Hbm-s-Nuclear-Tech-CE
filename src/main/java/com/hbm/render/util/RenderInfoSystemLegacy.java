@@ -1,21 +1,16 @@
 package com.hbm.render.util;
 
 import com.hbm.config.ClientConfig;
-import com.hbm.config.GeneralConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import org.lwjgl.opengl.GL11;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RenderInfoSystemLegacy {
@@ -56,9 +51,13 @@ public class RenderInfoSystemLegacy {
         Minecraft mc = Minecraft.getMinecraft();
         ScaledResolution resolution = event.getResolution();
 
-        List<InfoEntry> entries = new ArrayList(messages.values());
-        Collections.sort(entries);
-
+        List<InfoEntry> entries = new ArrayList();
+        { // sort by ID rather than time
+            List<Entry<Integer,InfoEntry>> sortedList = new ArrayList<>(messages.entrySet());
+            sortedList.sort(Entry.comparingByKey());
+            for (Entry<Integer,InfoEntry> entry : sortedList)
+                entries.add(entry.getValue());
+        }
         GlStateManager.pushMatrix();
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
@@ -85,15 +84,15 @@ public class RenderInfoSystemLegacy {
         int z = 0;
 
         GlStateManager.disableTexture2D();
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferbuilder = tessellator.getBuffer();
-
-        bufferbuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
-        bufferbuilder.pos(pX - 5, pZ - 5, z).color(0.25F, 0.25F, 0.25F, 0.5F).endVertex();
-        bufferbuilder.pos(pX - 5, height, z).color(0.25F, 0.25F, 0.25F, 0.5F).endVertex();
-        bufferbuilder.pos(side, height, z).color(0.25F, 0.25F, 0.25F, 0.5F).endVertex();
-        bufferbuilder.pos(side, pZ - 5, z).color(0.25F, 0.25F, 0.25F, 0.5F).endVertex();
-        tessellator.draw();
+        NTMBufferBuilder bufferbuilder = NTMImmediate.INSTANCE.beginPositionColorQuads(1);
+        bufferbuilder.appendPositionColorQuadUnchecked(
+                pX - 5, pZ - 5, z,
+                pX - 5, height, z,
+                side, height, z,
+                side, pZ - 5, z,
+                NTMBufferBuilder.packColor(0.25F, 0.25F, 0.25F, 0.5F)
+        );
+        NTMImmediate.INSTANCE.draw();
         GlStateManager.enableTexture2D();
 
         int off = 0;

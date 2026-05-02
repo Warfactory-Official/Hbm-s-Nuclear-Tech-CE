@@ -19,6 +19,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
@@ -46,7 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @AutoRegister
-public class TileEntityMachinePyroOven extends TileEntityMachinePolluting implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiver, IGUIProvider, IUpgradeInfoProvider, IFluidCopiable {
+public class TileEntityMachinePyroOven extends TileEntityMachinePolluting implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiver, IGUIProvider, IUpgradeInfoProvider, IFluidCopiable, IConnectionAnchors {
 
     public long power;
     public static final long maxPower = 10_000_000;
@@ -68,8 +69,8 @@ public class TileEntityMachinePyroOven extends TileEntityMachinePolluting implem
         super(6, 50, true, true);
         inventory = this.getNewInventory(6);
         tanks = new FluidTankNTM[2];
-        tanks[0] = new FluidTankNTM(Fluids.NONE, 24_000);
-        tanks[1] = new FluidTankNTM(Fluids.NONE, 24_000);
+        tanks[0] = new FluidTankNTM(Fluids.NONE, 24_000).withOwner(this);
+        tanks[1] = new FluidTankNTM(Fluids.NONE, 24_000).withOwner(this);
     }
     // is that the best solution?... ugh
     public ItemStackHandler getNewInventory(int scount) {
@@ -275,7 +276,7 @@ public class TileEntityMachinePyroOven extends TileEntityMachinePolluting implem
         }
     }
 
-    protected DirPos[] getConPos() {
+    public DirPos[] getConPos() {
         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
         ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
 
