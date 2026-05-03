@@ -18,7 +18,6 @@ public class ItemRenderMissile extends TEISRBase {
         if (missile == null)
             return;
         GlStateManager.pushMatrix();
-        super.drawDebugAxes();
         switch (type) {
             case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND -> {
 
