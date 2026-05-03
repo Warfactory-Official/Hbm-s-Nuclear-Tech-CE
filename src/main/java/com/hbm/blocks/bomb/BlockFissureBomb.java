@@ -1,8 +1,10 @@
 package com.hbm.blocks.bomb;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.generic.BlockFissure;
 import com.hbm.entity.item.EntityTNTPrimedBase;
 import com.hbm.explosion.ExplosionNukeSmall;
+import com.hbm.world.biome.BiomeGenCraterBase;
 
 import com.hbm.render.block.BlockBakeFrame;
 import net.minecraft.block.Block;
@@ -23,6 +25,7 @@ public class BlockFissureBomb extends BlockTNTBase {
         ExplosionNukeSmall.explode(world, x, y, z, ExplosionNukeSmall.PARAMS_MEDIUM);
 
         int range = 5;
+        boolean crater = world.getBiome(new BlockPos((int) Math.floor(x), 0, (int) Math.floor(z))) instanceof BiomeGenCraterBase;
 
         for(int i = -range; i <= range; i++) {
             for(int j = -range; j <= range; j++) {
@@ -35,7 +38,7 @@ public class BlockFissureBomb extends BlockTNTBase {
                     Block block = world.getBlockState(pos).getBlock();
 
                     if(block == ModBlocks.ore_bedrock_block) {
-                        world.setBlockState(pos, ModBlocks.ore_volcano.getDefaultState());
+                        world.setBlockState(pos, ModBlocks.ore_volcano.getDefaultState().withProperty(BlockFissure.CRATER, crater));
                     } else if(block == ModBlocks.ore_bedrock_oil) {
                         world.setBlockState(pos, Blocks.BEDROCK.getDefaultState());
                     }

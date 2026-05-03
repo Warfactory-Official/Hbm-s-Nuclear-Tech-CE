@@ -6,6 +6,7 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.bomb.DigammaMatter;
 import com.hbm.blocks.fluid.FluidFogHandler;
 import com.hbm.blocks.generic.BMPowerBox;
+import com.hbm.blocks.generic.BlockFissure;
 import com.hbm.blocks.generic.BlockModDoor;
 import com.hbm.blocks.generic.TrappedBrick;
 import com.hbm.blocks.machine.BlockSeal;
@@ -193,6 +194,8 @@ public class ClientProxy extends ServerProxy {
         ModelLoader.setCustomStateMapper(ModBlocks.schrabidic_block, new StateMap.Builder().ignore(BlockFluidClassic.LEVEL).build());
         ModelLoader.setCustomStateMapper(ModBlocks.corium_block, new StateMap.Builder().ignore(BlockFluidClassic.LEVEL).build());
         ModelLoader.setCustomStateMapper(ModBlocks.volcanic_lava_block, new StateMap.Builder().ignore(BlockFluidClassic.LEVEL).build());
+        ModelLoader.setCustomStateMapper(ModBlocks.rad_lava_block, new StateMap.Builder().ignore(BlockFluidClassic.LEVEL).build());
+        ModelLoader.setCustomStateMapper(ModBlocks.ore_volcano, new StateMap.Builder().ignore(BlockFissure.CRATER).build());
         ModelLoader.setCustomStateMapper(ModBlocks.sulfuric_acid_block, new StateMap.Builder().ignore(BlockFluidClassic.LEVEL).build());
 
         ModelLoader.setCustomStateMapper(ModBlocks.seal_controller, new StateMap.Builder().ignore(BlockSeal.ACTIVATED).build());
@@ -200,6 +203,7 @@ public class ClientProxy extends ServerProxy {
         ModelLoader.setCustomStateMapper(ModBlocks.brick_jungle_trap, new StateMap.Builder().ignore(TrappedBrick.TYPE).build());
         ModelLoader.setCustomStateMapper(ModBlocks.stone_porous, new StateMap.Builder().ignore(BlockStone.VARIANT).build());
         ModelLoader.setCustomStateMapper(ModBlocks.volcano_core, new StateMap.Builder().ignore(BlockDummyable.META).build());
+        ModelLoader.setCustomStateMapper(ModBlocks.volcano_rad_core, new StateMap.Builder().ignore(BlockDummyable.META).build());
         ModelLoader.setCustomStateMapper(ModBlocks.bm_power_box, new StateMap.Builder().ignore(BMPowerBox.FACING, BMPowerBox.IS_ON).build());
         ModelLoader.setCustomStateMapper(ModBlocks.floodlight, new StateMap.Builder().ignore(com.hbm.blocks.machine.Floodlight.META).build());
         ModelLoader.setCustomStateMapper(ModBlocks.spotlight_beam, new StateMap.Builder().ignore(com.hbm.blocks.machine.SpotlightBeam.META).build());

@@ -3,6 +3,7 @@ package com.hbm.main.client;
 import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.bomb.Balefire;
+import com.hbm.blocks.generic.BlockFissure;
 import com.hbm.blocks.generic.TrappedBrick;
 import com.hbm.blocks.machine.BlockSeal;
 import com.hbm.blocks.network.FluidDuctBox;
@@ -147,6 +148,8 @@ public class NTMClientRegistry {
         registerIgnoringStateMapper(ModBlocks.sulfuric_acid_block, BlockFluidBase.LEVEL);
         registerIgnoringStateMapper(ModBlocks.toxic_block, BlockFluidBase.LEVEL);
         registerIgnoringStateMapper(ModBlocks.volcanic_lava_block, BlockFluidBase.LEVEL);
+        registerIgnoringStateMapper(ModBlocks.rad_lava_block, BlockFluidBase.LEVEL);
+        registerIgnoringStateMapper(ModBlocks.ore_volcano, BlockFissure.CRATER);
         registerIgnoringStateMapper(ModBlocks.seal_controller, BlockSeal.ACTIVATED);
 
         registerNormalStateMapper(ModBlocks.bm_power_box);
@@ -180,6 +183,7 @@ public class NTMClientRegistry {
         registerNormalStateMapper(ModBlocks.turret_sentry_damaged);
         registerNormalStateMapper(ModBlocks.vault_door);
         registerNormalStateMapper(ModBlocks.volcano_core);
+        registerNormalStateMapper(ModBlocks.volcano_rad_core);
         registerNormalStateMapper(ModBlocks.water_door);
     }
 
@@ -565,8 +569,8 @@ public class NTMClientRegistry {
             for (int i = 0; i < SiegeTier.getLength(); i++) {
                 ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(Tags.MODID + ":coin_siege_" + SiegeTier.tiers[i].name, "inventory"));
             }
-        } else if (item == Item.getItemFromBlock(ModBlocks.volcano_core)) {
-            for (int i = 0; i < 4; i++) {
+        } else if (item == Item.getItemFromBlock(ModBlocks.volcano_core) || item == Item.getItemFromBlock(ModBlocks.volcano_rad_core)) {
+            for (int i = 0; i < 5; i++) {
                 ModelLoader.setCustomModelResourceLocation(item, i, new ModelResourceLocation(item.getRegistryName(), "inventory"));
             }
         } else if (item == ModItems.conveyor_wand) {

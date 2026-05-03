@@ -1,6 +1,7 @@
 package com.hbm.entity.effect;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.bomb.BlockVolcano;
 import com.hbm.config.BombConfig;
 import com.hbm.config.CompatibilityConfig;
 import com.hbm.config.FalloutConfigJSON;
@@ -692,6 +693,11 @@ public class EntityFalloutRain extends EntityExplosionChunkloading implements Bo
             IBlockState state = storage == Chunk.NULL_BLOCK_STORAGE || storage.isEmpty() ? Blocks.AIR.getDefaultState() : storage.get(lx, y & 15, lz);
             Block block = state.getBlock();
             if (block.isAir(state, world, pos.setPos(x, y, z)) || block == ModBlocks.fallout) continue;
+
+            if (block == ModBlocks.volcano_core) {
+                updates.put(Library.blockPosToLong(x, y, z), ModBlocks.volcano_rad_core.getDefaultState().withProperty(BlockVolcano.META, state.getValue(BlockVolcano.META)));
+                continue;
+            }
 
             IBlockState stateUp = null;
             int upY = y + 1;

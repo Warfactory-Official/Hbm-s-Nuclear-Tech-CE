@@ -10,6 +10,7 @@ public class ModFluids {
     public static Fluid schrabidic_fluid = new FluidNTM("schrabidic_fluid", "forgefluid/schrabidic_acid_still", "forgefluid/schrabidic_acid_flowing").setDensity(31200).setViscosity(500);
 	public static Fluid corium_fluid = new FluidNTM("corium_fluid", "forgefluid/corium_still", "forgefluid/corium_flowing").setDensity(31200).setViscosity(2000).setTemperature(3000);
 	public static Fluid volcanic_lava_fluid = new FluidNTM("volcanic_lava_fluid", "forgefluid/volcanic_lava_still", "forgefluid/volcanic_lava_flowing").setLuminosity(15).setDensity(3000).setViscosity(3000).setTemperature(1300);
+	public static Fluid rad_lava_fluid = new FluidNTM("rad_lava_fluid", "forgefluid/rad_lava_still", "forgefluid/rad_lava_flowing").setLuminosity(15).setDensity(3000).setViscosity(3000).setTemperature(1300);
     public static Fluid sulfuric_acid_fluid = new FluidNTM("sulfuric_acid", "forgefluid/sulfuric_acid_still", "forgefluid/sulfuric_acid_flowing").setDensity(1840).setViscosity(1000).setTemperature(273);
 
     public static void init() {
@@ -19,6 +20,7 @@ public class ModFluids {
 		registerFluid(schrabidic_fluid);
 		registerFluid(corium_fluid);
 		registerFluid(volcanic_lava_fluid);
+		registerFluid(rad_lava_fluid);
 		registerFluid(sulfuric_acid_fluid);
     }
 
@@ -34,6 +36,7 @@ public class ModFluids {
 		schrabidic_fluid = FluidRegistry.getFluid("schrabidic_fluid");
         corium_fluid = FluidRegistry.getFluid("corium_fluid");
         volcanic_lava_fluid = FluidRegistry.getFluid("volcanic_lava_fluid");
+        rad_lava_fluid = FluidRegistry.getFluid("rad_lava_fluid");
 		sulfuric_acid_fluid = FluidRegistry.getFluid("sulfuric_acid");
 	}
 }

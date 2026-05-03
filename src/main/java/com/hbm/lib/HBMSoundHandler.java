@@ -83,7 +83,6 @@ public final class HBMSoundHandler {
     public static SoundEvent reloadGrenade;
     public static SoundEvent reloadShotgun;
     public static SoundEvent reloadMag;
-    public static SoundEvent reloadRifle;
     public static SoundEvent reloadRevolver;
     public static SoundEvent boatWeapon;
     public static SoundEvent ricochet;
@@ -492,7 +491,6 @@ public final class HBMSoundHandler {
         GunConfiguration.RSOUND_GRENADE = reloadGrenade = register("weapon.hkReload");
         GunConfiguration.RSOUND_SHOTGUN = reloadShotgun = register("weapon.shotgunReload");
         GunConfiguration.RSOUND_MAG = reloadMag = register("weapon.magReload");
-        GunConfiguration.RSOUND_RIFLE = reloadRifle = register("");
         GunConfiguration.RSOUND_REVOLVER = reloadRevolver = register("weapon.revolverReload");
         GunConfiguration.RSOUND_FATMAN = fatmanReload = register("weapon.fatmanReload");
         boatWeapon = register("weapon.boat");

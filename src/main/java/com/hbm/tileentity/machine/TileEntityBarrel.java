@@ -66,6 +66,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements ITickable
     private static boolean converted = false;
     private AxisAlignedBB bb;
     protected FluidNode node;
+    public byte lastRedstone = 0;
     protected FluidType lastType;
     public FluidTank tank;
     public FluidTankNTM tankNew;
@@ -204,6 +205,14 @@ public class TileEntityBarrel extends TileEntityMachineBase implements ITickable
             tankNew.setType(0, 1, inventory);
             tankNew.loadTank(2, 3, inventory);
             tankNew.unloadTank(4, 5, inventory);
+
+            // Redstone Comparator Check
+            byte comp = tankNew.getRedstoneComparatorPower();
+            if(comp != this.lastRedstone) {
+                this.markDirty();
+                for(DirPos pos : getConPos()) this.updateRedstoneComparatorConnection(pos);
+            }
+            this.lastRedstone = comp;
 
             // In buffer mode, acts like a pipe block, providing fluid to its own node
             // otherwise, it is a regular providing/receiving machine, blocking further propagation

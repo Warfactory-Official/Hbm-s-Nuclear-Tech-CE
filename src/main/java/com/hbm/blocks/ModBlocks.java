@@ -1348,6 +1348,7 @@ public class ModBlocks {
 
     //Misc and more misc
     public static final Block volcano_core = new BlockVolcano("volcano_core").setBlockUnbreakable().setResistance(10000.0F).setCreativeTab(MainRegistry.nukeTab);
+    public static final Block volcano_rad_core = new BlockVolcano("volcano_rad_core").setBlockUnbreakable().setResistance(10000.0F).setCreativeTab(MainRegistry.nukeTab);
     public static final Block taint = new BlockTaint(Material.IRON, "taint").setCreativeTab(MainRegistry.nukeTab).setHardness(15.0F).setResistance(10.0F);
     public static final Block residue = new BlockCloudResidue(Material.IRON, "residue").setHardness(0.5F).setResistance(0.5F).setCreativeTab(MainRegistry.nukeTab);
 
@@ -1454,6 +1455,7 @@ public class ModBlocks {
 
     }.setImmovableMobility());
     public static final Material fluidvolcanic = (new MaterialLiquid(MapColor.RED));
+    public static final Material fluidrad = (new MaterialLiquid(MapColor.LIME));
 
     public static Block mercury_block;
 
@@ -1509,6 +1511,7 @@ public class ModBlocks {
     public static final Block schrabidic_block = new SchrabidicBlock(ModFluids.schrabidic_fluid, fluidschrabidic.setReplaceable(), ModDamageSource.radiation, "schrabidic_block").setResistance(500F);
     public static final Block corium_block = new CoriumFinite(ModFluids.corium_fluid, fluidcorium, "corium_block").setResistance(500F);
     public static final Block volcanic_lava_block = new VolcanicBlock(ModFluids.volcanic_lava_fluid, fluidvolcanic, "volcanic_lava_block").setResistance(500F);
+    public static final Block rad_lava_block = new RadBlock(ModFluids.rad_lava_fluid, fluidrad, "rad_lava_block").setResistance(500F);
     public static final Block sulfuric_acid_block = new GenericFluidBlock(ModFluids.sulfuric_acid_fluid, Material.WATER, "sulfuric_acid_block").setDamage(ModDamageSource.acid, 5F).setResistance(500F);
 
     public static void registerBlocks() {
@@ -1541,6 +1544,7 @@ public class ModBlocks {
         ModFluids.schrabidic_fluid.setBlock(schrabidic_block);
         ModFluids.corium_fluid.setBlock(corium_block);
         ModFluids.volcanic_lava_fluid.setBlock(volcanic_lava_block);
+        ModFluids.rad_lava_fluid.setBlock(rad_lava_block);
         ModFluids.sulfuric_acid_fluid.setBlock(sulfuric_acid_block);
     }
 }

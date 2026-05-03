@@ -72,6 +72,19 @@ public class BlockFluidBarrel extends BlockContainer implements ITooltipProvider
     }
 
     @Override
+    public boolean hasComparatorInputOverride(IBlockState state) {
+        return true;
+    }
+    @Override
+    public int getComparatorInputOverride(IBlockState blockState, World worldIn, BlockPos pos) {
+        TileEntity te = worldIn.getTileEntity(pos);
+        if (te instanceof TileEntityBarrel teBarrel) {
+            return teBarrel.tankNew.getRedstoneComparatorPower();
+        }
+        return 0;
+    }
+
+    @Override
     protected BlockStateContainer createBlockState() {
         return new BlockStateContainer(this, CONN_POS_X, CONN_NEG_X, CONN_POS_Z, CONN_NEG_Z);
     }

@@ -2,6 +2,7 @@ package com.hbm.tileentity;
 
 import com.hbm.Tags;
 import com.hbm.blocks.generic.BlockBedrockOreTE.TileEntityBedrockOre;
+import com.hbm.blocks.bomb.BlockVolcano.TileEntityVolcanoCore;
 import com.hbm.blocks.generic.BlockBobble;
 import com.hbm.blocks.generic.BlockFissure.TileEntityFissure;
 import com.hbm.blocks.generic.BlockLoot.TileEntityLoot;
@@ -290,7 +291,7 @@ public class TileMappings {
         put(TileEntityNukeN2.class, "tileentity_nuke_n2");
         put(TileEntityNukeCustom.class, "tileentity_nuke_custom");
         put(TileEntityCharge.class, "tileentity_explosive_charge");
-//        put(TileEntityVolcanoCore.class, "tileentity_volcano_core");
+        put(TileEntityVolcanoCore.class, "tileentity_volcano_core");
     }
 
     private static void putTurrets() {

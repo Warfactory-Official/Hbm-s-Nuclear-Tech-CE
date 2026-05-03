@@ -77,8 +77,8 @@ public class EntityShrapnel extends EntityThrowable {
 		setDead();
 		byte trailType = this.dataManager.get(TRAIL);
 
-		if (trailType == 2) {
-			processVolcanoImpact(mop);
+		if (trailType == 2 || trailType == 4) {
+			processVolcanoImpact(mop, trailType == 4);
 		} else if (trailType == 3) {
 			placeMudBlock(mop);
 		} else {
@@ -88,18 +88,18 @@ public class EntityShrapnel extends EntityThrowable {
 		playExtinguishSound();
 	}
 
-	private void processVolcanoImpact(RayTraceResult mop) {
+	private void processVolcanoImpact(RayTraceResult mop, boolean radioactive) {
 		if (world.isRemote || mop.typeOfHit != Type.BLOCK || mop.getBlockPos() == null) return;
 
 		BlockPos impactPos = mop.getBlockPos().up();
 
 		if (motionY < -0.2D && world.getBlockState(impactPos).getBlock().isReplaceable(world, impactPos)) {
-			world.setBlockState(impactPos, ModBlocks.volcanic_lava_block.getDefaultState());
+			world.setBlockState(impactPos, (radioactive ? ModBlocks.rad_lava_block : ModBlocks.volcanic_lava_block).getDefaultState());
 			spreadGas(mop);
 		}
 
 		if (motionY > 0) {
-			triggerExplosion(mop);
+			triggerExplosion(mop, radioactive);
 		}
 	}
 
@@ -118,10 +118,10 @@ public class EntityShrapnel extends EntityThrowable {
 		}
 	}
 
-	private void triggerExplosion(RayTraceResult mop) {
+	private void triggerExplosion(RayTraceResult mop, boolean radioactive) {
 		ExplosionNT explosion = new ExplosionNT(world, null, mop.getBlockPos().getX() + 0.5, mop.getBlockPos().getY() + 0.5, mop.getBlockPos().getZ() + 0.5, 7);
 		explosion.addAttrib(ExAttrib.NODROP);
-		explosion.addAttrib(ExAttrib.LAVA_V);
+		explosion.addAttrib(radioactive ? ExAttrib.LAVA_R : ExAttrib.LAVA_V);
 		explosion.addAttrib(ExAttrib.NOSOUND);
 		explosion.addAttrib(ExAttrib.ALLMOD);
 		explosion.addAttrib(ExAttrib.NOHURT);
@@ -156,6 +156,10 @@ public class EntityShrapnel extends EntityThrowable {
 
 	public void setWatz(boolean enabled) {
 		this.dataManager.set(TRAIL, (byte) (enabled ? 3 : 0));
+	}
+
+	public void setRadVolcano(boolean enabled) {
+		this.dataManager.set(TRAIL, (byte) (enabled ? 4 : 0));
 	}
 }
 
