@@ -157,6 +157,8 @@ public class FluidTankNTM implements IFluidHandler, IFluidTank, Cloneable {
 
     //Fills tank from canisters
     public boolean loadTank(int in, int out, @NotNull IItemHandler slots) {
+        if (in < 0 || in >= slots.getSlots()) return false;
+        if (out < 0 || out >= slots.getSlots()) return false;
 
         if (slots.getStackInSlot(in).isEmpty()) return false;
 
@@ -177,6 +179,8 @@ public class FluidTankNTM implements IFluidHandler, IFluidTank, Cloneable {
 
     //Fills canisters from tank
     public boolean unloadTank(int in, int out, @NotNull IItemHandler slots) {
+        if (in < 0 || in >= slots.getSlots()) return false;
+        if (out < 0 || out >= slots.getSlots()) return false;
 
         if (slots.getStackInSlot(in).isEmpty()) return false;
 
@@ -204,6 +208,8 @@ public class FluidTankNTM implements IFluidHandler, IFluidTank, Cloneable {
      * @return
      */
     public boolean setType(int in, int out, @NotNull IItemHandler slots) {
+        if (in < 0 || in >= slots.getSlots()) return false;
+        if (out < 0 || out >= slots.getSlots()) return false;
 
         if (!slots.getStackInSlot(in).isEmpty() && slots.getStackInSlot(in).getItem() instanceof IItemFluidIdentifier id) {
 
