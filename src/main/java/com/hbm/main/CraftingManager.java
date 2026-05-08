@@ -198,8 +198,11 @@ public class CraftingManager {
 		addShapelessAuto(new ItemStack(ModItems.biomass, 4), DictFrame.fromOne(ModBlocks.plant_flower, PlantEnums.EnumFlowerPlantType.HEMP), DictFrame.fromOne(ModBlocks.plant_flower, PlantEnums.EnumFlowerPlantType.HEMP), DictFrame.fromOne(ModBlocks.plant_flower, PlantEnums.EnumFlowerPlantType.HEMP), DictFrame.fromOne(ModBlocks.plant_flower, PlantEnums.EnumFlowerPlantType.HEMP), DictFrame.fromOne(ModBlocks.plant_flower, PlantEnums.EnumFlowerPlantType.HEMP), DictFrame.fromOne(ModBlocks.plant_flower, PlantEnums.EnumFlowerPlantType.HEMP) );
 
 		addRecipeAuto(new ItemStack(ModItems.coil_copper, 1), "WWW", "WIW", "WWW", 'W', MINGRADE.wireFine(), 'I', IRON.ingot() );
+		addRecipeAuto(new ItemStack(ModItems.coil_copper, 1), "WWW", "WIW", "WWW", 'W', MINGRADE.wireFine(), 'I', STEEL.ingot() );
 		addRecipeAuto(new ItemStack(ModItems.coil_advanced_alloy, 1), "WWW", "WIW", "WWW", 'W', ALLOY.wireFine(), 'I', IRON.ingot() );
+		addRecipeAuto(new ItemStack(ModItems.coil_advanced_alloy, 1), "WWW", "WIW", "WWW", 'W', ALLOY.wireFine(), 'I', STEEL.ingot() );
 		addRecipeAuto(new ItemStack(ModItems.coil_gold, 1), "WWW", "WIW", "WWW", 'W', GOLD.wireFine(), 'I', IRON.ingot() );
+		addRecipeAuto(new ItemStack(ModItems.coil_gold, 1), "WWW", "WIW", "WWW", 'W', GOLD.wireFine(), 'I', STEEL.ingot() );
 		addRecipeAuto(new ItemStack(ModItems.coil_copper_torus, 2), " C ", "CPC", " C ", 'P', IRON.plate(), 'C', ModItems.coil_copper );
 		addRecipeAuto(new ItemStack(ModItems.coil_advanced_torus, 2), " C ", "CPC", " C ", 'P', IRON.plate(), 'C', ModItems.coil_advanced_alloy );
 		addRecipeAuto(new ItemStack(ModItems.coil_gold_torus, 2), " C ", "CPC", " C ", 'P', IRON.plate(), 'C', ModItems.coil_gold );
@@ -207,11 +210,13 @@ public class CraftingManager {
 		addRecipeAuto(new ItemStack(ModItems.coil_advanced_torus, 2), " C ", "CPC", " C ", 'P', STEEL.plate(), 'C', ModItems.coil_advanced_alloy );
 		addRecipeAuto(new ItemStack(ModItems.coil_gold_torus, 2), " C ", "CPC", " C ", 'P', STEEL.plate(), 'C', ModItems.coil_gold );
 		addRecipeAuto(new ItemStack(ModItems.coil_tungsten, 1), "WWW", "WIW", "WWW", 'W', W.wireFine(), 'I', IRON.ingot() );
+		addRecipeAuto(new ItemStack(ModItems.coil_tungsten, 1), "WWW", "WIW", "WWW", 'W', W.wireFine(), 'I', STEEL.ingot() );
 		addRecipeAuto(new ItemStack(ModItems.coil_magnetized_tungsten, 1), "WWW", "WIW", "WWW", 'W', MAGTUNG.wireFine(), 'I', IRON.ingot() );
+		addRecipeAuto(new ItemStack(ModItems.coil_magnetized_tungsten, 1), "WWW", "WIW", "WWW", 'W', MAGTUNG.wireFine(), 'I', STEEL.ingot() );
 		addRecipeAuto(new ItemStack(ModItems.tank_steel, 2), "STS", "S S", "STS", 'S', STEEL.plate(), 'T', TI.plate() );
 		addRecipeAuto(new ItemStack(ModItems.motor, 2), " R ", "ICI", "ITI", 'R', MINGRADE.wireFine(), 'T', ModItems.coil_copper_torus, 'I', IRON.plate(), 'C', ModItems.coil_copper );
 		addRecipeAuto(new ItemStack(ModItems.motor, 2), " R ", "ICI", " T ", 'R', MINGRADE.wireFine(), 'T', ModItems.coil_copper_torus, 'I', STEEL.plate(), 'C', ModItems.coil_copper );
-		addRecipeAuto(new ItemStack(ModItems.motor_desh, 1), "PCP", "DMD", "PCP", 'P', ANY_PLASTIC.ingot(), 'C', ModItems.coil_gold_torus, 'D', DESH.ingot(), 'M', ModItems.motor );
+		addRecipeAuto(new ItemStack(ModItems.motor_desh, 1), "PCP", "DMD", "PCP", 'P', ANY_PLASTIC.ingot(), 'C', GOLD.wireDense(), 'D', DESH.ingot(), 'M', ModItems.motor );
 		addRecipeAuto(new ItemStack(ModItems.motor_bismuth, 1), "BCB", "SDS", "BCB", 'B', BI.nugget(), 'C', ModBlocks.hadron_coil_alloy, 'S', STEEL.plateCast(), 'D', DURA.ingot() );
 		addRecipeAuto(new ItemStack(ModItems.deuterium_filter, 1), "TST", "SCS", "TST", 'T', ANY_RESISTANTALLOY.ingot(), 'S', S.dust(), 'C', ModItems.catalyst_clay );
 
@@ -680,6 +685,7 @@ public class CraftingManager {
 		addRecipeAuto(new ItemStack(ModBlocks.pink_planks, 4), "W", 'W', ModBlocks.pink_log );
 		addRecipeAuto(new ItemStack(ModBlocks.pink_slab, 6), "WWW", 'W', ModBlocks.pink_planks );
 		addRecipeAuto(new ItemStack(ModBlocks.pink_stairs, 6), "W  ", "WW ", "WWW", 'W', ModBlocks.pink_planks );
+		addRecipeAuto(new ItemStack(ModBlocks.cargo_elevator, 3), "GGG", "SPS", 'G', ModBlocks.steel_grate, 'S', STEEL.ingot(), 'P', new ItemStack(ModItems.part_generic, 1, EnumPartType.PISTON_HYDRAULIC.ordinal()));
 
 		addRecipeAuto(new ItemStack(ModItems.door_metal, 1), "II", "SS", "II", 'I', IRON.plate(), 'S', STEEL.plate() );
 		addRecipeAuto(new ItemStack(ModItems.door_office, 1), "II", "SS", "II", 'I', KEY_PLANKS, 'S', IRON.plate() );
@@ -861,20 +867,19 @@ public class CraftingManager {
 
 		//addRecipeAuto(new ItemStack(ModBlocks.rbmk_display, 1), "B", "C", "D", 'B', B.ingot(), 'D', ModBlocks.deco_rbmk, 'C', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.VACUUM_TUBE));
 
-		addRecipeAuto(new ItemStack(ModBlocks.rbmk_display_blank, 8), new Object[] { "B", "D", 'B', B.ingot(), 'D', ModBlocks.concrete_asbestos });
-		addRecipeAuto(new ItemStack(ModBlocks.rbmk_display, 1), new Object[] { "C", "B", 'C', ModItems.crt_display, 'B', ModBlocks.rbmk_display_blank });
-		addRecipeAuto(new ItemStack(ModBlocks.rbmk_key_pad, 1), new Object[] { "R", "C", "B", 'R', ModBlocks.radio_torch_sender, 'B', ModBlocks.rbmk_display_blank, 'C', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.ANALOG) });
-		addRecipeAuto(new ItemStack(ModBlocks.rbmk_gauge, 1), new Object[] { "R", "C", "B", 'R', ModBlocks.radio_torch_receiver, 'B', ModBlocks.rbmk_display_blank, 'C', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.VACUUM_TUBE) });
-		addRecipeAuto(new ItemStack(ModBlocks.rbmk_numitron, 1), new Object[] { " R ", "CCC", " B ", 'R', ModBlocks.radio_torch_receiver, 'B', ModBlocks.rbmk_display_blank, 'C', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.NUMITRON) });
-		addRecipeAuto(new ItemStack(ModBlocks.rbmk_graph, 1), new Object[] { "R", "C", "B", 'R', ModBlocks.radio_torch_receiver, 'B', ModBlocks.rbmk_display_blank, 'C', ModItems.crt_display });
-        addRecipeAuto(new ItemStack(ModBlocks.rbmk_lever, 1),
-                new Object[]{"R", "C", "B", 'R', ModBlocks.radio_torch_sender, 'B', ModBlocks.rbmk_display_blank, 'C', CU.ingot()});
-        addRecipeAuto(new ItemStack(ModBlocks.rbmk_indicator, 1),
-                new Object[]{"R", "C", "B", 'R', ModBlocks.radio_torch_receiver, 'B', ModBlocks.rbmk_display_blank, 'C', ModItems.coil_tungsten});
+		addRecipeAuto(new ItemStack(ModBlocks.rbmk_display_blank, 8), "B", "D", 'B', B.ingot(), 'D', ModBlocks.concrete_asbestos);
+		addRecipeAuto(new ItemStack(ModBlocks.rbmk_display, 1), "C", "B", 'C', ModItems.crt_display, 'B', ModBlocks.rbmk_display_blank);
+		addRecipeAuto(new ItemStack(ModBlocks.rbmk_key_pad, 1), "R", "C", "B", 'R', ModBlocks.radio_torch_sender, 'B', ModBlocks.rbmk_display_blank, 'C', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.VACUUM_TUBE));
+		addRecipeAuto(new ItemStack(ModBlocks.rbmk_gauge, 1), "R", "C", "B", 'R', ModBlocks.radio_torch_receiver, 'B', ModBlocks.rbmk_display_blank, 'C', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.VACUUM_TUBE));
+		addRecipeAuto(new ItemStack(ModBlocks.rbmk_numitron, 1), " R ", "CCC", " B ", 'R', ModBlocks.radio_torch_receiver, 'B', ModBlocks.rbmk_display_blank, 'C', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.NUMITRON));
+		addRecipeAuto(new ItemStack(ModBlocks.rbmk_graph, 1), "R", "C", "B", 'R', ModBlocks.radio_torch_receiver, 'B', ModBlocks.rbmk_display_blank, 'C', ModItems.crt_display);
+        addRecipeAuto(new ItemStack(ModBlocks.rbmk_lever, 1), "R", "C", "B", 'R', ModBlocks.radio_torch_sender, 'B', ModBlocks.rbmk_display_blank, 'C', CU.ingot());
+        addRecipeAuto(new ItemStack(ModBlocks.rbmk_indicator, 1), "R", "C", "B", 'R', ModBlocks.radio_torch_receiver, 'B', ModBlocks.rbmk_display_blank, 'C', ModItems.coil_tungsten);
+		addRecipeAuto(new ItemStack(ModBlocks.rbmk_terminal, 1), "R ", "CD", "B ", 'R', ModBlocks.radio_torch_sender, 'B', ModBlocks.rbmk_display_blank, 'C', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.ANALOG), 'D', ModItems.crt_display);
 
         addRecipeAuto(new ItemStack(ModItems.rtty_pager, 1),
-                new Object[]{"R", "C", "S", 'R', ModBlocks.radio_torch_receiver, 'C', DictFrame.fromOne(
-                        ModItems.circuit, EnumCircuitType.BASIC), 'S', STEEL.plate()});
+                "R", "C", "S", 'R', ModBlocks.radio_torch_receiver, 'C', DictFrame.fromOne(
+                        ModItems.circuit, EnumCircuitType.BASIC), 'S', STEEL.plate());
 
 		addRecipeAuto(new ItemStack(ModBlocks.deco_rbmk, 8), "R", 'R', ModBlocks.rbmk_blank );
 		addRecipeAuto(new ItemStack(ModBlocks.deco_rbmk_smooth, 1), "R", 'R', ModBlocks.deco_rbmk );

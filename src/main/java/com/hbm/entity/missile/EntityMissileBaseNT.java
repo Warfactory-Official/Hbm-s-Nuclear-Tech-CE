@@ -154,7 +154,7 @@ public abstract class EntityMissileBaseNT extends EntityThrowableInterp implemen
                 if (motionY > -1.5) motionY -= 0.05;
             }
 
-            if (motionY < -velocity && this.isCluster) {
+            if (motionY < -1.5 && this.isCluster) {
                 cluster();
                 this.setDead();
                 return;

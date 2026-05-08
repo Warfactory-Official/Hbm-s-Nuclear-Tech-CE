@@ -15,12 +15,11 @@ import com.hbm.inventory.recipes.CrystallizerRecipes;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
-import com.hbm.tileentity.IConnectionAnchors;
-import com.hbm.tileentity.IFluidCopiable;
-import com.hbm.tileentity.IGUIProvider;
-import com.hbm.tileentity.IUpgradeInfoProvider;
-import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.main.MainRegistry;
+import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.*;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.I18nUtil;
 import com.hbm.util.SoundUtil;
@@ -33,6 +32,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
@@ -62,6 +62,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
     public float prevAngle;
     public FluidTankNTM tankNew;
     public FluidTank tank;
+    private AudioWrapper audio;
     public UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
     private Fluid oldFluid = Fluids.NONE.getFF();
     private AxisAlignedBB ladderAABB = null;
@@ -164,8 +165,34 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
                     angle -= 360;
                     prevAngle -= 360;
                 }
+
+                if(MainRegistry.proxy.me().getDistance(pos.getX(), pos.getY(), pos.getZ()) < 25) {
+                    if(audio == null) {
+                        audio = createAudioLoop();
+                        audio.startSound();
+                    } else if(!audio.isPlaying()) {
+                        audio = rebootAudio(audio);
+                    }
+                    audio.keepAlive();
+                    audio.updateVolume(this.getVolume(1F));
+                    audio.updatePitch(0.75F);
+                } else {
+                    if(audio != null) {
+                        audio.stopSound();
+                        audio = null;
+                    }
+                }
+            } else {
+                if(audio != null) {
+                    audio.stopSound();
+                    audio = null;
+                }
             }
         }
+    }
+
+    @Override public AudioWrapper createAudioLoop() {
+        return MainRegistry.proxy.getLoopedSound(HBMSoundHandler.chemicalPlant, SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), 1F, 15F, 0.75F, 15);
     }
 
     @Override
@@ -379,6 +406,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
     public void invalidate() {
         super.invalidate();
         unregisterClimbable();
+        if(audio != null) { audio.stopSound(); audio = null; }
     }
 
     @Override
@@ -391,6 +419,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
     public void onChunkUnload() {
         unregisterClimbable();
         super.onChunkUnload();
+        if(audio != null) { audio.stopSound(); audio = null; }
     }
 
     private AxisAlignedBB getLadderAABB() {

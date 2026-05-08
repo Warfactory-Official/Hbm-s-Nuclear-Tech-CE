@@ -50,6 +50,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -157,33 +158,47 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
     @Override
     public void neighborChanged(@NotNull IBlockState state, World world, @NotNull BlockPos pos, @NotNull Block blockIn, @NotNull BlockPos fromPos) {
         if (world.isRemote || safeRem) return;
-
-        int metadata = state.getValue(META);
-
-        //if it's an extra, remove the extra-ness
-        if (metadata >= extra) metadata -= extra;
-
-        ForgeDirection dir = ForgeDirection.getOrientation(metadata).getOpposite();
-        BlockPos other = pos.add(dir.offsetX, dir.offsetY, dir.offsetZ);
-        if (!isSameMultiblock(world.getBlockState(other).getBlock())) {
-            world.setBlockToAir(pos);
-        }
+        cascadeOrphans(world, pos, state);
     }
 
     @Override
     public void updateTick(@NotNull World world, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull Random rand) {
         super.updateTick(world, pos, state, rand);
         if (world.isRemote) return;
+        cascadeOrphans(world, pos, state);
+    }
 
-        int metadata = state.getValue(META);
-
-        //if it's an extra, remove the extra-ness
-        if (metadata >= extra) metadata -= extra;
-
-        ForgeDirection dir = ForgeDirection.getOrientation(metadata).getOpposite();
+    private boolean isOrphan(IBlockAccess world, BlockPos pos, IBlockState state) {
+        int meta = state.getValue(META);
+        if (meta >= 12) return false; // core, not a dummy
+        if (meta >= extra) meta -= extra;
+        ForgeDirection dir = ForgeDirection.getOrientation(meta).getOpposite();
         BlockPos other = pos.add(dir.offsetX, dir.offsetY, dir.offsetZ);
-        if (!isSameMultiblock(world.getBlockState(other).getBlock())) {
-            world.setBlockToAir(pos);
+        return !isSameMultiblock(world.getBlockState(other).getBlock());
+    }
+
+    // Iterative orphan cascade. Suppresses re-entry via safeRem so setBlockToAir's
+    // neighbor notifications don't recurse into neighborChanged; we manually queue
+    // the freshly-orphaned neighbors instead. Without this, destroying a long dummy
+    // chain blows the JVM stack (each recursion level burns ~8 frames). idk why it isn't crashing in 1.7
+    private void cascadeOrphans(World world, BlockPos start, IBlockState startState) {
+        if (startState.getBlock() != this || !isOrphan(world, start, startState)) return;
+        safeRem = true;
+        try {
+            ArrayDeque<BlockPos> queue = new ArrayDeque<>();
+            queue.add(start);
+            while (!queue.isEmpty()) {
+                BlockPos p = queue.poll();
+                IBlockState s = world.getBlockState(p);
+                if (s.getBlock() != this) continue;
+                if (!isOrphan(world, p, s)) continue;
+                world.setBlockToAir(p);
+                for (ForgeDirection d : ForgeDirection.VALID_DIRECTIONS) {
+                    queue.add(p.add(d.offsetX, d.offsetY, d.offsetZ));
+                }
+            }
+        } finally {
+            safeRem = false;
         }
     }
 

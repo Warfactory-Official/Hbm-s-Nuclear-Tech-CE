@@ -488,6 +488,7 @@ chem.COOLANT=Kühlflüssigkeit mischen
 chem.CORDITE=Korditherstellung
 chem.CRYOGEL=Kryogel mischen
 chem.DESH=Deshherstellung
+chem.deshcracked=Desh aus Cracköl
 chem.DEUTERIUM=Deuteriumextrahierung
 chem.DUCRETE=Dukretisierung
 chem.DYNAMITE=Dynamitsynthese

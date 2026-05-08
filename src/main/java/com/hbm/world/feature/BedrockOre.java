@@ -4,7 +4,10 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.BlockBedrockOreTE;
 import com.hbm.config.WorldConfig;
 import com.hbm.inventory.fluid.FluidStack;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModItems;
+import com.hbm.items.special.ItemBedrockOreBase;
+import com.hbm.items.special.ItemBedrockOreNew.BedrockOreType;
 import com.hbm.lib.Library;
 import com.hbm.world.phased.AbstractPhasedStructure;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -60,6 +63,36 @@ public class BedrockOre extends AbstractPhasedStructure {
     @Deprecated
     public static void generate(World world, int x, int z, ItemStack stack, FluidStack acid, int color, int tier) {
         generate(world, x, z, stack, acid, color, tier, ModBlocks.stone_depth);
+    }
+
+    public static void generateAuto(World world, int x, int z) {
+        double totalLevel = 0D;
+        for(BedrockOreType type : BedrockOreType.VALUES) {
+            totalLevel += ItemBedrockOreBase.getOreLevel(x, z, type);
+        }
+
+        totalLevel /= BedrockOreType.VALUES.length;
+        BedrockOre oreTask = new BedrockOre(new ItemStack(ModItems.bedrock_ore_base), getBoreFluid(totalLevel), 0xD78A16, getTier(totalLevel), ModBlocks.stone_depth);
+        oreTask.generate(world, world.rand, new BlockPos(x, 0, z));
+    }
+
+    public static final FluidStack BORE_TIER_1 = null;
+    public static final FluidStack BORE_TIER_2 = new FluidStack(Fluids.WATER, 1_000);
+    public static final FluidStack BORE_TIER_3 = new FluidStack(Fluids.SULFURIC_ACID, 1_000);
+    public static final FluidStack BORE_TIER_4 = new FluidStack(Fluids.SOLVENT, 2_000);
+
+    public static FluidStack getBoreFluid(double density) {
+        if(density > 1.5) return BORE_TIER_4;
+        if(density > 1) return BORE_TIER_3;
+        if(density > 0.75) return BORE_TIER_2;
+        return BORE_TIER_1;
+    }
+
+    public static int getTier(double density) {
+        if(density > 1.5) return 4;
+        if(density > 1) return 3;
+        if(density > 0.75) return 2;
+        return 1;
     }
 
     @Override

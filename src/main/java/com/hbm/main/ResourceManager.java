@@ -428,12 +428,14 @@ public class ResourceManager {
     public static final WaveFrontObjectVAO rbmk_numitron = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/rbmk/numitron.obj")).asVBO();
     public static final WaveFrontObjectVAO rbmk_lever = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/rbmk/lever.obj")).asVBO();
     public static final WaveFrontObjectVAO rbmk_indicator = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/rbmk/indicator.obj")).asVBO();
+    public static final WaveFrontObjectVAO rbmk_terminal = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/rbmk/terminal.obj")).asVBO();
     public static final ResourceLocation rbmk_keypad_tex = new ResourceLocation(Tags.MODID, "textures/models/network/keypad.png");
     public static final ResourceLocation rbmk_gauge_tex = new ResourceLocation(Tags.MODID, "textures/models/network/gauge.png");
     public static final ResourceLocation rbmk_numitron_tex = new ResourceLocation(Tags.MODID, "textures/models/network/numitron.png");
     public static final ResourceLocation rbmk_numitron_lights_tex = new ResourceLocation(Tags.MODID, "textures/models/network/numitron_lights.png");
     public static final ResourceLocation rbmk_lever_tex = new ResourceLocation(Tags.MODID, "textures/models/network/lever.png");
     public static final ResourceLocation rbmk_indicator_tex = new ResourceLocation(Tags.MODID, "textures/models/network/indicator.png");
+    public static final ResourceLocation rbmk_terminal_tex = new ResourceLocation(Tags.MODID, "textures/models/network/terminal.png");
 
     public static final ResourceLocation rbmk_crane_console_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/crane_console.png");
     public static final ResourceLocation rbmk_crane_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/rbmk_crane.png");
@@ -448,6 +450,8 @@ public class ResourceManager {
     public static final ResourceLocation rbmk_console_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/rbmk_control.png");
     public static final WaveFrontObjectVAO hev_battery = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/blocks/battery.obj")).asVBO();
     public static final WaveFrontObjectVAO anvil = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/blocks/anvil.obj")).asVBO();
+    public static final WaveFrontObjectVAO cargo_elevator = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/elevator.obj")).asVBO();
+    public static final ResourceLocation cargo_elevator_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/elevator.png");
     public static final WaveFrontObjectVAO charge_dynamite = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/blocks/charge_dynamite.obj")).asVBO();
     public static final WaveFrontObjectVAO charge_c4 = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/blocks/charge_c4.obj")).asVBO();
     //RBMK DEBRIS

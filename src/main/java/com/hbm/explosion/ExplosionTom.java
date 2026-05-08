@@ -120,7 +120,7 @@ public class ExplosionTom {
 
             if (y <= craterFloor) {
                 pos.setPos(pX, y, pZ);
-                if (world.rand.nextInt(499) < 1) {
+                if (world.rand.nextInt(200) == 0) {
                     world.setBlockState(pos, ModBlocks.ore_tektite_osmiridium.getDefaultState(), 2);
                 } else {
                     world.setBlockState(pos, ModBlocks.tektite.getDefaultState(), 2);

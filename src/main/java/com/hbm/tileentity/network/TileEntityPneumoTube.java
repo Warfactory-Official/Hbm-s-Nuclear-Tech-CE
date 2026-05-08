@@ -1,6 +1,7 @@
 package com.hbm.tileentity.network;
 
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
+import com.hbm.api.ntl.IPneumaticConnector;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.container.ContainerPneumoTube;
 import com.hbm.inventory.fluid.FluidType;
@@ -124,6 +125,8 @@ public class TileEntityPneumoTube extends TileEntityMachineBase implements IGUIP
             }
             TileEntity tile = access.getTileEntity(adj);
             if (tile instanceof TileEntityPneumoTube) {
+                conn |= (byte) bit;
+            } else if (tile instanceof IPneumaticConnector pc && pc.canConnectPneumatic(dir.getOpposite())) {
                 conn |= (byte) bit;
             } else if (compressor && this.insertionDir != dir && this.ejectionDir != dir
                     && Library.canConnectFluid(access, ax, ay, az, dir, Fluids.AIR)) {

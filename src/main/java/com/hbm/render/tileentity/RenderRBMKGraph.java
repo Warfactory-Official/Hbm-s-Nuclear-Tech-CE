@@ -55,8 +55,12 @@ public class RenderRBMKGraph extends TileEntitySpecialRenderer<TileEntityRBMKGra
 			FontRenderer font = Minecraft.getMinecraft().fontRenderer;
 			int height = font.FONT_HEIGHT;
 
-			long lowest = BobMathUtil.min(unit.values);
-			long highest = BobMathUtil.max(unit.values);
+			long lowest = unit.minBound ? unit.min : BobMathUtil.min(unit.values);
+			long highest = unit.maxBound ? unit.max : BobMathUtil.max(unit.values);
+			if(lowest > highest) {
+				if(unit.minBound && !unit.maxBound) highest = lowest;
+				else lowest = highest;
+			}
 
 			GlStateManager.color(0, 1, 0);
 			int segments = unit.values.length - 1;
@@ -66,6 +70,8 @@ public class RenderRBMKGraph extends TileEntitySpecialRenderer<TileEntityRBMKGra
 				for(int j = 0; j < 2; j++) {
 					int k = v + j;
 					long flux = unit.values[k];
+					if(flux < lowest) flux = lowest;
+					if(flux > highest) flux = highest;
 					float dx = 0.03225F;
 					float dy = 0.5F - 0.03125F + (flux - lowest) * 0.1875F / Math.max(range, 1);
 					float dz = 0.375F - k * 0.75F / (unit.values.length - 1);

@@ -1,15 +1,18 @@
 package com.hbm.items.tool;
 
+import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.items.ModItems;
 import com.hbm.items.special.ItemBedrockOreBase;
 import com.hbm.items.special.ItemBedrockOreNew;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.PlayerInformPacketLegacy;
+import com.hbm.world.feature.BedrockOre;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.Style;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
@@ -30,6 +33,8 @@ public class ItemOreDensityScanner extends Item {
 
         EntityPlayerMP player = (EntityPlayerMP) entity;
 
+        double totalLevel = 0D;
+
         for(ItemBedrockOreNew.BedrockOreType type : ItemBedrockOreNew.BedrockOreType.VALUES) {
             double level = ItemBedrockOreBase.getOreLevel((int) Math.floor(player.posX), (int) Math.floor(player.posZ), type);
             PacketDispatcher.wrapper.sendTo(new PlayerInformPacketLegacy(
@@ -42,7 +47,22 @@ public class ItemOreDensityScanner extends Item {
                             .appendText(")")
                             .setStyle(new Style().setColor(TextFormatting.RESET)),
                     777 + type.ordinal(), 4000), player);
+            totalLevel += level;
         }
+
+        totalLevel /= ItemBedrockOreNew.BedrockOreType.VALUES.length;
+
+        int tier = BedrockOre.getTier(totalLevel);
+        FluidStack boreFluid = BedrockOre.getBoreFluid(totalLevel);
+
+        TextComponentString summary = new TextComponentString("Tier " + tier);
+        if(boreFluid != null) {
+            summary.appendText(" - " + boreFluid.fill + "mB ")
+                    .appendSibling(new TextComponentTranslation(boreFluid.type.getTranslationKey()));
+        }
+        summary.setStyle(new Style().setColor(TextFormatting.YELLOW));
+
+        PacketDispatcher.wrapper.sendTo(new PlayerInformPacketLegacy(summary, 777 + ItemBedrockOreNew.BedrockOreType.VALUES.length, 4000), player);
     }
 
     public static String translateDensity(double density) {

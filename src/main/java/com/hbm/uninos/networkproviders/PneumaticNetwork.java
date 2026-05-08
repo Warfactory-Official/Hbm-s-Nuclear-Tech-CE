@@ -1,5 +1,6 @@
 package com.hbm.uninos.networkproviders;
 
+import com.hbm.api.ntl.ISlotMonitorProvider;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineAutocrafter;
 import com.hbm.tileentity.network.TileEntityPneumoTube;
@@ -42,6 +43,7 @@ public class PneumaticNetwork extends NodeNet<PneumaticNetwork.ReceiverTarget, T
     protected static final int TIMEOUT_MS = 1_000;
     // not actually individual items, but rather the total "mass", based on max stack size
     public static final int ITEMS_PER_TRANSFER = 64;
+    public final HashMap<ISlotMonitorProvider, Long> storages = new HashMap<>();
 
     public record ReceiverTarget(BlockPos pos, ForgeDirection pipeDir, TileEntityPneumoTube endpointTube) {
         public ReceiverTarget(BlockPos pos, ForgeDirection pipeDir, TileEntityPneumoTube endpointTube) {
@@ -98,6 +100,8 @@ public class PneumaticNetwork extends NodeNet<PneumaticNetwork.ReceiverTarget, T
                 it.remove();
             }
         }
+
+        this.storages.entrySet().removeIf(e -> now - e.getValue() > TIMEOUT_MS);
     }
 
     public boolean send(TileEntity sourceTile, TileEntityPneumoTube tube, ForgeDirection accessDir, int sendOrder, int receiveOrder, int maxRange,

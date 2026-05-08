@@ -130,14 +130,18 @@ public class ItemScraps extends ItemAutogen {
     @SideOnly(Side.CLIENT)
     public String getItemStackDisplayName(ItemStack stack) {
 
-        if(stack.hasTagCompound() && stack.getTagCompound().getBoolean("liquid")) {
-            Mats.MaterialStack contents = getMats(stack);
-            if(contents != null) {
+        Mats.MaterialStack contents = getMats(stack);
+        if(contents != null) {
+            String matName = contents.material.getTranslationKey();
+
+            if(stack.hasTagCompound() && stack.getTagCompound().getBoolean("liquid")) {
                 return I18nUtil.resolveKey(contents.material.getTranslationKey());
+            } else {
+                return ("" + I18n.format(this.getUnlocalizedNameInefficiently(stack) + ".name", I18n.format(matName))).trim();
             }
         }
 
-        return ("" + I18n.format(this.getUnlocalizedNameInefficiently(stack) + ".name")).trim();
+        return "Foundry Scraps";
     }
 
     @Override
@@ -146,11 +150,10 @@ public class ItemScraps extends ItemAutogen {
 
         if(contents != null) {
 
+            list.add(Mats.formatAmount(contents.amount, Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)));
+
             if(stack.hasTagCompound() && stack.getTagCompound().getBoolean("liquid")) {
-                list.add(Mats.formatAmount(contents.amount, Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)));
                 if(contents.material.smeltable == contents.material.smeltable.ADDITIVE) list.add(TextFormatting.DARK_RED + "Additive, not castable!");
-            } else {
-                list.add(I18nUtil.resolveKey(contents.material.getTranslationKey()) + ", " + Mats.formatAmount(contents.amount, Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)));
             }
         }
     }

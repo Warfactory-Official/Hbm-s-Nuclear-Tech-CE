@@ -216,7 +216,7 @@ public class BlastFurnaceRecipes extends SerializableRecipe {
                     if (!stack.extractForJEI().isEmpty()) {
                         in1.remove(nothing);
                         in1.addAll(stack.extractForJEI());
-                        break;
+                        continue;
                     }
                 }
                 if (in1.contains(nothing)) {
@@ -227,7 +227,7 @@ public class BlastFurnaceRecipes extends SerializableRecipe {
                     if (!stack.extractForJEI().isEmpty()) {
                         in2.remove(nothing);
                         in2.addAll(stack.extractForJEI());
-                        break;
+                        continue;
                     }
                 }
                 if (in2.contains(nothing)) {

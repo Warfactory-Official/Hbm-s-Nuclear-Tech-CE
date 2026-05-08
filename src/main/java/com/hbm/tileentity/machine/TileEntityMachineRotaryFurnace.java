@@ -156,13 +156,14 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachinePolluting i
                     markDirty();
                 }
 
-                if (this.canProcess(recipe)) {
-                    float speed = Math.max((float) burnHeat, 1);
-                    this.progress += speed / recipe.duration;
+                float processSpeed = Math.max((float) burnHeat, 1);
+                float steamUseMult = (float)(10 * Math.log10(processSpeed) + 1);
 
-                    speed = (float) (13 * Math.log10(speed) + 1);
-                    tanks[1].setFill((int) (tanks[1].getFill() - recipe.steam * speed));
-                    steamUsed += (int) (recipe.steam * speed);
+                if (this.canProcess(recipe, steamUseMult)) {
+                    this.progress += processSpeed / recipe.duration;
+
+                    tanks[1].setFill((int) (tanks[1].getFill() - recipe.steam * steamUseMult));
+                    steamUsed += (int) (recipe.steam * steamUseMult);
                     this.isProgressing = true;
 
                     if (this.progress >= 1F) {
@@ -338,7 +339,7 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachinePolluting i
         return result;
     }
 
-    public boolean canProcess(RotaryFurnaceRecipe recipe) {
+    public boolean canProcess(RotaryFurnaceRecipe recipe, float steamUseMult) {
 
         if (this.burnTime <= 0) return false;
 
@@ -347,10 +348,8 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachinePolluting i
             if (this.tanks[0].getFill() < recipe.fluid.fill) return false;
         }
 
-        float speed = Math.max((float) burnHeat, 1);
-
-        if (tanks[1].getFill() < recipe.steam * speed) return false;
-        if (tanks[2].getMaxFill() - tanks[2].getFill() < recipe.steam * speed / 100) return false;
+        if (tanks[1].getFill() < recipe.steam * steamUseMult) return false;
+        if (tanks[2].getMaxFill() - tanks[2].getFill() < recipe.steam * steamUseMult / 100) return false;
         if (this.steamUsed > 100) return false;
 
         if (this.output != null) {

@@ -38,9 +38,18 @@ public abstract class TileEntityPipelineBase extends TileEntityPipeBaseNT {
         connected.add(new int[] {x, y, z});
         this.bb = null;
 
-        FluidNode node = UniNodespace.getNode(world, pos, this.type.getNetworkProvider());
-        node.recentlyChanged = true;
-        node.addConnection(new DirPos(x, y, z, ForgeDirection.UNKNOWN));
+        if(this.node == null || this.node.expired) {
+            if(this.shouldCreateNode()) {
+                this.node = UniNodespace.getNode(world, pos, type.getNetworkProvider());
+                if(this.node == null || this.node.expired) {
+                    this.node = this.createNode(type);
+                    UniNodespace.createNode(world, this.node);
+                }
+            }
+        }
+
+        this.node.recentlyChanged = true;
+        this.node.addConnection(new DirPos(x, y, z, ForgeDirection.UNKNOWN));
 
         this.markDirty();
 

@@ -16,7 +16,9 @@ import com.hbm.interfaces.IClimbable;
 import com.hbm.inventory.OreDictManager;
 import com.hbm.inventory.RecipesCommon;
 import com.hbm.inventory.container.ContainerMachineFluidTank;
-import com.hbm.inventory.control_panel.*;
+import com.hbm.inventory.control_panel.ControlEvent;
+import com.hbm.inventory.control_panel.ControlEventSystem;
+import com.hbm.inventory.control_panel.IControllable;
 import com.hbm.inventory.control_panel.types.DataValue;
 import com.hbm.inventory.control_panel.types.DataValueFloat;
 import com.hbm.inventory.control_panel.types.DataValueString;
@@ -50,7 +52,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
@@ -639,7 +640,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
 
     @Override
     public String[] getFunctionInfo() {
-        return new String[]{PREFIX_VALUE + "type", PREFIX_VALUE + "fill", PREFIX_VALUE + "fillpercent", PREFIX_FUNCTION + "setmode" + NAME_SEPARATOR + "mode", PREFIX_FUNCTION + "setmode" + NAME_SEPARATOR + "mode" + PARAM_SEPARATOR + "fallback",};
+        return new String[]{PREFIX_VALUE + "type", PREFIX_VALUE + "fill", PREFIX_VALUE + "fillpercent", PREFIX_FUNCTION + "setmode" + NAME_SEPARATOR + "mode (0-3)", PREFIX_FUNCTION + "setmode" + NAME_SEPARATOR + "mode" + PARAM_SEPARATOR + "fallback (0-3)",};
     }
 
     @Override

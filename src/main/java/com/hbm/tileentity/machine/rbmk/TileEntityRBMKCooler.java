@@ -200,6 +200,15 @@ public class TileEntityRBMKCooler extends TileEntityRBMKBase implements IFluidSt
 	public Object[] getHeat(Context context, Arguments args) {
 		return new Object[]{heat};
 	}
+
+	@Callback(direct = true)
+	@Optional.Method(modid = "opencomputers")
+	public Object[] getCoolant(Context context, Arguments args) {
+		return new Object[] {
+				tanks[0].getFill(), tanks[0].getMaxFill(),
+				tanks[1].getFill(), tanks[1].getMaxFill()
+		};
+	}
 	
 	// Th3_Sl1ze: I'm trying to predict for now
 	@Callback(direct = true)

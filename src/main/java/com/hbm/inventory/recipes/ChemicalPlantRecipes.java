@@ -182,6 +182,12 @@ public class ChemicalPlantRecipes extends GenericRecipes<GenericRecipe> {
                         new FluidStack[] {new FluidStack(Fluids.LIGHTOIL, 200)} :
                         new FluidStack[] {new FluidStack(Fluids.LIGHTOIL, 200), new FluidStack(Fluids.MERCURY, 200)})
                 .outputItems(new ItemStack(ModItems.ingot_desh)));
+        this.register(new GenericRecipe("chem.deshcracked").setup(100, 100)
+                .inputItems(new RecipesCommon.ComparableStack(ModItems.powder_desh_mix))
+                .inputFluids((GeneralConfig.enableLBSM && GeneralConfig.enableLBSMSimpleChemsitry) ?
+                        new FluidStack[] {new FluidStack(Fluids.LIGHTOIL_CRACK, 500)} :
+                        new FluidStack[] {new FluidStack(Fluids.LIGHTOIL_CRACK, 500, 1), new FluidStack(Fluids.MERCURY, 100)})
+                .outputItems(new ItemStack(ModItems.ingot_desh)));
 
         this.register(new GenericRecipe("chem.polymer").setup(100, 100)
                 .inputItems(new RecipesCommon.OreDictStack(COAL.dust(), 2), new RecipesCommon.OreDictStack(F.dust()))
@@ -195,7 +201,7 @@ public class ChemicalPlantRecipes extends GenericRecipes<GenericRecipe> {
         this.register(new GenericRecipe("chem.rubber").setup(100, 200)
                 .inputItems(new RecipesCommon.OreDictStack(S.dust()))
                 .inputFluids(new FluidStack(Fluids.UNSATURATEDS, 500, GeneralConfig.enable528PressurizedRecipes ? 2 : 0))
-                .outputItems(new ItemStack(ModItems.ingot_rubber)));
+                .outputItems(new ItemStack(ModItems.ingot_rubber, 2)));
 
         this.register(new GenericRecipe("chem.hardplastic").setup(100, 1_000)
                 .inputFluids(new FluidStack(Fluids.XYLENE, 500, GeneralConfig.enable528PressurizedRecipes ? 2 : 0), new FluidStack(Fluids.PHOSGENE, 500, GeneralConfig.enable528PressurizedRecipes ? 2 : 0))

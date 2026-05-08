@@ -37,7 +37,7 @@ public class EntityTom extends EntityThrowable implements IConstantRenderer {
         
 		motionY = -0.5;
         
-        if(this.world.getBlockState(new BlockPos((int)this.posX, (int)this.posY, (int)this.posZ)).getBlock() != Blocks.AIR)
+        if(this.world.getBlockState(new BlockPos((int)this.posX, (int)this.posY, (int)this.posZ)).getBlock() != Blocks.AIR || this.posY < 10)
         {
     		if(!this.world.isRemote) {
     			if(CompatibilityConfig.isWarDim(world)){
@@ -47,11 +47,11 @@ public class EntityTom extends EntityThrowable implements IConstantRenderer {
 	    			tom.posZ = posZ;
 	    			tom.destructionRange = 600;
 	    			world.spawnEntity(tom);
+
+					EntityCloudTom cloud = new EntityCloudTom(world, 500);
+					cloud.setLocationAndAngles(posX, posY, posZ, 0, 0);
+					world.spawnEntity(cloud);
 	    		}
-    			
-    			EntityCloudTom cloud = new EntityCloudTom(world, 500);
-    			cloud.setLocationAndAngles(posX, posY, posZ, 0, 0);
-    			world.spawnEntity(cloud);
     		}
     		this.setDead();
         }

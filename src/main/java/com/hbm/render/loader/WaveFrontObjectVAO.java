@@ -260,7 +260,6 @@ public class WaveFrontObjectVAO implements IModelCustomNamed {
     static final class VBOBufferData extends GroupHandle {
         String name;
         int vboHandle = -1;
-        int eboHandle = -1;
     }
 
     @SuppressCheckedExceptions

@@ -97,4 +97,33 @@ public abstract class TileEntityTurretBaseArtillery extends TileEntityTurretBase
     public Object[] getTargetDistance(Context context, Arguments args) {
         return new Object[]{Math.sqrt(Math.pow(pos.getX() - args.checkDouble(0), 2) + Math.pow(pos.getY() - args.checkDouble(1), 2) + Math.pow(pos.getZ() - args.checkDouble(2), 2))};
     }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[] {
+                PREFIX_FUNCTION + "setActive" + NAME_SEPARATOR + "active (0 or 1)",
+                PREFIX_FUNCTION + "targetPlayers" + NAME_SEPARATOR + "enabled (0 or 1)",
+                PREFIX_FUNCTION + "targetAnimals" + NAME_SEPARATOR + "enabled (0 or 1)",
+                PREFIX_FUNCTION + "targetMobs" + NAME_SEPARATOR + "enabled (0 or 1)",
+                PREFIX_FUNCTION + "targetMachines" + NAME_SEPARATOR + "enabled (0 or 1)",
+                PREFIX_FUNCTION + "addWhitelist" + NAME_SEPARATOR + "name",
+                PREFIX_FUNCTION + "removeWhitelist" + NAME_SEPARATOR + "name",
+                PREFIX_FUNCTION + "enqueue" + NAME_SEPARATOR + "x" + PARAM_SEPARATOR + "y" + PARAM_SEPARATOR + "z",
+        };
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        super.runRORFunction(name, params);
+
+        if((PREFIX_FUNCTION + "enqueue").equals(name) && params.length > 2) {
+            int x = Integer.parseInt(params[0]);
+            int y = Integer.parseInt(params[1]);
+            int z = Integer.parseInt(params[2]);
+            this.sendCommandPosition(x, y, z);
+            this.markChanged();
+        }
+
+        return null;
+    }
 }

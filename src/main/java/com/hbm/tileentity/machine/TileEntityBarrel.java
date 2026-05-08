@@ -463,7 +463,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements ITickable
 
     @Override
     public String[] getFunctionInfo() {
-        return new String[]{PREFIX_VALUE + "type", PREFIX_VALUE + "fill", PREFIX_VALUE + "fillpercent", PREFIX_FUNCTION + "setmode" + NAME_SEPARATOR + "mode", PREFIX_FUNCTION + "setmode" + NAME_SEPARATOR + "mode" + PARAM_SEPARATOR + "fallback",};
+        return new String[]{PREFIX_VALUE + "type", PREFIX_VALUE + "fill", PREFIX_VALUE + "fillpercent", PREFIX_FUNCTION + "setmode" + NAME_SEPARATOR + "mode (0-3)", PREFIX_FUNCTION + "setmode" + NAME_SEPARATOR + "mode" + PARAM_SEPARATOR + "fallback (0-3)",};
     }
 
     @Override

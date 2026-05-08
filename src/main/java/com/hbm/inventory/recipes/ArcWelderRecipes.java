@@ -5,7 +5,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.inventory.OreDictManager;
-import com.hbm.inventory.RecipesCommon.*;
+import com.hbm.inventory.RecipesCommon.AStack;
+import com.hbm.inventory.RecipesCommon.ComparableStack;
+import com.hbm.inventory.RecipesCommon.OreDictStack;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.Mats;
@@ -16,7 +18,10 @@ import com.hbm.items.machine.ItemFluidIcon;
 import net.minecraft.item.ItemStack;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 import static com.hbm.inventory.OreDictManager.*;
 
@@ -43,6 +48,13 @@ public class ArcWelderRecipes extends SerializableRecipe {
             new OreDictStack(STEEL.plate(), 1),
             new ComparableStack(ModItems.coil_copper),
             new ComparableStack(ModItems.coil_copper_torus)));
+    recipes.add(
+        new ArcWelderRecipe(
+            new ItemStack(ModItems.motor, 2),
+            100,
+            400L,
+            new OreDictStack(STEEL.plate(), 2),
+            new OreDictStack(MINGRADE.wireDense(), 2)));
     recipes.add(
         new ArcWelderRecipe(
             DictFrame.fromOne(ModItems.part_generic, EnumPartType.LDE),
@@ -76,6 +88,12 @@ public class ArcWelderRecipes extends SerializableRecipe {
             100,
             10_000L,
             new OreDictStack(CU.wireFine(), 8)));
+    recipes.add(
+        new ArcWelderRecipe(
+            new ItemStack(ModItems.wire_dense, 1, Mats.MAT_MINGRADE.id),
+            100,
+            10_000L,
+            new OreDictStack(MINGRADE.wireFine(), 8)));
     recipes.add(
         new ArcWelderRecipe(
             new ItemStack(ModItems.wire_dense, 1, Mats.MAT_ALLOY.id),

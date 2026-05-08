@@ -26,7 +26,7 @@ public class TileEntityRadioTorchController extends TileEntityLoadedBase impleme
 
     public String channel = "";
     public String prev;
-    public boolean polling = false;
+    public boolean polling = true;
 
     @Override
     public void update() {
@@ -51,7 +51,7 @@ public class TileEntityRadioTorchController extends TileEntityLoadedBase impleme
                             vnt.explode();
                             return;
                         }
-                        if (this.polling || !rec.equals(prev)) {
+                        if ((this.polling && chan.timeStamp >= world.getTotalWorldTime() - 1) || !rec.equals(prev)) {
                             try {
                                 if (!rec.isEmpty())
                                     ror.runRORFunction(IRORInteractive.PREFIX_FUNCTION + IRORInteractive.getCommand(rec), IRORInteractive.getParams(rec));

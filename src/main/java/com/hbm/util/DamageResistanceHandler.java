@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import com.hbm.api.entity.IResistanceProvider;
 import com.hbm.items.ModItems;
+import com.hbm.lib.ModDamageSource;
 import com.hbm.main.MainRegistry;
 import com.hbm.util.Tuple.Quartet;
 import net.minecraft.entity.Entity;
@@ -182,9 +183,9 @@ public class DamageResistanceHandler {
                 .addExact(DamageSource.FALL.getDamageType(), 0F, 1F)
                 .setOther(2F, 0.25F));
         registerSet(ModItems.fau_helmet, ModItems.fau_plate, ModItems.fau_legs, ModItems.fau_boots,
-                new ResistanceStats().addCategory(CATEGORY_EXPLOSION, 50F, 0.95F).addCategory(CATEGORY_FIRE, 0F, 1F).addExact(DamageClass.LASER.name(), 25F, 0.95F).addExact(DamageSource.FALL.getDamageType(), 0F, 1F).setOther(100F, 0.99F));
+                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 100F, 0.99F).addCategory(CATEGORY_EXPLOSION, 50F, 0.95F).addCategory(CATEGORY_FIRE, 100F, 1F).addExact(DamageClass.LASER.name(), 25F, 0.95F).addExact(DamageSource.FALL.getDamageType(), 0F, 1F).setOther(100F, 0.99F));
         registerSet(ModItems.dns_helmet, ModItems.dns_plate, ModItems.dns_legs, ModItems.dns_boots,
-                new ResistanceStats().addCategory(CATEGORY_EXPLOSION, 100F, 0.99F).addCategory(CATEGORY_FIRE, 0F, 1F).setOther(1000F, 1F));
+                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 1000F, 1F).addCategory(CATEGORY_EXPLOSION, 100F, 0.99F).addCategory(CATEGORY_FIRE, 0F, 1F).setOther(1000F, 1F));
         registerSet(ModItems.taurun_helmet, ModItems.taurun_plate, ModItems.taurun_legs, ModItems.taurun_boots, new ResistanceStats()
                 .addCategory(CATEGORY_PHYSICAL, 2F, 0.15F)
                 .addCategory(CATEGORY_FIRE, 0F, 0.25F)
@@ -427,6 +428,9 @@ public class DamageResistanceHandler {
         if (source.getDamageType().toLowerCase(Locale.US).equals(DamageClass.SUBATOMIC.name())) return CATEGORY_ENERGY;
         if (source.getDamageType().toLowerCase(Locale.US).equals(DamageClass.ELECTRIC.name())) return CATEGORY_ENERGY;
         if (source == DamageSource.CACTUS) return CATEGORY_PHYSICAL;
+        if (source == ModDamageSource.spikes) return CATEGORY_PHYSICAL;
+        if (source == ModDamageSource.electricity) return CATEGORY_ENERGY;
+        if (source == ModDamageSource.microwave) return CATEGORY_ENERGY;
         if (source instanceof EntityDamageSource) return CATEGORY_PHYSICAL;
         return source.getDamageType();
     }
