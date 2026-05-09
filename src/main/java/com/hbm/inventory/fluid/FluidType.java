@@ -295,15 +295,15 @@ public class FluidType {
         boolean shiftHeld = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT);
 
         List<String> hidden = new ArrayList<>();
+        if(temperature != ROOM_TEMPERATURE && shiftHeld) {
+            if(temperature < 0) info.add(TextFormatting.BLUE + "" + temperature + "°C");
+            if(temperature > 0) info.add(TextFormatting.RED + "" + temperature + "°C");
+        }
 
         for(Class<? extends FluidTrait> clazz : FluidTrait.traitList) {
             FluidTrait trait = this.getTrait(clazz);
             if(trait != null) {
                 if(shiftHeld){
-                    if(temperature != ROOM_TEMPERATURE) {
-                        if(temperature < 0) info.add(TextFormatting.BLUE + "" + temperature + "°C");
-                        if(temperature > 0) info.add(TextFormatting.RED + "" + temperature + "°C");
-                    }
                     trait.addInfo(info);
                     trait.addInfoHidden(info);
                     trait.addInfoHidden(hidden);
