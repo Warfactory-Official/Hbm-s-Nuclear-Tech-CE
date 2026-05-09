@@ -25,10 +25,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
 @AutoRegister(name = "entity_rbmk_debris", trackingRange = 1000)
-public class EntityRBMKDebris extends Entity {
+public class EntityRBMKDebris extends EntityDebrisBase {
 
-	public static final DataParameter<Integer> TYPE_ID = EntityDataManager.createKey(EntityRBMKDebris.class, DataSerializers.VARINT);
-	
 	public float rot;
 	public float lastRot;
 	private boolean hasSizeSet = false;
@@ -41,17 +39,6 @@ public class EntityRBMKDebris extends Entity {
 		super(world);
 		this.setPosition(x, y, z);
 		this.setType(type);
-	}
-
-	@Override
-	protected void entityInit(){
-		this.getDataManager().register(TYPE_ID, 0);
-		this.rot = this.lastRot = this.rand.nextFloat() * 360;
-	}
-
-	@Override
-	public boolean canBeCollidedWith(){
-		return true;
 	}
 
 	@Override
@@ -89,7 +76,40 @@ public class EntityRBMKDebris extends Entity {
 
 		return false;
 	}
-	
+
+	@Override
+	public void onUpdate() {
+		if(!hasSizeSet) {
+
+			switch(this.getType()){
+				case BLANK:
+					this.setSize(0.5F, 0.5F);
+					break;
+				case ELEMENT:
+					this.setSize(1F, 1F);
+					break;
+				case FUEL:
+					this.setSize(0.25F, 0.25F);
+					break;
+				case GRAPHITE:
+					this.setSize(0.25F, 0.25F);
+					break;
+				case LID:
+					this.setSize(1F, 0.5F);
+					break;
+				case ROD:
+					this.setSize(0.75F, 0.5F);
+					break;
+			}
+
+			hasSizeSet = true;
+		}
+		if(!world.isRemote && this.getType() == DebrisType.FUEL)
+			ContaminationUtil.radiate(world, this.posX, this.posY, this.posZ, 16, 100);
+		super.onUpdate();
+	}
+/* can you tell me why
+	   - ntmelfeafieafleaf
 	@Override
 	public void onUpdate(){
 
@@ -179,9 +199,9 @@ public class EntityRBMKDebris extends Entity {
 				this.lastRot -= 360F;
 			}
 		}
-	}
+	}*/
 
-	private int getLifetime(){
+	public int getLifetime(){
 
 		switch(this.getType()){
 		case BLANK:
@@ -209,7 +229,9 @@ public class EntityRBMKDebris extends Entity {
 		return DebrisType.VALUES[Math.abs(this.getDataManager().get(TYPE_ID)) % DebrisType.VALUES.length];
 	}
 
-	@Override
+	// can you tell me why
+	// - ntmleafia
+	/*@Override
 	protected void readEntityFromNBT(NBTTagCompound nbt){
 		this.getDataManager().set(TYPE_ID, nbt.getInteger("debtype"));
 	}
@@ -358,7 +380,7 @@ public class EntityRBMKDebris extends Entity {
 
 		int range = 128;
 		return dist < range * range;
-	}
+	}*/
 
 	public static enum DebrisType {
 		BLANK, //just a metal beam
