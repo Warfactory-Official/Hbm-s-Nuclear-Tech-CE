@@ -1039,8 +1039,8 @@ public class ModEventHandler {
                     event.getEntityLiving().dropItem(ModItems.bandaid, 1);
                 }
 
-                if (event.getEntityLiving() instanceof IMob && rng.nextInt(1000) == 0) {
-                    event.getEntityLiving().dropItem(ModItems.heart_piece, 1);
+                if (event.getEntityLiving() instanceof IMob) {
+                    if(rng.nextInt(1000) == 0) event.getEntityLiving().dropItem(ModItems.heart_piece, 1);
                     if(rng.nextInt(250) == 0) event.getEntityLiving().dropItem(ModItems.key_red_cracked, 1);
                     if(rng.nextInt(250) == 0) event.getEntityLiving().dropItem(ModItems.launch_code_piece, 1);
                 }
