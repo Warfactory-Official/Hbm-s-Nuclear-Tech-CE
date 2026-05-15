@@ -11,6 +11,7 @@ import com.hbm.particle.ParticleSlicedMob;
 import com.hbm.particle.bullet_hit.EntityHitDataHandler;
 import com.hbm.particle.bullet_hit.EntityHitDataHandler.BulletHit;
 import com.hbm.particle.bullet_hit.ParticleMobGib;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.physics.RigidBody;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.render.util.ModelRendererUtil;
@@ -161,11 +162,6 @@ public class PacketSpecialDeath implements IMessage {
 								} else {
 									Vec3d direction = capTris.get(0).p2.pos.subtract(capTris.get(0).p1.pos).crossProduct(capTris.get(2).p2.pos.subtract(capTris.get(0).p1.pos)).normalize().scale(i%2==0 ? 0.4 : -0.4);
 									NBTTagCompound tag = new NBTTagCompound();
-									tag.setString("type", "spark");
-									tag.setString("mode", "coneBurst");
-									tag.setDouble("posX", pos.x);
-									tag.setDouble("posY", pos.y);
-									tag.setDouble("posZ", pos.z);
 									tag.setDouble("dirX", direction.x);
 									tag.setDouble("dirY", direction.y);
 									tag.setDouble("dirZ", direction.z);
@@ -181,7 +177,7 @@ public class PacketSpecialDeath implements IMessage {
 									tag.setFloat("angle", 60F);
 									tag.setInteger("count", 12);
 									tag.setFloat("randomVelocity", 0.3F);
-									MainRegistry.proxy.effectNT(tag);
+									MainRegistry.proxy.effectNT(HbmEffectNT.Spark, pos.x, pos.y, pos.z, tag);
 								}
 							}
 						});

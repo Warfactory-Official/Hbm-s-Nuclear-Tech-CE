@@ -24,6 +24,7 @@ import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.particle.SpentCasing;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.anim.sedna.AnimationEnums;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna.IType;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
@@ -235,14 +236,13 @@ public class XFactory12ga {
         }
 
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "plasmablast");
         data.setFloat("r", 0.5F);
         data.setFloat("g", 0.5F);
         data.setFloat("b", 1.0F);
         data.setFloat("pitch", pitch);
         data.setFloat("yaw", yaw);
         data.setFloat("scale", 0.75F);
-        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x, y, z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), x, y, z, 100));
+        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.PlasmaBlast, data, x, y, z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), x, y, z, 100));
     }
 
     public static void init() {

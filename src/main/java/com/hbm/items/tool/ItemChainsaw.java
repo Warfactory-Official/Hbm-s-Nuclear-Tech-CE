@@ -4,6 +4,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.ClaimedModelLocationRegistry;
 import com.hbm.items.IAnimatedItem;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.anim.BusAnimation;
 import com.hbm.render.anim.BusAnimationKeyframe;
 import com.hbm.render.anim.BusAnimationSequence;
@@ -35,9 +36,8 @@ public class ItemChainsaw extends ItemToolAbilityFueled implements IAnimatedItem
             return false;
 
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "anim");
         data.setString("mode", "generic");
-        MainRegistry.proxy.effectNT(data);
+        MainRegistry.proxy.effectNT(HbmEffectNT.Anim, 0, 0, 0, data);
         return true;
     }
 

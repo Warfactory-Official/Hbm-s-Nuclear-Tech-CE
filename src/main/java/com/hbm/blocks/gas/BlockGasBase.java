@@ -5,6 +5,7 @@ import com.hbm.handler.ArmorUtil;
 import com.hbm.items.ModItems;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.IBlockState;
@@ -164,15 +165,10 @@ public abstract class BlockGasBase extends Block {
         EntityPlayer p = MainRegistry.proxy.me();
         if (ArmorUtil.checkArmorPiece(p, ModItems.ashglasses, 3)) {
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("type", "vanillaExt");
-            data.setString("mode", "cloud");
-            data.setDouble("posX", pos.getX() + 0.5);
-            data.setDouble("posY", pos.getY() + 0.5);
-            data.setDouble("posZ", pos.getZ() + 0.5);
             data.setFloat("r", red);
             data.setFloat("g", green);
             data.setFloat("b", blue);
-            MainRegistry.proxy.effectNT(data);
+            MainRegistry.proxy.effectNT(HbmEffectNT.VanillaExt_Cloud, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, data);
         }
     }
 }

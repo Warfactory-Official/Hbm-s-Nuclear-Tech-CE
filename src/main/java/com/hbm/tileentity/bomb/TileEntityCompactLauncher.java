@@ -22,6 +22,7 @@ import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.TEMissileMultipartPacket;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
@@ -39,7 +40,6 @@ import net.minecraft.inventory.Container;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -143,8 +143,7 @@ public class TileEntityCompactLauncher extends TileEntityMachineBase implements 
 			List<Entity> entities = world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(pos.getX() - 0.5, pos.getY(), pos.getZ() - 0.5, pos.getX() + 1.5, pos.getY() + 10, pos.getZ() + 1.5));
 			for(Entity e : entities) {
 				if(e instanceof EntityMissileCustom) {
-					for(int i = 0; i < 15; i++)
-						MainRegistry.proxy.spawnParticle(pos.getX() + 0.5, pos.getY() + 0.25, pos.getZ() + 0.5, "launchsmoke", null);
+					for(int i = 0; i < 15; i++) MainRegistry.proxy.effectNT(HbmEffectNT.LaunchSmoke, pos.getX() + .5, pos.getY() + .5, pos.getZ() + .5);
 					break;
 				}
 			}

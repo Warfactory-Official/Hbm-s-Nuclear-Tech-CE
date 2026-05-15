@@ -3,6 +3,7 @@ package com.hbm.blocks.fluid;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
 import com.hbm.util.ContaminationUtil.HazardType;
@@ -11,7 +12,6 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
@@ -21,8 +21,10 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Random;
 
+@ParametersAreNonnullByDefault
 public class SchrabidicBlock extends BlockFluidClassic implements IFluidFog {
 
 	public static DamageSource damageSource;
@@ -84,9 +86,7 @@ public class SchrabidicBlock extends BlockFluidClassic implements IFluidFog {
 	
 	public boolean reactToBlocks(World world, int x, int y, int z) {
 		if(world.getBlockState(new BlockPos(x, y, z)).getMaterial() != ModBlocks.fluidschrabidic) {
-			if(world.getBlockState(new BlockPos(x, y, z)).getMaterial().isLiquid()) {
-				return true;
-			}
+            return world.getBlockState(new BlockPos(x, y, z)).getMaterial().isLiquid();
 		}
 		return false;
 	}
@@ -100,12 +100,7 @@ public class SchrabidicBlock extends BlockFluidClassic implements IFluidFog {
         double y = pos.getY() + 0.5F + rand.nextDouble() * 2 - 1D;
         double z = pos.getZ() + 0.5F + rand.nextDouble() * 2 - 1D;
 
-        NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "schrabfog");
-        data.setDouble("posX", x);
-        data.setDouble("posY", y);
-        data.setDouble("posZ", z);
-        MainRegistry.proxy.effectNT(data);
+        MainRegistry.proxy.effectNT(HbmEffectNT.SchrabFog, x, y, z);
     }
 
 	@Override

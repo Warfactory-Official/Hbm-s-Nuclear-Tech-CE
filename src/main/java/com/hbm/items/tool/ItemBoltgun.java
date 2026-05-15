@@ -12,6 +12,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.AdvancementManager;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.anim.BusAnimation;
 import com.hbm.render.anim.BusAnimationKeyframe;
 import com.hbm.render.anim.BusAnimationSequence;
@@ -80,17 +81,14 @@ public class ItemBoltgun extends Item implements IAnimatedItem {
                             }
 
                             NBTTagCompound data = new NBTTagCompound();
-                            data.setString("type", "vanillaExt");
-                            data.setString("mode", "largeexplode");
                             data.setFloat("size", 1F);
                             data.setByte("count", (byte) 1);
-                            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, entity.posX, entity.posY + entity.height / 2 - entity.getYOffset(), entity.posZ), new NetworkRegistry.TargetPoint(world.provider.getDimension(), entity.posX, entity.posY, entity.posZ, 50));
+                            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.VanillaExt_LargeExplode, data, entity.posX, entity.posY + entity.height / 2 - entity.getYOffset(), entity.posZ), new NetworkRegistry.TargetPoint(world.provider.getDimension(), entity.posX, entity.posY, entity.posZ, 50));
                         } else {
                             // doing this on the client outright removes the packet delay and makes the animation silky-smooth
                             NBTTagCompound d0 = new NBTTagCompound();
-                            d0.setString("type", "anim");
                             d0.setString("mode", "generic");
-                            MainRegistry.proxy.effectNT(d0);
+                            MainRegistry.proxy.effectNT(HbmEffectNT.Anim, 0, 0 ,0, d0);
                         }
                         return true;
                     }
@@ -141,16 +139,13 @@ public class ItemBoltgun extends Item implements IAnimatedItem {
         double off = 0.25;
 
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "vanillaExt");
-        data.setString("mode", "largeexplode");
         data.setFloat("size", 1F);
         data.setByte("count", (byte) 1);
-        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.getX() + hitX + dir.offsetX * off, pos.getY() + hitY + dir.offsetY * off, pos.getZ() + hitZ + dir.offsetZ * off), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 50));
+        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.VanillaExt_LargeExplode, data, pos.getX() + hitX + dir.offsetX * off, pos.getY() + hitY + dir.offsetY * off, pos.getZ() + hitZ + dir.offsetZ * off), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 50));
 
         NBTTagCompound d0 = new NBTTagCompound();
-        d0.setString("type", "anim");
         d0.setString("mode", "generic");
-        PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(d0, 0, 0, 0), (EntityPlayerMP) player);
+        PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Anim, d0, 0, 0, 0), (EntityPlayerMP) player);
     }
 
     @Override

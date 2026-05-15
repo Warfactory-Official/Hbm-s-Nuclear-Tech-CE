@@ -6,6 +6,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.uninos.GenNode;
 import com.hbm.uninos.UniNodespace;
 import com.hbm.util.Compat;
@@ -43,11 +44,10 @@ public interface IFluidReceiverMK2 extends IFluidUserMK2 {
         TileEntity te = Compat.getTileStandard(world, x, y, z);
         boolean red = false;
 
-        if(te instanceof IFluidConnectorMK2) {
-            IFluidConnectorMK2 con = (IFluidConnectorMK2) te;
+        if(te instanceof IFluidConnectorMK2 con) {
             if(!con.canConnect(type, dir.getOpposite())) return;
 
-            GenNode node = UniNodespace.getNode(world, new BlockPos(x, y, z), type.getNetworkProvider());
+            GenNode<FluidNetMK2> node = UniNodespace.getNode(world, new BlockPos(x, y, z), type.getNetworkProvider());
 
             if(node != null && node.net != null) {
                 node.net.addReceiver(this);
@@ -57,7 +57,6 @@ public interface IFluidReceiverMK2 extends IFluidUserMK2 {
 
         if(particleDebug) {
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("type", "network");
             data.setString("mode", "fluid");
             data.setInteger("color", type.getColor());
             double posX = x + 0.5 + dir.offsetX * 0.5 + world.rand.nextDouble() * 0.5 - 0.25;
@@ -66,7 +65,7 @@ public interface IFluidReceiverMK2 extends IFluidUserMK2 {
             data.setDouble("mX", -dir.offsetX * (red ? 0.025 : 0.1));
             data.setDouble("mY", -dir.offsetY * (red ? 0.025 : 0.1));
             data.setDouble("mZ", -dir.offsetZ * (red ? 0.025 : 0.1));
-            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, posX, posY, posZ), new NetworkRegistry.TargetPoint(world.provider.getDimension(), posX, posY, posZ, 25));
+            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Network, data, posX, posY, posZ), new NetworkRegistry.TargetPoint(world.provider.getDimension(), posX, posY, posZ, 25));
         }
     }
 

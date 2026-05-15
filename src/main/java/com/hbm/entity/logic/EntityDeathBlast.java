@@ -8,6 +8,7 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IConstantRenderer;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.amlfrom1710.Vec3;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -51,10 +52,8 @@ public class EntityDeathBlast extends Entity implements IConstantRenderer {
 					world.spawnEntity(laser);
 				}
 			}
-			
-			NBTTagCompound data = new NBTTagCompound();
-			data.setString("type", "muke");
-			PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, posX, posY + 0.5, posZ), new TargetPoint(world.provider.getDimension(), posX, posY, posZ, 250));
+
+			PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Muke, null, posX, posY + 0.5, posZ), new TargetPoint(world.provider.getDimension(), posX, posY, posZ, 250));
 			world.playSound(null, posX, posY, posZ, HBMSoundHandler.mukeExplosion, SoundCategory.HOSTILE, 25.0F, 0.9F);
 		}
 	}

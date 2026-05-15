@@ -6,6 +6,7 @@ import com.hbm.handler.threading.PacketThreading;
 import com.hbm.items.ISatChip;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.saveddata.satellites.Satellite;
 import com.hbm.saveddata.satellites.SatelliteSavedData;
 import com.hbm.saveddata.satellites.SatelliteScanner;
@@ -114,12 +115,11 @@ public class ItemModLens extends ItemArmorMod implements ISatChip {
 
         if(target == b && player.getRNG().nextInt(chance) == 0) {
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("type", "marker");
             data.setInteger("color", color);
             data.setInteger("expires", 15_000);
             data.setDouble("dist", 300D);
             if(label != null) data.setString("label", label);
-            PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(data, x, y, z), player);
+            PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Marker, data, x, y, z), player);
             return true;
         }
 

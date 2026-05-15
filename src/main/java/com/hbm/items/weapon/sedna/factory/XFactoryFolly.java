@@ -14,6 +14,7 @@ import com.hbm.items.weapon.sedna.mags.MagazineSingleReload;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.threading.ThreadedPacket;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.anim.sedna.AnimationEnums;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna.IType;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
@@ -51,14 +52,13 @@ public class XFactoryFolly {
             double spacing = 10;
             double dist = beam.ticksExisted * spacing;
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("type", "plasmablast");
             data.setFloat("r", 0.75F);
             data.setFloat("g", 0.75F);
             data.setFloat("b", 0.75F);
             data.setFloat("pitch", beam.rotationPitch + 90);
             data.setFloat("yaw", -beam.rotationYaw);
             data.setFloat("scale", 2F + beam.ticksExisted / (float)(beam.beamLength / spacing) * 3F);
-            ThreadedPacket message = new AuxParticlePacketNT(data, beam.posX + dir.x * dist, beam.posY + dir.y * dist, beam.posZ + dir.z * dist);
+            ThreadedPacket message = new AuxParticlePacketNT(HbmEffectNT.PlasmaBlast, data, beam.posX + dir.x * dist, beam.posY + dir.y * dist, beam.posZ + dir.z * dist);
             PacketThreading.createAllAroundThreadedPacket(message,
                     new NetworkRegistry.TargetPoint(beam.dimension, beam.posX, beam.posY, beam.posZ, 250));
         }

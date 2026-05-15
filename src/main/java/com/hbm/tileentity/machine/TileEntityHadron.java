@@ -15,6 +15,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.main.AdvancementManager;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.tileentity.machine.TileEntityHadronDiode.DiodeConfig;
@@ -547,9 +548,7 @@ public class TileEntityHadron extends TileEntityMachineBase implements ITickable
 			if(p.analysis == 2) {
 				this.world.playSound(null, p.posX + 0.5, p.posY + 0.5, p.posZ + 0.5, SoundEvents.ENTITY_FIREWORK_BLAST, SoundCategory.BLOCKS, 2.0F, 2F);
 				this.state = EnumHadronState.ANALYSIS;
-				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "hadron");
-				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, p.posX + 0.5, p.posY + 0.5, p.posZ + 0.5), new TargetPoint(world.provider.getDimension(), p.posX + 0.5, p.posY + 0.5, p.posZ + 0.5, 25));
+				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Hadron, null, p.posX + 0.5, p.posY + 0.5, p.posZ + 0.5), new TargetPoint(world.provider.getDimension(), p.posX + 0.5, p.posY + 0.5, p.posZ + 0.5, 25));
 			}
 
 			//if operating in line accelerator mode, halt after 2 blocks and staart the reading

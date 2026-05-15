@@ -7,6 +7,7 @@ import com.hbm.main.MainRegistry;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.packet.toserver.PacketMobSlicer;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.anim.HbmAnimations;
 import com.hbm.render.anim.HbmAnimations.Animation;
 import net.minecraft.client.Minecraft;
@@ -86,11 +87,10 @@ public class ItemSwordCutter extends ItemSwordAbility implements IEquipReceiver 
 			planeNormal = null;
 			clicked = false;
 			NBTTagCompound nbt = new NBTTagCompound();
-			nbt.setString("type", "anim");
 			nbt.setInteger("hand", EnumHand.MAIN_HAND.ordinal());
 			nbt.setString("mode", "swing");
 			nbt.setString("name", stack.getItem().getRegistryName().getPath());
-			MainRegistry.proxy.effectNT(nbt);
+			MainRegistry.proxy.effectNT(HbmEffectNT.Anim, 0, 0, 0, nbt);
 		}
 	}
 	
@@ -103,11 +103,10 @@ public class ItemSwordCutter extends ItemSwordAbility implements IEquipReceiver 
 		if(!(player instanceof EntityPlayerMP))
 			return;
 		NBTTagCompound nbt = new NBTTagCompound();
-		nbt.setString("type", "anim");
 		nbt.setInteger("hand", hand.ordinal());
 		nbt.setString("mode", "equip");
 		nbt.setString("name", this.getRegistryName().getPath());
-		PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(nbt, 0, 0, 0), (EntityPlayerMP)player);
+		PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Anim, nbt, 0, 0, 0), (EntityPlayerMP)player);
 	}
 
 }

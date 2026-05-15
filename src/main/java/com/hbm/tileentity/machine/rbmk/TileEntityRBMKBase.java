@@ -20,6 +20,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.AdvancementManager;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IOverpressurable;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.tileentity.machine.rbmk.RBMKColumn.ColumnType;
@@ -567,10 +568,9 @@ public abstract class TileEntityRBMKBase extends TileEntityLoadedBase implements
 		int avgZ = minZ + (maxZ - minZ) / 2;
 
 		NBTTagCompound data = new NBTTagCompound();
-		data.setString("type", "rbmkmush");
 		data.setFloat("scale", smallDim);
-		PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, avgX + 0.5, pos.getY() + 1, avgZ + 0.5), new TargetPoint(world.provider.getDimension(), avgX + 0.5, pos.getY() + 1, avgZ + 0.5, 250));
-		MainRegistry.proxy.effectNT(data);
+		PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.RBMKMush, data, avgX + 0.5, pos.getY() + 1, avgZ + 0.5), new TargetPoint(world.provider.getDimension(), avgX + 0.5, pos.getY() + 1, avgZ + 0.5, 250));
+		MainRegistry.proxy.effectNT(HbmEffectNT.RBMKMush, avgX + 0.5, pos.getY() + 1, avgZ + 0.5, data);
 
 		world.playSound(null, avgX + 0.5, pos.getY() + 1, avgZ + 0.5, HBMSoundHandler.rbmk_explosion, SoundCategory.BLOCKS, 50.0F, 1.0F);
 

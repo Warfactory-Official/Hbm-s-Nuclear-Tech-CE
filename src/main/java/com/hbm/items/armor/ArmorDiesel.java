@@ -9,6 +9,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModItems;
 import com.hbm.main.ResourceManager;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.item.ItemRenderBaseFMM;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.model.ModelArmorDiesel;
@@ -97,10 +98,9 @@ public class ArmorDiesel extends ArmorFSBFueled implements IItemRendererProvider
         && hasFSBArmor(player)
         && world.getTotalWorldTime() % 3 == 0) {
       NBTTagCompound data = new NBTTagCompound();
-      data.setString("type", "bnuuy");
       data.setInteger("player", player.getEntityId());
       PacketThreading.createAllAroundThreadedPacket(
-          new AuxParticlePacketNT(data, player.posX, player.posY, player.posZ),
+          new AuxParticlePacketNT(HbmEffectNT.bnuuy, data, player.posX, player.posY, player.posZ),
           new TargetPoint(
               world.provider.getDimension(), player.posX, player.posY, player.posZ, 100));
     }

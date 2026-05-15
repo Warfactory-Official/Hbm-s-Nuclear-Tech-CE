@@ -6,6 +6,7 @@ import com.hbm.handler.threading.PacketThreading;
 import com.hbm.items.ModItems;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.potion.HbmPotion;
 import com.hbm.util.ContaminationUtil;
 import net.minecraft.block.Block;
@@ -257,12 +258,10 @@ public interface IWeaponAbility extends IBaseAbility {
 
                     if (player instanceof EntityPlayerMP) {
                         NBTTagCompound data = new NBTTagCompound();
-                        data.setString("type", "vanillaburst");
                         data.setInteger("count", count * 4);
                         data.setDouble("motion", 0.1D);
-                        data.setString("mode", "blockdust");
                         data.setInteger("block", Block.getIdFromBlock(Blocks.REDSTONE_BLOCK));
-                        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, living.posX, living.posY + living.height * 0.5, living.posZ),
+                        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.VanillaBurst_BlockDust, data, living.posX, living.posY + living.height * 0.5, living.posZ),
                                 new NetworkRegistry.TargetPoint(living.dimension, living.posX, living.posY, living.posZ, 50));
                     }
 

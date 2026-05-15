@@ -10,6 +10,7 @@ import com.hbm.packet.toclient.GunAnimationPacket;
 import com.hbm.packet.toclient.GunFXPacket;
 import com.hbm.packet.toclient.GunFXPacket.FXType;
 import com.hbm.packet.PacketDispatcher;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.particle.vortex.*;
 import com.hbm.render.NTMRenderHelper;
 import com.hbm.render.anim.HbmAnimations.AnimType;
@@ -94,12 +95,7 @@ public class ItemGunVortex extends ItemGunBase {
 			hitPos = r.hitVec;
 			hitNormal = new Vec3d(r.sideHit.getXOffset(), r.sideHit.getYOffset(), r.sideHit.getZOffset());
 		}
-		
-		tag.setString("type", "spark");
-		tag.setString("mode", "coneBurst");
-		tag.setDouble("posX", pos.x-player.motionX);
-		tag.setDouble("posY", pos.y-player.motionY);
-		tag.setDouble("posZ", pos.z-player.motionZ);
+
 		tag.setDouble("dirX", view.x);
 		tag.setDouble("dirY", view.y);
 		tag.setDouble("dirZ", view.z);
@@ -113,7 +109,7 @@ public class ItemGunVortex extends ItemGunBase {
 		tag.setFloat("gravity", 0);
 		tag.setFloat("angle", 15F);
 		tag.setInteger("count", 12);
-		MainRegistry.proxy.effectNT(tag);
+		MainRegistry.proxy.effectNT(HbmEffectNT.Spark, pos.x-player.motionX, pos.y-player.motionY, pos.z-player.motionZ, tag);
 		
 		ParticleVortexBeam beam = new ParticleVortexBeam(player.world, pos.x, pos.y, pos.z, hitPos.x, hitPos.y, hitPos.z, shouldDoThirdPerson);
 		beam.color(0.5F, 0.8F, 0.9F, 2.0F);
@@ -166,11 +162,6 @@ public class ItemGunVortex extends ItemGunBase {
 				break;
 			}
 			tag = new NBTTagCompound();
-			tag.setString("type", "spark");
-			tag.setString("mode", "coneBurst");
-			tag.setDouble("posX", hitPos.x);
-			tag.setDouble("posY", hitPos.y);
-			tag.setDouble("posZ", hitPos.z);
 			tag.setDouble("dirX", sparkAxis.x);
 			tag.setDouble("dirY", sparkAxis.y+0.1);
 			tag.setDouble("dirZ", sparkAxis.z);
@@ -186,7 +177,7 @@ public class ItemGunVortex extends ItemGunBase {
 			tag.setFloat("angle", 70F);
 			tag.setInteger("count", 15);
 			tag.setFloat("randomVelocity", 0.1F);
-			MainRegistry.proxy.effectNT(tag);
+			MainRegistry.proxy.effectNT(HbmEffectNT.Spark, hitPos.x, hitPos.y, hitPos.z, tag);
 			
 			ParticleVortexHit hit = new ParticleVortexHit(player.world, hitPos.x, hitPos.y, hitPos.z, 2.5F+player.world.rand.nextFloat()*0.5F, 90);
 			hit.color(0.4F, 0.8F, 1F, 0.25F);

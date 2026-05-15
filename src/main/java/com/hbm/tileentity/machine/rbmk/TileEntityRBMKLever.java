@@ -9,6 +9,7 @@ import com.hbm.inventory.gui.GUIScreenRBMKLever;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.tileentity.network.RTTYSystem;
@@ -159,10 +160,9 @@ public class TileEntityRBMKLever extends TileEntityLoadedBase implements ITickab
                     double z = pos.getZ() + 0.5 + dir.offsetZ * 0.4 - rot.offsetZ * (index - 0.5) * (i == 0 ? 0.375 : 0.625);
 
                     NBTTagCompound dPart = new NBTTagCompound();
-                    dPart.setString("type", "tau");
                     dPart.setByte("count", (byte) 5);
                     dPart.setBoolean("small", true);
-                    PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(dPart, x, y, z), new TargetPoint(world.provider.getDimension(), x, y, z, 25));
+                    PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Tau, dPart, x, y, z), new TargetPoint(world.provider.getDimension(), x, y, z, 25));
                 }
             }
         }

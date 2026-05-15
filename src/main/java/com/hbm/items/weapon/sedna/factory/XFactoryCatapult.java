@@ -16,6 +16,7 @@ import com.hbm.items.weapon.sedna.mags.MagazineSingleReload;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.anim.sedna.AnimationEnums;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna.IType;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
@@ -95,9 +96,8 @@ public class XFactoryCatapult {
 
         bullet.world.playSound(null, mop.hitVec.x, mop.hitVec.y + 0.5, mop.hitVec.z, HBMSoundHandler.mukeExplosion, SoundCategory.HOSTILE, 15.0F, 1.0F);
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "muke");
         data.setBoolean("balefire", true);
-        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, mop.hitVec.x, mop.hitVec.y + 0.5, mop.hitVec.z), new NetworkRegistry.TargetPoint(bullet.dimension, mop.hitVec.x, mop.hitVec.y, mop.hitVec.z, 250));
+        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Muke, data, mop.hitVec.x, mop.hitVec.y + 0.5, mop.hitVec.z), new NetworkRegistry.TargetPoint(bullet.dimension, mop.hitVec.x, mop.hitVec.y, mop.hitVec.z, 250));
     };
 
     public static void incrementRad(World world, double posX, double posY, double posZ, float mult) {

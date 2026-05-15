@@ -19,6 +19,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
@@ -209,40 +210,35 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
                 if ((!doesBurn || !(tank.getTankType().hasTrait(FT_Flammable.class))) && (tank.getTankType().hasTrait(FluidTraitSimple.FT_Gaseous.class) || tank.getTankType().hasTrait(FluidTraitSimple.FT_Gaseous_ART.class))) {
 
                     NBTTagCompound data = new NBTTagCompound();
-                    data.setString("type", "tower");
                     data.setFloat("lift", 1F);
                     data.setFloat("base", 0.25F);
                     data.setFloat("max", 3F);
                     data.setInteger("life", 150 + world.rand.nextInt(20));
                     data.setInteger("color", tank.getTankType().getColor());
 
-                    data.setDouble("posX", pos.getX() + 0.5);
-                    data.setDouble("posZ", pos.getZ() + 0.5);
-                    data.setDouble("posY", pos.getY() + 11);
-
-                    MainRegistry.proxy.effectNT(data);
+                    MainRegistry.proxy.effectNT(HbmEffectNT.Tower, pos.getX() + .5, pos.getY() + 11, pos.getZ() + .5, data);
 
                 }
 
                 if (doesBurn && tank.getTankType().hasTrait(FT_Flammable.class) && MainRegistry.proxy.me().getDistanceSq(pos.getX(), pos.getY() + 10, pos.getZ()) <= 1024) {
 
                     NBTTagCompound data = new NBTTagCompound();
-                    data.setString("type", "vanillaExt");
-                    data.setString("mode", "smoke");
                     data.setBoolean("noclip", true);
                     data.setInteger("overrideAge", 50);
 
+                    double posX, posY, posZ;
+
                     if (world.getTotalWorldTime() % 2 == 0) {
-                        data.setDouble("posX", pos.getX() + 1.5);
-                        data.setDouble("posZ", pos.getZ() + 1.5);
-                        data.setDouble("posY", pos.getY() + 10.75);
+                        posX = pos.getX() + 1.5;
+                        posZ = pos.getZ() + 1.5;
+                        posY = pos.getY() + 10.75;
                     } else {
-                        data.setDouble("posX", pos.getX() + 1.125);
-                        data.setDouble("posZ", pos.getZ() - 0.5);
-                        data.setDouble("posY", pos.getY() + 11.75);
+                        posX = pos.getX() + 1.125;
+                        posZ = pos.getZ() - 0.5;
+                        posY = pos.getY() + 11.75;
                     }
 
-                    MainRegistry.proxy.effectNT(data);
+                    MainRegistry.proxy.effectNT(HbmEffectNT.VanillaExt_Smoke, posX, posY, posZ, data);
                 }
             }
         }

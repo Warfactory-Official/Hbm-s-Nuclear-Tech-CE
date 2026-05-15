@@ -28,6 +28,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.AdvancementManager;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -389,10 +390,9 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IT
             this.inventory.setStackInSlot(i, ItemStack.EMPTY);
         }
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "rbmkmush");
         data.setFloat("scale", 4);
-        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 250));
-        MainRegistry.proxy.effectNT(data);
+        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.RBMKMush, data, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 250));
+        MainRegistry.proxy.effectNT(HbmEffectNT.RBMKMush, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, data);
 
         int meta = this.getBlockMetadata();
         for (int ox = -2; ox <= 2; ox++) {

@@ -9,6 +9,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IConfigurableMachine;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -57,17 +58,13 @@ public class TileEntityTowerLarge extends TileEntityCondenser {
 
 			if(ClientConfig.COOLING_TOWER_PARTICLES.get() && (this.waterTimer > 0 && this.world.getTotalWorldTime() % 4 == 0)) {
 				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "tower");
 				data.setFloat("lift", 0.5F);
 				data.setFloat("base", 1F);
 				data.setFloat("max", 10F);
 				data.setInteger("life", 750 + world.rand.nextInt(250));
-	
-				data.setDouble("posX", pos.getX() + 0.5 + world.rand.nextDouble() * 3 - 1.5);
-				data.setDouble("posZ", pos.getZ() + 0.5 + world.rand.nextDouble() * 3 - 1.5);
-				data.setDouble("posY", pos.getY() + 1);
 				
-				MainRegistry.proxy.effectNT(data);
+				MainRegistry.proxy.effectNT(HbmEffectNT.Tower,
+                        pos.getX() + 0.5 + world.rand.nextDouble() * 3 - 1.5, pos.getY() + 1, pos.getZ() + 0.5 + world.rand.nextDouble() * 3 - 1.5, data);
 			}
 		}
 	}

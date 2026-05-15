@@ -19,11 +19,10 @@ public class AshesCreator implements IParticleCreator {
     public static void composeEffect(World world, Entity toPulverize, int ashesCount, float ashesScale) {
 
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "ashes");
         data.setInteger("entityID", toPulverize.getEntityId());
         data.setInteger("ashesCount", ashesCount);
         data.setFloat("ashesScale", ashesScale);
-        IParticleCreator.sendPacket(world, toPulverize.posX, toPulverize.posY, toPulverize.posZ, 100, data);
+        IParticleCreator.sendPacket(world, HbmEffectNT.Ashes, toPulverize.posX, toPulverize.posY, toPulverize.posZ, 100, data);
     }
 
     @Override

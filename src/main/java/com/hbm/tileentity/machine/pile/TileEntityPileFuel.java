@@ -7,6 +7,7 @@ import com.hbm.config.GeneralConfig;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.MathHelper;
@@ -37,10 +38,8 @@ public class TileEntityPileFuel extends TileEntityPileBase implements IPileNeutr
 
 			if(world.rand.nextFloat() * 2F <= this.heat / (float)this.maxHeat) {
 				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "vanillaExt");
-				data.setString("mode", "smoke");
 				data.setDouble("mY", 0.05);
-				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.getX() + 0.25 + world.rand.nextDouble() * 0.5, pos.getY() + 1, pos.getZ() + 0.25 + world.rand.nextDouble() * 0.5),
+				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.VanillaExt_Smoke, data, pos.getX() + 0.25 + world.rand.nextDouble() * 0.5, pos.getY() + 1, pos.getZ() + 0.25 + world.rand.nextDouble() * 0.5),
 						new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 20));
 			}
 			

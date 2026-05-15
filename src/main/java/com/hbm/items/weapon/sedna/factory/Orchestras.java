@@ -17,6 +17,7 @@ import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.packet.toclient.MuzzleFlashPacket;
 import com.hbm.particle.SpentCasing;
 import com.hbm.particle.helper.CasingCreator;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.anim.sedna.AnimationEnums;
 import com.hbm.render.anim.sedna.HbmAnimationsSedna;
 import com.hbm.sound.AudioWrapper;
@@ -1238,14 +1239,13 @@ public class Orchestras {
                 float yaw = entity.world.rand.nextFloat() * 180F;
                 for(int i = 0; i < 3; i++) {
                     NBTTagCompound data = new NBTTagCompound();
-                    data.setString("type", "plasmablast");
                     data.setFloat("r", 1.0F);
                     data.setFloat("g", 0.8F);
                     data.setFloat("b", 0.5F);
                     data.setFloat("pitch", -60F + 60F * i);
                     data.setFloat("yaw", yaw);
                     data.setFloat("scale", 2F);
-                    PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, entity.posX, entity.posY + entity.getEyeHeight(), entity.posZ),
+                    PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.PlasmaBlast, data, entity.posX, entity.posY + entity.getEyeHeight(), entity.posZ),
                             new NetworkRegistry.TargetPoint(entity.dimension, entity.posX, entity.posY + entity.getEyeHeight(), entity.posZ, 100));
                 }
             }

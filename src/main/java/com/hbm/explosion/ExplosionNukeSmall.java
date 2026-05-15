@@ -9,6 +9,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
@@ -25,12 +26,11 @@ public class ExplosionNukeSmall {
 
         if (params.particle != null) {
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("type", params.particle);
-            if ("muke".equals(params.particle) && (MainRegistry.polaroidID == 11 || world.rand.nextInt(100) == 0)) {
+            if (params.particle == HbmEffectNT.Muke && (MainRegistry.polaroidID == 11 || world.rand.nextInt(100) == 0)) {
                 data.setBoolean("balefire", true);
             }
             PacketThreading.createAllAroundThreadedPacket(
-                    new AuxParticlePacketNT(data, posX, posY + 0.5, posZ),
+                    new AuxParticlePacketNT(params.particle, data, posX, posY + 0.5, posZ),
                     new TargetPoint(world.provider.getDimension(), posX, posY, posZ, 250)
             );
         }
@@ -77,7 +77,7 @@ public class ExplosionNukeSmall {
 
 
     public static MukeParams PARAMS_SAFE   = new MukeParams() {{ safe = true;  killRadius = 45F; radiationLevel = 2F; }};
-    public static MukeParams PARAMS_TOTS   = new MukeParams() {{ blastRadius = 10F; killRadius = 30F; particle = "tinytot"; shrapnelCount = 0; resolution = 32; radiationLevel = 1; }};
+    public static MukeParams PARAMS_TOTS   = new MukeParams() {{ blastRadius = 10F; killRadius = 30F; particle = HbmEffectNT.TinyTot; shrapnelCount = 0; resolution = 32; radiationLevel = 1; }};
     public static MukeParams PARAMS_LOW    = new MukeParams() {{ blastRadius = 15F; killRadius = 45F; radiationLevel = 2; }};
     public static MukeParams PARAMS_MEDIUM = new MukeParams() {{ blastRadius = 20F; killRadius = 55F; radiationLevel = 3; }};
     public static MukeParams PARAMS_HIGH   = new MukeParams() {{ miniNuke = false; blastRadius = BombConfig.fatmanRadius; shrapnelCount = 0; }};
@@ -89,7 +89,7 @@ public class ExplosionNukeSmall {
         public float blastRadius;
         public float killRadius;
         public float radiationLevel = 1F;
-        public String particle = "muke";
+        public HbmEffectNT particle = HbmEffectNT.Muke;
         public int shrapnelCount = 25;
         public int resolution = 64;
         public ExAttrib[] explosionAttribs = new ExAttrib[] { ExAttrib.FIRE, ExAttrib.NOPARTICLE, ExAttrib.NOSOUND, ExAttrib.NODROP, ExAttrib.NOHURT }; // TODO: replace with VNT

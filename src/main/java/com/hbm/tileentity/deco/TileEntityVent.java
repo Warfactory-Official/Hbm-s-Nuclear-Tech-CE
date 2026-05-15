@@ -5,6 +5,7 @@ import com.hbm.entity.particle.EntityModFXShadow;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.block.Block;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -25,18 +26,18 @@ public class TileEntityVent extends TileEntity implements ITickable {
 			Block b = world.getBlockState(pos).getBlock();
 
 			if(b == ModBlocks.vent_chlorine) {
-				emit(1.5D, "chlorinefx", EntityModFXShadow.Type.CHLORINE);
+				emit(1.5D, HbmEffectNT.FX_Chlorine, EntityModFXShadow.Type.CHLORINE);
 			}
 			if(b == ModBlocks.vent_cloud) {
-				emit(1.75D, "cloudfx", EntityModFXShadow.Type.CLOUD);
+				emit(1.75D, HbmEffectNT.FX_Cloud, EntityModFXShadow.Type.CLOUD);
 			}
 			if(b == ModBlocks.vent_pink_cloud) {
-				emit(2D, "pinkcloudfx", EntityModFXShadow.Type.PINK_CLOUD);
+				emit(2D, HbmEffectNT.FX_PinkCloud, EntityModFXShadow.Type.PINK_CLOUD);
 			}
 		}
 	}
 
-	private void emit(double spread, String particleType, EntityModFXShadow.Type shadowType) {
+	private void emit(double spread, HbmEffectNT particleType, EntityModFXShadow.Type shadowType) {
 		double x = rand.nextGaussian() * spread;
 		double y = rand.nextGaussian() * spread;
 		double z = rand.nextGaussian() * spread;
@@ -55,8 +56,7 @@ public class TileEntityVent extends TileEntity implements ITickable {
 		data.setDouble("moX", mx);
 		data.setDouble("moY", my);
 		data.setDouble("moZ", mz);
-		data.setString("type", particleType);
-		PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, px, py, pz), new NetworkRegistry.TargetPoint(world.provider.getDimension(), px, py, pz, 128));
+		PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(particleType, data, px, py, pz), new NetworkRegistry.TargetPoint(world.provider.getDimension(), px, py, pz, 128));
 
 		EntityModFXShadow.spawn(world, shadowType, px, py, pz, mx, my, mz);
 	}

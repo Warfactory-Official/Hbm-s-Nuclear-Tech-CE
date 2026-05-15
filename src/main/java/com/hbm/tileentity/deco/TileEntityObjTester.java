@@ -41,7 +41,7 @@ public class TileEntityObjTester extends TileEntity implements ITickable {
 			if(fireAge >= 0) {
 				fireAge++;
 			}
-			MainRegistry.proxy.spawnParticle(pos.getX(), pos.getY(), pos.getZ(), "bfg_fire", new float[]{fireAge});
+			//MainRegistry.proxy.spawnParticle(pos.getX(), pos.getY(), pos.getZ(), "bfg_fire", new float[]{fireAge}); this is the only thing the old shader manager is still used for
 		} else {
 			if(r != null && r.typeOfHit == Type.ENTITY && r.entityHit instanceof EntityLivingBase){
 				EntityLivingBase ent = ((EntityLivingBase)r.entityHit);

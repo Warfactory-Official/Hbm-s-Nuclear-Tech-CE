@@ -11,6 +11,7 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.packet.toclient.BufPacket;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.TileEntityLoadedBase;
@@ -124,12 +125,10 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IB
                         world.playSound(null, e.posX, e.posY, e.posZ, SoundEvents.ENTITY_ZOMBIE_BREAK_DOOR_WOOD, SoundCategory.HOSTILE, 2.0F, 0.95F + world.rand.nextFloat() * 0.2F);
                         int count = Math.min((int) Math.ceil(e.getMaxHealth() / 4), 250);
                         NBTTagCompound data = new NBTTagCompound();
-                        data.setString("type", "vanillaburst");
                         data.setInteger("count", count * 4);
                         data.setDouble("motion", 0.1D);
-                        data.setString("mode", "blockdust");
                         data.setInteger("block", Block.getIdFromBlock(Objects.requireNonNull(Blocks.REDSTONE_BLOCK)));
-                        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, e.posX, e.posY + e.height * 0.5, e.posZ), new TargetPoint(e.dimension, e.posX, e.posY, e.posZ, 50));
+                        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.VanillaBurst_BlockDust, data, e.posX, e.posY + e.height * 0.5, e.posZ), new TargetPoint(e.dimension, e.posX, e.posY, e.posZ, 50));
                     }
                 }
 

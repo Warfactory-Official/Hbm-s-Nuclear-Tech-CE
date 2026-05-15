@@ -5,6 +5,7 @@ import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.particle.helper.ExplosionCreator;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
@@ -27,9 +28,7 @@ public class EntityTorpedo extends EntityThrowable {
 
         if(!world.isRemote && this.ticksExisted == 1) {
             for(int i = 0; i < 15; i++) {
-                NBTTagCompound data = new NBTTagCompound();
-                data.setString("type", "bf");
-                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data,
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.BF, new NBTTagCompound(),
                                 posX + (rand.nextDouble() - 0.5) * 2,
                                 posY + (rand.nextDouble() - 0.5) * 1,
                                 posZ + (rand.nextDouble() - 0.5) * 2),

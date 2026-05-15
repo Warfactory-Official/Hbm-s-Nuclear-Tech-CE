@@ -12,6 +12,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.AdvancementManager;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -247,12 +248,11 @@ public class EntityNukeExplosionMK3 extends EntityExplosionChunkloading {
 		world.playSound(null, x+0.5D, y+0.5D, z+0.5D, HBMSoundHandler.ufoBlast, SoundCategory.HOSTILE, 15.0F, 1.0F);
 						
 		NBTTagCompound data = new NBTTagCompound();
-		data.setString("type", "plasmablast");
 		data.setFloat("r", r);
 		data.setFloat("g", g);
 		data.setFloat("b", b);
 		data.setFloat("scale", 7.5F);
-		PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x+0.5D, y+0.5D, z+0.5D), new TargetPoint(dim, x, y, z, 150));
+		PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.PlasmaBlast, data, x+0.5D, y+0.5D, z+0.5D), new TargetPoint(dim, x, y, z, 150));
 	}
 
 	public static boolean isJammed(World world, Entity entity) {
@@ -326,12 +326,11 @@ public class EntityNukeExplosionMK3 extends EntityExplosionChunkloading {
 						world.playSound(null, ix, iy, iz, HBMSoundHandler.ufoBlast, SoundCategory.PLAYERS, 15.0F, 0.7F + world.rand.nextFloat() * 0.2F);
 
 						NBTTagCompound data = new NBTTagCompound();
-						data.setString("type", "plasmablast");
 						data.setFloat("r", 0.0F);
 						data.setFloat("g", 0.75F);
 						data.setFloat("b", 1.0F);
 						data.setFloat("scale", 7.5F);
-						PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, ix, iy, iz), new TargetPoint(entry.dim, ix, iy, iz, 150));
+						PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.PlasmaBlast, data, ix, iy, iz), new TargetPoint(entry.dim, ix, iy, iz, 150));
 					}
 				}
 

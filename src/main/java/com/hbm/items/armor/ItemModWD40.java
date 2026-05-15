@@ -3,6 +3,7 @@ package com.hbm.items.armor;
 import com.google.common.collect.Multimap;
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -60,15 +61,14 @@ public class ItemModWD40 extends ItemArmorMod {
 		
 		if(entity.world.isRemote && entity.hurtTime > 0) {
 			NBTTagCompound data = new NBTTagCompound();
-			data.setString("type", "vanillaExt");
-			data.setString("mode", "reddust");
-			data.setDouble("posX", entity.posX + (entity.getRNG().nextDouble() - 0.5) * entity.width * 2);
-			data.setDouble("posY", entity.posY - entity.getYOffset() + entity.getRNG().nextDouble() * entity.height);
-			data.setDouble("posZ", entity.posZ + (entity.getRNG().nextDouble() - 0.5) * entity.width * 2);
 			data.setDouble("mX", 0.01);
 			data.setDouble("mY", 0.5);
 			data.setDouble("mZ", 0.8);
-			MainRegistry.proxy.effectNT(data);
+			MainRegistry.proxy.effectNT(HbmEffectNT.VanillaExt_RedDust,
+                    entity.posX + (entity.getRNG().nextDouble() - 0.5) * entity.width * 2,
+                    entity.posY - entity.getYOffset() + entity.getRNG().nextDouble() * entity.height,
+                    entity.posZ + (entity.getRNG().nextDouble() - 0.5) * entity.width * 2,
+                    data);
 		}
 	}
 }

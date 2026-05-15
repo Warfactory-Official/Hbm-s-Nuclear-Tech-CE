@@ -6,6 +6,7 @@ import com.hbm.explosion.ExplosionLarge;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.world.Meteorite;
 import net.minecraft.block.Block;
@@ -187,15 +188,10 @@ public class EntityMeteor extends Entity {
 
             if (GeneralConfig.enableMeteorTails) {
                 NBTTagCompound data = new NBTTagCompound();
-                data.setString("type", "exhaust");
-                data.setString("mode", "meteor");
                 data.setInteger("count", 10);
                 data.setDouble("width", 1);
-                data.setDouble("posX", posX - motionX);
-                data.setDouble("posY", posY - motionY);
-                data.setDouble("posZ", posZ - motionZ);
 
-                MainRegistry.proxy.effectNT(data);
+                MainRegistry.proxy.effectNT(HbmEffectNT.Exhaust_Meteor, posX - motionX, posY - motionY, posZ - motionZ, data);
             }
         }
     }

@@ -25,6 +25,7 @@ import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.modules.ModuleBurnTime;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IConfigurableMachine;
 import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
@@ -128,14 +129,13 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachinePolluting i
 
                 if (prev != this.output.amount) {
                     NBTTagCompound data = new NBTTagCompound();
-                    data.setString("type", "foundry");
                     data.setInteger("color", leftover.material.moltenColor);
                     data.setByte("dir", (byte) rot.ordinal());
                     data.setFloat("off", 0.625F);
                     data.setFloat("base", 0.625F);
                     data.setFloat("len", Math.max(1F, pos.getY() + 1 - (float) (Math.ceil(impact.y) - 1.125)));
                     PacketThreading.createAllAroundThreadedPacket(
-                            new AuxParticlePacketNT(data, pos.getX() + 0.5D + rot.offsetX * 2.875D, pos.getY() + 0.75,
+                            new AuxParticlePacketNT(HbmEffectNT.Foundry, data, pos.getX() + 0.5D + rot.offsetX * 2.875D, pos.getY() + 0.75,
                                     pos.getZ() + 0.5D + rot.offsetZ * 2.875D),
                             new TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 50));
                 }
@@ -214,16 +214,12 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachinePolluting i
             if (isVenting && world.getTotalWorldTime() % 2 == 0) {
 
                 NBTTagCompound fx = new NBTTagCompound();
-                fx.setString("type", "tower");
                 fx.setFloat("lift", 10F);
                 fx.setFloat("base", 0.25F);
                 fx.setFloat("max", 2.5F);
                 fx.setInteger("life", 100 + world.rand.nextInt(20));
                 fx.setInteger("color", 0x202020);
-                fx.setDouble("posX", pos.getX() + 0.5 + rot.offsetX);
-                fx.setDouble("posY", pos.getY() + 5);
-                fx.setDouble("posZ", pos.getZ() + 0.5 + rot.offsetZ);
-                MainRegistry.proxy.effectNT(fx);
+                MainRegistry.proxy.effectNT(HbmEffectNT.Tower, pos.getX() + 0.5 + rot.offsetX, pos.getY() + 5, pos.getZ() + 0.5 + rot.offsetZ, fx);
             }
             this.lastAnim = this.anim;
             if (this.isProgressing) {

@@ -16,6 +16,7 @@ import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.packet.toclient.GunAnimationPacketSedna;
 import com.hbm.packet.toserver.GunButtonPacket;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.anim.sedna.AnimationEnums;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
 import com.hbm.render.misc.RenderScreenOverlay;
@@ -827,13 +828,12 @@ public class ItemGunBaseSedna extends ItemBakedBase implements IHoldableWeapon, 
         if(bullet.spentCasing == null) return; //abort if the bullet is caseless
 
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "casing");
         data.setFloat("pitch", (float) Math.toRadians(entity.rotationPitch));
         data.setFloat("yaw", (float) Math.toRadians(entity.rotationYaw));
         data.setBoolean("crouched", entity.isSneaking());
         data.setString("name", bullet.spentCasing.getName());
         data.setInteger("ej", ejector.getId());
-        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, entity.posX, entity.posY + entity.getEyeHeight(), entity.posZ), new NetworkRegistry.TargetPoint(entity.dimension, entity.posX, entity.posY, entity.posZ, 50));
+        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.CasingOld, data, entity.posX, entity.posY + entity.getEyeHeight(), entity.posZ), new NetworkRegistry.TargetPoint(entity.dimension, entity.posX, entity.posY, entity.posZ, 50));
     }
 
     public static int getReloadDuration(EntityPlayer player, ItemStack stack) {

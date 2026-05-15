@@ -10,6 +10,7 @@ import com.hbm.handler.threading.PacketThreading;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.potion.HbmPotion;
 import com.hbm.util.ArmorRegistry;
 import com.hbm.util.ArmorRegistry.HazardClass;
@@ -283,11 +284,11 @@ public class ExplosionChaos {
             case 2 -> EntityModFXShadow.Type.PINK_CLOUD;
             default -> EntityModFXShadow.Type.ORANGE;
         };
-        String particleType = switch (type) {
-            case 0 -> "chlorinefx";
-            case 1 -> "cloudfx";
-            case 2 -> "pinkcloudfx";
-            default -> "orangefx";
+        HbmEffectNT particleType = switch (type) {
+            case 0 -> HbmEffectNT.FX_Chlorine;
+            case 1 -> HbmEffectNT.FX_Cloud;
+            case 2 -> HbmEffectNT.FX_PinkCloud;
+            default -> HbmEffectNT.FX_Orange;
         };
         for(int i = 0; i < count; i++) {
             double mx = rand.nextGaussian() * speed;
@@ -298,8 +299,7 @@ public class ExplosionChaos {
             data.setDouble("moX", mx);
             data.setDouble("moY", my);
             data.setDouble("moZ", mz);
-            data.setString("type", particleType);
-            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x, y, z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), x, y, z, 128));
+            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(particleType, data, x, y, z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), x, y, z, 128));
 
             EntityModFXShadow.spawn(world, shadowType, x, y, z, mx, my, mz);
         }
@@ -715,8 +715,7 @@ public class ExplosionChaos {
 			data.setDouble("moX", mx);
 			data.setDouble("moY", my);
 			data.setDouble("moZ", mz);
-			data.setString("type", "orangefx");
-			PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x, y, z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), x, y, z, 50));
+			PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.FX_Orange, data, x, y, z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), x, y, z, 50));
 
 			EntityModFXShadow.spawn(world, EntityModFXShadow.Type.ORANGE, x, y, z, mx, my, mz);
 		}

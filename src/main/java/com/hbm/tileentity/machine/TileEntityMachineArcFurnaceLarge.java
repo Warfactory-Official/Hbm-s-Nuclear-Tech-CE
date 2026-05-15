@@ -24,6 +24,7 @@ import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.threading.ThreadedPacket;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
@@ -203,13 +204,12 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase impl
 
                 if(didPour != null) {
                     NBTTagCompound data = new NBTTagCompound();
-                    data.setString("type", "foundry");
                     data.setInteger("color", didPour.material.moltenColor);
                     data.setByte("dir", (byte) dir.ordinal());
                     data.setFloat("off", 0.625F);
                     data.setFloat("base", 0.625F);
                     data.setFloat("len", Math.max(1F, pos.getY() + 1 - (float) (Math.ceil(impact.y) - 0.875)));
-                    ThreadedPacket message = new AuxParticlePacketNT(data, pos.getX() + 0.5D + dir.offsetX * 2.875D, pos.getY() + 1, pos.getZ() + 0.5D + dir.offsetZ * 2.875D);
+                    ThreadedPacket message = new AuxParticlePacketNT(HbmEffectNT.Foundry, data, pos.getX() + 0.5D + dir.offsetX * 2.875D, pos.getY() + 1, pos.getZ() + 0.5D + dir.offsetZ * 2.875D);
                     PacketThreading.createAllAroundThreadedPacket(message,
                             new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 50));
                 }
@@ -262,31 +262,23 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase impl
 
             if(this.lid != this.prevLid && this.lid > this.prevLid && !(this.prevLid == 0 && this.lid == 1) && MainRegistry.proxy.me().getDistance(pos.getX() + 0.5, pos.getY() + 4, pos.getZ() + 0.5) < 50) {
                 NBTTagCompound data = new NBTTagCompound();
-                data.setString("type", "tower");
                 data.setFloat("lift", 0.01F);
                 data.setFloat("base", 0.5F);
                 data.setFloat("max", 2F);
                 data.setInteger("life", 70 + world.rand.nextInt(30));
-                data.setDouble("posX", pos.getX() + 0.5 + world.rand.nextGaussian() * 0.5);
-                data.setDouble("posZ", pos.getZ() + 0.5 + world.rand.nextGaussian() * 0.5);
-                data.setDouble("posY", pos.getY() + 4);
                 data.setBoolean("noWind", true);
                 data.setFloat("alphaMod", prevLid / lid);
                 data.setInteger("color", 0x000000);
                 data.setFloat("strafe", 0.05F);
-                for(int i = 0; i < 3; i++) MainRegistry.proxy.effectNT(data);
+                for(int i = 0; i < 3; i++) MainRegistry.proxy.effectNT(HbmEffectNT.Tower, pos.getX() + 0.5 + world.rand.nextGaussian() * 0.5, pos.getY() + 4, pos.getZ() + 0.5 + world.rand.nextGaussian() * 0.5, data);
             }
 
             if(this.lid != this.prevLid && this.lid < this.prevLid && this.lid > 0.5F && this.hasMaterial && MainRegistry.proxy.me().getDistance(pos.getX() + 0.5, pos.getY() + 4, pos.getZ() + 0.5) < 50) {
 
                 if(world.rand.nextInt(5) == 0) {
                     NBTTagCompound flame = new NBTTagCompound();
-                    flame.setString("type", "rbmkflame");
-                    flame.setDouble("posX", pos.getX() + 0.5 + world.rand.nextGaussian() * 0.5);
-                    flame.setDouble("posZ", pos.getZ() + 0.5 + world.rand.nextGaussian() * 0.5);
-                    flame.setDouble("posY", pos.getY() + 2.75);
                     flame.setInteger("maxAge", 50);
-                    for(int i = 0; i < 2; i++) MainRegistry.proxy.effectNT(flame);
+                    for(int i = 0; i < 2; i++) MainRegistry.proxy.effectNT(HbmEffectNT.RBMKFlame, pos.getX() + 0.5 + world.rand.nextGaussian() * 0.5, pos.getY() + 2.75, pos.getZ() + 0.5 + world.rand.nextGaussian() * 0.5, flame);
                 }
             }
         }

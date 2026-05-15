@@ -26,6 +26,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.particle.SpentCasing;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.BufferUtil;
 import com.hbm.util.CompatExternal;
@@ -932,13 +933,12 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 
 		Vec3d spawn = this.getCasingSpawnPos();
 		NBTTagCompound data = new NBTTagCompound();
-		data.setString("type", "casing");
 		data.setFloat("pitch", (float) -rotationPitch);
 		data.setFloat("yaw", (float) rotationYaw);
 		data.setBoolean("crouched", false);
 		data.setString("name", cachedCasingConfig.getName());
 		if(ej != null) data.setInteger("ej", ej.getId());
-		PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, spawn.x, spawn.y, spawn.z), new TargetPoint(world.provider.getDimension(), getPos().getX(), getPos().getY(), getPos().getZ(), 50));
+		PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.CasingOld, data, spawn.x, spawn.y, spawn.z), new TargetPoint(world.provider.getDimension(), getPos().getX(), getPos().getY(), getPos().getZ(), 50));
 
 		cachedCasingConfig = null;
 	}

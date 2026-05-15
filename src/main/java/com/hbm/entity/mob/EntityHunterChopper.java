@@ -11,6 +11,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.amlfrom1710.Vec3;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityFlying;
@@ -274,11 +275,9 @@ public class EntityHunterChopper extends EntityFlying implements IMob, IRadiatio
 			if(!world.isRemote) {
 
 				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "exhaust");
-				data.setString("mode", "meteor");
 				data.setInteger("count", 10);
 				data.setDouble("width", 1);
-                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, posX, posY, posZ),  new NetworkRegistry.TargetPoint(dimension, posX, posY, posZ, 100));
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Exhaust_Meteor, data, posX, posY, posZ),  new NetworkRegistry.TargetPoint(dimension, posX, posY, posZ, 100));
 			}
 			
 			rotationYaw += 20;

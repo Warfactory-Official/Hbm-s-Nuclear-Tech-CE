@@ -17,6 +17,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
@@ -123,9 +124,7 @@ public class TileEntityICF extends TileEntityMachineBase implements ITickable, I
                     tanks[2].setFill(tanks[2].getFill() + (int) Math.ceil(this.heat * 10.0D / maxHeat));
                     if (tanks[2].getFill() > tanks[2].getMaxFill()) tanks[2].setFill(tanks[2].getMaxFill());
 
-                    NBTTagCompound dPart = new NBTTagCompound();
-                    dPart.setString("type", "hadron");
-                    PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(dPart, getPos().getX() + 0.5, getPos().getY() + 3.5, getPos().getZ() + 0.5),
+                    PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Hadron, null, getPos().getX() + 0.5, getPos().getY() + 3.5, getPos().getZ() + 0.5),
                             new NetworkRegistry.TargetPoint(world.provider.getDimension(), getPos().getX(), getPos().getY(), getPos().getZ(), 25));
                 }
             }

@@ -7,6 +7,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.main.AdvancementManager;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
 import com.hbm.util.ContaminationUtil.HazardType;
@@ -82,13 +83,8 @@ public class EntitySpear extends Entity {
 				double dy = world.getHeight((int)Math.floor(posX), (int)Math.floor(posZ)) + 2;
 				
 				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "smoke");
-				data.setString("mode", "radialDigamma");
 				data.setInteger("count", 5);
-				data.setDouble("posX", posX);
-				data.setDouble("posY", dy);
-				data.setDouble("posZ", posZ);
-				MainRegistry.proxy.effectNT(data);
+				MainRegistry.proxy.effectNT(HbmEffectNT.Smoke_RadialDigamma, posX, dy, posZ, data);
 			}
 
 			
@@ -115,13 +111,8 @@ public class EntitySpear extends Entity {
 				world.playSound(null, posX, posY, posZ, HBMSoundHandler.dflash, SoundCategory.HOSTILE, 25000.0F, 1.0F);
 				
 				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "smoke");
-				data.setString("mode", "radialDigamma");
 				data.setInteger("count", 100);
-				data.setDouble("posX", posX);
-				data.setDouble("posY", posY + 7);
-				data.setDouble("posZ", posZ);
-				MainRegistry.proxy.effectNT(data);
+				MainRegistry.proxy.effectNT(HbmEffectNT.Smoke_RadialDigamma, posX, posY + 7, posZ, data);
 			}
 		}
 	}
