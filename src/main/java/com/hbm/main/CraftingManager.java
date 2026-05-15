@@ -765,9 +765,7 @@ public class CraftingManager {
 		addShapelessAuto(new ItemStack(ModItems.ams_catalyst_schrabidium, 1), ModItems.ams_catalyst_blank, ModItems.rune_dagaz, ModItems.rune_hagalaz, ModItems.rune_thurisaz, ModItems.rune_thurisaz, SA326.dust(), SA326.dust(), SA326.dust(), SA326.dust() );
 		addShapelessAuto(new ItemStack(ModItems.ams_catalyst_dineutronium, 1), ModItems.ams_catalyst_blank, ModItems.rune_hagalaz, ModItems.rune_hagalaz, ModItems.rune_thurisaz, ModItems.rune_thurisaz, DNT.dust(), DNT.dust(), DNT.dust(), DNT.dust() );
 		addRecipeAuto(new ItemStack(ModBlocks.barrel_plastic, 1), "IPI", "I I", "IPI", 'I', ModItems.plate_polymer, 'P', AL.plate() );
-		addRecipeAuto(new ItemStack(ModBlocks.barrel_iron, 1), "IPI", "I I", "IPI", 'I', IRON.plate(), 'P', IRON.ingot() );
-		addShapelessAuto(new ItemStack(ModBlocks.barrel_iron, 1), ModBlocks.barrel_corroded, ANY_TAR.any() );
-		addRecipeAuto(new ItemStack(ModBlocks.barrel_steel, 1), "IPI", "ITI", "IPI", 'I', STEEL.plate(), 'P', STEEL.ingot(), 'T', ANY_TAR.any() );
+        addRecipeAuto(new ItemStack(ModBlocks.barrel_steel, 1), "IPI", "I I", "IPI", 'I', STEEL.plate(), 'P', STEEL.ingot());
 		addRecipeAuto(new ItemStack(ModBlocks.barrel_tcalloy, 1), "IPI", "I I", "IPI", 'I', "ingotTcAlloy", 'P', TI.plate() );
 		addRecipeAuto(new ItemStack(ModBlocks.barrel_antimatter, 1), "IPI", "I I", "IPI", 'I', BIGMT.plate(), 'P', ModItems.coil_advanced_torus);
 		addRecipeAuto(new ItemStack(ModBlocks.tesla, 1), "CCC", "PIP", "WTW", 'C', ModItems.coil_copper, 'I', IRON.ingot(), 'P', ANY_PLASTIC.ingot(), 'T', ModBlocks.machine_transformer, 'W', KEY_PLANKS );
