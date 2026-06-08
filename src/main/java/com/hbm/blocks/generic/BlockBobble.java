@@ -125,7 +125,7 @@ public class BlockBobble extends BlockContainer implements INBTBlockTransformabl
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand,
                                     EnumFacing side, float hitX, float hitY, float hitZ) {
-        if (!world.isRemote && !player.isSneaking()) {
+        if (world.isRemote && !player.isSneaking()) {
             FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
         }
         return true;
@@ -335,12 +335,7 @@ public class BlockBobble extends BlockContainer implements INBTBlockTransformabl
 
         @Override
         public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
-            return new Container() {
-                @Override
-                public boolean canInteractWith(EntityPlayer playerIn) {
-                    return true;
-                }
-            };
+            return null;
         }
 
         @Override

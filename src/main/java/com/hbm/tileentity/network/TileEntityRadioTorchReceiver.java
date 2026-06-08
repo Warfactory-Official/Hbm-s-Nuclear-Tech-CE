@@ -1,7 +1,6 @@
 package com.hbm.tileentity.network;
 
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.inventory.container.ContainerRadioTorchReceiver;
 import com.hbm.inventory.gui.GUIScreenRadioTorch;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.network.RTTYSystem.RTTYChannel;
@@ -81,7 +80,7 @@ public class TileEntityRadioTorchReceiver extends TileEntityRadioTorchBase imple
 
     @Override
     public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
-        return new ContainerRadioTorchReceiver();
+        return null;
     }
 
     @Override

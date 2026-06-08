@@ -1,7 +1,6 @@
 package com.hbm.tileentity.network;
 
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.inventory.container.ContainerRadioTorchSender;
 import com.hbm.inventory.gui.GUIScreenRadioTorch;
 import com.hbm.tileentity.IGUIProvider;
 import net.minecraft.block.state.IBlockState;
@@ -62,7 +61,7 @@ public class TileEntityRadioTorchSender extends TileEntityRadioTorchBase impleme
 
     @Override
     public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
-        return new ContainerRadioTorchSender();
+        return null;
     }
 
     @Override
