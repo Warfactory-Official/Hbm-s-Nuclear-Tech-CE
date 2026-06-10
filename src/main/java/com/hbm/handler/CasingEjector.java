@@ -42,7 +42,7 @@ public class CasingEjector implements Cloneable {
     private static void offsetCasing(ParticleSpentCasing casing, Vec3NT offset, float pitch, float yaw, boolean crouched) {
         Vec3NT result = new Vec3NT(crouched ? 0 : offset.x, offset.y, offset.z);
 
-        result.rotateAroundXRad(pitch);
+        result.rotateAroundXRad(-pitch);
         result.rotateAroundYRad(-yaw);
 
         casing.setPosition(casing.getPosX() + result.x, casing.getPosY() + result.y, casing.getPosZ() + result.z);
@@ -60,7 +60,7 @@ public class CasingEjector implements Cloneable {
                 rand.nextGaussian() * yawFactor * 0.1D
         );
 
-        result.rotateAroundXRad(pitch);
+        result.rotateAroundXRad(-pitch);
         result.rotateAroundYRad(-yaw);
 
         return result;

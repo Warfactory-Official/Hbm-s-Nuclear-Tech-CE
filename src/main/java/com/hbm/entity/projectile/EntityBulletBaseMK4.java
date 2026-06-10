@@ -76,7 +76,7 @@ public class EntityBulletBaseMK4 extends EntityThrowableInterp {
         this.setLocationAndAngles(thrower.posX, thrower.posY + thrower.getEyeHeight(), thrower.posZ, thrower.rotationYaw, thrower.rotationPitch);
 
         Vec3NT offset = new Vec3NT(sideOffset, heightOffset, frontOffset);
-        offset.rotateAroundXRad(this.rotationPitch / 180F * (float) Math.PI);
+        offset.rotateAroundXRad(-this.rotationPitch / 180F * (float) Math.PI);
         offset.rotateAroundYRad(-this.rotationYaw / 180F * (float) Math.PI);
 
         this.posX += offset.x;

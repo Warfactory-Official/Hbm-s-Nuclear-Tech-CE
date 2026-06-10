@@ -350,7 +350,7 @@ public class Vec3NT extends MutableVec3d {
     @Contract(mutates = "this")
     public @NotNull Vec3NT rotateAroundXRad(double a) {
         double c = Math.cos(a), s = Math.sin(a);
-        double ny = this.y * c - this.z * s, nz = this.y * s + this.z * c;
+        double ny = this.y * c + this.z * s, nz = this.z * c - this.y * s;
         set(this.x, ny, nz);
         return this;
     }
@@ -366,7 +366,7 @@ public class Vec3NT extends MutableVec3d {
     @Contract(mutates = "this")
     public @NotNull Vec3NT rotateAroundZRad(double a) {
         double c = Math.cos(a), s = Math.sin(a);
-        double nx = this.x * c - this.y * s, ny = this.x * s + this.y * c;
+        double nx = this.x * c + this.y * s, ny = this.y * c - this.x * s;
         set(nx, ny, this.z);
         return this;
     }

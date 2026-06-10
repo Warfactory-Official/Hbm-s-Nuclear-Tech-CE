@@ -73,7 +73,7 @@ public class EntityBulletBeamBase extends Entity implements IEntityAdditionalSpa
         this.setLocationAndAngles(thrower.posX, thrower.posY + thrower.getEyeHeight(), thrower.posZ, thrower.rotationYaw + (float) rand.nextGaussian() * angularInaccuracy, thrower.rotationPitch + (float) rand.nextGaussian() * angularInaccuracy);
 
         Vec3NT offset = new Vec3NT(sideOffset, heightOffset, frontOffset);
-        offset.rotateAroundXRad(this.rotationPitch / 180F * (float) Math.PI);
+        offset.rotateAroundXRad(-this.rotationPitch / 180F * (float) Math.PI);
         offset.rotateAroundYRad(-this.rotationYaw / 180F * (float) Math.PI);
 
         this.posX += offset.x;

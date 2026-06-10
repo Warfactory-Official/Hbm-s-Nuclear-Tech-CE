@@ -37,7 +37,7 @@ public class CasingCreator implements IParticleCreator {
         if(player.isSneaking()) heightOffset -= 0.075F;
 
         Vec3NT offset = new Vec3NT(sideOffset, heightOffset, frontOffset);
-        offset.rotateAroundXRad(player.rotationPitch / 180F * (float) Math.PI);
+        offset.rotateAroundXRad(-player.rotationPitch / 180F * (float) Math.PI);
         offset.rotateAroundYRad(-player.rotationYaw / 180F * (float) Math.PI);
 
         double x = player.posX + offset.x;
