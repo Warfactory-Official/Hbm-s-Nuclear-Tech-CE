@@ -38,7 +38,7 @@ public abstract class MixinRenderChunk implements IShadowRenderFrameStamp {
      * a thread-local accumulator is correctly task-scoped: reset at HEAD, accumulated during, and
      * published into the CompiledChunk before setVisibility, all on the same thread.
      */
-    private static final class Hbm$Accumulator {
+    private static final class HbmAccumulator {
         int negX, posX, negY, posY, negZ, posZ;
         final ArrayList<TileEntity> spanningTesrs = new ArrayList<>();
 
@@ -54,7 +54,7 @@ public abstract class MixinRenderChunk implements IShadowRenderFrameStamp {
     }
 
     @Unique
-    private static final ThreadLocal<Hbm$Accumulator> hbm$accumulator = ThreadLocal.withInitial(Hbm$Accumulator::new);
+    private static final ThreadLocal<HbmAccumulator> hbm$accumulator = ThreadLocal.withInitial(HbmAccumulator::new);
 
     @Unique
     private int hbm$shadowFrameStamp = Integer.MIN_VALUE;
@@ -105,7 +105,7 @@ public abstract class MixinRenderChunk implements IShadowRenderFrameStamp {
                 int localY = pos.getY() - position.getY();
                 int localZ = pos.getZ() - position.getZ();
 
-                Hbm$Accumulator acc = hbm$accumulator.get();
+                HbmAccumulator acc = hbm$accumulator.get();
                 acc.negX = Math.max(acc.negX, extents[4] - localX);
                 acc.posX = Math.max(acc.posX, localX + extents[5] - 15);
                 acc.negY = Math.max(acc.negY, extents[1] - localY);
@@ -134,7 +134,7 @@ public abstract class MixinRenderChunk implements IShadowRenderFrameStamp {
         int negZ = (int) Math.ceil(Math.max(0.0D, sz - bb.minZ));
         int posZ = (int) Math.ceil(Math.max(0.0D, bb.maxZ - (sz + 16.0D)));
         if ((negX | posX | negY | posY | negZ | posZ) != 0) {
-            Hbm$Accumulator acc = hbm$accumulator.get();
+            HbmAccumulator acc = hbm$accumulator.get();
             acc.negX = Math.max(acc.negX, negX);
             acc.posX = Math.max(acc.posX, posX);
             acc.negY = Math.max(acc.negY, negY);
@@ -149,7 +149,7 @@ public abstract class MixinRenderChunk implements IShadowRenderFrameStamp {
     @WrapOperation(method = "rebuildChunk", require = 1, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/CompiledChunk;setVisibility(Lnet/minecraft/client/renderer/chunk/SetVisibility;)V"))
     private void hbm$publishOversizedExtents(CompiledChunk compiledChunk, SetVisibility visibility, Operation<Void> original) {
         IExtraExtentsHolder holder = (IExtraExtentsHolder) compiledChunk;
-        Hbm$Accumulator acc = hbm$accumulator.get();
+        HbmAccumulator acc = hbm$accumulator.get();
         holder.hbm$setOversizedModelExtents(acc.negX, acc.posX, acc.negY, acc.posY, acc.negZ, acc.posZ);
         if (!acc.spanningTesrs.isEmpty()) {
             holder.hbm$setChunkSpanningTesrs(acc.spanningTesrs.toArray(new TileEntity[0]));
