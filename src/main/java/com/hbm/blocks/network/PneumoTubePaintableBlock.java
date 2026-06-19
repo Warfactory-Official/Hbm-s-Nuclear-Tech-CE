@@ -46,12 +46,14 @@ import net.minecraftforge.common.property.ExtendedBlockState;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.util.vector.Vector3f;
+import team.chisel.ctm.api.IFacade;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -59,7 +61,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 // there were some fucking mumbo jumbo conversions with forgedirection <-> enumfacing, don't mind me
-public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable, ITooltipProvider {
+@Optional.Interface(iface = "team.chisel.ctm.api.IFacade", modid = Compat.ModIds.CTM)
+public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable, ITooltipProvider, IFacade {
 
     public static final IUnlistedProperty<IBlockState> DISGUISED_STATE = new SimpleUnlistedProperty<>("disguised_state", IBlockState.class);
     public static final PropertyBool DEFUSED = PropertyBool.create("defused");
@@ -275,6 +278,16 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
         return ext.withProperty(DISGUISED_STATE, null).withProperty(INSERTION_DIR, null).withProperty(EJECTION_DIR, null);
     }
 
+    // CTM IFacade: report the painted block so connected-texture neighbours resolve the disguise instead of the tube.
+    @Override
+    public IBlockState getFacade(IBlockAccess world, BlockPos pos, EnumFacing side) {
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof TileEntityPneumoTubePaintable tube && tube.block != null) {
+            return tube.block.getStateFromMeta(tube.meta);
+        }
+        return world.getBlockState(pos);
+    }
+
     @Override
     @SideOnly(Side.CLIENT)
     public void registerSprite(TextureMap map) {
@@ -446,7 +459,8 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
             List<BakedQuad> base = ImmutableList.of();
             if (disguiseState != null) {
                 if (layer == null || disguiseState.getBlock().canRenderInLayer(disguiseState, layer)) {
-                    IBakedModel disguiseModel = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(disguiseState);
+                    IBlockState lookup = disguiseState instanceof IExtendedBlockState ? ((IExtendedBlockState) disguiseState).getClean() : disguiseState;
+                    IBakedModel disguiseModel = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(lookup);
                     base = disguiseModel.getQuads(disguiseState, side, rand);
                 }
             } else if (tubeLayer) {

@@ -12,6 +12,7 @@ import com.hbm.interfaces.ICopiable;
 import com.hbm.render.block.BlockBakeFrame;
 import com.hbm.render.model.BakedModelTransforms;
 import com.hbm.tileentity.network.energy.TileEntityCableBaseNT;
+import com.hbm.util.Compat;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -41,11 +42,13 @@ import net.minecraftforge.common.property.ExtendedBlockState;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.util.vector.Vector3f;
+import team.chisel.ctm.api.IFacade;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -53,7 +56,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class BlockCablePaintable extends BlockBakeBase implements IToolable, ITooltipProvider {
+@Optional.Interface(iface = "team.chisel.ctm.api.IFacade", modid = Compat.ModIds.CTM)
+public class BlockCablePaintable extends BlockBakeBase implements IToolable, ITooltipProvider, IFacade {
 
     public static final IUnlistedProperty<IBlockState> DISGUISED_STATE = new SimpleUnlistedProperty<>("disguised_state", IBlockState.class);
     public static final PropertyBool DEFUSED = PropertyBool.create("defused");
@@ -228,6 +232,16 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable, ITo
         return state;
     }
 
+    // CTM IFacade: report the painted block so connected-texture neighbours resolve the disguise instead of the cable.
+    @Override
+    public IBlockState getFacade(IBlockAccess world, BlockPos pos, EnumFacing side) {
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof TileEntityCablePaintable cable && cable.block != null) {
+            return cable.block.getStateFromMeta(cable.meta);
+        }
+        return world.getBlockState(pos);
+    }
+
     @Override
     @SideOnly(Side.CLIENT)
     public void registerSprite(TextureMap map) {
@@ -393,7 +407,8 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable, ITo
             }
 
             if (disguiseState != null) {
-                IBakedModel disguiseModel = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(disguiseState);
+                IBlockState lookup = disguiseState instanceof IExtendedBlockState ? ((IExtendedBlockState) disguiseState).getClean() : disguiseState;
+                IBakedModel disguiseModel = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(lookup);
                 quads.addAll(disguiseModel.getQuads(disguiseState, side, rand));
             } else if (renderCable) {
                 if (side == null) {
