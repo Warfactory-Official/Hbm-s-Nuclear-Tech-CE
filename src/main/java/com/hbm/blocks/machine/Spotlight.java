@@ -292,8 +292,12 @@ public class Spotlight extends Block implements ISpotlight, INBTBlockTransformab
     @Override
     public void neighborChanged(@NotNull IBlockState state, World world, @NotNull BlockPos pos, @NotNull Block blockIn, @NotNull BlockPos fromPos) {
         if (world.isRemote) return;
-        if (blockIn instanceof SpotlightBeam) return;
-        if (blockIn == Blocks.AIR) return;
+        // In 1.12 'blockIn' is the OLD block at fromPos; upstream 1.7 bailed when the changed neighbour
+        // was now air/a beam. Check the CURRENT block instead, else breaking a block below the lamp
+        // re-propagates the beam into the just-cleared cells and swallows multiblock machine drops.
+        IBlockState fromState = world.getBlockState(fromPos);
+        if (fromState.getBlock() instanceof SpotlightBeam) return;
+        if (fromState.getBlock().isAir(fromState, world, fromPos)) return;
 
         EnumFacing facing = state.getValue(FACING);
         BlockPos checkPos = pos.offset(facing.getOpposite());
@@ -323,8 +327,11 @@ public class Spotlight extends Block implements ISpotlight, INBTBlockTransformab
     // which can't be placed on ceilings...
     private boolean canPlace(World world, BlockPos pos, IBlockState state, EnumFacing side) {
         if (state.getBlock() instanceof BlockSlab) {
+            // BlockDoubleSlab is a full opaque cube and has no HALF property; reading it would crash.
+            if (state.isOpaqueCube()) return true;
             EnumBlockHalf half = state.getValue(BlockSlab.HALF);
-            return (half == EnumBlockHalf.BOTTOM && side == EnumFacing.DOWN) || state.isOpaqueCube();
+            // Upstream 1.7: attach to a top-half slab from below (UP), a bottom-half slab from above (DOWN).
+            return side == (half == EnumBlockHalf.TOP ? EnumFacing.UP : EnumFacing.DOWN);
         }
 
         return state.isSideSolid(world, pos, side);

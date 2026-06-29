@@ -49,6 +49,7 @@ public class MineralRecipes {
         add1To9Pair(ModBlocks.block_cadmium, ModItems.ingot_cadmium);
         add1To9Pair(ModBlocks.block_tcalloy, ModItems.ingot_tcalloy);
         add1To9Pair(ModBlocks.block_cdalloy, ModItems.ingot_cdalloy);
+        add1To9Pair(ModBlocks.block_saturnite, ModItems.ingot_saturnite);
 
         for(int i = 0; i < ItemEnums.EnumCokeType.values().length; i++) {
             add1To9PairSameMeta(Item.getItemFromBlock(ModBlocks.block_coke), ModItems.coke, i);

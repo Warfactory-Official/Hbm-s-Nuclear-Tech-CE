@@ -159,6 +159,7 @@ public class OreDictManager {
      * TUNGSTEN
      */
     public static final DictFrame W = new DictFrame("Tungsten");
+    public static final DictFrame WC = new DictFrame("TungstenCarbide");
     /**
      * ALUMINUM
      */
@@ -460,6 +461,7 @@ public class OreDictManager {
         CU.ingot(ingot_copper).crystal(crystal_copper).dust(powder_copper).plate(plate_copper).block(block_copper).ore(ore_copper, ore_gneiss_copper);
         MINGRADE.ingot(ingot_red_copper).dust(powder_red_copper).block(block_red_copper);
         W.ingot(ingot_tungsten).dust(powder_tungsten).crystal(crystal_tungsten).block(block_tungsten).ore(ore_tungsten, ore_nether_tungsten).oreNether(ore_nether_tungsten);
+        WC.ingot(ingot_tungsten_carbide);
         AL.ingot(ingot_aluminium).dust(powder_aluminium).crystal(crystal_aluminium).plate(plate_aluminium).block(block_aluminium).ore(ore_aluminium);
         STEEL.ingot(ingot_steel).dustSmall(powder_steel_tiny).dust(powder_steel).plate(plate_steel).block(block_steel);
         TCALLOY.ingot(ingot_tcalloy).dust(powder_tcalloy).block(block_tcalloy);

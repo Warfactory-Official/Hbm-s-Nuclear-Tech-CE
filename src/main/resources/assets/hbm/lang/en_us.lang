@@ -4392,6 +4392,7 @@ item.ingot_tantalium.desc.P11=AKA Tantalum.
 item.ingot_tantalium.desc='Tantalum'
 item.ingot_tantalium.name=Tantalium Ingot
 item.ingot_tcalloy.name=Technetium Steel Ingot
+item.ingot_tungsten_carbide.name=Tungsten Carbide Ingot
 item.ingot_technetium.name=Technetium-99 Ingot
 item.ingot_tennessine.name=Tennessine-294 Ingot
 item.ingot_th232.name=Thorium-232 Ingot

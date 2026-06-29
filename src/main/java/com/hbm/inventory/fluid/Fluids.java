@@ -35,9 +35,12 @@ import net.minecraftforge.fml.relauncher.Side;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -799,7 +802,7 @@ public class Fluids {
     private static void initDefaultFluids(File file) {
 
         try {
-            JsonWriter writer = new JsonWriter(new FileWriter(file));
+            JsonWriter writer = new JsonWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8));
             writer.setIndent("  ");
             writer.beginObject();
 
@@ -824,7 +827,7 @@ public class Fluids {
     private static void readCustomFluids(File file) {
 
         try {
-            JsonObject json = gson.fromJson(new FileReader(file), JsonObject.class);
+            JsonObject json = gson.fromJson(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8), JsonObject.class);
 
             for (Entry<String, JsonElement> entry : json.entrySet()) {
 
@@ -856,7 +859,7 @@ public class Fluids {
     private static void writeDefaultTraits(File file) {
 
         try {
-            JsonWriter writer = new JsonWriter(new FileWriter(file));
+            JsonWriter writer = new JsonWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8));
             writer.setIndent("  ");
             writer.beginObject();
 
@@ -882,7 +885,7 @@ public class Fluids {
     private static void readTraits(File config) {
 
         try {
-            JsonObject json = gson.fromJson(new FileReader(config), JsonObject.class);
+            JsonObject json = gson.fromJson(new InputStreamReader(new FileInputStream(config), StandardCharsets.UTF_8), JsonObject.class);
 
             for (FluidType type : metaOrder) {
 

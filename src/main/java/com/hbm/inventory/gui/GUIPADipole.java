@@ -148,7 +148,6 @@ public class GUIPADipole extends GuiInfoContainer {
         addLine(bufferbuilder, 68, 63, 0xff0000, vec, playerYaw - dipole.dirRedstone * 90);
         tessellator.draw();
 
-        GlStateManager.enableLighting();
         GlStateManager.enableTexture2D();
         GlStateManager.popMatrix();
 

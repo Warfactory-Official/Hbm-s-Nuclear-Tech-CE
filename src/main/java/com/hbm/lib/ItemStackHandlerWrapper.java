@@ -30,7 +30,10 @@ public class ItemStackHandlerWrapper implements IItemHandlerModifiable {
 
     @Override
     public ItemStack getStackInSlot(int slot) {
-        return handle.getStackInSlot(slot);
+        if (validSlots == null) return handle.getStackInSlot(slot);
+        for (int i : validSlots)
+            if (i == slot) return handle.getStackInSlot(slot);
+        return ItemStack.EMPTY;
     }
 
     @Override

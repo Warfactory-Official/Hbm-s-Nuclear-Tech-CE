@@ -55,7 +55,21 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
 	public boolean canInsertItem(int slot, ItemStack itemStack){
         if (slot != 27 && slot != 28 && itemStack.getItem() instanceof ItemBlades) return false;
         if (slot != 29 && Library.isDischargeableBattery(itemStack)) return false;
-		return this.isItemValidForSlot(slot, itemStack);
+		if (!this.isItemValidForSlot(slot, itemStack)) return false;
+
+		// Spread auto-inserted items across the 9 shredding slots (fill the emptiest first), matching
+		// upstream 1.7 — otherwise automation piles everything into slot 0 and only one slot ever shreds.
+		if (slot < 9) {
+			ItemStack target = inventory.getStackInSlot(slot);
+			if (target.isEmpty()) return true;
+			int size = target.getCount();
+			for (int k = 0; k < 9; k++) {
+				ItemStack other = inventory.getStackInSlot(k);
+				if (other.isEmpty()) return false;
+				if (other.getItem() == itemStack.getItem() && other.getItemDamage() == itemStack.getItemDamage() && other.getCount() < size) return false;
+			}
+		}
+		return true;
 	}
 
 	@Override

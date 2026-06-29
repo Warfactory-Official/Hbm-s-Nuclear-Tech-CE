@@ -1005,9 +1005,9 @@ public class CraftingManager {
 		addRecipeAuto(new ItemStack(ModBlocks.foundry_mold), "B B", "BSB", 'B', ModItems.ingot_firebrick, 'S', Blocks.STONE_SLAB );
 		addRecipeAuto(new ItemStack(ModBlocks.foundry_channel, 4), "B B", " S ", 'B', ModItems.ingot_firebrick, 'S', Blocks.STONE_SLAB );
 		addShapelessAuto(new ItemStack(ModBlocks.foundry_outlet), ModBlocks.foundry_channel, STEEL.plate() );
-		// TODO: foundry tank/slagtap
+		// TODO: foundry tank
 		//addRecipeAuto(new ItemStack(ModBlocks.foundry_tank), "B B", "I I", "BSB", 'B', ModItems.ingot_firebrick, 'I', STEEL.ingot(), 'S', Blocks.STONE_SLAB );
-		//addShapelessAuto(new ItemStack(ModBlocks.foundry_slagtap), ModBlocks.foundry_channel, Blocks.STONEBRICK );
+		addShapelessAuto(new ItemStack(ModBlocks.foundry_slagtap), ModBlocks.foundry_channel, Blocks.STONEBRICK );
 		addRecipeAuto(new ItemStack(ModItems.mold_base), " B ", "BIB", " B ", 'B', ModItems.ingot_firebrick, 'I', IRON.ingot() );
 		addRecipeAuto(new ItemStack(ModBlocks.brick_fire), "BB", "BB", 'B', ModItems.ingot_firebrick );
 		addShapelessAuto(new ItemStack(ModItems.ingot_firebrick, 4), ModBlocks.brick_fire );
@@ -1214,7 +1214,7 @@ public class CraftingManager {
 			if(slab != null){
 				addRecipeAuto(new ItemStack(slab, 6, 0), "###", '#', new ItemStack(block, 1, meta));
 				addRecipeAuto(new ItemStack(stair, 4), "#  ", "## ", "###", '#', new ItemStack(slab, 1, 0));
-				addShapelessAuto(new ItemStack(block, 1, meta), new ItemStack(slab, 1, meta), new ItemStack(slab, 1, 0));
+				addShapelessAuto(new ItemStack(block, 1, meta), new ItemStack(slab, 1, 0), new ItemStack(slab, 1, 0));
 			}
 			addRecipeAuto(new ItemStack(stair, 8), "#  ", "## ", "###", '#', new ItemStack(block, 1, meta));
 			addShapelessAuto(new ItemStack(block, 3, meta), new ItemStack(stair, 1), new ItemStack(stair, 1), new ItemStack(stair, 1), new ItemStack(stair, 1));

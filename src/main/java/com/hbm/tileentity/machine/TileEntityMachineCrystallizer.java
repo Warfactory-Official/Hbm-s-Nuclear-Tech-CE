@@ -231,7 +231,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 
         tankNew.setFill(tankNew.getFill() - getRequiredAcid(result.acidAmount));
 
-        float freeChance = this.getFreeChance();
+        float freeChance = this.getFreeChance(result);
 
         if (freeChance == 0 || freeChance < world.rand.nextFloat())
             this.inventory.getStackInSlot(0).shrink(result.itemAmount);
@@ -269,17 +269,14 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
     }
 
     public int getRequiredAcid(int base) {
-        int efficiency = Math.min(upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.EFFECT), 3);
-        if (efficiency > 0) {
-            return base * (efficiency + 2);
-        }
+        // Fluid (acid) consumption is unaffected by the EFFECT upgrade — matches upstream 1.7.
         return base;
     }
 
-    public float getFreeChance() {
+    public float getFreeChance(CrystallizerRecipes.CrystallizerRecipe recipe) {
         int efficiency = Math.min(upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.EFFECT), 3);
         if (efficiency > 0) {
-            return Math.min(efficiency * 0.05F, 0.15F);
+            return Math.min(efficiency * recipe.productivity, 0.99F);
         }
         return 0;
     }
@@ -296,7 +293,8 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 
     public int getPowerRequired() {
         int speed = Math.min(upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.SPEED), 3);
-        return demand + Math.min(speed * 1000, 3000);
+        int effect = Math.min(upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.EFFECT), 3);
+        return demand + speed * demand + effect * demand * 2;
     }
 
     public float getCycleCount() {

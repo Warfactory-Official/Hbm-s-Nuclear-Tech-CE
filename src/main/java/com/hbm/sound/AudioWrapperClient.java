@@ -1,5 +1,6 @@
 package com.hbm.sound;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.fml.relauncher.Side;
@@ -13,6 +14,12 @@ public class AudioWrapperClient extends AudioWrapper {
 	public AudioWrapperClient(SoundEvent source, SoundCategory cat, boolean useNewSystem) {
 		if(source != null)
 			sound = new AudioDynamic(source, cat, useNewSystem);
+	}
+
+	@Override
+	public void attachTo(Entity e) {
+		if(sound != null)
+			sound.attachTo(e);
 	}
 
 	@Override

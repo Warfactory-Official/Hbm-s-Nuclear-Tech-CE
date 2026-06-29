@@ -79,6 +79,10 @@ public class PyroOvenRecipes extends SerializableRecipe {
         recipes.add(new PyroOvenRecipe(100)
                 .in(new FluidStack(Fluids.STEAM, 500)).in(new RecipesCommon.OreDictStack(COAL.dust()))
                 .out(new FluidStack(Fluids.SYNGAS, 1_000)));
+        //tungsten carbide from tungsten dust
+        recipes.add(new PyroOvenRecipe(300)
+                .in(new FluidStack(Fluids.SYNGAS, 2_000)).in(new RecipesCommon.OreDictStack(W.dust()))
+                .out(new FluidStack(Fluids.SPENTSTEAM, 1_000)).out(new ItemStack(ModItems.ingot_tungsten_carbide)));
         recipes.add(new PyroOvenRecipe(100)
                 .in(new FluidStack(Fluids.STEAM, 250)).in(new RecipesCommon.OreDictStack(ANY_COKE.gem()))
                 .out(new FluidStack(Fluids.SYNGAS, 1_000)));

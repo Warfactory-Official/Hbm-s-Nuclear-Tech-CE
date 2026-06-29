@@ -783,6 +783,7 @@ public class ModItems {
     public static final Item ingot_dura_steel = new ItemCustomLore("ingot_dura_steel").setCreativeTab(MainRegistry.partsTab);
     public static final Item ingot_technetium = new ItemBakedBase("ingot_technetium").setCreativeTab(MainRegistry.partsTab);
     public static final Item ingot_tcalloy = new ItemBakedBase("ingot_tcalloy").setCreativeTab(MainRegistry.partsTab);
+    public static final Item ingot_tungsten_carbide = new ItemBakedBase("ingot_tungsten_carbide").setCreativeTab(MainRegistry.partsTab);
     public static final Item ingot_cdalloy = new ItemBakedBase("ingot_cdalloy").setCreativeTab(MainRegistry.partsTab);
     public static final Item ingot_polymer = new ItemCustomLore("ingot_polymer").setCreativeTab(MainRegistry.partsTab);
     public static final Item ingot_bakelite = new ItemCustomLore("ingot_bakelite").setCreativeTab(MainRegistry.partsTab);

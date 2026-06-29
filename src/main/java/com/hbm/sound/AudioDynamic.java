@@ -40,6 +40,10 @@ public class AudioDynamic extends MovingSound {
 		this.zPosF = z;
 	}
 
+	public void attachTo(Entity e) {
+		this.parentEntity = e;
+	}
+
 	public void setAttenuation(ISound.AttenuationType type){
 		this.attenuationType = type;
 		volume = intendedVolume;
