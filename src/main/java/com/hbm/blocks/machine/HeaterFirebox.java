@@ -9,6 +9,7 @@ import com.hbm.util.I18nUtil;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -57,7 +58,12 @@ public class HeaterFirebox extends BlockDummyable implements ITooltipProvider, I
 		super.addInformation(stack, worldIn, list, flagIn);
 	}
 
-	@Override
+    @Override
+    public void onEntityCollision(World world, BlockPos pos, IBlockState state, Entity entity) {
+        handleHeatCollision(world, pos, state, entity);
+    }
+
+    @Override
     public void printHook(Pre event, World world, BlockPos pos) {
         BlockPos corePos = this.findCore(world, pos);
         if(corePos == null) {

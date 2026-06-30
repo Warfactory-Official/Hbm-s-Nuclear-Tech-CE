@@ -2,7 +2,6 @@ package com.hbm.tileentity.machine.storage;
 
 import com.hbm.api.tile.ILootContainerModifiable;
 import com.hbm.api.tile.IWorldRenameable;
-import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ItemStackHandlerWrapper;
 import com.hbm.tileentity.machine.TileEntityLockableBase;
 import net.minecraft.block.state.IBlockState;
@@ -11,7 +10,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -181,18 +179,16 @@ public abstract class TileEntityCrateBase extends TileEntityLockableBase impleme
 
     /**
      * {@inheritDoc}
-     * @implNote this method is only called client-side. Use com.hbm.interfaces.IContainerOpenEventListener to make it work server-side.
+     * @implNote Client-side hook only. Sound is played server-side via IContainerOpenEventListener.
      */
     public void openInventory(EntityPlayer player) {
-        player.world.playSound(player.posX, player.posY, player.posZ, HBMSoundHandler.crateOpen, SoundCategory.BLOCKS, 1.0F, 1.0F, false);
     }
 
     /**
      * {@inheritDoc}
-     * @implNote this method is only called client-side. Override Container#onContainerClosed to make it work server-side.
+     * @implNote Client-side hook only. Sound is played server-side via IContainerOpenEventListener.
      */
     public void closeInventory(EntityPlayer player) {
-        player.world.playSound(player.posX, player.posY, player.posZ, HBMSoundHandler.crateClose, SoundCategory.BLOCKS, 1.0F, 1.0F, false);
     }
 
     public boolean isItemValidForSlot(int i, ItemStack stack) {

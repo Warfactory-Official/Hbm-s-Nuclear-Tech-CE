@@ -198,9 +198,10 @@ public class TileEntityMachineRTG extends TileEntityLoadedBase implements ITicka
 			mark = true;
 			detectPower = power;
 		}
-		networkPackNT(10);
-		if(mark)
+		if(mark) {
+			networkPackNT(10);
 			markDirty();
+		}
 	}
 
 	@Override

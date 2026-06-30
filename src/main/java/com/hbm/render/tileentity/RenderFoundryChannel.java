@@ -3,6 +3,7 @@ package com.hbm.render.tileentity;
 import com.hbm.Tags;
 import com.hbm.blocks.machine.FoundryChannel;
 import com.hbm.interfaces.AutoRegister;
+import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.tileentity.machine.TileEntityFoundryChannel;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -12,9 +13,10 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
-import java.awt.*;
+
 @AutoRegister
 public class RenderFoundryChannel extends TileEntitySpecialRenderer<TileEntityFoundryChannel> {
     public static final ResourceLocation LAVA_TEXTURE = new ResourceLocation(Tags.MODID, "textures/models/machines/lava_gray.png");
@@ -29,51 +31,65 @@ public class RenderFoundryChannel extends TileEntitySpecialRenderer<TileEntityFo
         World world = tile.getWorld();
         FoundryChannel channel = (FoundryChannel) tile.getBlockType();
 
-        boolean doRender = tile.amount > 0 && tile.type != null;
-        if (!doRender) {
-            return;
-        }
+		boolean doRender = (tile.amount > 0 || tile.renderAmount > 0) && (tile.type != null || tile.renderType != null);
+		if (!doRender) {
+			return;
+		}
 
-        Color color = new Color(tile.type.moltenColor).brighter();
+		NTMMaterial mat = tile.renderType != null ? tile.renderType : tile.type;
+		int hex = mat.moltenColor;
+        double brightener = 0.7D;
+        int rComp = (hex >> 16) & 0xFF;
+        int gComp = (hex >> 8) & 0xFF;
+        int bComp = hex & 0xFF;
+        rComp = Math.min((int) (rComp / 0.7D), 255);
+        gComp = Math.min((int) (gComp / 0.7D), 255);
+        bComp = Math.min((int) (bComp / 0.7D), 255);
+        float nr = (float) (255D - (255D - rComp) * brightener) / 255F;
+        float ng = (float) (255D - (255D - gComp) * brightener) / 255F;
+        float nb = (float) (255D - (255D - bComp) * brightener) / 255F;
 
-        if(color != null) {
-            double brightener = 0.7D;
-            int nr = (int) (255D - (255D - color.getRed()) * brightener);
-            int ng = (int) (255D - (255D - color.getGreen()) * brightener);
-            int nb = (int) (255D - (255D - color.getBlue()) * brightener);
+		double maxLevel = 0.25D;
+		int capacity = tile.getCapacity();
+		if(capacity <= 0) capacity = 1;
 
-            color = new Color(nr, ng, nb);
-        }
+		double fraction = (double) tile.renderAmount / capacity;
+		double prevFrac = (double) tile.prevRenderAmount / capacity;
+		double interpFrac = prevFrac + (fraction - prevFrac) * partialTicks;
+		interpFrac = Math.max(0, Math.min(1, interpFrac));
 
-        double level = tile.amount * 0.25D / tile.getCapacity();
+		double level = interpFrac * maxLevel;
 
-        bindTexture(LAVA_TEXTURE);
+		double droop = MathHelper.sin((float) (interpFrac * Math.PI)) * 0.03F;
+		double baseY = 0.125D + level;
 
-        GlStateManager.pushMatrix();
-        GlStateManager.translate(x, y, z);
-        GlStateManager.disableLighting();
+		bindTexture(LAVA_TEXTURE);
 
-        GlStateManager.color(color.getRed() / 255F, color.getGreen() / 255F, color.getBlue() / 255F, 1.0F);
+		GlStateManager.pushMatrix();
+		GlStateManager.translate(x, y, z);
+		GlStateManager.disableLighting();
 
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuffer();
+		GlStateManager.color(nr, ng, nb, 1.0F);
 
-        buffer.begin(7, DefaultVertexFormats.POSITION_TEX);
+		Tessellator tessellator = Tessellator.getInstance();
+		BufferBuilder buffer = tessellator.getBuffer();
 
-        if (channel.canConnectTo(world, pos, EnumFacing.EAST)) { // +X
-            renderLiquid(buffer, 0.625D, 0.125D, 0.3125D, 1D, 0.125D + level, 0.6875D);
-        }
-        if (channel.canConnectTo(world, pos, EnumFacing.WEST)) { // -X
-            renderLiquid(buffer, 0D, 0.125D, 0.3125D, 0.375D, 0.125D + level, 0.6875D);
-        }
-        if (channel.canConnectTo(world, pos, EnumFacing.SOUTH)) { // +Z
-            renderLiquid(buffer, 0.3125D, 0.125D, 0.625D, 0.6875D, 0.125D + level, 1D);
-        }
-        if (channel.canConnectTo(world, pos, EnumFacing.NORTH)) { // -Z
-            renderLiquid(buffer, 0.3125D, 0.125D, 0D, 0.6875D, 0.125D + level, 0.375D);
-        }
+		buffer.begin(7, DefaultVertexFormats.POSITION_TEX);
 
-        renderLiquid(buffer, 0.375D, 0.125D, 0.375D, 0.625D, 0.125D + level, 0.625D);
+		if (channel.canConnectTo(world, pos, EnumFacing.EAST)) { // +X
+			renderSloped(buffer, 0.625D, 0.3125D, 1D, 0.6875D, baseY, droop);
+		}
+		if (channel.canConnectTo(world, pos, EnumFacing.WEST)) { // -X
+			renderSloped(buffer, 0D, 0.3125D, 0.375D, 0.6875D, baseY, droop);
+		}
+		if (channel.canConnectTo(world, pos, EnumFacing.SOUTH)) { // +Z
+			renderSloped(buffer, 0.3125D, 0.625D, 0.6875D, 1D, baseY, droop);
+		}
+		if (channel.canConnectTo(world, pos, EnumFacing.NORTH)) { // -Z
+			renderSloped(buffer, 0.3125D, 0D, 0.6875D, 0.375D, baseY, droop);
+		}
+
+		renderSloped(buffer, 0.375D, 0.375D, 0.625D, 0.625D, baseY, droop);
 
         tessellator.draw();
 
@@ -81,15 +97,27 @@ public class RenderFoundryChannel extends TileEntitySpecialRenderer<TileEntityFo
         GlStateManager.popMatrix();
     }
 
-    private void renderLiquid(BufferBuilder buffer, double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
-        buffer.pos(minX, minY, minZ).tex(0, 0).endVertex();
-        buffer.pos(minX, minY, maxZ).tex(0, 1).endVertex();
-        buffer.pos(maxX, minY, maxZ).tex(1, 1).endVertex();
-        buffer.pos(maxX, minY, minZ).tex(1, 0).endVertex();
+    private static double slopedHeight(double vx, double vz, double baseY, double droop) {
+        double dx = vx - 0.5;
+        double dz = vz - 0.5;
+        return baseY - droop + droop * (dx * dx + dz * dz) * 2;
+    }
 
-        buffer.pos(minX, maxY, minZ).tex(0, 0).endVertex();
-        buffer.pos(minX, maxY, maxZ).tex(0, 1).endVertex();
-        buffer.pos(maxX, maxY, maxZ).tex(1, 1).endVertex();
-        buffer.pos(maxX, maxY, minZ).tex(1, 0).endVertex();
+    private void renderSloped(BufferBuilder buffer, double minX, double minZ, double maxX, double maxZ, double baseY, double droop) {
+        double h1 = slopedHeight(minX, minZ, baseY, droop);
+        double h2 = slopedHeight(minX, maxZ, baseY, droop);
+        double h3 = slopedHeight(maxX, maxZ, baseY, droop);
+        double h4 = slopedHeight(maxX, minZ, baseY, droop);
+        double bottomY = 0.125D;
+
+        buffer.pos(minX, bottomY, minZ).tex(0, 0).endVertex();
+        buffer.pos(minX, bottomY, maxZ).tex(0, 1).endVertex();
+        buffer.pos(maxX, bottomY, maxZ).tex(1, 1).endVertex();
+        buffer.pos(maxX, bottomY, minZ).tex(1, 0).endVertex();
+
+        buffer.pos(minX, h1, minZ).tex(0, 0).endVertex();
+        buffer.pos(minX, h2, maxZ).tex(0, 1).endVertex();
+        buffer.pos(maxX, h3, maxZ).tex(1, 1).endVertex();
+        buffer.pos(maxX, h4, minZ).tex(1, 0).endVertex();
     }
 }

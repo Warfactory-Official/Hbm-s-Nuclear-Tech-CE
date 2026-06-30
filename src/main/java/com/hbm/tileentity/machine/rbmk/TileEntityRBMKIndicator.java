@@ -60,7 +60,7 @@ public class TileEntityRBMKIndicator extends TileEntityLoadedBase implements ITi
 
             for (int i = 0; i < 6; i++) this.indicators[i].update();
 
-            this.networkPackNT(50);
+            this.networkPackMK2(50);
         }
     }
 
@@ -130,9 +130,13 @@ public class TileEntityRBMKIndicator extends TileEntityLoadedBase implements ITi
             if (chan != null && chan.signal != null) {
                 try { sigVal = Integer.parseInt(chan.signal.toString()); } catch (Exception ex) { }
                 decideLight(sigVal);
+                TileEntityRBMKIndicator.this.dataChanged();
             } else {
                 // if there's no new signal and we're polling, set to 0
-                if (polling) decideLight(0);
+                if (polling) {
+                    decideLight(0);
+                    TileEntityRBMKIndicator.this.dataChanged();
+                }
             }
         }
 
@@ -225,6 +229,7 @@ public class TileEntityRBMKIndicator extends TileEntityLoadedBase implements ITi
             indicator.min = data.hasKey("min" + i) ? data.getInteger("min" + i) : Integer.MIN_VALUE;
             indicator.max = data.hasKey("max" + i) ? data.getInteger("max" + i) : Integer.MAX_VALUE;
         }
+        this.dataChanged();
     }
 
     // OpenComputers methods
@@ -259,6 +264,7 @@ public class TileEntityRBMKIndicator extends TileEntityLoadedBase implements ITi
         indicators[idx].active = args.checkBoolean(1);
         recomputeAnyActive();
         markDirty();
+        this.dataChanged();
         return new Object[]{true};
     }
 
@@ -269,6 +275,7 @@ public class TileEntityRBMKIndicator extends TileEntityLoadedBase implements ITi
         if (idx < 0 || idx >= 6) return new Object[]{false, "Invalid index (1-6)"};
         indicators[idx].light = args.checkBoolean(1);
         markDirty();
+        this.dataChanged();
         return new Object[]{true};
     }
 
@@ -279,6 +286,7 @@ public class TileEntityRBMKIndicator extends TileEntityLoadedBase implements ITi
         if (idx < 0 || idx >= 6) return new Object[]{false, "Invalid index (1-6)"};
         indicators[idx].color = MathHelper.clamp(args.checkInteger(1), 0, 0xffffff);
         markDirty();
+        this.dataChanged();
         return new Object[]{true};
     }
 
@@ -289,6 +297,7 @@ public class TileEntityRBMKIndicator extends TileEntityLoadedBase implements ITi
         if (idx < 0 || idx >= 6) return new Object[]{false, "Invalid index (1-6)"};
         indicators[idx].label = args.checkString(1);
         markDirty();
+        this.dataChanged();
         return new Object[]{true};
     }
 
@@ -302,6 +311,7 @@ public class TileEntityRBMKIndicator extends TileEntityLoadedBase implements ITi
         indicators[idx].min = min;
         indicators[idx].max = max;
         markDirty();
+        this.dataChanged();
         return new Object[]{true};
     }
 }

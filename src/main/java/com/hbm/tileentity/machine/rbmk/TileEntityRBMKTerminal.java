@@ -41,7 +41,7 @@ public class TileEntityRBMKTerminal extends TileEntityLoadedBase implements ITic
             if (!this.channel.isEmpty() && !this.repeatCmd.isEmpty()) {
                 RTTYSystem.broadcast(world, this.channel, this.repeatCmd);
             }
-            this.networkPackNT(50);
+            this.networkPackMK2(50);
         }
     }
 
@@ -120,6 +120,7 @@ public class TileEntityRBMKTerminal extends TileEntityLoadedBase implements ITic
         }
         this.history[0] = msg;
         this.markChanged();
+        this.dataChanged();
     }
 
     @Override
@@ -170,6 +171,7 @@ public class TileEntityRBMKTerminal extends TileEntityLoadedBase implements ITic
         if (data.hasKey("cmd")) {
             eval(data.getString("cmd"));
             this.markChanged();
+            this.dataChanged();
         }
     }
 

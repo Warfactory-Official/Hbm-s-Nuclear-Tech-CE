@@ -7,7 +7,6 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.container.ContainerMassStorage;
 import com.hbm.inventory.gui.GUIMassStorage;
 import com.hbm.items.ModItems;
-import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.toclient.BufPacket;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IControlReceiverFilter;
@@ -20,7 +19,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
-import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
@@ -144,11 +142,9 @@ public class TileEntityMassStorage extends TileEntityCrateBase implements IBufPa
     }
 
     public void openInventory(EntityPlayer player) {
-        player.world.playSound(player.posX, player.posY, player.posZ, HBMSoundHandler.storageOpen, SoundCategory.BLOCKS, 1.0F, 1.0F, false);
     }
 
     public void closeInventory(EntityPlayer player) {
-        player.world.playSound(player.posX, player.posY, player.posZ, HBMSoundHandler.storageClose, SoundCategory.BLOCKS, 1.0F, 1.0F, false);
     }
 
     @Override

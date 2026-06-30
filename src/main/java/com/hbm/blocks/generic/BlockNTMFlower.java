@@ -38,7 +38,7 @@ public class BlockNTMFlower extends BlockPlantEnumMeta<EnumFlowerPlantType> impl
     @Override
     public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand) {
         if (worldIn.isRemote) return;
-        EnumFlowerPlantType type = EnumFlowerPlantType.values()[state.getValue(META)];
+        EnumFlowerPlantType type = this.getEnumFromState(state);
 
         if (!(type == HEMP || type == MUSTARD_WILLOW_0 || type == MUSTARD_WILLOW_1)) return;
 
@@ -48,7 +48,7 @@ public class BlockNTMFlower extends BlockPlantEnumMeta<EnumFlowerPlantType> impl
 
     @Override
     public boolean canGrow(World worldIn, BlockPos pos, IBlockState state, boolean isClient) {
-        EnumFlowerPlantType type = EnumFlowerPlantType.values()[state.getValue(META)];
+        EnumFlowerPlantType type = this.getEnumFromState(state);
         if (type == MUSTARD_WILLOW_0 || type == MUSTARD_WILLOW_1) {
             if (!isWatered(worldIn, pos))
                 return false;

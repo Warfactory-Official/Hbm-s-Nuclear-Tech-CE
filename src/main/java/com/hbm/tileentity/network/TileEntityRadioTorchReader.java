@@ -62,7 +62,7 @@ public class TileEntityRadioTorchReader extends TileEntityLoadedBase implements 
                 }
             }
 
-            networkPackNT(50);
+            networkPackMK2(50);
         }
     }
 
@@ -106,6 +106,7 @@ public class TileEntityRadioTorchReader extends TileEntityLoadedBase implements 
             if (data.hasKey("channels" + i)) channels[i] = data.getString("channels" + i);
         for (int i = 0; i < names.length; i++) if (data.hasKey("names" + i)) names[i] = data.getString("names" + i);
 
+        this.dataChanged();
         this.markDirty();
     }
 

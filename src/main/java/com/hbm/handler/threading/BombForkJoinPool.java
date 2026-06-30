@@ -150,10 +150,10 @@ public final class BombForkJoinPool {
         return p;
     }
 
+    // reserveCores was removed — it overlaps with maxThreads (negative maxThreads already subtracts from available processors)
     private static int computeWorkers() {
         int processors = Runtime.getRuntime().availableProcessors();
-        int workers = BombConfig.maxThreads <= 0 ? Math.max(1, processors + BombConfig.maxThreads) : Math.min(BombConfig.maxThreads, processors);
-        return Math.max(1, workers);
+        return BombConfig.maxThreads <= 0 ? Math.max(1, processors + BombConfig.maxThreads) : Math.min(BombConfig.maxThreads, processors);
     }
 
     private static void crashOnWorkerFailure(Thread thread, Throwable error) {

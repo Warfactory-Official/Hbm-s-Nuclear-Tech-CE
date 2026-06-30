@@ -47,7 +47,9 @@ import com.hbm.items.weapon.sedna.factory.XFactory12ga;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.lib.ModDamageSource;
+import com.hbm.packet.HbmSyncHandler;
 import com.hbm.packet.PacketDispatcher;
+import com.hbm.packet.PermaSyncHandler;
 import com.hbm.packet.threading.ThreadedPacket;
 import com.hbm.packet.toclient.*;
 import com.hbm.particle.bullet_hit.EntityHitDataHandler;
@@ -62,8 +64,10 @@ import com.hbm.tileentity.network.RequestNetwork;
 import com.hbm.uninos.UniNodespace;
 import com.hbm.util.*;
 import com.hbm.util.ArmorRegistry.HazardClass;
+import com.hbm.saveddata.TomSaveData;
 import com.hbm.world.biome.BiomeGenCraterBase;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.enchantment.Enchantment;
@@ -153,11 +157,13 @@ public class ModEventHandler {
     public static final ResourceLocation ENT_HBM_PROP_ID = new ResourceLocation(Tags.MODID, "HBMLIVINGPROPS");
     public static final ResourceLocation DATA_LOC = new ResourceLocation(Tags.MODID, "HBMDATA");
     public static final Int2IntOpenHashMap RBMK_COL_HEIGHT_MAP = new Int2IntOpenHashMap(); // server only, stores raw dialColumnHeight values to avoid redundant packets
+    public static final Int2LongOpenHashMap TOM_HASH_MAP = new Int2LongOpenHashMap(); // server only, per-dim TOM data hash
     public static Random rand = new Random();
     private static final ForkJoinPool THREAD_POOL = ForkJoinPool.commonPool();
 
     static {
         RBMK_COL_HEIGHT_MAP.defaultReturnValue((int) RBMKDials.RBMKKeys.KEY_COLUMN_HEIGHT.defValue);
+        TOM_HASH_MAP.defaultReturnValue(-1L);
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
@@ -528,6 +534,14 @@ public class ModEventHandler {
             if (height != (int) RBMKDials.RBMKKeys.KEY_COLUMN_HEIGHT.defValue) {
                 PacketThreading.createSendToThreadedPacket(new SurveyPacket(height), player);
             }
+            // Sync TOM impact data to joining players — worldTick only broadcasts on hash change,
+            // so a player joining when data is stable would never receive the current state.
+            TomSaveData tomData = TomSaveData.forWorld(world);
+            TomBroadcastPacket.cachedFire = tomData.fire;
+            TomBroadcastPacket.cachedDust = tomData.dust;
+            TomBroadcastPacket.cachedImpact = tomData.impact;
+            TomBroadcastPacket.cachedTime = tomData.time;
+            PacketThreading.createSendToThreadedPacket(new TomBroadcastPacket(), player);
         } else if (entity instanceof EntityLiving living) {
             ItemStack held = living.getHeldItem(EnumHand.MAIN_HAND);
 
@@ -666,6 +680,25 @@ public class ModEventHandler {
             PacketThreading.createSendToDimensionThreadedPacket(new SurveyPacket(cur), dim);
         }
         BossSpawnHandler.rollTheDice(event.world);
+
+        /// PERMA CACHE REFRESH ///
+        PermaSyncHandler.tickCache(event.world);
+
+        /// TOM BROADCAST ///
+        {
+            TomSaveData tomData = TomSaveData.forWorld(event.world);
+            long tomHash = 31 * (31 * (31 * Float.floatToIntBits(tomData.fire) + Float.floatToIntBits(tomData.dust)) + (tomData.impact ? 1 : 0)) + tomData.time;
+            int curDim = event.world.provider.getDimension();
+            long prev = TOM_HASH_MAP.get(curDim);
+            if(prev != tomHash) {
+                TOM_HASH_MAP.put(curDim, tomHash);
+                TomBroadcastPacket.cachedFire = tomData.fire;
+                TomBroadcastPacket.cachedDust = tomData.dust;
+                TomBroadcastPacket.cachedImpact = tomData.impact;
+                TomBroadcastPacket.cachedTime = tomData.time;
+                PacketThreading.createSendToAllThreadedPacket(new TomBroadcastPacket());
+            }
+        }
     }
 
     //mlbv: concurrent workers are safe as long as they don't interfere
@@ -902,7 +935,8 @@ public class ModEventHandler {
             /// PU RADIATION END ///
 
             /// SYNC START ///
-            if(!player.world.isRemote && player instanceof EntityPlayerMP playerMP) PacketThreading.createSendToThreadedPacket(new PermaSyncPacket(playerMP), playerMP);
+            if(!player.world.isRemote && player instanceof EntityPlayerMP playerMP && PermaSyncHandler.shouldSend(playerMP))
+                PacketThreading.createSendToThreadedPacket(new PermaSyncPacket(playerMP), playerMP);
             /// SYNC END ///
         }
         // Alcater addition on June 2023
@@ -984,6 +1018,7 @@ public class ModEventHandler {
     public void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (!event.player.world.isRemote) {
             HazardSystem.onPlayerLogout(event.player);
+            HbmSyncHandler.removePlayer(event.player.getUniqueID());
         }
     }
 

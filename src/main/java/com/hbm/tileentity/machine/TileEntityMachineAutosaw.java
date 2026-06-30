@@ -212,7 +212,7 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IB
                 }
             }
 
-            PacketThreading.createAllAroundThreadedPacket(new BufPacket(pos.getX(), pos.getY(), pos.getZ(), this), new TargetPoint(this.world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
+            this.networkPackNT(100);
         } else {
 
             this.lastSpin = this.spin;

@@ -49,6 +49,7 @@ public class TileEntityTesla extends TileEntityMachineBase implements ITickable,
 	public static double offset = 1.75;
 	
 	public List<double[]> targets = new ArrayList<double[]>();
+	private boolean wasZapping;
 	
 	public TileEntityTesla() {
 		super(0);
@@ -79,7 +80,11 @@ public class TileEntityTesla extends TileEntityMachineBase implements ITickable,
 				this.targets = zap(world, dx, dy, dz, range, null);
 			}
 			
-			PacketDispatcher.wrapper.sendToAllAround(new TETeslaPacket(pos, targets), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
+			boolean zapping = power >= 5000;
+			if(zapping || wasZapping != zapping) {
+				PacketDispatcher.wrapper.sendToAllAround(new TETeslaPacket(pos, targets), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
+			}
+			wasZapping = zapping;
 		}
 	}
 

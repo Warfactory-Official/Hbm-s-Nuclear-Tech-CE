@@ -22,7 +22,6 @@ public class ParticleMukeFlash extends Particle {
 
     private static final ResourceLocation TEXTURE = new ResourceLocation(Tags.MODID, "textures/particle/flare.png");
     private final boolean bf;
-
     public ParticleMukeFlash(World world, double x, double y, double z, boolean bf) {
         super(world, x, y, z, 0.0D, 0.0D, 0.0D);
         this.particleMaxAge = 20;

@@ -9,7 +9,9 @@ import com.hbm.tileentity.TileEntityProxyEnergy;
 import com.hbm.tileentity.machine.TileEntityHeaterElectric;
 import com.hbm.util.I18nUtil;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -58,7 +60,12 @@ public class HeaterElectric extends BlockDummyable implements ILookOverlay, IToo
 		this.makeExtra(world, x, y, z);
 	}
 
-	@Override
+    @Override
+    public void onEntityCollision(World world, BlockPos pos, IBlockState state, Entity entity) {
+        handleHeatCollision(world, pos, state, entity);
+    }
+
+    @Override
     @SideOnly(Side.CLIENT)
     public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
         this.addStandardInfo(tooltip);

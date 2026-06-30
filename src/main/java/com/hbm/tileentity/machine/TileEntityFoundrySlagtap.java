@@ -98,7 +98,7 @@ public class TileEntityFoundrySlagtap extends TileEntityFoundryOutlet implements
 			world.scheduleUpdate(mop.getBlockPos().up(), ModBlocks.slag, 1);
 		}
 
-		if(didFlow) {
+		if(didFlow && world.rand.nextInt(3) == 0) {
 			ForgeDirection dir = side.getOpposite();
 			double hitY = mop.getBlockPos().getY();
 

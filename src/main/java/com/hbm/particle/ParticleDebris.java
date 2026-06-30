@@ -95,8 +95,6 @@ public class ParticleDebris extends Particle {
         float pY = (float) (this.prevPosY + (this.posY - this.prevPosY) * partialTicks - dY);
         float pZ = (float) (this.prevPosZ + (this.posZ - this.prevPosZ) * partialTicks - dZ);
 
-        BufferBuilder buffer = NTMImmediate.INSTANCE.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
-
         worldInAJar.lightlevel = world.getCombinedLight(new BlockPos((int) Math.floor(posX), (int) Math.floor(posY), (int) Math.floor(posZ)), 0);
         RenderHelper.disableStandardItemLighting();
         GlStateManager.disableBlend();
@@ -112,27 +110,58 @@ public class ParticleDebris extends Particle {
         Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
 
-        for (int x = 0; x < worldInAJar.sizeX; x++) {
-            for (int y = 0; y < worldInAJar.sizeY; y++) {
-                for (int z = 0; z < worldInAJar.sizeZ; z++) {
+        buildAndDraw();
+
+        GlStateManager.shadeModel(GL11.GL_FLAT);
+        GlStateManager.popMatrix();
+    }
+
+    // Rebuild vertex buffer every frame with current light level — no caching, but skips interior faces
+    private void buildAndDraw() {
+        int sx = worldInAJar.sizeX;
+        int sy = worldInAJar.sizeY;
+        int sz = worldInAJar.sizeZ;
+
+        boolean[][][] visible = new boolean[sx][sy][sz];
+        for (int x = 0; x < sx; x++) {
+            for (int y = 0; y < sy; y++) {
+                for (int z = 0; z < sz; z++) {
+                    if (worldInAJar.getBlock(x, y, z) == Blocks.AIR) continue;
+                    if (hasVisibleFace(x, y, z, sx, sy, sz)) {
+                        visible[x][y][z] = true;
+                    }
+                }
+            }
+        }
+
+        BufferBuilder buffer = NTMImmediate.INSTANCE.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+        for (int x = 0; x < sx; x++) {
+            for (int y = 0; y < sy; y++) {
+                for (int z = 0; z < sz; z++) {
+                    if (!visible[x][y][z]) continue;
                     BlockPos pos = new BlockPos(x, y, z);
-                    IBlockState state = worldInAJar.getBlockState(pos);
-
                     try {
-                        renderer.renderBlock(
-                                state, pos, worldInAJar, buffer
-                        );
-
+                        renderer.renderBlock(worldInAJar.getBlockState(pos), pos, worldInAJar, buffer);
                     } catch (Exception ignored) {
-
                     }
                 }
             }
         }
 
         NTMImmediate.INSTANCE.draw();
-        GlStateManager.shadeModel(GL11.GL_FLAT);
-        GlStateManager.popMatrix();
+    }
+
+    // Skips interior faces that are fully occluded by adjacent blocks — ~50% fewer quads for solid debris
+    private boolean hasVisibleFace(int x, int y, int z, int sx, int sy, int sz) {
+        return x == 0 || x == sx - 1 ||
+               y == 0 || y == sy - 1 ||
+               z == 0 || z == sz - 1 ||
+               worldInAJar.getBlock(x - 1, y, z) == Blocks.AIR ||
+               worldInAJar.getBlock(x + 1, y, z) == Blocks.AIR ||
+               worldInAJar.getBlock(x, y - 1, z) == Blocks.AIR ||
+               worldInAJar.getBlock(x, y + 1, z) == Blocks.AIR ||
+               worldInAJar.getBlock(x, y, z - 1) == Blocks.AIR ||
+               worldInAJar.getBlock(x, y, z + 1) == Blocks.AIR;
     }
 
 }

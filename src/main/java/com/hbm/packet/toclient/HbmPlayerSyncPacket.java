@@ -1,15 +1,12 @@
 package com.hbm.packet.toclient;
 
-import com.hbm.capability.HbmCapability;
-import com.hbm.capability.HbmCapability.IHBMData;
-import com.hbm.capability.HbmLivingCapability.IEntityHbmProps;
-import com.hbm.capability.HbmLivingProps;
 import com.hbm.capability.HbmLivingProps.ContaminationEffect;
 import com.hbm.main.MainRegistry;
+import com.hbm.packet.HbmSyncHandler;
 import com.hbm.packet.threading.PrecompiledPacket;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -20,18 +17,21 @@ public class HbmPlayerSyncPacket extends PrecompiledPacket {
 
     private static final ContaminationEffect[] EMPTY_CONTAMINATION = new ContaminationEffect[0];
 
-    IEntityHbmProps livingProps;
-    IHBMData hbmData;
-    ContaminationEffect[] contaminationSnapshot;
-    ByteBuf buf;
+    private EntityPlayerMP player;
+    private byte flags;
+    private ContaminationEffect[] contaminationSnapshot;
+    private ByteBuf buf;
 
     public HbmPlayerSyncPacket() {
+        this.contaminationSnapshot = EMPTY_CONTAMINATION;
     }
 
-    public HbmPlayerSyncPacket(IEntityHbmProps livingProps, IHBMData hbmData) {
-        this.livingProps = livingProps;
-        this.hbmData = hbmData;
-        this.contaminationSnapshot = livingProps.getContaminationEffectList().toArray(EMPTY_CONTAMINATION);
+    public HbmPlayerSyncPacket(EntityPlayerMP player, byte flags) {
+        this.player = player;
+        this.flags = flags;
+        this.contaminationSnapshot = (flags & HbmSyncHandler.FLAG_CONTAMINATION) != 0
+            ? com.hbm.capability.HbmLivingProps.getData(player).getContaminationEffectList().toArray(EMPTY_CONTAMINATION)
+            : EMPTY_CONTAMINATION;
     }
 
     @Override
@@ -41,8 +41,7 @@ public class HbmPlayerSyncPacket extends PrecompiledPacket {
 
     @Override
     public void toBytes(ByteBuf buf) {
-        livingProps.serialize(buf, contaminationSnapshot);
-        hbmData.serialize(buf);
+        HbmSyncHandler.writePacket(buf, flags, contaminationSnapshot, player);
     }
 
     public static class Handler implements IMessageHandler<HbmPlayerSyncPacket, IMessage> {
@@ -54,10 +53,7 @@ public class HbmPlayerSyncPacket extends PrecompiledPacket {
             ByteBuf buf = m.buf;
             Minecraft.getMinecraft().addScheduledTask(() -> {
                 try {
-                    EntityPlayer player = Minecraft.getMinecraft().player;
-                    if (Minecraft.getMinecraft().world == null || player == null) return;
-                    HbmLivingProps.getData(player).deserialize(buf);
-                    HbmCapability.getData(player).deserialize(buf);
+                    HbmSyncHandler.readPacket(buf);
                 } catch (Exception e) {
                     MainRegistry.logger.error("Failed to sync HBM player state", e);
                 } finally {

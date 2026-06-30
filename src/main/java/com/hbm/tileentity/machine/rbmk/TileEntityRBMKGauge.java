@@ -52,7 +52,7 @@ public class TileEntityRBMKGauge extends TileEntityLoadedBase implements ITickab
 
             for (int i = 0; i < 4; i++) this.gauges[i].update();
 
-            this.networkPackNT(50);
+            this.networkPackMK2(50);
         } else {
 
             for (int i = 0; i < 4; i++) this.gauges[i].updateClient();
@@ -154,9 +154,13 @@ public class TileEntityRBMKGauge extends TileEntityLoadedBase implements ITickab
                 } catch (Exception ex) {
                 }
                 this.value = sigVal;
+                TileEntityRBMKGauge.this.dataChanged();
             } else {
                 // if there's no new signal and we're polling, set to 0
-                if (polling) this.value = 0;
+                if (polling) {
+                    this.value = 0;
+                    TileEntityRBMKGauge.this.dataChanged();
+                }
             }
         }
 
@@ -239,6 +243,7 @@ public class TileEntityRBMKGauge extends TileEntityLoadedBase implements ITickab
             gauge.min = data.getInteger("min" + i);
             gauge.max = data.getInteger("max" + i);
         }
+        this.dataChanged();
     }
 
     // OpenComputers methods
@@ -272,6 +277,7 @@ public class TileEntityRBMKGauge extends TileEntityLoadedBase implements ITickab
         if (idx < 0 || idx >= 4) return new Object[]{false, "Invalid index (1-4)"};
         gauges[idx].active = args.checkBoolean(1);
         markDirty();
+        this.dataChanged();
         return new Object[]{true};
     }
 
@@ -282,6 +288,7 @@ public class TileEntityRBMKGauge extends TileEntityLoadedBase implements ITickab
         if (idx < 0 || idx >= 4) return new Object[]{false, "Invalid index (1-4)"};
         gauges[idx].polling = args.checkBoolean(1);
         markDirty();
+        this.dataChanged();
         return new Object[]{true};
     }
 
@@ -292,6 +299,7 @@ public class TileEntityRBMKGauge extends TileEntityLoadedBase implements ITickab
         if (idx < 0 || idx >= 4) return new Object[]{false, "Invalid index (1-4)"};
         gauges[idx].color = MathHelper.clamp(args.checkInteger(1), 0, 0xffffff);
         markDirty();
+        this.dataChanged();
         return new Object[]{true};
     }
 
@@ -302,6 +310,7 @@ public class TileEntityRBMKGauge extends TileEntityLoadedBase implements ITickab
         if (idx < 0 || idx >= 4) return new Object[]{false, "Invalid index (1-4)"};
         gauges[idx].label = args.checkString(1);
         markDirty();
+        this.dataChanged();
         return new Object[]{true};
     }
 
@@ -312,6 +321,7 @@ public class TileEntityRBMKGauge extends TileEntityLoadedBase implements ITickab
         if (idx < 0 || idx >= 4) return new Object[]{false, "Invalid index (1-4)"};
         gauges[idx].rtty = args.checkString(1);
         markDirty();
+        this.dataChanged();
         return new Object[]{true};
     }
 
@@ -322,6 +332,7 @@ public class TileEntityRBMKGauge extends TileEntityLoadedBase implements ITickab
         if (idx < 0 || idx >= 4) return new Object[]{false, "Invalid index (1-4)"};
         gauges[idx].min = (long) args.checkInteger(1);
         markDirty();
+        this.dataChanged();
         return new Object[]{true};
     }
 
@@ -332,6 +343,7 @@ public class TileEntityRBMKGauge extends TileEntityLoadedBase implements ITickab
         if (idx < 0 || idx >= 4) return new Object[]{false, "Invalid index (1-4)"};
         gauges[idx].max = (long) args.checkInteger(1);
         markDirty();
+        this.dataChanged();
         return new Object[]{true};
     }
 
@@ -342,6 +354,7 @@ public class TileEntityRBMKGauge extends TileEntityLoadedBase implements ITickab
         if (idx < 0 || idx >= 4) return new Object[]{false, "Invalid index (1-4)"};
         gauges[idx].value = (long) args.checkInteger(1);
         markDirty();
+        this.dataChanged();
         return new Object[]{true};
     }
 }

@@ -14,11 +14,12 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import org.lwjgl.opengl.GL11;
 
-import java.awt.*;
+
 
 public class ParticleFoundry extends Particle {
 
 	protected int color;
+	protected int pR, pG, pB;
 	protected ForgeDirection dir;
 	/* how far the metal splooshes down from the base point */
 	protected float length;
@@ -37,6 +38,17 @@ public class ParticleFoundry extends Particle {
 		this.base = base;
 		this.offset = offset;
 		
+		int rComp = (color >> 16) & 0xFF;
+		int gComp = (color >> 8) & 0xFF;
+		int bComp = color & 0xFF;
+		rComp = Math.min((int) (rComp / 0.7F), 255);
+		gComp = Math.min((int) (gComp / 0.7F), 255);
+		bComp = Math.min((int) (bComp / 0.7F), 255);
+		double brightener = 0.7D;
+		this.pR = (int) (255D - (255D - rComp) * brightener);
+		this.pG = (int) (255D - (255D - gComp) * brightener);
+		this.pB = (int) (255D - (255D - bComp) * brightener);
+
 		this.particleMaxAge = 20;
 	}
 	
@@ -74,13 +86,7 @@ public class ParticleFoundry extends Particle {
 		float width = (float) (0.0625D + ((this.particleAge + partialTicks) / this.particleMaxAge) * 0.0625D);
 		float girth = (float) (0.125D * (1 - ((this.particleAge + partialTicks) / this.particleMaxAge)));
 
-		Color color = new Color(this.color).brighter();
-		double brightener = 0.7D;
-		int r = (int) (255D - (255D - color.getRed()) * brightener);
-		int g = (int) (255D - (255D - color.getGreen()) * brightener);
-		int b = (int) (255D - (255D - color.getBlue()) * brightener);
-
-		GlStateManager.color(r / 255F, g / 255F, b / 255F);
+		GlStateManager.color(pR / 255F, pG / 255F, pB / 255F);
 
 		GlStateManager.pushMatrix();
 		GlStateManager.disableCull();
@@ -89,7 +95,7 @@ public class ParticleFoundry extends Particle {
 		mc.getTextureManager().bindTexture(lava);
 
 		NTMBufferBuilder fastBuffer = NTMImmediate.INSTANCE.beginParticlePositionTexColorLmap(GL11.GL_QUADS, 36);
-        int packedColor = NTMBufferBuilder.packColor(r, g, b, 255);
+        int packedColor = NTMBufferBuilder.packColor(pR, pG, pB, 255);
         int packedLightmap = NTMBufferBuilder.packLightmap(240, 240);
 
 		float dirXG = dir.offsetX * girth;
@@ -102,7 +108,7 @@ public class ParticleFoundry extends Particle {
 		float vMin = 0.0F;
 		float vMax = length;
 
-		float add = (int) (System.currentTimeMillis() / 100 % 16) / 16F;
+		float add = (((this.particleAge + partialTicks) * 0.5F) % 16) / 16F;
 
 		// Lower back
 		fastBuffer.appendParticlePositionTexColorLmapUnchecked(rotXW, girth, rotZW, uMax, vMax + add + girth, packedColor, packedLightmap);

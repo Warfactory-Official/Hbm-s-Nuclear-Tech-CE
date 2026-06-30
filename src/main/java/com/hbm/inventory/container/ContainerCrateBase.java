@@ -2,7 +2,9 @@ package com.hbm.inventory.container;
 
 import com.cleanroommc.bogosorter.api.ISortableContainer;
 import com.cleanroommc.bogosorter.api.ISortingContextBuilder;
+import com.hbm.interfaces.IContainerOpenEventListener;
 import com.hbm.inventory.TransferStrategy;
+import com.hbm.lib.HBMSoundHandler;
 import com.hbm.tileentity.machine.IHandHeldCrate;
 import com.hbm.tileentity.machine.TileEntityCrate;
 import com.hbm.util.InventoryUtil;
@@ -12,12 +14,13 @@ import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.SoundCategory;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.items.SlotItemHandler;
 import org.jetbrains.annotations.NotNull;
 
 @Optional.Interface(iface = "com.cleanroommc.bogosorter.api.ISortableContainer", modid = "bogosorter")
-public class ContainerCrateBase extends Container implements ISortableContainer {
+public class ContainerCrateBase extends Container implements ISortableContainer, IContainerOpenEventListener {
 
     protected final TileEntityCrate crate;
     private final TransferStrategy transferStrategy;
@@ -57,10 +60,20 @@ public class ContainerCrateBase extends Container implements ISortableContainer 
     }
 
     @Override
+    public void onContainerOpened(EntityPlayer player) {
+        if (!player.world.isRemote && !player.isSpectator()) {
+            player.world.playSound(null, crate.getPos().getX() + 0.5, crate.getPos().getY() + 0.5, crate.getPos().getZ() + 0.5, HBMSoundHandler.crateOpen, SoundCategory.BLOCKS, 1.0F, 1.0F);
+        }
+    }
+
+    @Override
     public void onContainerClosed(@NotNull EntityPlayer player) {
         super.onContainerClosed(player);
         if (!player.world.isRemote && crate instanceof IHandHeldCrate held) {
             held.finishHeldInventorySession(player);
+        }
+        if (!player.world.isRemote && !player.isSpectator()) {
+            player.world.playSound(null, crate.getPos().getX() + 0.5, crate.getPos().getY() + 0.5, crate.getPos().getZ() + 0.5, HBMSoundHandler.crateClose, SoundCategory.BLOCKS, 1.0F, 1.0F);
         }
     }
 

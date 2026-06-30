@@ -89,7 +89,7 @@ public class TileEntityDroneCrate extends TileEntityMachineBase implements IGUIP
                         (nextX  - dronePos.getX()), (nextY - dronePos.getY()), (nextZ - dronePos.getZ()), 0x00ffff);
             }
 
-            networkPackNT(25);
+            networkPackMK2(25);
         }
     }
 
@@ -295,6 +295,8 @@ public class TileEntityDroneCrate extends TileEntityMachineBase implements IGUIP
             this.itemType = !this.itemType;
             this.markDirty();
         }
+
+        this.dataChanged();
     }
 
     @Override

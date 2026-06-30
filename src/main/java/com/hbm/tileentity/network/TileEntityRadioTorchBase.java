@@ -60,7 +60,7 @@ public class TileEntityRadioTorchBase extends TileEntityLoadedBase implements IT
     public void update() {
 
         if (!world.isRemote) {
-            networkPackNT(50);
+            networkPackMK2(50);
         }
     }
 
@@ -123,6 +123,7 @@ public class TileEntityRadioTorchBase extends TileEntityLoadedBase implements IT
             }
         }
 
+        this.dataChanged();
         this.markDirty();
     }
 
@@ -169,6 +170,7 @@ public class TileEntityRadioTorchBase extends TileEntityLoadedBase implements IT
     @Optional.Method(modid = "opencomputers")
     public Object[] setChannel(Context context, Arguments args) {
         channel = args.checkString(0);
+        this.dataChanged();
         return new Object[]{};
     }
 
@@ -176,6 +178,7 @@ public class TileEntityRadioTorchBase extends TileEntityLoadedBase implements IT
     @Optional.Method(modid = "opencomputers")
     public Object[] setPolling(Context context, Arguments args) {
         polling = args.checkBoolean(0);
+        this.dataChanged();
         return new Object[]{};
     }
 
@@ -183,6 +186,7 @@ public class TileEntityRadioTorchBase extends TileEntityLoadedBase implements IT
     @Optional.Method(modid = "opencomputers")
     public Object[] setCustomMap(Context context, Arguments args) {
         customMap = args.checkBoolean(0);
+        this.dataChanged();
         return new Object[]{};
     }
 
@@ -197,6 +201,7 @@ public class TileEntityRadioTorchBase extends TileEntityLoadedBase implements IT
             }
         }
 
+        this.dataChanged();
         return new Object[]{};
     }
 }

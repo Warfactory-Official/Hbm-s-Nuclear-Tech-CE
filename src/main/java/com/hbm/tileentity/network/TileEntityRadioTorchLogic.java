@@ -115,7 +115,7 @@ public class TileEntityRadioTorchLogic extends TileEntityLoadedBase implements I
                 }
             }
 
-            networkPackNT(50);
+            networkPackMK2(50);
         }
     }
 
@@ -208,6 +208,7 @@ public class TileEntityRadioTorchLogic extends TileEntityLoadedBase implements I
         for (int i = 0; i < MAPPING_SIZE; i++)
             if (data.hasKey("conditions" + i)) this.conditions[i] = data.getInteger("conditions" + i);
 
+        this.dataChanged();
         this.markDirty();
     }
 }

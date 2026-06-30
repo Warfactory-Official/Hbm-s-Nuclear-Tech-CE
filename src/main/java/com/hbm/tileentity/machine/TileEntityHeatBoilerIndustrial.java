@@ -229,7 +229,7 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
 
                 if (ops > 0 && world.rand.nextInt(400) == 0) {
                     world.playSound(null, pos.getX() + 0.5, pos.getY() + 2, pos.getZ() + 0.5,
-                            HBMSoundHandler.boilerGroanSounds[world.rand.nextInt(3)], SoundCategory.BLOCKS, 0.5F, 1.0F);
+                            HBMSoundHandler.boilerGroanSounds[world.rand.nextInt(3)], SoundCategory.BLOCKS, 2.5F, 1.0F);
                 }
 
                 if (ops > 0) {

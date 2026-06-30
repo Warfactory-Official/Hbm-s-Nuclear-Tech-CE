@@ -171,14 +171,16 @@ public class HbmWorldGen implements IWorldGenerator {
         }
 
         //Gneiss
-        DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, dimID == 0 ? 25 : 0, 6, 30, 10, ModBlocks.ore_gneiss_iron, ModBlocks.stone_gneiss);
-        DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, dimID == 0 ? 10 : 0, 6, 30, 10, ModBlocks.ore_gneiss_gold, ModBlocks.stone_gneiss);
-        DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.uraniumSpawn.get(dimID)) * 3, 6, 30, 10, ModBlocks.ore_gneiss_uranium, ModBlocks.stone_gneiss);
-        DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.copperSpawn.get(dimID)) * 3, 6, 30, 10, ModBlocks.ore_gneiss_copper, ModBlocks.stone_gneiss);
-        DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.asbestosSpawn.get(dimID)) * 3, 6, 30, 10, ModBlocks.ore_gneiss_asbestos, ModBlocks.stone_gneiss);
-        DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.lithiumSpawn.get(dimID)), 6, 30, 10, ModBlocks.ore_gneiss_lithium, ModBlocks.stone_gneiss);
-        DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.rareSpawn.get(dimID)), 6, 30, 10, ModBlocks.ore_gneiss_asbestos, ModBlocks.stone_gneiss);
-        DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.gassshaleSpawn.get(dimID)) * 3, 10, 30, 10, ModBlocks.ore_gneiss_gas, ModBlocks.stone_gneiss);
+        if (WorldConfig.enableGneissLayer) {
+            DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, dimID == 0 ? 25 : 0, 6, 30, 10, ModBlocks.ore_gneiss_iron, ModBlocks.stone_gneiss);
+            DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, dimID == 0 ? 10 : 0, 6, 30, 10, ModBlocks.ore_gneiss_gold, ModBlocks.stone_gneiss);
+            DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.uraniumSpawn.get(dimID)) * 3, 6, 30, 10, ModBlocks.ore_gneiss_uranium, ModBlocks.stone_gneiss);
+            DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.copperSpawn.get(dimID)) * 3, 6, 30, 10, ModBlocks.ore_gneiss_copper, ModBlocks.stone_gneiss);
+            DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.asbestosSpawn.get(dimID)) * 3, 6, 30, 10, ModBlocks.ore_gneiss_asbestos, ModBlocks.stone_gneiss);
+            DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.lithiumSpawn.get(dimID)), 6, 30, 10, ModBlocks.ore_gneiss_lithium, ModBlocks.stone_gneiss);
+            DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.rareSpawn.get(dimID)), 6, 30, 10, ModBlocks.ore_gneiss_asbestos, ModBlocks.stone_gneiss);
+            DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.gassshaleSpawn.get(dimID)) * 3, 10, 30, 10, ModBlocks.ore_gneiss_gas, ModBlocks.stone_gneiss);
+        }
 
         //Normal ores
         DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.uraniumSpawn.get(dimID)), 5, 5, 20, ModBlocks.ore_uranium);
@@ -326,7 +328,22 @@ public class HbmWorldGen implements IWorldGenerator {
         if (dimBedrockOilFreq > 0 && rand.nextInt(dimBedrockOilFreq) == 0) {
             int randPosX = chunkMinX + rand.nextInt(16);
             int randPosZ = chunkMinZ + rand.nextInt(16);
-            BedrockOilDeposit.generate(world, randPosX, randPosZ);
+
+            for (int x = -4; x <= 4; x++) {
+                for (int y = 0; y <= 4; y++) {
+                    for (int z = -4; z <= 4; z++) {
+                        if (Math.abs(x) + Math.abs(y) + Math.abs(z) <= 6) {
+                            BlockPos pos = new BlockPos(randPosX + x, y, randPosZ + z);
+                            if (world.getBlockState(pos).getBlock() == Blocks.BEDROCK) {
+                                world.setBlockState(pos, ModBlocks.ore_bedrock_oil.getDefaultState());
+                            }
+                        }
+                    }
+                }
+            }
+
+            DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, 16, 8, 10, 50, ModBlocks.stone_porous);
+            OilSpot.generateOilSpot(world, randPosX, randPosZ, 5, 50, true);
         }
     }
 
@@ -729,7 +746,7 @@ public class HbmWorldGen implements IWorldGenerator {
         }
 
         // mlbv: this previously always outside the owning chunk (i + rand + 8 with i shifted)
-        if (rand.nextInt(4) == 0) {
+        if (WorldConfig.enableRedRoom && rand.nextInt(4) == 0) {
             int x = chunkMinX + rand.nextInt(16);
             int y = 6 + rand.nextInt(13);
             int z = chunkMinZ + rand.nextInt(16);
