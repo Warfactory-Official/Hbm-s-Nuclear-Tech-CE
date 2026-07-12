@@ -6,6 +6,7 @@ import com.hbm.main.ResourceManager;
 import com.hbm.render.RenderSparks;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.render.item.ItemRenderBase;
+import com.hbm.render.item.ItemRenderBaseLegacy;
 import com.hbm.tileentity.bomb.TileEntityRailgun;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
@@ -114,7 +115,7 @@ public class RenderRailgun extends TileEntitySpecialRenderer<TileEntityRailgun>
 
   @Override
   public ItemRenderBase getRenderer(Item item) {
-    return new ItemRenderBase() {
+    return new ItemRenderBaseLegacy() {
       public void renderInventory() {
         GlStateManager.translate(0, 2, -4);
         GlStateManager.scale(2.5, 2.5, 2.5);

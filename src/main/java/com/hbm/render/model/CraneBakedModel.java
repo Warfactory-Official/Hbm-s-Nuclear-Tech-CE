@@ -23,7 +23,7 @@ public class CraneBakedModel extends AbstractBakedModel {
     private final BlockCraneBase block;
 
     public CraneBakedModel(BlockCraneBase block) {
-        super(BakedModelTransforms.standardBlock());
+        super(BakedModelTransforms.isbrh());
         this.block = block;
     }
 
@@ -31,7 +31,8 @@ public class CraneBakedModel extends AbstractBakedModel {
     public @NotNull List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
         List<BakedQuad> quads = new ArrayList<>();
 
-        if (state == null) state = block.getDefaultState();
+        boolean isInventory = state == null;
+        if (isInventory) state = block.getDefaultState();
 
         EnumFacing input = state.getValue(FACING);
         EnumFacing outputOverride = null;
@@ -41,13 +42,14 @@ public class CraneBakedModel extends AbstractBakedModel {
         EnumFacing output = outputOverride != null ? outputOverride : input.getOpposite();
 
         if (side != null) {
-            addQuadsForFace(state, side, input, output, quads);
+            addQuadsForFace(state, side, input, output, isInventory, quads);
         }
 
         return quads;
     }
 
-    private void addQuadsForFace(IBlockState state, EnumFacing side, EnumFacing input, EnumFacing output, List<BakedQuad> quads) {
+    private void addQuadsForFace(IBlockState state, EnumFacing side, EnumFacing input, EnumFacing output,
+                                 boolean isInventory, List<BakedQuad> quads) {
         TextureAtlasSprite sprite = getSpriteForSide(side, input, output);
         if (sprite == null) return;
 
@@ -60,7 +62,8 @@ public class CraneBakedModel extends AbstractBakedModel {
         BlockFaceUV uv = new BlockFaceUV(new float[]{0, 0, 16, 16}, rotation * 90);
         BlockPartFace partFace = new BlockPartFace(side, -1, "", uv);
 
-        quads.add(bakery.makeBakedQuad(from, to, partFace, sprite, side, TRSRTransformation.identity(), null, true, true));
+        quads.add(bakery.makeBakedQuad(from, to, partFace, sprite, side,
+                isInventory ? ModelRotation.X0_Y90 : TRSRTransformation.identity(), null, !isInventory, true));
     }
 
     @Override

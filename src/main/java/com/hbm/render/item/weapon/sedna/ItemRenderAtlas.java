@@ -15,9 +15,7 @@ public class ItemRenderAtlas extends ItemRenderWeaponBase {
 	public ResourceLocation texture;
 
 	public ItemRenderAtlas(ResourceLocation texture) {
-		this.texture = texture;
-		offsets = offsets.get(ItemCameraTransforms.TransformType.THIRD_PERSON_RIGHT_HAND).setScale(0.75).setPosition(-0.9, 0.3, -1.15).getHelper();
-	}
+		this.texture = texture;	}
 
 	@Override
 	protected float getTurnMagnitude(ItemStack stack) {

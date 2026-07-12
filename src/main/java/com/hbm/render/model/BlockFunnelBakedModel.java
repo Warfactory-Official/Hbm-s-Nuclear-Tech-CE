@@ -28,7 +28,7 @@ public class BlockFunnelBakedModel extends AbstractWavefrontBakedModel {
     private List<BakedQuad> inventoryCache;
 
     public BlockFunnelBakedModel(HFRWavefrontObject model, TextureAtlasSprite[] sprites, boolean isInventory, float baseScale, float tx, float ty, float tz, float itemYaw) {
-        super(model, isInventory ? DefaultVertexFormats.ITEM : DefaultVertexFormats.BLOCK, baseScale, tx, ty, tz, BakedModelTransforms.standardBlock());
+        super(model, isInventory ? DefaultVertexFormats.ITEM : DefaultVertexFormats.BLOCK, baseScale, tx, ty, tz, BakedModelTransforms.isbrh());
         this.spriteTop = sprites[0];
         this.spriteSide = sprites[1];
         this.spriteBottom = sprites[2];
@@ -41,7 +41,7 @@ public class BlockFunnelBakedModel extends AbstractWavefrontBakedModel {
     }
 
     public static BlockFunnelBakedModel forItem(HFRWavefrontObject model, TextureAtlasSprite[] sprites) {
-        return new BlockFunnelBakedModel(model, sprites, true, 0.9F, 0.5F, 0.0F, 0.5F, (float) Math.PI);
+        return new BlockFunnelBakedModel(model, sprites, true, 1.0F, 0.5F, 0.0F, 0.5F, 0.0F);
     }
 
     public static BlockFunnelBakedModel empty(TextureAtlasSprite[] sprites) {

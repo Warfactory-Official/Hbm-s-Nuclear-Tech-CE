@@ -13,7 +13,9 @@ import com.hbm.util.RenderUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
@@ -21,6 +23,18 @@ import org.lwjgl.opengl.GL11;
 
 @AutoRegister(item = "grenade_universal")
 public class ItemRenderGrenade extends TEISRBase {
+
+    // 1.7-exact frames need identity binding (see ItemRenderFrames17 / boltgun); the default TEISRBase
+    // binding pre-multiplies defaultItemTransforms(), which the old per-context ops used to cancel.
+    @Override
+    public ModelBinding createModelBinding(Item item) {
+        return ModelBinding.inventory(item, ItemCameraTransforms.DEFAULT);
+    }
+
+    @Override
+    public boolean useIdentityTransform(Item item) {
+        return true;
+    }
 
     @Override
     public void renderByItem(ItemStack stack) {
@@ -31,40 +45,50 @@ public class ItemRenderGrenade extends TEISRBase {
         GlStateManager.enableCull();
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
 
+        // Each context plays the verbatim 1.7 ItemRenderGrenade body on top of the ItemRenderFrames17 base
+        // frame for that context (which reproduces the raw 1.7 render space); the old preambles here were
+        // compensating for the pre-e6fceb4a9 non-identity TEISR binding.
         switch (type) {
             case FIRST_PERSON_RIGHT_HAND:
             case FIRST_PERSON_LEFT_HAND: {
                 EnumHand hand = type == TransformType.FIRST_PERSON_RIGHT_HAND ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND;
-                GlStateManager.translate(0.5F, 0.4F, 0.5F);
-                GlStateManager.scale(0.125, 0.125, 0.125);
-                GlStateManager.rotate(180F, 0F, 1F, 0F);
+                GlStateManager.multMatrix(type == TransformType.FIRST_PERSON_LEFT_HAND ? ItemRenderFrames17.FIRST_PERSON_LEFT : ItemRenderFrames17.FIRST_PERSON);
                 renderFirstPerson(stack, hand);
                 break;
             }
             case THIRD_PERSON_RIGHT_HAND:
             case THIRD_PERSON_LEFT_HAND:
             case HEAD:
-                GlStateManager.translate(0.5F, 0.1F, 0.5F);
+                // 1.7 EQUIPPED: scale(0.125), translate(3,1,-0.5)
+                GlStateManager.multMatrix(type == TransformType.HEAD ? ItemRenderFrames17.HEAD
+                        : type == TransformType.THIRD_PERSON_LEFT_HAND ? ItemRenderFrames17.THIRD_PERSON_LEFT
+                        : ItemRenderFrames17.THIRD_PERSON);
                 GlStateManager.scale(0.125, 0.125, 0.125);
-                renderGrenade(stack, TransformType.THIRD_PERSON_RIGHT_HAND);
+                GlStateManager.translate(3, 1, -0.5);
+                renderGrenade(stack, type);
                 break;
             case GROUND:
-                GlStateManager.translate(0.5F, 0.15F, 0.5F);
+                // 1.7 ENTITY: scale(0.125)
+                GlStateManager.multMatrix(ItemRenderFrames17.GROUND);
                 GlStateManager.scale(0.125, 0.125, 0.125);
-                renderGrenade(stack, TransformType.GROUND);
+                renderGrenade(stack, type);
                 break;
             case FIXED:
-                GlStateManager.translate(0.5F, 0.3F, 0.5F);
+                // 1.7 ENTITY body rendered in the item frame: scale(0.125)
+                GlStateManager.multMatrix(ItemRenderFrames17.FIXED);
                 GlStateManager.scale(0.125, 0.125, 0.125);
-                renderGrenade(stack, TransformType.FIXED);
+                renderGrenade(stack, type);
                 break;
             case GUI:
-                GlStateManager.scale(0.0625, 0.0625, 0.0625);
+                // 1.7 INVENTORY
+                GlStateManager.enableLighting();
+                GlStateManager.multMatrix(ItemRenderFrames17.GUI);
                 GlStateManager.translate(8, 8, 0);
-                GlStateManager.rotate(-45F, 0F, 0F, 1F);
+                GlStateManager.scale(-1, -1, -1);
+                GlStateManager.rotate(45F, 0F, 0F, 1F);
                 GlStateManager.rotate(150F, 0F, 1F, 0F);
                 GlStateManager.rotate(15F, 1F, 0F, 0F);
-                renderGrenade(stack, TransformType.GUI);
+                renderGrenade(stack, type);
                 break;
             default:
                 break;
@@ -78,6 +102,8 @@ public class ItemRenderGrenade extends TEISRBase {
     public static void renderFirstPerson(ItemStack stack, EnumHand hand) {
         EnumGrenadeShell shell = ItemGrenadeUniversal.getShell(stack);
 
+        // 1.7 renderFirstPerson: scale(0.125), translate(3,1,-3), rotate(180,0,-1,0)
+        GlStateManager.scale(0.125, 0.125, 0.125);
         GlStateManager.translate(3, 1, -3);
         GlStateManager.rotate(180F, 0F, -1F, 0F);
 
@@ -148,29 +174,32 @@ public class ItemRenderGrenade extends TEISRBase {
         }
     }
 
+    // Verbatim 1.7 ItemRenderGrenade.renderGrenade branch structure. 1.7 ItemRenderType mapping:
+    // GUI=INVENTORY, THIRD_PERSON_*/HEAD=EQUIPPED, GROUND/FIXED=ENTITY (no extra transform), null=the
+    // world thrown-grenade entity (RenderGrenadeUniversal), which alone omits the spoon/ring.
     public static void renderGrenade(ItemStack stack, TransformType renderType) {
         EnumGrenadeShell shell = ItemGrenadeUniversal.getShell(stack);
+        boolean inv      = renderType == TransformType.GUI;
+        boolean equipped = renderType == TransformType.THIRD_PERSON_RIGHT_HAND
+                || renderType == TransformType.THIRD_PERSON_LEFT_HAND
+                || renderType == TransformType.HEAD;
+        boolean world    = renderType == null;
 
         if (shell == EnumGrenadeShell.FRAG) {
-            if (renderType == TransformType.GUI) {
-                GlStateManager.scale(3, 3, 3);
-            }
-            GlStateManager.translate(0, -2, 0);
+            if (inv)   { GlStateManager.scale(3, 3, 3); GlStateManager.translate(0, -2, 0); }
+            if (world) { GlStateManager.translate(0, -2, 0); }
             renderFragBody(stack);
-            if (renderType != null) {
-                Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.grenade_frag_tex);
+            if (!world) {
+                bind(ResourceManager.grenade_frag_tex);
                 ResourceManager.grenades.renderPart("FragSpoon");
                 ResourceManager.grenades.renderPart("FragRing");
             }
         } else if (shell == EnumGrenadeShell.STICK) {
-            if (renderType == TransformType.GUI) {
-                GlStateManager.scale(2, 2, 2);
-                GlStateManager.translate(0, -4.5, 0);
-            } else {
-                GlStateManager.translate(0, -2, 0);
-            }
+            if (inv)      { GlStateManager.scale(2, 2, 2); GlStateManager.translate(0, -4.5, 0); }
+            if (equipped) { GlStateManager.translate(0, -2, 0); }
+            if (world)    { GlStateManager.translate(0, -2, 0); }
             renderStickBody(stack);
-            if (renderType != null) {
+            if (!world) {
                 EnumGrenadeFilling filling = ItemGrenadeUniversal.getFilling(stack);
                 GlStateManager.color(ColorUtil.fr(filling.bodyColor), ColorUtil.fg(filling.bodyColor), ColorUtil.fb(filling.bodyColor));
                 bind(ResourceManager.grenade_stick_body_tex);
@@ -178,39 +207,21 @@ public class ItemRenderGrenade extends TEISRBase {
                 GlStateManager.color(1F, 1F, 1F, 1F);
             }
         } else if (shell == EnumGrenadeShell.TECH) {
-            if (renderType == TransformType.GUI) {
-                GlStateManager.scale(3.5, 3.5, 3.5);
-                GlStateManager.translate(0, -1.75, 0);
-            } else if (renderType == TransformType.THIRD_PERSON_RIGHT_HAND
-                    || renderType == TransformType.THIRD_PERSON_LEFT_HAND
-                    || renderType == TransformType.HEAD) {
-                GlStateManager.scale(1.5, 1.5, 1.5);
-                GlStateManager.translate(0.5, -1, 0.5);
-            } else {
-                GlStateManager.scale(1.5, 1.5, 1.5);
-                GlStateManager.translate(0, -1, 0);
-            }
+            if (inv)      { GlStateManager.scale(3.5, 3.5, 3.5); GlStateManager.translate(0, -1.75, 0); }
+            if (equipped) { GlStateManager.scale(1.5, 1.5, 1.5); GlStateManager.translate(0.5, -1, 0.5); }
+            if (world)    { GlStateManager.scale(1.5, 1.5, 1.5); GlStateManager.translate(0, -1, 0); }
             renderTechBody(stack);
-            if (renderType != null) {
-                Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.grenade_tech_tex);
+            if (!world) {
+                bind(ResourceManager.grenade_tech_tex);
                 ResourceManager.grenades.renderPart("TechRing");
             }
         } else if (shell == EnumGrenadeShell.NUKE) {
-            if (renderType == TransformType.GUI) {
-                GlStateManager.scale(2.5, 2.5, 2.5);
-                GlStateManager.translate(0, -2.75, 0);
-            } else if (renderType == TransformType.THIRD_PERSON_RIGHT_HAND
-                    || renderType == TransformType.THIRD_PERSON_LEFT_HAND
-                    || renderType == TransformType.HEAD) {
-                GlStateManager.scale(1.5, 1.5, 1.5);
-                GlStateManager.translate(0.5, -3, 0.5);
-            } else {
-                GlStateManager.scale(1.5, 1.5, 1.5);
-                GlStateManager.translate(0, -3, 0);
-            }
+            if (inv)      { GlStateManager.scale(2.5, 2.5, 2.5); GlStateManager.translate(0, -2.75, 0); }
+            if (equipped) { GlStateManager.scale(1.5, 1.5, 1.5); GlStateManager.translate(0.5, -3, 0.5); }
+            if (world)    { GlStateManager.scale(1.5, 1.5, 1.5); GlStateManager.translate(0, -3, 0); }
             renderNukeBody(stack);
-            if (renderType != null) {
-                Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.grenade_nuka_tex);
+            if (!world) {
+                bind(ResourceManager.grenade_nuka_tex);
                 ResourceManager.grenades.renderPart("NukaSpoon");
                 ResourceManager.grenades.renderPart("NukaRing");
             }

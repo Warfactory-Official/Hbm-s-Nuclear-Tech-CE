@@ -7,7 +7,10 @@ import com.hbm.render.loader.IModelCustom;
 import com.hbm.util.RenderUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
@@ -39,26 +42,40 @@ public class ItemRenderMissileGeneric extends TEISRBase {
 		this.category = category;
 	}
 
+	// 1.7-exact frames need identity binding (see ItemRenderFrames17); the old per-context ops (guiScale in
+	// held views, the 0.0625 GUI slot scale) were compensating for the pre-e6fceb4a9 non-identity binding.
+	@Override
+	public ModelBinding createModelBinding(Item item) {
+		return ModelBinding.inventory(item, ItemCameraTransforms.DEFAULT);
+	}
+
+	@Override
+	public boolean useIdentityTransform(Item item) {
+		return true;
+	}
+
 	@Override
 	public void renderByItem(ItemStack item) {
-	
+
 		Consumer<TextureManager> renderer = renderers.get(new ComparableStack(item).makeSingular());
 		if(renderer == null) return;
-		
+
 		GlStateManager.pushMatrix();
 
+		// 1.7 ItemRenderMissileGeneric guiScale/guiOffset (INVENTORY only). doomsday used TYPE_NUCLEAR in 1.7.
 		double guiScale = 1;
 		double guiOffset = 0;
 
 		switch(this.category) {
-			case TYPE_TIER0: guiScale = 3.75D; guiOffset = 1D; break;
-			case TYPE_TIER1: guiScale = 2.5D; guiOffset = 0.5D; break;
-			case TYPE_TIER2: guiScale = 2D; guiOffset = 0.5D; break;
-			case TYPE_TIER3: guiScale = 1.25D; guiOffset = 0D; break;
-			case TYPE_STEALTH: guiScale = 1.75D; guiOffset = 1.5D; break;
-			case TYPE_ABM: guiScale = 2.25D; guiOffset = 0.5D; break;
-			case TYPE_NUCLEAR: guiScale = 1.375D; guiOffset = 0D; break;
-			case TYPE_DOOMSDAY: guiScale = 1.375D; guiOffset = 0D; break;
+			case TYPE_TIER0: guiScale = 3.75D; guiOffset = 10.75D; break;
+			case TYPE_TIER1: guiScale = 2.5D; guiOffset = 8.5D; break;
+			case TYPE_TIER2: guiScale = 2D; guiOffset = 6.5D; break;
+			case TYPE_TIER3: guiScale = 1.25D; guiOffset = 1D; break;
+			case TYPE_STEALTH: guiScale = 1.75D; guiOffset = 4.75D; break;
+			case TYPE_ABM: guiScale = 2.25D; guiOffset = 7D; break;
+			case TYPE_NUCLEAR: guiScale = 1.375D; guiOffset = 1.5D; break;
+			case TYPE_DOOMSDAY: guiScale = 1.375D; guiOffset = 1.5D; break;
+			// THERMAL/CARRIER are CE-only (n2/endo/exo/carrier are flat icons in 1.7 + NTM-Space); no 1.7 oracle.
 			case TYPE_THERMAL: guiScale = 1.75D; guiOffset = 1D; break;
 			case TYPE_ROBIN: guiScale = 1.25D; guiOffset = 2D; break;
 			case TYPE_CARRIER: guiScale = 0.625D; break;
@@ -70,30 +87,35 @@ public class ItemRenderMissileGeneric extends TEISRBase {
 		float prevAlphaRef = RenderUtil.getAlphaRef();
 		GlStateManager.alphaFunc(GL11.GL_GREATER, 0F);
 		GlStateManager.enableAlpha();
+        // ItemRenderFrames17 base frame + verbatim 1.7 body. 1.7 EQUIPPED/EQUIPPED_FIRST_PERSON/ENTITY ignore
+        // guiScale; only INVENTORY uses it.
         switch (type) {
-            case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND -> {
-                double s = 0.15;
-                GlStateManager.translate(0.5, -0.25, 0.25);
-                GlStateManager.scale(s, s, s);
-                GlStateManager.scale(guiScale, guiScale, guiScale);
+            case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND, HEAD -> {
+                GlStateManager.multMatrix(type == TransformType.HEAD ? ItemRenderFrames17.HEAD
+                        : type == TransformType.THIRD_PERSON_LEFT_HAND ? ItemRenderFrames17.THIRD_PERSON_LEFT
+                        : ItemRenderFrames17.THIRD_PERSON);
+                GlStateManager.translate(0.5, -0.25, 0);
+                GlStateManager.scale(0.15, 0.15, 0.15);
             }
             case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND -> {
-                double heldScale = 0.1;
-                GlStateManager.translate(0.5, -0.25, 0.3);
-                GlStateManager.scale(heldScale, heldScale, heldScale);
-                GlStateManager.scale(guiScale, guiScale, guiScale);
+                GlStateManager.multMatrix(type == TransformType.FIRST_PERSON_LEFT_HAND ? ItemRenderFrames17.FIRST_PERSON_LEFT : ItemRenderFrames17.FIRST_PERSON);
+                GlStateManager.translate(0.5, 0.25, 0);
+                GlStateManager.scale(0.1, 0.1, 0.1);
             }
-            case GROUND, FIXED, HEAD -> {
-                double s2 = 0.15;
-                GlStateManager.scale(s2, s2, s2);
+            case GROUND -> {
+                GlStateManager.multMatrix(ItemRenderFrames17.GROUND);
+                GlStateManager.scale(0.15, 0.15, 0.15);
+            }
+            case FIXED -> {
+                GlStateManager.multMatrix(ItemRenderFrames17.FIXED);
+                GlStateManager.scale(0.15, 0.15, 0.15);
             }
             case GUI -> {
-                double s3 = 0.0625;
-                GlStateManager.scale(s3, s3, s3);
-                GlStateManager.translate(15 - guiOffset, 1 + guiOffset, 0);
+                GlStateManager.multMatrix(ItemRenderFrames17.GUI);
                 GlStateManager.scale(guiScale, guiScale, guiScale);
-                GlStateManager.rotate(45, 0, 0, 1);
+                GlStateManager.rotate(135, 0, 0, 1);
                 GlStateManager.rotate(System.currentTimeMillis() / 15 % 360, 0, 1, 0);
+                GlStateManager.translate(0, -16 + guiOffset, 0);
             }
             default -> {
             }

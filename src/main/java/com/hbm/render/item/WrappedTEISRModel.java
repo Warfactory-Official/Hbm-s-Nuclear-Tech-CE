@@ -98,9 +98,6 @@ public class WrappedTEISRModel implements IBakedModel {
         currentTransformType = cameraTransformType;
         renderer.type = cameraTransformType;
 
-        if (renderer.doNullTransform() && cameraTransformType == ItemCameraTransforms.TransformType.GUI) {
-            return Pair.of(this, null);
-        }
         if (useIdentityTransform) {
             return Pair.of(this, TRSRTransformation.identity().getMatrix());
         }

@@ -373,7 +373,7 @@ public class FluidDuctStandard extends FluidDuctBase implements IDynamicModels, 
 				itemModel = DuctNeoBakedModel.empty(missing);
 			} else {
 				blockModel = DuctNeoBakedModel.forBlock(wavefront, base, overlay);
-				itemModel = DuctNeoBakedModel.forItem(wavefront, base, overlay, 1.0F, 0.5F, 0.0F, 0.5F, (float)Math.PI);
+				itemModel = DuctNeoBakedModel.forItem(wavefront, base, overlay);
 			}
 
 			ModelResourceLocation mrlBlock = new ModelResourceLocation(getRegistryName(), "meta=" + meta);

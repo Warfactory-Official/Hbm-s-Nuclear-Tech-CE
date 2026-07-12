@@ -69,12 +69,10 @@ public class RenderHeatingOven extends TileEntitySpecialRenderer<TileEntityHeate
         return new ItemRenderBase() {
             public void renderInventory() {
                 GlStateManager.translate(0, -1, 0);
-                GlStateManager.scale(1.9, 1.9, 1.9);
+                GlStateManager.scale(3.25, 3.25, 3.25);
             }
 
             public void renderCommon() {
-                GlStateManager.rotate(180, 0, 1, 0);
-                GlStateManager.scale(1.9, 1.9, 1.9);
                 GlStateManager.shadeModel(GL11.GL_SMOOTH);
                 bindTexture(ResourceManager.heater_oven_tex);
                 ResourceManager.heater_oven.renderAll();

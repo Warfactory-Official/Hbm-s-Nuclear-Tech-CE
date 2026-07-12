@@ -73,7 +73,7 @@ public class RenderTurbofan extends TileEntitySpecialRenderer<TileEntityMachineT
     return new ItemRenderBase() {
       public void renderInventory() {
         GlStateManager.rotate(90, 0, 1, 0);
-        GlStateManager.scale(2, 2, 2);
+        GlStateManager.scale(2.25, 2.25, 2.25);
       }
 
       public void renderCommon() {

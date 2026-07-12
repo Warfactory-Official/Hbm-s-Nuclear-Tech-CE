@@ -84,7 +84,8 @@ public class BlockDecoToaster extends BlockDecoModel<BlockEnums.DecoToasterEnum>
                 event.getModelRegistry().putObject(mrlWorld, bakedWorld);
             }
 
-            IBakedModel bakedItem = new BlockDecoBakedModel(wavefront, sprite, false, 1.0F, 0.0F, -0.25F, 0.0F, -1, true);
+            IBakedModel bakedItem = BlockDecoBakedModel.forItem(wavefront, sprite, 0.5F, 0.25F, 0.5F,
+                    -(float) Math.PI / 2.0F);
             ModelResourceLocation mrlItem = new ModelResourceLocation(new ResourceLocation(Tags.MODID, getRegistryName().getPath() + "_item_" + m), "inventory");
             event.getModelRegistry().putObject(mrlItem, bakedItem);
         }

@@ -25,24 +25,26 @@ public class RBMKRodBakedModel extends AbstractRBMKLiddedBakedModel {
     private final TextureAtlasSprite sideSprite;
     private final TextureAtlasSprite innerSprite;
     private final TextureAtlasSprite capSprite;
+    private final TextureAtlasSprite fuelSprite;
 
     public RBMKRodBakedModel(TextureAtlasSprite side,
-                             TextureAtlasSprite inner, TextureAtlasSprite cap,
+                             TextureAtlasSprite inner, TextureAtlasSprite cap, TextureAtlasSprite fuel,
                              TextureAtlasSprite coverTop, TextureAtlasSprite coverSide,
                              TextureAtlasSprite glassTop, TextureAtlasSprite glassSide,
                              boolean isInventory) {
         super(ResourceManager.rbmk_element, isInventory ? DefaultVertexFormats.ITEM : DefaultVertexFormats.BLOCK,
-                1.0F, 0.5F, 0.0F, 0.5F, BakedModelTransforms.rbmkColumn(),
+                isInventory ? 0.35F : 1.0F, 0.5F, isInventory ? -0.175F : 0.0F, 0.5F,
+                BakedModelTransforms.isbrh(),
                 coverTop, coverSide, glassTop, glassSide, isInventory);
         this.sideSprite = side;
         this.innerSprite = inner;
         this.capSprite = cap;
+        this.fuelSprite = fuel;
     }
 
     @Override
     protected List<BakedQuad> buildInventoryQuads() {
         List<BakedQuad> quads = new ArrayList<>();
-        FaceBakery bakery = new FaceBakery();
         EnumFacing[] baseFaces = {
                 EnumFacing.NORTH, EnumFacing.SOUTH,
                 EnumFacing.EAST, EnumFacing.WEST
@@ -51,17 +53,12 @@ public class RBMKRodBakedModel extends AbstractRBMKLiddedBakedModel {
         for (int i = 0; i < 4; i++) {
             quads.addAll(bakeWavefrontAtYOffset(Collections.singleton("Inner"), i, innerSprite));
             quads.addAll(bakeWavefrontAtYOffset(Collections.singleton("Cap"), i, capSprite));
-
-            Vector3f from = new Vector3f(0, i * 16.0f, 0);
-            Vector3f to = new Vector3f(16.0f, (i + 1) * 16.0f, 16.0f);
+            quads.addAll(bakeSimpleQuads(ResourceManager.rbmk_element_rods, Collections.singleton("Rods"),
+                    0, 0, 0, true, false, fuelSprite, -1, 0.0F, i * baseScale, 0.0F, 1.0F, 1.0F));
 
             for (EnumFacing face : baseFaces) {
-                BlockFaceUV uv = AbstractBakedModel.makeFaceUV(face, new Vector3f(0, 0, 0),
-                        new Vector3f(16.0f, 16.0f, 16.0f));
-                BlockPartFace partFace = new BlockPartFace(face, -1, "", uv);
-                BakedQuad quad = bakery.makeBakedQuad(from, to, partFace, sideSprite, face,
-                        TRSRTransformation.identity(), null, true, true);
-                quads.add(quad);
+                addInventoryTexturedBoxFace(quads, 0.0F, i, 0.0F, 1.0F, i + 1.0F, 1.0F, -0.175F,
+                        face, sideSprite, sideSprite, sideSprite);
             }
         }
         return quads;
@@ -98,7 +95,8 @@ public class RBMKRodBakedModel extends AbstractRBMKLiddedBakedModel {
     }
 
     private List<BakedQuad> bakeWavefrontAtYOffset(Set<String> parts, float yOffsetBlocks, TextureAtlasSprite sprite) {
-        return bakeSimpleQuads(parts, 0, 0, 0, true, false, sprite, -1, 0.0F, yOffsetBlocks, 0.0F);
+        return bakeSimpleQuads(parts, 0, 0, 0, true, false, sprite, -1, 0.0F,
+                yOffsetBlocks * baseScale, 0.0F);
     }
 
     @Override

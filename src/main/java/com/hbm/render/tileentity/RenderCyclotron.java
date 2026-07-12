@@ -133,7 +133,8 @@ public class RenderCyclotron extends TileEntitySpecialRenderer<TileEntityMachine
   public ItemRenderBase getRenderer(Item item) {
     return new ItemRenderBase() {
       public void renderInventory() {
-        GlStateManager.scale(2.25, 2.25, 2.25);
+        GlStateManager.translate(0, -1, 0);
+        GlStateManager.scale(2.75, 2.75, 2.75);
       }
 
       public void renderCommon() {

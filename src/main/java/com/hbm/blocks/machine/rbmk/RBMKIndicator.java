@@ -34,12 +34,12 @@ public class RBMKIndicator extends RBMKMiniPanelBase implements IToolable {
 	private static final Set<String> ITEM_PARTS = ImmutableSet.of("Base", "Light");
 	private static final ResourceLocation PART_SPRITE = new ResourceLocation(Tags.MODID, "models/network/indicator");
 	private static final float[][] ITEM_UNIT_OFFSETS = new float[][]{
-			{0.75F,  0.3125F, 0.25F},
-			{0.75F,  0.3125F, 0.75F},
-			{0.75F,  0.0F,    0.25F},
-			{0.75F,  0.0F,    0.75F},
-			{0.75F, -0.3125F, 0.25F},
-			{0.75F, -0.3125F, 0.75F},
+			{0.25F,  0.3125F, 0.25F},
+			{-0.25F, 0.3125F, 0.25F},
+			{0.25F,  0.0F,    0.25F},
+			{-0.25F, 0.0F,    0.25F},
+			{0.25F, -0.3125F, 0.25F},
+			{-0.25F, -0.3125F, 0.25F},
 	};
 
 	public RBMKIndicator(String s) {

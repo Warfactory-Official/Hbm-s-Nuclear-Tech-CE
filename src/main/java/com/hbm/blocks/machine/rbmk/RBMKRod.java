@@ -98,10 +98,10 @@ public class RBMKRod extends RBMKBase {
 	@Override
 	public void bakeModel(ModelBakeEvent event) {
 		event.getModelRegistry().putObject(new ModelResourceLocation(getRegistryName(), "inventory"),
-				new RBMKRodBakedModel(sideSprite, innerSprite, topSprite, coverTopSprite, coverSideSprite, glassTopSprite, glassSideSprite, true));
+				new RBMKRodBakedModel(sideSprite, innerSprite, topSprite, fuelSprite, coverTopSprite, coverSideSprite, glassTopSprite, glassSideSprite, true));
 
 		event.getModelRegistry().putObject(new ModelResourceLocation(getRegistryName(), "normal"),
-				new RBMKRodBakedModel(sideSprite, innerSprite, topSprite, coverTopSprite, coverSideSprite, glassTopSprite, glassSideSprite, false));
+				new RBMKRodBakedModel(sideSprite, innerSprite, topSprite, fuelSprite, coverTopSprite, coverSideSprite, glassTopSprite, glassSideSprite, false));
 	}
 
 }

@@ -2,6 +2,7 @@ package com.hbm.render.model;
 
 import com.hbm.render.loader.*;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.EnumFacing;
@@ -31,7 +32,7 @@ public class FixedTransformWavefrontBakedModel extends AbstractBakedModel {
     public FixedTransformWavefrontBakedModel(HFRWavefrontObject model, TextureAtlasSprite sprite,
                                              @Nullable String[] partNames,
                                              Matrix4f transform, boolean shaded, float uScale, float vScale) {
-        super(BakedModelTransforms.forDeco(BakedModelTransforms.standardBlock()));
+        super(ItemCameraTransforms.DEFAULT);
         this.model = model;
         this.sprite = sprite;
         this.partNames = partNames == null || partNames.length == 0 ? null : new LinkedHashSet<>(

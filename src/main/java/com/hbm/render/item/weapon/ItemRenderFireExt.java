@@ -5,8 +5,8 @@ import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.factory.XFactoryTool;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
 import com.hbm.main.ResourceManager;
+import com.hbm.render.item.ItemRenderFrames17;
 import com.hbm.render.item.TEISRBase;
-import com.hbm.render.util.ViewModelPositonDebugger;
 import com.hbm.util.RenderUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -19,8 +19,6 @@ import org.lwjgl.opengl.GL11;
 
 @AutoRegister(item = "gun_fireext")
 public class ItemRenderFireExt extends TEISRBase {
-
-    protected ViewModelPositonDebugger offsets = new ViewModelPositonDebugger().get(ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND).setScale(1.00f).setPosition(-0.75, 0.95, -1.05).setRotation(0, 170, 30).getHelper().get(ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND).setPosition(-0.3, -0.55, 0).getHelper().get(ItemCameraTransforms.TransformType.THIRD_PERSON_RIGHT_HAND).setScale(0.55f).setPosition(-1.15, 1, -1.3).setRotation(-15, 95, 15).getHelper().get(ItemCameraTransforms.TransformType.GROUND).setScale(0.9f).setPosition(-0.55, 0.15, -0.75).getHelper().get(ItemCameraTransforms.TransformType.GUI).setScale(0.06f).setPosition(0, 15.95, -1.6).setRotation(190, -110, 0).getHelper();
 
     @Override
     public ModelBinding createModelBinding(Item item) {
@@ -56,15 +54,17 @@ public class ItemRenderFireExt extends TEISRBase {
 
         switch (currentType) {
             case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND -> {
-                offsets.apply(currentType);
+                GlStateManager.multMatrix(currentType == ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND ? ItemRenderFrames17.FIRST_PERSON_LEFT : ItemRenderFrames17.FIRST_PERSON);
                 double s0 = 0.35D;
                 GlStateManager.rotate(25F, 0F, 0F, 1F);
                 GlStateManager.translate(0.5D, -0.5D, -0.5D);
                 GlStateManager.rotate(80F, 0F, 1F, 0F);
                 GlStateManager.scale((float) s0, (float) s0, (float) s0);
             }
-            case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND -> {
-                offsets.apply(currentType);
+            case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND, HEAD -> {
+                GlStateManager.multMatrix(currentType == ItemCameraTransforms.TransformType.HEAD ? ItemRenderFrames17.HEAD
+                        : currentType == ItemCameraTransforms.TransformType.THIRD_PERSON_LEFT_HAND ? ItemRenderFrames17.THIRD_PERSON_LEFT
+                        : ItemRenderFrames17.THIRD_PERSON);
                 float scale = 0.5F;
                 GlStateManager.scale(scale, scale, scale);
                 GlStateManager.rotate(20F, 0F, 0F, 1F);
@@ -74,12 +74,17 @@ public class ItemRenderFireExt extends TEISRBase {
                 GlStateManager.translate(0.75D, -2.75D, 0.5D);
             }
             case GROUND -> {
-                offsets.apply(currentType);
+                GlStateManager.multMatrix(ItemRenderFrames17.GROUND);
+                double s1 = 0.3D;
+                GlStateManager.scale((float) s1, (float) s1, (float) s1);
+            }
+            case FIXED -> {
+                GlStateManager.multMatrix(ItemRenderFrames17.FIXED);
                 double s1 = 0.3D;
                 GlStateManager.scale((float) s1, (float) s1, (float) s1);
             }
             case GUI -> {
-                offsets.apply(currentType);
+                GlStateManager.multMatrix(ItemRenderFrames17.GUI);
                 GlStateManager.disableCull();
                 GlStateManager.enableLighting();
                 double s = 4.5D;

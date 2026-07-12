@@ -30,7 +30,7 @@ public class RBMKMiniPanelItemBakedModel extends AbstractWavefrontBakedModel {
     public RBMKMiniPanelItemBakedModel(HFRWavefrontObject model, Set<String> partNames, TextureAtlasSprite panelSprite,
                                        TextureAtlasSprite partSprite, float[][] unitOffsets, float partUScale,
                                        float partVScale) {
-        super(model, DefaultVertexFormats.ITEM, 1.0F, 0.0F, 0.0F, 0.0F, BakedModelTransforms.standardBlock());
+        super(model, DefaultVertexFormats.ITEM, 1.0F, 0.5F, 0.0F, 0.5F, BakedModelTransforms.isbrh());
         this.panelSprite = panelSprite;
         this.partSprite = partSprite;
         this.partNames = partNames;
@@ -45,10 +45,10 @@ public class RBMKMiniPanelItemBakedModel extends AbstractWavefrontBakedModel {
         if (cache != null) return cache;
 
         List<BakedQuad> quads = new ArrayList<>();
-        addBox(quads, 0.0F, 0.0F, 0.0F, 0.75F, 1.0F, 1.0F, panelSprite);
+        addBox(quads, 0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.75F, panelSprite);
 
         for (float[] offset : unitOffsets) {
-            quads.addAll(bakeSimpleQuads(partNames, 0.0F, 0.0F, 0.0F, true, false, partSprite, -1, offset[0], offset[1],
+            quads.addAll(bakeSimpleQuads(partNames, 0.0F, 0.0F, -(float) Math.PI / 2.0F, true, false, partSprite, -1, offset[0], offset[1],
                     offset[2], partUScale, partVScale));
         }
 

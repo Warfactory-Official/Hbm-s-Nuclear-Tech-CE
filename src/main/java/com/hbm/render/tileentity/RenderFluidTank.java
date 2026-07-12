@@ -86,11 +86,12 @@ public class RenderFluidTank extends TileEntitySpecialRenderer<TileEntityMachine
         return new ItemRenderBase() {
             public void renderInventory() {
                 GlStateManager.translate(0, -2, 0);
-                GlStateManager.rotate(90, 0, 1, 0);
-                GlStateManager.scale(3, 3, 3);
+                GlStateManager.scale(3.5, 3.5, 3.5);
             }
 
             public void renderCommon(ItemStack stack) {
+                GlStateManager.rotate(90, 0, 1, 0);
+                GlStateManager.scale(0.75, 0.75, 0.75);
                 GlStateManager.shadeModel(GL11.GL_SMOOTH);
                 GlStateManager.disableCull();
                 FluidTankNTM tank = new FluidTankNTM(Fluids.NONE, 0);

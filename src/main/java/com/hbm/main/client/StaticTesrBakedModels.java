@@ -45,8 +45,9 @@ import java.util.function.IntFunction;
  *     <li>Translate the old GL transform stack into {@code Spec} fields:
  *     {@code yawsByMeta}, {@code preTranslate}, {@code translate}, {@code worldAngles}, {@code item(...)},
  *     {@code itemAngles(...)} and {@code gui(...)}.</li>
- *     <li>If the old TESR rendered only selected OBJ groups, use {@code parts(...)}. If it rendered multiple static
- *     layers, either wrap the baked model in {@link CompositeBakedModel} or extend the baked helper for that pattern.</li>
+ *     <li>If the old TESR rendered only selected OBJ groups, use {@code parts(...)}. If its item renderer used a
+ *     different selection, override that with {@code itemParts(...)}. If it rendered multiple static layers, either
+ *     wrap the baked model in {@link CompositeBakedModel} or extend the baked helper for that pattern.</li>
  *     <li>If the source texture is non-square or not mip-safe for the current atlas settings, the runtime stitch path
  *     will pad it automatically. Do not check in replacement atlas PNGs unless there is some external reason.</li>
  *     <li>If the block still returns {@code ENTITYBLOCK_ANIMATED}, switch it to {@code MODEL} when
@@ -80,40 +81,40 @@ public final class StaticTesrBakedModels {
                     .gui(0.0D, 0.0D, 0.0D, 5.0D),
             metaFacingSpec(ModBlocks.nuke_fleija, "models/bombs/fleija.obj", "models/bombs/fleija", yawMap().meta(2, 90).meta(3, 270).meta(4, 180).meta(5, 0).build())
                     .doubleSided()
-                    .item(2.0F, RAD_90, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
-                    .gui(0.0D, -2.0D, 0.0D, 4.5D),
+                    .item(1.0F, RAD_90, 0.125F, 0.0F, 0.0F, 0.0F, 0.0F)
+                    .gui(0.0D, 0.0D, 0.0D, 6.8D),
             facingSpec(ModBlocks.nuke_gadget, "models/bombs/gadget.obj", "models/bombs/gadget", yawMap().meta(2, 0).meta(3, 180).meta(4, 90).meta(5, 270).build())
                     .doubleSided()
-                    .item(1.0F, 0.0F, 0.25F, 0.0F, 0.0F, 0.0F, 0.0F)
+                    .item(1.0F, RAD_270, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
                     .gui(0.0D, -3.0D, 0.0D, 5.0D),
             metaFacingSpec(ModBlocks.nuke_man, "models/bombs/fatman.obj", "models/bombs/fatman", yawMap().meta(2, 270).meta(3, 90).meta(4, 0).meta(5, 180).build())
                     .item(1.0F, RAD_180, 0.0F, 0.0F, 0.0F, -0.75F, 0.0F, 0.0F)
-                    .gui(0.0D, -2.0D, 0.0D, 5.5D),
+                    .gui(0.0D, -2.0D, 0.0D, 5.0D),
             facingSpec(ModBlocks.nuke_mike, "models/bombs/ivymike.obj", "models/bombs/ivymike", yawMap().meta(2, 180).meta(3, 0).meta(4, 270).meta(5, 90).build())
                     .doubleSided()
-                    .item(1.0F, RAD_90, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
-                    .gui(0.0D, -5.0D, 0.0D, 2.5D),
+                    .item(1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
+                    .gui(0.0D, -5.0D, 0.0D, 2.25D),
             facingSpec(ModBlocks.nuke_n2, "models/bombs/n2.obj", "models/bombs/n2", yawMap().meta(2, 180).meta(3, 0).meta(4, 270).meta(5, 90).build())
                     .doubleSided()
-                    .item(1.0F, RAD_90, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
-                    .gui(0.0D, -4.0D, 0.0D, 3.0D),
+                    .item(1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
+                    .gui(0.0D, -5.0D, 0.0D, 2.25D),
             facingSpec(ModBlocks.nuke_prototype, "models/bombs/prototype.obj", "models/bombs/prototype", yawMap().meta(2, 0).meta(3, 180).meta(4, 90).meta(5, 270).build())
                     .doubleSided()
-                    .item(1.0F, RAD_90, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
-                    .gui(0.0D, 0.0D, 0.0D, 2.25D),
+                    .item(1.0F, RAD_90, 0.0F, 0.125F, 0.0F, 0.0F, 0.0F)
+                    .gui(0.0D, 0.125D, 0.0D, 3.0D),
             facingSpec(ModBlocks.nuke_solinium, "models/bombs/ufp.obj", "models/bombs/ufp", yawMap().meta(2, 90).meta(3, 270).meta(4, 180).meta(5, 0).build())
                     .doubleSided()
-                    .item(1.0F, RAD_90, 0.5F, 0.0F, 0.0F, 0.0F, 0.0F)
-                    .gui(0.0D, 0.0D, 0.0D, 4.0D),
+                    .item(1.0F, RAD_90, 0.0F, -0.125F, 0.0F, 0.0F, 0.0F)
+                    .gui(0.0D, -0.125D, 0.0D, 5.0D),
             facingSpec(ModBlocks.nuke_tsar, "models/bombs/tsar.obj", "models/bombs/tsar", yawMap().meta(2, 0).meta(3, 180).meta(4, 90).meta(5, 270).build())
                     .doubleSided()
                     .item(1.0F, 0.0F, 1.5F, 0.0F, 0.0F, 0.0F, 0.0F)
                     .gui(0.0D, 0.0D, 0.0D, 2.25D),
-            facingSpec(ModBlocks.bomb_multi, "models/bombs/BombGeneric.obj", "models/bombs/BombGeneric", yawMap().meta(2, 90).meta(3, 270).meta(4, 0).meta(5, 180).build())
+            facingSpec(ModBlocks.bomb_multi, "models/bombs/BombGeneric.obj", "models/bombs/BombGeneric", yawMap().meta(2, 0).meta(3, 180).meta(4, 270).meta(5, 90).build())
                     .doubleSided()
                     .worldAngles(180.0D, 0.0D)
                     .translate(0.0F, 0.5F, 0.0F)
-                    .item(3.0F, RAD_90, 0.75F, 0.5F, 0.0F, 0.0F, 0.0F)
+                    .item(3.0F, RAD_270, 0.75F, 1.5F, 0.0F, 0.0F, 0.0F)
                     .itemAngles(180.0D, 0.0D)
                     .gui(0.0D, -1.0D, 0.0D, 4.0D),
             normalSpec(ModBlocks.machine_storage_drum, "models/machines/drum.obj", "models/machines/drum_gray", yawMap().meta(0, 0).build())
@@ -130,7 +131,8 @@ public final class StaticTesrBakedModels {
             normalSpec(ModBlocks.machine_flare, "models/machines/flare_stack.obj", "models/machines/flare_stack", yawMap().meta(12, 180).meta(13, 180).meta(14, 180).meta(15, 180).build())
                     .doubleSided()
                     .item(0.5F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
-                    .gui(0.0D, -4.0D, 0.0D, 2.5D),
+                    // 1.7 ItemRenderLibrary renderInventory scale is 2.25, not 2.5.
+                    .gui(0.0D, -4.0D, 0.0D, 2.25D),
             facingSpec(ModBlocks.geiger, "models/blocks/geiger_counter.obj", "blocks/geiger", yawMap().meta(2, 0).meta(3, 180).meta(4, 90).meta(5, 270).build())
                     .doubleSided()
                     .item(1.0F, RAD_90, 0.2F, 0.0F, 0.0F, 0.0F, 0.0F)
@@ -158,32 +160,32 @@ public final class StaticTesrBakedModels {
                     .gui(0.0D, -5.0D, 0.0D, 2.75D),
             normalSpec(ModBlocks.machine_industrial_boiler, "models/machines/industrial_boiler.obj", "models/machines/industrial_boiler", yawMap().meta(12, 0).meta(13, 0).meta(14, 0).meta(15, 0).build())
                     .item(1.0F, RAD_90, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
-                    .gui(0.0D, -3.0D, 0.0D, 2.5D, 90.0D),
+                    .gui(0.0D, -3.0D, 0.0D, 2.5D),
             normalSpec(ModBlocks.machine_deuterium_tower, "models/machines/machine_deuterium_tower.obj", "models/machines/machine_deuterium_tower", yawMap().meta(12, 180).meta(13, 0).meta(14, 270).meta(15, 90).build())
                     .preTranslate(0.5F, 0.0F, -0.5F)
                     .doubleSided()
                     .item(0.5F, RAD_180, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
-                    .gui(0.0D, -5.0D, 0.0D, 3.0D, 180.0D),
+                    .gui(0.0D, -5.0D, 0.0D, 3.0D),
             normalSpec(ModBlocks.machine_catalytic_cracker, "models/machines/cracking_tower.obj", "models/machines/cracking_tower", yawMap().meta(12, 90).meta(13, 270).meta(14, 180).meta(15, 0).build())
                     .doubleSided()
                     .item(0.5F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
                     .gui(0.0D, -3.5D, 0.0D, 1.8D),
             normalSpec(ModBlocks.machine_centrifuge, "models/centrifuge.obj", "models/machines/centrifuge_new", yawMap().meta(12, 0).meta(13, 180).meta(14, 90).meta(15, 270).build())
                     .item(1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
-                    .gui(0.0D, -5.0D, 0.0D, 3.8D),
+                    .gui(0.0D, -4.0D, 0.0D, 3.5D),
             normalSpec(ModBlocks.machine_drain, "models/machines/drain.obj", "models/machines/drain", yawMap().meta(12, 90).meta(13, 270).meta(14, 180).meta(15, 0).build())
-                    .item(1.0F, RAD_180, 0.75F, 0.0F, 0.0F, 0.0F, 0.0F)
-                    .gui(-1.0D, -1.0D, 0.0D, 5.0D, 180.0D),
+                    .item(1.0F, RAD_180, 0.0F, 0.0F, 0.0F, 0.75F, 0.0F, 0.0F)
+                    .gui(-1.0D, -1.0D, 0.0D, 5.0D),
             normalSpec(ModBlocks.machine_electrolyser, "models/machines/electrolyser.obj", "models/machines/electrolyser", yawMap().meta(12, 180).meta(13, 0).meta(14, 270).meta(15, 90).build())
                     .doubleSided()
                     .item(0.5F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
                     .gui(-1.0D, -1.0D, 0.0D, 2.5D),
             normalSpec(ModBlocks.heater_electric, "models/machines/electric_heater.obj", "models/machines/electric_heater", yawMap().meta(12, 90).meta(13, 270).meta(14, 180).meta(15, 0).build())
-                    .item(1.9F, RAD_180, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
-                    .gui(0.0D, -1.0D, 0.0D, 1.9D, 180.0D),
+                    .item(1.0F, 0.0F, -0.5F, 0.0F, 0.0F, 0.0F, 0.0F)
+                    .gui(0.0D, 0.0D, 0.0D, 3.0D),
             normalSpec(ModBlocks.heater_heatex, "models/machines/heatex.obj", "models/machines/heater_heatex", yawMap().meta(12, 90).meta(13, 270).meta(14, 180).meta(15, 0).build())
-                    .item(1.9F, RAD_180, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
-                    .gui(0.0D, -1.0D, 0.0D, 1.9D, 180.0D),
+                    .item(1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
+                    .gui(0.0D, -1.0D, 0.0D, 3.25D),
             normalSpec(ModBlocks.heater_oilburner, "models/machines/oilburner.obj", "models/machines/oilburner", yawMap().meta(12, 0).meta(13, 0).meta(14, 0).meta(15, 0).build())
                     .gui(0.0D, -1.5D, 0.0D, 3.25D),
             normalSpec(ModBlocks.machine_silex, "models/machines/silex.obj", "models/machines/silex", yawMap().meta(12, 90).meta(13, 270).meta(14, 180).meta(15, 0).build())
@@ -192,7 +194,7 @@ public final class StaticTesrBakedModels {
             normalSpec(ModBlocks.machine_wood_burner, "models/machines/wood_burner.obj", "models/machines/wood_burner", yawMap().meta(12, 180).meta(13, 0).meta(14, 270).meta(15, 90).build())
                     .preTranslate(-0.5F, 0.0F, -0.5F)
                     .item(1.0F, RAD_90, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
-                    .gui(0.0D, -4.1D, 0.0D, 3.5D, 90.0D),
+                    .gui(0.0D, -4.0D, 0.0D, 3.5D),
             normalSpec(ModBlocks.watz, "models/reactors/watz.obj", "models/machines/watz", yawMap().meta(12, 0).meta(13, 0).meta(14, 0).meta(15, 0).build())
                     .doubleSided()
                     .item(1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
@@ -210,8 +212,8 @@ public final class StaticTesrBakedModels {
                     .item(0.25F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
                     .gui(0.0D, -3.0D, 0.0D, 3.8D),
             normalSpec(ModBlocks.sat_dock, "models/sat_dock.obj", "models/missile_parts/sat_dock", yawMap().meta(0, 0).build())
-                    .item(1.0F, RAD_90, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
-                    .gui(0.0D, 0.0D, 0.0D, 3.0D, 90.0D),
+                    .item(1.0F, RAD_270, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
+                    .gui(0.0D, 0.0D, 0.0D, 3.0D),
             variantSpec(ModBlocks.soyuz_capsule, "models/soyuz_lander.obj", "models/soyuz_capsule/soyuz_lander", yawMap().meta(0, -25).build(), "rusty=false")
                     .parts("Capsule")
                     .doubleSided()
@@ -237,7 +239,7 @@ public final class StaticTesrBakedModels {
             normalSpec(ModBlocks.icf, "models/reactors/icf.obj", "models/machines/icf", yawMap().meta(12, 90).meta(13, 270).meta(14, 180).meta(15, 0).build())
                     .doubleSided()
                     .item(0.5F, RAD_90, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
-                    .gui(0.0D, -1.5D, 0.0D, 2.125D, 90.0D),
+                    .gui(0.0D, -1.5D, 0.0D, 2.125D),
             normalSpec(ModBlocks.fusion_boiler, "models/fusion/boiler.obj", "models/fusion/boiler", yawMap().meta(12, 90).meta(13, 270).meta(14, 180).meta(15, 0).build())
                     .item(0.5F, RAD_90, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
                     .gui(0.0D, -1.0D, 0.0D, 3.5D, 90.0D),
@@ -252,7 +254,7 @@ public final class StaticTesrBakedModels {
                     .parts("Microwave")
                     .preTranslate(0.0F, 0.0F, 18.0F)
                     .item(0.5F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 14.0F)
-                    .gui(0.0D, -1.0D, 0.0D, 2.5D, 90.0D),
+                    .gui(0.0D, -1.0D, 0.0D, 2.5D),
             facingSpec(ModBlocks.fluid_pump, "models/network/fluid_diode.obj", "models/network/fluid_diode", yawMap().meta(2, 180).meta(3, 0).meta(4, 270).meta(5, 90).build())
                     .item(2.0F, RAD_90, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
                     .gui(0.0D, -2.0D, 0.0D, 5.0D),
@@ -286,8 +288,9 @@ public final class StaticTesrBakedModels {
                     .item(1.0F, RAD_90, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
                     .gui(0.0D, -3.5D, 0.0D, 4.0D),
             normalSpec(ModBlocks.machine_gascent, "models/centrifuge_gas.obj", "models/machines/centrifuge_gas", yawMap().meta(12, 270).meta(13, 90).meta(14, 0).meta(15, 180).build())
+                    .itemParts("Centrifuge")
                     .item(1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
-                    .gui(0.0D, -5.0D, 0.0D, 3.8D),
+                    .gui(0.0D, -4.0D, 0.0D, 3.5D),
             normalSpec(ModBlocks.machine_radiolysis, "models/radiolysis.obj", "models/radiolysis", yawMap().meta(12, 180).meta(13, 0).meta(14, 90).meta(15, 270).build())
                     .doubleSided()
                     .item(1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
@@ -295,7 +298,7 @@ public final class StaticTesrBakedModels {
             normalSpec(ModBlocks.machine_turbinegas, "models/machines/turbinegas.obj", "models/machines/turbinegas", yawMap().meta(12, 90).meta(13, 270).meta(14, 180).meta(15, 0).build())
                     .doubleSided()
                     .item(0.75F, RAD_90, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
-                    .gui(-0.7D, -1.0D, 1.5D, 2.5D, 90.0D),
+                    .gui(0.0D, -1.0D, 1.5D, 2.5D),
             normalSpec(ModBlocks.machine_fracking_tower, "models/fracking_tower.obj", "models/machines/fracking_tower", yawMap().meta(12, 180).meta(13, 180).meta(14, 180).meta(15, 180).build())
                     .doubleSided()
                     .extraWorldLayer("models/blocks/pipe_neo.obj", "blocks/pipe_silver", 0.0F, 0.5F, 0.0F, "pX", "nX", "pZ", "nZ")
@@ -311,16 +314,17 @@ public final class StaticTesrBakedModels {
                     .item(1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
                     .gui(3.25D, 1.125D, 0.0D, 6.5D),
             normalSpec(ModBlocks.machine_well, "models/derrick.obj", "models/machines/derrick", yawMap().meta(12, 180).meta(13, 0).meta(14, 270).meta(15, 90).build())
-                    .item(0.5F, RAD_90, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
-                    .gui(0.0D, -4.0D, 0.0D, 3.0D, 90.0D),
+                    // 1.7 (mesh identical): renderCommon = S(0.5), no yaw; renderInventory = T(0,-4,0)·S(4), no yaw.
+                    .item(0.5F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
+                    .gui(0.0D, -4.0D, 0.0D, 4.0D),
             normalSpec(ModBlocks.reactor_zirnox, "models/zirnox.obj", "models/machines/zirnox", yawMap().meta(12, 90).meta(13, 270).meta(14, 180).meta(15, 0).build())
                     .doubleSided()
-                    .item(0.75F, RAD_90, 0.5F, 1.0F, -0.3F, 0.0F, 0.0F)
-                    .gui(0.5D, -1.55D, 0.0D, 2.7D, 90.0D),
+                    .item(0.75F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
+                    .gui(0.0D, -2.0D, 0.0D, 2.8D),
             normalSpec(ModBlocks.zirnox_destroyed, "models/zirnox_destroyed.obj", "models/machines/zirnox_destroyed", yawMap().meta(12, 90).meta(13, 270).meta(14, 180).meta(15, 0).build())
                     .doubleSided()
-                    .item(0.75F, RAD_90, 0.5F, 1.0F, -0.3F, 0.0F, 0.0F)
-                    .gui(0.5D, -1.55D, 0.0D, 2.7D, 90.0D)
+                    .item(0.75F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
+                    .gui(0.0D, -2.0D, 0.0D, 2.8D)
     );
     private static final Reference2ObjectOpenHashMap<Block, Spec> SPECS_BY_BLOCK = createSpecsByBlock();
 
@@ -388,7 +392,7 @@ public final class StaticTesrBakedModels {
                 StaticWavefrontItemBakedModel itemModel = new StaticWavefrontItemBakedModel(
                         model,
                         sprite,
-                        spec.partNames,
+                        spec.itemPartNames != null ? spec.itemPartNames : spec.partNames,
                         spec.itemScale,
                         spec.itemYaw,
                         spec.doubleSided,
@@ -651,6 +655,7 @@ public final class StaticTesrBakedModels {
         private final float[] yawsByMeta;
         private final ModelResourceLocation[] worldModelLocations;
         private String[] partNames;
+        private String[] itemPartNames;
         private final List<LayerSpec> extraWorldLayers = new ArrayList<>();
         private boolean bakeInventory = true;
         private boolean doubleSided;
@@ -708,6 +713,11 @@ public final class StaticTesrBakedModels {
 
         private Spec parts(String... names) {
             partNames = names;
+            return this;
+        }
+
+        private Spec itemParts(String... names) {
+            itemPartNames = names;
             return this;
         }
 

@@ -25,7 +25,7 @@ public class DuctBakedModel extends AbstractBakedModel {
     private final Int2ObjectOpenHashMap<List<BakedQuad>> cache = new Int2ObjectOpenHashMap<>();
 
     public DuctBakedModel(int meta, boolean isExhaust) {
-        super(BakedModelTransforms.standardBlock());
+        super(BakedModelTransforms.isbrh());
         this.meta = meta;
         this.isExhaust = isExhaust;
     }

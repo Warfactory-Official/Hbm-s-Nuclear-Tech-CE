@@ -14,7 +14,7 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister(item = "gun_chemthrower")
 public class ItemRenderChemthrower extends ItemRenderWeaponBase {
 
-	public ItemRenderChemthrower() { offsets = offsets.get(ItemCameraTransforms.TransformType.GUI).setPosition(0, 18, -13).setScale(0.05).getHelper(); }
+	public ItemRenderChemthrower() {}
 
 	@Override
 	protected float getTurnMagnitude(ItemStack stack) {

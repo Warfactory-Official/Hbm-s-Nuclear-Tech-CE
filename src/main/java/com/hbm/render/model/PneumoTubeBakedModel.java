@@ -26,7 +26,7 @@ public class PneumoTubeBakedModel extends AbstractBakedModel {
     private final Int2ObjectOpenHashMap<List<BakedQuad>> cache = new Int2ObjectOpenHashMap<>();
 
     public PneumoTubeBakedModel() {
-        super(BakedModelTransforms.standardBlock());
+        super(BakedModelTransforms.isbrh());
     }
 
     @Override

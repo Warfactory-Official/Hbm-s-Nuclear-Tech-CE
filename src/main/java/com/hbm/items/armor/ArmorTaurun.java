@@ -1,16 +1,12 @@
 package com.hbm.items.armor;
 
-import com.hbm.items.ModItems;
 import com.hbm.items.gear.ArmorFSB;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.item.ItemRenderBaseFMM;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.model.ModelArmorTaurun;
 import com.hbm.render.tileentity.IItemRendererProvider;
-import com.hbm.render.util.ViewModelPositonDebugger;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
@@ -23,12 +19,6 @@ public class ArmorTaurun extends ArmorFSB implements IItemRendererProvider {
 
   @SideOnly(Side.CLIENT)
   ModelArmorTaurun[] models;
-
-  @SideOnly(Side.CLIENT)
-  protected ViewModelPositonDebugger offsets;
-
-  @SideOnly(Side.CLIENT)
-  protected ViewModelPositonDebugger offsetsHelmetChestplate;
 
   public ArmorTaurun(
       ArmorMaterial material, int layer, EntityEquipmentSlot slot, String texture, String s) {
@@ -61,10 +51,10 @@ public class ArmorTaurun extends ArmorFSB implements IItemRendererProvider {
   @Override
   @SideOnly(Side.CLIENT)
   public ItemRenderBase getRenderer(Item item) {
-    return new ItemRenderBaseFMM() {
+    return new ItemRenderBase() {
       public void renderInventory() {
-        if (armorType == EntityEquipmentSlot.MAINHAND) GlStateManager.translate(0, 1, 0);
-        if (armorType == EntityEquipmentSlot.OFFHAND) GlStateManager.translate(0, 1.5, 0);
+        if (armorType == EntityEquipmentSlot.HEAD) GlStateManager.translate(0, 1, 0);
+        if (armorType == EntityEquipmentSlot.CHEST) GlStateManager.translate(0, 1.5, 0);
         setupRenderInv();
       }
 
@@ -73,74 +63,6 @@ public class ArmorTaurun extends ArmorFSB implements IItemRendererProvider {
       }
 
       public void renderCommon() {
-        if (item == ModItems.taurun_helmet || item == ModItems.taurun_plate) {
-          if (offsetsHelmetChestplate == null)
-            offsetsHelmetChestplate =
-                new ViewModelPositonDebugger()
-                    .get(ItemCameraTransforms.TransformType.GUI)
-                    .setScale(0.85F)
-                    .setPosition(-1.2, 0.0, 1.0)
-                    .setRotation(255, -36, -143)
-                    .getHelper()
-                    .get(ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND)
-                    .setPosition(-1.00, -31.30, -4.95)
-                    .setRotation(-23, -139, 85)
-                    .getHelper()
-                    .get(ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND)
-                    .setPosition(-0.5, 3, -2.75)
-                    .setRotation(610, -115, -100)
-                    .getHelper()
-                    .get(ItemCameraTransforms.TransformType.THIRD_PERSON_RIGHT_HAND)
-                    .setScale(0.7F)
-                    .setPosition(-0.25, -3.6, -1.25)
-                    .setRotation(5, -90, 340)
-                    .getHelper()
-                    .get(ItemCameraTransforms.TransformType.THIRD_PERSON_LEFT_HAND)
-                    .setPosition(-8, -5.50, -1.00)
-                    .setRotation(0, 330, 180)
-                    .getHelper()
-                    .get(ItemCameraTransforms.TransformType.GROUND)
-                    .setScale(1F)
-                    .setPosition(0, 1, 0)
-                    .setRotation(0, 0, 180)
-                    .getHelper();
-
-          offsetsHelmetChestplate.apply(type);
-        } else {
-          if (offsets == null)
-            offsets =
-                new ViewModelPositonDebugger()
-                    .get(ItemCameraTransforms.TransformType.GUI)
-                    .setScale(1.0F)
-                    .setPosition(-1.2, 0.0, 1.0)
-                    .setRotation(255, -36, -143)
-                    .getHelper()
-                    .get(ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND)
-                    .setPosition(-1.00, -31.30, -4.95)
-                    .setRotation(-23, -139, 85)
-                    .getHelper()
-                    .get(ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND)
-                    .setPosition(-0.5, 3, -2.75)
-                    .setRotation(610, -115, -100)
-                    .getHelper()
-                    .get(ItemCameraTransforms.TransformType.THIRD_PERSON_RIGHT_HAND)
-                    .setScale(0.7F)
-                    .setPosition(-0.25, -3.6, -1.25)
-                    .setRotation(5, -90, 340)
-                    .getHelper()
-                    .get(ItemCameraTransforms.TransformType.THIRD_PERSON_LEFT_HAND)
-                    .setPosition(-8, -5.50, -1.00)
-                    .setRotation(0, 330, 180)
-                    .getHelper()
-                    .get(ItemCameraTransforms.TransformType.GROUND)
-                    .setScale(1F)
-                    .setPosition(0, 1, 0)
-                    .setRotation(0, 0, 180)
-                    .getHelper();
-
-          offsets.apply(type);
-        }
-
         renderStandard(
             ResourceManager.armor_taurun,
             armorType,

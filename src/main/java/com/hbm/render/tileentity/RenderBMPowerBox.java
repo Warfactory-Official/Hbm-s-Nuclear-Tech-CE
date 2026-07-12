@@ -4,6 +4,7 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.item.ItemRenderBase;
+import com.hbm.render.item.ItemRenderBaseLegacy;
 import com.hbm.tileentity.machine.TileEntityBMPowerBox;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
@@ -66,7 +67,7 @@ public class RenderBMPowerBox extends TileEntitySpecialRenderer<TileEntityBMPowe
 
   @Override
   public ItemRenderBase getRenderer(Item item) {
-    return new ItemRenderBase() {
+    return new ItemRenderBaseLegacy() {
       public void renderInventory() {
         GlStateManager.translate(0, -6, 0);
         GlStateManager.scale(18, 18, 18);

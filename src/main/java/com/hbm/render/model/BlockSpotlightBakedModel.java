@@ -7,8 +7,6 @@ import com.hbm.render.loader.HFRWavefrontObject;
 import com.hbm.util.FacingUtil;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
-import net.minecraft.client.renderer.block.model.ItemTransformVec3f;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.EnumFacing;
@@ -16,7 +14,6 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.util.vector.Vector3f;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,43 +32,12 @@ public class BlockSpotlightBakedModel extends AbstractWavefrontBakedModel {
     public BlockSpotlightBakedModel(HFRWavefrontObject model, TextureAtlasSprite sprite, boolean isInventory,
                                     LightType type, float baseScale, float tx, float ty, float tz, float itemYaw) {
         super(model, isInventory ? DefaultVertexFormats.ITEM : DefaultVertexFormats.BLOCK, baseScale, tx, ty, tz,
-                makeItemTransforms(type));
+                BakedModelTransforms.isbrh());
 
         this.sprite = sprite;
         this.isInventory = isInventory;
         this.type = type;
         this.itemYaw = itemYaw;
-    }
-
-    @SuppressWarnings("deprecation")
-    private static ItemCameraTransforms makeItemTransforms(LightType type) {
-        ItemTransformVec3f gui = new ItemTransformVec3f(new Vector3f(30, 45, 0), new Vector3f(0.15f, 0.05f, 0),
-                new Vector3f(1.5f, 1.5f, 1.5f));
-
-        switch (type) {
-            case HALOGEN -> {
-                gui.translation.set(0.25f, 0.15f);
-                gui.scale.set(1.4f, 1.4f, 1.4f);
-            }
-            case FLUORESCENT -> {
-                gui.translation.set(0.15f, 0.05f);
-                gui.scale.set(1.2f, 1.2f, 1.2f);
-            }
-        }
-
-        ItemTransformVec3f thirdPersonLeft = new ItemTransformVec3f(new Vector3f(45, 90, 0),
-                new Vector3f(0, -0.015f, 0.1f), new Vector3f(0.45f, 0.45f, 0.45f));
-        ItemTransformVec3f thirdPersonRight = new ItemTransformVec3f(new Vector3f(45, -90, 0),
-                new Vector3f(0, -0.015f, 0.1f), new Vector3f(0.45f, 0.45f, 0.45f));
-        ItemTransformVec3f firstPersonLeft = new ItemTransformVec3f(new Vector3f(0, -135, 0),
-                new Vector3f(0.03f, 0.1f, 0), new Vector3f(0.5f, 0.5f, 0.5f));
-        ItemTransformVec3f firstPersonRight = new ItemTransformVec3f(new Vector3f(0, 45, 0),
-                new Vector3f(0.1f, 0.1f, 0), new Vector3f(0.5f, 0.5f, 0.5f));
-        ItemTransformVec3f ground = new ItemTransformVec3f(new Vector3f(0, 0, 0), new Vector3f(0, 0.25f, 0),
-                new Vector3f(0.5f, 0.5f, 0.5f));
-
-        return new ItemCameraTransforms(thirdPersonLeft, thirdPersonRight, firstPersonLeft, firstPersonRight,
-                BakedModelTransforms.standardBlock().head, gui, ground, BakedModelTransforms.standardBlock().fixed);
     }
 
     public static BlockSpotlightBakedModel forBlock(HFRWavefrontObject model, TextureAtlasSprite sprite,
@@ -81,7 +47,8 @@ public class BlockSpotlightBakedModel extends AbstractWavefrontBakedModel {
 
     public static BlockSpotlightBakedModel forItem(HFRWavefrontObject model, TextureAtlasSprite sprite,
                                                    LightType type) {
-        return new BlockSpotlightBakedModel(model, sprite, true, type, 0.9F, 0.0F, 0.0F, 0.0F, (float) Math.PI);
+        return new BlockSpotlightBakedModel(model, sprite, true, type, 1.5F, 0.5F, 0.5F, 0.5F,
+                (float) -Math.PI / 2.0F);
     }
 
     @Override
@@ -164,7 +131,7 @@ public class BlockSpotlightBakedModel extends AbstractWavefrontBakedModel {
             default -> partName;
         };
 
-        return new ArrayList<>(bakeSimpleQuads(Collections.singleton(partName), 0, 0, itemYaw, true, true, sprite));
+        return new ArrayList<>(bakeSimpleQuads(Collections.singleton(partName), 0, 0, itemYaw, true, false, sprite));
     }
 
     @Override

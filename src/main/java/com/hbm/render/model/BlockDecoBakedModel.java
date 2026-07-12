@@ -20,16 +20,24 @@ public class BlockDecoBakedModel extends AbstractWavefrontBakedModel {
     private final boolean forBlock;
     private final int rotationOffset;
     private final boolean rotationInLowBits;
+    private final float itemYaw;
     @SuppressWarnings("unchecked")
     private final List<BakedQuad>[] cache = new List[4];
     private List<BakedQuad> itemQuads;
 
     public BlockDecoBakedModel(HFRWavefrontObject model, TextureAtlasSprite sprite, boolean forBlock, float baseScale, float tx, float ty, float tz, int rotationOffset, boolean rotationInLowBits) {
-        super(model, DefaultVertexFormats.ITEM, baseScale, tx, ty, tz, BakedModelTransforms.forDeco(BakedModelTransforms.standardBlock()));
+        this(model, sprite, forBlock, baseScale, tx, ty, tz, rotationOffset, rotationInLowBits, 0.0F);
+    }
+
+    private BlockDecoBakedModel(HFRWavefrontObject model, TextureAtlasSprite sprite, boolean forBlock, float baseScale,
+                                float tx, float ty, float tz, int rotationOffset, boolean rotationInLowBits,
+                                float itemYaw) {
+        super(model, DefaultVertexFormats.ITEM, baseScale, tx, ty, tz, BakedModelTransforms.isbrh());
         this.sprite = sprite;
         this.forBlock = forBlock;
         this.rotationOffset = rotationOffset;
         this.rotationInLowBits = rotationInLowBits;
+        this.itemYaw = itemYaw;
     }
 
     public static BlockDecoBakedModel forBlock(HFRWavefrontObject model, TextureAtlasSprite sprite) {
@@ -40,12 +48,17 @@ public class BlockDecoBakedModel extends AbstractWavefrontBakedModel {
         return new BlockDecoBakedModel(model, sprite, true, 1.0F, 0.0F, ty, 0.0F, 0, true);
     }
 
+    public static BlockDecoBakedModel forItem(HFRWavefrontObject model, TextureAtlasSprite sprite,
+                                               float tx, float ty, float tz, float yaw) {
+        return new BlockDecoBakedModel(model, sprite, false, 1.0F, tx, ty, tz, 0, false, yaw);
+    }
+
     @Override
     public @NotNull List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
         if (side != null) return Collections.emptyList();
 
         if (!forBlock) {
-            if (itemQuads == null) itemQuads = super.bakeSimpleQuads(null, 0.0F, 0.0F, 0.0F, true, false, sprite);
+            if (itemQuads == null) itemQuads = super.bakeSimpleQuads(null, 0.0F, 0.0F, itemYaw, true, false, sprite);
             return itemQuads;
         }
 

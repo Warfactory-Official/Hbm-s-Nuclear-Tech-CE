@@ -372,6 +372,8 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable, ITo
         private final ImmutableMap<EnumFacing, ImmutableList<BakedQuad>> overlayFaces;
         private final ImmutableList<BakedQuad> baseGeneral;
         private final ImmutableList<BakedQuad> overlayGeneral;
+        private final ImmutableList<BakedQuad> inventoryBaseGeneral;
+        private final ImmutableList<BakedQuad> inventoryOverlayGeneral;
 
         public CablePaintableModel(TextureAtlasSprite base, TextureAtlasSprite overlay) {
             this.particle = base;
@@ -379,6 +381,8 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable, ITo
             this.overlayFaces = buildFaceMap(overlay, -1, true);
             this.baseGeneral = flatten(this.baseFaces);
             this.overlayGeneral = flatten(this.overlayFaces);
+            this.inventoryBaseGeneral = flatten(buildFaceMap(base, -1, false, ModelRotation.X0_Y90));
+            this.inventoryOverlayGeneral = flatten(buildFaceMap(overlay, -1, true, ModelRotation.X0_Y90));
         }
 
         @Override
@@ -388,14 +392,9 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable, ITo
             boolean renderCable = layer == null || layer == BlockRenderLayer.CUTOUT_MIPPED;
 
             if (state == null) {
-                if (renderCable) {
-                    if (side == null) {
-                        quads.addAll(baseGeneral);
-                        quads.addAll(overlayGeneral);
-                    } else {
-                        quads.addAll(baseFaces.get(side));
-                        quads.addAll(overlayFaces.get(side));
-                    }
+                if (renderCable && side == null) {
+                    quads.addAll(inventoryBaseGeneral);
+                    quads.addAll(inventoryOverlayGeneral);
                 }
                 return quads;
             }
@@ -451,7 +450,7 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable, ITo
 
         @Override
         public ItemCameraTransforms getItemCameraTransforms() {
-            return BakedModelTransforms.standardBlock();
+            return BakedModelTransforms.isbrh();
         }
 
         @Override
@@ -460,9 +459,14 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable, ITo
         }
 
         private static ImmutableMap<EnumFacing, ImmutableList<BakedQuad>> buildFaceMap(TextureAtlasSprite sprite, int tintIndex, boolean offset) {
+            return buildFaceMap(sprite, tintIndex, offset, ModelRotation.X0_Y0);
+        }
+
+        private static ImmutableMap<EnumFacing, ImmutableList<BakedQuad>> buildFaceMap(TextureAtlasSprite sprite, int tintIndex,
+                                                                                       boolean offset, ModelRotation rotation) {
             ImmutableMap.Builder<EnumFacing, ImmutableList<BakedQuad>> builder = ImmutableMap.builder();
             for (EnumFacing face : EnumFacing.VALUES) {
-                builder.put(face, ImmutableList.of(createQuad(face, sprite, tintIndex, offset)));
+                builder.put(face, ImmutableList.of(createQuad(face, sprite, tintIndex, offset, rotation)));
             }
             return builder.build();
         }
@@ -475,7 +479,8 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable, ITo
             return builder.build();
         }
 
-        private static BakedQuad createQuad(EnumFacing face, TextureAtlasSprite sprite, int tintIndex, boolean offset) {
+        private static BakedQuad createQuad(EnumFacing face, TextureAtlasSprite sprite, int tintIndex, boolean offset,
+                                            ModelRotation rotation) {
             float eps = 0.001F;
             Vector3f from = new Vector3f(0F, 0F, 0F);
             Vector3f to = new Vector3f(16F, 16F, 16F);
@@ -493,7 +498,7 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable, ITo
 
             BlockFaceUV uv = new BlockFaceUV(new float[]{0F, 0F, 16F, 16F}, 0);
             BlockPartFace partFace = new BlockPartFace(null, tintIndex, "", uv);
-            return FACE_BAKERY.makeBakedQuad(from, to, partFace, sprite, face, ModelRotation.X0_Y0, null, false, true);
+            return FACE_BAKERY.makeBakedQuad(from, to, partFace, sprite, face, rotation, null, false, true);
         }
     }
 }

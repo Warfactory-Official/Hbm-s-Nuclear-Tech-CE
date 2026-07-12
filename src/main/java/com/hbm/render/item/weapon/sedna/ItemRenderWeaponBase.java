@@ -5,7 +5,6 @@ import com.hbm.config.ClientConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT.SmokeNode;
 import com.hbm.render.item.TEISRBase;
-import com.hbm.render.util.ViewModelPositonDebugger;
 import com.hbm.util.RenderUtil;
 import com.hbm.util.ShaderHelper;
 import net.minecraft.block.state.IBlockState;
@@ -31,15 +30,9 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 
-public abstract class ItemRenderWeaponBase extends TEISRBase {
+import com.hbm.render.item.ItemRenderFrames17;
 
-    protected ViewModelPositonDebugger offsets = new ViewModelPositonDebugger()
-            .get(ItemCameraTransforms.TransformType.GUI)
-            .setScale(0.06f).setPosition(0.00, 16.5, -9.25).setRotation(186, -182, 0).getHelper()
-            .get(ItemCameraTransforms.TransformType.THIRD_PERSON_RIGHT_HAND)
-            .setScale(0.5f).setPosition(-1.15, 0.9, -1.4).setRotation(-14, 105, 0).getHelper()
-            .get(ItemCameraTransforms.TransformType.GROUND)
-            .setScale(0.85f).setPosition(-0.5, 0.6, -0.5).getHelper();
+public abstract class ItemRenderWeaponBase extends TEISRBase {
 
     public static final ResourceLocation flash_plume =  new ResourceLocation(Tags.MODID, "textures/models/weapons/lilmac_plume.png");
     public static final ResourceLocation laser_flash = new ResourceLocation(Tags.MODID, "textures/models/weapons/laser_flash.png");
@@ -80,44 +73,39 @@ public abstract class ItemRenderWeaponBase extends TEISRBase {
                 renderFirstPerson(stack);
             }
             case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND -> {
-                offsets.apply(type);
+                GlStateManager.multMatrix(currentType == ItemCameraTransforms.TransformType.THIRD_PERSON_LEFT_HAND ? ItemRenderFrames17.THIRD_PERSON_LEFT : ItemRenderFrames17.THIRD_PERSON);
+                setupThirdPerson(stack);
+                renderEquipped(stack);
+            }
+            case HEAD -> {
+                GlStateManager.multMatrix(ItemRenderFrames17.HEAD);
                 setupThirdPerson(stack);
                 renderEquipped(stack);
             }
             case GROUND-> {
-                offsets.apply(type);
+                GlStateManager.multMatrix(ItemRenderFrames17.GROUND);
                 setupEntity(stack);
                 renderEntity(stack);
             }
 
-            //FIXME:Slize for the love of god why did you forget Fixed
+            // 1.7 item-frame oracle = the ENTITY body rendered in a frame (ItemRenderFrames17.FIXED).
             case FIXED-> {
-                offsets.apply(type);
-                setupFixed(stack);
+                GlStateManager.multMatrix(ItemRenderFrames17.FIXED);
+                setupEntity(stack);
                 renderEntity(stack);
             }
             case GUI -> {
-                offsets.apply(type);
+                GlStateManager.multMatrix(ItemRenderFrames17.GUI);
                 GlStateManager.disableCull();
                 setupInv(stack);
                 renderInv(stack);
                 GlStateManager.enableCull();
             }
 
-            default -> {
-                if (!doNullTransform()) {
-                    renderOther(stack, null);
-                }
-            }
+            default -> renderOther(stack, null);
         }
         if (!prevCull) GlStateManager.disableCull();
         GlStateManager.popMatrix();
-    }
-
-    private void setupFixed(@NotNull ItemStack stack) {
-        double scale = 1F;
-        GlStateManager.scale(scale, scale, scale);
-
     }
 
     public void renderEquipped(ItemStack stack) { renderOther(stack, null); }
@@ -286,6 +274,7 @@ public abstract class ItemRenderWeaponBase extends TEISRBase {
     public void setupEntity(ItemStack stack) {
         double scale = 0.125D;
         GlStateManager.scale(scale, scale, scale);
+        GlStateManager.rotate(-90, 0, 1, 0);
     }
 
     public void setupModTable(ItemStack stack) {

@@ -74,17 +74,6 @@ public class TEISRBase extends TileEntityItemStackRenderer {
 		GlStateManager.popMatrix();
 	}
 
-    /**
-     * Use fancy missing model perspective
-     */
-	public boolean useFMMPerspective(Item item) {
-		return false;
-	}
-
-	public boolean doNullTransform(){
-		return false;
-	}
-
 	public static final class ModelBinding {
 		private static final ResourceLocation MISSINGNO = new ResourceLocation("missingno");
 		private final ModelResourceLocation modelLocation;

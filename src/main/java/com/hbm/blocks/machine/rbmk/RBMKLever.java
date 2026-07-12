@@ -36,8 +36,8 @@ public class RBMKLever extends RBMKMiniPanelBase implements IToolable {
 	private static final Set<String> ITEM_PARTS = ImmutableSet.of("Base", "Lever");
 	private static final ResourceLocation PART_SPRITE = new ResourceLocation(Tags.MODID, "models/network/lever");
 	private static final float[][] ITEM_UNIT_OFFSETS = {
-			{0.75F, 0.0F, 0.25F},
-			{0.75F, 0.0F, 0.75F},
+			{-0.25F, 0.0F, 0.25F},
+			{0.25F, 0.0F, 0.25F},
 	};
 
 	public RBMKLever(String s) {

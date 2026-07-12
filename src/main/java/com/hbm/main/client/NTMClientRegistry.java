@@ -34,7 +34,6 @@ import com.hbm.render.GuiCTMWarning;
 import com.hbm.render.entity.RenderBoat;
 import com.hbm.render.icon.RegistrationUtils;
 import com.hbm.render.item.BakedModelNoFPV;
-import com.hbm.render.item.FancyMissingModelPerspective;
 import com.hbm.render.item.TEISRBase;
 import com.hbm.render.item.WrappedTEISRModel;
 import com.hbm.render.item.weapon.B92BakedModel;
@@ -403,10 +402,6 @@ public class NTMClientRegistry {
         }
 
         teisr.itemModel = model;
-        if (teisr.useFMMPerspective(owned.item)) {
-            reg.putObject(targetLocation, new FancyMissingModelPerspective(teisr, model));
-            return;
-        }
         if (owned.useIdentityTransform) {
             reg.putObject(targetLocation, new BakedModelNoFPV(teisr, model));
             return;

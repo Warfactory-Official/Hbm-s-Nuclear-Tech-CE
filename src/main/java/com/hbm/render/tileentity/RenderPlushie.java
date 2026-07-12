@@ -131,17 +131,11 @@ public class RenderPlushie extends TileEntitySpecialRenderer<TileEntityPlushie> 
     public ItemRenderBase getRenderer(Item item) {
         return new ItemRenderBase() {
             public void renderInventory() {
-                GlStateManager.rotate(180, 0, 1, 0);
                 GlStateManager.translate(0, -6, 0);
                 GlStateManager.scale(6, 6, 6);
             }
 
-            public void renderGround() {
-                GlStateManager.scale(3, 3, 3);
-            }
-
             public void renderCommon(ItemStack item) {
-                GlStateManager.rotate(180.0, 0, 1, 0);
                 GlStateManager.translate(0, 0.25, 0);
                 GlStateManager.enableCull();
                 PlushieType type = EnumUtil.grabEnumSafely(PlushieType.VALUES, item.getItemDamage());
@@ -157,7 +151,7 @@ public class RenderPlushie extends TileEntitySpecialRenderer<TileEntityPlushie> 
                         GlStateManager.scale(1.25, 1.25, 1.25);
                         break;
                     case HUNDUN:
-                        GlStateManager.translate(0.5, 0.42, 0);
+                        GlStateManager.translate(0.5, 0.5, 0);
                         GlStateManager.scale(1.25, 1.25, 1.25);
                         break;
                     case DERG:

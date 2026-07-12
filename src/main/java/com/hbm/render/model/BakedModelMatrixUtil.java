@@ -1,7 +1,10 @@
 package com.hbm.render.model;
 
+import net.minecraft.client.renderer.GLAllocation;
+
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector3f;
+import java.nio.FloatBuffer;
 
 public final class BakedModelMatrixUtil {
 
@@ -96,5 +99,16 @@ public final class BakedModelMatrixUtil {
             normal.normalize();
         }
         return normal;
+    }
+
+    public static FloatBuffer glMatrix(Matrix4f... operations) {
+        Matrix4f matrix = compose(operations);
+        FloatBuffer buffer = GLAllocation.createDirectFloatBuffer(16);
+        buffer.put(matrix.m00).put(matrix.m10).put(matrix.m20).put(matrix.m30);
+        buffer.put(matrix.m01).put(matrix.m11).put(matrix.m21).put(matrix.m31);
+        buffer.put(matrix.m02).put(matrix.m12).put(matrix.m22).put(matrix.m32);
+        buffer.put(matrix.m03).put(matrix.m13).put(matrix.m23).put(matrix.m33);
+        buffer.flip();
+        return buffer;
     }
 }

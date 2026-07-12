@@ -22,7 +22,7 @@ public class BlockSandbagsBakedModel extends AbstractBakedModel {
     private List<BakedQuad> inventoryCache;
 
     public BlockSandbagsBakedModel(TextureAtlasSprite sprite, boolean isInventory) {
-        super(BakedModelTransforms.standardBlock());
+        super(BakedModelTransforms.isbrh());
         this.sprite = sprite;
         this.isInventory = isInventory;
     }

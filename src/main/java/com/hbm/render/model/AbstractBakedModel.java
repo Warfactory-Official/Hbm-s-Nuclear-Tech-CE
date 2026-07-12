@@ -83,6 +83,11 @@ public abstract class AbstractBakedModel implements IBakedModel {
         }
     }
 
+    protected static void addIsbrhY90Box(List<BakedQuad> quads, float minX, float minY, float minZ,
+                                         float maxX, float maxY, float maxZ, TextureAtlasSprite sprite) {
+        addBox(quads, minZ, minY, 1.0F - maxX, maxZ, maxY, 1.0F - minX, sprite);
+    }
+
     public static BlockFaceUV makeFaceUV(EnumFacing face, Vector3f from, Vector3f to) {
         float u1, v1, u2, v2;
         switch (face) {

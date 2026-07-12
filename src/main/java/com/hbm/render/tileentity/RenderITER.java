@@ -5,6 +5,7 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.item.ItemRenderBase;
+import com.hbm.render.item.ItemRenderBaseLegacy;
 import com.hbm.tileentity.machine.TileEntityITER;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.DestFactor;
@@ -131,7 +132,7 @@ public class RenderITER extends TileEntitySpecialRenderer<TileEntityITER>
 
   @Override
   public ItemRenderBase getRenderer(Item item) {
-    return new ItemRenderBase() {
+    return new ItemRenderBaseLegacy() {
       public void renderInventory() {
         GlStateManager.translate(0, -1, 0);
         GlStateManager.scale(4.5, 4.5, 4.5);

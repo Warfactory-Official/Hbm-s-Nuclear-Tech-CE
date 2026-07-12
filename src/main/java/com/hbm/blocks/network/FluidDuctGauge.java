@@ -295,6 +295,7 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
         private final ImmutableMap<EnumFacing, ImmutableList<BakedQuad>> gaugeFaces;
         private final ImmutableList<BakedQuad> baseGeneral;
         private final ImmutableList<BakedQuad> overlayGeneral;
+        private final ImmutableList<BakedQuad> inventoryGeneral;
 
         public FluidDuctGaugeModel(TextureAtlasSprite base, TextureAtlasSprite overlay, TextureAtlasSprite gauge) {
             this.particle = base;
@@ -303,6 +304,11 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
             this.gaugeFaces = buildFaceMap(gauge, -1, true);
             this.baseGeneral = flatten(baseFaces);
             this.overlayGeneral = flatten(overlayFaces);
+            ImmutableList.Builder<BakedQuad> inventory = ImmutableList.builder();
+            inventory.addAll(flatten(buildFaceMap(base, -1, false, ModelRotation.X0_Y90)));
+            inventory.addAll(flatten(buildFaceMap(overlay, -1, true, ModelRotation.X0_Y90)));
+            inventory.addAll(buildFaceMap(gauge, -1, true, ModelRotation.X0_Y90).get(EnumFacing.NORTH));
+            this.inventoryGeneral = inventory.build();
         }
 
         @Override
@@ -312,8 +318,12 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
                 return Collections.emptyList();
             }
 
+            if (state == null) {
+                return side == null ? inventoryGeneral : Collections.emptyList();
+            }
+
             EnumFacing facing = EnumFacing.NORTH;
-            if (state != null && state.getPropertyKeys().contains(FACING)) {
+            if (state.getPropertyKeys().contains(FACING)) {
                 facing = state.getValue(FACING);
             }
 
@@ -354,7 +364,7 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
 
         @Override
         public @NotNull ItemCameraTransforms getItemCameraTransforms() {
-            return BakedModelTransforms.standardBlock();
+            return BakedModelTransforms.isbrh();
         }
 
         @Override
@@ -363,9 +373,14 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
         }
 
         private static ImmutableMap<EnumFacing, ImmutableList<BakedQuad>> buildFaceMap(TextureAtlasSprite sprite, int tintIndex, boolean offset) {
+            return buildFaceMap(sprite, tintIndex, offset, ModelRotation.X0_Y0);
+        }
+
+        private static ImmutableMap<EnumFacing, ImmutableList<BakedQuad>> buildFaceMap(TextureAtlasSprite sprite, int tintIndex,
+                                                                                       boolean offset, ModelRotation rotation) {
             ImmutableMap.Builder<EnumFacing, ImmutableList<BakedQuad>> builder = ImmutableMap.builder();
             for (EnumFacing face : EnumFacing.VALUES) {
-                builder.put(face, ImmutableList.of(createQuad(face, sprite, tintIndex, offset)));
+                builder.put(face, ImmutableList.of(createQuad(face, sprite, tintIndex, offset, rotation)));
             }
             return builder.build();
         }
@@ -378,7 +393,8 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
             return builder.build();
         }
 
-        private static BakedQuad createQuad(EnumFacing face, TextureAtlasSprite sprite, int tintIndex, boolean offset) {
+        private static BakedQuad createQuad(EnumFacing face, TextureAtlasSprite sprite, int tintIndex, boolean offset,
+                                            ModelRotation rotation) {
             float eps = 0.001F;
             Vector3f from = new Vector3f(0F, 0F, 0F);
             Vector3f to = new Vector3f(16F, 16F, 16F);
@@ -396,7 +412,7 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
 
             BlockFaceUV uv = new BlockFaceUV(new float[]{0F, 0F, 16F, 16F}, 0);
             BlockPartFace partFace = new BlockPartFace(null, tintIndex, "", uv);
-            return FACE_BAKERY.makeBakedQuad(from, to, partFace, sprite, face, ModelRotation.X0_Y0, null, false, true);
+            return FACE_BAKERY.makeBakedQuad(from, to, partFace, sprite, face, rotation, null, false, true);
         }
     }
 }

@@ -74,8 +74,17 @@ public abstract class AbstractWavefrontBakedModel extends AbstractBakedModel {
                                               boolean centerToBlock, TextureAtlasSprite sprite, int tintIndex,
                                               float extraTx, float extraTy, float extraTz,
                                               float uScale, float vScale) {
-        List<FaceGeometry> geometries = buildGeometry(partNames, roll, pitch, yaw, applyShading, centerToBlock, extraTx,
-                extraTy, extraTz);
+        return bakeSimpleQuads(model, partNames, roll, pitch, yaw, applyShading, centerToBlock, sprite, tintIndex,
+                extraTx, extraTy, extraTz, uScale, vScale);
+    }
+
+    protected List<BakedQuad> bakeSimpleQuads(HFRWavefrontObject sourceModel, Set<String> partNames,
+                                              float roll, float pitch, float yaw, boolean applyShading,
+                                              boolean centerToBlock, TextureAtlasSprite sprite, int tintIndex,
+                                              float extraTx, float extraTy, float extraTz,
+                                              float uScale, float vScale) {
+        List<FaceGeometry> geometries = buildGeometry(sourceModel, partNames, roll, pitch, yaw, applyShading,
+                centerToBlock, extraTx, extraTy, extraTz);
         List<BakedQuad> quads = new ArrayList<>(geometries.size());
         for (FaceGeometry geometry : geometries) {
             quads.add(geometry.buildQuad(sprite, tintIndex, uScale, vScale));
@@ -91,9 +100,16 @@ public abstract class AbstractWavefrontBakedModel extends AbstractBakedModel {
     protected List<FaceGeometry> buildGeometry(Set<String> partNames, float roll, float pitch, float yaw,
                                                boolean applyShading,
                                                boolean centerToBlock, float extraTx, float extraTy, float extraTz) {
+        return buildGeometry(model, partNames, roll, pitch, yaw, applyShading, centerToBlock, extraTx, extraTy,
+                extraTz);
+    }
+
+    private List<FaceGeometry> buildGeometry(HFRWavefrontObject sourceModel, Set<String> partNames,
+                                             float roll, float pitch, float yaw, boolean applyShading,
+                                             boolean centerToBlock, float extraTx, float extraTy, float extraTz) {
         List<FaceGeometry> geometries = new ArrayList<>();
 
-        for (GroupObject group : model.groupObjects) {
+        for (GroupObject group : sourceModel.groupObjects) {
             if (partNames != null && !partNames.contains(group.name)) {
                 continue;
             }

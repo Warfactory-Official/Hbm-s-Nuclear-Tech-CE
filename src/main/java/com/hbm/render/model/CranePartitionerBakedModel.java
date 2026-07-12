@@ -14,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-// FIXME fucking itemcameratransforms again..
 @SideOnly(Side.CLIENT)
 public class CranePartitionerBakedModel extends AbstractWavefrontBakedModel {
 
@@ -39,7 +38,7 @@ public class CranePartitionerBakedModel extends AbstractWavefrontBakedModel {
                                        TextureAtlasSprite sideSprite, TextureAtlasSprite topSprite, TextureAtlasSprite backSprite,
                                        TextureAtlasSprite beltSprite, TextureAtlasSprite innerSprite, TextureAtlasSprite innerSideSprite,
                                        boolean forBlock, float itemYaw) {
-        super(model, format, baseScale, tx, ty, tz, BakedModelTransforms.forDeco(BakedModelTransforms.standardBlock()));
+        super(model, format, baseScale, tx, ty, tz, BakedModelTransforms.isbrh());
         this.sideSprite = sideSprite;
         this.topSprite = topSprite;
         this.backSprite = backSprite;
@@ -63,9 +62,9 @@ public class CranePartitionerBakedModel extends AbstractWavefrontBakedModel {
                 model,
                 DefaultVertexFormats.ITEM,
                 1.0F,
+                0.5F,
                 0.0F,
-                -0.5F,
-                0.0F,
+                0.5F,
                 side,
                 top,
                 back,

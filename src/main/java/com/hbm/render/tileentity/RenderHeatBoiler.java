@@ -65,12 +65,12 @@ public class RenderHeatBoiler extends TileEntitySpecialRenderer<TileEntityHeatBo
     public ItemRenderBase getRenderer(Item item) {
         return new ItemRenderBase() {
             public void renderInventory() {
-                GlStateManager.translate(0, -2.55, 0);
-                GlStateManager.scale(3.05, 3.05, 3.05);
+                GlStateManager.translate(0, -3, 0);
+                GlStateManager.scale(3, 3, 3);
             }
 
             public void renderCommon(ItemStack stack) {
-                GlStateManager.scale(1, 1, 1);
+                GlStateManager.rotate(90, 0F, 1F, 0F);
                 GlStateManager.shadeModel(GL11.GL_SMOOTH);
                 bindTexture(ResourceManager.boiler_tex);
                 if(stack.getItemDamage() == 1)

@@ -17,7 +17,6 @@ public class ItemRenderG3 extends ItemRenderWeaponBase {
 
 	public ItemRenderG3(ResourceLocation texture) {
 		this.texture = texture;
-		this.offsets = offsets.get(ItemCameraTransforms.TransformType.THIRD_PERSON_RIGHT_HAND).setScale(0.85).setPosition(-0.85, 0.1, -1.1).getHelper();
 	}
 
 	@Override
@@ -157,8 +156,8 @@ public class ItemRenderG3 extends ItemRenderWeaponBase {
 			double scale = 0.875D;
 			GlStateManager.scale(scale, scale, scale);
 			GlStateManager.rotate(25, 1, 0, 0);
-			GlStateManager.rotate(45, 0, 1, 0);
-			GlStateManager.translate(-0.5, 0.5, 0);
+			GlStateManager.rotate(hasSilencer(stack) ? 50 : 45, 0, 1, 0);
+			GlStateManager.translate(hasSilencer(stack) ? 0.75 : -0.5, 0.5, 0);
 		} else {
 			double scale = 1.125D;
 			GlStateManager.scale(scale, scale, scale);

@@ -634,15 +634,6 @@ public class RenderBobble extends TileEntitySpecialRenderer<TileEntityBobble> im
                 GlStateManager.scale(0.5, 0.5, 0.5);
                 RenderBobble.instance.renderBobble(BobbleType.VALUES[Math.floorMod(stack.getItemDamage(), BobbleType.VALUES.length)]);
             }
-
-            public void renderGround() {
-                GlStateManager.scale(5.0, 5.0, 5.0);
-            }
-
-            public void renderFirstPersonRightHand() {
-                GlStateManager.scale(2.0, 2.0, 2.0);
-                GlStateManager.rotate(45, 0, 1, 0);
-            }
         };
     }
 }

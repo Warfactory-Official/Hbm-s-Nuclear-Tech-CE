@@ -18,9 +18,7 @@ public class ItemRenderFlamer extends ItemRenderWeaponBase {
 	public ResourceLocation texture;
 
 	public ItemRenderFlamer(ResourceLocation texture) {
-		this.texture = texture;
-		offsets = offsets.get(ItemCameraTransforms.TransformType.GUI).setPosition(0, 16.5, -7.5).getHelper();
-	}
+		this.texture = texture;	}
 
 	@Override
 	protected float getTurnMagnitude(ItemStack stack) {

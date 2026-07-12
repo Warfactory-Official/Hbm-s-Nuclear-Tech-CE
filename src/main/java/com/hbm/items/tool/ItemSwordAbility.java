@@ -11,6 +11,7 @@ import com.hbm.items.IClaimedModelLocation;
 import com.hbm.items.IDynamicModels;
 import com.hbm.items.ModItems;
 import com.hbm.lib.HBMSoundHandler;
+import com.hbm.main.client.NTMClientRegistry;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureMap;
@@ -110,7 +111,8 @@ public class ItemSwordAbility extends ItemSword implements IDynamicModels, IClai
 
 	@Override
 	public void registerModel() {
-		ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath), "inventory"));
+		ModelResourceLocation syntheticLocation = NTMClientRegistry.getSyntheticTeisrModelLocation(this);
+		ModelLoader.setCustomModelResourceLocation(this, 0, syntheticLocation != null ? syntheticLocation : new ModelResourceLocation(new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath), "inventory"));
 	}
 
 	@Override

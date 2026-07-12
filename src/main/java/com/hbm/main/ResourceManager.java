@@ -442,7 +442,8 @@ public class ResourceManager {
     public static final ResourceLocation rbmk_autoloader_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/rbmk_autoloader.png");
     public static final ResourceLocation mini_nuke_tex = new ResourceLocation(Tags.MODID, "textures/models/projectiles/mini_nuke.png");
     public static final HFRWavefrontObject rbmk_element = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/rbmk/rbmk_element.obj"), true);
-    public static final WaveFrontObjectVAO rbmk_element_rods_vbo = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/rbmk/rbmk_element_rods.obj")).asVBO();
+    public static final HFRWavefrontObject rbmk_element_rods = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/rbmk/rbmk_element_rods.obj"));
+    public static final WaveFrontObjectVAO rbmk_element_rods_vbo = rbmk_element_rods.asVBO();
     public static final WaveFrontObjectVAO rbmk_reflector = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/rbmk/rbmk_reflector.obj")).asVBO();
     public static final HFRWavefrontObject rbmk_rods = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/rbmk/rbmk_rods.obj"));
     public static final WaveFrontObjectVAO rbmk_rods_vbo = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/rbmk/rbmk_rods.obj")).asVBO();

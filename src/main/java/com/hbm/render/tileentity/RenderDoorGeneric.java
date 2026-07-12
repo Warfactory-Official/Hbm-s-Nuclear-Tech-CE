@@ -230,7 +230,6 @@ public class RenderDoorGeneric extends TileEntitySpecialRenderer<TileEntityDoorG
 
 				public void renderCommon() {
 					GlStateManager.rotate(90, 0, 1, 0);
-					GlStateManager.translate(0, 0.5, 0);
 					if (DoorDecl.LARGE_VEHICLE_DOOR.hasSkins())
 						bindTexture(DoorDecl.LARGE_VEHICLE_DOOR.getCyclingSkins());
 					else
@@ -272,8 +271,8 @@ public class RenderDoorGeneric extends TileEntitySpecialRenderer<TileEntityDoorG
 		} else if (item == Item.getItemFromBlock(ModBlocks.qe_sliding_door)) {
 			return new ItemRenderBase() {
 				public void renderInventory() {
-					GlStateManager.translate(0, -3.5, 0);
-					GlStateManager.scale(6, 6, 6);
+					GlStateManager.translate(0, -3, 0);
+					GlStateManager.scale(5, 5, 5);
 				}
 
 				public void renderCommon() {
@@ -289,8 +288,8 @@ public class RenderDoorGeneric extends TileEntitySpecialRenderer<TileEntityDoorG
 		} else if (item == Item.getItemFromBlock(ModBlocks.fire_door)) {
 			return new ItemRenderBase() {
 				public void renderInventory() {
-					GlStateManager.translate(0, -3.5, 0);
-					GlStateManager.scale(3.6, 3.6, 3.6);
+					GlStateManager.translate(0, -3, 0);
+					GlStateManager.scale(3.5, 3.5, 3.5);
 				}
 
 				public void renderCommon() {
@@ -333,7 +332,7 @@ public class RenderDoorGeneric extends TileEntitySpecialRenderer<TileEntityDoorG
 		} else if (item == Item.getItemFromBlock(ModBlocks.round_airlock_door)) {
 			return new ItemRenderBase() {
 				public void renderInventory() {
-					GlStateManager.translate(0, -4, 0);
+					GlStateManager.translate(0, -3.75, 0);
 					GlStateManager.scale(3, 3, 3);
 				}
 
@@ -347,14 +346,12 @@ public class RenderDoorGeneric extends TileEntitySpecialRenderer<TileEntityDoorG
 		} else if (item == Item.getItemFromBlock(ModBlocks.secure_access_door)) {
 			return new ItemRenderBase() {
 				public void renderInventory() {
-					GlStateManager.translate(0, -4, 0);
+					GlStateManager.translate(0, -3.75, 0);
 					GlStateManager.scale(2.4, 2.4, 2.4);
-					GlStateManager.rotate(90, 0, -1, 0);
 				}
 
 				public void renderCommon() {
 					GlStateManager.translate(0, 1, 0);
-					GlStateManager.rotate(90, 0, 1, 0);
 					bindTexture(DoorDecl.SECURE_ACCESS_DOOR.getCyclingSkins());
 					GlStateManager.shadeModel(GL11.GL_SMOOTH);
 					ResourceManager.pheo_secure_door.renderAll();

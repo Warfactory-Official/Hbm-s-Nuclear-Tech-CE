@@ -23,7 +23,7 @@ public class RBMKMiniPanelBakedModel extends AbstractBakedModel {
     private List<BakedQuad> inventoryCache;
 
     public RBMKMiniPanelBakedModel(TextureAtlasSprite sprite,boolean isInventory) {
-        super(BakedModelTransforms.standardBlock());
+        super(BakedModelTransforms.isbrh());
         this.sprite = sprite;
         this.isInventory = isInventory;
     }
@@ -36,8 +36,7 @@ public class RBMKMiniPanelBakedModel extends AbstractBakedModel {
 
         if (isInventory) {
             if (inventoryCache != null) return inventoryCache;
-            // setRenderBounds(0.25D, 0D, 0D, 1D, 1D, 1D); из 1.7.10
-            addBox(quads, 0.25f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, sprite);
+            addBox(quads, 0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.75F, sprite);
             return inventoryCache = Collections.unmodifiableList(quads);
         }
 

@@ -8,6 +8,7 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IDoor;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.item.ItemRenderBase;
+import com.hbm.render.item.ItemRenderBaseLegacy;
 import com.hbm.render.model.BakedModelTransforms;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import com.hbm.tileentity.machine.TileEntitySiloHatch;
@@ -71,7 +72,7 @@ public class RenderSiloHatch extends TileEntitySpecialRenderer<TileEntitySiloHat
 
   @Override
   public ItemRenderBase getRenderer(Item item) {
-    return new ItemRenderBase() {
+    return new ItemRenderBaseLegacy() {
       @Override
       protected ItemCameraTransforms getBindingTransforms(Item item) {
         return BakedModelTransforms.standardBlock();

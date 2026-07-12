@@ -12,7 +12,7 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister(item = "gun_maresleg_akimbo")
 public class ItemRenderMareslegAkimbo extends ItemRenderWeaponBase {
 
-	public ItemRenderMareslegAkimbo() { offsets = offsets.get(ItemCameraTransforms.TransformType.GUI).setPosition(0, 16.5, -5.5).getHelper(); }
+	public ItemRenderMareslegAkimbo() {}
 
 	@Override
 	public boolean isAkimbo() { return true; }

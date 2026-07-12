@@ -23,7 +23,7 @@ public class RBMKColumnBakedModel extends AbstractRBMKLiddedBakedModel {
             TextureAtlasSprite coverTop, TextureAtlasSprite coverSide,
             TextureAtlasSprite glassTop, TextureAtlasSprite glassSide,
             boolean isInventory) {
-        super(ResourceManager.rbmk_element, DefaultVertexFormats.BLOCK, 1.0F, 0.5F, 0.0F, 0.5F, BakedModelTransforms.rbmkColumn(),
+        super(ResourceManager.rbmk_element, DefaultVertexFormats.BLOCK, 1.0F, 0.5F, 0.0F, 0.5F, BakedModelTransforms.isbrh(),
                 coverTop, coverSide, glassTop, glassSide, isInventory);
         topSprite = top;
         sideSprite = side;
@@ -33,7 +33,8 @@ public class RBMKColumnBakedModel extends AbstractRBMKLiddedBakedModel {
     protected List<BakedQuad> buildInventoryQuads() {
         List<BakedQuad> quads = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
-            addTexturedBox(quads, 0.0F, i, 0.0F, 1.0F, i + 1.0F, 1.0F, topSprite, sideSprite, topSprite);
+            addInventoryTexturedBox(quads, 0.0F, i, 0.0F, 1.0F, i + 1.0F, 1.0F, -0.175F,
+                    topSprite, sideSprite, topSprite);
         }
         return quads;
     }

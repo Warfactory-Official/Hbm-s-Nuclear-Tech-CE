@@ -94,7 +94,6 @@ public class RenderLandmine extends TileEntitySpecialRenderer<TileEntityLandmine
 
         public void renderCommon() {
           GlStateManager.scale(1.25, 1.25, 1.25);
-          GlStateManager.rotate(22.5F, 0F, 1F, 0F);
           GlStateManager.disableCull();
           GlStateManager.shadeModel(GL11.GL_SMOOTH);
           bindTexture(ResourceManager.mine_ap_grass_tex);

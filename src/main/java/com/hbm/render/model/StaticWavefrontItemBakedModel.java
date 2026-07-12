@@ -106,60 +106,108 @@ public class StaticWavefrontItemBakedModel extends AbstractWavefrontBakedModel {
     }
 
     private void initPerspectiveMatrices(double guiTranslateX, double guiTranslateY, double guiTranslateZ,
-                                         double guiScale) {
-        initPerspectiveMatrices(guiTranslateX, guiTranslateY, guiTranslateZ, guiScale, 0.0D);
-    }
-
-    private void initPerspectiveMatrices(double guiTranslateX, double guiTranslateY, double guiTranslateZ,
                                          double guiScale, double guiYaw) {
+        // Each context wraps the exact-1.7 ItemRenderBase frame (X_C) in stageTransform, which conjugates it
+        // by T(-0.5)/T(0.5). That makes the baked-model engine path (multiply M_hp, then the engine's
+        // translate(-0.5)) reproduce the TEISR path (translate(-0.5), then multMatrix(X_C)): the baked geometry
+        // plays the role of the machine render body, so the shared frame lands it exactly where 1.7 did.
+        // The per-item gui overrides then tune each model within the slot, as a machine's renderInventory does.
         perspectiveMatrices.put(ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND,
                 stageTransform(
-                        translate(0.5, 0.0, 0.5),
-                        translate(0.0, 0.3, 0.0),
-                        scale(0.2),
-                        rotateY(135.0)
+                        translate(0.5, 0.5, 0.5),
+                        rotateY(45.0),
+                        scale(0.4),
+                        translate(0.0, -0.3, 0.0),
+                        scale(1.5),
+                        rotateY(50.0),
+                        rotateZ(335.0),
+                        translate(-0.9375, -0.0625, 0.0),
+                        translate(0.5, 0.25, 0.0),
+                        scale(0.25),
+                        rotateY(90.0)
                 ));
         perspectiveMatrices.put(ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND,
                 leftHandStageTransform(
-                        translate(0.5, 0.0, 0.5),
-                        translate(0.0, 0.3, 0.0),
-                        scale(0.2),
-                        rotateY(45.0)
+                        translate(0.5, 0.5, 0.5),
+                        rotateY(-45.0),
+                        scale(0.4),
+                        translate(0.0, -0.3, 0.0),
+                        scale(1.5),
+                        rotateY(-50.0),
+                        rotateZ(-335.0),
+                        translate(0.9375, -0.0625, 0.0),
+                        translate(-0.5, 0.25, 0.0),
+                        scale(0.25),
+                        rotateY(-90.0)
                 ));
-        Matrix4f thirdRight = stageTransform(
-                translate(0.5, 0.0, 0.5),
-                translate(0.0, 0.25, 0.0),
-                scale(0.1875),
-                rotateY(180.0)
-        );
-        perspectiveMatrices.put(ItemCameraTransforms.TransformType.THIRD_PERSON_RIGHT_HAND, thirdRight);
-        perspectiveMatrices.put(ItemCameraTransforms.TransformType.HEAD, thirdRight);
+        perspectiveMatrices.put(ItemCameraTransforms.TransformType.THIRD_PERSON_RIGHT_HAND,
+                stageTransform(
+                        translate(0.4375, 0.375, 1.125),
+                        rotateY(180.0),
+                        rotateX(90.0),
+                        translate(0.1875, 0.625, -0.125),
+                        scale(0.375),
+                        rotateZ(60.0),
+                        rotateX(-90.0),
+                        rotateZ(20.0),
+                        translate(0.0, -0.3, 0.0),
+                        scale(1.5),
+                        rotateY(50.0),
+                        rotateZ(335.0),
+                        translate(-0.9375, -0.0625, 0.0),
+                        translate(0.5, 0.25, 0.0),
+                        scale(0.25)
+                ));
         perspectiveMatrices.put(ItemCameraTransforms.TransformType.THIRD_PERSON_LEFT_HAND,
                 leftHandStageTransform(
-                        translate(0.5, 0.0, 0.5),
+                        translate(0.5625, 0.375, 1.125),
+                        rotateY(180.0),
+                        rotateX(90.0),
+                        translate(-0.1875, 0.625, -0.125),
+                        scale(0.375),
+                        rotateZ(-60.0),
+                        rotateX(-90.0),
+                        rotateZ(-20.0),
+                        translate(0.0, -0.3, 0.0),
+                        scale(1.5),
+                        rotateY(-50.0),
+                        rotateZ(-335.0),
+                        translate(0.9375, -0.0625, 0.0),
+                        translate(-0.5, 0.25, 0.0),
+                        scale(0.25)
+                ));
+        perspectiveMatrices.put(ItemCameraTransforms.TransformType.HEAD,
+                stageTransform(
+                        translate(0.5, 0.5, 0.5),
+                        scale(1.6, -1.6, -1.6),
+                        rotateY(180.0),
                         translate(0.0, 0.25, 0.0),
-                        scale(0.1875)
+                        translate(0.0, -0.3, 0.0),
+                        scale(1.5),
+                        rotateY(50.0),
+                        rotateZ(335.0),
+                        translate(-0.9375, -0.0625, 0.0),
+                        translate(0.5, 0.25, 0.0),
+                        scale(0.25)
                 ));
         perspectiveMatrices.put(ItemCameraTransforms.TransformType.GROUND,
                 stageTransform(
-                        translate(0.5, 0.0, 0.5),
-                        translate(0.0, 0.3, 0.0),
-                        scale(0.125),
+                        translate(0.5, 0.25, 0.5),
+                        scale(0.1875),
                         rotateY(90.0)
                 ));
         perspectiveMatrices.put(ItemCameraTransforms.TransformType.FIXED,
                 stageTransform(
-                        translate(0.5, 0.0, 0.5),
-                        translate(0.0, 0.3, 0.0),
-                        scale(0.25),
-                        rotateY(90.0)
+                        translate(0.5, 0.34, 0.53125),
+                        rotateY(-90.0),
+                        scale(0.375)
                 ));
         perspectiveMatrices.put(ItemCameraTransforms.TransformType.GUI,
                 stageTransform(
+                        translate(0.5, 0.375, 0.0),
                         rotateX(30.0),
                         rotateY(225.0),
-                        scale(0.0620),
-                        translate(0.0, 11.3, -11.3),
+                        scale(0.0625),
                         translate(guiTranslateX, guiTranslateY, guiTranslateZ),
                         scale(guiScale),
                         rotateY(guiYaw)
@@ -167,11 +215,12 @@ public class StaticWavefrontItemBakedModel extends AbstractWavefrontBakedModel {
         perspectiveMatrices.put(ItemCameraTransforms.TransformType.NONE, null);
     }
 
-    private static Matrix4f stageTransform(Matrix4f... oldTeisrOperations) {
-        return compose(HALF_BLOCK_NEGATIVE, compose(oldTeisrOperations), HALF_BLOCK_POSITIVE);
+    private static Matrix4f stageTransform(Matrix4f... itemRenderBaseFrame) {
+        return compose(HALF_BLOCK_NEGATIVE, compose(itemRenderBaseFrame), HALF_BLOCK_POSITIVE);
     }
 
-    private static Matrix4f leftHandStageTransform(Matrix4f... oldTeisrOperations) {
-        return compose(FLIP_X, stageTransform(oldTeisrOperations), FLIP_X);
+    private static Matrix4f leftHandStageTransform(Matrix4f... itemRenderBaseFrame) {
+        // Forge applies its own flip-X conjugation to non-null left-hand perspective matrices.
+        return compose(FLIP_X, stageTransform(itemRenderBaseFrame), FLIP_X);
     }
 }

@@ -16,7 +16,7 @@ import java.awt.*;
 @AutoRegister(item = "gun_spas12")
 public class ItemRenderSPAS12 extends ItemRenderWeaponBase {
 
-	public ItemRenderSPAS12() { offsets = offsets.get(ItemCameraTransforms.TransformType.GUI).setPosition(0, 14.75, -21.5).getHelper(); }
+	public ItemRenderSPAS12() {}
 
 	@Override
 	protected float getTurnMagnitude(ItemStack stack) {

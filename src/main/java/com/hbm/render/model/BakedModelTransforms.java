@@ -11,8 +11,7 @@ import org.lwjgl.util.vector.Vector3f;
 public final class BakedModelTransforms {
 
     private static final ItemCameraTransforms STANDARD_BLOCK = buildStandardBlock();
-    private static final ItemCameraTransforms RBMK_COLUMN = buildColumn();
-    private static final ItemCameraTransforms PIPE_ITEM = buildPipeItem();
+    private static final ItemCameraTransforms ISBRH = buildIsbrh();
 
     private BakedModelTransforms() {
     }
@@ -21,12 +20,8 @@ public final class BakedModelTransforms {
         return STANDARD_BLOCK;
     }
 
-    public static ItemCameraTransforms rbmkColumn() {
-        return RBMK_COLUMN;
-    }
-
-    public static ItemCameraTransforms pipeItem() {
-        return PIPE_ITEM;
+    public static ItemCameraTransforms isbrh() {
+        return ISBRH;
     }
 
     private static ItemCameraTransforms buildStandardBlock() {
@@ -69,86 +64,41 @@ public final class BakedModelTransforms {
         return new ItemCameraTransforms(thirdPerson, thirdPerson, firstPerson, firstPerson, head, gui, ground, fixed);
     }
 
-    private static ItemCameraTransforms buildColumn() {
-        ItemTransformVec3f gui = new ItemTransformVec3f(
-                new Vector3f(30, -135, 0),
-                new Vector3f(0, -0.27f, 0),
-                new Vector3f(0.2f, 0.2f, 0.2f)
-        );
-        ItemTransformVec3f thirdPerson = new ItemTransformVec3f(
-                new Vector3f(75, 45, 0),
-                new Vector3f(0, 1.5f / 16f, -2.5f / 16f),
-                new Vector3f(0.25f, 0.25f, 0.25f)
-        );
-        ItemTransformVec3f firstPerson = new ItemTransformVec3f(
-                new Vector3f(0, 45, 0),
-                new Vector3f(0, 0, 0),
-                new Vector3f(0.25f, 0.25f, 0.25f)
-        );
-        ItemTransformVec3f ground = new ItemTransformVec3f(
-                new Vector3f(0, 0, 0),
-                new Vector3f(0, 2f / 16f, 0),
-                new Vector3f(0.25f, 0.25f, 0.25f)
-        );
-        ItemTransformVec3f head = new ItemTransformVec3f(
-                new Vector3f(0, 0, 0),
-                new Vector3f(0, 13f / 16f, 7f / 16f),
-                new Vector3f(0.5f, 0.5f, 0.5f)
-        );
-        ItemTransformVec3f fixed = new ItemTransformVec3f(
-                new Vector3f(0, 180, 0),
-                new Vector3f(0, 0, 0),
-                new Vector3f(0.25f, 0.25f, 0.25f)
-        );
-        return new ItemCameraTransforms(thirdPerson, thirdPerson, firstPerson, firstPerson, head, gui, ground, fixed);
-    }
-
-    public static ItemCameraTransforms forDeco(ItemCameraTransforms standardBlock) {
+    private static ItemCameraTransforms buildIsbrh() {
         ItemTransformVec3f gui = new ItemTransformVec3f(
                 new Vector3f(30, -45, 0),
                 new Vector3f(0, 0, 0),
                 new Vector3f(0.625f, 0.625f, 0.625f)
         );
 
-        return new ItemCameraTransforms(standardBlock.thirdperson_left, standardBlock.thirdperson_right, standardBlock.firstperson_left,
-                standardBlock.firstperson_right, standardBlock.head, gui, standardBlock.ground, standardBlock.fixed);
-    }
-
-    private static ItemCameraTransforms buildPipeItem() {
-        ItemTransformVec3f gui = new ItemTransformVec3f(
-                new Vector3f(30, -45, 0),
-                new Vector3f(0, 0.3f, 0),
-                new Vector3f(0.8f, 0.8f, 0.8f)
-        );
-
         ItemTransformVec3f thirdPerson = new ItemTransformVec3f(
-                new Vector3f(75, 45, 0),
-                new Vector3f(0, 0.25f, 0),
-                new Vector3f(0.5f, 0.5f, 0.5f)
+                new Vector3f(70, -45, 0),
+                new Vector3f(0, 2f / 16f, 0),
+                new Vector3f(0.375f, 0.375f, 0.375f)
         );
 
         ItemTransformVec3f firstPerson = new ItemTransformVec3f(
                 new Vector3f(0, 45, 0),
-                new Vector3f(0, 0.25f, 0),
-                new Vector3f(0.5f, 0.5f, 0.5f)
+                new Vector3f(0, 0, 0),
+                new Vector3f(0.4f, 0.4f, 0.4f)
+        );
+
+        ItemTransformVec3f head = new ItemTransformVec3f(
+                new Vector3f(0, 90, 0),
+                new Vector3f(0, 0, 0),
+                new Vector3f(1, 1, 1)
         );
 
         ItemTransformVec3f ground = new ItemTransformVec3f(
                 new Vector3f(0, 0, 0),
-                new Vector3f(0, 2f / 16f, 0),
-                new Vector3f(0.5f, 0.5f, 0.5f)
-        );
-
-        ItemTransformVec3f head = new ItemTransformVec3f(
-                new Vector3f(0, 0, 0),
-                new Vector3f(0, 13f / 16f, 7f / 16f),
-                new Vector3f(1, 1, 1)
+                new Vector3f(0, -0.25f, 0),
+                new Vector3f(0.25f, 0.25f, 0.25f)
         );
 
         ItemTransformVec3f fixed = new ItemTransformVec3f(
-                new Vector3f(0, 180, 0),
-                new Vector3f(0, 0, 0),
-                new Vector3f(0.75f, 0.75f, 0.75f)
+                new Vector3f(0, 90, 0),
+                new Vector3f(0, -0.035f, 0.03125f),
+                new Vector3f(0.625f, 0.625f, 0.625f)
         );
 
         return new ItemCameraTransforms(thirdPerson, thirdPerson, firstPerson, firstPerson, head, gui, ground, fixed);

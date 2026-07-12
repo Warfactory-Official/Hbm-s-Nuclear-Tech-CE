@@ -6,6 +6,7 @@ import com.hbm.main.ResourceManager;
 import com.hbm.render.GLCompat;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.render.item.ItemRenderBase;
+import com.hbm.render.item.ItemRenderBaseLegacy;
 import com.hbm.render.model.BakedModelTransforms;
 import com.hbm.tileentity.deco.TileEntitySpinnyLight;
 import net.minecraft.client.renderer.GlStateManager;
@@ -172,7 +173,7 @@ public class RenderSpinnyLight extends TileEntitySpecialRenderer<TileEntitySpinn
 
     @Override
     public ItemRenderBase getRenderer(Item item) {
-        return new ItemRenderBase() {
+        return new ItemRenderBaseLegacy() {
             @Override
             protected ItemCameraTransforms getBindingTransforms(Item item) {
                 return BakedModelTransforms.standardBlock();

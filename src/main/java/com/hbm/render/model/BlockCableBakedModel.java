@@ -25,7 +25,7 @@ public class BlockCableBakedModel extends AbstractWavefrontBakedModel {
     private List<BakedQuad> itemQuads;
 
     private BlockCableBakedModel(HFRWavefrontObject model, TextureAtlasSprite sprite, boolean forBlock, float baseScale, float tx, float ty, float tz, float itemYaw) {
-        super(model, forBlock ? DefaultVertexFormats.BLOCK : DefaultVertexFormats.ITEM, baseScale, tx, ty, tz, BakedModelTransforms.pipeItem());
+        super(model, forBlock ? DefaultVertexFormats.BLOCK : DefaultVertexFormats.ITEM, baseScale, tx, ty, tz, BakedModelTransforms.isbrh());
         this.sprite = sprite;
         this.forBlock = forBlock;
         this.itemYaw = itemYaw;
@@ -35,8 +35,8 @@ public class BlockCableBakedModel extends AbstractWavefrontBakedModel {
         return new BlockCableBakedModel(model, sprite, true, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F);
     }
 
-    public static BlockCableBakedModel forItem(HFRWavefrontObject model, TextureAtlasSprite sprite, float baseScale, float tx, float ty, float tz, float yaw) {
-        return new BlockCableBakedModel(model, sprite, false, baseScale, tx, ty, tz, yaw);
+    public static BlockCableBakedModel forItem(HFRWavefrontObject model, TextureAtlasSprite sprite) {
+        return new BlockCableBakedModel(model, sprite, false, 1.25F, 0.5F, 0.5F, 0.5F, (float) Math.PI);
     }
 
     public static BlockCableBakedModel empty(TextureAtlasSprite sprite) {

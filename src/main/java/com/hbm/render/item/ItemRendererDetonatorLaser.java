@@ -10,6 +10,8 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -20,6 +22,13 @@ import java.util.Random;
 @AutoRegister(item = "detonator_laser")
 @SideOnly(Side.CLIENT)
 public class ItemRendererDetonatorLaser extends TEISRBase {
+
+    // Uses the identity-assuming ItemRenderFrames17 frames, so it must route through BakedModelNoFPV;
+    // otherwise this non-block item gets defaultItemTransforms() pre-multiplied onto the frame.
+    @Override
+    public boolean useIdentityTransform(Item item) {
+        return true;
+    }
 
     @Override
     public void renderByItem(ItemStack itemStackIn) {
@@ -34,38 +43,46 @@ public class ItemRendererDetonatorLaser extends TEISRBase {
         Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.detonator_laser_tex);
 
         switch (type) {
-            case FIRST_PERSON_RIGHT_HAND -> {
-                GlStateManager.translate(0.3, 0.9, -0.3);
-                GlStateManager.rotate(205, 0, 0, 1);
-                GlStateManager.translate(-0.2, 1.1, 0.8);
-                GlStateManager.rotate(-25, 0, 0, 1);
-                GlStateManager.rotate(180, 1, 0, 0);
+            case FIRST_PERSON_RIGHT_HAND, FIRST_PERSON_LEFT_HAND -> {
+                GlStateManager.multMatrix(type == TransformType.FIRST_PERSON_LEFT_HAND ? ItemRenderFrames17.FIRST_PERSON_LEFT : ItemRenderFrames17.FIRST_PERSON);
                 double s0 = 0.25D;
                 GlStateManager.scale(s0, s0, s0);
                 GlStateManager.rotate(80F, 0F, 1F, 0F);
                 GlStateManager.rotate(-20F, 1F, 0F, 0F);
                 GlStateManager.translate(1F, 0.5F, 3F);
             }
-            case FIRST_PERSON_LEFT_HAND -> {
-                double s0 = 0.25D;
-                GlStateManager.scale(s0, s0, s0);
-                GlStateManager.rotate(80F, 0F, 1F, 0F);
-                GlStateManager.rotate(-20F, 1F, 0F, 0F);
-                GlStateManager.translate(1F, 0.5F, 3F);
-                GlStateManager.rotate(205, 0, 0, 1);
-                GlStateManager.translate(0.2, 1.1, 0.8);
-                GlStateManager.rotate(-25, 0, 0, 1);
+            case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND, HEAD -> {
+                // detonator_laser's 1.7 item was setFull3D(), so third-person uses the full-3D held branch.
+                GlStateManager.multMatrix(type == TransformType.HEAD ? ItemRenderFrames17.HEAD
+                        : type == TransformType.THIRD_PERSON_LEFT_HAND ? ItemRenderFrames17.THIRD_PERSON_FULL3D_LEFT
+                        : ItemRenderFrames17.THIRD_PERSON_FULL3D);
+                double scale = 0.125D;
+                GlStateManager.scale(-scale, -scale, -scale);
+                GlStateManager.rotate(85F, 0F, 1F, 0F);
+                GlStateManager.rotate(145F, 1F, 0F, 0F);
+                GlStateManager.translate(-0.5F, -1.0F, 6.5F);
             }
-            case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND, GROUND, FIXED, HEAD -> {
-                GlStateManager.scale(0.375F, 0.375F, 0.375F);
-                GlStateManager.translate(1.75, -0.5, 0.4);
-                GlStateManager.rotate(180, 1, 0, 1);
+            case GROUND -> {
+                GlStateManager.multMatrix(ItemRenderFrames17.GROUND);
+                double s1 = 0.25D;
+                GlStateManager.rotate(-90F, 0F, 1F, 0F);
+                GlStateManager.scale(s1, s1, s1);
+            }
+            case FIXED -> {
+                GlStateManager.multMatrix(ItemRenderFrames17.FIXED);
+                double s1 = 0.25D;
+                GlStateManager.rotate(-90F, 0F, 1F, 0F);
+                GlStateManager.scale(s1, s1, s1);
             }
             case GUI -> {
-                GlStateManager.translate(0.26, 0.23, 0);
-                GlStateManager.rotate(90, 0, 1, 0);
-                GlStateManager.rotate(45, 1, 0, 0);
-                GlStateManager.scale(0.2, 0.2, 0.2);
+                GlStateManager.multMatrix(ItemRenderFrames17.GUI);
+                GlStateManager.enableLighting();
+                double s = 3.5D;
+                GlStateManager.scale(s, s, -s);
+                GlStateManager.translate(1.5F, 2.75F, 0.0F);
+                GlStateManager.rotate(180F, 1F, 0F, 0F);
+                GlStateManager.rotate(-90F, 0F, 1F, 0F);
+                GlStateManager.rotate(-45F, 1F, 0F, 0F);
             }
             default -> {
             }

@@ -7,6 +7,7 @@ import com.hbm.inventory.control_panel.ControlPanel;
 import com.hbm.main.ClientProxy;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.item.ItemRenderBase;
+import com.hbm.render.item.ItemRenderBaseLegacy;
 import com.hbm.tileentity.machine.TileEntityControlPanel;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -60,7 +61,7 @@ public class RenderControlPanel extends TileEntitySpecialRenderer<TileEntityCont
 
   @Override
   public ItemRenderBase getRenderer(Item item) {
-    return new ItemRenderBase() {
+    return new ItemRenderBaseLegacy() {
       public void renderInventory() {
         GlStateManager.translate(-2.5, -1, 0);
         GlStateManager.scale(12, 12, 12);
@@ -72,10 +73,6 @@ public class RenderControlPanel extends TileEntitySpecialRenderer<TileEntityCont
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
         ResourceManager.control_panel_custom.renderAll();
         GlStateManager.shadeModel(GL11.GL_FLAT);
-      }
-
-      public boolean doNullTransform() {
-        return true;
       }
     };
   }

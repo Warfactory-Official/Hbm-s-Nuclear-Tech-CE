@@ -3,6 +3,7 @@ package com.hbm.render.model;
 import com.hbm.render.loader.HFRWavefrontObject;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.EnumFacing;
@@ -35,7 +36,7 @@ public class StaticMetaWavefrontBakedModel extends AbstractWavefrontBakedModel {
                                          float preTranslateX, float preTranslateY, float preTranslateZ,
                                          float translateX, float translateY, float translateZ) {
         super(model, DefaultVertexFormats.BLOCK, 1.0F, translateX, translateY, translateZ,
-                BakedModelTransforms.forDeco(BakedModelTransforms.standardBlock()));
+                ItemCameraTransforms.DEFAULT);
         this.sprite = sprite;
         this.yawsByMeta = Arrays.copyOf(yawsByMeta, yawsByMeta.length);
         this.partNames = partNames == null || partNames.length == 0 ? null : new LinkedHashSet<>(

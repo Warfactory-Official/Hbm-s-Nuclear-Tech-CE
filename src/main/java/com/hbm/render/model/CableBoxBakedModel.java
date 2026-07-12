@@ -23,7 +23,7 @@ public class CableBoxBakedModel extends AbstractBakedModel {
     private final Int2ObjectOpenHashMap<List<BakedQuad>> cache = new Int2ObjectOpenHashMap<>();
 
     public CableBoxBakedModel(int meta) {
-        super(BakedModelTransforms.standardBlock());
+        super(BakedModelTransforms.isbrh());
         this.meta = meta;
     }
 

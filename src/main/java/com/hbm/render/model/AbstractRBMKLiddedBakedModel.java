@@ -174,4 +174,39 @@ public abstract class AbstractRBMKLiddedBakedModel extends AbstractWavefrontBake
         BakedQuad quad = bakery.makeBakedQuad(from, to, partFace, sprite, face, TRSRTransformation.identity(), null, true, true);
         quads.add(quad);
     }
+
+    protected static void addInventoryTexturedBox(List<BakedQuad> quads, float minX, float minY, float minZ,
+                                                   float maxX, float maxY, float maxZ, float yOrigin,
+                                                   TextureAtlasSprite top, TextureAtlasSprite side,
+                                                   TextureAtlasSprite bottom) {
+        for (EnumFacing face : EnumFacing.VALUES) {
+            addInventoryTexturedBoxFace(quads, minX, minY, minZ, maxX, maxY, maxZ, yOrigin, face, top, side,
+                    bottom);
+        }
+    }
+
+    protected static void addInventoryTexturedBoxFace(List<BakedQuad> quads, float minX, float minY, float minZ,
+                                                       float maxX, float maxY, float maxZ, float yOrigin,
+                                                       EnumFacing face, TextureAtlasSprite top,
+                                                       TextureAtlasSprite side, TextureAtlasSprite bottom) {
+        FaceBakery bakery = new FaceBakery();
+        Vector3f from = new Vector3f((0.325F + 0.35F * minX) * 16.0F, (yOrigin + 0.35F * minY) * 16.0F,
+                (0.325F + 0.35F * minZ) * 16.0F);
+        Vector3f to = new Vector3f((0.325F + 0.35F * maxX) * 16.0F, (yOrigin + 0.35F * maxY) * 16.0F,
+                (0.325F + 0.35F * maxZ) * 16.0F);
+        TextureAtlasSprite sprite = face == EnumFacing.UP ? top : (face == EnumFacing.DOWN ? bottom : side);
+
+        Vector3f uvFrom = new Vector3f((minX % 1.0F) * 16.0F, (minY % 1.0F) * 16.0F,
+                (minZ % 1.0F) * 16.0F);
+        Vector3f uvTo = new Vector3f(uvFrom.x + (maxX - minX) * 16.0F,
+                uvFrom.y + (maxY - minY) * 16.0F, uvFrom.z + (maxZ - minZ) * 16.0F);
+        if (maxX - minX == 1.0F) { uvFrom.x = 0.0F; uvTo.x = 16.0F; }
+        if (maxY - minY == 1.0F) { uvFrom.y = 0.0F; uvTo.y = 16.0F; }
+        if (maxZ - minZ == 1.0F) { uvFrom.z = 0.0F; uvTo.z = 16.0F; }
+
+        BlockFaceUV uv = makeFaceUV(face, uvFrom, uvTo);
+        BlockPartFace partFace = new BlockPartFace(face, -1, "", uv);
+        quads.add(bakery.makeBakedQuad(from, to, partFace, sprite, face, TRSRTransformation.identity(), null, true,
+                true));
+    }
 }
