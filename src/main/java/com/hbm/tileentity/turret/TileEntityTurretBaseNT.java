@@ -593,6 +593,12 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 		if(e.isDead || !e.isEntityAlive())
 			return false;
 
+        if(e instanceof EntityPlayer player) {
+            if(player.isCreative()) {
+                return false;
+            }
+        }
+
 		if(!hasThermalVision() && e instanceof EntityLivingBase && ((EntityLivingBase)e).isPotionActive(MobEffects.INVISIBILITY))
 			return false;
 
