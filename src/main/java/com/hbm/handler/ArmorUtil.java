@@ -361,9 +361,12 @@ public class ArmorUtil {
 		}
 		
 		List<String> lore = new ArrayList<>();
-		list.add("  " + filter.getDisplayName() + append);
+		lore.add(filter.getDisplayName());
 		filter.getItem().addInformation(filter, world, lore, flagIn);
 		ForgeEventFactory.onItemTooltip(filter, null, lore, flagIn);
+
+		list.add("  " + (!lore.isEmpty() ? lore.remove(0) : filter.getDisplayName()) + append);
+
 		lore.forEach(x -> list.add("§e  " + x));
 	}
 }

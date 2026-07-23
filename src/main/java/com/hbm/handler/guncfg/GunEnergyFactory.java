@@ -21,6 +21,7 @@ import net.minecraft.util.SoundCategory;
 
 import java.util.ArrayList;
 
+// TODO RIP Drillgem's guns
 public class GunEnergyFactory {
 
 	public static GunConfiguration getVortexConfig() {
@@ -59,37 +60,6 @@ public class GunEnergyFactory {
 
 		return config;
 
-	}
-
-	public static GunConfiguration getEgonConfig() {
-		GunConfiguration config = new GunConfiguration();
-
-		config.rateOfFire = 2;
-		config.roundsPerCycle = 1;
-		config.gunMode = GunConfiguration.MODE_NORMAL;
-		config.firingMode = GunConfiguration.FIRE_AUTO;
-		config.hasSights = false;
-		config.reloadDuration = 20;
-		config.firingDuration = 0;
-		config.ammoCap = 40;
-		config.reloadType = GunConfiguration.RELOAD_NONE;
-		config.allowsInfinity = true;
-		config.crosshair = Crosshair.NONE;
-		config.durability = 10000;
-		config.reloadSound = GunConfiguration.RSOUND_MAG;
-		config.firingSound = HBMSoundHandler.osiprShoot;
-		config.reloadSoundEnd = false;
-
-		config.name = "Gluon Gun";
-		config.manufacturer = "Black Mesa Research Facility";
-
-		config.comment.add("Damage starts at 5/s and gets doubled every 2s while on target");
-		config.comment.add("Working to make a better tomorrow for all mankind.");
-
-		config.config = new ArrayList<Integer>();
-		config.config.add(BulletConfigSyncingUtil.SPECIAL_GAUSS);
-
-		return config;
 	}
 
 	public static BulletConfiguration getZOMGBoltConfig() {

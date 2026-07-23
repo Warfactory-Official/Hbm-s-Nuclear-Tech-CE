@@ -2,7 +2,7 @@
   "parent": "hbm:achbismuth",
   "display": {
     "icon": {
-      "item": "hbm:iter"
+      "item": "hbm:fusion_torus"
     },
     "title": {
       "translate": "achievement.fusion"

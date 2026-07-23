@@ -37,7 +37,6 @@ public class ModDamageSource extends DamageSource {
     public static DamageSource exhaust = (new DamageSource("exhaust")).setDamageIsAbsolute().setDamageBypassesArmor();
     public static DamageSource spikes = (new DamageSource("spikes")).setDamageBypassesArmor();
     public static DamageSource lunar = (new DamageSource("lunar")).setDamageIsAbsolute().setDamageBypassesArmor();
-    public static DamageSource gluon = new DamageSource("gluon").setDamageIsAbsolute().setDamageBypassesArmor().setDamageAllowedInCreativeMode();
     public static DamageSource slicer = new DamageSource("slicer").setDamageIsAbsolute().setDamageBypassesArmor();
     public static DamageSource crucible = new DamageSource("crucible").setDamageIsAbsolute().setDamageBypassesArmor();
     public static DamageSource monoxide = (new DamageSource("monoxide")).setDamageIsAbsolute().setDamageBypassesArmor();

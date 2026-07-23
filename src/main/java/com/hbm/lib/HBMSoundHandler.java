@@ -220,10 +220,6 @@ public final class HBMSoundHandler {
     public static SoundEvent rocketEngine;
     public static SoundEvent ballsLaser;
     public static SoundEvent dartShoot;
-    public static SoundEvent gluonStart;
-    public static SoundEvent gluonLoop;
-    public static SoundEvent gluonEnd;
-    public static SoundEvent gluonHit;
     public static SoundEvent jetpack;
     public static SoundEvent switchmode1;
     public static SoundEvent switchmode2;
@@ -623,10 +619,6 @@ public final class HBMSoundHandler {
         rocketEngine = register("entity.rocketEngine");
         ballsLaser = register("weapon.ballsLaser");
         dartShoot = register("weapon.dartShoot");
-        gluonStart = register("weapon.gluonstart");
-        gluonLoop = register("weapon.gluonloop");
-        gluonEnd = register("weapon.gluonend");
-        gluonHit = register("weapon.gluonhit");
         jetpack = register("weapon.jetpack");
         mukeExplosion = register("weapon.mukeExplosion");
         explosion_medium = register("weapon.explosion_medium");

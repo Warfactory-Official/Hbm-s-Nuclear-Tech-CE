@@ -69,8 +69,7 @@ public class ResourceManager {
     //Breeder
     public static final WaveFrontObjectVAO breeder = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/reactors/breeder.obj")).asVBO();
 
-    //ITER
-    public static final WaveFrontObjectVAO iter = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/reactors/iter.obj")).asVBO();
+    //Fusion Reactor
     public static final WaveFrontObjectVAO fusion_torus = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/fusion/torus.obj")).asVBO();
     public static final WaveFrontObjectVAO fusion_klystron = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/fusion/klystron.obj")).asVBO();
     public static final WaveFrontObjectVAO fusion_mhdt = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/fusion/mhdt.obj")).asVBO();
@@ -475,19 +474,7 @@ public class ResourceManager {
     public static final WaveFrontObjectVAO radar = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/radar.obj")).asVBO();
     public static final WaveFrontObjectVAO radar_large = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/radar_large.obj")).asVBO();
     public static final WaveFrontObjectVAO radar_screen = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/radar_screen.obj")).asVBO();
-    //ITER
-    public static final ResourceLocation iter_glass = new ResourceLocation(Tags.MODID, "textures/models/iter/glass.png");
-    public static final ResourceLocation iter_microwave = new ResourceLocation(Tags.MODID, "textures/models/iter/microwave.png");
-    public static final ResourceLocation iter_motor = new ResourceLocation(Tags.MODID, "textures/models/iter/motor.png");
-    public static final ResourceLocation iter_plasma = new ResourceLocation(Tags.MODID, "textures/models/iter/plasma.png");
-    public static final ResourceLocation iter_rails = new ResourceLocation(Tags.MODID, "textures/models/iter/rails.png");
-    public static final ResourceLocation iter_solenoid = new ResourceLocation(Tags.MODID, "textures/models/iter/solenoid.png");
-    public static final ResourceLocation iter_toroidal = new ResourceLocation(Tags.MODID, "textures/models/iter/toroidal.png");
-    public static final ResourceLocation iter_torus = new ResourceLocation(Tags.MODID, "textures/models/iter/torus.png");
-    public static final ResourceLocation iter_torus_tungsten = new ResourceLocation(Tags.MODID, "textures/models/iter/torus_tungsten.png");
-    public static final ResourceLocation iter_torus_desh = new ResourceLocation(Tags.MODID, "textures/models/iter/torus_desh.png");
-    public static final ResourceLocation iter_torus_chlorophyte = new ResourceLocation(Tags.MODID, "textures/models/iter/torus_chlorophyte.png");
-    public static final ResourceLocation iter_torus_vaporwave = new ResourceLocation(Tags.MODID, "textures/models/iter/torus_vaporwave.png");
+    //Fusion Reactor
     public static final ResourceLocation fusion_torus_tex = new ResourceLocation(Tags.MODID, "textures/models/fusion/torus.png");
     public static final ResourceLocation fusion_plasma_tex = new ResourceLocation(Tags.MODID, "textures/models/fusion/plasma.png");
     public static final ResourceLocation fusion_plasma_glow_tex = new ResourceLocation(Tags.MODID, "textures/models/fusion/plasma_glow.png");
@@ -522,8 +509,6 @@ public class ResourceManager {
             new ResourceLocation(Tags.MODID, "textures/models/machines/fensus/fensu_red.png"),
             new ResourceLocation(Tags.MODID, "textures/models/machines/fensus/fensu_black.png")
     };
-    public static final ResourceLocation jshotgun_tex = new ResourceLocation(Tags.MODID, "textures/models/weapons/jade_shotgun.png");
-    public static final ResourceLocation jshotgun_lmap = new ResourceLocation(Tags.MODID, "textures/models/weapons/jade_shotgun_lmap.png");
     //Forcefield
     public static final WaveFrontObjectVAO forcefield_top = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/forcefield_top.obj")).asVBO();
     //Shimmer Sledge
@@ -1438,9 +1423,6 @@ public class ResourceManager {
     public static AnimatedModel lightning_fp;
     public static Animation lightning_fp_anim;
     public static AnimatedModel arm_rig;
-    public static AnimatedModel jshotgun;
-    public static Animation jshotgun_anim0;
-    public static Animation jshotgun_anim1;
     public static AnimatedModel crucible_anim;
     public static Animation crucible_equip;
     //SHADERS
@@ -1607,10 +1589,6 @@ public class ResourceManager {
 
         crucible_anim = ColladaLoader.load(new ResourceLocation(Tags.MODID, "models/anim/crucible_equip.dae"), true);
         crucible_equip = ColladaLoader.loadAnim(1060, new ResourceLocation(Tags.MODID, "models/anim/crucible_equip.dae"));
-
-        jshotgun = ColladaLoader.load(new ResourceLocation(Tags.MODID, "models/anim/jshotgun_anim1.dae"), true);
-        jshotgun_anim0 = ColladaLoader.loadAnim(1500, new ResourceLocation(Tags.MODID, "models/anim/jshotgun_anim0.dae"));
-        jshotgun_anim1 = ColladaLoader.loadAnim(3000, new ResourceLocation(Tags.MODID, "models/anim/jshotgun_anim1.dae"));
 
         transition_seal = ColladaLoader.load(new ResourceLocation(Tags.MODID, "models/doors/seal.dae"), true);
         transition_seal_anim = ColladaLoader.loadAnim(24040, new ResourceLocation(Tags.MODID, "models/doors/seal.dae"));

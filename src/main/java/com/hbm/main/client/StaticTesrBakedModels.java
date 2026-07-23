@@ -250,11 +250,6 @@ public final class StaticTesrBakedModels {
             normalSpec(ModBlocks.fusion_collector, "models/fusion/collector.obj", "models/fusion/collector", yawMap().meta(12, 90).meta(13, 270).meta(14, 180).meta(15, 0).build())
                     .item(0.5F, RAD_90, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
                     .gui(0.0D, -2.0D, 0.0D, 5.0D, 90.0D),
-            normalSpec(ModBlocks.plasma_heater, "models/reactors/iter.obj", "models/iter/microwave", yawMap().meta(12, 0).meta(13, 180).meta(14, 90).meta(15, 270).build())
-                    .parts("Microwave")
-                    .preTranslate(0.0F, 0.0F, 18.0F)
-                    .item(0.5F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 14.0F)
-                    .gui(0.0D, -1.0D, 0.0D, 2.5D),
             facingSpec(ModBlocks.fluid_pump, "models/network/fluid_diode.obj", "models/network/fluid_diode", yawMap().meta(2, 180).meta(3, 0).meta(4, 270).meta(5, 90).build())
                     .item(2.0F, RAD_90, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F)
                     .gui(0.0D, -2.0D, 0.0D, 5.0D),

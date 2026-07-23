@@ -463,7 +463,7 @@ public class AdvGen {
                 "hbm:achbismuth",
                 new Display()
                         .key("fusion")
-                        .icon(new ItemStack(ModBlocks.iter))
+                        .icon(new ItemStack(ModBlocks.fusion_torus))
                         .toast(true)
                         .announce(true)
                         .frame(FrameType.CHALLENGE),
