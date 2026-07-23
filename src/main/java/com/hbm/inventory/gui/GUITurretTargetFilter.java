@@ -155,7 +155,7 @@ public class GUITurretTargetFilter extends GuiScreen {
             }
 
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("addFilter", mobList.get(mobScrollList.selectedSlot));
+            data.setString("addFilter", filteredMobList.get(mobScrollList.selectedSlot));
             PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, turretPos));
         }
 
