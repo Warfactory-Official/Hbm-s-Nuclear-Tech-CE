@@ -30,7 +30,7 @@ public class EntityNukeTorex extends Entity implements IConstantRenderer {
 	public static final int firstCondenseHeight = 130;
 	public static final int secondCondenseHeight = 170;
 	public static final int blastWaveHeadstart = 5;
-	public static final int maxCloudlets = 20_000;
+	public static int maxCloudlets = 20_000;
 
 	//Nuke colors
 	public static final double nr1 = 2.5;
@@ -61,6 +61,7 @@ public class EntityNukeTorex extends Entity implements IConstantRenderer {
 
 	public boolean didPlaySound = false;
 	public boolean didShake = false;
+	private int cloudletUpdateStep = 0; // round-robin index when divisor > 1
 
 	public EntityNukeTorex(World p_i1582_1_) {
 		super(p_i1582_1_);
@@ -188,12 +189,29 @@ public class EntityNukeTorex extends Entity implements IConstantRenderer {
 			}
 
 			for(int i = cloudlets.size() - 1; i >= 0; i--) {
-				Cloudlet cloud = cloudlets.get(i);
-				if(cloud.isDead) {
+				if(cloudlets.get(i).isDead) {
 					cloudlets.remove(i);
-					continue;
 				}
-				cloud.update();
+			}
+
+			// divisor controls round-robin force recompute — default 1 means all cloudlets recompute every tick
+			int size = cloudlets.size();
+			int divisor = 1;
+			if(size > 0) {
+				int toCompute = divisor > 1 ? Math.max(1, (size + divisor - 1) / divisor) : size;
+				if(cloudletUpdateStep >= size) cloudletUpdateStep = 0;
+				for(int i = 0; i < size; i++) {
+					boolean recompute;
+					if(divisor <= 1) {
+						recompute = true;
+					} else if(cloudletUpdateStep + toCompute <= size) {
+						recompute = i >= cloudletUpdateStep && i < cloudletUpdateStep + toCompute;
+					} else {
+						recompute = i >= cloudletUpdateStep || i < cloudletUpdateStep + toCompute - size;
+					}
+					cloudlets.get(i).update(recompute);
+				}
+				if(divisor > 1) cloudletUpdateStep = (cloudletUpdateStep + toCompute) % size;
 			}
 			
 			coreHeight += 0.15/* * s*/;
@@ -317,6 +335,7 @@ public class EntityNukeTorex extends Entity implements IConstantRenderer {
 		public double prevColorG;
 		public double prevColorB;
 		public double renderSortDistanceSq;
+		public boolean visible = true;
 		public TorexType type;
 		public float startingScale = 3F;
 		public float growingScale = 5F;
@@ -348,9 +367,10 @@ public class EntityNukeTorex extends Entity implements IConstantRenderer {
 		private double motionRingMult = 0.5F;
 		private double motionCondensationMult = 1F;
 		private double motionShockwaveMult = 1F;
+		private boolean forcesComputed = false; // true after first force calc, stays true if recomputeForces=false
 		
 		
-		private void update() {
+		private void update(boolean recomputeForces) {
 			age++;
 			
 			if(age > cloudletLife) {
@@ -360,8 +380,11 @@ public class EntityNukeTorex extends Entity implements IConstantRenderer {
 			this.prevPosX = this.posX;
 			this.prevPosY = this.posY;
 			this.prevPosZ = this.posZ;
-			
-			double simDeltaX = EntityNukeTorex.this.posX - this.posX;
+
+			if(recomputeForces || !forcesComputed) {
+				forcesComputed = true;
+
+				double simDeltaX = EntityNukeTorex.this.posX - this.posX;
 			double simDeltaZ = EntityNukeTorex.this.posZ - this.posZ;
 			double simPosX = EntityNukeTorex.this.posX + Math.sqrt(simDeltaX * simDeltaX + simDeltaZ * simDeltaZ);
 			
@@ -392,6 +415,7 @@ public class EntityNukeTorex extends Entity implements IConstantRenderer {
 				this.motionX = this.computedMotionX;
 				this.motionY = this.computedMotionY;
 				this.motionZ = this.computedMotionZ;
+			}
 			}
 			
 			double mult = this.motionMult * getSimulationSpeed();

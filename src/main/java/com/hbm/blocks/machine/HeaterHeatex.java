@@ -13,6 +13,7 @@ import com.hbm.util.I18nUtil;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -79,6 +80,11 @@ public class HeaterHeatex extends BlockDummyable implements ITooltipProvider, IL
         return true;
     }
 
+
+    @Override
+    public void onEntityCollision(World world, BlockPos pos, IBlockState state, Entity entity) {
+        handleHeatCollision(world, pos, state, entity);
+    }
 
     @Override
     @SideOnly(Side.CLIENT)

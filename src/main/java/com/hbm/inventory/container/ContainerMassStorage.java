@@ -1,7 +1,9 @@
 package com.hbm.inventory.container;
 
+import com.hbm.interfaces.IContainerOpenEventListener;
 import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotFiltered;
+import com.hbm.lib.HBMSoundHandler;
 import com.hbm.tileentity.machine.storage.TileEntityMassStorage;
 import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
@@ -10,9 +12,10 @@ import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.SoundCategory;
 import net.minecraftforge.items.SlotItemHandler;
 
-public class ContainerMassStorage extends Container {
+public class ContainerMassStorage extends Container implements IContainerOpenEventListener {
 
 	private TileEntityMassStorage storage;
     private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(3)
@@ -81,5 +84,20 @@ public class ContainerMassStorage extends Container {
 	@Override
 	public boolean canInteractWith(EntityPlayer player) {
 		return storage.isUseableByPlayer(player);
+	}
+
+	@Override
+	public void onContainerOpened(EntityPlayer player) {
+		if (!player.world.isRemote && !player.isSpectator()) {
+			player.world.playSound(null, storage.getPos().getX() + 0.5, storage.getPos().getY() + 0.5, storage.getPos().getZ() + 0.5, HBMSoundHandler.storageOpen, SoundCategory.BLOCKS, 1.0F, 1.0F);
+		}
+	}
+
+	@Override
+	public void onContainerClosed(EntityPlayer player) {
+		super.onContainerClosed(player);
+		if (!player.world.isRemote && !player.isSpectator()) {
+			player.world.playSound(null, storage.getPos().getX() + 0.5, storage.getPos().getY() + 0.5, storage.getPos().getZ() + 0.5, HBMSoundHandler.storageClose, SoundCategory.BLOCKS, 1.0F, 1.0F);
+		}
 	}
 }

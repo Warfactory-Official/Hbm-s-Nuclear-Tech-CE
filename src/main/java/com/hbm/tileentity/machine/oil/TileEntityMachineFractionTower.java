@@ -81,7 +81,7 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
 
 			this.sendFluid();
 
-			PacketThreading.createAllAroundThreadedPacket(new BufPacket(pos.getX(), pos.getY(), pos.getZ(), this), new NetworkRegistry.TargetPoint(this.world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 50));
+			this.networkPackNT(50);
 		}
 	}
 

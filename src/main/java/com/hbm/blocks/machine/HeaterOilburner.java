@@ -14,6 +14,7 @@ import com.hbm.util.I18nUtil;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -83,6 +84,11 @@ public class HeaterOilburner extends BlockDummyable implements ITooltipProvider,
         this.makeExtra(world, x, y, z + 1);
         this.makeExtra(world, x, y, z - 1);
         this.makeExtra(world, x, y + 1, z);
+    }
+
+    @Override
+    public void onEntityCollision(World world, BlockPos pos, IBlockState state, Entity entity) {
+        handleHeatCollision(world, pos, state, entity);
     }
 
     @Override

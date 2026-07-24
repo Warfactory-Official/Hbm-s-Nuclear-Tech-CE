@@ -202,15 +202,7 @@ public class EntityUFO extends EntityFlying implements IMob, IRadiationImmune {
 
 				int ix = (int)Math.floor(this.posX);
 				int iz = (int)Math.floor(this.posZ);
-				int iy = 0;
-				
-				for(int i = (int)Math.ceil(this.posY); i >= 0; i--) {
-					
-					if(this.world.getBlockState(new BlockPos(ix, i, iz)).getBlock() != Blocks.AIR) {
-						iy = i;
-						break;
-					}
-				}
+				int iy = this.world.getHeight(ix, iz);
 				
 				if(iy < this.posY) {
 					List<Entity> entities = world.getEntitiesWithinAABBExcludingEntity(this, new AxisAlignedBB(this.posX, iy, this.posZ, this.posX, this.posY, this.posZ).grow(5, 0, 5));

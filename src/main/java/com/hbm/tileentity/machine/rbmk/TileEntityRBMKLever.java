@@ -65,7 +65,7 @@ public class TileEntityRBMKLever extends TileEntityLoadedBase implements ITickab
 
         if (!world.isRemote) {
             for (int i = 0; i < 2; i++) this.levers[i].update();
-            this.networkPackNT(50);
+            this.networkPackMK2(50);
         } else {
             for (int i = 0; i < 2; i++) this.levers[i].updateClient();
         }
@@ -112,6 +112,7 @@ public class TileEntityRBMKLever extends TileEntityLoadedBase implements ITickab
 
             this.isTurningOn = !isTurningOn;
             TileEntityRBMKLever.this.markDirty();
+            TileEntityRBMKLever.this.dataChanged();
         }
 
         public void update() {
@@ -135,6 +136,7 @@ public class TileEntityRBMKLever extends TileEntityLoadedBase implements ITickab
                     world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.leverStop, SoundCategory.BLOCKS, 0.5F, 1F);
                     arcFlash = true;
                 }
+                TileEntityRBMKLever.this.dataChanged();
 
             // turning off...
             } else if (!this.isTurningOn && this.flipProgress > 0F) {
@@ -146,6 +148,7 @@ public class TileEntityRBMKLever extends TileEntityLoadedBase implements ITickab
                     if (!polling && canSend(commandOff)) RTTYSystem.broadcast(world, rtty, commandOff);
                     world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.leverStop, SoundCategory.BLOCKS, 0.5F, 1F);
                 }
+                TileEntityRBMKLever.this.dataChanged();
             }
 
             if (arcFlash) {
@@ -253,6 +256,7 @@ public class TileEntityRBMKLever extends TileEntityLoadedBase implements ITickab
         }
 
         this.markDirty();
+        this.dataChanged();
     }
 
     // OpenComputers methods
@@ -287,6 +291,7 @@ public class TileEntityRBMKLever extends TileEntityLoadedBase implements ITickab
         levers[idx].active = args.checkBoolean(1);
         recomputeAnyActive();
         markDirty();
+        this.dataChanged();
         return new Object[]{true};
     }
 
@@ -297,6 +302,7 @@ public class TileEntityRBMKLever extends TileEntityLoadedBase implements ITickab
         if (idx < 0 || idx >= 2) return new Object[]{false, "Invalid index (1-2)"};
         levers[idx].label = args.checkString(1);
         markDirty();
+        this.dataChanged();
         return new Object[]{true};
     }
 }

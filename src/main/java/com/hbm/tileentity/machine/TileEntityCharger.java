@@ -49,29 +49,31 @@ public class TileEntityCharger extends TileEntityLoadedBase implements IBufPacke
 		if (!world.isRemote) {
 			this.trySubscribe(world, pos.getX() + dir.offsetX, pos.getY(), pos.getZ() + dir.offsetZ, dir);
 
-			this.players = world.getEntitiesWithinAABB(
-					EntityPlayer.class,
-					new AxisAlignedBB(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5)
-							.grow(0.5, 0.0, 0.5)
-			);
+			if(world.getTotalWorldTime() % 10 == 0) {
+				this.players = world.getEntitiesWithinAABB(
+						EntityPlayer.class,
+						new AxisAlignedBB(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5)
+								.grow(0.5, 0.0, 0.5)
+				);
 
-			charge = 0; // required
+				charge = 0;
 
-			for(EntityPlayer player : players) {
-				InventoryPlayer inv = player.inventory;
-				for(int i = 0; i < inv.getSizeInventory(); i ++){
+				for(EntityPlayer player : players) {
+					InventoryPlayer inv = player.inventory;
+					for(int i = 0; i < inv.getSizeInventory(); i ++){
 
-					ItemStack stack = inv.getStackInSlot(i);
+						ItemStack stack = inv.getStackInSlot(i);
 
-					if(Library.isBattery(stack)) {
-						if (stack.getItem() instanceof IBatteryItem battery) {
-							charge += Math.min(battery.getMaxCharge(stack) - battery.getCharge(stack), battery.getChargeRate(stack));
-						} else {
-							IEnergyStorage cap = stack.getCapability(CapabilityEnergy.ENERGY, null);
-							if (cap != null && GeneralConfig.conversionRateHeToRF > 0) {
-								long maxHe = (long) (cap.getMaxEnergyStored() / GeneralConfig.conversionRateHeToRF);
-								long currentHe = (long) (cap.getEnergyStored() / GeneralConfig.conversionRateHeToRF);
-								charge += maxHe - currentHe;
+						if(Library.isBattery(stack)) {
+							if (stack.getItem() instanceof IBatteryItem battery) {
+								charge += Math.min(battery.getMaxCharge(stack) - battery.getCharge(stack), battery.getChargeRate(stack));
+							} else {
+								IEnergyStorage cap = stack.getCapability(CapabilityEnergy.ENERGY, null);
+								if (cap != null && GeneralConfig.conversionRateHeToRF > 0) {
+									long maxHe = (long) (cap.getMaxEnergyStored() / GeneralConfig.conversionRateHeToRF);
+									long currentHe = (long) (cap.getEnergyStored() / GeneralConfig.conversionRateHeToRF);
+									charge += maxHe - currentHe;
+								}
 							}
 						}
 					}

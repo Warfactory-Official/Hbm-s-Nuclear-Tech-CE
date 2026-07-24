@@ -130,7 +130,7 @@ public class TileEntityCraneGrabber extends TileEntityCraneBase implements IGUIP
                 }
             }
 
-            networkPackNT(15);
+            networkPackNT(15); // per-tick sync — hash-dedup avoids unnecessary sends
         }
     }
 
@@ -222,6 +222,7 @@ public class TileEntityCraneGrabber extends TileEntityCraneBase implements IGUIP
 
     public void nextMode(int i) {
         this.matcher.nextMode(world, inventory.getStackInSlot(i), i);
+        this.dataChanged();
     }
 
     @Override
@@ -263,5 +264,6 @@ public class TileEntityCraneGrabber extends TileEntityCraneBase implements IGUIP
         if(data.hasKey("whitelist")) {
             this.isWhitelist = !this.isWhitelist;
         }
+        this.dataChanged();
     }
 }

@@ -2,6 +2,7 @@ package com.hbm.blocks;
 
 import com.google.common.collect.ImmutableMap;
 import com.hbm.handler.MultiblockHandlerXR;
+import com.hbm.api.tile.IHeatSource;
 import com.hbm.interfaces.ICopiable;
 import com.hbm.items.ClaimedModelLocationRegistry;
 import com.hbm.items.IDynamicModels;
@@ -674,4 +675,16 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 		};
 	}
 
+    public void handleHeatCollision(World world, BlockPos pos, IBlockState state, Entity entity) {
+        if(!world.isRemote && entity instanceof EntityLivingBase living && !living.isSneaking()) {
+            BlockPos corePos = this.findCore(world, pos);
+            if(corePos == null) return;
+            TileEntity te = world.getTileEntity(corePos);
+            if(!(te instanceof IHeatSource)) return;
+            IHeatSource source = (IHeatSource) te;
+            if(source.getHeatStored() > 1000) {
+                living.setFire((int) Math.ceil(3.0 + source.getHeatStored() / 50000.0));
+            }
+        }
+    }
 }

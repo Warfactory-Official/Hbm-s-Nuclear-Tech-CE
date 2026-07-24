@@ -18,7 +18,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.List;
+import java.util.Set;
 
 @AutoRegister
 public class TileEntityFoundryChannel extends TileEntityFoundryBase {
@@ -31,6 +33,12 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
 	protected boolean hasCheckedNeighbors;
 	protected int unpropagateTime;
 
+	private static final ForgeDirection[] HORIZONTAL = { ForgeDirection.NORTH, ForgeDirection.SOUTH, ForgeDirection.WEST, ForgeDirection.EAST };
+
+	public double renderAmount;
+	public double prevRenderAmount;
+	public NTMMaterial renderType;
+
 	@Override
 	public void update() {
 		
@@ -38,7 +46,7 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
 
 			// Initialise before allowing pours, so newly added channels will avoid causing clog feeds
 			if(!hasCheckedNeighbors) {
-				List<TileEntityFoundryChannel> visited = new ArrayList<TileEntityFoundryChannel>();
+				Set<TileEntityFoundryChannel> visited = new ObjectOpenHashSet<TileEntityFoundryChannel>();
 				visited.add(this);
 
 				neighborType = checkNeighbors(visited);
@@ -133,9 +141,23 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
 			} else {
 				unpropagateTime = 0;
 			}
+		} else {
+			this.prevRenderAmount = this.renderAmount;
+			if(this.type != null) this.renderType = this.type;
+			if(this.amount > 0 || this.renderAmount > 0.1) {
+				this.renderAmount += (this.amount - this.renderAmount) * 0.3;
+			} else {
+				this.renderAmount = 0;
+				this.renderType = null;
+			}
 		}
-		
+
 		super.update();
+	}
+
+	@Override
+	protected boolean shouldClientReRender() {
+		return false;
 	}
 
 	@Override
@@ -180,7 +202,7 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
 	public void propagateMaterial(NTMMaterial propType) {
 		if(propType != null && neighborType != null) return; // optimise away any pours that change nothing
 
-		List<TileEntityFoundryChannel> visited = new ArrayList<TileEntityFoundryChannel>();
+		Set<TileEntityFoundryChannel> visited = new ObjectOpenHashSet<TileEntityFoundryChannel>();
 		visited.add(this);
 
 		boolean hasMaterial = propagateMaterial(propType, visited, false);
@@ -193,7 +215,7 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
 		}
 	}
 
-	protected boolean propagateMaterial(NTMMaterial propType, List<TileEntityFoundryChannel> visited, boolean hasMaterial) {
+	protected boolean propagateMaterial(NTMMaterial propType, Set<TileEntityFoundryChannel> visited, boolean hasMaterial) {
 		// if emptying, don't mark the channel as ready for a new material until it is entirely clear
 		if(propType != null) {
 			neighborType = propType;
@@ -202,7 +224,7 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
 			unpropagateTime = 0;
 		}
 
-		for(ForgeDirection dir : new ForgeDirection[] { ForgeDirection.NORTH, ForgeDirection.SOUTH, ForgeDirection.WEST, ForgeDirection.EAST }) {
+		for(ForgeDirection dir : HORIZONTAL) {
 			TileEntity b = world.getTileEntity(pos.add(dir.offsetX, 0, dir.offsetZ));
 					
 			if(b instanceof TileEntityFoundryChannel acc && !visited.contains(b)) {
@@ -217,10 +239,10 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
 		return hasMaterial;
 	}
 
-	protected NTMMaterial checkNeighbors(List<TileEntityFoundryChannel> visited) {
+	protected NTMMaterial checkNeighbors(Set<TileEntityFoundryChannel> visited) {
 		if(neighborType != null) return neighborType;
 
-		for(ForgeDirection dir : new ForgeDirection[] { ForgeDirection.NORTH, ForgeDirection.SOUTH, ForgeDirection.WEST, ForgeDirection.EAST }) {
+		for(ForgeDirection dir : HORIZONTAL) {
 			TileEntity b = world.getTileEntity(pos.add(dir.offsetX, 0, dir.offsetZ));
 
 			if(b instanceof TileEntityFoundryChannel acc && !visited.contains(b)) {

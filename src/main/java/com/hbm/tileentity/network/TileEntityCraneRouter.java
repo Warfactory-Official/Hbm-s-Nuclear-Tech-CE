@@ -46,7 +46,7 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
     @Override
     public void update() {
         if(!world.isRemote) {
-            networkPackNT(15);
+            networkPackMK2(15);
         }
     }
 
@@ -85,6 +85,7 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
         int mIndex = index % 5;
 
         this.patterns[matcher].nextMode(world, inventory.getStackInSlot(index), mIndex);
+        this.dataChanged();
     }
 
     public void initPattern(ItemStack stack, int index) {
@@ -93,6 +94,7 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
         int mIndex = index % 5;
 
         this.patterns[matcher].initPatternSmart(world, stack, mIndex);
+        this.dataChanged();
     }
 
     @Override
@@ -138,6 +140,7 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
         if(data.hasKey("slot")) {
             setFilterContents(data);
         }
+        this.dataChanged();
     }
 
     @Override
@@ -158,6 +161,7 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements IGUI
         if(nbt.hasKey("modes")) {
             modes = nbt.getIntArray("modes");
         }
+        this.dataChanged();
     }
 
     @Override

@@ -174,6 +174,8 @@ public class ExplosionNukeRayParallelized implements IExplosionRay, BombForkJoin
             return;
         }
 
+        // RESOLUTION_FACTOR is a compile-time constant — BombConfig.explosionResolutionFactor was removed
+        // because runtime-tuning the ray count is never needed and desyncs clients
         rayCount = Math.max(0, (int) (2.5 * Math.PI * strength * strength * RESOLUTION_FACTOR));
         invRayIndexScale = rayCount > 1 ? 1.0 / (rayCount - 1) : 0.0;
         pendingRays = rayCount;

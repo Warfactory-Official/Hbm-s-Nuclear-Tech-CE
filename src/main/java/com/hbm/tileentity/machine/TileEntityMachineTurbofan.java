@@ -240,59 +240,66 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 					}
 				}
 
-				double minX = this.pos.getX() + 0.5 - dir.offsetX * 3.5 - rot.offsetX * 1.5;
-				double maxX = this.pos.getX() + 0.5 - dir.offsetX * 19.5 + rot.offsetX * 1.5;
-				double minZ = this.pos.getZ() + 0.5 - dir.offsetZ * 3.5 - rot.offsetZ * 1.5;
-				double maxZ = this.pos.getZ() + 0.5 - dir.offsetZ * 19.5 + rot.offsetZ * 1.5;
+				double zMinX = this.pos.getX() + 0.5 - dir.offsetX * 3.5 - rot.offsetX * 1.5;
+				double zMaxX = this.pos.getX() + 0.5 - dir.offsetX * 19.5 + rot.offsetX * 1.5;
+				double zMinZ = this.pos.getZ() + 0.5 - dir.offsetZ * 3.5 - rot.offsetZ * 1.5;
+				double zMaxZ = this.pos.getZ() + 0.5 - dir.offsetZ * 19.5 + rot.offsetZ * 1.5;
+				AxisAlignedBB zoneExhaust = new AxisAlignedBB(Math.min(zMinX, zMaxX), pos.getY(), Math.min(zMinZ, zMaxZ), Math.max(zMinX, zMaxX), pos.getY() + 3, Math.max(zMinZ, zMaxZ));
 
-				List<Entity> list = world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(Math.min(minX, maxX), pos.getY(), Math.min(minZ, maxZ), Math.max(minX, maxX), pos.getY() + 3, Math.max(minZ, maxZ)));
+				zMinX = this.pos.getX() + 0.5 + dir.offsetX * 3.5 - rot.offsetX * 1.5;
+				zMaxX = this.pos.getX() + 0.5 + dir.offsetX * 8.5 + rot.offsetX * 1.5;
+				zMinZ = this.pos.getZ() + 0.5 + dir.offsetZ * 3.5 - rot.offsetZ * 1.5;
+				zMaxZ = this.pos.getZ() + 0.5 + dir.offsetZ * 8.5 + rot.offsetZ * 1.5;
+				AxisAlignedBB zoneIntake = new AxisAlignedBB(Math.min(zMinX, zMaxX), pos.getY(), Math.min(zMinZ, zMaxZ), Math.max(zMinX, zMaxX), pos.getY() + 3, Math.max(zMinZ, zMaxZ));
 
-				for(Entity e : list) {
+				zMinX = this.pos.getX() + 0.5 + dir.offsetX * 3.5 - rot.offsetX * 1.5;
+				zMaxX = this.pos.getX() + 0.5 + dir.offsetX * 3.75 + rot.offsetX * 1.5;
+				zMinZ = this.pos.getZ() + 0.5 + dir.offsetZ * 3.5 - rot.offsetZ * 1.5;
+				zMaxZ = this.pos.getZ() + 0.5 + dir.offsetZ * 3.75 + rot.offsetZ * 1.5;
+				AxisAlignedBB zoneBlades = new AxisAlignedBB(Math.min(zMinX, zMaxX), pos.getY(), Math.min(zMinZ, zMaxZ), Math.max(zMinX, zMaxX), pos.getY() + 3, Math.max(zMinZ, zMaxZ));
 
-					if(this.afterburner > 0) {
-						e.setFire(5);
-						e.attackEntityFrom(DamageSource.ON_FIRE, 5F);
-					}
-					e.motionX -= dir.offsetX * 0.2;
-					e.motionZ -= dir.offsetZ * 0.2;
-				}
+				double uMinX = Math.min(Math.min(zoneExhaust.minX, zoneIntake.minX), zoneBlades.minX);
+				double uMaxX = Math.max(Math.max(zoneExhaust.maxX, zoneIntake.maxX), zoneBlades.maxX);
+				double uMinZ = Math.min(Math.min(zoneExhaust.minZ, zoneIntake.minZ), zoneBlades.minZ);
+				double uMaxZ = Math.max(Math.max(zoneExhaust.maxZ, zoneIntake.maxZ), zoneBlades.maxZ);
 
-				minX = this.pos.getX() + 0.5 + dir.offsetX * 3.5 - rot.offsetX * 1.5;
-				maxX = this.pos.getX() + 0.5 + dir.offsetX * 8.5 + rot.offsetX * 1.5;
-				minZ = this.pos.getZ() + 0.5 + dir.offsetZ * 3.5 - rot.offsetZ * 1.5;
-				maxZ = this.pos.getZ() + 0.5 + dir.offsetZ * 8.5 + rot.offsetZ * 1.5;
-
-				list = world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(Math.min(minX, maxX), pos.getY(), Math.min(minZ, maxZ), Math.max(minX, maxX), pos.getY() + 3, Math.max(minZ, maxZ)));
-
-				for(Entity e : list) {
-					e.motionX -= dir.offsetX * 0.2;
-					e.motionZ -= dir.offsetZ * 0.2;
-				}
-
-				minX = this.pos.getX() + 0.5 + dir.offsetX * 3.5 - rot.offsetX * 1.5;
-				maxX = this.pos.getX() + 0.5 + dir.offsetX * 3.75 + rot.offsetX * 1.5;
-				minZ = this.pos.getZ() + 0.5 + dir.offsetZ * 3.5 - rot.offsetZ * 1.5;
-				maxZ = this.pos.getZ() + 0.5 + dir.offsetZ * 3.75 + rot.offsetZ * 1.5;
-
-				list = world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(Math.min(minX, maxX), pos.getY(), Math.min(minZ, maxZ), Math.max(minX, maxX), pos.getY() + 3, Math.max(minZ, maxZ)));
+				List<Entity> list = world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(uMinX, pos.getY(), uMinZ, uMaxX, pos.getY() + 3, uMaxZ));
 
 				for(Entity e : list) {
-					e.attackEntityFrom(ModDamageSource.turbofan, 1000);
-					e.setInWeb();
+					AxisAlignedBB eb = e.getEntityBoundingBox();
 
-					if(!e.isEntityAlive() && e instanceof EntityLivingBase) {
-						NBTTagCompound vdat = new NBTTagCompound();
-						vdat.setInteger("ent", e.getEntityId());
-						vdat.setInteger("cDiv", 5);
-						PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Giblets, vdat, e.posX, e.posY + e.height * 0.5, e.posZ), new TargetPoint(e.dimension, e.posX, e.posY + e.height * 0.5, e.posZ, 150));
-
-						world.playSound(null, e.posX, e.posY, e.posZ, SoundEvents.ENTITY_ZOMBIE_BREAK_DOOR_WOOD, SoundCategory.BLOCKS, 2.0F, 0.95F + world.rand.nextFloat() * 0.2F);
-
-						blood.setFill(blood.getFill() + 50);
-						if(blood.getFill() > blood.getMaxFill()) {
-							blood.setFill(blood.getMaxFill());
+					if(eb.intersects(zoneExhaust)) {
+						if(this.afterburner > 0) {
+							e.setFire(5);
+							e.attackEntityFrom(DamageSource.ON_FIRE, 5F);
 						}
-						this.showBlood = true;
+						e.motionX -= dir.offsetX * 0.2;
+						e.motionZ -= dir.offsetZ * 0.2;
+					}
+
+					if(eb.intersects(zoneIntake)) {
+						e.motionX -= dir.offsetX * 0.2;
+						e.motionZ -= dir.offsetZ * 0.2;
+					}
+
+					if(eb.intersects(zoneBlades)) {
+						e.attackEntityFrom(ModDamageSource.turbofan, 1000);
+						e.setInWeb();
+
+						if(!e.isEntityAlive() && e instanceof EntityLivingBase) {
+							NBTTagCompound vdat = new NBTTagCompound();
+							vdat.setInteger("ent", e.getEntityId());
+							vdat.setInteger("cDiv", 5);
+							PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Giblets, vdat, e.posX, e.posY + e.height * 0.5, e.posZ), new TargetPoint(e.dimension, e.posX, e.posY + e.height * 0.5, e.posZ, 150));
+
+							world.playSound(null, e.posX, e.posY, e.posZ, SoundEvents.ENTITY_ZOMBIE_BREAK_DOOR_WOOD, SoundCategory.BLOCKS, 2.0F, 0.95F + world.rand.nextFloat() * 0.2F);
+
+							blood.setFill(blood.getFill() + 50);
+							if(blood.getFill() > blood.getMaxFill()) {
+								blood.setFill(blood.getMaxFill());
+							}
+							this.showBlood = true;
+						}
 					}
 				}
 			}
@@ -354,44 +361,38 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 				ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10).getRotation(ForgeDirection.UP);
 				ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
 
+				double px = MainRegistry.proxy.me().posX;
+				double pz = MainRegistry.proxy.me().posZ;
+
 				double minX = this.pos.getX() + 0.5 - dir.offsetX * 3.5 - rot.offsetX * 1.5;
 				double maxX = this.pos.getX() + 0.5 - dir.offsetX * 19.5 + rot.offsetX * 1.5;
-				double minZ = this.pos.getZ() + 0.5 - dir.offsetZ * 3.5 - rot.offsetZ * 1.5;
-				double maxZ = this.pos.getZ() + 0.5 - dir.offsetZ * 19.5 + rot.offsetZ * 1.5;
-
-				List<Entity> list = world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(Math.min(minX, maxX), pos.getY(), Math.min(minZ, maxZ), Math.max(minX, maxX), pos.getY() + 3, Math.max(minZ, maxZ)));
-
-				for(Entity e : list) {
-					if(e == MainRegistry.proxy.me()) {
-						e.motionX -= dir.offsetX * 0.2;
-						e.motionZ -= dir.offsetZ * 0.2;
+				if(px >= Math.min(minX, maxX) && px <= Math.max(minX, maxX)) {
+					double minZ = this.pos.getZ() + 0.5 - dir.offsetZ * 3.5 - rot.offsetZ * 1.5;
+					double maxZ = this.pos.getZ() + 0.5 - dir.offsetZ * 19.5 + rot.offsetZ * 1.5;
+					if(pz >= Math.min(minZ, maxZ) && pz <= Math.max(minZ, maxZ)) {
+						MainRegistry.proxy.me().motionX -= dir.offsetX * 0.2;
+						MainRegistry.proxy.me().motionZ -= dir.offsetZ * 0.2;
 					}
 				}
 
 				minX = this.pos.getX() + 0.5 + dir.offsetX * 3.5 - rot.offsetX * 1.5;
 				maxX = this.pos.getX() + 0.5 + dir.offsetX * 8.5 + rot.offsetX * 1.5;
-				minZ = this.pos.getZ() + 0.5 + dir.offsetZ * 3.5 - rot.offsetZ * 1.5;
-				maxZ = this.pos.getZ() + 0.5 + dir.offsetZ * 8.5 + rot.offsetZ * 1.5;
-
-				list = world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(Math.min(minX, maxX), pos.getY(), Math.min(minZ, maxZ), Math.max(minX, maxX), pos.getY() + 3, Math.max(minZ, maxZ)));
-
-				for(Entity e : list) {
-					if(e == MainRegistry.proxy.me()) {
-						e.motionX -= dir.offsetX * 0.2;
-						e.motionZ -= dir.offsetZ * 0.2;
+				if(px >= Math.min(minX, maxX) && px <= Math.max(minX, maxX)) {
+					double minZ = this.pos.getZ() + 0.5 + dir.offsetZ * 3.5 - rot.offsetZ * 1.5;
+					double maxZ = this.pos.getZ() + 0.5 + dir.offsetZ * 8.5 + rot.offsetZ * 1.5;
+					if(pz >= Math.min(minZ, maxZ) && pz <= Math.max(minZ, maxZ)) {
+						MainRegistry.proxy.me().motionX -= dir.offsetX * 0.2;
+						MainRegistry.proxy.me().motionZ -= dir.offsetZ * 0.2;
 					}
 				}
 
 				minX = this.pos.getX() + 0.5 + dir.offsetX * 3.5 - rot.offsetX * 1.5;
 				maxX = this.pos.getX() + 0.5 + dir.offsetX * 3.75 + rot.offsetX * 1.5;
-				minZ = this.pos.getZ() + 0.5 + dir.offsetZ * 3.5 - rot.offsetZ * 1.5;
-				maxZ = this.pos.getZ() + 0.5 + dir.offsetZ * 3.75 + rot.offsetZ * 1.5;
-
-				list = world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(Math.min(minX, maxX), pos.getY(), Math.min(minZ, maxZ), Math.max(minX, maxX), pos.getY() + 3, Math.max(minZ, maxZ)));
-
-				for(Entity e : list) {
-					if(e == MainRegistry.proxy.me()) {
-						e.setInWeb();
+				if(px >= Math.min(minX, maxX) && px <= Math.max(minX, maxX)) {
+					double minZ = this.pos.getZ() + 0.5 + dir.offsetZ * 3.5 - rot.offsetZ * 1.5;
+					double maxZ = this.pos.getZ() + 0.5 + dir.offsetZ * 3.75 + rot.offsetZ * 1.5;
+					if(pz >= Math.min(minZ, maxZ) && pz <= Math.max(minZ, maxZ)) {
+						MainRegistry.proxy.me().setInWeb();
 					}
 				}
 			}

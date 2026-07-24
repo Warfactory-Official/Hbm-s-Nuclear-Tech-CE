@@ -102,7 +102,9 @@ public class PacketDispatcher {
 		wrapper.registerMessage(HbmPlayerSyncPacket.Handler.class, HbmPlayerSyncPacket.class, i++, Side.CLIENT);
 		wrapper.registerMessage(SerializableRecipePacket.Handler.class, SerializableRecipePacket.class, i++, Side.CLIENT);
 		wrapper.registerMessage(PlayerSoundPacket.Handler.class, PlayerSoundPacket.class, i++, Side.CLIENT);
-		wrapper.registerMessage(BiomeSyncPacket.Handler.class, BiomeSyncPacket.class, i++, Side.CLIENT);
+        wrapper.registerMessage(BiomeSyncPacket.Handler.class, BiomeSyncPacket.class, i++, Side.CLIENT);
+        //Broadcast packet for TOM impact data (replaces per-player TOM sync in PermaSyncPacket)
+        wrapper.registerMessage(TomBroadcastPacket.Handler.class, TomBroadcastPacket.class, i++, Side.CLIENT);
         wrapper.registerMessage(PermaSyncPacket.Handler.class, PermaSyncPacket.class, i++, Side.CLIENT);
 		//Syncs muzzle flashes of SEDNA guns for clients from other entities/players
 		wrapper.registerMessage(MuzzleFlashPacket.Handler.class, MuzzleFlashPacket.class, i++, Side.CLIENT);

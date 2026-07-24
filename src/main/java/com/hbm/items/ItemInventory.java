@@ -114,11 +114,15 @@ public class ItemInventory extends ItemStackHandler {
 
     public void openInventory() {
         if (player == null) return;
+        if (player.world.isRemote) return;
+        if (player.isSpectator()) return;
         player.world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.crateOpen, SoundCategory.BLOCKS, 1.0F, 0.8F);
     }
 
     public void closeInventory() {
         if (player == null) return;
+        if (player.world.isRemote) return;
+        if (player.isSpectator()) return;
         player.world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.crateClose, SoundCategory.BLOCKS, 1.0F, 0.8F);
     }
 

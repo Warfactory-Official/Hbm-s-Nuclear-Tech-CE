@@ -53,7 +53,7 @@ public class TileEntityRBMKKeyPad extends TileEntityLoadedBase implements ITicka
 
             for (int i = 0; i < 4; i++) this.keys[i].update();
 
-            this.networkPackNT(50);
+            this.networkPackMK2(50);
         }
     }
 
@@ -134,6 +134,7 @@ public class TileEntityRBMKKeyPad extends TileEntityLoadedBase implements ITicka
             } else {
                 this.isPressed = !this.isPressed;
                 TileEntityRBMKKeyPad.this.markDirty();
+                TileEntityRBMKKeyPad.this.dataChanged();
             }
 
             world.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK, SoundCategory.BLOCKS, 1F, this.isPressed ? 1F : 0.75F);
@@ -149,6 +150,7 @@ public class TileEntityRBMKKeyPad extends TileEntityLoadedBase implements ITicka
             if (!polling && isPressed) {
                 if (this.clickTimer-- <= 0) {
                     this.isPressed = false;
+                    TileEntityRBMKKeyPad.this.dataChanged();
                 }
             }
         }
@@ -232,6 +234,7 @@ public class TileEntityRBMKKeyPad extends TileEntityLoadedBase implements ITicka
             key.command = data.getString("cmd" + i);
         }
         this.markDirty();
+        this.dataChanged();
     }
 
     // OpenComputers methods
@@ -264,6 +267,7 @@ public class TileEntityRBMKKeyPad extends TileEntityLoadedBase implements ITicka
         if (idx < 0 || idx >= 4) return new Object[]{false, "Invalid index (1-4)"};
         keys[idx].active = args.checkBoolean(1);
         markDirty();
+        this.dataChanged();
         return new Object[]{true};
     }
 
@@ -274,6 +278,7 @@ public class TileEntityRBMKKeyPad extends TileEntityLoadedBase implements ITicka
         if (idx < 0 || idx >= 4) return new Object[]{false, "Invalid index (1-4)"};
         keys[idx].polling = args.checkBoolean(1);
         markDirty();
+        this.dataChanged();
         return new Object[]{true};
     }
 
@@ -284,6 +289,7 @@ public class TileEntityRBMKKeyPad extends TileEntityLoadedBase implements ITicka
         if (idx < 0 || idx >= 4) return new Object[]{false, "Invalid index (1-4)"};
         keys[idx].color = MathHelper.clamp(args.checkInteger(1), 0, 0xffffff);
         markDirty();
+        this.dataChanged();
         return new Object[]{true};
     }
 
@@ -294,6 +300,7 @@ public class TileEntityRBMKKeyPad extends TileEntityLoadedBase implements ITicka
         if (idx < 0 || idx >= 4) return new Object[]{false, "Invalid index (1-4)"};
         keys[idx].label = args.checkString(1);
         markDirty();
+        this.dataChanged();
         return new Object[]{true};
     }
 
@@ -304,6 +311,7 @@ public class TileEntityRBMKKeyPad extends TileEntityLoadedBase implements ITicka
         if (idx < 0 || idx >= 4) return new Object[]{false, "Invalid index (1-4)"};
         keys[idx].rtty = args.checkString(1);
         markDirty();
+        this.dataChanged();
         return new Object[]{true};
     }
 
@@ -314,6 +322,7 @@ public class TileEntityRBMKKeyPad extends TileEntityLoadedBase implements ITicka
         if (idx < 0 || idx >= 4) return new Object[]{false, "Invalid index (1-4)"};
         keys[idx].command = args.checkString(1);
         markDirty();
+        this.dataChanged();
         return new Object[]{true};
     }
 
@@ -325,6 +334,7 @@ public class TileEntityRBMKKeyPad extends TileEntityLoadedBase implements ITicka
         if (!keys[idx].active) return new Object[]{false, "Key is not active"};
         keys[idx].click();
         markDirty();
+        this.dataChanged();
         return new Object[]{true};
     }
 

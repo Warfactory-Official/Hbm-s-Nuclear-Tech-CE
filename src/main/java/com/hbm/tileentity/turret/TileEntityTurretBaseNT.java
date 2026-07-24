@@ -912,12 +912,10 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 
 
 	public static void openInventory(EntityPlayer player) {
-		player.world.playSound(player.posX + 0.5, player.posY + 0.5, player.posZ + 0.5, HBMSoundHandler.openC, SoundCategory.BLOCKS, 1.0F, 1.0F, false);
 	}
 
 
 	public static void closeInventory(EntityPlayer player) {
-		player.world.playSound(player.posX + 0.5, player.posY + 0.5, player.posZ + 0.5, HBMSoundHandler.closeC, SoundCategory.BLOCKS, 1.0F, 1.0F, false);
 	}
 
 	public boolean usesCasings() { return false; }

@@ -26,7 +26,6 @@ import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.items.ItemStackHandler;
 import org.lwjgl.opengl.GL11;
 
-import java.awt.*;
 import java.util.Objects;
 @AutoRegister
 public class RenderFoundry extends TileEntitySpecialRenderer<TileEntityFoundryCastingBase> implements ITileActorRenderer {
@@ -77,7 +76,6 @@ public class RenderFoundry extends TileEntitySpecialRenderer<TileEntityFoundryCa
 
         if (foundry.shouldRender()) {
 			int hex = foundry.getMat().moltenColor;
-			Color color = new Color(hex);
 
 			GlStateManager.pushMatrix();
 			GlStateManager.disableCull();
@@ -88,7 +86,7 @@ public class RenderFoundry extends TileEntitySpecialRenderer<TileEntityFoundryCa
 			Tessellator tessellator = Tessellator.getInstance();
 			BufferBuilder buffer = tessellator.getBuffer();
 
-			GlStateManager.color(color.getRed() / 255F, color.getGreen() / 255F, color.getBlue() / 255F, 1.0F);
+			GlStateManager.color(((hex >> 16) & 0xFF) / 255F, ((hex >> 8) & 0xFF) / 255F, (hex & 0xFF) / 255F, 1.0F);
 			buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
 
 			float yLevel = (float) foundry.getLevel();

@@ -36,6 +36,11 @@ public class TileEntityFoundryOutlet extends TileEntityFoundryBase {
 	}
 	
 	@Override
+	protected boolean shouldClientReRender() {
+		return false;
+	}
+
+	@Override
 	public void update() {
 		super.update();
 		
@@ -87,7 +92,7 @@ public class TileEntityFoundryOutlet extends TileEntityFoundryBase {
 		MaterialStack didPour = acc.pour(world, mop[0].getBlockPos(), mop[0].hitVec.x, mop[0].hitVec.y, mop[0].hitVec.z, ForgeDirection.UP, stack);
 		
 
-		if(stack != null) {
+		if(stack != null && world.rand.nextInt(3) == 0) {
 			
 			ForgeDirection dir = side.getOpposite();
 			double hitY = mop[0].getBlockPos().getY() + 1;

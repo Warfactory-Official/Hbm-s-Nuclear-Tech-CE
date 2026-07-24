@@ -77,43 +77,45 @@ public class TileEntityFileCabinet extends TileEntityCrateBase implements IGUIPr
             this.prevUpperExtent = upperExtent;
         }
 
-        float openSpeed = playersUsing > 0 ? 1F / 16F : 1F / 25F;
-        float maxExtent = 0.8F;
+        if (world.isRemote) {
+            float openSpeed = playersUsing > 0 ? 1F / 16F : 1F / 25F;
+            float maxExtent = 0.8F;
 
-        if(this.playersUsing > 0) {
-            if(lowerExtent == 0F && upperExtent == 0F)
-                this.world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.crateOpen, SoundCategory.BLOCKS, 0.8F, 1.0F, false);
-            else {
-                if(upperExtent + openSpeed >= maxExtent && lowerExtent < maxExtent) {
-                    this.world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.crateOpen, SoundCategory.BLOCKS, 0.5F, this.world.rand.nextFloat() * 0.1F + 0.7F, false);
+            if(this.playersUsing > 0) {
+                if(lowerExtent == 0F && upperExtent == 0F)
+                    this.world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.crateOpen, SoundCategory.BLOCKS, 0.8F, 1.0F, false);
+                else {
+                    if(upperExtent + openSpeed >= maxExtent && lowerExtent < maxExtent) {
+                        this.world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.crateOpen, SoundCategory.BLOCKS, 0.5F, this.world.rand.nextFloat() * 0.1F + 0.7F, false);
+                    }
+
+                    if(lowerExtent + openSpeed >= maxExtent && lowerExtent < maxExtent) {
+                        this.world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.crateOpen, SoundCategory.BLOCKS, 0.5F, this.world.rand.nextFloat() * 0.1F + 0.7F, false);
+                    }
                 }
 
-                if(lowerExtent + openSpeed >= maxExtent && lowerExtent < maxExtent) {
-                    this.world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.crateOpen, SoundCategory.BLOCKS, 0.5F, this.world.rand.nextFloat() * 0.1F + 0.7F, false);
+                this.lowerExtent += openSpeed;
+
+                if(timer >= 10) {
+                    this.upperExtent += openSpeed;
                 }
+
+            } else if(lowerExtent > 0) {
+                if(upperExtent - openSpeed < maxExtent / 2 && upperExtent >= maxExtent / 2 && upperExtent != lowerExtent) {
+                    this.world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.crateClose, SoundCategory.BLOCKS, 0.8F, 1.0F, false);
+                }
+
+                if(lowerExtent - openSpeed < maxExtent / 2 && lowerExtent >= maxExtent / 2) {
+                    this.world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.crateClose, SoundCategory.BLOCKS, 0.8F, 1.0F, false);
+                }
+
+                this.upperExtent -= openSpeed;
+                this.lowerExtent -= openSpeed;
             }
 
-            this.lowerExtent += openSpeed;
-
-            if(timer >= 10) {
-                this.upperExtent += openSpeed;
-            }
-
-        } else if(lowerExtent > 0) {
-            if(upperExtent - openSpeed < maxExtent / 2 && upperExtent >= maxExtent / 2 && upperExtent != lowerExtent) {
-                this.world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.crateClose, SoundCategory.BLOCKS, 0.8F, 1.0F, false);
-            }
-
-            if(lowerExtent - openSpeed < maxExtent / 2 && lowerExtent >= maxExtent / 2) {
-                this.world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, HBMSoundHandler.crateClose, SoundCategory.BLOCKS, 0.8F, 1.0F, false);
-            }
-
-            this.upperExtent -= openSpeed;
-            this.lowerExtent -= openSpeed;
+            this.lowerExtent = MathHelper.clamp(lowerExtent, 0F, maxExtent);
+            this.upperExtent = MathHelper.clamp(upperExtent, 0F, maxExtent);
         }
-
-        this.lowerExtent = MathHelper.clamp(lowerExtent, 0F, maxExtent);
-        this.upperExtent = MathHelper.clamp(upperExtent, 0F, maxExtent);
     }
 
     @Override

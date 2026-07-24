@@ -314,6 +314,8 @@ public class GeneralConfig {
 
 		WorldConfig.enableSulfurCave = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_ORES, "2.C00_enableSulfurCave", "Toggles sulfur caves", true);
 		WorldConfig.enableAsbestosCave = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_ORES, "2.C01_enableAsbestosCave", "Toggles asbestos caves", true);
+		WorldConfig.enableGneissLayer = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_ORES, "2.L03_enableGneissLayer", "Toggles gneiss stone stratum and gneiss ore generation", true);
+		WorldConfig.enableRedRoom = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_ORES, "2.L04_enableRedRoom", "Toggles red room keyhole generation", true);
         
 		WorldConfig.enableCraterBiomes = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_BIOMES, "17.B_toggle", "Enables the biome change caused by nuclear explosions", true);
 		WorldConfig.craterBiomeId = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_BIOMES, "17.B00_craterBiomeId", "The numeric ID for the crater biome", 80);

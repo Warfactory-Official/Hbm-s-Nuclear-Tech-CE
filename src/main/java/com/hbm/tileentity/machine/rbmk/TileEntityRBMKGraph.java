@@ -49,9 +49,10 @@ public class TileEntityRBMKGraph extends TileEntityLoadedBase implements ITickab
 		
 		if(!world.isRemote) {
 			
-			if(world.getTotalWorldTime() % 10 == 0) for(int i = 0; i < 2; i++) this.graphs[i].update();
-			
-			this.networkPackNT(50);
+			if(world.getTotalWorldTime() % 10 == 0) {
+				for(int i = 0; i < 2; i++) this.graphs[i].update();
+				this.networkPackNT(50);
+			}
 		}
 	}
 

@@ -271,17 +271,25 @@ public class ExplosionNukeGeneric {
         //mlbv: we use it in com.hbm.hazard.type.HazardTypeContaminating which may have a very low radius
         int bound = r22 / 5;
         if (bound == 0) return;
+
+        int maxZZ = r22 + bound - 1;
+
         for (int xx = -r; xx < r; xx++) {
             int X = xx + x;
             int XX = xx * xx;
-            for (int yy = -r; yy < r; yy++) {
-                int Y = yy + y;
-                int YY = XX + yy * yy;
-                for (int zz = -r; zz < r; zz++) {
-                    int Z = zz + z;
-                    int ZZ = YY + zz * zz;
+            if (XX >= maxZZ) continue;
+            for (int zz = -r; zz < r; zz++) {
+                int Z = zz + z;
+                int ZZ_xz = XX + zz * zz;
+                if (ZZ_xz >= maxZZ) continue;
+
+                int maxY = (int) Math.sqrt(maxZZ - ZZ_xz);
+                for (int yy = -maxY; yy <= maxY; yy++) {
+                    int Y = yy + y;
+                    int ZZ = ZZ_xz + yy * yy;
                     if (ZZ < r22 + world.rand.nextInt(bound)) {
-                        if (world.getBlockState(pos.setPos(X, Y, Z)).getBlock() != Blocks.AIR) wasteDest(world, pos);
+                        if (world.getBlockState(pos.setPos(X, Y, Z)).getBlock() != Blocks.AIR)
+                            wasteDest(world, pos);
                     }
                 }
             }
@@ -373,16 +381,22 @@ public class ExplosionNukeGeneric {
         int r = radius;
         int r2 = r * r;
         int r22 = r2 / 2;
+        int bound = r22 / 5;
+        if (bound == 0) return;
+        int maxZZ = r22 + bound - 1;
         for (int xx = -r; xx < r; xx++) {
             int X = xx + x;
             int XX = xx * xx;
-            for (int yy = -r; yy < r; yy++) {
-                int Y = yy + y;
-                int YY = XX + yy * yy;
-                for (int zz = -r; zz < r; zz++) {
-                    int Z = zz + z;
-                    int ZZ = YY + zz * zz;
-                    if (ZZ < r22 + world.rand.nextInt(r22 / 5)) {
+            if (XX >= maxZZ) continue;
+            for (int zz = -r; zz < r; zz++) {
+                int Z = zz + z;
+                int ZZ_xz = XX + zz * zz;
+                if (ZZ_xz >= maxZZ) continue;
+                int maxY = (int) Math.sqrt(maxZZ - ZZ_xz);
+                for (int yy = -maxY; yy <= maxY; yy++) {
+                    int Y = yy + y;
+                    int ZZ = ZZ_xz + yy * yy;
+                    if (ZZ < r22 + world.rand.nextInt(bound)) {
                         mpos.setPos(X, Y, Z);
                         if (world.getBlockState(mpos).getBlock() != Blocks.AIR) wasteDestNoSchrab(world, mpos);
                     }

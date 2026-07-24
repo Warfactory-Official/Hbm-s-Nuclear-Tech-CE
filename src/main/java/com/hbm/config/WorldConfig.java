@@ -54,6 +54,8 @@ public class WorldConfig {
 
 	public static boolean enableSulfurCave = true;
 	public static boolean enableAsbestosCave = true;
+	public static boolean enableGneissLayer = true;
+	public static boolean enableRedRoom = true;
 
 	public static int radioStructure = 500;
 	public static int antennaStructure = 750;

@@ -211,6 +211,7 @@ public class TileEntityForceField extends TileEntityLoadedBase implements ITicka
                 health = maxHealth;
         }
 
+        // doField runs every tick — the %5 gate was removed because field entities move continuously
         if (isOn && cooldown == 0 && health > 0 && power >= powerCons) {
             doField(radius);
 
