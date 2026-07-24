@@ -151,6 +151,7 @@ public class MainRegistry {
         SpaceConfig.loadFromConfig(config);
         StructureConfig.loadFromConfig(config);
         reloadCompatConfig();
+        WorldConfig.loadFromConfig(config);
         BedrockOreJsonConfig.init();
         CassetteJsonConfig.init();
         config.save();
