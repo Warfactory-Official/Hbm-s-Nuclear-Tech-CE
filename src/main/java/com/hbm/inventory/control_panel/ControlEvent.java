@@ -98,7 +98,7 @@ public class ControlEvent {
 		register(new ControlEvent("door_open_state").setVar("state", 0));
 		register(new ControlEvent("door_toggle").setVar("passcode", 0));
 		register(new ControlEvent("turret_set_target").setVar("players", false).setVar("passive", false).setVar("hostile", true).setVar("machines", true));
-		register(new ControlEvent("turret_switch").setVar("isOn", true));
+		register(new ControlEvent("turret_switch").setVar("isOn", true).setVar("isBlacklistFilter", true));
 		register(new ControlEvent("lever_toggle").setVar("isOn", false));
 		register(new ControlEvent("spinny_light_power").setVar("isOn", false));
 		register(new ControlEvent("siren_set_state").setVar("isOn", false));

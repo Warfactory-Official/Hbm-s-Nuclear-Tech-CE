@@ -1413,6 +1413,7 @@ info.template_out_p=Виходи:
 info.template_seconds=секунд
 info.template_time=Час виготовлення:
 info.templatefolder=Створено за допомогою папки шаблонів
+item.turret_mob_filter.name=Фільтр мобів турелі
 item.RPA_boots.name=Залишки Чоботи
 item.RPA_helmet.name=Залишки шолома
 item.RPA_legs.name=Залишки Легінси

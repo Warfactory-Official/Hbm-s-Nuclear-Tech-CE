@@ -87,7 +87,8 @@ public class CraftingManager {
 	}
 
 	public static void addCrafting(){
-		// TODO: rework that addslabstair shit
+        addRecipeAuto(new ItemStack(ModItems.turret_mob_filter, 1), "SCS", "TBT", "IRI", 'S', ModItems.plate_steel, 'C', Items.COMPARATOR, 'T', Blocks.REDSTONE_BLOCK, 'B', ModItems.turret_chip, 'R', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.CHIP), 'I', ModItems.plate_iron);
+        // TODO: rework that addslabstair shit
 		addSlabStair(ModBlocks.reinforced_brick_slab, ModBlocks.reinforced_brick_stairs, ModBlocks.reinforced_brick);
 		addSlabStair(ModBlocks.reinforced_sand_slab, ModBlocks.reinforced_sand_stairs, ModBlocks.reinforced_sand);
 		addSlabStair(ModBlocks.reinforced_stone_slab, ModBlocks.reinforced_stone_stairs, ModBlocks.reinforced_stone);
