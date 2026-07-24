@@ -86,15 +86,15 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 
         } else if (data.hasKey("name")) {
             this.addName(data.getString("name"));
-        } else if (data.hasKey("addFilter")) {
-            String id = data.getString("addFilter");
+        } else if (data.hasKey("addMobFilter")) {
+            String id = data.getString("addMobFilter");
 
             if (!mobFilter.contains(id)) {
                 mobFilter.add(id);
             }
 
-        } else if (data.hasKey("removeFilter")) {
-            String id = data.getString("removeFilter");
+        } else if (data.hasKey("removeMobFilter")) {
+            String id = data.getString("removeMobFilter");
 
             mobFilter.remove(id);
         }
@@ -125,7 +125,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
     public boolean targetMobs = true;
     public boolean targetMachines = true;
 
-    public boolean isBlacklistFilter = true;
+    public boolean isBlacklistMobFilter = true;
 
     public boolean manualOverride = false;
 
@@ -172,7 +172,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
     public void readFromNBT(NBTTagCompound nbt) {
         this.power = nbt.getLong("power");
         this.isOn = nbt.getBoolean("isOn");
-        this.isBlacklistFilter = nbt.getBoolean("isBlacklistFilter");
+        this.isBlacklistMobFilter = nbt.getBoolean("isBlacklistFilter");
         this.targetPlayers = nbt.getBoolean("targetPlayers");
         this.targetAnimals = nbt.getBoolean("targetAnimals");
         this.targetMobs = nbt.getBoolean("targetMobs");
@@ -194,7 +194,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
     public @NotNull NBTTagCompound writeToNBT(NBTTagCompound nbt) {
         nbt.setLong("power", this.power);
         nbt.setBoolean("isOn", this.isOn);
-        nbt.setBoolean("isBlacklistFilter", this.isBlacklistFilter);
+        nbt.setBoolean("isBlacklistFilter", this.isBlacklistMobFilter);
         nbt.setBoolean("targetPlayers", this.targetPlayers);
         nbt.setBoolean("targetAnimals", this.targetAnimals);
         nbt.setBoolean("targetMobs", this.targetMobs);
@@ -321,7 +321,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
         buf.writeBoolean(this.targetMobs);
         buf.writeBoolean(this.targetMachines);
         buf.writeInt(this.stattrak);
-        buf.writeBoolean(this.isBlacklistFilter);
+        buf.writeBoolean(this.isBlacklistMobFilter);
         buf.writeInt(mobFilter.size());
 
         for (String id : mobFilter) {
@@ -342,7 +342,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
         this.targetMobs = buf.readBoolean();
         this.targetMachines = buf.readBoolean();
         this.stattrak = buf.readInt();
-        this.isBlacklistFilter = buf.readBoolean();
+        this.isBlacklistMobFilter = buf.readBoolean();
 
         int size = buf.readInt();
         List<String> syncedMobFilter = new ArrayList<>(size);
@@ -374,7 +374,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
                 this.targetMachines = !this.targetMachines;
                 break;
             case 6:
-                this.isBlacklistFilter = !this.isBlacklistFilter;
+                this.isBlacklistMobFilter = !this.isBlacklistMobFilter;
                 break;
         }
     }
@@ -713,7 +713,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
                 ResourceLocation id = EntityList.getKey(e);
 
                 if (id != null) {
-                    if (isBlacklistFilter) {
+                    if (isBlacklistMobFilter) {
                         if (mobFilter.contains(id.toString())) {
                             return false;
                         }
@@ -1036,7 +1036,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
             this.targetMachines = e.vars.get("machines").getBoolean();
         } else if (e.name.equals("turret_switch")) {
             this.isOn = e.vars.get("isOn").getBoolean();
-            this.isBlacklistFilter = e.vars.get("isBlacklistFilter").getBoolean();
+            this.isBlacklistMobFilter = e.vars.get("isBlacklistFilter").getBoolean();
         }
     }
 
@@ -1180,6 +1180,35 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
         return new Object[]{this.aligned};
     }
 
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] isBlacklistMobFilter(Context context, Arguments args) {
+        return new Object[]{this.isBlacklistMobFilter};
+    }
+
+    @Callback(direct = true, limit = 1)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] toggleBlacklistMobFilter(Context context, Arguments args) {
+        this.isBlacklistMobFilter = args.checkBoolean(0);
+        return new Object[]{};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] addMobFilter(Context context, Arguments args) {
+        if (mobFilter.contains(args.checkString(0))) return new Object[]{false};
+        mobFilter.add(args.checkString(0));
+        return new Object[]{true};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] removeMobFilter(Context context, Arguments args) {
+        if (!mobFilter.contains(args.checkString(0))) return new Object[]{false};
+        mobFilter.remove(args.checkString(0));
+        return new Object[]{true};
+    }
+
     @Override
     @Optional.Method(modid = "opencomputers")
     public boolean canConnectNode(EnumFacing side) {
@@ -1189,42 +1218,35 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
     @Override
     @Optional.Method(modid = "opencomputers")
     public String[] methods() { // :vomit:
-        return new String[]{"setActive", "isActive", "getEnergyInfo", "getWhitelisted", "addWhitelist", "removeWhitelist", "setTargeting", "getTargeting", "hasTarget", "getAngle", "isAligned"};
+        return new String[]{"setActive", "isActive", "getEnergyInfo", "getWhitelisted", "addWhitelist", "removeWhitelist", "setTargeting", "getTargeting", "hasTarget", "getAngle", "isAligned", "isBlacklistMobFilter", "toggleBlacklistMobFilter", "addMobFilter", "removeMobFilter"};
     }
 
     @Override
     @Optional.Method(modid = "opencomputers")
     public Object[] invoke(String method, Context context, Arguments args) throws Exception {
-        switch (method) {
-            case "setActive":
-                return setActive(context, args);
-            case "isActive":
-                return isActive(context, args);
-            case "getEnergyInfo":
-                return getEnergyInfo(context, args);
-            case "getWhitelisted":
-                return getWhitelisted(context, args);
-            case "addWhitelist":
-                return addWhitelist(context, args);
-            case "removeWhitelist":
-                return removeWhitelist(context, args);
-            case "setTargeting":
-                return setTargeting(context, args);
-            case "getTargeting":
-                return getTargeting(context, args);
-            case "hasTarget":
-                return hasTarget(context, args);
-            case "getAngle":
-                return getAngle(context, args);
-            case "isAligned":
-                return isAligned(context, args);
-        }
-        throw new NoSuchMethodException();
+        return switch (method) {
+            case "setActive" -> setActive(context, args);
+            case "isActive" -> isActive(context, args);
+            case "getEnergyInfo" -> getEnergyInfo(context, args);
+            case "getWhitelisted" -> getWhitelisted(context, args);
+            case "addWhitelist" -> addWhitelist(context, args);
+            case "removeWhitelist" -> removeWhitelist(context, args);
+            case "setTargeting" -> setTargeting(context, args);
+            case "getTargeting" -> getTargeting(context, args);
+            case "hasTarget" -> hasTarget(context, args);
+            case "getAngle" -> getAngle(context, args);
+            case "isAligned" -> isAligned(context, args);
+            case "isBlacklistMobFilter" -> isBlacklistMobFilter(context, args);
+            case "toggleBlacklistMobFilter" -> toggleBlacklistMobFilter(context, args);
+            case "addMobFilter" -> addMobFilter(context, args);
+            case "removeMobFilter" -> removeMobFilter(context, args);
+            default -> throw new NoSuchMethodException();
+        };
     }
 
     @Override
     public String[] getFunctionInfo() {
-        return new String[]{PREFIX_FUNCTION + "setActive" + NAME_SEPARATOR + "active (0 or 1)", PREFIX_FUNCTION + "targetPlayers" + NAME_SEPARATOR + "enabled (0 or 1)", PREFIX_FUNCTION + "targetAnimals" + NAME_SEPARATOR + "enabled (0 or 1)", PREFIX_FUNCTION + "targetMobs" + NAME_SEPARATOR + "enabled (0 or 1)", PREFIX_FUNCTION + "targetMachines" + NAME_SEPARATOR + "enabled (0 or 1)", PREFIX_FUNCTION + "addWhitelist" + NAME_SEPARATOR + "name", PREFIX_FUNCTION + "removeWhitelist" + NAME_SEPARATOR + "name",};
+        return new String[]{PREFIX_FUNCTION + "setActive" + NAME_SEPARATOR + "active (0 or 1)", PREFIX_FUNCTION + "targetPlayers" + NAME_SEPARATOR + "enabled (0 or 1)", PREFIX_FUNCTION + "targetAnimals" + NAME_SEPARATOR + "enabled (0 or 1)", PREFIX_FUNCTION + "targetMobs" + NAME_SEPARATOR + "enabled (0 or 1)", PREFIX_FUNCTION + "targetMachines" + NAME_SEPARATOR + "enabled (0 or 1)", PREFIX_FUNCTION + "addWhitelist" + NAME_SEPARATOR + "name", PREFIX_FUNCTION + "removeWhitelist" + NAME_SEPARATOR + "name", PREFIX_FUNCTION + "addMobFilter" + NAME_SEPARATOR + "name", PREFIX_FUNCTION + "removeMobFilter" + NAME_SEPARATOR + "name", PREFIX_FUNCTION + "toggleBlacklistMobFilter" + NAME_SEPARATOR + "enabled (0 or 1)"};
     }
 
     @Override
@@ -1261,7 +1283,19 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
             if (whitelist.contains(playerName)) this.removeName(whitelist.indexOf(playerName));
             this.markChanged();
         }
-
+        if ((PREFIX_FUNCTION + "toggleBlacklistMobFilter").equals(name) && params.length > 0) {
+            this.isBlacklistMobFilter = IRORInteractive.parseInt(params[0], 0, 1) == 1;
+            this.markChanged();
+        }
+        if ((PREFIX_FUNCTION + "addMobFilter").equals(name) && params.length > 0) {
+            String mobName = params[0];
+            if (!mobFilter.contains(mobName)) mobFilter.add(mobName);
+            this.markChanged();
+        }
+        if ((PREFIX_FUNCTION + "removeMobFilter").equals(name) && params.length > 0) {
+            mobFilter.remove(params[0]);
+            this.markChanged();
+        }
         return null;
     }
 }

@@ -110,7 +110,7 @@ public class GUITurretTargetFilter extends GuiScreen {
     private void drawGuiContainerForegroundLayer() {
         int textureX = 0;
 
-        if (!turret.isBlacklistFilter) {
+        if (!turret.isBlacklistMobFilter) {
             textureX = 10;
         }
 
@@ -155,7 +155,7 @@ public class GUITurretTargetFilter extends GuiScreen {
             }
 
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("addFilter", filteredMobList.get(mobScrollList.selectedSlot));
+            data.setString("addMobFilter", filteredMobList.get(mobScrollList.selectedSlot));
             PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, turretPos));
         }
 
@@ -168,10 +168,10 @@ public class GUITurretTargetFilter extends GuiScreen {
             }
 
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("removeFilter", turret.mobFilter.get(filterScrollingList.selectedSlot));
+            data.setString("removeMobFilter", turret.mobFilter.get(filterScrollingList.selectedSlot));
             PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, turretPos));
 
-            if(!turret.mobFilter.isEmpty()) {
+            if (!turret.mobFilter.isEmpty()) {
                 filterScrollingList.selectedSlot = 0;
             } else {
                 filterScrollingList.selectedSlot = -1;
