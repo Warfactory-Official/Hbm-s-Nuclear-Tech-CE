@@ -1,7 +1,7 @@
 package com.hbm.items.tool;
 
 import com.hbm.blocks.BlockDummyable;
-import com.hbm.inventory.gui.GUITurretTargetFilter;
+import com.hbm.inventory.gui.GUITurretMobFilter;
 import com.hbm.items.ItemBakedBase;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.IGUIProvider;
@@ -26,10 +26,10 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
-public class ItemTurretTargetFilter extends ItemBakedBase implements IGUIProvider {
+public class ItemTurretMobFilter extends ItemBakedBase implements IGUIProvider {
     private TileEntityTurretBaseNT turret;
 
-    public ItemTurretTargetFilter(String name) {
+    public ItemTurretMobFilter(String name) {
         super(name);
 
         setMaxStackSize(1);
@@ -69,11 +69,11 @@ public class ItemTurretTargetFilter extends ItemBakedBase implements IGUIProvide
     @Override
     @SideOnly(Side.CLIENT)
     public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
-        return new GUITurretTargetFilter(turret);
+        return new GUITurretMobFilter(turret);
     }
 
     @Override
     public void addInformation(@NotNull ItemStack stack, World player, List<String> tooltip, @NotNull ITooltipFlag advanced) {
-        tooltip.add(TextFormatting.GRAY + "Shift-click on turret to open filter list");
+        tooltip.add(TextFormatting.GRAY + "Shift-click on turret to open mob filter list");
     }
 }

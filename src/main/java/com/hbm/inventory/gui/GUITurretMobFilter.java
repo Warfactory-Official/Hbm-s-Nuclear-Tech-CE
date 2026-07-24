@@ -28,8 +28,8 @@ import static com.hbm.render.NTMRenderHelper.bindTexture;
 import static com.hbm.util.GuiUtil.checkMouseBoundary;
 import static com.hbm.util.SoundUtil.playClickSound;
 
-public class GUITurretTargetFilter extends GuiScreen {
-    private final static ResourceLocation backgroundTexture = new ResourceLocation(Tags.MODID, "textures/gui/gui_turret_target_filter.png");
+public class GUITurretMobFilter extends GuiScreen {
+    private final static ResourceLocation backgroundTexture = new ResourceLocation(Tags.MODID, "textures/gui/gui_turret_mob_filter.png");
 
     private static final int sizeX = 242;
     private static final int sizeY = 124;
@@ -49,7 +49,7 @@ public class GUITurretTargetFilter extends GuiScreen {
 
     private final TileEntityTurretBaseNT turret;
 
-    public GUITurretTargetFilter(TileEntityTurretBaseNT turret) {
+    public GUITurretMobFilter(TileEntityTurretBaseNT turret) {
         this.turret = turret;
     }
 

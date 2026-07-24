@@ -71,7 +71,7 @@ public class ModItems {
 
     public static final List<Item> ALL_ITEMS = new ArrayList<>();
 
-    public static final Item turret_target_filter = new ItemTurretTargetFilter("turret_target_filter").setCreativeTab(MainRegistry.weaponTab);
+    public static final Item turret_mob_filter = new ItemTurretMobFilter("turret_mob_filter").setCreativeTab(MainRegistry.weaponTab);
 
     public static final Item redstone_sword = new RedstoneSword(ToolMaterial.STONE, "redstone_sword").setCreativeTab(CreativeTabs.COMBAT);
     public static final Item big_sword = new BigSword(ToolMaterial.DIAMOND, "big_sword").setCreativeTab(CreativeTabs.COMBAT);
