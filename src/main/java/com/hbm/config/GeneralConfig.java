@@ -80,6 +80,7 @@ public class GeneralConfig {
 	public static boolean enableServerRecipeSync = true;
 	public static boolean enableMachineGravity = false;
 	public static boolean enableExpensiveMode = false;
+	public static boolean dynamicTreesCompatMode = false;
 
 	public static boolean trueExp() {
 		return enableExpensiveMode && !PrecAssRecipes.INSTANCE.modified;
@@ -243,6 +244,7 @@ public class GeneralConfig {
 		enableMachineGravity = config.get(CommonConfig.CATEGORY_GENERAL, "1.44_enableMachineGravity", false, "Requires large large machines to have a proper foundation, or else they tilt and break. Independent from the 528 version of this config, which does the same, but only works with 528 enabled.").getBoolean(false);
 		enableFluidContainersV2 = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.99_CE_enableFluidContainersV2", "If enabled, 3 new enhanced version of base fluid barrels that supports partial fill and drain are added.", false);
 		leadSafeForgeContainerWhitelist = loadLeadSafeForgeContainerWhitelist(config);
+		dynamicTreesCompatMode = config.get(CommonConfig.CATEGORY_GENERAL, "1.67_dynamicTreesCompatMode", false, "Prevents HBM from reenabling tree, big shroom and cactus generation that was disabled by DynamicTrees").getBoolean(false);
 		enableExpensiveMode = config.get(CommonConfig.CATEGORY_GENERAL, "1.99_enableExpensiveMode", false, "It does what the name implies.").getBoolean(false);
         
 

@@ -219,12 +219,12 @@ public class ModEventHandlerImpact {
 
 	@SubscribeEvent
 	public void postImpactDecoration(DecorateBiomeEvent.Decorate event) {
-		
 		TomSaveData data = TomSaveData.forWorld(event.getWorld());
-		
-		if(data.impact) {
-			EventType type = event.getType();
-			
+		EventType type = event.getType();
+
+		if ((GeneralConfig.dynamicTreesCompatMode)&&(type == event.getType().TREE || type == event.getType().BIG_SHROOM || type == event.getType().CACTUS)) return;
+
+		if(data.impact) {	
 			if(data.dust > 0 || data.fire > 0) {
 				if(type == event.getType().TREE || type == event.getType().BIG_SHROOM || type == event.getType().GRASS || type == event.getType().REED || type == event.getType().FLOWERS || type == event.getType().DEAD_BUSH
 						|| type == event.getType().CACTUS || type == event.getType().PUMPKIN || type == event.getType().LILYPAD) {
