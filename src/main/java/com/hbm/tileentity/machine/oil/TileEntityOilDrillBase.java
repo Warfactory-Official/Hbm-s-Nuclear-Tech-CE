@@ -228,29 +228,27 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase imple
 
     public boolean trySuck(int y) {
         BlockPos startPos = new BlockPos(pos.getX(), y, pos.getZ());
-        Block startBlock = world.getBlockState(startPos).getBlock();
-        if (!canSuckBlock(startBlock)) return false;
+        if (!canSuckBlock(world.getBlockState(startPos).getBlock())) return false;
         if (!this.canPump()) return true;
         Queue<BlockPos> queue = new ArrayDeque<>();
         processed.clear();
         queue.offer(startPos);
         processed.add(startPos);
 
-        int nodesVisited = 0;
-        while (!queue.isEmpty() && nodesVisited < 256) {
-            BlockPos currentPos = queue.poll();
-            nodesVisited++;
-            Block currentBlock = world.getBlockState(currentPos).getBlock();
-            if (currentBlock == ModBlocks.ore_oil || currentBlock == ModBlocks.ore_bedrock_oil) {
-                doSuck(currentPos);
-                return true;
-            }
-            if (currentBlock != ModBlocks.ore_oil_empty) continue;
-            for (ForgeDirection dir : BobMathUtil.getShuffledDirs()) {
-                BlockPos neighborPos = currentPos.add(dir.offsetX, dir.offsetY, dir.offsetZ);
-                if (!processed.contains(neighborPos) && canSuckBlock(world.getBlockState(neighborPos).getBlock())) {
-                    processed.add(neighborPos);
-                    queue.offer(neighborPos);
+        for (int layer = 0; layer <= 64 && !queue.isEmpty(); layer++) {
+            for (int i = queue.size(); i > 0; i--) {
+                BlockPos currentPos = queue.poll();
+                Block currentBlock = world.getBlockState(currentPos).getBlock();
+                if (currentBlock == ModBlocks.ore_oil || currentBlock == ModBlocks.ore_bedrock_oil) {
+                    doSuck(currentPos);
+                    return true;
+                }
+                if (currentBlock != ModBlocks.ore_oil_empty) continue;
+                for (ForgeDirection dir : BobMathUtil.getShuffledDirs()) {
+                    BlockPos neighborPos = currentPos.add(dir.offsetX, dir.offsetY, dir.offsetZ);
+                    if (processed.add(neighborPos) && canSuckBlock(world.getBlockState(neighborPos).getBlock())) {
+                        queue.offer(neighborPos);
+                    }
                 }
             }
         }
