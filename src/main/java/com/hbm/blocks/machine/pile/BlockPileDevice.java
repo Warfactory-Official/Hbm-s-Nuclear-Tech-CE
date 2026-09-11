@@ -91,7 +91,7 @@ public class BlockPileDevice extends BlockMeta implements ITileEntityProvider, I
 	}
 
 	@Override
-	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+	public boolean onBlockActivated(@NotNull World world, @NotNull BlockPos pos, @NotNull IBlockState state, EntityPlayer player, @NotNull EnumHand hand, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ) {
 		if(player.isSneaking()) return false;
 
 		int meta = state.getValue(META);
@@ -125,11 +125,11 @@ public class BlockPileDevice extends BlockMeta implements ITileEntityProvider, I
 	}
 
 	@Override
-	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
+	public void onBlockPlacedBy(@NotNull World world, @NotNull BlockPos pos, IBlockState state, @NotNull EntityLivingBase placer, @NotNull ItemStack stack) {
 		if(state.getValue(META) != BLOCK_META_CONTROL) return;
 
 		int i = MathHelper.floor(placer.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
-		if(i == 0) world.setBlockState(pos, state.withProperty(META, BLOCK_META_CONTROL + 0), 2);
+		if(i == 0) world.setBlockState(pos, state.withProperty(META, BLOCK_META_CONTROL), 2);
 		if(i == 1) world.setBlockState(pos, state.withProperty(META, BLOCK_META_CONTROL + 3), 2);
 		if(i == 2) world.setBlockState(pos, state.withProperty(META, BLOCK_META_CONTROL + 1), 2);
 		if(i == 3) world.setBlockState(pos, state.withProperty(META, BLOCK_META_CONTROL + 2), 2);
@@ -150,7 +150,7 @@ public class BlockPileDevice extends BlockMeta implements ITileEntityProvider, I
 	}
 
 	@Override
-	public List<ItemStack> getDrops(IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
+	public @NotNull List<ItemStack> getDrops(IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
 		return Arrays.asList(new ItemStack(Item.getItemFromBlock(this), 1, damageDropped(state)));
 	}
 
@@ -176,9 +176,8 @@ public class BlockPileDevice extends BlockMeta implements ITileEntityProvider, I
 		List<String> text = new ArrayList<>();
 		TileEntity tile = world.getTileEntity(pos);
 
-		if(tile instanceof TileEntityPileLoader) {
-			TileEntityPileLoader device = (TileEntityPileLoader) tile;
-			text.add("Temp: " + Math.round(device.channelTemp) + " / " + TileEntityPileCore.MAX_HEAT + "°C");
+		if(tile instanceof TileEntityPileLoader device) {
+            text.add("Temp: " + Math.round(device.channelTemp) + " / " + TileEntityPileCore.MAX_HEAT + "°C");
 			if(!device.syncStack.isEmpty()) text.add("Loading: " + device.syncStack.getDisplayName());
 
 			if(!device.channelStack.isEmpty()) {
@@ -187,9 +186,8 @@ public class BlockPileDevice extends BlockMeta implements ITileEntityProvider, I
 			}
 		}
 
-		if(tile instanceof TileEntityPileControl) {
-			TileEntityPileControl device = (TileEntityPileControl) tile;
-			text.add("Extraction level: " + (int) (device.level * 100) + "%");
+		if(tile instanceof TileEntityPileControl device) {
+            text.add("Extraction level: " + (int) (device.level * 100) + "%");
 		}
 
 		if(!text.isEmpty())

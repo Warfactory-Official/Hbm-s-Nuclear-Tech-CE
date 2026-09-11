@@ -9,6 +9,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
@@ -66,8 +67,11 @@ public class CraneExtractor extends BlockCraneBase {
     public void breakBlock(World world, @NotNull BlockPos pos, @NotNull IBlockState state) {
         TileEntity tileentity = world.getTileEntity(pos);
 
-        if(tileentity instanceof TileEntityCraneExtractor) {
-            InventoryHelper.dropInventoryItems(world, pos, tileentity, 9, 19);
+        if(tileentity instanceof TileEntityCraneExtractor crane) {
+            for(int i = 9; i <= 19; i++) {
+                ItemStack stack = crane.inventory.getStackInSlot(i);
+                if(!stack.isEmpty()) InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), stack);
+            }
         }
         super.breakBlock(world, pos, state);
     }

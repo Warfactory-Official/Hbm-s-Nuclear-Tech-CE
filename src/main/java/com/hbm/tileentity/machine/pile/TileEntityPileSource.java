@@ -2,7 +2,7 @@ package com.hbm.tileentity.machine.pile;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
-
+@Deprecated
 @AutoRegister
 public class TileEntityPileSource extends TileEntityPileBase {
 

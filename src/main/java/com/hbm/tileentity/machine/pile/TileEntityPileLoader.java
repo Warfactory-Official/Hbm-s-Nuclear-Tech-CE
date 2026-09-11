@@ -250,8 +250,8 @@ public class TileEntityPileLoader extends TileEntityPileDeviceBase implements IS
 	@Override public void clear() { this.stack = ItemStack.EMPTY; }
 
 	@NotNull @Override public int[] getSlotsForFace(@NotNull EnumFacing side) { return new int[] {0}; }
-	@Override public boolean isItemValidForSlot(int slot, @NotNull ItemStack stack) { return isItemLoadable(stack); }
-	@Override public boolean canInsertItem(int slot, @NotNull ItemStack stack, @NotNull EnumFacing side) { return isItemLoadable(stack); }
+	@Override public boolean isItemValidForSlot(int slot, @NotNull ItemStack stack) { return this.stack.isEmpty() && !this.loading && this.level <= 0D && isItemLoadable(stack); }
+	@Override public boolean canInsertItem(int slot, @NotNull ItemStack stack, @NotNull EnumFacing side) { return isItemValidForSlot(slot, stack); }
 	@Override public boolean canExtractItem(int slot, @NotNull ItemStack stack, @NotNull EnumFacing side) { return false; }
 
 	@Override

@@ -10,6 +10,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.pile.TileEntityPileCore.PileChannel;
+import com.hbm.tileentity.network.ICachedPipeConnections;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.Compat;
 
@@ -97,12 +98,22 @@ public class TileEntityPileVent extends TileEntityPileDeviceBase implements IFlu
 	public void serialize(ByteBuf buf) {
 		super.serialize(buf);
 		buf.writeBoolean(this.isActive);
+		compair.serialize(buf);
 	}
 
 	@Override
 	public void deserialize(ByteBuf buf) {
 		super.deserialize(buf);
 		this.isActive = buf.readBoolean();
+		compair.deserialize(buf);
+	}
+
+	@Override
+	public void deserializeInitial(ByteBuf buf) {
+		super.deserializeInitial(buf);
+		ForgeDirection dir = getOrientation();
+		TileEntity te = world.getTileEntity(pos.add(dir.offsetX, 0, dir.offsetZ));
+		if(te instanceof ICachedPipeConnections cached) cached.invalidateConnectionCache();
 	}
 
 	@Override

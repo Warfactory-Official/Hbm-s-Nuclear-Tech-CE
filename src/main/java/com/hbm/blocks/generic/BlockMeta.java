@@ -9,6 +9,8 @@ import com.hbm.items.IModelRegister;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.client.NTMClientRegistry;
 import com.hbm.render.block.BlockBakeFrame;
+import com.hbm.render.block.CTMModelWrapper;
+import com.hbm.util.Compat;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
@@ -37,6 +39,7 @@ import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -109,6 +112,10 @@ public class BlockMeta extends BlockBase implements ICustomBlockItem, IDynamicMo
     }
 
     protected boolean useSpecialRenderer() {
+        return false;
+    }
+
+    protected boolean useCTM() {
         return false;
     }
 
@@ -189,6 +196,7 @@ public class BlockMeta extends BlockBase implements ICustomBlockItem, IDynamicMo
                 IBakedModel bakedModel = retexturedModel.bake(
                         ModelRotation.X0_Y0, DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()
                 );
+                if (useCTM() && Loader.isModLoaded(Compat.ModIds.CTM)) bakedModel = CTMModelWrapper.wrap(retexturedModel, bakedModel);
 
                 ModelResourceLocation modelLocation = new ModelResourceLocation(getRegistryName(), "meta=" + meta);
                 event.getModelRegistry().putObject(modelLocation, bakedModel);

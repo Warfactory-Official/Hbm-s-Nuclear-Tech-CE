@@ -65,6 +65,11 @@ public class BlockPile extends BlockMeta implements ITileEntityProvider, IToolab
 	}
 
 	@Override
+	protected boolean useCTM() {
+		return true;
+	}
+
+	@Override
 	public TileEntity createNewTileEntity(@NotNull World world, int meta) {
 		if(meta == META_CORE) return new TileEntityPileCore();
 		return new TileEntityPileBaseMK2();
