@@ -8,6 +8,7 @@ import com.hbm.tileentity.IControlReceiverFilter;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -64,8 +65,8 @@ public class TileEntityPneumoStorageMono extends TileEntityPneumaticStorageBase 
 	@Override public boolean allowTypeSetting() { return false; }
 
 	@Override
-	public void receiveControl(NBTTagCompound data) {
-		super.receiveControl(data);
+	public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
+		super.receiveControl(player, data);
 
 		if(data.hasKey("slot")) {
 			setFilterContents(data);

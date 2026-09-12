@@ -466,7 +466,7 @@ public class TileEntityWatz extends TileEntityMachineBase implements ITickable, 
 	}
 
 	@Override
-	public void receiveControl(NBTTagCompound data) {
+	public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
 
 		if(data.hasKey("lock")) {
 

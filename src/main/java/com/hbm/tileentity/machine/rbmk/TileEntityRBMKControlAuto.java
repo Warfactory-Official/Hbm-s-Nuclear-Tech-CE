@@ -13,6 +13,7 @@ import com.hbm.util.EnumUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.MathHelper;
@@ -134,7 +135,7 @@ public class TileEntityRBMKControlAuto extends TileEntityRBMKControl implements 
 	}
 
 	@Override
-	public void receiveControl(NBTTagCompound data) {
+	public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
 		
 		if(data.hasKey("function")) {
 			int c = Math.abs(data.getInteger("function")) % RBMKColor.VALUES.length;

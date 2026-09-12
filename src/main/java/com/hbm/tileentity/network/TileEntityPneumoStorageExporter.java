@@ -12,6 +12,7 @@ import com.hbm.util.BobMathUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -305,7 +306,7 @@ public class TileEntityPneumoStorageExporter extends TileEntityPneumaticMachineB
 	}
 
 	@Override
-	public void receiveControl(NBTTagCompound data) {
+	public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
 		if(data.hasKey("continuous")) {
 			this.continuousRequest = !this.continuousRequest;
 		}

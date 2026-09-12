@@ -4,6 +4,7 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.container.ContainerMachineSatLinker;
 import com.hbm.inventory.gui.GUIMachineSatLinker;
 import com.hbm.items.ISatChip;
+import com.hbm.lib.ItemStackHandlerWrapper;
 import com.hbm.saveddata.satellites.SatelliteSavedData;
 import com.hbm.tileentity.IGUIProvider;
 import net.minecraft.client.gui.GuiScreen;
@@ -17,8 +18,10 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
+import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
 public class TileEntityMachineSatLinker extends TileEntity implements ITickable, IGUIProvider {
@@ -39,6 +42,11 @@ public class TileEntityMachineSatLinker extends TileEntity implements ITickable,
 			protected void onContentsChanged(int slot) {
 				super.onContentsChanged(slot);
 				markDirty();
+			}
+
+			@Override
+			public boolean isItemValid(int slot, @NotNull ItemStack stack) {
+				return stack.getItem() instanceof ISatChip;
 			}
 		};
 	}
@@ -101,7 +109,18 @@ public class TileEntityMachineSatLinker extends TileEntity implements ITickable,
 	
 	@Override
 	public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
-		return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ? CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(inventory) : super.getCapability(capability, facing);
+
+		if(capability != CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) return super.getCapability(capability, facing);
+		if(facing == null) return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(inventory);
+
+		// only the copy slot is reachable from the outside, and only once it carries the source frequency
+		return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(new ItemStackHandlerWrapper(inventory, new int[] { 1 }) {
+			@Override
+			public ItemStack extractItem(int slot, int amount, boolean simulate) {
+				if(ISatChip.getFreqS(handle.getStackInSlot(0)) != ISatChip.getFreqS(handle.getStackInSlot(1))) return ItemStack.EMPTY;
+				return super.extractItem(slot, amount, simulate);
+			}
+		});
 	}
 
 	@Override

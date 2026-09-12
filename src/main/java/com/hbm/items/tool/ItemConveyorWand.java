@@ -84,7 +84,7 @@ public class ItemConveyorWand extends Item implements ILookOverlay {
         if (pos1.equals(pos2) && side1 == side2 && (side1 == EnumFacing.UP || side1 == EnumFacing.DOWN)) {
             BlockPos placePos = pos1.offset(side1);
             if (!routeWorld.getBlockState(placePos).getBlock().isReplaceable(routeWorld, placePos)) return -1;
-            IBlockState placeState = getConveyorBlock(type).getDefaultState().withProperty(BlockConveyor.FACING, player.getHorizontalFacing());
+            IBlockState placeState = getConveyorBlock(type).getDefaultState().withProperty(BlockConveyor.FACING, player.getHorizontalFacing().getOpposite());
             if (buildWorld instanceof World) ((World) buildWorld).setBlockState(placePos.subtract(boxOrigin), placeState, 3);
             else if (buildWorld instanceof WorldInAJar) ((WorldInAJar) buildWorld).setBlockState(placePos.subtract(boxOrigin), placeState);
             return 1;
@@ -98,7 +98,7 @@ public class ItemConveyorWand extends Item implements ILookOverlay {
         boolean shouldTurnToTarget = side2.getAxis().isHorizontal() || targetBlockState.getBlock() instanceof BlockCraneBase ||
                                      targetBlockState.getBlock() == ModBlocks.conveyor_lift ||
                                      targetBlockState.getBlock() == ModBlocks.conveyor_chute;
-        EnumFacing horDir = currentDir.getAxis().isVertical() ? player.getHorizontalFacing().getOpposite() : currentDir;
+        EnumFacing horDir = currentDir.getAxis().isVertical() ? player.getHorizontalFacing() : currentDir;
 
         if (hasVertical && currentPos.getY() > targetPos.getY() &&
             routeWorld.getBlockState(currentPos.down()).getBlock().isReplaceable(routeWorld, currentPos.down())) {
@@ -241,7 +241,7 @@ public class ItemConveyorWand extends Item implements ILookOverlay {
 
             BlockPos placePos = pos.offset(facing);
             if (world.getBlockState(placePos).getBlock().isReplaceable(world, placePos)) {
-                IBlockState defaultState = toPlaceBlock.getDefaultState();
+                IBlockState defaultState = toPlaceBlock.getStateForPlacement(world, placePos, facing, hitX, hitY, hitZ, 0, player);
                 world.setBlockState(placePos, defaultState, 11);
                 IBlockState placedState = world.getBlockState(placePos);
                 placedState.getBlock().onBlockPlacedBy(world, placePos, placedState, player, stack);

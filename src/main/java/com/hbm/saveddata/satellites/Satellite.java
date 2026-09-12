@@ -1,6 +1,7 @@
 package com.hbm.saveddata.satellites;
 
 import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.entity.missile.EntitySatellitePod;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemDrive.EnumDriveType;
 import com.hbm.items.machine.ItemSatellite.EnumSatType;
@@ -12,6 +13,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
+import net.minecraftforge.items.ItemStackHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -140,12 +142,17 @@ public abstract class Satellite {
 	public EnumDriveType driveInput = null;
 	public EnumDriveType driveOutput = null;
 
+	/** Items waiting in orbit for a sat dock to call them down */
+	public ItemStackHandler requestableSlots = new ItemStackHandler(0);
+
 	public void writeToNBT(NBTTagCompound nbt) {
 		nbt.setInteger("targetX", targetX);
 		nbt.setInteger("targetZ", targetZ);
 		nbt.setString("tx", tx);
 		if(driveInput != null) nbt.setInteger("driveInput", driveInput.ordinal());
 		if(driveOutput != null) nbt.setInteger("driveOutput", driveOutput.ordinal());
+
+		nbt.setTag("requestableSlots", this.requestableSlots.serializeNBT());
 	}
 
 	public void readFromNBT(NBTTagCompound nbt) {
@@ -154,6 +161,25 @@ public abstract class Satellite {
 		this.tx = nbt.getString("tx");
 		this.driveInput = nbt.hasKey("driveInput") ? EnumUtil.grabEnumSafely(EnumDriveType.VALUES, nbt.getInteger("driveInput")) : null;
 		this.driveOutput = nbt.hasKey("driveOutput") ? EnumUtil.grabEnumSafely(EnumDriveType.VALUES, nbt.getInteger("driveOutput")) : null;
+
+		this.requestableSlots = new ItemStackHandler(0);
+		if(nbt.hasKey("requestableSlots")) this.requestableSlots.deserializeNBT(nbt.getCompoundTag("requestableSlots"));
+	}
+
+	/** Returns true if requestable items are available, and sends them to the specified location */
+	public boolean tryRequestItems(World world, int x, int y, int z) {
+
+		if(this.requestableSlots == null || this.requestableSlots.getSlots() <= 0) return false;
+
+		EntitySatellitePod pod = new EntitySatellitePod(world).setup(y, requestableSlots);
+		pod.setPosition(x + 0.5, 300, z + 0.5);
+
+		if(!world.spawnEntity(pod)) return false;
+
+		this.requestableSlots = new ItemStackHandler(0);
+		this.markDirty();
+
+		return true;
 	}
 
 	public void onCommand(World world, String... cmd) {

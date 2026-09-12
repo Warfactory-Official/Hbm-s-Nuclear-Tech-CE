@@ -27,6 +27,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.Container;
@@ -349,7 +350,7 @@ public class BlockWandTandem extends BlockContainerBakeable implements IBlockSid
         }
 
         @Override
-        public void receiveControl(NBTTagCompound nbt) {
+        public void receiveControl(EntityPlayerMP player, NBTTagCompound nbt) {
             readFromNBT(nbt);
             markDirty();
         }

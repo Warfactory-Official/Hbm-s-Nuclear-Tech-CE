@@ -16,6 +16,7 @@ import li.cil.oc.api.network.SimpleComponent;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.Container;
@@ -162,7 +163,7 @@ public class TileEntityRadioTelex extends TileEntityLoadedBase implements IContr
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
 
         for(int i = 0; i < 5; i++) {
             if(data.hasKey("tx" + i)) this.txBuffer[i] = data.getString("tx" + i);

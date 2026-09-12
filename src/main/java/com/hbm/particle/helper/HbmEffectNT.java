@@ -66,7 +66,7 @@ public enum HbmEffectNT {
     LaunchSmoke, ExKeroseneOld, ExKerosene, ExSolid, ExHydrogen, ExBalefire, RadFog,
     // MK3 stuff
     MissileContrail, Smoke_Cloud, Smoke_Radial, Smoke_RadialDigamma, Smoke_Shock, Smoke_ShockRand, Smoke_Wave, Smoke_FoamSplash,
-    DebugDrone, Network, Exhaust_Soyuz, Exhaust_Meteor, Muke, TinyTot, UFO, Haze, PlasmaBlast, JustTilt, ProperJolt, GasFlame,
+    DebugDrone, Network, Exhaust_Soyuz, Exhaust_Lambda, Exhaust_Meteor, Muke, TinyTot, UFO, Haze, PlasmaBlast, JustTilt, ProperJolt, GasFlame,
     Marker, CasingOld, Foundry, Fireworks, Vomit, Sweat, Splash, FluidFill, RadiationFlash, AmatExplosion, VanillaBurst_Flame,
     VanillaBurst_Cloud, VanillaBurst_RedDust, VanillaBurst_BlueDust, VanillaBurst_GreenDust, VanillaBurst_BlockDust, VanillaExt_Flame,
     VanillaExt_Cloud, VanillaExt_RedDust, VanillaExt_BlueDust, VanillaExt_GreenDust, VanillaExt_BlockDust, VanillaExt_Smoke,
@@ -363,6 +363,28 @@ public enum HbmEffectNT {
                     ParticleRocketFlame fx = new ParticleRocketFlame(world,
                             x + rand.nextGaussian() * width, y, z + rand.nextGaussian() * width);
                     fx.setMotionY(-0.75 + rand.nextDouble() * 0.5);
+                    Minecraft.getMinecraft().effectRenderer.addEffect(fx);
+                }
+            }
+        });
+        Exhaust_Lambda.setHandler((world, x, y, z, data) -> {
+            Random rand = world.rand;
+            EntityPlayer player = Minecraft.getMinecraft().player;
+            if (new Vec3d(player.posX - x, player.posY - y, player.posZ - z).length() > 350) return;
+
+            int count = Math.max(1, data.getInteger("count"));
+            double width = data.getDouble("width");
+
+            for (int i = 0; i < count; i++) {
+                if (GeneralConfig.instancedParticles) {
+                    ParticleRocketFlameInstanced fx = new ParticleRocketFlameInstanced(world,
+                            x + rand.nextGaussian() * width, y, z + rand.nextGaussian() * width);
+                    fx.setMotionY(-1 + rand.nextDouble() * 0.25);
+                    InstancedParticleRenderer.addParticle(fx);
+                } else {
+                    ParticleRocketFlame fx = new ParticleRocketFlame(world,
+                            x + rand.nextGaussian() * width, y, z + rand.nextGaussian() * width).setScale(1.5F);
+                    fx.setMotionY(-1 + rand.nextDouble() * 0.25);
                     Minecraft.getMinecraft().effectRenderer.addEffect(fx);
                 }
             }

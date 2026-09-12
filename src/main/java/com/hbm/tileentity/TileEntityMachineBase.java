@@ -165,11 +165,13 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
     @Override
     public void serialize(ByteBuf buf) {
         buf.writeBoolean(muffled);
+        buf.writeBoolean(tilted);
     }
 
     @Override
     public void deserialize(ByteBuf buf) {
         this.muffled = buf.readBoolean();
+        this.tilted = buf.readBoolean();
     }
 
     public void handleButtonPacket(int value, int meta) {

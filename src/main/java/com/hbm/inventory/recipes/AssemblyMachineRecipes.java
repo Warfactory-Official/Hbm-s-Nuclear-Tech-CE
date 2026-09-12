@@ -14,6 +14,7 @@ import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.items.ItemEnums.*;
 import com.hbm.items.ModItems;
+import com.hbm.items.machine.ItemDrive.EnumDriveType;
 import com.hbm.items.weapon.grenade.ItemGrenadeFuze;
 import com.hbm.items.weapon.grenade.ItemGrenadeShell;
 import com.hbm.items.machine.*;
@@ -950,22 +951,42 @@ public class AssemblyMachineRecipes extends GenericRecipes<GenericRecipe> {
         this.register(new GenericRecipe("ass.multitool").setup(100, 100).outputItems(new ItemStack(ModItems.multitool_hit, 1))
                 .inputItems(new OreDictStack(ANY_RESISTANTALLOY.ingot(), 4), new OreDictStack(STEEL.plate(), 4), new OreDictStack(GOLD.wireFine(), 12), new ComparableStack(ModItems.motor, 4), new ComparableStack(ModItems.circuit, 16, EnumCircuitType.CAPACITOR_BOARD)));
 
+        this.register(new GenericRecipe("ass.alclad").setupNamed(200, 50_000).outputItems(new ItemStack(ModItems.part_generic, 1, EnumPartType.ALCLAD.ordinal()))
+                .inputItems(new OreDictStack(AL.dust(), 8), new OreDictStack(CU.plate(), 2)));
+        this.register(new GenericRecipe("ass.titaniumconstruction").setupNamed(600, 1_000).outputItems(new ItemStack(ModItems.part_generic, 1, EnumPartType.ALCLAD.ordinal()))
+                .inputItems(new OreDictStack(TI.plate(), 4), new OreDictStack(ANY_PLASTIC.ingot(), 8)));
+
+        this.register(new GenericRecipe("ass.launchpadsoyuz").setup(1_200, 5_000).outputItems(new ItemStack(ModBlocks.launchpad_soyuz, 1))
+                .inputItems(new ComparableStack(ModBlocks.concrete_rebar, 64), new OreDictStack(STEEL.plateWelded(), 32), new OreDictStack(ANY_HARDPLASTIC.ingot(), 24), new ComparableStack(ModItems.motor, 24), new ComparableStack(ModItems.circuit, 1, EnumCircuitType.CONTROLLER_ADVANCED))
+                .inputItemsEx(new ComparableStack(ModBlocks.concrete_rebar, 64), new ComparableStack(ModItems.item_expensive, 32, EnumExpensiveType.FERRO_PLATING), new OreDictStack(ANY_HARDPLASTIC.ingot(), 64), new ComparableStack(ModItems.motor, 32), new ComparableStack(ModItems.circuit, 1, EnumCircuitType.CONTROLLER_ADVANCED)));
+        this.register(new GenericRecipe("ass.launchpadlambda").setup(1_200, 5_000).outputItems(new ItemStack(ModBlocks.launchpad_lambda, 1))
+                .inputItems(new ComparableStack(ModBlocks.concrete_rebar, 64), new OreDictStack(STEEL.plateWelded(), 12), new ComparableStack(ModItems.motor_bismuth, 4), new ComparableStack(ModItems.circuit, 1, EnumCircuitType.CONTROLLER_ADVANCED), new ComparableStack(ModItems.drive, 1, EnumDriveType.DISK_FLIGHTDATA_PROCESSED))
+                .inputItemsEx(new ComparableStack(ModBlocks.concrete_rebar, 64), new ComparableStack(ModItems.item_expensive, 8, EnumExpensiveType.BRONZE_TUBES), new ComparableStack(ModItems.circuit, 3, EnumCircuitType.CONTROLLER_ADVANCED), new ComparableStack(ModItems.drive, 16, EnumDriveType.DISK_FLIGHTDATA_PROCESSED)));
+
         // space
-        this.register(new GenericRecipe("ass.soyuz").setup(6_000, 100).outputItems(new ItemStack(ModItems.missile_soyuz, 1))
+        this.register(new GenericRecipe("ass.soyuz").setup(6_000, 25_000).outputItems(new ItemStack(ModItems.missile_soyuz, 1))
                 .inputItems(new OreDictStack(TI.shell(), 32),
                         new OreDictStack(RUBBER.ingot(), 64),
                         new ComparableStack(ModItems.rocket_fuel, 64),
                         new ComparableStack(ModItems.thruster_small, 12),
                         new ComparableStack(ModItems.thruster_medium, 12),
                         new ComparableStack(ModItems.circuit, 4, EnumCircuitType.CONTROLLER),
-                        new ComparableStack(ModItems.part_generic, 32, EnumPartType.LDE)).setPools(GenericRecipes.POOL_PREFIX_DISCOVER + "soyuz"));
-        this.register(new GenericRecipe("ass.lander").setup(2_400, 100).outputItems(new ItemStack(ModItems.missile_soyuz_lander, 1))
+                        new ComparableStack(ModItems.part_generic, 32, EnumPartType.LDE),
+                        new ComparableStack(ModItems.drive, 4, EnumDriveType.FLASH_FLIGHTSIM)).setPools528(GenericRecipes.POOL_PREFIX_528 + "soyuz"));
+        this.register(new GenericRecipe("ass.lambdarocket").setup(1_200, 50_000).outputItems(new ItemStack(ModItems.missile_lambda, 1))
+                .inputItems(new ComparableStack(ModItems.part_generic, 64, EnumPartType.ALCLAD),
+                        new ComparableStack(ModItems.ingot_tungsten_carbide, 24),
+                        new ComparableStack(ModItems.rocket_fuel, 64),
+                        new ComparableStack(ModItems.circuit, 24, EnumCircuitType.BASIC),
+                        new ComparableStack(ModItems.drive, 1, EnumDriveType.DISK_FLIGHTDATA_PROCESSED)).setPools528(GenericRecipes.POOL_PREFIX_528 + "soyuz"));
+        this.register(new GenericRecipe("ass.lander").setup(2_400, 25_000).outputItems(new ItemStack(ModItems.missile_soyuz_lander, 1))
                 .inputItems(new OreDictStack(AL.shell(), 4),
                         new OreDictStack(RUBBER.ingot(), 16),
                         new ComparableStack(ModItems.rocket_fuel, 16),
                         new ComparableStack(ModItems.thruster_small, 3),
                         new ComparableStack(ModItems.circuit, 3, EnumCircuitType.CONTROLLER_ADVANCED),
-                        new ComparableStack(ModItems.part_generic, 12, EnumPartType.LDE)).setPools(GenericRecipes.POOL_PREFIX_DISCOVER + "soyuz"));
+                        new ComparableStack(ModItems.part_generic, 12, EnumPartType.LDE),
+                        new ComparableStack(ModItems.drive, 8, EnumDriveType.FLASH_FLIGHTSIM)).setPools528(GenericRecipes.POOL_PREFIX_528 + "soyuz"));
         this.register(new GenericRecipe("ass.satellitebase").setup(600, 100).outputItems(new ItemStack(ModItems.sat_base, 1))
                 .inputItems(new OreDictStack(RUBBER.ingot(), 12),
                         new OreDictStack(TI.shell(), 3),
@@ -1069,7 +1090,17 @@ public class AssemblyMachineRecipes extends GenericRecipes<GenericRecipe> {
                 .inputItems(new OreDictStack(AL.shell(), 1),
                         new ComparableStack(ModItems.coil_gold, 4),
                         new ComparableStack(ModItems.circuit, 1, EnumCircuitType.QUANTUM),
+                        new ComparableStack(ModItems.part_generic, 1, EnumPartType.LDE))
+                .inputItemsEx(new ComparableStack(ModItems.item_expensive, 1, EnumExpensiveType.BRONZE_TUBES),
+                        new ComparableStack(ModItems.circuit, 1, EnumCircuitType.QUANTUM),
                         new ComparableStack(ModItems.part_generic, 1, EnumPartType.LDE)));
+        this.register(new GenericRecipe("ass.0gassembler").setup(600, 25_000).outputItems(new ItemStack(ModItems.satellite, 1, EnumSatType.SCIENCE_ASSEMBLER.ordinal()))
+                .inputItems(new OreDictStack(WEAPONSTEEL.shell(), 4),
+                        new OreDictStack(ANY_BISMOIDBRONZE.plateCast(), 4),
+                        new OreDictStack(PURG.billet(), 16),
+                        new ComparableStack(ModItems.motor_bismuth, 4),
+                        new ComparableStack(ModItems.circuit, 4, EnumCircuitType.QUANTUM),
+                        new ComparableStack(ModItems.part_generic, 4, EnumPartType.LDE)));
         this.register(new GenericRecipe("ass.nitra").setupNamed(200, 500)
                 .inputItems(new ComparableStack(ModItems.nitra))
                 .setIconToFirstIngredient()

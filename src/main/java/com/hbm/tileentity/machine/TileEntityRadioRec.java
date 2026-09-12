@@ -12,6 +12,7 @@ import com.hbm.util.NoteBuilder.Octave;
 import com.hbm.util.Tuple;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ITickable;
@@ -94,7 +95,7 @@ public class TileEntityRadioRec extends TileEntityLoadedBase implements ITickabl
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if (data.hasKey("channel")) this.channel = data.getString("channel");
         if (data.hasKey("isOn")) this.isOn = data.getBoolean("isOn");
 

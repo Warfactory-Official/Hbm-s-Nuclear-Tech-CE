@@ -142,6 +142,9 @@ public class ResourceManager {
     public static final WaveFrontObjectVAO thresher = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/thresher.obj")).asVBO();
     public static final WaveFrontObjectVAO piston_inserter = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/piston_inserter.obj")).asVBO();
     public static final WaveFrontObjectVAO launchpad_soyuz = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/launchpad_soyuz.obj")).asVBO();
+    public static final WaveFrontObjectVAO launchpad_lambda = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/launchpad_lambda.obj")).asVBO();
+    public static final WaveFrontObjectVAO lambda_rocket = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/lambda_rocket.obj")).asVBO();
+    public static final WaveFrontObjectVAO dropship = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/dropship.obj")).asVBO();
     public static final WaveFrontObjectVAO lpw2 = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/lpw2.obj")).asVBO();
     public static final WaveFrontObjectVAO igen = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/machines/igen.obj")).asVBO();
     //Sphere
@@ -787,6 +790,9 @@ public class ResourceManager {
     public static final ResourceLocation thresher_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/thresher.png");
     public static final ResourceLocation piston_inserter_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/piston_inserter.png");
     public static final ResourceLocation launchpad_soyuz_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/launchpad_soyuz.png");
+    public static final ResourceLocation launchpad_lambda_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/launchpad_lambda.png");
+    public static final ResourceLocation lambda_rocket_tex = new ResourceLocation(Tags.MODID, "textures/models/lambda_rocket.png");
+    public static final ResourceLocation dropship_tex = new ResourceLocation(Tags.MODID, "textures/entity/dropship.png");
     public static final ResourceLocation lpw2_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/lpw2.png");
     public static final ResourceLocation lpw2_term_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/lpw2_term.png");
     public static final ResourceLocation lpw2_error_tex = new ResourceLocation(Tags.MODID, "textures/models/machines/lpw2_term_error.png");

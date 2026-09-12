@@ -10,6 +10,8 @@ import com.hbm.items.weapon.sedna.impl.ItemGunDrill;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
 import com.hbm.items.weapon.sedna.mags.MagazineFluid;
 import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
+import com.hbm.packet.PacketDispatcher;
+import com.hbm.packet.toclient.ParticleBurstPacket;
 import com.hbm.render.anim.sedna.*;
 import com.hbm.render.misc.RenderScreenOverlay;
 import com.hbm.util.EntityDamageUtil;
@@ -83,10 +85,11 @@ public class XFactoryDrill {
                 if(player != null && mop.typeOfHit == RayTraceResult.Type.BLOCK) {
 
                     int aoe = player.isSneaking() ? 0 : getModdableAoE(stack, 1);
-                    boolean didPlink = false;
+                    boolean didPlink = breakExtraBlock(player.world, mop.getBlockPos(), player, mop.getBlockPos(), false);
                     for(int i = -aoe; i <= aoe; i++) {
                         for(int j = -aoe; j <= aoe; j++) {
                             for(int k = -aoe; k <= aoe; k++) {
+                                if(i == 0 && j == 0 && k == 0) continue;
                                 BlockPos targetPos = mop.getBlockPos().add(i, j, k);
                                 didPlink = breakExtraBlock(player.world, targetPos, player, mop.getBlockPos(), didPlink);
                             }
@@ -119,11 +122,15 @@ public class XFactoryDrill {
             return didPlink;
         }
 
-        // we are serverside and tryHarvestBlock already invokes the 2001 packet for every player except the user, so we manually send it for the user as well
-        player.interactionManager.tryHarvestBlock(pos);
+        // we are serverside and tryHarvestBlock already invokes the 2001 packet for every player except the user, so manually send the break effect for the user
+        boolean harvested = player.interactionManager.tryHarvestBlock(pos);
 
-        if(world.isAirBlock(pos)) { // only do this when the block was destroyed. if the block doesn't create air when broken, this breaks, but it's no big deal
-            player.connection.sendPacket(new SPacketEffect(2001, pos, Block.getStateId(state), false));
+        if(harvested) {
+            if(pos.equals(refPos)) {
+                player.connection.sendPacket(new SPacketEffect(2001, pos, Block.getStateId(state), false));
+            } else {
+                PacketDispatcher.wrapper.sendTo(new ParticleBurstPacket(pos.getX(), pos.getY(), pos.getZ(), Block.getIdFromBlock(block), block.getMetaFromState(state)), player);
+            }
         }
 
         return didPlink;

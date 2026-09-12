@@ -47,6 +47,15 @@ public abstract class GuiInfoContainer extends GuiContainer {
     return this.itemRender;
   }
 
+  protected void drawConstrainedLabel(String label, int x, int y, int color, float maxScale, float divisor) {
+
+    float scale = Math.min(maxScale, divisor / this.fontRenderer.getStringWidth(label));
+
+    GlStateManager.scale(scale, scale, 1);
+    this.fontRenderer.drawString(label, (int) (x / scale - this.fontRenderer.getStringWidth(label) / 2F), (int) (y / scale - this.fontRenderer.FONT_HEIGHT / 2F), color);
+    GlStateManager.scale(1 / scale, 1 / scale, 1);
+  }
+
   public FontRenderer getFontRenderer() {
     return this.fontRenderer;
   }

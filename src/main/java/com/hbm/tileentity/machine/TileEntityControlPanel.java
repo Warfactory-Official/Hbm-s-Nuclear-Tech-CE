@@ -15,6 +15,7 @@ import li.cil.oc.api.machine.Context;
 import li.cil.oc.api.network.SimpleComponent;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.EnumDyeColor;
@@ -224,7 +225,7 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 	}
 
 	@Override
-	public void receiveControl(NBTTagCompound data){
+	public void receiveControl(EntityPlayerMP player, NBTTagCompound data){
 		if(data.hasKey("full_set")) {
 			markDirty();
 			for(Control c : panel.controls){

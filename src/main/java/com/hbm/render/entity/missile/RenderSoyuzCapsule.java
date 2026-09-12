@@ -38,9 +38,10 @@ public class RenderSoyuzCapsule extends Render<EntitySoyuzCapsule>
 
     GlStateManager.translate(x, y, z);
 
-    double time = (entity.world.getTotalWorldTime());
-    double sine = Math.sin(time * 0.05) * 5;
-    double sin3 = Math.sin(time * 0.05 + Math.PI * 0.5) * 5;
+    double interp = partialTicks * 0.05D;
+    double time = (entity.world.getTotalWorldTime() * 0.05D) % (Math.PI * 2) + interp;
+    double sine = Math.sin(time) * 5;
+    double sin3 = Math.sin(time + Math.PI * 0.5) * 5;
     int height = 7;
     GlStateManager.translate(0.0F, height, 0.0F);
     GlStateManager.rotate((float) (sine), 0, 0, 1);

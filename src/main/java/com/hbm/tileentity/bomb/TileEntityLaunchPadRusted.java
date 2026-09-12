@@ -19,6 +19,7 @@ import com.hbm.util.TrackerUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -223,7 +224,7 @@ public class TileEntityLaunchPadRusted extends TileEntityMachineBase implements 
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if(data.hasKey("release")) {
             if(this.missileLoaded && inventory.getStackInSlot(0).isEmpty()) {
                 this.missileLoaded = false;

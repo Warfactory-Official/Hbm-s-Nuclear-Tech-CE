@@ -7,6 +7,7 @@ import com.hbm.inventory.gui.GUICraneInserter;
 import com.hbm.tileentity.IGUIProvider;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -163,7 +164,7 @@ public class TileEntityCraneInserter extends TileEntityCraneBase implements IGUI
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if(data.hasKey("destroyer")) {
             this.destroyer = !this.destroyer;
             this.markDirty();

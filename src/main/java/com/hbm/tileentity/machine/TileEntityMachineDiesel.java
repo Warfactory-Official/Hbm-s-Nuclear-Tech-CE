@@ -28,6 +28,7 @@ import com.hbm.tileentity.IGUIProvider;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -320,7 +321,7 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting implemen
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if(data.hasKey("turnOn")) this.isOn = !this.isOn;
         this.markChanged();
     }

@@ -14,6 +14,7 @@ import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.items.BrokenItem;
 import com.hbm.items.ItemEnums.EnumCircuitType;
 import com.hbm.items.ModItems;
+import com.hbm.items.machine.ItemOrbitalAssembly.EnumOrbitalAssembly;
 
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -34,6 +35,13 @@ public class PrecAssRecipes extends GenericRecipes<GenericRecipe> {
 
     @Override
     public void registerDefaults() {
+
+        registerPair(new GenericRecipe("precass.crystalcircuit").setup(600, 20_000L)
+                        .inputItems(new ComparableStack(ModItems.circuit, 4, EnumCircuitType.CHIP_QUANTUM),
+                                new ComparableStack(ModItems.ingot_cft, 4),
+                                new ComparableStack(ModItems.circuit, 16, EnumCircuitType.PCB),
+                                new OreDictStack(GOLD.wireFine(), 32)),
+                DictFrame.fromOne(ModItems.orbital_assembly, EnumOrbitalAssembly.CRYSTAL_CIRCUIT), 50, 100);
 
         // i cast: bleeding anus
         // i cast: XL horse dildo (unlubed)

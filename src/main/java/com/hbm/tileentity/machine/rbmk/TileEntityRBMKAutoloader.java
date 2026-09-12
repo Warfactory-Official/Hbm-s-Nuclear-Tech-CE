@@ -18,6 +18,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -279,7 +280,7 @@ public class TileEntityRBMKAutoloader extends TileEntityMachineBase implements I
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if(data.hasKey("minus") && this.cycle > 5) this.cycle -= 5;
         if(data.hasKey("plus") && this.cycle < 95) this.cycle += 5;
         this.cycle = MathHelper.clamp(cycle, 5, 95);

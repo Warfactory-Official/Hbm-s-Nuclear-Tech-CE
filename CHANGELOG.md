@@ -28,10 +28,34 @@
 - Number displays no longer misrender; a misplaced decimal point is fixed, digits no longer overflow the display, and oversized values now read as all 9s.
 - Smoothed out the RBMK crane console's arm movement, which could appear jittery.
 - Fixed fluid networks mishandling transfers when multithreaded network updates are enabled.
+- Tilted machines now appear tilted on clients; large fluid tanks in particular stayed upright for everyone but the server.
+- Fixed the pneumatic storage access terminal's slots being drawn 34 pixels to the left of the panel they belong to.
+- Conveyors, chutes and lifts built with the conveyor wand now face the same way as hand-placed ones; dragging a run downwards produced a tower that spat items out backwards.
+- The conveyor ejector now drops its installed upgrades when broken.
+- Lethal radiation no longer bypasses effects that prevent death, such as the totem of undying.
+- The industrial drill's area mining no longer floods the client with full block-break effects for every block in range.
+- Satellite cooldowns and science sensor progress now survive a world reload.
+- Machine control panels now respect block protection, so claim and region mods can deny them like any other right-click.
+- Rocket flame particles now honour their size setting; debris, explosion clouds and missile contrails were all drawing at the default scale.
+- The Soyuz capsule and its landing pod no longer land one block off when coming down at negative coordinates.
+- The Soyuz capsule no longer crashes the game if it lands somewhere its cargo container cannot be placed.
+- The satellite frequency linker no longer lets automation pull an unprogrammed chip out or feed it items that are not chips.
+- The Soyuz capsule's contents can now be pulled out by hoppers and pipes from any side, not just the top slot.
 ### Changes
 - The schrabidium missile is now crafted with an anti-schrabidium cell and a quantum circuit.
 - Fuel- and battery-powered F.S.B. armor can now be enchanted.
+- The Soyuz rocket's skin tooltip is now translatable instead of hardcoded English.
+- Asteroid and lunar mining satellites no longer need the sat dock to send a rocket up on a timer; they now mine continuously and hold their haul in orbit until a dock calls it down, and report their progress in the satellite interface.
+- The Soyuz rocket and lander now need flight simulation drives to build, cost considerably more power to assemble, and are gated behind the 528 blueprint pool rather than a discovery.
+- Building a Soyuz launch pad now claims a service area beside the pad instead of behind it, and cables, pipes and hoppers can be attached anywhere on the pad's structure rather than only the core block.
 ### New Features
+- Added the Lambda launch pad and the Lambda-98 rocket: a silo-style pad that erects the rocket from underground, fuelled with leaded gasoline and peroxide, with an auto-launch toggle and a launch countdown. Ported from 1.7.
+- Added Aviation Grade Sheeting, an assembly machine part with two recipes (aluminium/copper and titanium/plastic).
+- The Soyuz launch pad finally has a recipe; it had none before.
 - RBMK numitron displays gained per-screen toggles to abbreviate large numbers (e.g. 12.3k) and to pad with leading zeroes, along with a redesigned setup screen.
+- The Soyuz launch pad can now actually launch. Its interface gained a cargo/satellite mode switch, fuel, oxidiser and power indicators, an orbital module warning and a launch button with a ten second countdown, and the pad retracts its gantry and lifts off on its own.
+- Added cargo delivery pods: orbiting satellites now drop their cargo to a sat dock in a landing pod that touches down on its legs, unloads, and flies back up. Pods show up on radar and explode if shot down.
+- Added the zero-gravity assembler satellite and orbital assembly kits. Send an assembly kit up to an orbiting space laboratory and it will build the recipe in orbit, then send the result down by delivery pod. The first recipe produces the new Crystal Circuit Board.
+- The Soyuz launch pad has been retextured, and gained sounds for its gantry, carriage and launch countdown.
 ### Performance
 ### Misc

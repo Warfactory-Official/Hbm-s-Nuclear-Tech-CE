@@ -146,7 +146,8 @@ public class ItemEnums {
         CHIP_QUANTUM,
         CONTROLLER_QUANTUM,
         ATOMIC_CLOCK,
-        NUMITRON;
+        NUMITRON,
+        CRYSTAL;
 
         public static final EnumCircuitType[] VALUES = values();
     }
@@ -168,7 +169,8 @@ public class ItemEnums {
         PISTON_ELECTRIC("piston_electric"),
         LDE("low_density_element"),
         HDE("heavy_duty_element"),
-        GLASS_POLARIZED("glass_polarized");
+        GLASS_POLARIZED("glass_polarized"),
+        ALCLAD("plate_alclad_generic");
 
         public static final EnumPartType[] VALUES = values();
 

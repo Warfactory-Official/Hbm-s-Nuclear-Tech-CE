@@ -14,7 +14,8 @@ public class SatelliteLunarMiner extends SatelliteMiner {
     @Override
     public ITextComponent[] getInfo(World world) {
         return new ITextComponent[] {
-                new TextComponentTranslation(ItemSatellite.make(EnumSatType.MINER_LUNAR).getTranslationKey() + ".name")
+                new TextComponentTranslation(ItemSatellite.make(EnumSatType.MINER_LUNAR).getTranslationKey() + ".name"),
+                new TextComponentTranslation("satellite.minerprogress", (int) Math.round(this.progress * 100) + "%")
         };
     }
 
