@@ -291,12 +291,12 @@ public class EntityEffectHandler {
             entity.attackEntityFrom(ModDamageSource.radiation, 1000F);
             HbmLivingProps.setRadiation(entity, 0);
 
-            if (entity.getHealth() > 0) {
+            if (entity.getHealth() > 0 && !(entity instanceof EntityPlayer)) {
                 entity.setHealth(0);
                 entity.onDeath(ModDamageSource.radiation);
             }
 
-            if (entity instanceof EntityPlayerMP) AdvancementManager.grantAchievement((EntityPlayerMP) entity, AdvancementManager.achRadDeath);
+            if (entity instanceof EntityPlayerMP && entity.getHealth() <= 0) AdvancementManager.grantAchievement((EntityPlayerMP) entity, AdvancementManager.achRadDeath);
         } else if (eRad >= 800) {
             if (rng % 300 == 0) entity.addPotionEffect(new PotionEffect(MobEffects.NAUSEA, 5 * 30, 0));
             if (rng % 300 == 50) entity.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 10 * 20, 2));

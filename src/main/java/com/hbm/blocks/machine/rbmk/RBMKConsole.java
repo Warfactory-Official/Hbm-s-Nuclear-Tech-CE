@@ -60,7 +60,7 @@ public class RBMKConsole extends BlockDummyable implements ITooltipProvider {
 							control.setInteger("sel_" + j, j);
 					}
 
-					console.receiveControl(control);
+					console.receiveControl(null, control);
 				}
 			}
 		}

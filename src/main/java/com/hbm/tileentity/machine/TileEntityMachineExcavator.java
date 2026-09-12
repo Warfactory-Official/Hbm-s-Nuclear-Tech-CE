@@ -41,6 +41,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.Container;
@@ -660,7 +661,7 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if (data.hasKey("drill")) this.enableDrill = !this.enableDrill;
         if (data.hasKey("walling")) this.enableWalling = !this.enableWalling;
         if (data.hasKey("veinminer")) this.enableVeinMiner = !this.enableVeinMiner;

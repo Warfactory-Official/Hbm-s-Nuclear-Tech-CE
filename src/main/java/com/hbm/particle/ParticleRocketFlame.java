@@ -109,11 +109,14 @@ public class ParticleRocketFlame extends Particle {
 			int l = j & 65535;
 			
 			float spread = (float) Math.pow(((float)(age) / (float)maxAge) * 4F, 1.5) + 1F;
-			
-			float scale = urandom.nextFloat() * 0.5F + 0.1F + ((float)(age) / (float)maxAge) * 2F;
-	        float pX = (float) ((this.prevPosX + (this.posX - this.prevPosX) * (double)partialTicks - interpPosX) + (urandom.nextGaussian() - 1D) * 0.2F * spread);
+			spread *= this.particleScale;
+
+			float sideOffset = (float) (0.25 * this.particleScale);
+
+			float scale = (urandom.nextFloat() * 0.5F + 0.1F + ((float)(age) / (float)maxAge) * 2F) * this.particleScale;
+	        float pX = (float) ((this.prevPosX + sideOffset + (this.posX - this.prevPosX) * (double)partialTicks - interpPosX) + (urandom.nextGaussian() - 1D) * 0.2F * spread);
 	        float pY = (float) ((this.prevPosY + (this.posY - this.prevPosY) * (double)partialTicks - interpPosY) + (urandom.nextGaussian() - 1D) * 0.5F * spread);
-	        float pZ = (float) ((this.prevPosZ + (this.posZ - this.prevPosZ) * (double)partialTicks - interpPosZ) + (urandom.nextGaussian() - 1D) * 0.2F * spread);
+	        float pZ = (float) ((this.prevPosZ + sideOffset + (this.posZ - this.prevPosZ) * (double)partialTicks - interpPosZ) + (urandom.nextGaussian() - 1D) * 0.2F * spread);
 
 			float alpha = this.particleAlpha * 0.75F;
 			int packedColor = NTMBufferBuilder.packColor(this.particleRed, this.particleGreen, this.particleBlue, alpha);

@@ -95,9 +95,6 @@ public class TileEntityPneumoStorageAccess extends TileEntityLoadedBase implemen
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) { }
-
-    @Override
     public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
 
         if (!(player.openContainer instanceof ContainerPneumoStorageAccess container)) return;

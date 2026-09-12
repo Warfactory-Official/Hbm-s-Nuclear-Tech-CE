@@ -516,10 +516,6 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
-    }
-
-    @Override
     public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
 
         if (data.hasKey("missiles")) this.scanMissiles = !this.scanMissiles;

@@ -2444,6 +2444,7 @@ public class ModItems {
     public static final Item sat_miner = new ItemSatChip("sat_miner").setMaxStackSize(1);
     public static final Item sat_lunar_miner = new ItemSatChip("sat_lunar_miner").setMaxStackSize(1);
     public static final Item satellite = new ItemSatellite("satellite").setMaxStackSize(1).setCreativeTab(MainRegistry.missileTab);
+    public static final Item orbital_assembly = new ItemOrbitalAssembly("orbital_assembly").setMaxStackSize(1).setCreativeTab(MainRegistry.partsTab);
     public static final Item sat_gerald = new ItemSatChip("sat_gerald").setMaxStackSize(1).setCreativeTab(MainRegistry.missileTab);
     public static final Item sat_chip = new ItemSatChip("sat_chip").setMaxStackSize(1).setCreativeTab(MainRegistry.missileTab);
     public static final Item sat_interface = new ItemSatInterface("sat_interface").setMaxStackSize(1).setCreativeTab(MainRegistry.missileTab);
@@ -2489,6 +2490,7 @@ public class ModItems {
     public static final Item missile_stealth = new ItemMissileStandard("missile_stealth", ItemMissileStandard.MissileFormFactor.STRONG, ItemMissileStandard.MissileTier.TIER1).setCreativeTab(MainRegistry.missileTab);
     public static final Item missile_soyuz_lander = new ItemCustomLore("missile_soyuz_lander", "soyuz_lander").setMaxStackSize(1).setCreativeTab(MainRegistry.missileTab);
     public static final Item missile_soyuz = new ItemSoyuz("missile_soyuz").setMaxStackSize(1).setCreativeTab(MainRegistry.missileTab);
+    public static final Item missile_lambda = new ItemBase("missile_lambda").setMaxStackSize(1).setCreativeTab(MainRegistry.missileTab);
     public static final Item warhead_generic_small = new ItemBase("warhead_generic_small").setCreativeTab(MainRegistry.partsTab);
     public static final Item warhead_incendiary_small = new ItemBase("warhead_incendiary_small").setCreativeTab(MainRegistry.partsTab);
     public static final Item warhead_cluster_small = new ItemBase("warhead_cluster_small").setCreativeTab(MainRegistry.partsTab);

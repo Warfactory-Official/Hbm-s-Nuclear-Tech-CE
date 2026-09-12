@@ -11,6 +11,7 @@ import li.cil.oc.api.machine.Callback;
 import li.cil.oc.api.machine.Context;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -113,7 +114,7 @@ public class TileEntityRadioTorchBase extends TileEntityLoadedBase implements IT
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if (data.hasKey("isPolling")) this.polling = data.getBoolean("isPolling");
         if (data.hasKey("hasMapping")) this.customMap = data.getBoolean("hasMapping");
         if (data.hasKey("channel")) this.channel = data.getString("channel");

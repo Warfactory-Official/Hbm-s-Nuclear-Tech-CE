@@ -11,6 +11,7 @@ import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -231,7 +232,7 @@ public class TileEntityMachineAmmoPress extends TileEntityMachineBase
   }
 
   @Override
-  public void receiveControl(NBTTagCompound data) {
+  public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
     int newRecipe = data.getInteger("selection");
     if (newRecipe == selectedRecipe) this.selectedRecipe = -1;
     else this.selectedRecipe = newRecipe;

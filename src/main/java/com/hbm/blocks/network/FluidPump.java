@@ -39,6 +39,7 @@ import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -303,7 +304,7 @@ public class FluidPump extends BlockContainerBakeable implements INBTBlockTransf
         }
 
         @Override
-        public void receiveControl(NBTTagCompound data) {
+        public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
             if (data.hasKey("capacity")) {
                 this.bufferSize = MathHelper.clamp(data.getInteger("capacity"), 0, 10_000);
             }

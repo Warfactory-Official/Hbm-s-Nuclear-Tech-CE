@@ -301,10 +301,6 @@ public class BlockWandStructure extends BlockContainer implements IBlockMulti, I
         }
 
         @Override
-        public void receiveControl(NBTTagCompound data) {
-        }
-
-        @Override
         public void receiveControl(EntityPlayerMP player, NBTTagCompound nbt) {
             readFromNBT(nbt);
             markDirty();

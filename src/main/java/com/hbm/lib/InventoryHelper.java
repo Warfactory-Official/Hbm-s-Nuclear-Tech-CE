@@ -37,6 +37,20 @@ public class InventoryHelper {
                 !itemstack.isEmpty()).forEach(itemstack -> spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), itemstack));
     }
 
+    public static void dropInventoryItems(World world, BlockPos pos, IItemHandler inventory, int beginSlot, int endSlot) {
+        if(inventory == null)
+            return;
+        for (int i = beginSlot; i <= endSlot && i < inventory.getSlots(); ++i)
+        {
+            ItemStack itemstack = inventory.getStackInSlot(i);
+
+            if (!itemstack.isEmpty())
+            {
+                spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), itemstack);
+            }
+        }
+    }
+
     public static void dropInventoryItems(World world, BlockPos pos, ICapabilityProvider t, int beginSlot, int endSlot) {
         if(t == null)
             return;

@@ -3,13 +3,13 @@ package com.hbm.saveddata.satellites;
 import com.hbm.entity.projectile.EntityTom;
 import com.hbm.items.ModItems;
 import com.hbm.main.AdvancementManager;
+import com.hbm.world.WorldUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import java.util.Locale;
@@ -86,10 +86,7 @@ public class SatelliteHorizons extends Satellite {
 		EntityTom tom = new EntityTom(world);
 		tom.setPosition(x + 0.5, 600, z + 0.5);
 
-		IChunkProvider provider = world.getChunkProvider();
-		provider.provideChunk(x >> 4, z >> 4);
-
-		world.spawnEntity(tom);
+		WorldUtil.loadAndSpawnEntityInWorld(tom);
 
 		for(EntityPlayer p : world.playerEntities)
 			AdvancementManager.grantAchievement(p, AdvancementManager.horizonsEnd);

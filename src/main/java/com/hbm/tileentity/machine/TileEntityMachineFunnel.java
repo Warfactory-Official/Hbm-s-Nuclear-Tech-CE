@@ -10,6 +10,7 @@ import com.hbm.tileentity.TileEntityMachineBase;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
@@ -190,7 +191,7 @@ public class TileEntityMachineFunnel extends TileEntityMachineBase implements IG
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         this.mode++;
         if (mode > 2) mode = 0;
         this.markDirty();

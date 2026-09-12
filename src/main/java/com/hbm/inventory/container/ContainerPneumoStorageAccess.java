@@ -56,18 +56,18 @@ public class ContainerPneumoStorageAccess extends Container {
         InvWrapper displayWrapper = new InvWrapper(inventory);
         for (int i = 0; i < DISPLAY_ROWS; i++) {
             for (int j = 0; j < DISPLAY_COLUMNS; j++) {
-                this.addSlotToContainer(new SlotPneumo(displayWrapper, j + i * DISPLAY_COLUMNS, 8 + j * 18, 17 + i * 18));
+                this.addSlotToContainer(new SlotPneumo(displayWrapper, j + i * DISPLAY_COLUMNS, 34 + 8 + j * 18, 17 + i * 18));
             }
         }
 
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; j++) {
-                this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 169 + i * 18));
+                this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 34 + 8 + j * 18, 169 + i * 18));
             }
         }
 
         for (int i = 0; i < 9; i++) {
-            this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 227));
+            this.addSlotToContainer(new Slot(invPlayer, i, 34 + 8 + i * 18, 227));
         }
 
         this.rebuildListing();

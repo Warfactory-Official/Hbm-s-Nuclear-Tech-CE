@@ -553,9 +553,6 @@ public class TileEntityElectrolyser extends TileEntityMachineBase implements IEn
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) { }
-
-    @Override
     public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
 
         if(data.hasKey("sgm")) lastSelectedGUI = 1;

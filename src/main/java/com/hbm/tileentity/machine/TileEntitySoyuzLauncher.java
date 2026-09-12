@@ -2,7 +2,7 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluid.IFluidStandardTransceiver;
-import com.hbm.entity.missile.EntitySoyuz;
+import com.hbm.entity.missile.EntityRocketSoyuz;
 import com.hbm.handler.MissileStruct;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.container.ContainerSoyuzLauncher;
@@ -130,7 +130,7 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase implements IT
                 countdown--;
             }
 
-            List<EntitySoyuz> entities = world.getEntitiesWithinAABB(EntitySoyuz.class, new AxisAlignedBB(pos.getX() - 0.5, pos.getY(), pos.getZ() - 0.5, pos.getX() + 1.5, pos.getY() + 10, pos.getZ() + 1.5));
+            List<EntityRocketSoyuz> entities = world.getEntitiesWithinAABB(EntityRocketSoyuz.class, new AxisAlignedBB(pos.getX() - 0.5, pos.getY(), pos.getZ() - 0.5, pos.getX() + 1.5, pos.getY() + 10, pos.getZ() + 1.5));
 
             if (!entities.isEmpty()) {
 
@@ -216,7 +216,7 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase implements IT
         int req = this.getFuelRequired();
         int pow = this.getPowerRequired();
 
-        EntitySoyuz soyuz = new EntitySoyuz(world);
+        EntityRocketSoyuz soyuz = new EntityRocketSoyuz(world);
         soyuz.setSkin(this.getType());
         soyuz.mode = this.mode;
         soyuz.setLocationAndAngles(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 0, 0);

@@ -42,6 +42,7 @@ import net.minecraft.entity.item.EntityMinecart;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.MobEffects;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -80,7 +81,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if (data.hasKey("del")) {
             this.removeName(data.getInteger("del"));
 

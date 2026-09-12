@@ -38,6 +38,7 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -362,7 +363,7 @@ public class CableDiode extends BlockContainer implements IEnergyConnectorBlock,
         }
 
         @Override
-        public void receiveControl(NBTTagCompound data) {
+        public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
             if(data.hasKey("limit")) this.limit = data.getLong("limit");
             if(data.hasKey("priority")) this.priority = EnumUtil.grabEnumSafely(ConnectionPriority.class, data.getByte("priority"));
             if(limit < 0) limit = 0;

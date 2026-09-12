@@ -32,6 +32,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
@@ -321,7 +322,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if (data.hasKey("valve")) this.isOn = !this.isOn;
         if (data.hasKey("dial")) this.doesBurn = !this.doesBurn;
         markDirty();

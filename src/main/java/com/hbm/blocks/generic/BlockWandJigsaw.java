@@ -32,6 +32,7 @@ import net.minecraft.client.renderer.block.model.ModelRotation;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemBlock;
@@ -331,7 +332,7 @@ public class BlockWandJigsaw extends BlockContainerBakeable implements IBlockSid
         }
 
         @Override
-        public void receiveControl(NBTTagCompound nbt) {
+        public void receiveControl(EntityPlayerMP player, NBTTagCompound nbt) {
             readFromNBT(nbt);
             markDirty();
         }
