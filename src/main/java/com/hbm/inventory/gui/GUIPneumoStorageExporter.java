@@ -3,20 +3,15 @@ package com.hbm.inventory.gui;
 import net.minecraft.client.renderer.GlStateManager;
 import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerPneumoStorageExporter;
-import com.hbm.packet.PacketDispatcher;
-import com.hbm.packet.toserver.NBTControlPacket;
 import com.hbm.tileentity.network.TileEntityPneumoStorageExporter;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
-import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 
-import static com.hbm.util.SoundUtil.playClickSound;
 
 public class GUIPneumoStorageExporter extends GuiInfoContainer {
 
@@ -35,6 +30,7 @@ public class GUIPneumoStorageExporter extends GuiInfoContainer {
 	@Override
 	public void drawScreen(int x, int y, float interp) {
 		super.drawScreen(x, y, interp);
+		super.renderHoveredToolTip(x, y);
 
 		this.drawCustomInfoStat(x, y, guiLeft + 142, guiTop + 16, 18, 18, x, y, new String[] {
 				"Request mode: " + TextFormatting.YELLOW + (this.exporter.continuousRequest ? "Continuous" : "By request")});
@@ -62,18 +58,9 @@ public class GUIPneumoStorageExporter extends GuiInfoContainer {
 	protected void mouseClicked(int x, int y, int button) throws IOException {
 		super.mouseClicked(x, y, button);
 
-		sendFlag(x, y, 142, 16, "continuous");
-		sendFlag(x, y, 142, 34, "request");
-		sendFlag(x, y, 142, 52, "ror");
-	}
-
-	private void sendFlag(int x, int y, int posX, int posY, String flag) {
-		if(guiLeft + posX <= x && guiLeft + posX + 18 > x && guiTop + posY < y && guiTop + posY + 18 >= y) {
-			playClickSound();
-			NBTTagCompound data = new NBTTagCompound();
-			data.setBoolean(flag, true);
-			PacketDispatcher.wrapper.sendToServer(new NBTControlPacket(data, exporter.getPos()));
-		}
+		clickSendFlag(exporter, x, y, 142, 16, 18, 18, "continuous");
+		clickSendFlag(exporter, x, y, 142, 34, 18, 18, "request");
+		clickSendFlag(exporter, x, y, 142, 52, 18, 18, "ror");
 	}
 
 	@Override
@@ -86,6 +73,7 @@ public class GUIPneumoStorageExporter extends GuiInfoContainer {
 
 	@Override
 	protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
+		super.drawDefaultBackground();
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		Minecraft.getMinecraft().getTextureManager().bindTexture(TEXTURE);
 		drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);

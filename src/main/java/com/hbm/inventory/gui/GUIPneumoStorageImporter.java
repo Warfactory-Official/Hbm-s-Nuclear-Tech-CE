@@ -25,6 +25,12 @@ public class GUIPneumoStorageImporter extends GuiInfoContainer {
 	}
 
 	@Override
+	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+		super.drawScreen(mouseX, mouseY, partialTicks);
+		super.renderHoveredToolTip(mouseX, mouseY);
+	}
+
+	@Override
 	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
 		String name = this.importer.getDisplayName().getUnformattedText();
 
@@ -34,6 +40,7 @@ public class GUIPneumoStorageImporter extends GuiInfoContainer {
 
 	@Override
 	protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
+		super.drawDefaultBackground();
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		Minecraft.getMinecraft().getTextureManager().bindTexture(TEXTURE);
 		drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);

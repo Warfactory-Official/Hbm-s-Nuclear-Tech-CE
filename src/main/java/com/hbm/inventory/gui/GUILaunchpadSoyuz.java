@@ -33,6 +33,7 @@ public class GUILaunchpadSoyuz extends GuiInfoContainer {
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		super.drawScreen(mouseX, mouseY, partialTicks);
+		super.renderHoveredToolTip(mouseX, mouseY);
 
 		pad.tanks[0].renderTankInfo(this, mouseX, mouseY, guiLeft + 152, guiTop + 44, 16, 52);
 		pad.tanks[1].renderTankInfo(this, mouseX, mouseY, guiLeft + 170, guiTop + 44, 16, 52);
@@ -101,6 +102,7 @@ public class GUILaunchpadSoyuz extends GuiInfoContainer {
 
 	@Override
 	protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
+		super.drawDefaultBackground();
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		Minecraft.getMinecraft().getTextureManager().bindTexture(TEXTURE);
 		drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);

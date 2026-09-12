@@ -4,6 +4,7 @@ import com.hbm.api.ntl.StackCache;
 import com.hbm.api.ntl.StackCache.CacheSlot;
 import com.hbm.inventory.slot.SlotNonRetarded;
 import com.hbm.tileentity.network.TileEntityPneumoStorageAccess;
+import com.hbm.util.InventoryUtil;
 import com.hbm.util.ItemStackUtil;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
@@ -14,6 +15,7 @@ import net.minecraft.inventory.IContainerListener;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.items.wrapper.InvWrapper;
@@ -35,6 +37,52 @@ public class ContainerPneumoStorageAccess extends Container {
     public static final int SORT_INTERNAL = 3;
 
     public static final String STACK_SIZE_KEY = "PNEUMO_STACK_SIZE";
+    /** Holds the stack's own display tag while the grid overwrites it with the amount label */
+    public static final String ORIGINAL_DISPLAY_KEY = "PNEUMO_DISPLAY";
+
+    /**
+     * Grid stacks carry the total amount as a tag so that the vanilla slot sync can ship it to the client.
+     * That tag is part of the stack's identity as far as the stack cache is concerned, so it has to be
+     * stripped again before the stack is used for any lookup, insertion or extraction.
+     */
+    public static ItemStack toDisplayStack(CacheSlot cacheSlot) {
+        ItemStack display = cacheSlot.displayStack.copy();
+
+        if (display.hasTagCompound() && display.getTagCompound().hasKey("display")) {
+            display.getTagCompound().setTag(ORIGINAL_DISPLAY_KEY, display.getTagCompound().getTag("display").copy());
+        }
+
+        ItemStackUtil.addTooltipToStack(display, "x" + cacheSlot.stacksize, "in " + cacheSlot.monitors.size() + " stacks");
+        display.getTagCompound().setLong(STACK_SIZE_KEY, cacheSlot.stacksize);
+
+        return display;
+    }
+
+    public static ItemStack toRealStack(ItemStack display) {
+        ItemStack stack = display.copy();
+        stack.setCount(1);
+
+        NBTTagCompound tag = stack.getTagCompound();
+        if (tag == null) return stack;
+
+        tag.removeTag(STACK_SIZE_KEY);
+
+        if (tag.hasKey(ORIGINAL_DISPLAY_KEY)) {
+            tag.setTag("display", tag.getTag(ORIGINAL_DISPLAY_KEY));
+            tag.removeTag(ORIGINAL_DISPLAY_KEY);
+        } else {
+            tag.removeTag("display");
+        }
+
+        if (tag.isEmpty()) stack.setTagCompound(null);
+
+        return stack;
+    }
+
+    public static long getDisplayedAmount(ItemStack display) {
+        if (!display.hasTagCompound()) return 0;
+        return display.getTagCompound().getLong(STACK_SIZE_KEY);
+    }
 
     protected TileEntityPneumoStorageAccess access;
     protected InventoryPneumoStorageAccess inventory;
@@ -163,30 +211,77 @@ public class ContainerPneumoStorageAccess extends Container {
     @Override
     public ItemStack slotClick(int index, int button, ClickType mode, EntityPlayer player) {
 
+        boolean client = player.world.isRemote;
+
+        // the grid is virtual, so every interaction with it is resolved on the server and synced back
         if (index >= 0 && index < DISPLAY_SLOTS) {
-            boolean client = player.world.isRemote;
-            Slot slot = this.getSlot(index);
+
+            if (client || (mode != ClickType.PICKUP && mode != ClickType.QUICK_MOVE)) return ItemStack.EMPTY;
+
+            StackCache cache = this.access.cache;
+            if (cache == null || cache.hasExpired) return ItemStack.EMPTY;
+
             ItemStack held = player.inventory.getItemStack();
 
-            if (held.isEmpty() && slot.getHasStack() && slot.getStack().hasTagCompound()) {
-                ItemStack stack = slot.getStack().copy();
-
-                if (button == 0) {
-                    int toGrab = (int) Math.min(stack.getMaxStackSize(), stack.getTagCompound().getLong(STACK_SIZE_KEY));
-
-                    if (client) {
-                        stack.setCount(toGrab);
-                        player.inventory.setItemStack(stack);
-                    } else {
-                        if (this.access.cache == null || this.access.cache.hasExpired) return stack;
-                        StackCache cache = this.access.cache;
-                        stack.setCount((int) cache.consumeItemsAndReturnQuantity(stack, toGrab));
-                        player.inventory.setItemStack(stack);
-                    }
-                }
-
-                return slot.getStack().copy();
+            // dropping a held stack onto the grid deposits it, right click deposits a single item
+            if (mode == ClickType.PICKUP && !held.isEmpty()) {
+                int toDeposit = button == 1 ? 1 : held.getCount();
+                int leftover = (int) cache.addItemsAndReturnQuantity(held, toDeposit);
+                held.shrink(toDeposit - leftover);
+                player.inventory.setItemStack(held.isEmpty() ? ItemStack.EMPTY : held);
+                this.detectAndSendChanges();
+                return ItemStack.EMPTY;
             }
+
+            Slot slot = this.getSlot(index);
+            if (!slot.getHasStack()) return ItemStack.EMPTY;
+
+            ItemStack request = toRealStack(slot.getStack());
+            long available = getDisplayedAmount(slot.getStack());
+            if (available <= 0) return ItemStack.EMPTY;
+
+            int toGrab = (int) Math.min(request.getMaxStackSize(), available);
+            if (mode == ClickType.PICKUP && button == 1) toGrab = 1;
+
+            int grabbed = (int) cache.consumeItemsAndReturnQuantity(request, toGrab);
+            if (grabbed <= 0) return ItemStack.EMPTY;
+
+            ItemStack payload = request.copy();
+            payload.setCount(grabbed);
+
+            if (mode == ClickType.QUICK_MOVE) {
+                ItemStack remainder = InventoryUtil.tryAddItemToInventory(player.inventory.mainInventory, payload);
+                // whatever doesn't fit goes right back into the system instead of being voided
+                if (!remainder.isEmpty()) cache.addItemsAndReturnQuantity(remainder, remainder.getCount());
+            } else {
+                player.inventory.setItemStack(payload);
+            }
+
+            this.detectAndSendChanges();
+            return ItemStack.EMPTY;
+        }
+
+        // shift clicking out of the player inventory deposits into the system
+        if (mode == ClickType.QUICK_MOVE && index >= DISPLAY_SLOTS && index < this.inventorySlots.size()) {
+
+            if (client) return ItemStack.EMPTY;
+
+            StackCache cache = this.access.cache;
+            if (cache == null || cache.hasExpired) return ItemStack.EMPTY;
+
+            Slot slot = this.getSlot(index);
+            if (!slot.getHasStack()) return ItemStack.EMPTY;
+
+            ItemStack stack = slot.getStack();
+            int leftover = (int) cache.addItemsAndReturnQuantity(stack, stack.getCount());
+
+            if (leftover < stack.getCount()) {
+                slot.decrStackSize(stack.getCount() - leftover);
+                slot.onSlotChanged();
+            }
+
+            this.detectAndSendChanges();
+            return ItemStack.EMPTY;
         }
 
         return super.slotClick(index, button, mode, player);
@@ -281,9 +376,7 @@ public class ContainerPneumoStorageAccess extends Container {
                 if (index >= size) break;
 
                 CacheSlot cacheSlot = cacheSlots.get(index);
-                slots[i] = cacheSlot.displayStack.copy();
-                ItemStackUtil.addTooltipToStack(slots[i], "x" + cacheSlot.stacksize, "in " + cacheSlot.monitors.size() + " stacks");
-                slots[i].getTagCompound().setLong(STACK_SIZE_KEY, cacheSlot.stacksize);
+                slots[i] = toDisplayStack(cacheSlot);
             }
 
             return size;

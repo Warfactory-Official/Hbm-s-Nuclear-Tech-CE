@@ -70,21 +70,12 @@ public class GUIPneumoTube extends GuiInfoContainer {
         super.mouseClicked(x, y, i);
 
         if(!endpointOnly) {
-            click(x, y, 7, 52, 18, 18, "redstone");
-            click(x, y, 6, 36, 20, 8, "pressure");
-            click(x, y, 151, 16, 18, 18, "receive");
-            click(x, y, 151, 52, 18, 18, "send");
+            clickSendFlag(tube, x, y, 7, 52, 18, 18, "redstone");
+            clickSendFlag(tube, x, y, 6, 36, 20, 8, "pressure");
+            clickSendFlag(tube, x, y, 151, 16, 18, 18, "receive");
+            clickSendFlag(tube, x, y, 151, 52, 18, 18, "send");
         }
-        click(x, y, 128, 30, 14, 26, "whitelist");
-    }
-
-    public void click(int x, int y, int left, int top, int sizeX, int sizeY, String name) {
-        if(checkClick(x, y, left, top, sizeX, sizeY)) {
-            mc.getSoundHandler().playSound(PositionedSoundRecord.getRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F, 1.0F));
-            NBTTagCompound data = new NBTTagCompound();
-            data.setBoolean(name, true);
-            PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, tube.getPos()));
-        }
+        clickSendFlag(tube, x, y, 128, 30, 14, 26, "whitelist");
     }
 
     @Override

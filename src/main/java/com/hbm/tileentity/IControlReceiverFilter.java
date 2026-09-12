@@ -34,6 +34,8 @@ public interface IControlReceiverFilter extends IControlReceiver, ICopiable {
         IItemHandler handler = tile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
         if (handler instanceof IItemHandlerModifiable modifiableHandler) {
             int slot = nbt.getInteger("slot");
+            if (slot < 0 || slot >= modifiableHandler.getSlots()) return;
+
             ItemStack stack = new ItemStack(nbt.getCompoundTag("stack"));
 
             modifiableHandler.setStackInSlot(slot, stack);

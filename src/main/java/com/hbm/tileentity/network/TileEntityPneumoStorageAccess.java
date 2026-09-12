@@ -2,6 +2,7 @@ package com.hbm.tileentity.network;
 
 import com.hbm.api.ntl.IPneumaticConnector;
 import com.hbm.api.ntl.StackCache;
+import com.hbm.blocks.network.PneumoStorageAccess;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerPneumoStorageAccess;
@@ -13,12 +14,12 @@ import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.uninos.UniNodespace;
 import com.hbm.uninos.networkproviders.PneumaticNetwork;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -83,10 +84,12 @@ public class TileEntityPneumoStorageAccess extends TileEntityLoadedBase implemen
 
     @Override
     public boolean canConnectPneumatic(ForgeDirection dir) {
-        TileEntity tile = world != null ? world.getTileEntity(pos) : null;
-        if (tile == null) return false;
-        net.minecraft.util.EnumFacing facing = world.getBlockState(pos).getValue(com.hbm.blocks.network.PneumoStorageAccess.FACING);
-        return dir == ForgeDirection.getOrientation(facing.getOpposite().getIndex());
+        if (world == null) return false;
+
+        IBlockState state = world.getBlockState(pos);
+        if (!(state.getBlock() instanceof PneumoStorageAccess)) return false;
+
+        return dir == ForgeDirection.getOrientation(state.getValue(PneumoStorageAccess.FACING).getOpposite().getIndex());
     }
 
     @Override

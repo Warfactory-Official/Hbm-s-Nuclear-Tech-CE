@@ -117,6 +117,7 @@ public class GUIPneumoStorageAccess extends GuiInfoContainer {
         this.wasClicking = isClicking;
 
         super.drawScreen(mouseX, mouseY, partialTicks);
+        super.renderHoveredToolTip(mouseX, mouseY);
 
         this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 7, guiTop + 7, 18, 18, mouseX, mouseY, new String[] { I18nUtil.resolveKey("pneumo.sorting") + " " + TextFormatting.YELLOW + I18nUtil.resolveKey("pneumo.sorting.amount") });
         this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 7, guiTop + 25, 18, 18, mouseX, mouseY, new String[] { I18nUtil.resolveKey("pneumo.sorting") + " " + TextFormatting.YELLOW + I18nUtil.resolveKey("pneumo.sorting.id") });
@@ -196,6 +197,7 @@ public class GUIPneumoStorageAccess extends GuiInfoContainer {
 
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
+        super.drawDefaultBackground();
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         Minecraft.getMinecraft().getTextureManager().bindTexture(TEXTURE);
         drawTexturedModalRect(guiLeft + 34, guiTop, 0, 0, 176, ySize);

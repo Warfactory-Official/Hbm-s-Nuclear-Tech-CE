@@ -61,16 +61,8 @@ public abstract class BlockContainerBakeableNormal extends BlockContainer implem
             event.getModelRegistry().putObject(worldLocation, bakedModel);
 
             if (!ClaimedModelLocationRegistry.hasSyntheticTeisrBinding(Item.getItemFromBlock(this))) {
-                IModel itemBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
-                ImmutableMap<String, String> itemTextures = ImmutableMap.of("layer0", blockFrame.getTextureLocation(0).toString());
-                IModel itemRetextured = itemBaseModel.retexture(itemTextures);
-                IBakedModel itemBaked = itemRetextured.bake(
-                        ModelRotation.X0_Y0,
-                        DefaultVertexFormats.ITEM,
-                        ModelLoader.defaultTextureGetter()
-                );
                 ModelResourceLocation inventoryLocation = new ModelResourceLocation(getRegistryName(), "inventory");
-                event.getModelRegistry().putObject(inventoryLocation, itemBaked);
+                event.getModelRegistry().putObject(inventoryLocation, bakedModel);
             }
         } catch (Exception e) {
             e.printStackTrace();

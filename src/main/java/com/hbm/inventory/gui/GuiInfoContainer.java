@@ -1,12 +1,15 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.gui.element.GUIElements;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.Library;
+import com.hbm.packet.toserver.NBTControlPacket;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.util.I18nUtil;
+import com.hbm.util.SoundUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.inventory.GuiContainer;
@@ -16,10 +19,9 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -339,6 +341,15 @@ public abstract class GuiInfoContainer extends GuiContainer {
     GlStateManager.enableDepth();
     RenderHelper.enableStandardItemLighting();
     GlStateManager.enableRescaleNormal();
+  }
+
+  public void clickSendFlag(TileEntity tile, int x, int y, int left, int top, int sizeX, int sizeY, String name) {
+    if(checkClick(x, y, left, top, sizeX, sizeY)) {
+      SoundUtil.playClickSound();
+      NBTTagCompound data = new NBTTagCompound();
+      data.setBoolean(name, true);
+      PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, tile.getPos()));
+    }
   }
 
   /** Draws item with label, excludes all the GL state setup */
