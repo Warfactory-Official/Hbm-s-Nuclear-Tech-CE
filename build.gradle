@@ -2133,3 +2133,17 @@ tasks.withType(Test).configureEach {
         languageVersion = JavaLanguageVersion.of(25)
     }
 }
+
+// ========== JSON MINIFIER ==========
+afterEvaluate {
+    processResources {
+        doLast {
+            def outputDir = destinationDir ?: outputs.files.singleFile
+            fileTree(dir: outputDir, include: '**/*.json').each { file ->
+                try {
+                    file.text = groovy.json.JsonOutput.toJson(new groovy.json.JsonSlurper().parse(file))
+                } catch (Exception ignore) {}
+            }
+        }
+    }
+}

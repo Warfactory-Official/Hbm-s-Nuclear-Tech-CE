@@ -1650,8 +1650,8 @@ public class ModEventHandler {
                     BiomeGenCraterBase.craterInnerBiome.setRegistryName("hbm", "crater_inner"),
                     BiomeGenCraterBase.craterOuterBiome.setRegistryName("hbm", "crater_outer")
             );
+            BiomeGenCraterBase.initDictionary();
         }
-        BiomeGenCraterBase.initDictionary();
     }
 
     private static final String NBT_AKIMBO = "AkimboGhost";

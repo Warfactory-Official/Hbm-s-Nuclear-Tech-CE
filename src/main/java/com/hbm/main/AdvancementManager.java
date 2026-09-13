@@ -87,7 +87,7 @@ public class AdvancementManager {
     }
 
     public static void init(MinecraftServer serv) {
-        if (!GeneralConfig.enableAdvancements) return;
+        if (!GeneralConfig.enableAdvancements) return; // Probably, this line will be outdated.
         net.minecraft.advancements.AdvancementManager adv = serv.getAdvancementManager();
 
         achSacrifice  = load(adv, "achsacrifice");
