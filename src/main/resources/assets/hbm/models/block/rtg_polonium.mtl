@@ -1,5 +1,0 @@
-newmtl PoloniumRTG
-d 1.0
-Ka 0.0 0.0 0.0
-Kd 1.0 1.0 1.0
-map_Kd hbm:models/machines/rtg_polonium_flipped
