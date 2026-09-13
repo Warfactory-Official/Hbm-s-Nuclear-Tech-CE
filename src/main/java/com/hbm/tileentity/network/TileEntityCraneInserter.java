@@ -167,7 +167,7 @@ public class TileEntityCraneInserter extends TileEntityCraneBase implements IGUI
     public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if(data.hasKey("destroyer")) {
             this.destroyer = !this.destroyer;
-            this.markDirty();
+            this.onBlockChanged();
         }
     }
 
