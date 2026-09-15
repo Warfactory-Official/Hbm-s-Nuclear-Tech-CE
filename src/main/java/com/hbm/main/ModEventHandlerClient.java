@@ -916,8 +916,7 @@ public class ModEventHandlerClient {
             for (int i = 0; i < HbmAnimations.hotbar.length; i++) {
                 Animation animation = HbmAnimations.hotbar[i];
 
-                if (animation == null)
-                    continue;
+                if (animation == null) continue;
 
                 long time = System.currentTimeMillis() - animation.startMillis;
 
