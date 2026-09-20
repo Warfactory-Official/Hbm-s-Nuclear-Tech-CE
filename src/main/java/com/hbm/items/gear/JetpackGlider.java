@@ -37,6 +37,7 @@ public class JetpackGlider extends ItemArmorMod implements IFillableItem {
 			return tank;
 		}
 		tank.readFromNBT(stack.getTagCompound().getCompoundTag("fuelTank"), "0");
+		tank.changeTankSize(capacity);
 		return tank;
 	}
 

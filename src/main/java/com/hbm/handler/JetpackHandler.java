@@ -229,9 +229,6 @@ public class JetpackHandler {
 		}
 		hud_key_down = hudKey;
 		float thrust = info.thrust;
-		if(jetpackActive(player) && player.isInWater()){
-			info.failureTicks = 80;
-		}
 		if(jetpackActive(player) && !player.onGround && info.failureTicks <= 0 && fuelTank.getFill() > 0){
 			float speed = getSpeed(fuelTank.getTankType());
 			player.capabilities.isFlying = false;
@@ -242,20 +239,61 @@ public class JetpackHandler {
 			if(isHovering(player)){
 				m.moveForward *= (player.isSprinting() ? 0.17 : 0.1)*speed;
 				m.moveStrafe *= 0.1F*speed;
+
+				float yaw = (float) Math.toRadians(player.rotationYawHead);
+				float forwardX = -MathHelper.sin(yaw);
+				float forwardZ = MathHelper.cos(yaw);
+				float strafeX = -MathHelper.sin((float)(yaw - Math.PI * 0.5));
+				float strafeZ = MathHelper.cos((float)(yaw - Math.PI * 0.5));
+
+				boolean hasForward = m.forwardKeyDown || m.backKeyDown;
+				boolean hasStrafe = m.leftKeyDown || m.rightKeyDown;
+				boolean hasVertical = m.jump || m.sneak;
+
+				if(!hasForward) {
+					double dotForward = player.motionX * forwardX + player.motionZ * forwardZ;
+					player.motionX -= dotForward * forwardX * 0.5;
+					player.motionZ -= dotForward * forwardZ * 0.5;
+				}
+				if(!hasStrafe) {
+					double dotStrafe = player.motionX * strafeX + player.motionZ * strafeZ;
+					player.motionX -= dotStrafe * strafeX * 0.5;
+					player.motionZ -= dotStrafe * strafeZ * 0.5;
+				}
+
 				player.motionX -= MathHelper.sin((float) Math.toRadians(player.rotationYawHead)) * m.moveForward;
 				player.motionZ += MathHelper.cos((float) Math.toRadians(player.rotationYawHead)) * m.moveForward;
 				player.motionX -= MathHelper.sin((float) Math.toRadians(player.rotationYawHead-90)) * m.moveStrafe;
 				player.motionZ += MathHelper.cos((float) Math.toRadians(player.rotationYawHead-90)) * m.moveStrafe;
-				player.motionY *= 0.75;
-				player.motionY += 0.05;
+				if(player.motionY < -1)
+					player.motionY += 0.2D;
+				else if(player.motionY < -0.1)
+					player.motionY += 0.1D;
+				else if(player.motionY < 0)
+					player.motionY = 0;
 				float extraMY = 0;
 				if(m.jump){
-					m.jump = false;
-					extraMY += 0.3*speed;
+					if(m.sneak) {
+						player.motionY = 0;
+						m.moveForward *= 0.5F;
+						m.moveStrafe *= 0.5F;
+					} else {
+						m.jump = false;
+						extraMY += 0.3*speed;
+					}
 				}
 				if(m.sneak){
-					m.sneak = false;
-					extraMY -= Math.min(0.3, 0.3*speed);
+					if(m.jump) {
+						player.motionY = 0;
+						m.moveForward *= 0.5F;
+						m.moveStrafe *= 0.5F;
+					} else {
+						m.sneak = false;
+						extraMY -= Math.min(0.3, 0.3*speed);
+					}
+				}
+				if(!hasVertical) {
+					player.motionY *= 0.5;
 				}
 				player.motionY += extraMY;
 				float diff = (Math.abs(m.moveForward)+Math.abs(m.moveStrafe)+extraMY+0.4F) - thrust;
@@ -309,6 +347,7 @@ public class JetpackHandler {
 			if(!player.world.isRemote){
 				JetpackInfo info = e.getValue();
 				if(jetpackActive(player)){
+					player.fallDistance = 0;
 					FluidTankNTM tank = getTank(player);
 					int drain = (int) Math.ceil(getDrain(tank.getTankType() == Fluids.NONE ? null : tank.getTankType())*info.thrust);
 					if(info.thrust < 0.0001)
