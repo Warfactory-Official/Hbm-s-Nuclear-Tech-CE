@@ -133,6 +133,8 @@ public class AssemblyMachineRecipes extends GenericRecipes<GenericRecipe> {
                 .inputItems(new OreDictStack(PB.plateCast(), 4), new OreDictStack(BE.ingot(), 8), new OreDictStack(DURA.plate(), 8), new OreDictStack(ASBESTOS.ingot(), 4)));
         this.register(new GenericRecipe("ass.thermoelement").setup(60, 100).outputItems(new ItemStack(ModItems.thermo_element, 1))
                 .inputItems(new RecipesCommon.OreDictStack(STEEL.plate(), 1), new RecipesCommon.OreDictStack(MINGRADE.wireFine(), 2), new RecipesCommon.OreDictStack(NETHERQUARTZ.dust(), 2)));
+        this.register(new GenericRecipe("ass.flashdrive").setup(100, 100).outputItems(new ItemStack(ModItems.drive, 4, EnumDriveType.FLASH_EMPTY.ordinal()))
+                .inputItems(new OreDictStack(STEEL.plate(), 1), new OreDictStack(ANY_PLASTIC.ingot(), 1), new OreDictStack(MINGRADE.wireFine(), 8)));
         this.register(new GenericRecipe("ass.thermoelementsilicon").setup(60, 100).outputItems(new ItemStack(ModItems.thermo_element, 1))
                 .inputItems(new RecipesCommon.OreDictStack(STEEL.plate(), 1), new RecipesCommon.OreDictStack(GOLD.wireFine(), 2), new RecipesCommon.OreDictStack(SI.billet(), 1)));
         this.register(new GenericRecipe("ass.rtgunit").setup(100, 100).outputItems(new ItemStack(ModItems.rtg_unit, 1))
