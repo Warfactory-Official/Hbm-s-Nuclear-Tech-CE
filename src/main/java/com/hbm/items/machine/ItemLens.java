@@ -44,10 +44,7 @@ public class ItemLens extends Item {
 	
 	public static long getLensDamage(ItemStack stack) {
 		
-		if(!stack.hasTagCompound()) {
-			stack.setTagCompound(new NBTTagCompound());
-			return 0;
-		}
+		if(!stack.hasTagCompound()) return 0;
 		
 		return stack.getTagCompound().getLong("damage");
 	}
