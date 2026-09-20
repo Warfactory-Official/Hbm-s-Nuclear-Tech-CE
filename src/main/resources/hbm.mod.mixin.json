@@ -25,7 +25,8 @@
   ],
   "mixins": [
     "potioncore.MixinPotionCoreEventHandler",
-    "ae2.MixinPartFluidImportBus"
+    "ae2.MixinPartFluidImportBus",
+    "ae2.MixinAEItemStackRegistry"
   ],
   "server": [],
   "setSourceFile": true,
