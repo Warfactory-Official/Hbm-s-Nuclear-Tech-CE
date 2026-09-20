@@ -409,7 +409,7 @@ public class JetpackHandler {
 				} catch(Throwable e) {
 					throw new RuntimeException(e);
 				}
-				if(j.jetpackFlyTime >= 0 && player.world.isRemote){
+				if(player.world.isRemote){
 					j.jetpackFlyTime ++;
 				}
 			}
