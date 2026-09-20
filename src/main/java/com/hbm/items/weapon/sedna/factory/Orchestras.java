@@ -601,7 +601,7 @@ public class Orchestras {
             if(timer < 5) {
                 //start sound
                 if(runningAudio == null || !runningAudio.isPlaying()) {
-                    AudioWrapper audio = MainRegistry.proxy.getLoopedSound(HBMSoundHandler.flameLoop, SoundCategory.PLAYERS, (float) entity.posX, (float) entity.posY, (float) entity.posZ, 1F, 15F);
+                    AudioWrapper audio = MainRegistry.proxy.getLoopedSound(HBMSoundHandler.flameLoop, SoundCategory.PLAYERS, (float) entity.posX, (float) entity.posY, (float) entity.posZ, 1F, 15F, 15F, 10);
                     ItemGunBaseNT.loopedSounds.put(entity, audio);
                     audio.startSound();
                 }
@@ -908,7 +908,7 @@ public class Orchestras {
             if(ItemGunStinger.getLockonProgress(stack) > 0 && !ItemGunStinger.getIsLockedOn(stack)) {
                 //start sound
                 if(runningAudio == null || !runningAudio.isPlaying()) {
-                    AudioWrapper audio = MainRegistry.proxy.getLoopedSound(HBMSoundHandler.lockon, SoundCategory.PLAYERS, (float) entity.posX, (float) entity.posY, (float) entity.posZ, 1F, 15F);
+                    AudioWrapper audio = MainRegistry.proxy.getLoopedSound(HBMSoundHandler.lockon, SoundCategory.PLAYERS, (float) entity.posX, (float) entity.posY, (float) entity.posZ, 1F, 15F, 15F, 10);
                     ItemGunBaseNT.loopedSounds.put(entity, audio);
                     audio.startSound();
                 }
@@ -939,7 +939,7 @@ public class Orchestras {
             if(timer < 5) {
                 //start sound
                 if(runningAudio == null || !runningAudio.isPlaying()) {
-                    AudioWrapper audio = MainRegistry.proxy.getLoopedSound(HBMSoundHandler.flameLoop, SoundCategory.PLAYERS, (float) entity.posX, (float) entity.posY, (float) entity.posZ, 1F, 15F);
+                    AudioWrapper audio = MainRegistry.proxy.getLoopedSound(HBMSoundHandler.flameLoop, SoundCategory.PLAYERS, (float) entity.posX, (float) entity.posY, (float) entity.posZ, 1F, 15F, 15F, 10);
                     ItemGunBaseNT.loopedSounds.put(entity, audio);
                     audio.startSound();
                 }
