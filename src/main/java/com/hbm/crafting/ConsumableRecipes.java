@@ -7,6 +7,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ItemEnums;
 import com.hbm.items.ItemEnums.EnumCircuitType;
 import com.hbm.items.ModItems;
+import com.hbm.items.armor.ItemModTesla;
 import com.hbm.items.food.ItemConserve.EnumFoodType;
 import com.hbm.items.machine.ItemBatteryPack;
 import com.hbm.items.weapon.grenade.ItemGrenadeFilling.EnumGrenadeFilling;
@@ -196,6 +197,7 @@ public class ConsumableRecipes {
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.ink, 1),"FPF", "PIP", "FPF", 'F', new ItemStack(Blocks.RED_FLOWER, 1, OreDictionary.WILDCARD_VALUE), 'P', ModItems.armor_polish, 'I', KEY_BLACK );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.bathwater_mk2, 1),"MWM", "WBW", "MWM", 'M', ModItems.bottle_mercury, 'W', ModItems.nuclear_waste, 'B', ModItems.bathwater );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.back_tesla, 1),"DGD", "GTG", "DGD", 'D', ModItems.ducttape, 'G', GOLD.wireFine(), 'T', ModBlocks.tesla );
+        CraftingManager.addShapelessAuto(ItemModTesla.withStaticGenerator(new ItemStack(ModItems.back_tesla, 1)), ModItems.back_tesla, ModBlocks.meteor_battery );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.medal_liquidator, 1),"GBG", "BFB", "GBG", 'G', AU198.nugget(), 'B', B.ingot(), 'F', ModItems.debris_fuel );
         CraftingManager.addShapelessAuto(new ItemStack(ModItems.injector_5htp, 1),ModItems.five_htp, DictFrame.fromOne(ModItems.circuit, EnumCircuitType.BASIC), BIGMT.plate() );
         CraftingManager.addShapelessAuto(new ItemStack(ModItems.injector_knife, 1),ModItems.injector_5htp, Items.IRON_SWORD );

@@ -682,6 +682,7 @@ public class ModEventHandlerClient {
         }
         RenderOverhead.renderActionPreview(evt.getPartialTicks());
         RadVisOverlay.render(evt);
+        ItemModTesla.renderArcs(evt);
     }
 
     @SubscribeEvent
