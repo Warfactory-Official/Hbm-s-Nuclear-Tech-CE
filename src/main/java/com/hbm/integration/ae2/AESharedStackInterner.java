@@ -12,11 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * Replacement for AE2's AEItemStackRegistry lookup, which returns the cached AESharedItemStack by hash alone,
- * without an equality check - two stacks with colliding NBT hashes (e.g. ICF pellets D/T and He3/He4) get merged
- * into one. Keeps AE2's semantics otherwise: one weakly held canonical instance per distinct stack.
- */
+
 public final class AESharedStackInterner {
 
     private static final Int2ObjectOpenHashMap<List<Entry>> BUCKETS = new Int2ObjectOpenHashMap<>();
@@ -26,7 +22,6 @@ public final class AESharedStackInterner {
 
     private AESharedStackInterner() {}
 
-    /** Returns the canonical AESharedItemStack for the stack, or null if the AE2 class can't be instantiated. */
     public static synchronized Object intern(ItemStack stack) {
         if (failed) return null;
         purge();
