@@ -41,6 +41,8 @@ public class ItemPoolsRedRoom {
 
                     weighted(ModItems.gun_hangman, 0, 1, 1, 1),
                     weighted(ModItems.gun_mas36, 0, 1, 1, 1),
+                	weighted(ModItems.weapon_mod_special, EnumModSpecial.NICKEL.ordinal(), 1, 1, 1),
+					weighted(ModItems.weapon_mod_special, EnumModSpecial.DOUBLOONS.ordinal(), 1, 1, 1),
             };
         }};
 
@@ -57,6 +59,7 @@ public class ItemPoolsRedRoom {
                     weighted(ModItems.item_secret, ItemEnums.EnumSecretType.SELENIUM_STEEL.ordinal(), 4, 4, 10),
                     weighted(ModItems.item_secret, ItemEnums.EnumSecretType.CONTROLLER.ordinal(), 1, 1, 10),
                     weighted(ModItems.item_secret, ItemEnums.EnumSecretType.CANISTER.ordinal(), 1, 1, 10),
+                    weighted(ModItems.blueprint_folder, 2, 1, 1, 1),
             };
         }};
     }
