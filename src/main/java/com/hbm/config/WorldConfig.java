@@ -65,4 +65,39 @@ public class WorldConfig {
 		meteorShowerChance = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_METEORS, "5.04_meteorShowerChance", "The probability of a meteor spawning during meteor shower (an average of once every nTH ticks)", 20 * 60 * 15);
 		meteorShowerDuration = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_METEORS, "5.05_meteorShowerDuration", "Max duration of meteor shower in ticks", 20 * 60 * 30);
 	}
+
+	// EC compat: fields removed in 1.12 CE refactor but still accessed via direct field reference by EnergyControl CrossHBM.loadOreInfo
+	// Keep as deprecated stubs to avoid NoSuchFieldError. Values are dummies - ore gen no longer uses them.
+	@Deprecated public static int uraniumSpawn = 6;
+	@Deprecated public static int thoriumSpawn = 7;
+	@Deprecated public static int titaniumSpawn = 8;
+	@Deprecated public static int sulfurSpawn = 5;
+	@Deprecated public static int aluminiumSpawn = 7;
+	@Deprecated public static int copperSpawn = 12;
+	@Deprecated public static int fluoriteSpawn = 6;
+	@Deprecated public static int niterSpawn = 6;
+	@Deprecated public static int tungstenSpawn = 10;
+	@Deprecated public static int leadSpawn = 6;
+	@Deprecated public static int berylliumSpawn = 6;
+	@Deprecated public static int ligniteSpawn = 2;
+	@Deprecated public static int asbestosSpawn = 4;
+	@Deprecated public static int rareSpawn = 6;
+	@Deprecated public static int lithiumSpawn = 6;
+	@Deprecated public static int cinnabarSpawn = 1;
+	@Deprecated public static int cinnebarSpawn = 1; // EC typo
+	@Deprecated public static int cobaltSpawn = 2;
+	@Deprecated public static int gassshaleSpawn = 5;
+	@Deprecated public static int gasbubbleSpawn = 4;
+	@Deprecated public static int oilSpawn = 100;
+	@Deprecated public static int ironClusterSpawn = 4;
+	@Deprecated public static int titaniumClusterSpawn = 2;
+	@Deprecated public static int aluminiumClusterSpawn = 3;
+	@Deprecated public static int copperClusterSpawn = 4;
+	// extra stubs that existed in older builds and might be referenced by other addons
+	@Deprecated public static int oilcoalSpawn = 128;
+	@Deprecated public static int explosivebubbleSpawn = 0;
+	@Deprecated public static int netherUraniumuSpawn = 8;
+	@Deprecated public static int netherTungstenSpawn = 10;
+	@Deprecated public static int netherSulfurSpawn = 26;
+	@Deprecated public static int netherPhosphorusSpawn = 24;
 }
