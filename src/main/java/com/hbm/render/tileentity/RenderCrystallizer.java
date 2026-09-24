@@ -8,17 +8,10 @@ import com.hbm.tileentity.machine.TileEntityMachineCrystallizer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.item.Item;
-import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
 @AutoRegister
 public class RenderCrystallizer extends TileEntitySpecialRenderer<TileEntityMachineCrystallizer>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(@NotNull TileEntityMachineCrystallizer te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityMachineCrystallizer crys,

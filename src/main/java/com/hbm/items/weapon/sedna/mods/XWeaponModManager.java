@@ -75,8 +75,9 @@ public class XWeaponModManager {
                 ModItems.gun_spas12,
                 ModItems.gun_panzerschreck };
         Item[] wsteelGuns = new Item[] {
+                ModItems.gun_star_f, ModItems.gun_star_f_akimbo,
                 ModItems.gun_g3, ModItems.gun_g3_zebra,
-                ModItems.gun_stinger,
+                ModItems.gun_mk108,
                 ModItems.gun_chemthrower };
         Item[] ferroGuns = new Item[] {
                 ModItems.gun_amat,
@@ -114,7 +115,7 @@ public class XWeaponModManager {
         new WeaponModDefinition(GunFactory.EnumModGeneric.BRONZE_DURA).addMod(bronzeGuns, new WeaponModGenericDurability(117));
 
         new WeaponModDefinition(GunFactory.EnumModSpecial.SPEEDLOADER).addMod(ModItems.gun_liberator, new WeaponModLiberatorSpeedloader(200));
-        new WeaponModDefinition(GunFactory.EnumModSpecial.SILENCER).addMod(new Item[] {ModItems.gun_am180, ModItems.gun_uzi, ModItems.gun_uzi_akimbo, ModItems.gun_g3, ModItems.gun_amat}, new WeaponModSilencer(ID_SILENCER));
+        new WeaponModDefinition(GunFactory.EnumModSpecial.SILENCER).addMod(new Item[] {ModItems.gun_am180, ModItems.gun_uzi, ModItems.gun_uzi_akimbo, ModItems.gun_star_f, ModItems.gun_star_f_akimbo, ModItems.gun_g3, ModItems.gun_amat}, new WeaponModSilencer(ID_SILENCER));
         new WeaponModDefinition(GunFactory.EnumModSpecial.SCOPE).addMod(new Item[] {ModItems.gun_heavy_revolver, ModItems.gun_g3, ModItems.gun_mas36, ModItems.gun_charge_thrower}, new WeaponModScope(ID_SCOPE));
         new WeaponModDefinition(GunFactory.EnumModSpecial.SAW)
                 .addMod(new Item[] {ModItems.gun_maresleg, ModItems.gun_double_barrel}, new WeaponModSawedOff(ID_SAWED_OFF))
@@ -124,7 +125,7 @@ public class XWeaponModManager {
         new WeaponModDefinition(GunFactory.EnumModSpecial.SLOWDOWN).addMod(new Item[] {ModItems.gun_minigun, ModItems.gun_minigun_dual}, new WeaponModSlowdown(207));
         new WeaponModDefinition(GunFactory.EnumModSpecial.SPEEDUP)
                 .addMod(new Item[] {ModItems.gun_minigun, ModItems.gun_minigun_dual}, new WeaponModMinigunSpeedup(ID_MINIGUN_SPEED))
-                .addMod(new Item[] {ModItems.gun_autoshotgun, ModItems.gun_autoshotgun_shredder}, new WeaponModShredderSpeedup(209));
+                .addMod(new Item[] {ModItems.gun_autoshotgun, ModItems.gun_autoshotgun_shredder, ModItems.gun_mk108}, new WeaponModShredderSpeedup(209));
         new WeaponModDefinition(GunFactory.EnumModSpecial.CHOKE).addMod(new Item[] {ModItems.gun_pepperbox, ModItems.gun_maresleg, ModItems.gun_double_barrel, ModItems.gun_liberator, ModItems.gun_spas12, ModItems.gun_autoshotgun_sexy, ModItems.gun_autoshotgun_heretic}, new WeaponModChoke(210));
         new WeaponModDefinition(GunFactory.EnumModSpecial.FURNITURE_GREEN).addMod(ModItems.gun_g3, new WeaponModPolymerFurniture(ID_FURNITURE_GREEN));
         new WeaponModDefinition(GunFactory.EnumModSpecial.FURNITURE_BLACK).addMod(ModItems.gun_g3, new WeaponModPolymerFurniture(ID_FURNITURE_BLACK));
@@ -162,7 +163,9 @@ public class XWeaponModManager {
         BulletConfig[] r762 = new BulletConfig[] {XFactory762mm.r762_sp, XFactory762mm.r762_fmj, XFactory762mm.r762_jhp, XFactory762mm.r762_ap, XFactory762mm.r762_du, XFactory762mm.r762_he};
         BulletConfig[] bmg50 = new BulletConfig[] {XFactory50.bmg50_sp, XFactory50.bmg50_fmj, XFactory50.bmg50_jhp, XFactory50.bmg50_ap, XFactory50.bmg50_du, XFactory50.bmg50_he};
         new WeaponModDefinition(GunFactory.EnumModCaliber.P9)
-                .addMod(ModItems.gun_henry, new WeaponModCaliber(300, 28, 10F, p9));
+                .addMod(ModItems.gun_henry, new WeaponModCaliber(300, 28, 10F, p9))
+                .addMod(ModItems.gun_star_f, new WeaponModCaliber(301, 12, 15F, p9))
+                .addMod(ModItems.gun_star_f_akimbo, new WeaponModCaliber(302, 12, 15F, p9));
         new WeaponModDefinition(GunFactory.EnumModCaliber.P45)
                 .addMod(ModItems.gun_henry, new WeaponModCaliber(310, 28, 10F, p45))
                 .addMod(ModItems.gun_greasegun, new WeaponModCaliber(311, 24, 3F, p45))

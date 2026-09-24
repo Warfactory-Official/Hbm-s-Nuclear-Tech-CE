@@ -2,6 +2,7 @@ package com.hbm.inventory.gui;
 
 import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerMachineAssemblyFactory;
+import com.hbm.inventory.gui.element.GUIElements;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.machine.ItemBlueprints;
@@ -47,7 +48,7 @@ public class GUIMachineAssemblyFactory extends GuiInfoContainer {
         for(int i = 0; i < 4; i++) if(guiLeft + 6 + (i % 2) * 109 <= mouseX && guiLeft + 6 + (i % 2) * 109 + 18 > mouseX && guiTop + 53 + (i / 2) * 56 < mouseY && guiTop + 53 + (i / 2) * 56 + 18 >= mouseY) {
             if(this.assembler.assemblerModule[i].recipe != null && AssemblyMachineRecipes.INSTANCE.recipeNameMap.containsKey(this.assembler.assemblerModule[i].recipe)) {
                 GenericRecipe recipe = AssemblyMachineRecipes.INSTANCE.recipeNameMap.get(this.assembler.assemblerModule[i].recipe);
-                this.drawHoveringText(recipe.print(), mouseX, mouseY);
+                GUIElements.drawHoveringTextRecipe(recipe.print(), mouseX, mouseY, this.fontRenderer, itemRender, this.width, this.height);
             } else {
                 this.drawHoveringText(TextFormatting.YELLOW + I18nUtil.resolveKey("gui.recipe.setRecipe"), mouseX, mouseY);
             }

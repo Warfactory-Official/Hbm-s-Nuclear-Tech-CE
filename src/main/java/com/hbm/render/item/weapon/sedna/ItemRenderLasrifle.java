@@ -65,7 +65,7 @@ public class ItemRenderLasrifle extends ItemRenderWeaponBase {
 		ResourceManager.lasrifle.renderPart("Gun");
 		ResourceManager.lasrifle.renderPart("Barrel");
 		ResourceManager.lasrifle.renderPart("Stock");
-		ResourceManager.lasrifle.renderPart("Scope");
+		if(hasScope(stack)) ResourceManager.lasrifle.renderPart("Scope");
 
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(0, -0.375, 2.375);
@@ -106,11 +106,11 @@ public class ItemRenderLasrifle extends ItemRenderWeaponBase {
 	@Override
 	public void setupInv(ItemStack stack) {
 		super.setupInv(stack);
-		double scale = 1.0625D;
+		double scale = 1.03125D;
 		GlStateManager.scale(scale, scale, scale);
 		GlStateManager.rotate(25, 1, 0, 0);
 		GlStateManager.rotate(45, 0, 1, 0);
-		GlStateManager.translate(0.5, 0, 0);
+		GlStateManager.translate(0.75, 0, 0);
 	}
 
 	@Override

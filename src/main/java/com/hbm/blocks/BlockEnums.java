@@ -37,6 +37,33 @@ public class BlockEnums {
 		public static final EnumStalagmiteType[] VALUES = values();
 	}
 
+	public enum EnumCMMaterials {
+		STEEL,
+		ALLOY,
+		DESH,
+		TCALLOY;
+
+		public static final EnumCMMaterials[] VALUES = values();
+	}
+
+	public enum EnumCMEngines {
+		STANDARD,
+		DESH,
+		BISMUTH;
+
+		public static final EnumCMEngines[] VALUES = values();
+	}
+
+	public enum EnumCMCircuit {
+		ALUMINIUM,
+		COPPER,
+		RED_COPPER,
+		GOLD,
+		SCHRABIDIUM;
+
+		public static final EnumCMCircuit[] VALUES = values();
+	}
+
 	/** DECO / STRUCTURE ENUMS */
 	//i apologize in advance
 
@@ -142,9 +169,7 @@ public class BlockEnums {
 		RAD,
 		SPARKLE,
 		KORL,
-		FRITZ,
-		SUNSET,
-		STAR;
+		FRITZ;
 
 		public static final EnumBlockCapType[] VALUES = values();
 
@@ -156,8 +181,6 @@ public class BlockEnums {
                  case SPARKLE -> ModItems.cap_sparkle;
                  case KORL -> ModItems.cap_korl;
                  case FRITZ -> ModItems.cap_fritz;
-                 case SUNSET -> ModItems.cap_sunset;
-                 case STAR -> ModItems.cap_star;
 			};
 		}
 
@@ -170,5 +193,32 @@ public class BlockEnums {
         INCANDESCENT,
         FLUORESCENT,
         HALOGEN
+    }
+
+    public enum EnumBiomeType {
+        DESERT,
+        WOODLAND;
+
+        public static final EnumBiomeType[] VALUES = values();
+    }
+
+    public enum PlatemetalType {
+        BASE,
+        BLACK,
+        WHITE,
+        RED,
+        GREEN,
+        LIGHT_GRAY,
+        BLUE,
+        PURPLE,
+        CYAN,
+        PINK,
+        LIME,
+        YELLOW,
+        LIGHT_BLUE,
+        MAGENTA,
+        ORANGE;
+
+        public static final PlatemetalType[] VALUES = values();
     }
 }

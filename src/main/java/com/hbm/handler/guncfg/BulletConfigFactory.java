@@ -8,7 +8,8 @@ import com.hbm.interfaces.IBulletUpdateBehavior;
 import com.hbm.inventory.RecipesCommon;
 import com.hbm.items.ModItems;
 import com.hbm.lib.Library;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.util.Vec3NT;
 import com.hbm.util.BobMathUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -101,7 +102,7 @@ public class BulletConfigFactory {
 		bullet.doesBreakGlass = false;
 		bullet.style = BulletConfiguration.STYLE_GRENADE;
 		bullet.plink = BulletConfiguration.PLINK_GRENADE;
-		bullet.vPFX = "smoke";
+		bullet.vPFX = HbmEffectNT.VanillaExt_Smoke;
 		
 		return bullet;
 	}
@@ -152,7 +153,7 @@ public class BulletConfigFactory {
 		bullet.explosive = 2.5F;
 		bullet.style = BulletConfiguration.STYLE_GRENADE;
 		bullet.plink = BulletConfiguration.PLINK_GRENADE;
-		bullet.vPFX = "smoke";
+		bullet.vPFX = HbmEffectNT.VanillaExt_Smoke;
 
 		return bullet;
 	}
@@ -167,7 +168,7 @@ public class BulletConfigFactory {
 				if(bullet.shooter == null || !(bullet.shooter instanceof EntityPlayer))
 					return;
 				
-				if(Vec3.createVectorHelper(bullet.posX - bullet.shooter.posX, bullet.posY - bullet.shooter.posY, bullet.posZ - bullet.shooter.posZ).length() > 100)
+				if(Vec3NT.createVectorHelper(bullet.posX - bullet.shooter.posX, bullet.posY - bullet.shooter.posY, bullet.posZ - bullet.shooter.posZ).length() > 100)
 					return;
 
 				RayTraceResult mop = Library.rayTraceIncludeEntities((EntityPlayer)bullet.shooter, 200, 1);
@@ -179,18 +180,18 @@ public class BulletConfigFactory {
 					mop.hitVec = new Vec3d(ent.posX, ent.posY + ent.getEyeHeight()/2, ent.posZ);
 				}
 
-				Vec3 vec = Vec3.createVectorHelper(mop.hitVec.x - bullet.posX, mop.hitVec.y - bullet.posY, mop.hitVec.z - bullet.posZ);
+				Vec3NT vec = Vec3NT.createVectorHelper(mop.hitVec.x - bullet.posX, mop.hitVec.y - bullet.posY, mop.hitVec.z - bullet.posZ);
 
 				if(vec.length() < 1)
 					return;
 
 				vec = vec.normalize();
 
-				double speed = Vec3.createVectorHelper(bullet.motionX, bullet.motionY, bullet.motionZ).length();
+				double speed = Vec3NT.createVectorHelper(bullet.motionX, bullet.motionY, bullet.motionZ).length();
 
-				bullet.motionX = vec.xCoord * speed;
-				bullet.motionY = vec.yCoord * speed;
-				bullet.motionZ = vec.zCoord * speed;
+				bullet.motionX = vec.x * speed;
+				bullet.motionY = vec.y * speed;
+				bullet.motionZ = vec.z * speed;
 			}
 
 		};
@@ -216,14 +217,14 @@ public class BulletConfigFactory {
 
 				if(target != null) {
 
-					Vec3 delta = Vec3.createVectorHelper(target.posX - bullet.posX, target.posY + target.height / 2 - bullet.posY, target.posZ - bullet.posZ);
+					Vec3NT delta = Vec3NT.createVectorHelper(target.posX - bullet.posX, target.posY + target.height / 2 - bullet.posY, target.posZ - bullet.posZ);
 					delta = delta.normalize();
 
-					double vel = Vec3.createVectorHelper(bullet.motionX, bullet.motionY, bullet.motionZ).length();
+					double vel = Vec3NT.createVectorHelper(bullet.motionX, bullet.motionY, bullet.motionZ).length();
 
-					bullet.motionX = delta.xCoord * vel;
-					bullet.motionY = delta.yCoord * vel;
-					bullet.motionZ = delta.zCoord * vel;
+					bullet.motionX = delta.x * vel;
+					bullet.motionY = delta.y * vel;
+					bullet.motionZ = delta.z * vel;
 				}
 			}
 

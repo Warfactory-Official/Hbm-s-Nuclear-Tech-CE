@@ -1,23 +1,27 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.Tags;
+import com.hbm.handler.threading.PacketThreading;
+import com.hbm.inventory.gui.element.GUIElements;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.Library;
+import com.hbm.packet.toserver.NBTControlPacket;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.util.I18nUtil;
+import com.hbm.util.SoundUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +38,28 @@ public abstract class GuiInfoContainer extends GuiContainer {
 
   public void drawFluidInfo(String[] text, int x, int y) {
     this.drawHoveringText(Arrays.asList(text), x, y);
+  }
+
+  @Override
+  public void drawHoveringText(List<String> list, int x, int y) {
+    GUIElements.drawHoveringText(list, x, y, fontRenderer, itemRender, width, height);
+  }
+
+  public RenderItem getItemRenderer() {
+    return this.itemRender;
+  }
+
+  protected void drawConstrainedLabel(String label, int x, int y, int color, float maxScale, float divisor) {
+
+    float scale = Math.min(maxScale, divisor / this.fontRenderer.getStringWidth(label));
+
+    GlStateManager.scale(scale, scale, 1);
+    this.fontRenderer.drawString(label, (int) (x / scale - this.fontRenderer.getStringWidth(label) / 2F), (int) (y / scale - this.fontRenderer.FONT_HEIGHT / 2F), color);
+    GlStateManager.scale(1 / scale, 1 / scale, 1);
+  }
+
+  public FontRenderer getFontRenderer() {
+    return this.fontRenderer;
   }
 
   public void drawFluidInfo(List<String> text, int x, int y) {
@@ -317,9 +343,18 @@ public abstract class GuiInfoContainer extends GuiContainer {
     GlStateManager.enableRescaleNormal();
   }
 
+  public void clickSendFlag(TileEntity tile, int x, int y, int left, int top, int sizeX, int sizeY, String name) {
+    if(checkClick(x, y, left, top, sizeX, sizeY)) {
+      SoundUtil.playClickSound();
+      NBTTagCompound data = new NBTTagCompound();
+      data.setBoolean(name, true);
+      PacketThreading.createSendToServerThreadedPacket(new NBTControlPacket(data, tile.getPos()));
+    }
+  }
+
   /** Draws item with label, excludes all the GL state setup */
   protected void drawItemStack(ItemStack stack, int x, int y, String label) {
-    GL11.glTranslatef(0.0F, 0.0F, 32.0F);
+    GlStateManager.translate(0.0F, 0.0F, 32.0F);
     this.zLevel = 200.0F;
     itemRender.zLevel = 200.0F;
     FontRenderer font;
@@ -341,15 +376,15 @@ public abstract class GuiInfoContainer extends GuiContainer {
   }
 
   public void renderItem(ItemStack stack, int x, int y, float layer) {
-    GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+    GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     RenderHelper.enableGUIStandardItemLighting();
     OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (float) 240, (float) 240);
-    GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+    GlStateManager.enableRescaleNormal();
     itemRender.zLevel = layer;
     itemRender.renderItemAndEffectIntoGUI(stack, guiLeft + x, guiTop + y);
     itemRender.zLevel = 0.0F;
-    GL11.glEnable(GL11.GL_ALPHA_TEST);
-    GL11.glDisable(GL11.GL_LIGHTING);
+    GlStateManager.enableAlpha();
+    GlStateManager.disableLighting();
   }
 
   protected boolean checkClick(int x, int y, int left, int top, int sizeX, int sizeY) {

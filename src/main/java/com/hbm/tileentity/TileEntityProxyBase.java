@@ -1,23 +1,30 @@
 package com.hbm.tileentity;
 
 import com.hbm.blocks.BlockDummyable;
-import com.hbm.blocks.machine.BlockHadronAccess;
 import com.hbm.blocks.machine.MachineDiFurnaceExtension;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityDiFurnace;
-import com.hbm.tileentity.machine.TileEntityHadron;
+import com.hbm.util.Compat;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.NotNull;
 
 public class TileEntityProxyBase extends TileEntityLoadedBase {
 
+	public BlockPos cachedPosition;
+
 	public TileEntity getTE() {
 
-		if(this.getBlockType() instanceof BlockDummyable) {
+		if(cachedPosition != null) {
+			TileEntity te = Compat.getTileStandard(world, cachedPosition.getX(), cachedPosition.getY(), cachedPosition.getZ());
+			if(te != null && !(te instanceof TileEntityProxyBase)) return te;
+			cachedPosition = null;
+			this.markDirty();
+		}
 
-			BlockDummyable dummy = (BlockDummyable)this.getBlockType();
+		if(this.getBlockType() instanceof BlockDummyable dummy) {
 
-			int[] pos = dummy.findCore(world, this.pos.getX(), this.pos.getY(), this.pos.getZ());
+            int[] pos = dummy.findCore(world, this.pos.getX(), this.pos.getY(), this.pos.getZ());
 
 			if(pos != null) {
 
@@ -31,19 +38,6 @@ public class TileEntityProxyBase extends TileEntityLoadedBase {
 		/// this spares me the hassle of registering a new child class TE that aims at the right target ///
 		//Drillgon200: Incidentally, it's also a gateway to some very messy code, the very thing this class is supposed to prevent.
 
-		if(this.getBlockType() instanceof BlockHadronAccess) {
-			ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata());
-
-
-			for(int i = 1; i < 3; i++) {
-				TileEntity te = world.getTileEntity(new BlockPos(pos.getX() + dir.offsetX * i, pos.getY() + dir.offsetY * i, pos.getZ() + dir.offsetZ * i));
-
-				if(te instanceof TileEntityHadron) {
-					return te;
-				}
-			}
-		}
-
 		if (this.getBlockType() instanceof MachineDiFurnaceExtension) {
 			TileEntity te = world.getTileEntity(pos.down());
 
@@ -53,5 +47,25 @@ public class TileEntityProxyBase extends TileEntityLoadedBase {
 		}
 
 		return null;
+	}
+
+	@Override
+	public void readFromNBT(NBTTagCompound nbt) {
+		super.readFromNBT(nbt);
+
+		if(nbt.getBoolean("hasPos")) cachedPosition = new BlockPos(nbt.getInteger("pX"), nbt.getInteger("pY"), nbt.getInteger("pZ"));
+	}
+
+	@Override
+	public @NotNull NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+		super.writeToNBT(nbt);
+
+		if(this.cachedPosition != null) {
+			nbt.setBoolean("hasPos", true);
+			nbt.setInteger("pX", this.cachedPosition.getX());
+			nbt.setInteger("pY", this.cachedPosition.getY());
+			nbt.setInteger("pZ", this.cachedPosition.getZ());
+		}
+		return nbt;
 	}
 }

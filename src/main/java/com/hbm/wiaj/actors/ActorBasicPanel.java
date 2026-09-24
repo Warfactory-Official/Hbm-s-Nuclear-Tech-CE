@@ -58,7 +58,7 @@ public class ActorBasicPanel implements ISpecialActor {
         y += h / 2;
 
         if (!lines.isEmpty()) {
-            GL11.glDisable(GL12.GL_RESCALE_NORMAL);
+            GlStateManager.disableRescaleNormal();
             RenderHelper.disableStandardItemLighting();
             GlStateManager.disableLighting();
             GlStateManager.disableDepth();
@@ -141,7 +141,7 @@ public class ActorBasicPanel implements ISpecialActor {
                         indent += font.getStringWidth((String) o) + 2;
                     } else {
                         ItemStack stack = (ItemStack) o;
-                        GL11.glColor3f(1F, 1F, 1F);
+                        GlStateManager.color(1F, 1F, 1F);
 
                         if (stack.getCount() == 0) {
                             this.drawGradientRect(minX + indent - 1, minY - 1, minX + indent + 17, minY + 17, 0xffff0000, 0xffff0000);
@@ -166,7 +166,7 @@ public class ActorBasicPanel implements ISpecialActor {
             GlStateManager.enableLighting();
             GlStateManager.enableDepth();
             RenderHelper.enableStandardItemLighting();
-            GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+            GlStateManager.enableRescaleNormal();
         }
     }
 

@@ -3,6 +3,8 @@ package com.hbm.handler;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.PlantEnums;
 import com.hbm.blocks.generic.BlockConcreteColoredExt;
+import com.hbm.blocks.generic.BlockPlushie;
+import com.hbm.blocks.generic.BlockSnowglobe;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.gui.GUIScreenBobmazon.Offer;
 import com.hbm.inventory.gui.GUIScreenBobmazon.Requirement;
@@ -41,6 +43,9 @@ public class BobmazonOfferFactory {
 		//blueprints
 		standard.add(new Offer(new ItemStack(ModItems.blueprint_folder, 1, 0), Requirement.ASSEMBLY, 64));
 		standard.add(new Offer(new ItemStack(ModItems.blueprint_folder, 1, 1), Requirement.OIL, 256));
+        // vending machines
+        standard.add(new Offer(new ItemStack(ModBlocks.vending_machine, 1, 0), Requirement.CHEMICS, 64));
+        standard.add(new Offer(new ItemStack(ModBlocks.vending_machine, 1, 1), Requirement.CHEMICS, 64));
 		//plants
 		standard.add(new Offer(new ItemStack(Blocks.SAPLING, 1, 3), Requirement.STEEL, 12, 9));
 		standard.add(new Offer(new ItemStack(ModBlocks.plant_flower, 1, PlantEnums.EnumFlowerPlantType.FOXGLOVE.ordinal()), Requirement.STEEL, 16, 5));
@@ -50,8 +55,8 @@ public class BobmazonOfferFactory {
 		standard.add(new Offer(new ItemStack(ModBlocks.plant_flower, 1, PlantEnums.EnumFlowerPlantType.MUSTARD_WILLOW_0.ordinal()), Requirement.NUCLEAR, 64, 8));
 		//deco
 		for(BlockConcreteColoredExt.EnumConcreteType conc : BlockConcreteColoredExt.EnumConcreteType.VALUES) standard.add(new Offer(new ItemStack(ModBlocks.concrete_colored_ext, 16, conc.ordinal()), Requirement.CHEMICS, 4));
-		//for(SnowglobeType globe : SnowglobeType.values()) standard.add(new Offer(new ItemStack(ModBlocks.snowglobe, 1, globe.ordinal()), Requirement.CHEMICS, 128));
-		//for(int i = 1; i < PlushieType.values().length; i++) standard.add(new Offer(new ItemStack(ModBlocks.plushie, 1, i), Requirement.OIL, 16, i < 3 ? 10 : 0));
+		for(BlockSnowglobe.SnowglobeType globe : BlockSnowglobe.SnowglobeType.values()) standard.add(new Offer(new ItemStack(ModBlocks.snowglobe, 1, globe.ordinal()), Requirement.CHEMICS, 128));
+		for(int i = 1; i < BlockPlushie.PlushieType.values().length; i++) standard.add(new Offer(new ItemStack(ModBlocks.plushie, 1, i), Requirement.OIL, 16, i < 3 ? 10 : 0));
 
 		special.add(new Offer(new ItemStack(Items.IRON_INGOT, 64), Requirement.STEEL, 1));
 		special.add(new Offer(new ItemStack(ModItems.ingot_steel, 64), Requirement.STEEL, 1));
@@ -118,25 +123,23 @@ public class BobmazonOfferFactory {
         }
 
 		special.add(new Offer(ItemKitCustom.create("Fusion Man", "For the nuclear physicist on the go", 0xff00ff, 0x800080,
-				new ItemStack(ModBlocks.iter),
-				new ItemStack(ModBlocks.plasma_heater),
-				new ItemStack(ModItems.fusion_shield_vaporwave),
+				new ItemStack(ModBlocks.fusion_klystron),
+				new ItemStack(ModBlocks.fusion_torus),
+				new ItemStack(ModBlocks.fusion_mhdt),
+				new ItemStack(ModBlocks.machine_intake, 3),
 				ItemBattery.getFullBattery(ModItems.battery_spark),
-				new ItemStack(ModBlocks.machine_chemplant, 10),
+				new ItemStack(ModBlocks.machine_chemical_factory, 4),
 				new ItemStack(ModBlocks.machine_fluidtank, 8),
 				new ItemStack(ModBlocks.red_wire_coated, 64),
 				new ItemStack(ModBlocks.red_cable, 64),
 				new ItemStack(ModItems.fluid_barrel_full, 64, Fluids.DEUTERIUM.getID()),
 				new ItemStack(ModItems.fluid_barrel_full, 64, Fluids.TRITIUM.getID()),
-				new ItemStack(ModItems.fluid_barrel_full, 64, Fluids.XENON.getID()),
-				new ItemStack(ModItems.fluid_barrel_full, 64, Fluids.MERCURY.getID()),
+				new ItemStack(ModItems.fluid_barrel_full, 64, Fluids.PERFLUOROMETHYL.getID()),
 				new ItemStack(ModBlocks.red_pylon_large, 8),
 				new ItemStack(ModBlocks.substation, 4),
-				new ItemStack(ModBlocks.red_pylon, 16),
 				new ItemStack(ModBlocks.red_connector, 64),
 				new ItemStack(ModItems.wiring_red_copper, 1),
-				new ItemStack(ModBlocks.machine_chungus, 1),
-				new ItemStack(ModBlocks.machine_large_turbine, 3),
+				new ItemStack(ModBlocks.machine_chungus, 3),
 				new ItemStack(ModItems.template_folder, 1),
 				new ItemStack(Items.PAPER, 64),
 				new ItemStack(Items.DYE, 64)

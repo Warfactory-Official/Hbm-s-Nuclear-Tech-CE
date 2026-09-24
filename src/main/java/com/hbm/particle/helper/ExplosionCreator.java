@@ -5,7 +5,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.particle.ParticleDebris;
 import com.hbm.particle.ParticleMukeWave;
 import com.hbm.particle.ParticleRocketFlame;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.wiaj.WorldInAJar;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -33,7 +33,6 @@ public class ExplosionCreator implements IParticleCreator {
                                      int debrisCount, int debrisSize, int debrisRetry, float debrisVelocity, float debrisHorizontalDeviation, float debrisVerticalOffset, float soundRange) {
 
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "explosionLarge");
         data.setByte("cloudCount", (byte) cloudCount);
         data.setFloat("cloudScale", cloudScale);
         data.setFloat("cloudSpeedMult", cloudSpeedMult);
@@ -45,7 +44,7 @@ public class ExplosionCreator implements IParticleCreator {
         data.setFloat("debrisHorizontalDeviation", debrisHorizontalDeviation);
         data.setFloat("debrisVerticalOffset", debrisVerticalOffset);
         data.setFloat("soundRange", soundRange);
-        IParticleCreator.sendPacket(world, x, y, z, Math.max(300, (int) soundRange), data);
+        IParticleCreator.sendPacket(world, HbmEffectNT.ExplosionLarge, x, y, z, Math.max(300, (int) soundRange), data);
     }
 
     /**
@@ -127,10 +126,10 @@ public class ExplosionCreator implements IParticleCreator {
             int cY = (int) Math.floor(y + oY + 0.5);
             int cZ = (int) Math.floor(z + oZ + 0.5);
 
-            Vec3 motion = Vec3.createVectorHelper(debrisVelocity, 0, 0);
-            motion.rotateAroundZ((float) -Math.toRadians(45 + rand.nextFloat() * 25));
-            motion.rotateAroundY((float) (rand.nextDouble() * Math.PI * 2));
-            ParticleDebris particle = new ParticleDebris(world, x, y, z, motion.xCoord, motion.yCoord, motion.zCoord);
+            Vec3NT motion = Vec3NT.createVectorHelper(debrisVelocity, 0, 0);
+            motion.rotateRollSelf((float) -Math.toRadians(45 + rand.nextFloat() * 25));
+            motion.rotateYawSelf((float) (rand.nextDouble() * Math.PI * 2));
+            ParticleDebris particle = new ParticleDebris(world, x, y, z, motion.x, motion.y, motion.z);
             WorldInAJar wiaj = new WorldInAJar(debrisSize, debrisSize, debrisSize);
             particle.worldInAJar = wiaj;
 

@@ -34,6 +34,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -64,9 +65,9 @@ public class BlockDecoModel<E extends Enum<E>> extends BlockEnumMeta<E> implemen
 
     //FIXME: This is a hack, the mapping for items should be flat (first model occupies 0-3, seconds occupies 3-7, etc)
     @Override
-    public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
+    public @NotNull ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
         if(state.getBlock() == ModBlocks.filing_cabinet)
-            return new ItemStack(Item.getItemFromBlock(this), 1, state.getValue(META)%2);
+            return new ItemStack(Item.getItemFromBlock(this), 1, state.getValue(META) & 3);
         if(state.getBlock() == ModBlocks.deco_computer)
             return new ItemStack(Item.getItemFromBlock(this), 1, 0);
         else
@@ -84,99 +85,71 @@ public class BlockDecoModel<E extends Enum<E>> extends BlockEnumMeta<E> implemen
     }
 
     @Override
-    public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
+    public @NotNull BlockFaceShape getBlockFaceShape(@NotNull IBlockAccess worldIn, @NotNull IBlockState state, @NotNull BlockPos pos, @NotNull EnumFacing face) {
         return BlockFaceShape.UNDEFINED;
     }
 
     @Override
-    public boolean isOpaqueCube(IBlockState state) {
+    public boolean isOpaqueCube(@NotNull IBlockState state) {
         return false;
     }
 
     @Override
-    public boolean isFullCube(IBlockState state) {
+    public boolean isFullCube(@NotNull IBlockState state) {
         return false;
     }
 
-    private static int orientationFromYaw(EntityLivingBase player) {
-        int i = MathHelper.floor(player.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
-        if ((i & 1) != 1) {
-            return i >> 1; // North(0) and South(1)
-        } else {
-            return (i == 3) ? 2 : 3; // West(2) or East(3)
+    @Override
+    public @NotNull IBlockState getStateForPlacement(@NotNull World worldIn, @NotNull BlockPos pos, @NotNull EnumFacing facing,
+                                                     float hitX, float hitY, float hitZ, int meta, @NotNull EntityLivingBase placer, @NotNull EnumHand hand) {
+        int i = MathHelper.floor(placer.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
+        int orient;
+
+        if((i & 1) != 1)
+            orient = i >> 1;
+        else {
+            if(i == 3) orient = 2;
+            else orient = 3;
         }
-    }
 
-    @Override
-    public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing,
-                                            float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, EnumHand hand) {
-        int orient = orientationFromYaw(placer) & 3;
-        int finalMeta = ((orient << 2) | (meta & 3)) & 15;
+        int finalMeta = (orient << 2) | (meta & 3);
         return this.getDefaultState().withProperty(META, finalMeta);
     }
 
     private AxisAlignedBB getBoxFor(int orient) {
         return switch (orient) {
-            case 0 -> // North
-                    new AxisAlignedBB(1.0F - mxX, mnY, 1.0F - mxZ, 1.0F - mnX, mxY, 1.0F - mnZ);
-            case 1 -> // South
-                    new AxisAlignedBB(mnX, mnY, mnZ, mxX, mxY, mxZ);
-            case 2 -> // West
-                    new AxisAlignedBB(1.0F - mxZ, mnY, mnX, 1.0F - mnZ, mxY, mxX);
-            case 3 -> // East
-                    new AxisAlignedBB(mnZ, mnY, 1.0F - mxX, mxZ, mxY, 1.0F - mnX);
+            case 0 -> new AxisAlignedBB(1.0F - mxX, mnY, 1.0F - mxZ, 1.0F - mnX, mxY, 1.0F - mnZ);
+            case 1 -> new AxisAlignedBB(mnX, mnY, mnZ, mxX, mxY, mxZ);
+            case 2 -> new AxisAlignedBB(1.0F - mxZ, mnY, mnX, 1.0F - mnZ, mxY, mxX);
+            case 3 -> new AxisAlignedBB(mnZ, mnY, 1.0F - mxX, mxZ, mxY, 1.0F - mnX);
             default -> FULL_BLOCK_AABB;
         };
     }
 
     @Override
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+    public @NotNull AxisAlignedBB getBoundingBox(IBlockState state, @NotNull IBlockAccess source, @NotNull BlockPos pos) {
         int meta = state.getValue(META);
         int orient = (meta >> 2) & 3;
         return getBoxFor(orient);
     }
 
     @Override
-    public void addCollisionBoxToList(IBlockState state, World worldIn, BlockPos pos,
-                                      AxisAlignedBB entityBox, List<AxisAlignedBB> collidingBoxes,
+    public void addCollisionBoxToList(@NotNull IBlockState state, @NotNull World worldIn, @NotNull BlockPos pos,
+                                      @NotNull AxisAlignedBB entityBox, @NotNull List<AxisAlignedBB> collidingBoxes,
                                       @Nullable Entity entityIn, boolean isActualState) {
         AxisAlignedBB bb = getBoundingBox(state, worldIn, pos);
         Block.addCollisionBoxToList(pos, entityBox, collidingBoxes, bb);
     }
 
     @Override
-    public List<ItemStack> getDrops(IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
+    public @NotNull List<ItemStack> getDrops(IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
         int meta = state.getValue(META) & 3;
         return Collections.singletonList(new ItemStack(Item.getItemFromBlock(this), 1, meta));
     }
 
     @Override
     public int transformMeta(int meta, int coordBaseMode) {
-        if(coordBaseMode == 0) return meta;
-        //N: 0b00, S: 0b01, W: 0b10, E: 0b11
-        int rot = meta >> 2;
-        int type = meta & 3;
-
-        switch (coordBaseMode) {
-            default -> {
-            } //South
-            case 1 -> { //West
-                if ((rot & 3) < 2) //N & S can just have bits toggled
-                    rot = rot ^ 3;
-                else //W & E can just have first bit set to 0
-                    rot = rot ^ 2;
-            }
-            case 2 -> //North
-                    rot = rot ^ 1; //N, W, E & S can just have first bit toggled
-            case 3 -> { //East
-                if ((rot & 3) < 2)//N & S can just have second bit set to 1
-                    rot = rot ^ 2;
-                else //W & E can just have bits toggled
-                    rot = rot ^ 3;
-            }
-        }
-        //genuinely like. why did i do that
-        return (rot << 2) | type; //To accommodate for BlockDecoModel's shift in the rotation bits; otherwise, simply bit-shift right and or any non-rotation meta after
+        return INBTBlockTransformable.transformMetaDecoModelHigh(meta, coordBaseMode);
     }
 
     @SideOnly(Side.CLIENT)
@@ -192,7 +165,8 @@ public class BlockDecoModel<E extends Enum<E>> extends BlockEnumMeta<E> implemen
                 .getTextureMapBlocks()
                 .getAtlasSprite(new ResourceLocation("hbm", "blocks/deco_computer").toString());
         IBakedModel baked = BlockDecoBakedModel.forBlock(wavefront, sprite);
-        for (int m = 0; m < 4; m++) {
+
+        for (int m = 0; m < 16; m++) {
             ModelResourceLocation mrl = new ModelResourceLocation(getRegistryName(), "meta=" + m);
             event.getModelRegistry().putObject(mrl, baked);
         }
@@ -203,9 +177,8 @@ public class BlockDecoModel<E extends Enum<E>> extends BlockEnumMeta<E> implemen
     public StateMapperBase getStateMapper(ResourceLocation loc) {
         return new StateMapperBase() {
             @Override
-            protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
-                int meta = state.getValue(META) & 3;
-                return new ModelResourceLocation(loc, "meta=" + meta);
+            protected @NotNull ModelResourceLocation getModelResourceLocation(@NotNull IBlockState state) {
+                return new ModelResourceLocation(loc, "meta=" + state.getValue(META));
             }
         };
     }

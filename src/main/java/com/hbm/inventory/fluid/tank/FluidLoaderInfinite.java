@@ -37,15 +37,13 @@ public class FluidLoaderInfinite implements IFluidLoadingHandler {
         FluidType itemType = item.getType();
 		if (tank.getTankType() == Fluids.NONE) {
 			if (itemType != null) {
+				if (item.getChance() > 1 && rand.nextInt(item.getChance()) != 0) return false;
 				tank.setTankType(itemType);
 			} else return false;
-		}
+		} else if (item.getChance() > 1 && rand.nextInt(item.getChance()) != 0) return false;
 		if (itemType != null && tank.getTankType() != itemType) return false;
 
-		if (item.getChance() <= 1 || rand.nextInt(item.getChance()) == 0) {
-			tank.setFill(Math.min(tank.getFill() + item.getAmount() * inputStack.getCount(), tank.getMaxFill()));
-		}
-
+		tank.setFill(Math.min(tank.getFill() + item.getAmount() * inputStack.getCount(), tank.getMaxFill()));
 		return true;
 	}
 }

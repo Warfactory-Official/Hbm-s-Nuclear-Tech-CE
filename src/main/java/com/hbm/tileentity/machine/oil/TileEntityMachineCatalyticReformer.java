@@ -15,6 +15,7 @@ import com.hbm.items.ModItems;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IPersistentNBT;
@@ -33,7 +34,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
-public class TileEntityMachineCatalyticReformer extends TileEntityMachineBase implements IEnergyReceiverMK2, IFluidStandardTransceiver, IPersistentNBT, IGUIProvider, IFluidCopiable, ITickable {
+public class TileEntityMachineCatalyticReformer extends TileEntityMachineBase implements IEnergyReceiverMK2, IFluidStandardTransceiver, IPersistentNBT, IGUIProvider, IFluidCopiable, ITickable, IConnectionAnchors {
 
     public long power;
     public static final long maxPower = 1_000_000;
@@ -44,10 +45,10 @@ public class TileEntityMachineCatalyticReformer extends TileEntityMachineBase im
         super(11, true, true);
 
         this.tanks = new FluidTankNTM[4];
-        this.tanks[0] = new FluidTankNTM(Fluids.NAPHTHA, 64_000);
-        this.tanks[1] = new FluidTankNTM(Fluids.REFORMATE, 24_000);
-        this.tanks[2] = new FluidTankNTM(Fluids.PETROLEUM, 24_000);
-        this.tanks[3] = new FluidTankNTM(Fluids.HYDROGEN, 24_000);
+        this.tanks[0] = new FluidTankNTM(Fluids.NAPHTHA, 64_000).withOwner(this);
+        this.tanks[1] = new FluidTankNTM(Fluids.REFORMATE, 24_000).withOwner(this);
+        this.tanks[2] = new FluidTankNTM(Fluids.PETROLEUM, 24_000).withOwner(this);
+        this.tanks[3] = new FluidTankNTM(Fluids.HYDROGEN, 24_000).withOwner(this);
     }
 
     @Override

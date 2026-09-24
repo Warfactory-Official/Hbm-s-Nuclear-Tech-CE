@@ -36,7 +36,7 @@ public class TileEntityFurnaceIron extends TileEntityMachineBase implements IGUI
 
 	public int progress;
 	public int processingTime;
-	public static final int baseTime = 200;
+	public static final int baseTime = 160;
 	
 	public ModuleBurnTime burnModule;
 

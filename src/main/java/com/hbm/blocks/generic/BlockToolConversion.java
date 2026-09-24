@@ -101,12 +101,6 @@ public class BlockToolConversion extends BlockBase implements IToolable, ILookOv
         return Collections.singletonList(new ItemStack(Item.getItemFromBlock(this), 1, meta));
     }
 
-    @Override
-    public void onBlockPlacedBy(World world, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull EntityLivingBase placer, ItemStack stack) {
-        int meta = stack.getMetadata();
-        world.setBlockState(pos, this.getStateFromMeta(meta), 3);
-    }
-
     public String getTranslationKey(IBlockState state) {
         return super.getTranslationKey() + (state.getValue(TOOLED) ? "_tooled" : "");
     }

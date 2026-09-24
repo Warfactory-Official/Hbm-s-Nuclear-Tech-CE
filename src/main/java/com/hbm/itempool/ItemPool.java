@@ -30,14 +30,15 @@ public class ItemPool {
         ItemPoolsSatellite.init();
         ItemPoolsPile.init();
         ItemPoolsC130.init();
+        ItemPoolsVendingMachine.init();
     }
 
-    public static HashMap<String, ItemPool> pools = new HashMap();
+    public static HashMap<String, ItemPool> pools = new HashMap<>();
 
     public String name;
     public WeightedRandomChestContentFrom1710[] pool = new WeightedRandomChestContentFrom1710[0];
 
-    private List<WeightedRandomChestContentFrom1710> buildingList = new ArrayList();
+    private List<WeightedRandomChestContentFrom1710> buildingList = new ArrayList<>();
 
     public ItemPool() { }
 

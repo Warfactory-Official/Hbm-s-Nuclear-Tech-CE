@@ -59,7 +59,7 @@ public class GUICraneRouter extends GuiInfoContainer {
         for (int j = 0; j < 2; j++) {
             for (int k = 0; k < 3; k++) {
                 int buttonX = guiLeft + 7 + j * 222;
-                int buttonY = guiTop + 15 + k * 26;
+                int buttonY = guiTop + 16 + k * 26;
 
                 if (buttonX <= mouseX && mouseX < buttonX + 18 && buttonY < mouseY && mouseY <= buttonY + 18) {
                     String[] text = new String[2];
@@ -95,21 +95,7 @@ public class GUICraneRouter extends GuiInfoContainer {
                 int index = i % 5;
 
                 if (isMouseOverSlot(slot, mouseX, mouseY) && matcher.modes[index] != null) {
-                    String label = TextFormatting.YELLOW + "";
-
-                    switch (matcher.modes[index]) {
-                        case "exact":
-                            label += "Item and meta match";
-                            break;
-                        case "wildcard":
-                            label += "Item matches";
-                            break;
-                        default:
-                            label += "Ore dict key matches: " + matcher.modes[index];
-                            break;
-                    }
-
-                    drawHoveringText(Arrays.asList(TextFormatting.RED + "Right click to change", label), mouseX, mouseY - 30);
+                    drawHoveringText(Arrays.asList(TextFormatting.RED + "Right click to change", ModulePatternMatcher.getLabel(matcher.modes[index])), mouseX, mouseY - 30);
                 }
             }
         }
@@ -129,7 +115,7 @@ public class GUICraneRouter extends GuiInfoContainer {
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, 93);
-        drawTexturedModalRect(guiLeft + 39, guiTop + 101, 39, 101, 176, 100);
+        drawTexturedModalRect(guiLeft + 39, guiTop + 93, 39, 93, 176, 108);
 
         for (int j = 0; j < 2; j++) {
             for (int k = 0; k < 3; k++) {

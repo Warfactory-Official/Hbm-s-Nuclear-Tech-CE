@@ -34,6 +34,8 @@ public class CompatibilityConfig {
 	public static HashMap<Integer, Integer> alexandriteSpawn;
 	public static HashMap<Integer, Integer> oilBubbleSpawn;
 	public static HashMap<Integer, Integer> cobaltSpawn;
+	public static HashMap<Integer, Integer> gneissIronSpawn;
+	public static HashMap<Integer, Integer> gneissGoldSpawn;
 	
 	public static HashMap<Integer, Integer> ironClusterSpawn;
 	public static HashMap<Integer, Integer> titaniumClusterSpawn;
@@ -76,9 +78,9 @@ public class CompatibilityConfig {
 	public static HashMap<Integer, Integer> siloStructure;
 	public static HashMap<Integer, Integer> factoryStructure;
 	public static HashMap<Integer, Integer> dudStructure;
+	public static HashMap<Integer, Integer> meteoriteSpawn;
 	public static HashMap<Integer, Integer> spaceshipStructure;
 	public static HashMap<Integer, Integer> barrelStructure;
-	public static HashMap<Integer, Integer> geyserWater;
 	public static HashMap<Integer, Integer> geyserChlorine;
 	public static HashMap<Integer, Integer> geyserVapor;
 	public static HashMap<Integer, Integer> geyserNether;
@@ -207,6 +209,8 @@ public class CompatibilityConfig {
 		gasbubbleSpawn = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_ORES, "01.19_gasBubbleSpawnRate", "Spawns a gas bubble every nTH chunk - <dimID:amount> (Int:Int)", Integer.class, Integer.class, new String[]{ "0:40", "-6:40" }, ":");
 		cinnabarSpawn = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_ORES, "01.20_cinnabarSpawnRate", "Amount of cinnabar ore veins per chunk - <dimID:amount> (Int:Int)", Integer.class, Integer.class, new String[]{ "0:1", "-6:1" }, ":");
 		cobaltSpawn = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_ORES, "01.21_cobaltSpawnRate", "Amount of cobalt ore veins per chunk - <dimID:amount> (Int:Int)", Integer.class, Integer.class, new String[]{ "0:2", "-6:2" }, ":");
+		gneissIronSpawn = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_ORES, "01.34_gneissIronSpawnrate", "Amount of iron ore veins per chunk in Gneiss - <dimID:amount> (Int:Int)", Integer.class, Integer.class, new String[]{ "0:25" }, ":");
+		gneissGoldSpawn = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_ORES, "01.35_gneissGoldSpawnrate", "Amount of gold ore veins per chunk in Gneiss - <dimID:amount> (Int:Int)", Integer.class, Integer.class, new String[]{ "0:10" }, ":");
 		
 		ironClusterSpawn = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_ORES, "01.22_ironClusterSpawn", "Amount of iron cluster veins per chunk - <dimID:amount> (Int:Int)", Integer.class, Integer.class, new String[]{ "0:4", "-6:4" }, ":");
 		titaniumClusterSpawn = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_ORES, "01.23_titaniumClusterSpawn", "Amount of titanium cluster veins per chunk - <dimID:amount> (Int:Int)", Integer.class, Integer.class, new String[]{ "0:2", "-6:2" }, ":");
@@ -256,8 +260,8 @@ public class CompatibilityConfig {
 		minefreq = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_STRUCTURES, "03.15_landmineSpawn", "Spawn AP landmine on every nTH chunk - <dimID:n> (Int:Int)", Integer.class, Integer.class, new String[]{ "0:64" }, ":");
 		radfreq = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_STRUCTURES, "03.17_radHotsoptSpawn", "Spawn big radiation hotspot on every nTH chunk - <dimID:n> (Int:Int)", Integer.class, Integer.class, new String[]{ "0:5000" }, ":");
 		vaultfreq = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_STRUCTURES, "03.18_vaultSpawn", "Spawn locked safe on every nTH chunk - <dimID:n> (Int:Int)", Integer.class, Integer.class, new String[]{ "0:2500" }, ":");
+		meteoriteSpawn = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_STRUCTURES, "03.19_meteoriteSpawn", "Spawn a fallen meteorite on every nTH chunk - <dimID:n> (Int:Int)", Integer.class, Integer.class, new String[]{ "0:200" }, ":");
 		
-		geyserWater = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_STRUCTURES, "03.19_geyserWaterSpawn", "Spawn water geyser on every nTH chunk - <dimID:n> (Int:Int)", Integer.class, Integer.class, new String[]{ "0:3000" }, ":");
 		geyserChlorine = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_STRUCTURES, "03.20_geyserChlorineSpawn", "Spawn poison geyser on every nTH chunk - <dimID:n> (Int:Int)", Integer.class, Integer.class, new String[]{ "0:3000" }, ":");
 		geyserVapor = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_STRUCTURES, "03.21_geyserVaporSpawn", "Spawn vapor geyser on every nTH chunk - <dimID:n> (Int:Int)", Integer.class, Integer.class, new String[]{ "0:500" }, ":");
 		geyserNether = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_STRUCTURES, "03.22_geyserNetherSpawn", "Spawn nether geyser on every nTH chunk - <dimID:n> (Int:Int)", Integer.class, Integer.class, new String[]{ "-1:2" }, ":");
@@ -266,61 +270,6 @@ public class CompatibilityConfig {
 		arcticStructure = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_DUNGEONS, "03.25_arcticVaultSpawn", "Spawn artic code vault on every nTH chunk - <dimID:n> (Int:Int)", Integer.class, Integer.class, new String[]{ "0:500" }, ":");
 		jungleStructure = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_DUNGEONS, "03.26_jungleDungeonSpawn", "Spawn jungle dungeon on every nTH chunk - <dimID:n> (Int:Int)", Integer.class, Integer.class, new String[]{ "0:2000" }, ":");
 		pyramidStructure = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_DUNGEONS, "03.27_pyramidSpawn", "Spawn pyramid on every nTH chunk - <dimID:n> (Int:Int)", Integer.class, Integer.class, new String[]{ "0:4000" }, ":");
-		
-		meteorStrikeChance = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_METEORS, "05.01_meteorStrikeChance", "The probability of a meteor spawning per tick (an average of once every nTH ticks) - <dimID:n> (Int:Int)", Integer.class, Integer.class, new String[]{ 
-			"0:"+20 * 10 * 60 * 5, //Earth
-			"-28:"+20 * 10 * 5, //Moon
-			"-29:"+20 * 10 * 13, //Mars
-			"-31:"+20 * 10 * 60 * 15,  //Venus
-			"-13:"+20 * 10 * 30, //Mercury
-			"-20:"+20 * 10 * 60 * 10, //Ceres
-			"-1500:"+20 * 10 * 3, //IO
-			"-1501:"+20 * 10 * 25, //Europa
-			"-1506:"+20 * 10 * 60, //Ganymede
-			"-1505:"+20 * 10 * 60 * 2, //Callisto
-			"-1507:"+20 * 10 * 6, //Rhea
-			"-1508:"+20 * 10 * 60 * 8, //Titan
-			"-1511:"+20 * 10 * 60 * 4, //Iapetus
-			"-1510:"+20 * 10 * 60 * 3, //Titania
-			"-1509:"+20 * 10 * 60 * 9, //Oberon
-			"-1504:"+20 * 10 * 60 * 20 //Triton
-		}, ":");
-		meteorShowerChance = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_METEORS, "05.02_meteorShowerChance", "The probability of a meteor spawning during meteor shower per tick (an average of once every nTH ticks) - <dimID:n> (Int:Int)", Integer.class, Integer.class, new String[]{ 
-			"0:"+20 * 60 * 60 * 5, //Earth
-			"-28:"+20 * 60 * 5, //Moon
-			"-29:"+20 * 60 * 13, //Mars
-			"-31:"+20 * 60 * 60 * 15,  //Venus
-			"-13:"+20 * 60 * 30, //Mercury
-			"-20:"+20 * 60 * 60 * 10, //Ceres
-			"-1500:"+20 * 60 * 3, //IO
-			"-1501:"+20 * 60 * 25, //Europa
-			"-1506:"+20 * 60 * 60, //Ganymede
-			"-1505:"+20 * 60 * 60 * 2, //Callisto
-			"-1507:"+20 * 60 * 6, //Rhea
-			"-1508:"+20 * 60 * 60 * 8, //Titan
-			"-1511:"+20 * 60 * 60 * 4, //Iapetus
-			"-1510:"+20 * 60 * 60 * 3, //Titania
-			"-1509:"+20 * 60 * 60 * 9, //Oberon
-			"-1504:"+20 * 60 * 60 * 20 //Triton
-		}, ":");
-		meteorShowerDuration = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_METEORS, "05.03_meteorShowerDuration", "Max duration of meteor shower in ticks - <dimID:n> (Int:Int)", Integer.class, Integer.class, new String[]{ 
-			"0:"+20 * 60 * 5, //Earth
-			"-28:"+20 * 5, //Moon
-			"-29:"+20 * 13, //Mars
-			"-31:"+20 * 60 * 15,  //Venus
-			"-13:"+20 * 30, //Mercury
-			"-20:"+20 * 60 * 10, //Ceres
-			"-1500:"+20 * 3, //IO
-			"-1501:"+20 * 25, //Europa
-			"-1506:"+20 * 60, //Ganymede
-			"-1505:"+20 * 60 * 2, //Callisto
-			"-1507:"+20 * 6, //Rhea
-			"-1508:"+20 * 60 * 8, //Titan
-			"-1511:"+20 * 60 * 4, //Iapetus
-			"-1510:"+20 * 60 * 3, //Titania
-			"-1509:"+20 * 60 * 9, //Oberon
-			"-1504:"+20 * 60 * 20 //Triton
-		}, ":");
 		
 
 		String mobModRadComment = "Amount of radiation resistance all the mobs of that mod get. Radresistance s is calculated as s=(1-0.1^r). So a resistance value of 3.0 means that 99.9%=(1-0.1^3.0) of the radiation gets blocked. - <mod=radresistance> (String:Float)";

@@ -5,7 +5,7 @@ import com.hbm.items.weapon.sedna.factory.XFactory556mm;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
 import com.hbm.render.anim.sedna.BusAnimationSequenceSedna;
-import com.hbm.render.anim.sedna.HbmAnimationsSedna.GunAnimation;
+import com.hbm.render.anim.sedna.AnimationEnums.GunAnimation;
 import net.minecraft.item.ItemStack;
 
 import java.util.Objects;

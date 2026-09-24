@@ -32,6 +32,12 @@ public class ItemBlockBase extends ItemBlock {
     }
 
     @Override
+    public int getItemStackLimit(ItemStack stack) {
+        if (IPersistentNBT.carriesContents(stack)) return 1;
+        return super.getItemStackLimit(stack);
+    }
+
+    @Override
     public int getMetadata(int meta) {
         if (this.block instanceof IBlockMulti)
             return meta;

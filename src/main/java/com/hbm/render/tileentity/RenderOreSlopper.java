@@ -44,7 +44,7 @@ public class RenderOreSlopper extends TileEntitySpecialRenderer<TileEntityMachin
         };
         GlStateManager.rotate(rotationY, 0F, 1F, 0F);
 
-        int oldShadeModel = GL11.glGetInteger(GL11.GL_SHADE_MODEL);
+        int oldShadeModel = GlStateManager.glGetInteger(GL11.GL_SHADE_MODEL);
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
 
         bindTexture(ResourceManager.ore_slopper_tex);

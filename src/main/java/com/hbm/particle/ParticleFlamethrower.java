@@ -64,7 +64,7 @@ public class ParticleFlamethrower extends ParticleRotating {
 
     this.particleAlpha = (float) Math.pow(1 - Math.min(ageScaled, 1), 0.5);
 
-    double scale = (ageScaled * 1.25 + 0.25) * particleScale;
+    float scale = (float) ((ageScaled * 1.25 + 0.25) * particleScale);
     renderParticleRotated(buffer, partialTicks, sX, sY, sZ, dX, dZ, scale);
   }
 

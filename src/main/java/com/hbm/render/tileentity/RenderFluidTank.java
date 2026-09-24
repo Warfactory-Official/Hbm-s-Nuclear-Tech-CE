@@ -60,13 +60,13 @@ public class RenderFluidTank extends TileEntitySpecialRenderer<TileEntityMachine
             RenderHelper.disableStandardItemLighting();
             GlStateManager.pushMatrix();
             GlStateManager.translate(-0.25, 0.5, -1.501);
-            GL11.glRotated(90, 0, 1, 0);
+            GlStateManager.rotate(90, 0, 1, 0);
             GlStateManager.scale(1.0F, 0.375F, 0.375F);
             DiamondPronter.pront(type.poison, type.flammability, type.reactivity, type.symbol);
             GlStateManager.popMatrix();
             GlStateManager.pushMatrix();
             GlStateManager.translate(0.25, 0.5, 1.501);
-            GL11.glRotated(-90, 0, 1, 0);
+            GlStateManager.rotate(-90, 0, 1, 0);
             GlStateManager.scale(1.0F, 0.375F, 0.375F);
             DiamondPronter.pront(type.poison, type.flammability, type.reactivity, type.symbol);
             GlStateManager.popMatrix();
@@ -86,11 +86,12 @@ public class RenderFluidTank extends TileEntitySpecialRenderer<TileEntityMachine
         return new ItemRenderBase() {
             public void renderInventory() {
                 GlStateManager.translate(0, -2, 0);
-                GlStateManager.rotate(90, 0, 1, 0);
-                GlStateManager.scale(3, 3, 3);
+                GlStateManager.scale(3.5, 3.5, 3.5);
             }
 
             public void renderCommon(ItemStack stack) {
+                GlStateManager.rotate(90, 0, 1, 0);
+                GlStateManager.scale(0.75, 0.75, 0.75);
                 GlStateManager.shadeModel(GL11.GL_SMOOTH);
                 GlStateManager.disableCull();
                 FluidTankNTM tank = new FluidTankNTM(Fluids.NONE, 0);

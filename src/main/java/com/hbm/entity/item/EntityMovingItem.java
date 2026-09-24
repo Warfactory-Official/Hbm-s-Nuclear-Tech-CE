@@ -41,7 +41,7 @@ public class EntityMovingItem extends EntityMovingConveyorObject implements ICon
 
     public boolean attackEntityFrom(DamageSource source, float amount) {
 
-    	if(!world.isRemote) {
+    	if(!world.isRemote && !this.isDead) {
 			world.spawnEntity(new EntityItem(world, posX, posY, posZ, this.getItemStack()));
 	    	this.setDead();
     	}
@@ -72,7 +72,7 @@ public class EntityMovingItem extends EntityMovingConveyorObject implements ICon
 	@Override
 	protected void writeEntityToNBT(NBTTagCompound nbt) {
 
-        if (this.getItemStack() != null)
+        if (!this.getItemStack().isEmpty())
         	nbt.setTag("Item", this.getItemStack().writeToNBT(new NBTTagCompound()));
 
         nbt.setInteger("schedule", schedule);
@@ -92,6 +92,7 @@ public class EntityMovingItem extends EntityMovingConveyorObject implements ICon
 
 		this.setDead();
 		EntityItem item = new EntityItem(world, posX + motionX * 2, posY + motionY * 2, posZ + motionZ * 2, this.getItemStack());
+		item.lifespan = 60 * 20;
 		item.motionX = this.motionX * 2;
 		item.motionY = 0.1;
 		item.motionZ = this.motionZ * 2;

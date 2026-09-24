@@ -7,7 +7,7 @@ import com.hbm.entity.projectile.EntityRubble;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.lib.Library;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -85,12 +85,12 @@ public class EntityGlyphidDigger extends EntityGlyphid {
             int bugY = (int) posY;
             int bugZ = (int) posZ;
 
-            Vec3 vec0 = new Vec3(getLookVec());
+            Vec3NT vec0 = new Vec3NT(getLookVec());
 
             List<int[]> list = Library.getBlockPosInPath(new BlockPos(bugX, bugY, bugZ), l, vec0.toVec3d());
 
             for (int i = 0; i < 8; i++) {
-                vec0.rotateAroundY(part);
+                vec0.rotateYawSelf(part);
                 list.addAll(Library.getBlockPosInPath(new BlockPos(bugX, bugY - 1, bugZ), l, vec0.toVec3d()));
             }
 
@@ -107,24 +107,24 @@ public class EntityGlyphidDigger extends EntityGlyphid {
             }
 
             int prediction = 60;
-            Vec3 delta = Vec3.createVectorHelper(e.posX - posX + velX * prediction, (e.posY + e.height / 2) - (posY + 1) + velY * prediction, e.posZ - posZ + velZ * prediction);
+            Vec3NT delta = Vec3NT.createVectorHelper(e.posX - posX + velX * prediction, (e.posY + e.height / 2) - (posY + 1) + velY * prediction, e.posZ - posZ + velZ * prediction);
             double len = delta.length();
             if(len < 3) return;
-            double targetYaw = -Math.atan2(delta.xCoord, delta.zCoord);
+            double targetYaw = -Math.atan2(delta.x, delta.z);
 
-            double x = Math.sqrt(delta.xCoord * delta.xCoord + delta.zCoord * delta.zCoord);
-            double y = delta.yCoord;
+            double x = Math.sqrt(delta.x * delta.x + delta.z * delta.z);
+            double y = delta.y;
             double v0 = 1.2;
             double v02 = v0 * v0;
             double g = 0.03D;
             double upperLower = topAttack ? 1 : -1;
             double targetPitch = Math.atan((v02 + Math.sqrt(v02*v02 - g*(g*x*x + 2*y*v02)) * upperLower) / (g*x));
-            Vec3 fireVec = null;
+            Vec3NT fireVec = null;
             if(!Double.isNaN(targetPitch)) {
 
-                fireVec = Vec3.createVectorHelper(v0, 0, 0);
-                fireVec.rotateAroundZ((float) -targetPitch);
-                fireVec.rotateAroundY((float) -(targetYaw + Math.PI * 0.5));
+                fireVec = Vec3NT.createVectorHelper(v0, 0, 0);
+                fireVec.rotateRollSelf((float) -targetPitch);
+                fireVec.rotateYawSelf((float) -(targetYaw + Math.PI * 0.5));
             }
 
             for (int[] ints : list) {
@@ -148,7 +148,7 @@ public class EntityGlyphidDigger extends EntityGlyphid {
                     rubble.setMetaBasedOnBlock(b, b.getMetaFromState(state));
 
                     if(fireVec != null)
-                        rubble.shoot(fireVec.xCoord, fireVec.yCoord, fireVec.zCoord, (float) v0, rand.nextFloat());
+                        rubble.shoot(fireVec.x, fireVec.y, fireVec.z, (float) v0, rand.nextFloat());
 
                     world.spawnEntity(rubble);
 

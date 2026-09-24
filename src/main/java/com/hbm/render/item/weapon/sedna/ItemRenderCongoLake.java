@@ -7,7 +7,7 @@ import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
 import com.hbm.particle.SpentCasing;
 import com.hbm.render.anim.sedna.HbmAnimationsSedna;
-import com.hbm.render.anim.sedna.HbmAnimationsSedna.GunAnimation;
+import com.hbm.render.anim.sedna.AnimationEnums.GunAnimation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.item.ItemStack;

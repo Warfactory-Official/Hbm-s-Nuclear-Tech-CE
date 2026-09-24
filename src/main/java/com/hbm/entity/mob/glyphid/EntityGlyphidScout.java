@@ -7,7 +7,7 @@ import com.hbm.entity.mob.glyphid.GlyphidStats.StatBundle;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.world.feature.GlyphidHive;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -89,10 +89,10 @@ public class EntityGlyphidScout extends EntityGlyphid {
 
             if(MobConfig.rampantGlyphidGuidance && PollutionHandler.targetCoords != null){
                 if(!hasTarget) {
-                    Vec3 dirVec = playerBaseDirFinder(Vec3.createVectorHelper(posX, posY, posZ), getPlayerTargetDirection());
+                    Vec3NT dirVec = playerBaseDirFinder(Vec3NT.createVectorHelper(posX, posY, posZ), getPlayerTargetDirection());
 
                     EntityWaypoint target = new EntityWaypoint(world);
-                    target.setLocationAndAngles(dirVec.xCoord, dirVec.yCoord, dirVec.zCoord, 0, 0);
+                    target.setLocationAndAngles(dirVec.x, dirVec.y, dirVec.z, 0, 0);
                     target.maxAge = 300;
                     target.radius = 6;
                     target.setWaypointType(TASK_BUILD_HIVE);
@@ -185,10 +185,10 @@ public class EntityGlyphidScout extends EntityGlyphid {
         for(int i = 0; i < 8; i++) {
 
             float angle = (float) Math.toRadians(360D / 16 * i);
-            Vec3 rot = Vec3.createVectorHelper(0, 0, length);
-            rot.rotateAroundY(angle);
-            Vec3 pos = Vec3.createVectorHelper(this.posX, this.posY + 1, this.posZ);
-            Vec3 nextPos = Vec3.createVectorHelper(this.posX + rot.xCoord, this.posY + 1, this.posZ + rot.zCoord);
+            Vec3NT rot = Vec3NT.createVectorHelper(0, 0, length);
+            rot.rotateYawSelf(angle);
+            Vec3NT pos = Vec3NT.createVectorHelper(this.posX, this.posY + 1, this.posZ);
+            Vec3NT nextPos = Vec3NT.createVectorHelper(this.posX + rot.x, this.posY + 1, this.posZ + rot.z);
             RayTraceResult result = this.world.rayTraceBlocks(pos.toVec3d(), nextPos.toVec3d());
 
             if(result != null && result.typeOfHit == RayTraceResult.Type.BLOCK) {
@@ -241,7 +241,7 @@ public class EntityGlyphidScout extends EntityGlyphid {
         IBlockState state = world.getBlockState(new BlockPos(nestX, nestY - 1, nestZ));
         Block b = state.getBlock();
 
-        boolean distanceCheck = Vec3.createVectorHelper(nestX - homeX, nestY - homeY, nestZ - homeZ).length() > minDistanceToHive;
+        boolean distanceCheck = Vec3NT.createVectorHelper(nestX - homeX, nestY - homeY, nestZ - homeZ).length() > minDistanceToHive;
 
         if(distanceCheck && state.getMaterial() != Material.AIR && state.isNormalCube() && b != ModBlocks.glyphid_base) {
 
@@ -328,19 +328,19 @@ public class EntityGlyphidScout extends EntityGlyphid {
     /** Finds the direction from the bug's location to the target and adds it to their current coord
      * Used as a performant way to make scouts expand toward the player's spawn point
      * @return An adjusted direction vector, to be added into the bug's current position for it to path in the required direction**/
-    public static Vec3 playerBaseDirFinder(Vec3 currentLocation, Vec3 target){
-        Vec3 dirVec = currentLocation.subtract(target).normalize();
-        return Vec3.createVectorHelper(
-                currentLocation.xCoord + dirVec.xCoord * 10,
-                currentLocation.yCoord + dirVec.yCoord * 10,
-                currentLocation.zCoord + dirVec.zCoord * 10
+    public static Vec3NT playerBaseDirFinder(Vec3NT currentLocation, Vec3NT target){
+        Vec3NT dirVec = currentLocation.subtract(target).normalize();
+        return Vec3NT.createVectorHelper(
+                currentLocation.x + dirVec.x * 10,
+                currentLocation.y + dirVec.y * 10,
+                currentLocation.z + dirVec.z * 10
         );
     }
 
-    protected Vec3 getPlayerTargetDirection() {
+    protected Vec3NT getPlayerTargetDirection() {
         EntityPlayer player = world.getClosestPlayerToEntity(this, 300);
         if(player != null) {
-            return Vec3.createVectorHelper(player.posX, player.posY, player.posZ);
+            return Vec3NT.createVectorHelper(player.posX, player.posY, player.posZ);
         }
         return PollutionHandler.targetCoords;
     }

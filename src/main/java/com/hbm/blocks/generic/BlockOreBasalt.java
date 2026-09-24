@@ -27,7 +27,7 @@ public class BlockOreBasalt extends BlockEnumMeta<EnumBasaltOreType> {
         return Arrays.stream(blockEnum)
                 .map(Enum::name)
                 .map(name -> registryName + "." + name.toLowerCase(Locale.US))
-                .map(texture -> new BlockBakeFrame(texture + "_top", texture))
+                .map(texture -> BlockBakeFrame.column(texture + "_top", texture))
                 .toArray(BlockBakeFrame[]::new);
     }
 

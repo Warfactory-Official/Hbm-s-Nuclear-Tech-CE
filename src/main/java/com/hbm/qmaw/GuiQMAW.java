@@ -1,26 +1,24 @@
 package com.hbm.qmaw;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.hbm.Tags;
-import net.minecraft.client.audio.PositionedSoundRecord;
+import com.hbm.qmaw.components.QComponentLink;
+import com.hbm.qmaw.components.QComponentText;
+import com.hbm.util.SoundUtil;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.init.SoundEvents;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.resources.LanguageManager;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
-import com.hbm.qmaw.components.*;
-
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.resources.LanguageManager;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GuiQMAW extends GuiScreen {
 
@@ -51,6 +49,34 @@ public class GuiQMAW extends GuiScreen {
         parseQMAW(qmaw);
     }
 
+    /** Preprocessor before actual parsing begins, imports contents from other QMAWs using curly bracket notation */
+    protected String compose(String contents) {
+        LanguageManager lang = Minecraft.getMinecraft().getLanguageManager();
+        String langCode = lang.getCurrentLanguage().getLanguageCode();
+        int recursionBrake = 100;
+
+        while(contents.contains("{{") && recursionBrake > 0) {
+
+            int begin = contents.indexOf("{{");
+            int end = contents.indexOf("}}");
+            if(end < begin) break;
+
+            String composeTag = contents.substring(begin + 2, end);
+            QuickManualAndWiki qmaw = QMAWLoader.qmaw.get(composeTag);
+            String substitute = composeTag;
+
+            if(qmaw != null) {
+                if(qmaw.contents.containsKey(langCode)) substitute = qmaw.contents.get(langCode);
+                else if(qmaw.contents.containsKey(EN_US)) substitute = qmaw.contents.get(EN_US);
+            }
+
+            contents = contents.replace("{{" + composeTag + "}}", substitute);
+            recursionBrake--;
+        }
+
+        return contents;
+    }
+
     protected void parseQMAW(QuickManualAndWiki qmaw) {
         LanguageManager lang = Minecraft.getMinecraft().getLanguageManager();
 
@@ -63,7 +89,7 @@ public class GuiQMAW extends GuiScreen {
         String toParse = qmaw.contents.get(lang.getCurrentLanguage().getLanguageCode());
         if(toParse == null) toParse = qmaw.contents.get(EN_US);
         if(toParse == null) toParse = "Missing Localization!";
-        toParse = "" + toParse; // strings are reference types, no?
+        toParse = compose(toParse);
 
         int maxLineLength = xSize - 29;
         String prevToParse = "" + toParse;
@@ -185,7 +211,7 @@ public class GuiQMAW extends GuiScreen {
 
         QuickManualAndWiki qmaw = QMAWLoader.qmaw.get(prev);
         if(qmaw != null) {
-            Minecraft.getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.getRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F, 1.0F));
+            SoundUtil.playClickSound();
             GuiQMAW screen = new GuiQMAW(qmaw);
             screen.back.addAll(back);
             screen.back.remove(screen.back.size() - 1);
@@ -202,7 +228,7 @@ public class GuiQMAW extends GuiScreen {
 
         QuickManualAndWiki qmaw = QMAWLoader.qmaw.get(next);
         if(qmaw != null) {
-            Minecraft.getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.getRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F, 1.0F));
+            SoundUtil.playClickSound();
             GuiQMAW screen = new GuiQMAW(qmaw);
             screen.back.addAll(back);
             screen.back.add(qmawID);

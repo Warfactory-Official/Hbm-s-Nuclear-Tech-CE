@@ -4,7 +4,7 @@ import com.hbm.config.CompatibilityConfig;
 import com.hbm.config.GeneralConfig;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFence;
 import net.minecraft.block.BlockFenceGate;
@@ -134,7 +134,7 @@ public abstract class EntityGrenadeBouncyBase extends Entity implements IProject
 		this.prevPosZ = this.posZ;
 		this.prevRotationPitch = this.rotationPitch;
 
-        this.rotationPitch -= Vec3.createVectorHelper(motionX, motionY, motionZ).length() * 25;
+        this.rotationPitch -= Vec3NT.createVectorHelper(motionX, motionY, motionZ).length() * 25;
 		
 		double d0 = this.motionX;
 		double d1 = this.motionY;

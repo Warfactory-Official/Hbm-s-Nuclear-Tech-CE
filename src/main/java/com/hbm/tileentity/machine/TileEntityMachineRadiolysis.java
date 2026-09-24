@@ -15,6 +15,7 @@ import com.hbm.items.machine.ItemRTGPellet;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -36,7 +37,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @AutoRegister
-public class TileEntityMachineRadiolysis extends TileEntityMachineBase implements ITickable, IEnergyProviderMK2, IFluidStandardTransceiver, IGUIProvider, IFluidCopiable {
+public class TileEntityMachineRadiolysis extends TileEntityMachineBase implements ITickable, IEnergyProviderMK2, IFluidStandardTransceiver, IGUIProvider, IFluidCopiable, IConnectionAnchors {
 
     public long power;
     public static final int maxPower = 1000000;
@@ -50,9 +51,9 @@ public class TileEntityMachineRadiolysis extends TileEntityMachineBase implement
     public TileEntityMachineRadiolysis() {
         super(15, true, true); //10 rtg slots, 2 fluid ID slots (io), 2 irradiation slots (io), battery slot
         tanks = new FluidTankNTM[3];
-        tanks[0] = new FluidTankNTM(Fluids.NONE, 2_000);
-        tanks[1] = new FluidTankNTM(Fluids.NONE, 2_000);
-        tanks[2] = new FluidTankNTM(Fluids.NONE, 2_000);
+        tanks[0] = new FluidTankNTM(Fluids.NONE, 2_000).withOwner(this);
+        tanks[1] = new FluidTankNTM(Fluids.NONE, 2_000).withOwner(this);
+        tanks[2] = new FluidTankNTM(Fluids.NONE, 2_000).withOwner(this);
     }
 
     @Override
@@ -159,7 +160,7 @@ public class TileEntityMachineRadiolysis extends TileEntityMachineBase implement
         tanks[2].deserialize(buf);
     }
 
-    protected DirPos[] getConPos() {
+    public DirPos[] getConPos() {
         int xCoord = this.getPos().getX(), yCoord = this.getPos().getY(), zCoord = this.getPos().getZ();
         return new DirPos[] {
                 new DirPos(xCoord + 2, yCoord, zCoord, Library.POS_X),

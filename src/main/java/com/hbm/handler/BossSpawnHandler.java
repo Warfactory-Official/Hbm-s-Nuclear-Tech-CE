@@ -1,5 +1,6 @@
 package com.hbm.handler;
 
+import com.hbm.blocks.ModBlocks;
 import com.hbm.config.GeneralConfig;
 import com.hbm.config.MobConfig;
 import com.hbm.config.WorldConfig;
@@ -10,14 +11,17 @@ import com.hbm.entity.mob.EntityRADBeast;
 import com.hbm.entity.projectile.EntityMeteor;
 import com.hbm.items.ModItems;
 import com.hbm.main.MainRegistry;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.MutableVec3d;
-import com.hbm.util.Vec3NT;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.stats.StatBase;
+import net.minecraft.stats.StatList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentString;
@@ -40,9 +44,15 @@ public class BossSpawnHandler {
 				if(world.rand.nextInt(MobConfig.maskmanChance) == 0 && !world.playerEntities.isEmpty() && world.provider.isSurfaceWorld()) {	//33% chance only if there is a player online
 
 					EntityPlayer player = world.playerEntities.get(world.rand.nextInt(world.playerEntities.size()));	//choose a random player
-					
-					
-					if(ContaminationUtil.getRads(player) >= MobConfig.maskmanMinRad && (world.getHeight((int)player.posX, (int)player.posZ) > player.posY + 3 || !MobConfig.maskmanUnderground)) {	//if the player has more than 50 RAD and is underground
+
+					if(!(player instanceof EntityPlayerMP playerMP)) return;
+
+                    Item crystallizerItem = Item.getItemFromBlock(ModBlocks.machine_crystallizer);
+					StatBase statCraft = StatList.getCraftStats(crystallizerItem);
+					StatBase statPlace = StatList.getObjectUseStats(crystallizerItem);
+					boolean acidizerStat = (statCraft != null && playerMP.getStatFile().readStat(statCraft) > 0) || (statPlace != null && playerMP.getStatFile().readStat(statPlace) > 0);
+
+					if(acidizerStat && ContaminationUtil.getRads(player) >= MobConfig.maskmanMinRad && (world.getHeight((int)player.posX, (int)player.posZ) > player.posY + 3 || !MobConfig.maskmanUnderground)) {	//if the player has more than 50 RAD and is underground
 						player.sendMessage(new TextComponentString("The mask man is about to claim another victim.").setStyle(new Style().setColor(TextFormatting.RED)));
 						
 						double spawnX = player.posX + world.rand.nextGaussian() * 20;
@@ -64,13 +74,13 @@ public class BossSpawnHandler {
 					EntityPlayer player = world.playerEntities.get(world.rand.nextInt(world.playerEntities.size()));
 					player.sendMessage(new TextComponentString("FBI, OPEN UP!").setStyle(new Style().setColor(TextFormatting.RED)));
 					
-					Vec3 vec = Vec3.createVectorHelper(MobConfig.raidAttackDistance, 0, 0);
-					vec.rotateAroundY((float)(Math.PI * 2) * world.rand.nextFloat());
+					Vec3NT vec = Vec3NT.createVectorHelper(MobConfig.raidAttackDistance, 0, 0);
+					vec.rotateYawSelf((float)(Math.PI * 2) * world.rand.nextFloat());
 
 					for(int i = 0; i < MobConfig.raidAmount; i++) {
 
-						double spawnX = player.posX + vec.xCoord + world.rand.nextGaussian() * 5;
-						double spawnZ = player.posZ + vec.zCoord + world.rand.nextGaussian() * 5;
+						double spawnX = player.posX + vec.x + world.rand.nextGaussian() * 5;
+						double spawnZ = player.posZ + vec.z + world.rand.nextGaussian() * 5;
 						double spawnY = world.getHeight((int)spawnX, (int)spawnZ);
 
 						trySpawn(world, (float)spawnX, (float)spawnY, (float)spawnZ, new EntityFBI(world));
@@ -78,8 +88,8 @@ public class BossSpawnHandler {
 
 					for(int i = 0; i < MobConfig.raidDrones; i++) {
 
-						double spawnX = player.posX + vec.xCoord + world.rand.nextGaussian() * 5;
-						double spawnZ = player.posZ + vec.zCoord + world.rand.nextGaussian() * 5;
+						double spawnX = player.posX + vec.x + world.rand.nextGaussian() * 5;
+						double spawnZ = player.posZ + vec.z + world.rand.nextGaussian() * 5;
 						double spawnY = world.getHeight((int)spawnX, (int)spawnZ);
 
 						trySpawn(world, (float)spawnX, (float)spawnY + 10, (float)spawnZ, new EntityFBIDrone(world));
@@ -99,13 +109,13 @@ public class BossSpawnHandler {
 					if(player.getEntityData().getCompoundTag(EntityPlayer.PERSISTED_NBT_TAG).getLong("fbiMark") < world.getTotalWorldTime()) {
 						player.sendMessage(new TextComponentString("FBI, OPEN UP!").setStyle(new Style().setColor(TextFormatting.RED)));
 						
-						Vec3 vec = Vec3.createVectorHelper(MobConfig.raidAttackDistance, 0, 0);
-						vec.rotateAroundY((float)(Math.PI * 2) * world.rand.nextFloat());
+						Vec3NT vec = Vec3NT.createVectorHelper(MobConfig.raidAttackDistance, 0, 0);
+						vec.rotateYawSelf((float)(Math.PI * 2) * world.rand.nextFloat());
 						
 						for(int i = 0; i < MobConfig.raidAmount; i++) {
 	
-							double spawnX = player.posX + vec.xCoord + world.rand.nextGaussian() * 5;
-							double spawnZ = player.posZ + vec.zCoord + world.rand.nextGaussian() * 5;
+							double spawnX = player.posX + vec.x + world.rand.nextGaussian() * 5;
+							double spawnZ = player.posZ + vec.z + world.rand.nextGaussian() * 5;
 							double spawnY = world.getHeight((int)spawnX, (int)spawnZ);
 							
 							trySpawn(world, (float)spawnX, (float)spawnY, (float)spawnZ, new EntityFBI(world));
@@ -128,14 +138,14 @@ public class BossSpawnHandler {
 						player.sendMessage(new TextComponentString("You hear a faint clicking...").setStyle(new Style().setColor(TextFormatting.YELLOW)));
 						player.getEntityData().getCompoundTag(EntityPlayer.PERSISTED_NBT_TAG).setBoolean("radMark", false);
 
-						Vec3 vec = Vec3.createVectorHelper(MobConfig.raidAttackDistance, 0, 0);
+						Vec3NT vec = Vec3NT.createVectorHelper(MobConfig.raidAttackDistance, 0, 0);
 
 						for(int i = 0; i < MobConfig.elementalAmount; i++) {
 
-							vec.rotateAroundY((float)(Math.PI * 2) * world.rand.nextFloat());
+							vec.rotateYawSelf((float)(Math.PI * 2) * world.rand.nextFloat());
 
-							double spawnX = player.posX + vec.xCoord + world.rand.nextGaussian();
-							double spawnZ = player.posZ + vec.zCoord + world.rand.nextGaussian();
+							double spawnX = player.posX + vec.x + world.rand.nextGaussian();
+							double spawnZ = player.posZ + vec.z + world.rand.nextGaussian();
 							double spawnY = world.getHeight((int)spawnX, (int)spawnZ);
 
 							EntityRADBeast rad = new EntityRADBeast(world);
@@ -150,7 +160,7 @@ public class BossSpawnHandler {
 			}
 		}
 
-		if(GeneralConfig.enableMeteorStrikes && !world.isRemote) {
+		if(WorldConfig.enableMeteorStrikes && !world.isRemote) {
 			meteorUpdate(world);
 		}
 	}
@@ -185,7 +195,7 @@ public class BossSpawnHandler {
 						if(!armor.isEmpty() && ArmorModHandler.hasMods(armor)) {
 							ItemStack mod = ArmorModHandler.pryMods(armor)[ArmorModHandler.helmet_only];
 							
-							if(mod != null) {
+							if(mod != null && !mod.isEmpty()) { // idk if mod can be null at this point
 								if(mod.getItem() == ModItems.protection_charm) {
 									repell = true;
 								}
@@ -207,7 +217,7 @@ public class BossSpawnHandler {
 				MainRegistry.logger.info("Ended meteor shower.");
 		}
 
-		if(meteorRand.nextInt(WorldConfig.meteorStrikeChance * 100) == 0 && GeneralConfig.enableMeteorShowers) {
+		if(meteorRand.nextInt(WorldConfig.meteorStrikeChance * 100) == 0 && WorldConfig.enableMeteorShowers) {
 			meteorShower = (int)(WorldConfig.meteorShowerDuration * 0.75 + WorldConfig.meteorShowerDuration * 0.25 * meteorRand.nextFloat());
 
 			if(GeneralConfig.enableDebugMode)

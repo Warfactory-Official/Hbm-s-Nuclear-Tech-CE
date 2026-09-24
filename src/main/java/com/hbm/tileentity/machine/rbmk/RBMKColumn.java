@@ -23,6 +23,7 @@ public abstract class RBMKColumn {
     public boolean moderated;
     public int reasimWater;
     public int reasimSteam;
+    public int indicator;
 
     public final @NotNull ColumnType type;
 
@@ -36,6 +37,7 @@ public abstract class RBMKColumn {
         buf.writeBoolean(moderated);
         buf.writeInt(reasimWater);
         buf.writeInt(reasimSteam);
+        buf.writeByte(indicator);
     }
 
     protected void deserialize(ByteBuf buf) {
@@ -44,6 +46,7 @@ public abstract class RBMKColumn {
         moderated = buf.readBoolean();
         reasimWater = buf.readInt();
         reasimSteam = buf.readInt();
+        indicator = buf.readByte();
     }
 
     @SideOnly(Side.CLIENT)
@@ -234,6 +237,11 @@ public abstract class RBMKColumn {
     public static class CoolerColumn extends RBMKColumn {
         public int cooled;
         public int cryo;
+        public int maxCryo;
+        public int hot;
+        public int maxHot;
+        public short coldType;
+        public short hotType;
 
         public CoolerColumn() {
             super(ColumnType.COOLER);
@@ -244,6 +252,11 @@ public abstract class RBMKColumn {
             super.serialize(buf);
             buf.writeInt(cooled);
             buf.writeInt(cryo);
+            buf.writeInt(maxCryo);
+            buf.writeInt(hot);
+            buf.writeInt(maxHot);
+            buf.writeShort(coldType);
+            buf.writeShort(hotType);
         }
 
         @Override
@@ -251,6 +264,11 @@ public abstract class RBMKColumn {
             super.deserialize(buf);
             cooled = buf.readInt();
             cryo = buf.readInt();
+            maxCryo = buf.readInt();
+            hot = buf.readInt();
+            maxHot = buf.readInt();
+            coldType = buf.readShort();
+            hotType = buf.readShort();
         }
 
         @Override
@@ -258,7 +276,8 @@ public abstract class RBMKColumn {
         public List<String> getFancyStats() {
             List<String> stats = super.getFancyStats();
             stats.add(TextFormatting.AQUA + I18nUtil.resolveKey("rbmk.cooler.cooling", cooled * 20));
-            stats.add(TextFormatting.DARK_AQUA + I18nUtil.resolveKey("rbmk.cooler.cryo", cryo));
+            stats.add(TextFormatting.BLUE + Fluids.fromID(coldType).getLocalizedName() + " " + cryo + "/" + maxCryo + "mB");
+            stats.add(TextFormatting.RED + Fluids.fromID(hotType).getLocalizedName() + " " + hot + "/" + maxHot + "mB");
             return stats;
         }
     }

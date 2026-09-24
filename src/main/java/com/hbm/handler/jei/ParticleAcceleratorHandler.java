@@ -32,6 +32,7 @@ public class ParticleAcceleratorHandler extends JEIUniversalHandler {
             JeiRecipes.JeiUniversalRecipe recipeWrapper = new JeiRecipes.JeiUniversalRecipe(inputs, outputs, machines) {
                 @Override
                 public void drawInfo(@NotNull Minecraft minecraft, int recipeWidth, int recipeHeight, int mouseX, int mouseY) {
+                    super.drawInfo(minecraft, recipeWidth, recipeHeight, mouseX, mouseY);
                     if (momentum > 0) {
                         String momentumString = "Momentum: " + String.format(Locale.US, "%,d", momentum);
                         minecraft.fontRenderer.drawString(momentumString, 8, 52, 0x404040);

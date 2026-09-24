@@ -1,5 +1,7 @@
 {
-	"variants": {
-		"normal": { "model": "hbm:machine_industrial_generator" }
-	}
+    "variants": {
+        "normal": {
+            "model": "hbm:machine_industrial_generator"
+        }
+    }
 }

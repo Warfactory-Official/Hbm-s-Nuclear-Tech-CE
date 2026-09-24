@@ -210,7 +210,9 @@ public class TileEntityBatteryREDD extends TileEntityBatteryBase implements IPer
 
     @Override
     public long transferPower(long power, boolean simulate) {
-        this.power = this.power.add(BigInteger.valueOf(power));
+        if (!simulate && power > 0) {
+            this.power = this.power.add(BigInteger.valueOf(power));
+        }
         return 0L;
     }
 
@@ -259,19 +261,19 @@ public class TileEntityBatteryREDD extends TileEntityBatteryBase implements IPer
 
     // do some opencomputer stuff
     @Callback(direct = true)
-    @Optional.Method(modid = "OpenComputers")
+    @Optional.Method(modid = "opencomputers")
     public Object[] getEnergyInfo(Context context, Arguments args) {
         return new Object[] {this.power.doubleValue(), this.delta.longValue()};
     }
 
     @Callback(direct = true)
-    @Optional.Method(modid = "OpenComputers")
+    @Optional.Method(modid = "opencomputers")
     public Object[] getInfo(Context context, Arguments args) {
         return new Object[] {this.power.doubleValue(), this.delta.longValue(), redLow, redHigh, getPriority().ordinal()-1};
     }
 
     @Override
-    @Optional.Method(modid = "OpenComputers")
+    @Optional.Method(modid = "opencomputers")
     public String[] methods() {
         return new String[] {
                 "getEnergyInfo",
@@ -284,7 +286,7 @@ public class TileEntityBatteryREDD extends TileEntityBatteryBase implements IPer
     }
 
     @Override
-    @Optional.Method(modid = "OpenComputers")
+    @Optional.Method(modid = "opencomputers")
     public Object[] invoke(String method, Context context, Arguments args) throws Exception {
         return switch (method) {
             case "getEnergyInfo" -> getEnergyInfo(context, args);

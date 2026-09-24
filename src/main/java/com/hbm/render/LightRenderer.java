@@ -176,7 +176,7 @@ public class LightRenderer {
 				GlStateManager.pushMatrix();
 				GlStateManager.loadIdentity();
 				GlStateManager.matrixMode(GL11.GL_MODELVIEW);
-				GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, ClientProxy.AUX_GL_BUFFER);
+				GlStateManager.getFloat(GL11.GL_MODELVIEW_MATRIX, ClientProxy.AUX_GL_BUFFER);
 				NTMRenderHelper.renderFullscreenTriangle();
 				GlStateManager.matrixMode(GL11.GL_PROJECTION);
 				GlStateManager.popMatrix();
@@ -205,7 +205,7 @@ public class LightRenderer {
 				Vec3d diff = light.pos.subtract(playerPos);
 				GlStateManager.pushMatrix();
 				GlStateManager.translate(diff.x, diff.y, diff.z);
-				GL11.glScaled(light.radius, light.radius, light.radius);
+				GlStateManager.scale(light.radius, light.radius, light.radius);
 				ResourceManager.sphere_uv.renderAll();
 				GlStateManager.popMatrix();
 			} else {
@@ -215,7 +215,7 @@ public class LightRenderer {
 				GlStateManager.pushMatrix();
 				GlStateManager.loadIdentity();
 				GlStateManager.matrixMode(GL11.GL_MODELVIEW);
-				GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, ClientProxy.AUX_GL_BUFFER);
+				GlStateManager.getFloat(GL11.GL_MODELVIEW_MATRIX, ClientProxy.AUX_GL_BUFFER);
 				NTMRenderHelper.renderFullscreenTriangle();
 				GlStateManager.matrixMode(GL11.GL_PROJECTION);
 				GlStateManager.popMatrix();
@@ -332,14 +332,14 @@ public class LightRenderer {
 
 		for(Entity ent : entitiesToRender){
         	Minecraft.getMinecraft().getRenderManager().renderEntityStatic(ent, partialTicks, false);
-        	if(GL11.glGetInteger(GLCompat.GL_CURRENT_PROGRAM) != shader.getShaderId()){
+        	if(GlStateManager.glGetInteger(GLCompat.GL_CURRENT_PROGRAM) != shader.getShaderId()){
         		blacklistedObjects.add(ent.getClass());
         		shader.use();
         	}
         }
         for(TileEntity te : tilesToRender){
         	TileEntityRendererDispatcher.instance.render(te, partialTicks, -1);
-        	if(GL11.glGetInteger(GLCompat.GL_CURRENT_PROGRAM) != shader.getShaderId()){
+        	if(GlStateManager.glGetInteger(GLCompat.GL_CURRENT_PROGRAM) != shader.getShaderId()){
         		blacklistedObjects.add(te.getClass());
         		shader.use();
         	}
@@ -435,8 +435,8 @@ public class LightRenderer {
 		GlStateManager.bindTexture(HbmShaderManager2.depthTexture);
 		GlStateManager.setActiveTexture(GLCompat.GL_TEXTURE0+4);
 		Minecraft.getMinecraft().getTextureManager().bindTexture(light.cookie);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
 		GlStateManager.setActiveTexture(GLCompat.GL_TEXTURE0+5);
 		GlStateManager.bindTexture(shadowTex);
 		GlStateManager.setActiveTexture(GLCompat.GL_TEXTURE0);
@@ -479,15 +479,15 @@ public class LightRenderer {
 
 	private static void initShadowBuffer(){
 		shadowFbo = GLCompat.genFramebuffers();
-		shadowTex = GL11.glGenTextures();
+		shadowTex = GlStateManager.generateTexture();
 		
 		GLCompat.bindFramebuffer(GLCompat.GL_FRAMEBUFFER, shadowFbo);
 		GlStateManager.bindTexture(shadowTex);
 		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GLCompat.GL_DEPTH_COMPONENT24, 1024, 1024, 0, GL11.GL_DEPTH_COMPONENT, GL11.GL_FLOAT, (FloatBuffer)null);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
 		GLCompat.framebufferTexture2D(GLCompat.GL_FRAMEBUFFER, GLCompat.GL_DEPTH_ATTACHMENT, GL11.GL_TEXTURE_2D, shadowTex, 0);
 	}
 	
@@ -498,21 +498,21 @@ public class LightRenderer {
 	}
 	
 	private static void recreateBuffers() {
-		GL11.glDeleteTextures(albedoTex);
+		GlStateManager.deleteTexture(albedoTex);
 		GLCompat.deleteFramebuffers(albedoFbo);
 		GLCompat.deleteRenderbuffers(albedoDepth);
 		albedoFbo = GLCompat.genFramebuffers();
-		albedoTex = GL11.glGenTextures();
+		albedoTex = GlStateManager.generateTexture();
 		albedoDepth = GLCompat.genRenderbuffers();
 
 		GLCompat.bindFramebuffer(GLCompat.GL_FRAMEBUFFER, albedoFbo);
 
 		GlStateManager.bindTexture(albedoTex);
 		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, width, height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (FloatBuffer) null);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
 		GLCompat.framebufferTexture2D(GLCompat.GL_FRAMEBUFFER, GLCompat.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, albedoTex, 0);
 
 		GLCompat.bindRenderbuffer(GLCompat.GL_RENDERBUFFER, albedoDepth);
@@ -520,33 +520,33 @@ public class LightRenderer {
 		GLCompat.framebufferRenderbuffer(GLCompat.GL_FRAMEBUFFER, GLCompat.GL_DEPTH_ATTACHMENT, GLCompat.GL_RENDERBUFFER, albedoDepth);
 
 		
-		GL11.glDeleteTextures(lightAccTex);
+		GlStateManager.deleteTexture(lightAccTex);
 		GLCompat.deleteFramebuffers(lightAccFbo);
 		lightAccFbo = GLCompat.genFramebuffers();
-		lightAccTex = GL11.glGenTextures();
+		lightAccTex = GlStateManager.generateTexture();
 		
 		GLCompat.bindFramebuffer(GLCompat.GL_FRAMEBUFFER, lightAccFbo);
 		GlStateManager.bindTexture(lightAccTex);
 		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GLCompat.GL_RGBA16F, width, height, 0, GL11.GL_RGBA, GL11.GL_FLOAT, (FloatBuffer) null);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
 		GLCompat.framebufferTexture2D(GLCompat.GL_FRAMEBUFFER, GLCompat.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, lightAccTex, 0);
 		
 		
-		GL11.glDeleteTextures(volAccTex);
+		GlStateManager.deleteTexture(volAccTex);
 		GLCompat.deleteFramebuffers(volAccFbo);
 		volAccFbo = GLCompat.genFramebuffers();
-		volAccTex = GL11.glGenTextures();
+		volAccTex = GlStateManager.generateTexture();
 		
 		GLCompat.bindFramebuffer(GLCompat.GL_FRAMEBUFFER, volAccFbo);
 		GlStateManager.bindTexture(volAccTex);
 		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GLCompat.GL_RGBA16F, width/2, height/2, 0, GL11.GL_RGBA, GL11.GL_FLOAT, (FloatBuffer) null);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
 		GLCompat.framebufferTexture2D(GLCompat.GL_FRAMEBUFFER, GLCompat.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, volAccTex, 0);
 		
 		Minecraft.getMinecraft().getFramebuffer().bindFramebuffer(false);
@@ -618,7 +618,7 @@ public class LightRenderer {
 			//Multiply by 2 because the FOV should be the diameter. Why is height multiplied by sqrt2? I honestly have no idea, but it doesn't work
 			//correctly if I use height directly, and minecraft also multiplies by sqrt2, so I am, too.
 			Project.gluPerspective(degrees * 2, 1, 0.05F, (float) height * MathHelper.SQRT_2);
-			GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, ClientProxy.AUX_GL_BUFFER);
+			GlStateManager.getFloat(GL11.GL_PROJECTION_MATRIX, ClientProxy.AUX_GL_BUFFER);
 			projectionMatrix = new Matrix4f();
 			projectionMatrix.load(ClientProxy.AUX_GL_BUFFER);
 			ClientProxy.AUX_GL_BUFFER.rewind();
@@ -632,12 +632,12 @@ public class LightRenderer {
 			Vec3d startToEnd = end.subtract(start);
 			Vec3d angles = BobMathUtil.getEulerAngles(startToEnd.normalize());
 			
-		    GL11.glRotated(-angles.y+270, 1, 0, 0);
-		    GL11.glRotated(-angles.x+180, 0, 1, 0);
+		    GlStateManager.rotate((float) (-angles.y+270), 1, 0, 0);
+		    GlStateManager.rotate((float) (-angles.x+180), 0, 1, 0);
 		    GlStateManager.translate(-(start.x-entPos.x), -(start.y-entPos.y), -(start.z-entPos.z));
 		    
 		    viewMatrix = new Matrix4f();
-		    GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, ClientProxy.AUX_GL_BUFFER);
+		    GlStateManager.getFloat(GL11.GL_MODELVIEW_MATRIX, ClientProxy.AUX_GL_BUFFER);
 			viewMatrix.load(ClientProxy.AUX_GL_BUFFER);
 			ClientProxy.AUX_GL_BUFFER.rewind();
 			

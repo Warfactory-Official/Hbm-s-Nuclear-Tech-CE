@@ -19,12 +19,14 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.modules.ModuleBurnTime;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -40,7 +42,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 // THE BURNER OF WOOD
 
 @AutoRegister
-public class TileEntityMachineWoodBurner extends TileEntityMachineBase implements IFluidStandardReceiver, IControlReceiver, IEnergyProviderMK2, IGUIProvider, ITickable, IFluidCopiable {
+public class TileEntityMachineWoodBurner extends TileEntityMachineBase implements IFluidStandardReceiver, IControlReceiver, IEnergyProviderMK2, IGUIProvider, ITickable, IFluidCopiable, IConnectionAnchors {
 	
 	public long power;
 	public static final long maxPower = 100_000;
@@ -60,7 +62,7 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase implement
 
 	public TileEntityMachineWoodBurner() {
 		super(6, true, true);
-		this.tank = new FluidTankNTM(Fluids.WOODOIL, 16_000);
+		this.tank = new FluidTankNTM(Fluids.WOODOIL, 16_000).withOwner(this);
 	}
 
 	@Override
@@ -174,7 +176,7 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase implement
 		tank.deserialize(buf);
 	}
 	
-	private DirPos[] getConPos() {
+	public DirPos[] getConPos() {
 		ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
 		ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
 
@@ -225,7 +227,7 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase implement
 	}
 
 	@Override
-	public void receiveControl(NBTTagCompound data) {
+	public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
 		if(data.hasKey("toggle")) {
 			this.isOn = !this.isOn;
 			this.markDirty();

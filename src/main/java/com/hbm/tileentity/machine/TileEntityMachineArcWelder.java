@@ -20,6 +20,8 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
@@ -57,7 +59,7 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase
         IGUIProvider,
         IUpgradeInfoProvider,
         IFluidCopiable,
-        ITickable {
+        ITickable, IConnectionAnchors {
     private static final int invSize = 8;
     private final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
     public long power;
@@ -72,7 +74,7 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase
     public TileEntityMachineArcWelder() {
         super(invSize, true, true);
 
-        this.tank = new FluidTankNTM(Fluids.NONE, 24_000);
+        this.tank = new FluidTankNTM(Fluids.NONE, 24_000).withOwner(this);
 
         inventory =
                 new ItemStackHandler(invSize) {
@@ -179,11 +181,11 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase
                     if (world.getTotalWorldTime() % 2 == 0) {
                         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
                         NBTTagCompound dPart = new NBTTagCompound();
-                        dPart.setString("type", world.getTotalWorldTime() % 20 == 0 ? "tau" : "hadron");
+                        HbmEffectNT effect = world.getTotalWorldTime() % 20 == 0 ? HbmEffectNT.Tau : HbmEffectNT.Hadron;
                         dPart.setByte("count", (byte) 5);
                         PacketThreading.createAllAroundThreadedPacket(
                                 new AuxParticlePacketNT(
-                                        dPart,
+                                        effect, dPart,
                                         pos.getX() + 0.5 - dir.offsetX * 0.5,
                                         pos.getY() + 1.25,
                                         pos.getZ() + 0.5 - dir.offsetZ * 0.5),
@@ -283,7 +285,7 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase
         }
     }
 
-    protected DirPos[] getConPos() {
+    public DirPos[] getConPos() {
 
         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);

@@ -38,6 +38,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.hbm.lib.queues.MpscUnboundedXaddArrayLongQueue;
+
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Arrays;
 import java.util.Objects;
@@ -265,7 +267,10 @@ public final class ChunkUtil {
         chunkMap.remove(key);
     }
 
-    public static void onServerStopping() {
+    // Must run after BombForkJoinPool cancels jobs — cancelJob() calls releaseMirrorMap(),
+    // which decrements activeTask. If we cleared activeTask before that (as in FMLServerStoppingEvent),
+    // the counter goes negative and the next acquireMirrorMap() takes the wrong branch → NPE.
+    public static void onServerStopped() {
         chunkMap.clear();
         activeTask.clear();
         if (GeneralConfig.enableExtendedLogging)
@@ -822,7 +827,13 @@ public final class ChunkUtil {
         World world = chunk.getWorld();
         Block oldBlock = oldState.getBlock();
         Block newBlock = newState.getBlock();
-        if (oldBlock != newBlock) oldBlock.breakBlock(world, pos, oldState);
+        if (oldBlock != newBlock) {
+            try {
+                oldBlock.breakBlock(world, pos, oldState);
+            } catch (Throwable e) {
+                MainRegistry.logger.error("breakBlock failed during fallout cleanup for {} at {}; the transition is already applied, continuing", oldState, pos, e);
+            }
+        }
         TileEntity te = chunk.getTileEntity(pos, Chunk.EnumCreateEntityType.CHECK);
         if (te != null && te.shouldRefresh(world, pos, oldState, newState)) world.removeTileEntity(pos);
         Block block = newState.getBlock();

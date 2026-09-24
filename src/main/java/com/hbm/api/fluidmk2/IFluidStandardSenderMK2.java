@@ -6,13 +6,19 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.uninos.GenNode;
 import com.hbm.uninos.UniNodespace;
 import com.hbm.util.Compat;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import org.jetbrains.annotations.NotNull;
 
@@ -57,11 +63,16 @@ public interface IFluidStandardSenderMK2 extends IFluidProviderMK2 {
                 toTransfer -= rec.transferFluid(type, pressure, toTransfer);
                 this.useUpFluid(type, pressure, toTransfer);
             }
+        } else if(te != null && te != this && !(te instanceof IFluidConnectorMK2)) {
+            // Neither an NTM pipe nor an NTM machine - fall back to the vanilla Forge fluid capability so
+            // this can still push into AE2 fluid buses/interfaces, or any other mod's tank, sitting on the
+            // opposite face. Only pressure-0 fluid is offered outward: a foreign IFluidHandler has no way
+            // to represent NTM's pressure concept, so there's no meaningful way to hand it pressurized gas.
+            if(pressure == 0) pushToForeignHandler(type, world, x, y, z, dir);
         }
 
         if(particleDebug) {
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("type", "network");
             data.setString("mode", "fluid");
             data.setInteger("color", type.getColor());
             double posX = x + 0.5 - dir.offsetX * 0.5 + world.rand.nextDouble() * 0.5 - 0.25;
@@ -70,8 +81,37 @@ public interface IFluidStandardSenderMK2 extends IFluidProviderMK2 {
             data.setDouble("mX", dir.offsetX * (red ? 0.025 : 0.1));
             data.setDouble("mY", dir.offsetY * (red ? 0.025 : 0.1));
             data.setDouble("mZ", dir.offsetZ * (red ? 0.025 : 0.1));
-            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, posX, posY, posZ), new NetworkRegistry.TargetPoint(world.provider.getDimension(), posX, posY, posZ, 25));
+            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Network, data, posX, posY, posZ), new NetworkRegistry.TargetPoint(world.provider.getDimension(), posX, posY, posZ, 25));
         }
+    }
+
+    /**
+     * Pushes pressure-0 fluid of the given type into a neighbour that only exposes the vanilla Forge
+     * fluid capability (AE2 fluid buses/interfaces, or any other mod's tank) - simulate first, then
+     * commit only the amount the target actually accepted, so a target that reports more room than it
+     * really has can't destroy fluid.
+     */
+    default void pushToForeignHandler(FluidType type, World world, int x, int y, int z, ForgeDirection dir) {
+        Fluid ff = type.getFF();
+        if(ff == null) return;
+
+        EnumFacing facing = dir.toEnumFacing();
+        if(facing == null) return;
+        EnumFacing opposite = facing.getOpposite();
+
+        TileEntity te = Compat.getTileStandard(world, x, y, z);
+        if(te == null || !te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, opposite)) return;
+        IFluidHandler handler = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, opposite);
+        if(handler == null) return;
+
+        long available = Math.min(this.getFluidAvailable(type, 0), this.getProviderSpeed(type, 0));
+        if(available <= 0) return;
+        int offer = (int) Math.min(available, Integer.MAX_VALUE);
+
+        int canAccept = handler.fill(new FluidStack(ff, offer), false);
+        if(canAccept <= 0) return;
+        int filled = handler.fill(new FluidStack(ff, canAccept), true);
+        if(filled > 0) this.useUpFluid(type, 0, filled);
     }
 
     @NotNull FluidTankNTM[] getSendingTanks();

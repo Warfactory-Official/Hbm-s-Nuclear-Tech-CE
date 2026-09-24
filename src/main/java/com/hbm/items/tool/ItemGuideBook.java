@@ -49,9 +49,11 @@ public class ItemGuideBook extends Item implements IGUIProvider {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void getSubItems(@NotNull CreativeTabs tab, @NotNull NonNullList<ItemStack> items){
-		if(tab == CreativeTabs.SEARCH || tab == this.getCreativeTab())
-			for(int i = 1; i < BookType.VALUES.length; i++)
-				items.add(new ItemStack(this, 1, i));
+		if(tab == CreativeTabs.SEARCH || tab == this.getCreativeTab()) {
+			for (BookType type : BookType.VALUES) {
+				if (type.meta != 0) items.add(new ItemStack(this, 1, type.meta));
+			}
+		}
 	}
 
 	@Override
@@ -60,27 +62,31 @@ public class ItemGuideBook extends Item implements IGUIProvider {
 	}
 
 	public enum BookType {
+		// 'thanks' Alcater, I have to do this mess cuz you added a guide book in the middle of the enum..
+		TEST(0, "book.test.cover", 2F, statFacTest()),
+		RBMK(1, "book.rbmk.cover", 1.5F, statFacRBMK()),
+		HADRON(3, "book.error.cover", 1.5F, statFacHadron()),
+		STARTER(4, "book.starter.cover", 1.5F, statFacStarter());
 
-		TEST("book.test.cover", 2F, statFacTest()),
-		RBMK("book.rbmk.cover", 1.5F, statFacRBMK()),
-		MSWORD("book.msword.cover", 1.5F, statFacMSword()),
-		HADRON("book.error.cover", 1.5F, statFacHadron()),
-		STARTER("book.starter.cover", 1.5F, statFacStarter());
+		public static final BookType[] VALUES = values();
 
-        public static final BookType[] VALUES = values();
-
+		public final int meta;
 		public final List<GuidePage> pages;
 		public final float titleScale;
 		public final String title;
 
-		BookType(String title, float titleScale, List<GuidePage> pages) {
+		BookType(int meta, String title, float titleScale, List<GuidePage> pages) {
+			this.meta = meta;
 			this.title = title;
 			this.titleScale = titleScale;
 			this.pages = pages;
 		}
 
 		public static BookType getType(int i) {
-			return BookType.VALUES[Math.abs(i) % BookType.VALUES.length];
+			for (BookType type : VALUES) {
+				if (type.meta == i) return type;
+			}
+			return TEST;
 		}
 	}
 

@@ -21,6 +21,8 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
@@ -30,6 +32,7 @@ import com.hbm.util.I18nUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -58,7 +61,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
         IGUIProvider,
         IUpgradeInfoProvider,
         IFluidCopiable,
-        ITickable {
+        ITickable, IConnectionAnchors {
     private static final int invSize = 11;
     private final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
     public long power;
@@ -104,7 +107,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
                         }
                     }
                 };
-        this.tank = new FluidTankNTM(Fluids.NONE, 8_000);
+        this.tank = new FluidTankNTM(Fluids.NONE, 8_000).withOwner(this);
     }
 
     @Override
@@ -188,11 +191,10 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
                         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
                         BlockPos pos = getPos();
                         NBTTagCompound dPart = new NBTTagCompound();
-                        dPart.setString("type", "tau");
                         dPart.setByte("count", (byte) 3);
                         PacketThreading.createAllAroundThreadedPacket(
                                 new AuxParticlePacketNT(
-                                        dPart,
+                                        HbmEffectNT.Tau, dPart,
                                         pos.getX() + 0.5 - dir.offsetX * 0.5 + rot.offsetX * 0.5,
                                         pos.getY() + 1.125,
                                         pos.getZ() + 0.5 - dir.offsetZ * 0.5 + rot.offsetZ * 0.5),
@@ -310,7 +312,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
         return new int[]{0, 1, 2, 3, 4, 5, 6};
     }
 
-    protected DirPos[] getConPos() {
+    public DirPos[] getConPos() {
 
         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
@@ -510,7 +512,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         this.collisionPrevention = !this.collisionPrevention;
         this.markDirty();
     }

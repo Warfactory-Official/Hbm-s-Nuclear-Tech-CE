@@ -32,6 +32,7 @@ import java.util.UUID;
 @AutoRegister
 public class TileEntityNukeBalefire extends TileEntityMachineBase implements ITickable, IGUIProvider {
 
+	private AxisAlignedBB bb;
 	public boolean loaded;
 	public boolean started;
 	public int timer;
@@ -177,7 +178,8 @@ public class TileEntityNukeBalefire extends TileEntityMachineBase implements ITi
 	
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		if (bb == null) bb = new AxisAlignedBB(pos.getX() - 1, pos.getY(), pos.getZ() - 1, pos.getX() + 2, pos.getY() + 2, pos.getZ() + 2);
+		return bb;
 	}
 
 	@Override

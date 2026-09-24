@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.slot.SlotUpgrade;
@@ -16,6 +17,18 @@ import net.minecraft.item.ItemStack;
 public class ContainerElectrolyserFluid extends Container {
 
     private TileEntityElectrolyser electrolyser;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(14)
+                                                                              .rule(0, 1, Library::isBattery)
+                                                                              .rule(1, 3, Library::isMachineUpgrade)
+                                                                              .rule(3, 5,
+                                                                                      s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                              .genericMachineRange(5)
+                                                                              .ruleDispatchMode(
+                                                                                      TransferStrategy.RuleDispatchMode.FALLTHROUGH_ON_FAILURE)
+                                                                              .playerFallbackMode(
+                                                                                      TransferStrategy.PlayerFallbackMode.REBALANCE_SECTIONS)
+                                                                              .build();
 
     public ContainerElectrolyserFluid(InventoryPlayer invPlayer, TileEntityElectrolyser tedf) {
         electrolyser = tedf;
@@ -54,10 +67,7 @@ public class ContainerElectrolyserFluid extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 14,
-                Library::isBattery, 1,
-                Library::isMachineUpgrade, 3,
-                s -> s.getItem() instanceof IItemFluidIdentifier, 5);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
     @Override

@@ -17,6 +17,10 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.saveddata.satellites.SatelliteRayScan;
+import com.hbm.saveddata.satellites.SatelliteRayScan.RayEvent;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -42,7 +46,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @AutoRegister
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 public class TileEntityICF extends TileEntityMachineBase implements ITickable, IGUIProvider, IFluidStandardTransceiver, SimpleComponent,
-        CompatHandler.OCComponent, IFluidCopiable {
+        CompatHandler.OCComponent, IFluidCopiable, IConnectionAnchors {
 
     public static final long maxHeat = 1_000_000_000_000L;
     public static final int[] io = new int[]{0, 1, 2, 3, 4, 6, 7, 8, 9, 10};
@@ -60,9 +64,9 @@ public class TileEntityICF extends TileEntityMachineBase implements ITickable, I
     public TileEntityICF() {
         super(12, true, false);
         this.tanks = new FluidTankNTM[3];
-        this.tanks[0] = new FluidTankNTM(Fluids.SODIUM, 512_000);
-        this.tanks[1] = new FluidTankNTM(Fluids.SODIUM_HOT, 512_000);
-        this.tanks[2] = new FluidTankNTM(Fluids.STELLAR_FLUX, 24_000);
+        this.tanks[0] = new FluidTankNTM(Fluids.SODIUM, 512_000).withOwner(this);
+        this.tanks[1] = new FluidTankNTM(Fluids.SODIUM_HOT, 512_000).withOwner(this);
+        this.tanks[2] = new FluidTankNTM(Fluids.STELLAR_FLUX, 24_000).withOwner(this);
     }
 
     @Override
@@ -119,12 +123,14 @@ public class TileEntityICF extends TileEntityMachineBase implements ITickable, I
                         markDirty = true;
                     }
 
+                    if (world.getTotalWorldTime() % 20 == 15) {
+                        SatelliteRayScan.reportEvent(world, pos.getX(), pos.getY(), pos.getZ(), RayEvent.INFO_PARTICLE, 200);
+                    }
+
                     tanks[2].setFill(tanks[2].getFill() + (int) Math.ceil(this.heat * 10.0D / maxHeat));
                     if (tanks[2].getFill() > tanks[2].getMaxFill()) tanks[2].setFill(tanks[2].getMaxFill());
 
-                    NBTTagCompound dPart = new NBTTagCompound();
-                    dPart.setString("type", "hadron");
-                    PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(dPart, getPos()),
+                    PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Hadron, null, getPos().getX() + 0.5, getPos().getY() + 3.5, getPos().getZ() + 0.5),
                             new NetworkRegistry.TargetPoint(world.provider.getDimension(), getPos().getX(), getPos().getY(), getPos().getZ(), 25));
                 }
             }

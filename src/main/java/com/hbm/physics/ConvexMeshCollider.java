@@ -1,6 +1,6 @@
 package com.hbm.physics;
 
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.render.util.Triangle;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -77,12 +77,12 @@ public class ConvexMeshCollider extends Collider {
 			Vec3d p3 = new Vec3d(vertices[indices[i+2]*3+0], vertices[indices[i+2]*3+1], vertices[indices[i+2]*3+2]);
 			triangles[i/3] = new Triangle(p1, p2, p3);
 		}
-		double maxX = support(RigidBody.cardinals[0]).xCoord;
-		double maxY = support(RigidBody.cardinals[1]).yCoord;
-		double maxZ = support(RigidBody.cardinals[2]).zCoord;
-		double minX = support(RigidBody.cardinals[3]).xCoord;
-		double minY = support(RigidBody.cardinals[4]).yCoord;
-		double minZ = support(RigidBody.cardinals[5]).zCoord;
+		double maxX = support(RigidBody.cardinals[0]).x;
+		double maxY = support(RigidBody.cardinals[1]).y;
+		double maxZ = support(RigidBody.cardinals[2]).z;
+		double minX = support(RigidBody.cardinals[3]).x;
+		double minY = support(RigidBody.cardinals[4]).y;
+		double minZ = support(RigidBody.cardinals[5]).z;
 		this.localBox = new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
 	}
 	
@@ -97,31 +97,31 @@ public class ConvexMeshCollider extends Collider {
 		return vol/6F;
 	}
 	
-	private Vec3 computeCenterOfMass(){
-		Vec3 center = new Vec3(0, 0, 0);
+	private Vec3NT computeCenterOfMass(){
+		Vec3NT center = new Vec3NT(0, 0, 0);
 		float volume = 0;
 		for(Triangle t : triangles){
 			Matrix3f mat = new Matrix3f((float)t.p1.pos.x, (float)t.p1.pos.y, (float)t.p1.pos.z, (float)t.p2.pos.x, (float)t.p2.pos.y, (float)t.p2.pos.z, (float)t.p3.pos.x, (float)t.p3.pos.y, (float)t.p3.pos.z);
 			float vol = mat.determinant();
-			center.xCoord += vol*(mat.m00+mat.m10+mat.m20);
-			center.yCoord += vol*(mat.m01+mat.m11+mat.m21);
-			center.zCoord += vol*(mat.m02+mat.m12+mat.m22);
+			center.setX(center.x + (vol*(mat.m00+mat.m10+mat.m20)));
+			center.setY(center.y + (vol*(mat.m01+mat.m11+mat.m21)));
+			center.setZ(center.z + (vol*(mat.m02+mat.m12+mat.m22)));
 			volume += vol;
 		}
-		center.xCoord /= volume*4F;
-		center.yCoord /= volume*4F;
-		center.zCoord /= volume*4F;
+		center.setX(center.x / (volume*4F));
+		center.setY(center.y / (volume*4F));
+		center.setZ(center.z / (volume*4F));
 		return center;
 	}
 	
-	private Matrix3f computeInertia(Vec3 com, float mass){
+	private Matrix3f computeInertia(Vec3NT com, float mass){
 		float volume = 0;
-		Vec3 diag = new Vec3(0, 0, 0);
-		Vec3 offd = new Vec3(0, 0, 0);
+		Vec3NT diag = new Vec3NT(0, 0, 0);
+		Vec3NT offd = new Vec3NT(0, 0, 0);
 		for(Triangle t : triangles){
-			Matrix3f mat = new Matrix3f((float)(t.p1.pos.x-com.xCoord), (float)(t.p1.pos.y-com.yCoord), (float)(t.p1.pos.z-com.zCoord), 
-					(float)(t.p2.pos.x-com.xCoord), (float)(t.p2.pos.y-com.yCoord), (float)(t.p2.pos.z-com.zCoord), 
-							(float)(t.p3.pos.x-com.xCoord), (float)(t.p3.pos.y-com.yCoord), (float)(t.p3.pos.z-com.zCoord));
+			Matrix3f mat = new Matrix3f((float)(t.p1.pos.x-com.x), (float)(t.p1.pos.y-com.y), (float)(t.p1.pos.z-com.z), 
+					(float)(t.p2.pos.x-com.x), (float)(t.p2.pos.y-com.y), (float)(t.p2.pos.z-com.z), 
+							(float)(t.p3.pos.x-com.x), (float)(t.p3.pos.y-com.y), (float)(t.p3.pos.z-com.z));
 			float d = mat.determinant();
 			volume += d;
 			
@@ -138,56 +138,56 @@ public class ConvexMeshCollider extends Collider {
 			}
 		}
 		float volume2 = volume*(60F/6F);
-		diag.xCoord /= volume2;
-		diag.yCoord /= volume2;
-		diag.zCoord /= volume2;
+		diag.setX(diag.x / (volume2));
+		diag.setY(diag.y / (volume2));
+		diag.setZ(diag.z / (volume2));
 		volume2 = volume*(120F/6F);
-		offd.xCoord /= volume2;
-		offd.yCoord /= volume2;
-		offd.zCoord /= volume2;
+		offd.setX(offd.x / (volume2));
+		offd.setY(offd.y / (volume2));
+		offd.setZ(offd.z / (volume2));
 		diag = diag.mult(mass);
 		offd = offd.mult(mass);
 		return new Matrix3f(
-				(float)(diag.yCoord+diag.zCoord), (float)-offd.zCoord, (float)-offd.yCoord,
-				(float)-offd.zCoord, (float)(diag.xCoord+diag.zCoord), (float)-offd.xCoord,
-				(float)-offd.yCoord, (float)-offd.xCoord, (float)(diag.xCoord+diag.yCoord));
+				(float)(diag.y+diag.z), (float)-offd.z, (float)-offd.y,
+				(float)-offd.z, (float)(diag.x+diag.z), (float)-offd.x,
+				(float)-offd.y, (float)-offd.x, (float)(diag.x+diag.y));
 	}
 	
-	private static void setVal(Vec3 vec, int idx, double val){
+	private static void setVal(Vec3NT vec, int idx, double val){
 		switch(idx){
 		case 0:
-			vec.xCoord = val; return;
+			vec.setX(val); return;
 		case 1:
-			vec.yCoord = val; return;
+			vec.setY(val); return;
 		case 2:
-			vec.zCoord = val; return;
+			vec.setZ(val); return;
 		}
 	}
 	
-	private static double val(Vec3 vec, int idx){
+	private static double val(Vec3NT vec, int idx){
 		switch(idx){
 		case 0:
-			return vec.xCoord;
+			return vec.x;
 		case 1:
-			return vec.yCoord;
+			return vec.y;
 		case 2:
-			return vec.zCoord;
+			return vec.z;
 		}
 		throw new RuntimeException("Out of range");
 	}
 
 	@Override
-	public Vec3 support(Vec3 dir) {
+	public Vec3NT support(Vec3NT dir) {
 		double dot = -Float.MAX_VALUE;
 		int index = 0;
 		for(int i = 0; i < vertices.length; i += 3){
-			double newDot = dir.xCoord*vertices[i] + dir.yCoord*vertices[i+1] + dir.zCoord*vertices[i+2];
+			double newDot = dir.x*vertices[i] + dir.y*vertices[i+1] + dir.z*vertices[i+2];
 			if(newDot > dot){
 				dot = newDot;
 				index = i;
 			}
 		}
-		return new Vec3(vertices[index], vertices[index+1], vertices[index+2]);
+		return new Vec3NT(vertices[index], vertices[index+1], vertices[index+2]);
 	}
 
 	@Override

@@ -151,9 +151,11 @@ public class TileEntityDroneDock extends TileEntityRequestNetworkContainer imple
         paths.add(init);
 
         // breadth-first search
+        outer:
         for(int i = 0; i < pathingDepth; i++) {
 
             List<List<PathNode>> newPaths = new ArrayList<>();
+            int iterationBrake = 1000;
 
             for(List<PathNode> oldPath : paths) {
                 for(PathNode connectedUnsafe : oldPath.get(oldPath.size() - 1).reachableNodes) {
@@ -170,6 +172,12 @@ public class TileEntityDroneDock extends TileEntityRequestNetworkContainer imple
 
                         newPath.add(connectedSafe);
                         newPaths.add(newPath);
+                    }
+
+                    iterationBrake--;
+                    if(iterationBrake <= 0) {
+                        paths = newPaths;
+                        continue outer;
                     }
                 }
             }

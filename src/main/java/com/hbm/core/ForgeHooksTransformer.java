@@ -3,6 +3,7 @@ package com.hbm.core;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.*;
+import org.spongepowered.asm.transformers.MixinClassWriter;
 
 import static com.hbm.core.HbmCorePlugin.coreLogger;
 import static com.hbm.core.HbmCorePlugin.fail;
@@ -198,7 +199,7 @@ final class ForgeHooksTransformer {
                 throw new IllegalStateException("Failed to patch onPickBlock");
             }
 
-            ClassWriter cw = new MinecraftClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
+            ClassWriter cw = new MixinClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
             cn.accept(cw);
             return cw.toByteArray();
         } catch (Throwable t) {

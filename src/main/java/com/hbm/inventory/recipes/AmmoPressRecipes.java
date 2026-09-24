@@ -62,7 +62,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.M357_BP, 16),
             null,
-            lead.copy(),
+            lead.copy(2),
             null,
             null,
             smokeful,
@@ -113,7 +113,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
             wSteel,
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(2),
             null,
             null,
             sSmall,
@@ -125,7 +125,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
             steel,
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(3),
             null,
             null,
             cSmall,
@@ -135,7 +135,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.M44_BP, 12),
             null,
-            lead.copy(),
+            lead.copy(2),
             null,
             null,
             smokeful,
@@ -186,7 +186,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
             wSteel,
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(2),
             null,
             null,
             sSmall,
@@ -198,7 +198,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
             steel,
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(3),
             null,
             null,
             cSmall,
@@ -247,7 +247,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
             wSteel,
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(2),
             null,
             null,
             sSmall,
@@ -296,7 +296,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
             wSteel,
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(2),
             null,
             null,
             sSmall,
@@ -345,7 +345,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
             wSteel,
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(2),
             null,
             null,
             sSmall,
@@ -357,7 +357,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
             uranium,
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(2),
             null,
             null,
             sSmall,
@@ -367,110 +367,110 @@ public class AmmoPressRecipes extends SerializableRecipe {
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.R556_SP, 16),
             null,
-            lead.copy(),
+            lead.copy(2),
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(2),
             null,
             null,
-            cSmall.copy(),
+            cSmall.copy(2),
             null));
     recipes.add(
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.R556_FMJ, 16),
             null,
-            steel.copy(),
+            steel.copy(2),
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(2),
             null,
             null,
-            cSmall.copy(),
+            cSmall.copy(2),
             null));
     recipes.add(
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.R556_JHP, 16),
             plastic,
-            copper.copy(),
+            copper.copy(2),
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(2),
             null,
             null,
-            cSmall.copy(),
+            cSmall.copy(2),
             null));
     recipes.add(
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.R556_AP, 16),
             null,
-            wSteel.copy(),
+            wSteel.copy(2),
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(4),
             null,
             null,
-            sSmall.copy(),
+            sSmall.copy(2),
             null));
 
     recipes.add(
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.R762_SP, 12),
             null,
-            lead.copy(),
+            lead.copy(2),
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(2),
             null,
             null,
-            cSmall.copy(),
+            cSmall.copy(2),
             null));
     recipes.add(
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.R762_FMJ, 12),
             null,
-            steel.copy(),
+            steel.copy(2),
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(2),
             null,
             null,
-            cSmall.copy(),
+            cSmall.copy(2),
             null));
     recipes.add(
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.R762_JHP, 12),
             plastic,
-            copper.copy(),
+            copper.copy(2),
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(2),
             null,
             null,
-            cSmall.copy(),
+            cSmall.copy(2),
             null));
     recipes.add(
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.R762_AP, 12),
             null,
-            wSteel.copy(),
+            wSteel.copy(2),
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(4),
             null,
             null,
-            sSmall.copy(),
+            sSmall.copy(2),
             null));
     recipes.add(
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.R762_DU, 12),
             null,
-            uranium.copy(),
+            uranium.copy(2),
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(4),
             null,
             null,
-            sSmall.copy(),
+            sSmall.copy(2),
             null));
     recipes.add(
         new AmmoPressRecipe(
@@ -479,20 +479,20 @@ public class AmmoPressRecipes extends SerializableRecipe {
             ferro,
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(4),
             null,
             null,
-            sSmall.copy(),
+            sSmall.copy(2),
             null));
 
     recipes.add(
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.BMG50_SP, 12),
             null,
-            lead.copy(),
+            lead.copy(2),
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(3),
             null,
             null,
             cBig,
@@ -501,10 +501,10 @@ public class AmmoPressRecipes extends SerializableRecipe {
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.BMG50_FMJ, 12),
             null,
-            steel.copy(),
+            steel.copy(2),
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(3),
             null,
             null,
             cBig,
@@ -513,10 +513,10 @@ public class AmmoPressRecipes extends SerializableRecipe {
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.BMG50_JHP, 12),
             plastic,
-            copper.copy(),
+            copper.copy(2),
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(3),
             null,
             null,
             cBig,
@@ -525,10 +525,10 @@ public class AmmoPressRecipes extends SerializableRecipe {
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.BMG50_AP, 12),
             null,
-            wSteel.copy(),
+            wSteel.copy(2),
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(6),
             null,
             null,
             sBig,
@@ -537,10 +537,10 @@ public class AmmoPressRecipes extends SerializableRecipe {
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.BMG50_DU, 12),
             null,
-            uranium.copy(),
+            uranium.copy(2),
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(6),
             null,
             null,
             sBig,
@@ -552,7 +552,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
             ferro,
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(6),
             null,
             null,
             sBig,
@@ -562,7 +562,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.G12_BP, 6),
             null,
-            nugget.copy(),
+            nugget.copy(6),
             null,
             null,
             smokeful,
@@ -574,7 +574,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.G12_BP_MAGNUM, 6),
             null,
-            nugget.copy(),
+            nugget.copy(8),
             null,
             null,
             smokeful,
@@ -599,7 +599,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.G12, 6),
             null,
-            nugget.copy(),
+            nugget.copy(6),
             null,
             null,
             smokeless,
@@ -623,7 +623,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.G12_FLECHETTE, 6),
             null,
-            flechette.copy(),
+            flechette.copy(12),
             null,
             null,
             smokeless,
@@ -635,7 +635,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.G12_MAGNUM, 6),
             null,
-            nugget.copy(),
+            nugget.copy(8),
             null,
             null,
             smokeless,
@@ -672,10 +672,10 @@ public class AmmoPressRecipes extends SerializableRecipe {
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.G10, 4),
             null,
-            nugget.copy(),
+            nugget.copy(8),
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(2),
             null,
             null,
             sShell,
@@ -684,10 +684,10 @@ public class AmmoPressRecipes extends SerializableRecipe {
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.G10_SHRAPNEL, 4),
             plastic,
-            nugget.copy(),
+            nugget.copy(8),
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(2),
             null,
             null,
             sShell,
@@ -699,7 +699,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
             uranium,
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(2),
             null,
             null,
             sShell,
@@ -711,7 +711,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
             lead,
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(2),
             null,
             null,
             sShell,
@@ -723,7 +723,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
             ferro,
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(2),
             null,
             null,
             sShell,
@@ -773,7 +773,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.G40_DEMO, 4),
             null,
-            he.copy(),
+            he.copy(2),
             null,
             null,
             smokeless,
@@ -816,7 +816,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
             cBig,
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(3),
             null));
     recipes.add(
         new AmmoPressRecipe(
@@ -840,7 +840,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
             cBig,
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(3),
             null));
     recipes.add(
         new AmmoPressRecipe(
@@ -858,19 +858,19 @@ public class AmmoPressRecipes extends SerializableRecipe {
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.ROCKET_DEMO, 2),
             null,
-            he.copy(),
+            he.copy(2),
             null,
             null,
             cBig,
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(3),
             null));
     recipes.add(
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.ROCKET_DEMO, 2),
             null,
-            he.copy(),
+            he.copy(2),
             null,
             null,
             cBig,
@@ -888,7 +888,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
             cBig,
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(3),
             null));
     recipes.add(
         new AmmoPressRecipe(
@@ -912,7 +912,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
             cBig,
             null,
             null,
-            smokeless.copy(),
+            smokeless.copy(3),
             null));
     recipes.add(
         new AmmoPressRecipe(
@@ -988,7 +988,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
             plastic,
             null,
             null,
-            silicon.copy(),
+            silicon.copy(4),
             null,
             null,
             plastic,
@@ -1000,7 +1000,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
             plastic,
             null,
             null,
-            silicon.copy(),
+            silicon.copy(6),
             null,
             null,
             plastic,
@@ -1077,7 +1077,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.NUKE_DEMO, 1),
             null,
-            plutonium.copy(),
+            plutonium.copy(2),
             null,
             null,
             shell,
@@ -1089,7 +1089,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.NUKE_HIGH, 1),
             null,
-            plutonium.copy(),
+            plutonium.copy(4),
             null,
             null,
             shell,
@@ -1101,25 +1101,25 @@ public class AmmoPressRecipes extends SerializableRecipe {
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.NUKE_TOTS, 1),
             null,
-            plutonium.copy(),
+            plutonium.copy(2),
             null,
             null,
-            tatb.copy(),
+            tatb.copy(2),
             null,
             null,
-            sPlate.copy(),
+            sPlate.copy(4),
             null));
     recipes.add(
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.NUKE_HIVE, 1),
             null,
-            he.copy(),
+            he.copy(8),
             null,
             null,
-            sBig.copy(),
+            sBig.copy(2),
             null,
             null,
-            sPlate.copy(),
+            sPlate.copy(4),
             null));
     recipes.add(
         new AmmoPressRecipe(
@@ -1150,7 +1150,7 @@ public class AmmoPressRecipes extends SerializableRecipe {
         new AmmoPressRecipe(
             DictFrame.fromOne(ModItems.ammo_standard, EnumAmmo.CT_MORTAR, 4),
             null,
-            he.copy(),
+            he.copy(4),
             null,
             null,
             pipe,

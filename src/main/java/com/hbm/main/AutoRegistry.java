@@ -62,7 +62,7 @@ public final class AutoRegistry {
         invokeRegistrationMethod("registerTileEntities", registerTileEntitiesHandle);
     }
 
-    static void preInitClient() {
+    public static void preInitClient() {
         invokeRegistrationMethod("registerItemRenderers", registerItemRenderersHandle);
     }
 

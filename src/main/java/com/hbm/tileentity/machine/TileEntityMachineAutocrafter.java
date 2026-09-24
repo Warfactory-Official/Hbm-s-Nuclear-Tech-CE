@@ -13,6 +13,7 @@ import com.hbm.util.BufferUtil;
 import com.hbm.util.ItemStackUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
@@ -22,6 +23,7 @@ import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
@@ -179,28 +181,43 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase implemen
                             didCraft = true;
                         }
 
-                        if(didCraft) {
-                            for(int i = 10; i < 19; i++) {
+                        if (didCraft) {
+                            // gods, that's atrocious. though, otherwise we won't save an empty container item
+                            InventoryCrafting grid = this.getRecipeGrid();
+                            NonNullList<ItemStack> remaining = recipe.getRemainingItems(grid);
 
-                                ItemStack ingredient = this.inventory.getStackInSlot(i);
+                            for (int s = 0; s < 9; s++) {
+                                int invSlot = 10 + s;
 
-                                if(!ingredient.isEmpty()) {
-                                    this.inventory.getStackInSlot(i).shrink(1);
+                                ItemStack in = this.inventory.getStackInSlot(invSlot);
+                                if (!in.isEmpty()) {
+                                    in.shrink(1);
+                                    if (in.getCount() <= 0) this.inventory.setStackInSlot(invSlot, ItemStack.EMPTY);
+                                }
 
-                                    if(this.inventory.getStackInSlot(i).isEmpty() && ingredient.getItem().hasContainerItem(ingredient)) {
-                                        ItemStack container = ingredient.getItem().getContainerItem(ingredient);
-
-                                        if(container.isItemStackDamageable() && container.getItemDamage() > container.getMaxDamage()) {
-                                            continue;
+                                ItemStack rem = remaining.get(s);
+                                if (!rem.isEmpty()) {
+                                    if (this.inventory.getStackInSlot(invSlot).isEmpty()) {
+                                        this.inventory.setStackInSlot(invSlot, rem.copy());
+                                    } else {
+                                        boolean placed = false;
+                                        for (int k = 10; k < 19; k++) {
+                                            if (this.inventory.getStackInSlot(k).isEmpty()) {
+                                                this.inventory.setStackInSlot(k, rem.copy());
+                                                placed = true;
+                                                break;
+                                            }
                                         }
-
-                                        this.inventory.setStackInSlot(i, container);
+                                        if (!placed) {
+                                            world.spawnEntity(new EntityItem(world, pos.getX()+0.5, pos.getY()+1.0, pos.getZ()+0.5, rem.copy()));
+                                        }
                                     }
                                 }
                             }
 
                             this.power -= consumption;
                         }
+
                     }
                 }
             }

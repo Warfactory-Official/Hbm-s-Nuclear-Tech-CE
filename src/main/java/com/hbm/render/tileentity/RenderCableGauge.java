@@ -31,7 +31,7 @@ public class RenderCableGauge extends TileEntitySpecialRenderer<TileEntityCableG
 		GlStateManager.enableLighting();
 		GlStateManager.enableCull();
 		GlStateManager.depthMask(false);
-		GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+		GlStateManager.enableRescaleNormal();
 		GlStateManager.color(1, 1, 1, 1);
 		OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
 			
@@ -49,7 +49,7 @@ public class RenderCableGauge extends TileEntitySpecialRenderer<TileEntityCableG
 			font.drawString(text, -width / 2, -height / 2, 0xff8000);
 		}
 		GlStateManager.depthMask(true);
-		GL11.glDisable(GL12.GL_RESCALE_NORMAL);
+		GlStateManager.disableRescaleNormal();
 		GlStateManager.popMatrix();
 	}
 }

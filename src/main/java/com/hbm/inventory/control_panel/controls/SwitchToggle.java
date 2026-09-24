@@ -4,6 +4,7 @@ import com.hbm.inventory.control_panel.*;
 import com.hbm.inventory.control_panel.nodes.NodeBoolean;
 import com.hbm.inventory.control_panel.nodes.NodeGetVar;
 import com.hbm.inventory.control_panel.nodes.NodeSetVar;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.loader.IModelCustom;
 import net.minecraft.client.Minecraft;
@@ -20,8 +21,8 @@ import java.util.List;
 
 public class SwitchToggle extends Control {
 
-    public SwitchToggle(String name, ControlPanel panel) {
-        super(name, panel);
+    public SwitchToggle(String name,String registryName,ControlPanel panel) {
+        super(name,registryName, panel);
         vars.put("isOn", new DataValueFloat(0));
     }
 
@@ -117,6 +118,6 @@ public class SwitchToggle extends Control {
 
     @Override
     public Control newControl(ControlPanel panel) {
-        return new SwitchToggle(name, panel);
+        return new SwitchToggle(name,registryName,panel);
     }
 }

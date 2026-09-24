@@ -1,6 +1,6 @@
 #version 120
 
-uniform sampler2D texture;
+uniform sampler2D mainTex;
 uniform sampler2D noise;
 uniform sampler2D bigNoise;
 uniform float worldTime;
@@ -25,6 +25,6 @@ void main(){
 	noiseA *= c1*c2;
 	
 	noiseA += remap(noiseC, 0, 1, -0.03, 0.03)*c1*c2;
-	vec4 tex = texture2D(texture, vec2(texCoord.x, texCoord.y+noiseA));
+	vec4 tex = texture2D(mainTex, vec2(texCoord.x, texCoord.y+noiseA));
 	gl_FragColor = tex * gl_Color;
 }

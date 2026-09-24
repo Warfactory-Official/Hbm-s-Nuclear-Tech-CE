@@ -32,7 +32,7 @@ public class NTMEnergyCapabilityWrapper implements IEnergyStorage {
      */
     public NTMEnergyCapabilityWrapper(@NotNull TileEntity handler, @Nullable BlockPos pos) {
         if (handler instanceof IEnergyHandlerMK2 energyHandlerMK2) this.handler = energyHandlerMK2;
-        else throw new IllegalArgumentException("Handler must implement EnergyHandlerMK2");
+        else throw new IllegalArgumentException("TileEntity " + handler.getClass().getName() + " must implement EnergyHandlerMK2");
         this.receiver = handler instanceof IEnergyReceiverMK2 ? (IEnergyReceiverMK2) handler : null;
         this.provider = handler instanceof IEnergyProviderMK2 ? (IEnergyProviderMK2) handler : null;
         this.accessor = pos;

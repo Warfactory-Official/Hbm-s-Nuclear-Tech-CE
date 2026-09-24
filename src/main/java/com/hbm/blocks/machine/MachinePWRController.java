@@ -6,6 +6,7 @@ import com.hbm.blocks.machine.BlockPWR.TileEntityBlockPWR;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.block.BlockBakeFrame;
 import com.hbm.render.block.RotatableStateMapper;
 import com.hbm.tileentity.machine.TileEntityPWRController;
@@ -51,7 +52,7 @@ public class MachinePWRController extends BlockContainerBakeable implements IToo
     private static final int MAX_SIZE = 4096;
 
     public MachinePWRController(String name) {
-        super(Material.IRON, name, BlockBakeFrame.simpleSouthRotatable("pwr_casing_blank", "pwr_controller"));
+        super(Material.IRON, name, BlockBakeFrame.southFacingCube("pwr_casing_blank", "pwr_controller"));
         this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
     }
 
@@ -100,8 +101,8 @@ public class MachinePWRController extends BlockContainerBakeable implements IToo
     }
 
     @Override
-    public void onBlockPlacedBy(World worldIn, @NotNull BlockPos pos, IBlockState state, EntityLivingBase placer, @NotNull ItemStack stack) {
-        worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
+    public @NotNull IBlockState getStateForPlacement(World worldIn, @NotNull BlockPos pos, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ, int meta, @NotNull EntityLivingBase placer) {
+        return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
     }
 
     @Override
@@ -209,15 +210,14 @@ public class MachinePWRController extends BlockContainerBakeable implements IToo
         errored = true;
     }
 
-    private void sendError(World world, BlockPos pos, String message, EntityPlayer player) {
+    public static void sendError(World world, BlockPos pos, String message, EntityPlayer player) {
         if (player instanceof EntityPlayerMP) {
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("type", "marker");
             data.setInteger("color", 0xff0000);
             data.setInteger("expires", 5_000);
             data.setDouble("dist", 128D);
             if (message != null) data.setString("label", message);
-            PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(data, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), (EntityPlayerMP) player);
+            PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Marker, data, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), (EntityPlayerMP) player);
         }
     }
 

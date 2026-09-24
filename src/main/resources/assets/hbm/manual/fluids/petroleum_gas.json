@@ -1,0 +1,23 @@
+{
+	"name": "Petroleum Gas",
+	"icon": [
+		"hbm:fluid_icon",
+		1,
+		24
+	],
+	"trigger": [
+		[
+			"hbm:fluid_icon",
+			1,
+			24
+		]
+	],
+	"title": {
+		"en_us": "Petroleum Gas",
+		"ru_ru": "Попутный нефтяной газ"
+	},
+	"content": {
+		"en_us": "Obtained after [[refining|Oil Refinery]] [[heated|Boiler]] [[crude oil|Crude Oil]]. Petroleum gas is the main ingredient in [[polymer|Polymer]], [[bakelite|Bakelite]], and [[perfluoromethyl|Perfluoromethyl]] making it a key ingredient for progression in all stages of the game. It is also the primary fluid used in [[fracking solution|Fracking Solution]].<br><br>{{Template:Oil1}}",
+		"ru_ru": "Получается после  [[переработки|Oil Refinery]] [[нагретой|Boiler]] [[сырой нефти|Crude Oil]]. Нефтяной газ является основным компонентом для [[полимера|Polymer]], [[бакелита|Bakelite]] и [[перфторометан|Perfluoromethyl]], что делает его ключевым ингредиентом для продвижения на всех этапах игры. Он также является основной жидкостью, используемой в [[растворе для гидроразрыва пласта|Fracking Solution]].<br><br>{{Template:Oil1}}"
+	}
+}

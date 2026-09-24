@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.slot.SlotUpgrade;
@@ -19,7 +20,16 @@ public class ContainerMachineGasCent extends Container {
 
   private final TileEntityMachineGasCent gasCent;
 
-  public ContainerMachineGasCent(InventoryPlayer invPlayer, TileEntityMachineGasCent teGasCent) {
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(7)
+                                                                              .rule(0, 4,
+                                                                                      ContainerMachineGasCent::isNormal)
+                                                                              .rule(4, 5, Library::isBattery)
+                                                                              .rule(5, 6,
+                                                                                      s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                              .rule(6, 7, Library::isMachineUpgrade)
+                                                                              .build();
+
+    public ContainerMachineGasCent(InventoryPlayer invPlayer, TileEntityMachineGasCent teGasCent) {
 
     gasCent = teGasCent;
 
@@ -57,11 +67,7 @@ public class ContainerMachineGasCent extends Container {
 
   @Override
   public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-    return InventoryUtil.transferStack(this.inventorySlots, index, 7,
-            ContainerMachineGasCent::isNormal, 4,
-            Library::isBattery, 5,
-            s -> s.getItem() instanceof IItemFluidIdentifier, 6,
-            Library::isMachineUpgrade, 7);
+      return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
   }
 
   @Override

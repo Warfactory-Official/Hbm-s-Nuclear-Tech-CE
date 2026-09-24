@@ -72,7 +72,7 @@ public class ItemRenderMAS36 extends ItemRenderWeaponBase {
 		GlStateManager.rotate((float) lift[0], 1, 0, 0);
 		GlStateManager.translate(0, 3, 3);
 
-		GL11.glTranslated(stab[0], stab[1], stab[2]);
+		GlStateManager.translate(stab[0], stab[1], stab[2]);
 
 		GlStateManager.translate(0, 0, recoil[2]);
 

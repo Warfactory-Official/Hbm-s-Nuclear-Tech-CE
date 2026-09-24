@@ -2,9 +2,11 @@ package com.hbm.blocks.machine.fusion;
 
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ITooltipProvider;
+import com.hbm.integration.ae2.NTMCraftingMachineFactory;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityProxyCombo;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionTorus;
+import com.hbm.util.Compat;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
@@ -15,6 +17,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.Loader;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -81,8 +84,8 @@ public class MachineFusionTorus extends BlockDummyable implements ITooltipProvid
 
     @Override
     public TileEntity createNewTileEntity(@NotNull World world, int meta) {
-        if(meta >= 12) return new TileEntityFusionTorus();
-        if(meta >= 6) return new TileEntityProxyCombo().inventory().power().fluid();
+        if(meta >= 12) return Loader.isModLoaded(Compat.ModIds.AE2) ? NTMCraftingMachineFactory.createAE2TileEntity("com.hbm.integration.ae2.tileentity.TileEntityFusionTorusAE2") : new TileEntityFusionTorus();
+        if(meta >= 6) return Loader.isModLoaded(Compat.ModIds.AE2) ? NTMCraftingMachineFactory.createAE2Proxy(true, true, true) : new TileEntityProxyCombo().inventory().power().fluid();
 
         return null;
     }

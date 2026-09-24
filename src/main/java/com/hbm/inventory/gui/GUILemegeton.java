@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import net.minecraft.client.renderer.GlStateManager;
 import com.hbm.Tags;
 import org.lwjgl.opengl.GL11;
 
@@ -27,7 +28,7 @@ public class GUILemegeton extends GuiContainer {
 	}
 
 	protected void drawGuiContainerBackgroundLayer(float inter, int mX, int mY) {
-		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		this.mc.getTextureManager().bindTexture(texture);
 		int left = (this.width - this.xSize) / 2;
 		int top = (this.height - this.ySize) / 2;

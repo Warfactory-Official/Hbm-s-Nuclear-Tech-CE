@@ -1,17 +1,11 @@
 package com.hbm.blocks.network;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.network.TileEntityRadioTorchSender;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import org.jetbrains.annotations.NotNull;
 
 public class RadioTorchSender extends RadioTorchRWBase {
@@ -26,18 +20,6 @@ public class RadioTorchSender extends RadioTorchRWBase {
     @Override
     public TileEntity createNewTileEntity(@NotNull World worldIn, int meta) {
         return new TileEntityRadioTorchSender();
-    }
-
-    @Override
-    public boolean onBlockActivated(World world, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull EntityPlayer player, @NotNull EnumHand hand, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ) {
-        if (world.isRemote) {
-            return true;
-        } else if (!player.isSneaking()) {
-            FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
-            return true;
-        } else {
-            return false;
-        }
     }
 
     @Override

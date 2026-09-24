@@ -6,6 +6,7 @@ import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactory9mm;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.util.Vec3dUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -87,13 +88,11 @@ public class TileEntityTurretSentryDamaged extends TileEntityTurretSentry {
       }
 
       NBTTagCompound data = new NBTTagCompound();
-      data.setString("type", "vanillaExt");
-      data.setString("mode", "largeexplode");
       data.setFloat("size", 1F);
       data.setByte("count", (byte) 1);
       PacketThreading.createAllAroundThreadedPacket(
           new AuxParticlePacketNT(
-              data, pos.x + vec.x + side.x, pos.y + vec.y, pos.z + vec.z + side.z),
+              HbmEffectNT.VanillaExt_LargeExplode, data, pos.x + vec.x + side.x, pos.y + vec.y, pos.z + vec.z + side.z),
           new NetworkRegistry.TargetPoint(
               world.provider.getDimension(),
               this.pos.getX(),

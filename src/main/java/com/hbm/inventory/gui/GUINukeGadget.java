@@ -3,17 +3,17 @@ package com.hbm.inventory.gui;
 import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerNukeGadget;
 import com.hbm.tileentity.bomb.TileEntityNukeGadget;
+import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.client.renderer.GlStateManager;
 
-public class GUINukeGadget extends GuiContainer {
+public class GUINukeGadget extends GuiInfoContainer {
 	
-	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/gadgetSchematic.png");
-	private TileEntityNukeGadget testNuke;
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/weapon/gadgetSchematic.png");
+	private final TileEntityNukeGadget testNuke;
 	
 	public GUINukeGadget(InventoryPlayer invPlayer, TileEntityNukeGadget tedf) {
 		super(new ContainerNukeGadget(invPlayer, tedf));
@@ -34,6 +34,8 @@ public class GUINukeGadget extends GuiContainer {
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		super.drawScreen(mouseX, mouseY, partialTicks);
+		String[] descText = I18nUtil.resolveKeyArray("desc.gui.nukeGadget.desc");
+		this.drawCustomInfoStat(mouseX, mouseY, guiLeft - 16, guiTop + 16, 16, 16, guiLeft - 8, guiTop + 16 + 16, descText);
 		super.renderHoveredToolTip(mouseX, mouseY);
 	}
 	
@@ -68,5 +70,7 @@ public class GUINukeGadget extends GuiContainer {
 		{
 			drawTexturedModalRect(guiLeft + 134, guiTop + 35, 176, 48, 16, 16);
 		}
+
+		this.drawInfoPanel(guiLeft - 16, guiTop + 16, 16, 16, 2);
 	}
 }

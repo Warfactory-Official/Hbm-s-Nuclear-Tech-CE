@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.albion;
 
+import com.hbm.handler.CompatHandler;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.container.ContainerPADetector;
 import com.hbm.inventory.gui.GUIPADetector;
@@ -10,9 +11,17 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.main.AdvancementManager;
+import com.hbm.saveddata.satellites.SatelliteDetector;
+import com.hbm.saveddata.satellites.SatelliteDetector.BurstIntensity;
+import com.hbm.saveddata.satellites.SatelliteRayScan;
+import com.hbm.saveddata.satellites.SatelliteRayScan.RayEvent;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.machine.albion.TileEntityPASource.PAState;
 import com.hbm.tileentity.machine.albion.TileEntityPASource.Particle;
+import li.cil.oc.api.machine.Arguments;
+import li.cil.oc.api.machine.Callback;
+import li.cil.oc.api.machine.Context;
+import li.cil.oc.api.network.SimpleComponent;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -22,13 +31,16 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 
 @AutoRegister
-public class TileEntityPADetector extends TileEntityCooledBase implements IGUIProvider, IParticleUser {
+@Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
+public class TileEntityPADetector extends TileEntityCooledBase implements IGUIProvider, IParticleUser, IRORValueProvider, SimpleComponent, CompatHandler.OCComponent {
 
     public static final long usage = 100_000;
     AxisAlignedBB bb = null;
@@ -167,6 +179,8 @@ public class TileEntityPADetector extends TileEntityCooledBase implements IGUIPr
                 List<EntityPlayerMP> players = world.getEntitiesWithinAABB(EntityPlayerMP.class, new AxisAlignedBB(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5).grow(100, 50, 100));
                 for(EntityPlayerMP player : players) AdvancementManager.grantAchievement(player, AdvancementManager.achOmega12);
             }
+            SatelliteDetector.reportEvent(world, SatelliteDetector.DURATION_MEDIUM, BurstIntensity.MEDIUM, pos.getX(), pos.getZ());
+            SatelliteRayScan.reportEvent(world, pos.getX(), pos.getY(), pos.getZ(), RayEvent.INFO_PARTICLE, 600);
             particle.crash(PAState.SUCCESS);
             return;
         }
@@ -199,5 +213,98 @@ public class TileEntityPADetector extends TileEntityCooledBase implements IGUIPr
     @Override
     public BlockPos getExitPos(Particle particle) {
         return null;
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[] {
+                PREFIX_VALUE + "temperature",
+                PREFIX_VALUE + "pfmcold",
+                PREFIX_VALUE + "pfm"
+        };
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if((PREFIX_VALUE + "temperature").equals(name)) return "" + (int) this.temperature;
+        if((PREFIX_VALUE + "pfmcold").equals(name)) return "" + coolantTanks[0].getFill();
+        if((PREFIX_VALUE + "pfm").equals(name)) return "" + coolantTanks[1].getFill();
+        return null;
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public String getComponentName() {
+        return "ntm_pa_detector";
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getEnergyInfo(Context context, Arguments args) {
+        return new Object[] {getPower(), getMaxPower()};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getCoolant(Context context, Arguments args) {
+        return new Object[] {
+            coolantTanks[0].getFill(), coolantTanks[0].getMaxFill(),
+            coolantTanks[1].getFill(), coolantTanks[1].getMaxFill(),
+        };
+    }
+
+    @Optional.Method(modid = "opencomputers")
+    private Object[] craftingInfo() {
+        Object[] items = new Object[] {"", 0, "", 0, "", 0, "", 0};
+        for(int i = 0; i < 4; i++) {
+            ItemStack slot = inventory.getStackInSlot(i + 1);
+            if(!slot.isEmpty()) {
+                items[i * 2] = slot.getTranslationKey();
+                items[(i * 2) + 1] = slot.getCount();
+            }
+        }
+        return items;
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getCrafting(Context context, Arguments args) {
+        return craftingInfo();
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getInfo(Context context, Arguments args) {
+        Object[] items = craftingInfo();
+        return new Object[] {
+            getPower(), getMaxPower(),
+            coolantTanks[0].getFill(), coolantTanks[0].getMaxFill(),
+            coolantTanks[1].getFill(), coolantTanks[1].getMaxFill(),
+            items[0], items[1], items[2], items[3],
+            items[4], items[5], items[6], items[7]
+        };
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public String[] methods() {
+        return new String[] {
+            "getEnergyInfo",
+            "getCoolant",
+            "getCrafting",
+            "getInfo"
+        };
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public Object[] invoke(String method, Context context, Arguments args) throws Exception {
+        switch (method) {
+            case "getEnergyInfo": return getEnergyInfo(context, args);
+            case "getCoolant": return getCoolant(context, args);
+            case "getCrafting": return getCrafting(context, args);
+            case "getInfo": return getInfo(context, args);
+        }
+        throw new NoSuchMethodException();
     }
 }

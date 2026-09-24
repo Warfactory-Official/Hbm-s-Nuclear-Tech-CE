@@ -346,7 +346,7 @@ public class GUIRBMKConsole extends GuiScreen {
 			switch (col.type) {
 				case COOLER:
 					RBMKColumn.CoolerColumn cooler = (RBMKColumn.CoolerColumn) col;
-					int cryo = (int) Math.ceil((double) (cooler.cryo * 8) / 16000);
+					int cryo = (int) Math.ceil((double) (cooler.cryo * 8) / Math.max(cooler.maxCryo, 1));
 					if (cryo > 0)
 						drawTexturedModalRect(guiLeft + x + 3, guiTop + y + size - cryo - 1, 123, 191 - cryo, 4, cryo);
 					break;
@@ -436,7 +436,7 @@ public class GUIRBMKConsole extends GuiScreen {
 		GlStateManager.disableTexture2D();
 		GlStateManager.disableLighting();
 		GlStateManager.color(0f, 1f, 0f, 1f);
-		GL11.glLineWidth(2F);
+		GlStateManager.glLineWidth(2F);
 		GL11.glEnable(GL11.GL_LINE_SMOOTH);
 
 		Tessellator tess = Tessellator.getInstance();

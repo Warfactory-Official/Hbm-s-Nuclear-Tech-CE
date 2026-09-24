@@ -47,6 +47,8 @@ public interface IDoor {
     enum DoorState {
         CLOSED, OPEN, CLOSING, OPENING;
 
+        public static final DoorState[] VALUES = values();
+
         public boolean isStationaryState() {
             return (this == CLOSED || this == OPEN);
         }

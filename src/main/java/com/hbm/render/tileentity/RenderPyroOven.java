@@ -41,7 +41,7 @@ public class RenderPyroOven extends TileEntitySpecialRenderer<TileEntityMachineP
 
         GlStateManager.pushMatrix();
         GlStateManager.translate(1.5, 0, 1.5);
-        GL11.glRotated(anim * -15D % 360D, 0, 1, 0);
+        GlStateManager.rotate((float) (anim * -15D % 360D), 0, 1, 0);
         GlStateManager.translate(-1.5, 0, -1.5);
         ResourceManager.pyrooven.renderPart("Fan");
         GlStateManager.popMatrix();
@@ -61,10 +61,10 @@ public class RenderPyroOven extends TileEntitySpecialRenderer<TileEntityMachineP
         return new ItemRenderBase() {
             public void renderInventory() {
                 GlStateManager.translate(0, -1, 0);
-                GL11.glScaled(3.5, 3.5, 3.5);
+                GlStateManager.scale(3.5, 3.5, 3.5);
             }
             public void renderCommon() {
-                GL11.glScaled(0.5, 0.5, 0.5);
+                GlStateManager.scale(0.5, 0.5, 0.5);
                 GlStateManager.rotate(90, 0F, 1F, 0F);
                 GlStateManager.shadeModel(GL11.GL_SMOOTH);
                 bindTexture(ResourceManager.pyrooven_tex);

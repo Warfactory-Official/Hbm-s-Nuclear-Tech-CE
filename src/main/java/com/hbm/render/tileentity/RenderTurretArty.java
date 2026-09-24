@@ -41,11 +41,11 @@ public class RenderTurretArty extends TileEntitySpecialRenderer<TileEntityTurret
         Math.toDegrees(
             turret.lastRotationPitch + (turret.rotationPitch - turret.lastRotationPitch) * interp);
 
-    GL11.glRotated(yaw - 90, 0, 1, 0);
+    GlStateManager.rotate((float) (yaw - 90), 0, 1, 0);
     ResourceManager.turret_arty.renderPart("Carriage");
 
     GlStateManager.translate(0, 3, 0);
-    GL11.glRotated(pitch, 1, 0, 0);
+    GlStateManager.rotate((float) (pitch), 1, 0, 0);
     GlStateManager.translate(0, -3, 0);
     ResourceManager.turret_arty.renderPart("Cannon");
     double barrel = turret.lastBarrelPos + (turret.barrelPos - turret.lastBarrelPos) * interp;

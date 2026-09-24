@@ -21,12 +21,6 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister
 public class RenderBAT9000 extends TileEntitySpecialRenderer<TileEntityMachineBAT9000>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityMachineBAT9000 te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityMachineBAT9000 bat,
@@ -77,8 +71,8 @@ public class RenderBAT9000 extends TileEntitySpecialRenderer<TileEntityMachineBA
     GlStateManager.disableLighting();
     GlStateManager.color(1F, 1F, 1F, 1F);
 
-    double height = bat.tankNew.getFill() * 1.5D / bat.tankNew.getMaxFill();
-    double off = 2.2;
+    float height = bat.tankNew.getFill() * 1.5F / bat.tankNew.getMaxFill();
+    float off = 2.2F;
     int color = type.getColor();
 
     Tessellator tess = Tessellator.getInstance();
@@ -93,67 +87,67 @@ public class RenderBAT9000 extends TileEntitySpecialRenderer<TileEntityMachineBA
     NTMRenderHelper.addQuad(
         buffer,
         -off,
-        1.5,
-        -0.5,
+        1.5F,
+        -0.5F,
         -off,
-        1.5 + height,
-        -0.5,
+        1.5F + height,
+        -0.5F,
         -off,
-        1.5 + height,
-        0.5,
+        1.5F + height,
+        0.5F,
         -off,
-        1.5,
-        0.5,
+        1.5F,
+        0.5F,
         r,
         g,
         b);
     NTMRenderHelper.addQuad(
         buffer,
         off,
-        1.5,
-        -0.5,
+        1.5F,
+        -0.5F,
         off,
-        1.5 + height,
-        -0.5,
+        1.5F + height,
+        -0.5F,
         off,
-        1.5 + height,
-        0.5,
+        1.5F + height,
+        0.5F,
         off,
-        1.5,
-        0.5,
+        1.5F,
+        0.5F,
         r,
         g,
         b);
     NTMRenderHelper.addQuad(
         buffer,
-        -0.5,
-        1.5,
+        -0.5F,
+        1.5F,
         -off,
-        -0.5,
-        1.5 + height,
+        -0.5F,
+        1.5F + height,
         -off,
-        0.5,
-        1.5 + height,
+        0.5F,
+        1.5F + height,
         -off,
-        0.5,
-        1.5,
+        0.5F,
+        1.5F,
         -off,
         r,
         g,
         b);
     NTMRenderHelper.addQuad(
         buffer,
-        -0.5,
-        1.5,
+        -0.5F,
+        1.5F,
         off,
-        -0.5,
-        1.5 + height,
+        -0.5F,
+        1.5F + height,
         off,
-        0.5,
-        1.5 + height,
+        0.5F,
+        1.5F + height,
         off,
-        0.5,
-        1.5,
+        0.5F,
+        1.5F,
         off,
         r,
         g,

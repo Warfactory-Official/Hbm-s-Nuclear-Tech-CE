@@ -2,6 +2,7 @@ package com.hbm.tileentity.machine.fusion;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
+import com.hbm.handler.CompatHandler;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerFusionKlystron;
@@ -14,13 +15,19 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.uninos.UniNodespace;
 import com.hbm.uninos.networkproviders.KlystronNetwork;
 import io.netty.buffer.ByteBuf;
+import li.cil.oc.api.machine.Arguments;
+import li.cil.oc.api.machine.Callback;
+import li.cil.oc.api.machine.Context;
+import li.cil.oc.api.network.SimpleComponent;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -31,6 +38,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
@@ -38,7 +46,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Map;
 
 @AutoRegister
-public class TileEntityFusionKlystron extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardReceiverMK2, IControlReceiver, IGUIProvider {
+@Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
+public class TileEntityFusionKlystron extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardReceiverMK2, IControlReceiver, IGUIProvider, IConnectionAnchors, SimpleComponent, CompatHandler.OCComponent {
 
     protected KlystronNetwork.KlystronNode klystronNode;
     public static final long MAX_OUTPUT = 1_000_000;
@@ -46,7 +55,7 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase implements I
     public long outputTarget;
     public long output;
     public long power;
-    public long maxPower;
+    public long maxPower = 1_000_000L;
 
     public float fan;
     public float prevFan;
@@ -60,7 +69,7 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase implements I
     public TileEntityFusionKlystron() {
         super(1, true, true);
 
-        compair = new FluidTankNTM(Fluids.AIR, AIR_CONSUMPTION * 60);
+        compair = new FluidTankNTM(Fluids.AIR, AIR_CONSUMPTION * 60).withOwner(this);
     }
 
     @Override
@@ -100,33 +109,8 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase implements I
 
             if(output < outputTarget / 50) output = 0;
 
-            if(klystronNode == null || klystronNode.expired) {
-                ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10).getOpposite();
-                klystronNode = UniNodespace.getNode(world, pos.add(dir.offsetX * 4, 2, dir.offsetZ * 4), KlystronNetwork.THE_PROVIDER);
-
-                if(klystronNode == null) {
-                    klystronNode = (KlystronNetwork.KlystronNode) new KlystronNetwork.KlystronNode(KlystronNetwork.THE_PROVIDER,
-                            new BlockPos(pos.getX() + dir.offsetX * 4, pos.getY() + 2, pos.getZ() + dir.offsetZ * 4))
-                            .setConnections(new DirPos(pos.getX() + dir.offsetX * 5, pos.getY() + 2, pos.getZ() + dir.offsetZ * 5, dir));
-
-                    UniNodespace.createNode(world, klystronNode);
-                }
-            }
-
-            if(klystronNode.net != null) klystronNode.net.addProvider(this);
-
-            if(klystronNode != null && klystronNode.net != null) {
-                KlystronNetwork net = klystronNode.net;
-
-                for(Map.Entry<TileEntity, Long> o : net.receiverEntries.entrySet()) {
-                    if(o.getKey() instanceof TileEntityFusionTorus torus) { // replace this with an interface should we ever get more acceptors
-                        if(torus.isLoaded() && !torus.isInvalid()) { // check against zombie network members
-                            torus.klystronEnergy += this.output;
-                            break; // we only do one anyway
-                        }
-                    }
-                }
-            }
+            this.klystronNode = handleKNode(klystronNode, this);
+            provideKyU(klystronNode, this.output);
 
             this.networkPackNT(100);
 
@@ -178,6 +162,51 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase implements I
                 new DirPos(pos.getX() + rot.offsetX * 3, pos.getY(), pos.getZ() + rot.offsetZ * 3, rot),
                 new DirPos(pos.getX() - rot.offsetX * 3, pos.getY(), pos.getZ() - rot.offsetZ * 3, rot.getOpposite())
         };
+    }
+
+    /** Ensures the k-node exists, is loaded, and the klystron is a provider in the k-net. Returns a new klystron node if none existed, or the previous one. */
+    public static KlystronNetwork.KlystronNode handleKNode(KlystronNetwork.KlystronNode klystronNode, TileEntity that) {
+
+        World world = that.getWorld();
+        BlockPos pos = that.getPos();
+
+        if(klystronNode == null || klystronNode.expired) {
+            ForgeDirection dir = ForgeDirection.getOrientation(that.getBlockMetadata() - 10).getOpposite();
+            klystronNode = UniNodespace.getNode(world, pos.add(dir.offsetX * 4, 2, dir.offsetZ * 4), KlystronNetwork.THE_PROVIDER);
+
+            if(klystronNode == null) {
+                klystronNode = (KlystronNetwork.KlystronNode) new KlystronNetwork.KlystronNode(KlystronNetwork.THE_PROVIDER,
+                        new BlockPos(pos.getX() + dir.offsetX * 4, pos.getY() + 2, pos.getZ() + dir.offsetZ * 4))
+                        .setConnections(new DirPos(pos.getX() + dir.offsetX * 5, pos.getY() + 2, pos.getZ() + dir.offsetZ * 5, dir));
+
+                UniNodespace.createNode(world, klystronNode);
+            }
+        }
+
+        if(klystronNode.net != null) klystronNode.net.addProvider(that);
+
+        return klystronNode;
+    }
+
+    /** Provides klystron energy to the k-net of the supplied k-node, returns true is a connection is established */
+    public static boolean provideKyU(KlystronNetwork.KlystronNode klystronNode, long output) {
+        boolean connected = false;
+
+        if(klystronNode != null && klystronNode.net != null) {
+            KlystronNetwork net = klystronNode.net;
+
+            for(Map.Entry<TileEntity, Long> o : net.receiverEntries.entrySet()) {
+                if(o.getKey() instanceof TileEntityFusionTorus torus) { // replace this with an interface should we ever get more acceptors
+                    if(torus.isLoaded() && !torus.isInvalid()) { // check against zombie network members
+                        torus.klystronEnergy += output;
+                        connected = true;
+                        break; // we only do one anyway
+                    }
+                }
+            }
+        }
+
+        return connected;
     }
 
     @Override
@@ -252,7 +281,7 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase implements I
 
     @Override public long getPower() { return power; }
     @Override public void setPower(long power) { this.power = power; }
-    @Override public long getMaxPower() { return maxPower; }
+    @Override public long getMaxPower() { return Math.max(maxPower, 1_000_000L); }
 
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[] {compair}; }
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[] {compair}; }
@@ -299,12 +328,78 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase implements I
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
 
         if(data.hasKey("amount")) {
             this.outputTarget = data.getLong("amount");
             if(this.outputTarget < 0) this.outputTarget = 0;
             if(this.outputTarget > MAX_OUTPUT) this.outputTarget = MAX_OUTPUT;
         }
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public String getComponentName() {
+        return "ntm_fusion_klystron";
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getEnergyInfo(Context context, Arguments args) {
+        return new Object[] {getPower(), getMaxPower()};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getAir(Context context, Arguments args) {
+        return new Object[] {compair.getFill(), compair.getMaxFill()};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getOutput(Context context, Arguments args) {
+        return new Object[] {output, outputTarget};
+    }
+
+    @Callback(direct = true, limit = 4)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] setOutput(Context context, Arguments args) {
+        outputTarget = (long) MathHelper.clamp(args.checkDouble(0), 0.0, (double) MAX_OUTPUT);
+        return new Object[] {};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getInfo(Context context, Arguments args) {
+        return new Object[] {
+            getPower(), getMaxPower(),
+            compair.getFill(), compair.getMaxFill(),
+            output, outputTarget
+        };
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public String[] methods() {
+        return new String[] {
+            "getEnergyInfo",
+            "getAir",
+            "getOutput",
+            "setOutput",
+            "getInfo"
+        };
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public Object[] invoke(String method, Context context, Arguments args) throws Exception {
+        switch (method) {
+            case "getEnergyInfo": return getEnergyInfo(context, args);
+            case "getAir": return getAir(context, args);
+            case "getOutput": return getOutput(context, args);
+            case "setOutput": return setOutput(context, args);
+            case "getInfo": return getInfo(context, args);
+        }
+        throw new NoSuchMethodException();
     }
 }

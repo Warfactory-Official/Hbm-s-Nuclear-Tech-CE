@@ -8,6 +8,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.util.BobMathUtil;
 import io.netty.buffer.ByteBuf;
@@ -31,12 +32,13 @@ public class TileEntityRefueler extends TileEntityLoadedBase implements IFluidSt
 
     private boolean isOperating = false;
     private int operatingTime;
+    private AxisAlignedBB bb;
 
     public FluidTankNTM tank;
 
     public TileEntityRefueler() {
         super();
-        tank = new FluidTankNTM(Fluids.KEROSENE, 100);
+        tank = new FluidTankNTM(Fluids.KEROSENE, 100).withOwner(this);
     }
 
     @Override
@@ -90,16 +92,16 @@ public class TileEntityRefueler extends TileEntityLoadedBase implements IFluidSt
                 Random rand = world.rand;
 
                 NBTTagCompound data = new NBTTagCompound();
-                data.setString("type", "fluidfill");
                 data.setInteger("color", tank.getTankType().getColor());
-                data.setDouble("posX", pos.getX() + 0.5 + rand.nextDouble() * 0.0625 + dir.offsetX * 0.5 + rot.offsetX * 0.25);
-                data.setDouble("posZ", pos.getZ() + 0.5 + rand.nextDouble() * 0.0625 + dir.offsetZ * 0.5 + rot.offsetZ * 0.25);
-                data.setDouble("posY", pos.getY() + 0.375);
                 data.setDouble("mX", -dir.offsetX + rand.nextGaussian() * 0.1);
                 data.setDouble("mZ", -dir.offsetZ + rand.nextGaussian() * 0.1);
                 data.setDouble("mY", 0D);
 
-                MainRegistry.proxy.effectNT(data);
+                MainRegistry.proxy.effectNT(HbmEffectNT.FluidFill,
+                        pos.getX() + 0.5 + rand.nextDouble() * 0.0625 + dir.offsetX * 0.5 + rot.offsetX * 0.25,
+                        pos.getY() + .375,
+                        pos.getZ() + 0.5 + rand.nextDouble() * 0.0625 + dir.offsetZ * 0.5 + rot.offsetZ * 0.25,
+                        data);
             }
 
             prevFillLevel = fillLevel;
@@ -155,5 +157,11 @@ public class TileEntityRefueler extends TileEntityLoadedBase implements IFluidSt
     @Override
     public FluidTankNTM[] getReceivingTanks() {
         return new FluidTankNTM[] { tank };
+    }
+
+    @Override
+    public AxisAlignedBB getRenderBoundingBox() {
+        if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+        return bb;
     }
 }

@@ -3,7 +3,7 @@ package com.hbm.render.tileentity;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.tileentity.machine.TileEntityForceField;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -16,12 +16,6 @@ import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManage
 @AutoRegister
 public class RenderMachineForceField extends TileEntitySpecialRenderer<TileEntityForceField>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityForceField te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityForceField ff,
@@ -49,7 +43,7 @@ public class RenderMachineForceField extends TileEntitySpecialRenderer<TileEntit
       generateSphere(segments, segments * 2, ff.radius, ff.color);
 
       double rot = (System.currentTimeMillis() * 0.5D) % 360;
-      GL11.glRotated(-rot, 0F, 1F, 0F);
+      GlStateManager.rotate((float) (-rot), 0F, 1F, 0F);
     }
 
     GlStateManager.translate(0, 0.5, 0);
@@ -103,13 +97,13 @@ public class RenderMachineForceField extends TileEntitySpecialRenderer<TileEntit
       buf.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
       GlStateManager.rotate(sRot, 0F, 1F, 0F);
 
-      Vec3 vec = Vec3.createVectorHelper(0, rad, 0);
+      Vec3NT vec = Vec3NT.createVectorHelper(0, rad, 0);
 
       for (int i = 0; i < l; i++) {
 
-        buf.pos(vec.xCoord, vec.yCoord, vec.zCoord).color(r, g, b, 1.0F).endVertex();
-        vec.rotateAroundX(lRot);
-        buf.pos(vec.xCoord, vec.yCoord, vec.zCoord).color(r, g, b, 1.0F).endVertex();
+        buf.pos(vec.x, vec.y, vec.z).color(r, g, b, 1.0F).endVertex();
+        vec.rotatePitchSelf(lRot);
+        buf.pos(vec.x, vec.y, vec.z).color(r, g, b, 1.0F).endVertex();
       }
       tes.draw();
     }

@@ -1,10 +1,12 @@
 package com.hbm.handler.ability;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.generic.BlockBobble;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.items.ModItems;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.potion.HbmPotion;
 import com.hbm.util.ContaminationUtil;
 import net.minecraft.block.Block;
@@ -28,12 +30,12 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 
 public interface IWeaponAbility extends IBaseAbility {
     // Note: tool is currently unused in weapon abilities
-    public void onHit(int level, World world, EntityPlayer player, Entity victim, Item tool);
+    void onHit(int level, World world, EntityPlayer player, Entity victim, Item tool);
 
-    public final static int SORT_ORDER_BASE = 200;
+    int SORT_ORDER_BASE = 200;
 
     // region handlers
-    public static final IWeaponAbility NONE = new IWeaponAbility() {
+    IWeaponAbility NONE = new IWeaponAbility() {
         @Override
         public String getName() {
             return "";
@@ -41,7 +43,7 @@ public interface IWeaponAbility extends IBaseAbility {
 
         @Override
         public int sortOrder() {
-            return SORT_ORDER_BASE + 0;
+            return SORT_ORDER_BASE;
         }
 
         @Override
@@ -49,13 +51,13 @@ public interface IWeaponAbility extends IBaseAbility {
         }
     };
 
-    public static final IWeaponAbility RADIATION = new IWeaponAbility() {
+    IWeaponAbility RADIATION = new IWeaponAbility() {
         @Override
         public String getName() {
             return "weapon.ability.radiation";
         }
 
-        public final float[] radAtLevel = { 15F, 50F, 500F };
+        public final float[] radAtLevel = {15F, 50F, 500F};
 
         @Override
         public int levels() {
@@ -74,18 +76,18 @@ public interface IWeaponAbility extends IBaseAbility {
 
         @Override
         public void onHit(int level, World world, EntityPlayer player, Entity victim, Item tool) {
-            if(victim instanceof EntityLivingBase)
+            if (victim instanceof EntityLivingBase)
                 ContaminationUtil.contaminate((EntityLivingBase) victim, ContaminationUtil.HazardType.RADIATION, ContaminationUtil.ContaminationType.CREATIVE, radAtLevel[level]);
         }
     };
 
-    public static final IWeaponAbility VAMPIRE = new IWeaponAbility() {
+    IWeaponAbility VAMPIRE = new IWeaponAbility() {
         @Override
         public String getName() {
             return "weapon.ability.vampire";
         }
 
-        public final float[] amountAtLevel = { 2F, 3F, 5F, 10F, 50F };
+        public final float[] amountAtLevel = {2F, 3F, 5F, 10F, 50F};
 
         @Override
         public int levels() {
@@ -106,24 +108,24 @@ public interface IWeaponAbility extends IBaseAbility {
         public void onHit(int level, World world, EntityPlayer player, Entity victim, Item tool) {
             float amount = amountAtLevel[level];
 
-            if(victim instanceof EntityLivingBase living) {
-                if(living.getHealth() <= 0)
+            if (victim instanceof EntityLivingBase living) {
+                if (living.getHealth() <= 0)
                     return;
                 living.setHealth(living.getHealth() - amount);
-                if(living.getHealth() <= 0)
+                if (living.getHealth() <= 0)
                     living.onDeath(DamageSource.MAGIC);
                 player.heal(amount);
             }
         }
     };
 
-    public static final IWeaponAbility STUN = new IWeaponAbility() {
+    IWeaponAbility STUN = new IWeaponAbility() {
         @Override
         public String getName() {
             return "weapon.ability.stun";
         }
 
-        public final int[] durationAtLevel = { 2, 3, 5, 10, 15 };
+        public final int[] durationAtLevel = {2, 3, 5, 10, 15};
 
         @Override
         public int levels() {
@@ -144,8 +146,7 @@ public interface IWeaponAbility extends IBaseAbility {
         public void onHit(int level, World world, EntityPlayer player, Entity victim, Item tool) {
             int duration = durationAtLevel[level];
 
-            if(victim instanceof EntityLivingBase) {
-                EntityLivingBase living = (EntityLivingBase) victim;
+            if (victim instanceof EntityLivingBase living) {
 
                 living.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, duration * 20, 4));
                 living.addPotionEffect(new PotionEffect(MobEffects.WEAKNESS, duration * 20, 4));
@@ -153,13 +154,13 @@ public interface IWeaponAbility extends IBaseAbility {
         }
     };
 
-    public static final IWeaponAbility PHOSPHORUS = new IWeaponAbility() {
+    IWeaponAbility PHOSPHORUS = new IWeaponAbility() {
         @Override
         public String getName() {
             return "weapon.ability.phosphorus";
         }
 
-        public final int[] durationAtLevel = { 60, 90 };
+        public final int[] durationAtLevel = {60, 90};
 
         @Override
         public int levels() {
@@ -180,21 +181,20 @@ public interface IWeaponAbility extends IBaseAbility {
         public void onHit(int level, World world, EntityPlayer player, Entity victim, Item tool) {
             int duration = durationAtLevel[level];
 
-            if(victim instanceof EntityLivingBase) {
-                EntityLivingBase living = (EntityLivingBase) victim;
+            if (victim instanceof EntityLivingBase living) {
 
                 living.addPotionEffect(new PotionEffect(HbmPotion.phosphorus, duration * 20, 4));
             }
         }
     };
 
-    public static final IWeaponAbility FIRE = new IWeaponAbility() {
+    IWeaponAbility FIRE = new IWeaponAbility() {
         @Override
         public String getName() {
             return "weapon.ability.fire";
         }
 
-        public final int[] durationAtLevel = { 5, 10 };
+        public final int[] durationAtLevel = {5, 10};
 
         @Override
         public int levels() {
@@ -213,19 +213,19 @@ public interface IWeaponAbility extends IBaseAbility {
 
         @Override
         public void onHit(int level, World world, EntityPlayer player, Entity victim, Item tool) {
-            if(victim instanceof EntityLivingBase) {
+            if (victim instanceof EntityLivingBase) {
                 victim.setFire(durationAtLevel[level]);
             }
         }
     };
 
-    public static final IWeaponAbility CHAINSAW = new IWeaponAbility() {
+    IWeaponAbility CHAINSAW = new IWeaponAbility() {
         @Override
         public String getName() {
             return "weapon.ability.chainsaw";
         }
 
-        public final int[] dividerAtLevel = { 15, 10 };
+        public final int[] dividerAtLevel = {15, 10};
 
         @Override
         public int levels() {
@@ -246,25 +246,22 @@ public interface IWeaponAbility extends IBaseAbility {
         public void onHit(int level, World world, EntityPlayer player, Entity victim, Item tool) {
             int divider = dividerAtLevel[level];
 
-            if(victim instanceof EntityLivingBase) {
-                EntityLivingBase living = (EntityLivingBase) victim;
+            if (victim instanceof EntityLivingBase living) {
 
-                if(living.getHealth() <= 0.0F) {
+                if (living.getHealth() <= 0.0F) {
                     int count = Math.min((int) Math.ceil(living.getMaxHealth() / divider), 250); // safeguard to prevent funnies from bosses with obscene  health
 
-                    for(int i = 0; i < count; i++) {
+                    for (int i = 0; i < count; i++) {
                         living.entityDropItem(new ItemStack(ModItems.nitra_small), 1);
                         world.spawnEntity(new EntityXPOrb(world, living.posX, living.posY, living.posZ, 1));
                     }
 
-                    if(player instanceof EntityPlayerMP) {
+                    if (player instanceof EntityPlayerMP) {
                         NBTTagCompound data = new NBTTagCompound();
-                        data.setString("type", "vanillaburst");
                         data.setInteger("count", count * 4);
                         data.setDouble("motion", 0.1D);
-                        data.setString("mode", "blockdust");
                         data.setInteger("block", Block.getIdFromBlock(Blocks.REDSTONE_BLOCK));
-                        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, living.posX, living.posY + living.height * 0.5, living.posZ),
+                        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.VanillaBurst_BlockDust, data, living.posX, living.posY + living.height * 0.5, living.posZ),
                                 new NetworkRegistry.TargetPoint(living.dimension, living.posX, living.posY, living.posZ, 50));
                     }
 
@@ -274,7 +271,7 @@ public interface IWeaponAbility extends IBaseAbility {
         }
     };
 
-    public static final IWeaponAbility BEHEADER = new IWeaponAbility() {
+    IWeaponAbility BEHEADER = new IWeaponAbility() {
         @Override
         public String getName() {
             return "weapon.ability.beheader";
@@ -287,8 +284,7 @@ public interface IWeaponAbility extends IBaseAbility {
 
         @Override
         public void onHit(int level, World world, EntityPlayer player, Entity victim, Item tool) {
-            if (victim instanceof EntityLivingBase && ((EntityLivingBase) victim).getHealth() <= 0.0F) {
-                EntityLivingBase living = (EntityLivingBase) victim;
+            if (victim instanceof EntityLivingBase living && living.getHealth() <= 0.0F) {
 
                 if (living instanceof EntitySkeleton) {
                     living.entityDropItem(new ItemStack(Items.SKULL, 1, 0), 0.0F);
@@ -318,7 +314,7 @@ public interface IWeaponAbility extends IBaseAbility {
         }
     };
 
-    public static final IWeaponAbility BOBBLE = new IWeaponAbility() {
+    IWeaponAbility BOBBLE = new IWeaponAbility() {
         @Override
         public String getName() {
             return "weapon.ability.bobble";
@@ -331,26 +327,26 @@ public interface IWeaponAbility extends IBaseAbility {
 
         @Override
         public void onHit(int level, World world, EntityPlayer player, Entity victim, Item tool) {
-            if(victim instanceof EntityMob && ((EntityMob) victim).getHealth() <= 0.0F) {
-                EntityMob mob = (EntityMob) victim;
+            if (victim instanceof EntityMob mob && mob.getHealth() <= 0.0F) {
 
                 int chance = 1000;
 
-                if(mob.getMaxHealth() > 20) {
+                if (mob.getMaxHealth() > 20) {
                     chance = 750;
                 }
-                // TODO: bobblehead
-                //if(world.rand.nextInt(chance) == 0) mob.entityDropItem(new ItemStack(ModBlocks.bobblehead, 1, world.rand.nextInt(BobbleType.values().length - 1) + 1), 0.0F);
+
+                if (world.rand.nextInt(chance) == 0)
+                    mob.entityDropItem(new ItemStack(ModBlocks.bobblehead, 1, world.rand.nextInt(BlockBobble.BobbleType.values().length - 1) + 1), 0.0F);
             }
         }
     };
     // endregion handlers
 
-    static final IWeaponAbility[] abilities = { NONE, RADIATION, VAMPIRE, STUN, PHOSPHORUS, FIRE, CHAINSAW, BEHEADER, BOBBLE };
+    IWeaponAbility[] abilities = {NONE, RADIATION, VAMPIRE, STUN, PHOSPHORUS, FIRE, CHAINSAW, BEHEADER, BOBBLE};
 
     static IWeaponAbility getByName(String name) {
-        for(IWeaponAbility ability : abilities) {
-            if(ability.getName().equals(name))
+        for (IWeaponAbility ability : abilities) {
+            if (ability.getName().equals(name))
                 return ability;
         }
 

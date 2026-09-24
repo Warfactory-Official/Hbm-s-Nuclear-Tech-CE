@@ -65,8 +65,8 @@ public class ParticlePlasmaBlast extends Particle {
 		float pZ = (float) (this.prevPosZ + (this.posZ - this.prevPosZ) * (double)partialTicks - interpPosZ);
 
 		GlStateManager.translate(pX, pY, pZ);
-		GL11.glRotated(this.rotationYaw, 0, 1, 0);
-		GL11.glRotated(this.rotationPitch, 1, 0, 0);
+		GlStateManager.rotate((float) (this.rotationYaw), 0, 1, 0);
+		GlStateManager.rotate((float) (this.rotationPitch), 1, 0, 0);
 			
 		this.particleAlpha = 1 - (((float)this.particleAge + partialTicks) / (float)this.particleMaxAge);
 		float scale = (1 - (float)Math.pow(Math.E, (this.particleAge + partialTicks) * -0.125)) * this.particleScale;

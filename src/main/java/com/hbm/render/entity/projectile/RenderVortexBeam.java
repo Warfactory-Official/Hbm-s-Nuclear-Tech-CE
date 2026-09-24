@@ -3,7 +3,7 @@ package com.hbm.render.entity.projectile;
 import com.hbm.entity.projectile.EntityBeamBase;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.lib.Library;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.render.misc.BeamPronter;
 import com.hbm.render.misc.BeamPronter.EnumBeamType;
 import com.hbm.render.misc.BeamPronter.EnumWaveType;
@@ -35,7 +35,7 @@ public class RenderVortexBeam extends Render<EntityBeamBase> {
 
 			RayTraceResult pos = Library.rayTrace(player, 100, 1);
 
-			Vec3 skeleton = Vec3.createVectorHelper(pos.hitVec.x - player.posX, pos.hitVec.y - player.posY - player.getEyeHeight(), pos.hitVec.z - player.posZ);
+			Vec3NT skeleton = Vec3NT.createVectorHelper(pos.hitVec.x - player.posX, pos.hitVec.y - player.posY - player.getEyeHeight(), pos.hitVec.z - player.posZ);
 			int init = (int) -(System.currentTimeMillis() % 360);
 
 	        BeamPronter.prontBeam(skeleton.toVec3d(), EnumWaveType.SPIRAL, EnumBeamType.SOLID, 0x000040, 0x2020d0, init, 1, 0F, 4, 0.005F);

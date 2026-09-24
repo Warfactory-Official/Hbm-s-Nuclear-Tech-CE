@@ -65,7 +65,7 @@ public class RenderMicrowave extends TileEntitySpecialRenderer<TileEntityMicrowa
 
     if (mic.time > 0) {
       GlStateManager.translate(0.575D, 0.0D, -0.45D);
-      GL11.glRotated(rot, 0D, 1D, 0D);
+      GlStateManager.rotate((float) (rot), (float) (0D), (float) (1D), (float) (0D));
       GlStateManager.translate(-0.575D, 0.0D, 0.45D);
     }
     ResourceManager.microwave.renderPart("plate_Cylinder");

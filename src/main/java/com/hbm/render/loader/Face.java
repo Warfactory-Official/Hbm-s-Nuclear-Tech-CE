@@ -1,5 +1,6 @@
 package com.hbm.render.loader;
 
+import com.hbm.render.util.NTMBufferBuilder;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.relauncher.Side;
@@ -23,6 +24,7 @@ public class Face {
 	}
 
 	public void addFaceForRender(BufferBuilder tessellator, float textureOffset) {
+		NTMBufferBuilder fastBuffer = (NTMBufferBuilder) tessellator;
 		
 		if (this.faceNormal == null) {
 			this.faceNormal = calculateFaceNormal();
@@ -65,9 +67,12 @@ public class Face {
 					normalZ = this.vertexNormals[i].z;
 				}
 				
-				tessellator.pos(this.vertices[i].x, this.vertices[i].y, this.vertices[i].z).tex(this.textureCoordinates[i].u + offsetU, this.textureCoordinates[i].v + offsetV).normal(normalX, normalY, normalZ).endVertex();
+				fastBuffer.appendPositionTexNormal(this.vertices[i].x, this.vertices[i].y, this.vertices[i].z,
+						this.textureCoordinates[i].u + offsetU, this.textureCoordinates[i].v + offsetV,
+						NTMBufferBuilder.packNormal(normalX, normalY, normalZ));
 			} else {
-				tessellator.pos(this.vertices[i].x, this.vertices[i].y, this.vertices[i].z).tex(0, 0).normal(normalX, normalY, normalZ).endVertex();
+				fastBuffer.appendPositionTexNormal(this.vertices[i].x, this.vertices[i].y, this.vertices[i].z,
+						0, 0, NTMBufferBuilder.packNormal(normalX, normalY, normalZ));
 			}
 		}
 	}

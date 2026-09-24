@@ -3,7 +3,7 @@ package com.hbm.world.feature;
 import com.hbm.blocks.BlockEnumMeta;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.PlantEnums;
-import com.hbm.blocks.generic.BlockFlowerPlant;
+import com.hbm.blocks.generic.BlockNTMFlower;
 import com.hbm.lib.Library;
 import com.hbm.world.phased.AbstractPhasedStructure;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -68,7 +68,7 @@ public class NTMFlowers extends AbstractPhasedStructure {
             int pz = z + rand.nextInt(8) - rand.nextInt(8);
             BlockPos blockpos = mutablePos.setPos(px, py, pz);
 
-            if (world.isAirBlock(blockpos) && blockpos.getY() < 255 && ((BlockFlowerPlant) plantType.getBlock()).canBlockStay(world, blockpos, plantType)) {
+            if (world.isAirBlock(blockpos) && blockpos.getY() < 255 && ((BlockNTMFlower) plantType.getBlock()).canBlockStay(world, blockpos, plantType)) {
                 world.setBlockState(blockpos, plantType, 18);
             }
         }

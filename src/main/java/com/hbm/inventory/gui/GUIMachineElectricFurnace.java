@@ -12,34 +12,34 @@ import net.minecraft.client.renderer.GlStateManager;
 
 public class GUIMachineElectricFurnace extends GuiInfoContainer {
 	
-	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/GUIElectricFurnace.png");
-	private TileEntityMachineElectricFurnace diFurnace;
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_electric_furnace.png");
+	private TileEntityMachineElectricFurnace furnace;
 
 	public GUIMachineElectricFurnace(InventoryPlayer invPlayer, TileEntityMachineElectricFurnace tedf) {
 		super(new ContainerMachineElectricFurnace(invPlayer, tedf));
-		diFurnace = tedf;
+		furnace = tedf;
 		
 		this.xSize = 176;
-		this.ySize = 166;
+		this.ySize = 186;
 	}
 	
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float f) {
 		super.drawScreen(mouseX, mouseY, f);
-		this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 20, guiTop + 69 - 52, 16, 52, diFurnace.power, TileEntityMachineElectricFurnace.maxPower);
+		this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 152, guiTop + 52 - 34, 16, 34, furnace.power, TileEntityMachineElectricFurnace.maxPower);
 		String[] upgradeText = new String[3];
 		upgradeText[0] = I18nUtil.resolveKey("desc.gui.upgrade");
 		upgradeText[1] = I18nUtil.resolveKey("desc.gui.upgrade.speed");
 		upgradeText[2] = I18nUtil.resolveKey("desc.gui.upgrade.power");
-		this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 151, guiTop + 19, 8, 8, mouseX, mouseY, upgradeText);
+		this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 115, guiTop + 19, 8, 8, mouseX, mouseY, upgradeText);
 		super.renderHoveredToolTip(mouseX, mouseY);
 	}
 	
 	@Override
 	protected void drawGuiContainerForegroundLayer(int i, int j) {
-		String name = this.diFurnace.hasCustomName() ? this.diFurnace.getName() : I18n.format(this.diFurnace.getName());
-		
-		this.fontRenderer.drawString(name, this.xSize / 2 - this.fontRenderer.getStringWidth(name) / 2, 6, 4210752);
+		String name = this.furnace.hasCustomName() ? this.furnace.getName() : I18n.format(this.furnace.getName());
+
+		this.fontRenderer.drawString(name, 70 - this.fontRenderer.getStringWidth(name) / 2, 6, 4210752);
 		this.fontRenderer.drawString(I18n.format("container.inventory"), 8, this.ySize - 96 + 2, 4210752);
 	}
 
@@ -56,20 +56,22 @@ public class GUIMachineElectricFurnace extends GuiInfoContainer {
 		//works so that container packets can still be used
 		//efficiency!
 		
-		if(diFurnace.isInvalid() && diFurnace.getWorld().getTileEntity(diFurnace.getPos()) instanceof TileEntityMachineElectricFurnace)
-			diFurnace = (TileEntityMachineElectricFurnace) diFurnace.getWorld().getTileEntity(diFurnace.getPos());
+		if(furnace.isInvalid() && furnace.getWorld().getTileEntity(furnace.getPos()) instanceof TileEntityMachineElectricFurnace)
+			furnace = (TileEntityMachineElectricFurnace) furnace.getWorld().getTileEntity(furnace.getPos());
 		
-		if(diFurnace.hasPower()) {
-			int i = (int)diFurnace.getPowerScaled(52);
-			drawTexturedModalRect(guiLeft + 20, guiTop + 69 - i, 200, 52 - i, 16, i);
+		if(furnace.hasPower()) {
+			int p = (int) furnace.getPowerScaled(34);
+			drawTexturedModalRect(guiLeft + 152, guiTop + 52 - p, 176, 64 - p, 16, p);
 		}
 		
-		if(diFurnace.canProcess() && diFurnace.hasPower()) {
-			drawTexturedModalRect(guiLeft + 56, guiTop + 35, 176, 0, 16, 16);
+		if(furnace.canProcess() && furnace.hasPower()) {
+			drawTexturedModalRect(guiLeft + 45, guiTop + 20, 192, 12, 18, 16);
+			drawTexturedModalRect(guiLeft + 46, guiTop + 47, 192, 28, 18, 16);
 		}
 
-		int j1 = diFurnace.getProgressScaled(24);
-		drawTexturedModalRect(guiLeft + 79, guiTop + 34, 176, 17, j1 + 1, 17);
-		this.drawInfoPanel(guiLeft + 151, guiTop + 19, 8, 8, 8);
+		int j1 = furnace.getProgressScaled(28);
+		drawTexturedModalRect(guiLeft + 43, guiTop + 36, 176, 0, j1, 12);
+
+		this.drawInfoPanel(guiLeft + 115, guiTop + 19, 8, 8, 8);
 	}
 }

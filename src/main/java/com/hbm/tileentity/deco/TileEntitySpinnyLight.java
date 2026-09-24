@@ -23,6 +23,7 @@ public class TileEntitySpinnyLight extends TileEntity implements IControllable {
 	
 	public EnumDyeColor color = EnumDyeColor.WHITE;
 	public long timeAdded = 0;
+	private AxisAlignedBB bb;
 	
 	@Override
 	public void onLoad() {
@@ -68,7 +69,8 @@ public class TileEntitySpinnyLight extends TileEntity implements IControllable {
 	
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return new AxisAlignedBB(this.pos, this.pos.add(1, 1, 1)).grow(10);
+		if (bb == null) bb = new AxisAlignedBB(this.pos, this.pos.add(1, 1, 1)).grow(10);
+		return bb;
 	}
 
 	@Override

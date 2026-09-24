@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.tileentity.machine.TileEntityMachineSiren;
 import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
@@ -10,15 +11,19 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerMachineSiren extends Container {
-	
+
 	private TileEntityMachineSiren siren;
-	
+
+	private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(1)
+                                                                              .genericMachineRange(0)
+                                                                              .build();
+
 	public ContainerMachineSiren(InventoryPlayer invPlayer, TileEntityMachineSiren tedf) {
-		
+
 		siren = tedf;
-		
+
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 8, 35));
-		
+
 		for(int i = 0; i < 3; i++)
 		{
 			for(int j = 0; j < 9; j++)
@@ -26,17 +31,17 @@ public class ContainerMachineSiren extends Container {
 				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
 			}
 		}
-		
+
 		for(int i = 0; i < 9; i++)
 		{
 			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 142));
 		}
 	}
-	
+
 	@Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 1);
+		return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
 	@Override

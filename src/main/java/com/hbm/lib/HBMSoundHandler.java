@@ -2,18 +2,15 @@ package com.hbm.lib;
 
 import com.hbm.Tags;
 import com.hbm.handler.GunConfiguration;
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
-import java.util.ArrayList;
-import java.util.List;
-
+//TODO: rename to NTMSounds
 public final class HBMSoundHandler {
 
-    public static List<SoundEvent> ALL_SOUNDS = new ArrayList<>();
+    public static final Object2ObjectLinkedOpenHashMap<ResourceLocation, SoundEvent> ALL_SOUNDS = new Object2ObjectLinkedOpenHashMap<>();
 
-    public static SoundEvent assemblerOperate;
     public static SoundEvent fel;
     public static SoundEvent fensuHum;
     public static SoundEvent hephaestusRunning;
@@ -25,6 +22,10 @@ public final class HBMSoundHandler {
     public static SoundEvent rbmkLid;
     public static SoundEvent syringeUse;
     public static SoundEvent sparkShoot;
+    public static SoundEvent leverStart;
+    public static SoundEvent leverStop;
+    public static SoundEvent metalImpact;
+    public static SoundEvent spark;
     public static SoundEvent b92Reload;
     public static SoundEvent techBleep;
     public static SoundEvent techBoop;
@@ -37,7 +38,6 @@ public final class HBMSoundHandler {
     public static SoundEvent reactorLoop;
     public static SoundEvent reactorStart;
     public static SoundEvent reactorStop;
-    public static SoundEvent chemplantOperate;
     public static SoundEvent chemicalPlant;
     public static SoundEvent potatOSRandom;
     public static SoundEvent weaponSpinDown;
@@ -84,7 +84,6 @@ public final class HBMSoundHandler {
     public static SoundEvent reloadGrenade;
     public static SoundEvent reloadShotgun;
     public static SoundEvent reloadMag;
-    public static SoundEvent reloadRifle;
     public static SoundEvent reloadRevolver;
     public static SoundEvent boatWeapon;
     public static SoundEvent ricochet;
@@ -192,7 +191,6 @@ public final class HBMSoundHandler {
     public static SoundEvent soyuzReady;
     public static SoundEvent soyuzTakeOff;
     public static SoundEvent chime;
-    public static SoundEvent deagleShoot;
     public static SoundEvent tauChargeLoop;
     public static SoundEvent tauChargeLoop2;
     public static SoundEvent chopperFlyingLoop;
@@ -201,7 +199,6 @@ public final class HBMSoundHandler {
     public static SoundEvent lacunaeSpinup;
     public static SoundEvent lacunaeSpindown;
     public static SoundEvent teslaShoot;
-    public static SoundEvent flamerReload;
     public static SoundEvent stop;
     public static SoundEvent bonk;
     public static SoundEvent glauncher;
@@ -212,7 +209,6 @@ public final class HBMSoundHandler {
     public static SoundEvent quadroReload;
     public static SoundEvent fstbmbStart;
     public static SoundEvent fstbmbPing;
-    public static SoundEvent sauerGun;
     public static SoundEvent ducc;
     public static SoundEvent whack;
     public static SoundEvent turbofanOperate;
@@ -224,10 +220,6 @@ public final class HBMSoundHandler {
     public static SoundEvent rocketEngine;
     public static SoundEvent ballsLaser;
     public static SoundEvent dartShoot;
-    public static SoundEvent gluonStart;
-    public static SoundEvent gluonLoop;
-    public static SoundEvent gluonEnd;
-    public static SoundEvent gluonHit;
     public static SoundEvent jetpack;
     public static SoundEvent switchmode1;
     public static SoundEvent switchmode2;
@@ -317,6 +309,8 @@ public final class HBMSoundHandler {
     public static SoundEvent lockon;
     public static SoundEvent boltOpen;
     public static SoundEvent boltClose;
+    public static SoundEvent grenadeTech;
+    public static SoundEvent grenadeNuka;
     public static SoundEvent shredderCycle;
     public static SoundEvent rifleCock;
     public static SoundEvent screw;
@@ -327,9 +321,11 @@ public final class HBMSoundHandler {
     public static SoundEvent coilgunReload;
     public static SoundEvent smack;
     public static SoundEvent squeakyToy;
+    public static SoundEvent hundunsMagnificentHowl;
     public static SoundEvent fireSilenced;
     public static SoundEvent fireGreaseGun;
     public static SoundEvent firePistol;
+    public static SoundEvent firePistolLight;
     public static SoundEvent fireBlackPowder;
     public static SoundEvent fireUzi;
     public static SoundEvent fireAberrator;
@@ -345,6 +341,7 @@ public final class HBMSoundHandler {
     public static SoundEvent fireShotgunAuto;
     public static SoundEvent fireShotgunAlt;
     public static SoundEvent glShoot;
+    public static SoundEvent mk108Shoot;
     public static SoundEvent fireLaserGatling;
     public static SoundEvent fireRifleHeavy;
     public static SoundEvent fireAssault;
@@ -365,39 +362,39 @@ public final class HBMSoundHandler {
     public static SoundEvent plinkMedium;
     public static SoundEvent plinkLarge;
 
-    public static SoundEvent alarmHatch = registerBypass("alarm.hatch");
-    public static SoundEvent alarmAutopilot = registerBypass("alarm.autopilot");
-    public static SoundEvent alarmAMSSiren = registerBypass("alarm.amsSiren");
-    public static SoundEvent alarmBlastDoor = registerBypass("alarm.blastDoorAlarm");
-    public static SoundEvent alarmAPCLoop = registerBypass("alarm.apcLoop");
-    public static SoundEvent alarmKlaxon = registerBypass("alarm.klaxon");
-    public static SoundEvent alarmFoKlaxonA = registerBypass("alarm.foKlaxonA");
-    public static SoundEvent alarmFoKlaxonB = registerBypass("alarm.foKlaxonB");
-    public static SoundEvent alarmRegular = registerBypass("alarm.regularSiren");
-    public static SoundEvent alarmClassic = registerBypass("alarm.classic");
-    public static SoundEvent alarmBank = registerBypass("alarm.bankAlarm");
-    public static SoundEvent alarmBeep = registerBypass("alarm.beepSiren");
-    public static SoundEvent alarmContainer = registerBypass("alarm.containerAlarm");
-    public static SoundEvent alarmSweep = registerBypass("alarm.sweepSiren");
-    public static SoundEvent alarmStrider = registerBypass("alarm.striderSiren");
-    public static SoundEvent alarmAirRaid = registerBypass("alarm.airRaid");
-    public static SoundEvent alarmNostromo = registerBypass("alarm.nostromoSiren");
-    public static SoundEvent alarmEas = registerBypass("alarm.easAlarm");
-    public static SoundEvent alarmAPCPass = registerBypass("alarm.apcPass");
-    public static SoundEvent alarmRazorTrain = registerBypass("alarm.razortrainHorn");
-    public static SoundEvent soyuzed = registerBypass("alarm.soyuzed");
-    public static SoundEvent metalStep = registerBypass("step.metal");
-    public static SoundEvent iron = registerBypass("step.iron");
-    public static SoundEvent ironLand = registerBypass("step.iron_land");
-    public static SoundEvent ironJump = registerBypass("step.iron_jump");
-    public static SoundEvent poweredStep = registerBypass("step.powered");
+    public static SoundEvent alarmHatch = register("alarm.hatch");
+    public static SoundEvent alarmAutopilot = register("alarm.autopilot");
+    public static SoundEvent alarmAMSSiren = register("alarm.amsSiren");
+    public static SoundEvent alarmBlastDoor = register("alarm.blastDoorAlarm");
+    public static SoundEvent alarmAPCLoop = register("alarm.apcLoop");
+    public static SoundEvent alarmKlaxon = register("alarm.klaxon");
+    public static SoundEvent alarmFoKlaxonA = register("alarm.foKlaxonA");
+    public static SoundEvent alarmFoKlaxonB = register("alarm.foKlaxonB");
+    public static SoundEvent alarmRegular = register("alarm.regularSiren");
+    public static SoundEvent alarmClassic = register("alarm.classic");
+    public static SoundEvent alarmBank = register("alarm.bankAlarm");
+    public static SoundEvent alarmBeep = register("alarm.beepSiren");
+    public static SoundEvent alarmContainer = register("alarm.containerAlarm");
+    public static SoundEvent alarmSweep = register("alarm.sweepSiren");
+    public static SoundEvent alarmStrider = register("alarm.striderSiren");
+    public static SoundEvent alarmAirRaid = register("alarm.airRaid");
+    public static SoundEvent alarmNostromo = register("alarm.nostromoSiren");
+    public static SoundEvent alarmEas = register("alarm.easAlarm");
+    public static SoundEvent alarmAPCPass = register("alarm.apcPass");
+    public static SoundEvent alarmRazorTrain = register("alarm.razortrainHorn");
+    public static SoundEvent soyuzed = register("alarm.soyuzed");
+    public static SoundEvent metalStep = register("step.metal");
+    public static SoundEvent iron = register("step.iron");
+    public static SoundEvent ironLand = register("step.iron_land");
+    public static SoundEvent ironJump = register("step.iron_jump");
+    public static SoundEvent poweredStep = register("step.powered");
 
-    public static SoundEvent lambdaCore = registerBypass("music.recordlambdacore");
-    public static SoundEvent sectorSweep = registerBypass("music.recordsectorsweep");
-    public static SoundEvent vortalCombat = registerBypass("music.recordvortalcombat");
-    public static SoundEvent glass = registerBypass("music.transmission");
+    public static SoundEvent lambdaCore = register("music.recordlambdacore");
+    public static SoundEvent sectorSweep = register("music.recordsectorsweep");
+    public static SoundEvent vortalCombat = register("music.recordvortalcombat");
+    public static SoundEvent glass = register("music.transmission");
 
-    public static SoundEvent metalBlock = registerBypass("step.metalBlock");
+    public static SoundEvent metalBlock = register("step.metalBlock");
 
     public static SoundEvent[] geigerSounds;
     public static SoundEvent[] voiceSounds;
@@ -418,7 +415,6 @@ public final class HBMSoundHandler {
         explosionSmallFar = register("weapon.explosion_small_far");
         explosionLargeNear = register("weapon.explosion_large_near");
         explosionLargeFar = register("weapon.explosion_large_far");
-        assemblerOperate = register("block.assembleroperate");
         fel = register("block.fel");
         fensuHum = register("block.fensuHum");
         hephaestusRunning = register("block.hephaestusRunning");
@@ -429,6 +425,10 @@ public final class HBMSoundHandler {
         rbmkLid = register("block.rbmkLid");
         syringeUse = register("item.syringe");
         sparkShoot = register("weapon.sparkShoot");
+        leverStart = register("block.leverStart");
+        leverStop = register("block.leverStop");
+        metalImpact = register("block.metalImpact");
+        spark = register("block.spark");
         b92Reload = register("weapon.b92Reload");
         techBleep = register("item.techBleep");
         techBoop = register("item.techBoop");
@@ -441,7 +441,6 @@ public final class HBMSoundHandler {
         reactorLoop = register("block.reactorLoop");
         reactorStart = register("block.reactorStart");
         reactorStop = register("block.reactorStop");
-        chemplantOperate = register("block.chemplantOperate");
         chemicalPlant = register("block.chemicalPlant");
         potatOSRandom = register("potatos.random");
         weaponSpinDown = register("weapon.spindown");
@@ -492,7 +491,6 @@ public final class HBMSoundHandler {
         GunConfiguration.RSOUND_GRENADE = reloadGrenade = register("weapon.hkReload");
         GunConfiguration.RSOUND_SHOTGUN = reloadShotgun = register("weapon.shotgunReload");
         GunConfiguration.RSOUND_MAG = reloadMag = register("weapon.magReload");
-        GunConfiguration.RSOUND_RIFLE = reloadRifle = register("");
         GunConfiguration.RSOUND_REVOLVER = reloadRevolver = register("weapon.revolverReload");
         GunConfiguration.RSOUND_FATMAN = fatmanReload = register("weapon.fatmanReload");
         boatWeapon = register("weapon.boat");
@@ -501,7 +499,7 @@ public final class HBMSoundHandler {
         alarmGambit = register("alarm.gambit");
         revolverShoot = register("weapon.revolverShoot");
         heavyShoot = register("weapon.heavyShoot");
-        schrabidiumShoot = register("weapon.schrabidiumShoot");
+        schrabidiumShoot = register("weapon.schrabidiumshoot");
         revolverShootAlt = register("weapon.revolverShootAlt");
         hkShoot = register("weapon.hkShoot");
         shotgunShoot = register("weapon.shotgunShoot");
@@ -592,7 +590,6 @@ public final class HBMSoundHandler {
         soyuzReady = register("block.soyuzReady");
         soyuzTakeOff = register("entity.soyuzTakeoff");
         chime = register("alarm.chime");
-        deagleShoot = register("weapon.deagleShoot");
         tauChargeLoop2 = register("weapon.tauChargeLoop2");
         chopperFlyingLoop = register("entity.chopperFlyingLoop");
         chopperCrashingLoop = register("entity.chopperCrashingLoop");
@@ -600,7 +597,6 @@ public final class HBMSoundHandler {
         lacunaeSpinup = register("weapon.lacunaeSpinup");
         lacunaeSpindown = register("weapon.lacunaeSpindown");
         teslaShoot = register("weapon.teslaShoot");
-        flamerReload = register("weapon.flamerReload");
         stop = register("weapon.stop");
         bonk = register("weapon.bonk");
         glauncher = register("weapon.glauncher");
@@ -612,7 +608,6 @@ public final class HBMSoundHandler {
         quadroReload = register("weapon.quadroReload");
         fstbmbStart = register("weapon.fstbmbStart");
         fstbmbPing = register("weapon.fstbmbPing");
-        sauerGun = register("weapon.sauergun");
         ducc = register("entity.ducc");
         whack = register("weapon.whack");
         turbofanOperate = register("block.turbofanOperate");
@@ -624,10 +619,6 @@ public final class HBMSoundHandler {
         rocketEngine = register("entity.rocketEngine");
         ballsLaser = register("weapon.ballsLaser");
         dartShoot = register("weapon.dartShoot");
-        gluonStart = register("weapon.gluonstart");
-        gluonLoop = register("weapon.gluonloop");
-        gluonEnd = register("weapon.gluonend");
-        gluonHit = register("weapon.gluonhit");
         jetpack = register("weapon.jetpack");
         mukeExplosion = register("weapon.mukeExplosion");
         explosion_medium = register("weapon.explosion_medium");
@@ -671,7 +662,7 @@ public final class HBMSoundHandler {
         groan = register("player.groan");
         ufoBeam = register("entity.ufoBeam");
         ufoBlast = register("entity.ufoBlast");
-        iGeneratorOperate = register("block.igeneratoroperate");
+        iGeneratorOperate = register("block.igeneratorOperate");
         transitionSealOpen = register("block.door.transitionseal");
         siloopen = register("block.door.siloopen");
         siloclose = register("block.door.siloclose");
@@ -715,6 +706,8 @@ public final class HBMSoundHandler {
         lockon = register("weapon.fire.lockon");
         boltOpen = register("weapon.reload.boltOpen");
         boltClose = register("weapon.reload.boltClose");
+        grenadeTech = register("weapon.reload.grenadeTech");
+        grenadeNuka = register("weapon.reload.grenadeNuka");
         shredderCycle = register("weapon.fire.shredderCycle");
         rifleCock = register("weapon.reload.rifleCock");
         screw = register("weapon.reload.screw");
@@ -725,9 +718,11 @@ public final class HBMSoundHandler {
         coilgunReload = register("weapon.coilgunReload");
         smack = register("weapon.fire.smack");
         squeakyToy = register("block.squeakyToy");
+        hundunsMagnificentHowl = register("block.hundunsMagnificentHowl");
         motor = register("block.motor");
         fireSilenced = register("weapon.fire.silenced");
         firePistol = register("weapon.fire.pistol");
+        firePistolLight = register("weapon.fire.pistollight");
         fireBlackPowder = register("weapon.fire.blackPowder");
         fireUzi = register("weapon.fire.uzi");
         fireGreaseGun = register("weapon.fire.greaseGun");
@@ -744,6 +739,7 @@ public final class HBMSoundHandler {
         fireShotgunAuto = register("weapon.fire.shotgunAlt");
         fireShotgunAlt = register("weapon.fire.shotgunAuto");
         glShoot = register("weapon.glShoot");
+        mk108Shoot = register("weapon.fire.mk108");
         fireLaserGatling = register("weapon.fire.laserGatling");
         fireRifleHeavy = register("weapon.fire.rifleHeavy");
         fireAssault = register("weapon.fire.assault");
@@ -772,16 +768,21 @@ public final class HBMSoundHandler {
     }
 
     public static SoundEvent register(String name) {
-        SoundEvent e = new SoundEvent(new ResourceLocation(Tags.MODID, name));
-        e.setRegistryName(name);
-        ALL_SOUNDS.add(e);
+        ResourceLocation loc = new ResourceLocation(Tags.MODID, name);
+        SoundEvent existing = ALL_SOUNDS.get(loc);
+        if (existing != null) return existing;
+        SoundEvent e = new SoundEvent(loc);
+        e.setRegistryName(loc);
+        ALL_SOUNDS.put(loc, e);
         return e;
     }
 
-    public static SoundEvent registerBypass(String name) {
-        SoundEvent e = new SoundEvent(new ResourceLocation(Tags.MODID, name));
-        e.setRegistryName(name);
-        ForgeRegistries.SOUND_EVENTS.register(e);
+    public static SoundEvent getOrCreate(ResourceLocation loc) {
+        SoundEvent existing = ALL_SOUNDS.get(loc);
+        if (existing != null) return existing;
+        SoundEvent e = new SoundEvent(loc);
+        e.setRegistryName(loc);
+        ALL_SOUNDS.put(loc, e);
         return e;
     }
 

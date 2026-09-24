@@ -26,7 +26,7 @@ public class RenderLandmine extends TileEntitySpecialRenderer<TileEntityLandmine
     Block block = te.getWorld().getBlockState(te.getPos()).getBlock();
 
     if (block == ModBlocks.mine_ap) {
-      GL11.glScaled(0.375D, 0.375D, 0.375D);
+      GlStateManager.scale(0.375D, 0.375D, 0.375D);
       GlStateManager.translate(0, -0.0625 * 3.5, 0);
       Biome biome = te.getWorld().getBiome(te.getPos());
       if (te.getWorld().getHeight(te.getPos()).getY() > te.getPos().getY() + 2)
@@ -45,13 +45,13 @@ public class RenderLandmine extends TileEntitySpecialRenderer<TileEntityLandmine
       GlStateManager.shadeModel(GL11.GL_FLAT);
     }
     if (block == ModBlocks.mine_shrap) {
-      GL11.glScaled(0.375D, 0.375D, 0.375D);
+      GlStateManager.scale(0.375D, 0.375D, 0.375D);
       GlStateManager.translate(0, -0.0625 * 3.5, 0);
       bindTexture(ResourceManager.mine_shrap_tex);
       ResourceManager.mine_ap.renderAll();
     }
     if (block == ModBlocks.mine_fat) {
-      GL11.glScaled(0.25D, 0.25D, 0.25D);
+      GlStateManager.scale(0.25D, 0.25D, 0.25D);
       bindTexture(ResourceManager.mine_fat_tex);
       ResourceManager.mine_fat.renderAll();
     }
@@ -94,7 +94,6 @@ public class RenderLandmine extends TileEntitySpecialRenderer<TileEntityLandmine
 
         public void renderCommon() {
           GlStateManager.scale(1.25, 1.25, 1.25);
-          GlStateManager.rotate(22.5F, 0F, 1F, 0F);
           GlStateManager.disableCull();
           GlStateManager.shadeModel(GL11.GL_SMOOTH);
           bindTexture(ResourceManager.mine_ap_grass_tex);

@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotCraftingOutput;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.tileentity.machine.oil.TileEntityMachineCoker;
@@ -14,6 +15,12 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerMachineCoker extends Container {
 
     private TileEntityMachineCoker coker;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(2)
+                                                                              .rule(0, 1,
+                                                                                      s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                              .genericMachineRange(1)
+                                                                              .build();
 
     public ContainerMachineCoker(InventoryPlayer invPlayer, TileEntityMachineCoker tedf) {
 
@@ -35,8 +42,7 @@ public class ContainerMachineCoker extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 2,
-                s -> s.getItem() instanceof IItemFluidIdentifier, 1);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
     @Override

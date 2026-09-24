@@ -1,6 +1,6 @@
 #version 120
 
-uniform sampler2D texture;
+uniform sampler2D mainTex;
 uniform sampler2D noise;
 uniform vec4 duck;
 uniform float age;

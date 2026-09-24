@@ -53,9 +53,26 @@ public class MachineFluidTank extends BlockDummyable implements IPersistentInfoP
 	@Override
 	public TileEntity createNewTileEntity(World world, int meta) {
 		if(meta >= 12) return new TileEntityMachineFluidTank();
-        // mlbv: added inventory support for https://github.com/MisterNorwood/Hbm-s-Nuclear-Tech-CE/issues/891
+        // mlbv: added inventory support for https://github.com/Warfactory-Official/Hbm-s-Nuclear-Tech-CE/issues/891
         if (meta >= 6) return new TileEntityProxyCombo(true, false, true);
 		return null;
+	}
+
+	@Override
+	public boolean hasComparatorInputOverride(IBlockState state) {
+		return true;
+	}
+	@Override
+	public int getComparatorInputOverride(IBlockState blockState, World worldIn, BlockPos pos) {
+		TileEntity te = worldIn.getTileEntity(pos);
+		if (te instanceof TileEntityMachineFluidTank teTank) {
+			return teTank.tank.getRedstoneComparatorPower();
+		}
+		TileEntity core = this.findCoreTE(worldIn, pos);
+		if (core instanceof TileEntityMachineFluidTank teTank) {
+			return teTank.tank.getRedstoneComparatorPower();
+		}
+		return 0;
 	}
 
 	@Override
@@ -67,7 +84,7 @@ public class MachineFluidTank extends BlockDummyable implements IPersistentInfoP
 	public int getOffset() {
 		return 1;
 	}
-	
+
 	@Override
 	public Item getItemDropped(IBlockState state, Random rand, int fortune) {
 		return Item.getItemFromBlock(ModBlocks.machine_fluidtank);
@@ -192,5 +209,5 @@ public class MachineFluidTank extends BlockDummyable implements IPersistentInfoP
 	public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
 		IRepairable.addGenericOverlay(event, world, pos.getX(), pos.getY(), pos.getZ(), this);
 	}
-	
+
 }

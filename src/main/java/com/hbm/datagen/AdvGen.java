@@ -219,10 +219,10 @@ public class AdvGen {
                 "hbm:achburnerpress",
                 new Display()
                         .key("blastFurnace")
-                        .icon(new ItemStack(ModBlocks.machine_press))
+                        .icon(new ItemStack(ModBlocks.machine_blast_furnace))
                         .toast(true)
                         .announce(true),
-                "crafting", new ItemStack(ModBlocks.machine_difurnace_off))
+                "crafting", new ItemStack(ModBlocks.machine_blast_furnace))
         );
         batch.add(Templates.obtainAnyItemStack("achassembly",
                 "hbm:achburnerpress",
@@ -231,7 +231,7 @@ public class AdvGen {
                         .icon(new ItemStack(ModBlocks.machine_assembly_machine))
                         .toast(true)
                         .announce(true),
-                "crafting", new ItemStack(ModBlocks.machine_assembly_machine), new ItemStack(ModBlocks.machine_assembler))
+                "crafting", new ItemStack(ModBlocks.machine_assembly_machine))
         );
         batch.add(Templates.obtainAnyItem("achselenium",
                 "hbm:achburnerpress",
@@ -250,7 +250,7 @@ public class AdvGen {
                         .icon(new ItemStack(ModBlocks.machine_chemical_plant))
                         .toast(true)
                         .announce(true),
-                "crafting", new ItemStack(ModBlocks.machine_chemical_plant), new ItemStack(ModBlocks.machine_chemplant))
+                "crafting", new ItemStack(ModBlocks.machine_chemical_plant))
         );
         batch.add(Templates.obtainAnyItemStack("achconcrete",
                 "hbm:achchemplant",
@@ -463,7 +463,7 @@ public class AdvGen {
                 "hbm:achbismuth",
                 new Display()
                         .key("fusion")
-                        .icon(new ItemStack(ModBlocks.iter))
+                        .icon(new ItemStack(ModBlocks.fusion_torus))
                         .toast(true)
                         .announce(true)
                         .frame(FrameType.CHALLENGE),

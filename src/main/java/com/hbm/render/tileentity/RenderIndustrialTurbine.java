@@ -65,7 +65,7 @@ public class RenderIndustrialTurbine extends TileEntitySpecialRenderer<TileEntit
                 GlStateManager.rotate(90, 0F, 1F, 0F);
                 GlStateManager.scale(0.75, 0.75, 0.75);
                 GlStateManager.translate(0.5, 0, 0);
-                GL11.glShadeModel(GL11.GL_SMOOTH);
+                GlStateManager.shadeModel(GL11.GL_SMOOTH);
                 bindTexture(ResourceManager.industrial_turbine_tex);
 
                 ResourceManager.industrial_turbine.renderPart("Turbine");
@@ -81,7 +81,7 @@ public class RenderIndustrialTurbine extends TileEntitySpecialRenderer<TileEntit
                 GlStateManager.translate(0, -1.5, 0);
                 ResourceManager.industrial_turbine.renderPart("Flywheel");
 
-                GL11.glShadeModel(GL11.GL_FLAT);
+                GlStateManager.shadeModel(GL11.GL_FLAT);
             }
         };
     }

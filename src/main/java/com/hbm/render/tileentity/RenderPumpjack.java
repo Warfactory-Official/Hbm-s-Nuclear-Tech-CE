@@ -4,7 +4,7 @@ import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.tileentity.machine.oil.TileEntityMachinePumpjack;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -17,12 +17,6 @@ import org.lwjgl.opengl.GL11;
 
 @AutoRegister
 public class RenderPumpjack extends TileEntitySpecialRenderer<TileEntityMachinePumpjack> implements IItemRendererProvider {
-
-    @Override
-    public boolean isGlobalRenderer(TileEntityMachinePumpjack te) {
-        return true;
-    }
-
     @Override
     public void render(TileEntityMachinePumpjack pj, double x, double y, double z, float f, int destroyStage, float alpha) {
 
@@ -61,7 +55,7 @@ public class RenderPumpjack extends TileEntitySpecialRenderer<TileEntityMachineP
 
         GlStateManager.pushMatrix();
         GlStateManager.translate(0, 3.5, -3.5);
-        GL11.glRotated(Math.toDegrees(Math.sin(Math.toRadians(rotation))) * 0.25, 1, 0, 0);
+        GlStateManager.rotate((float) (Math.toDegrees(Math.sin(Math.toRadians(rotation))) * 0.25), 1, 0, 0);
         GlStateManager.translate(0, -3.5, 3.5);
         ResourceManager.pumpjack.renderPart("Head");
         GlStateManager.popMatrix();
@@ -71,11 +65,11 @@ public class RenderPumpjack extends TileEntitySpecialRenderer<TileEntityMachineP
         ResourceManager.pumpjack.renderPart("Carriage");
         GlStateManager.popMatrix();
 
-        Vec3 backPos = Vec3.createVectorHelper(0, 0, -2);
-        backPos.rotateAroundX(-(float) Math.sin(Math.toRadians(rotation)) * 0.25F);
+        Vec3NT backPos = Vec3NT.createVectorHelper(0, 0, -2);
+        backPos.rotatePitchSelf(-(float) Math.sin(Math.toRadians(rotation)) * 0.25F);
 
-        Vec3 rot = Vec3.createVectorHelper(0, 0.5, 0);
-        rot.rotateAroundX(-(float) Math.toRadians(rotation - 90));
+        Vec3NT rot = Vec3NT.createVectorHelper(0, 0.5, 0);
+        rot.rotatePitchSelf(-(float) Math.toRadians(rotation - 90));
 
         GlStateManager.disableLighting();
         GlStateManager.disableCull();
@@ -91,11 +85,11 @@ public class RenderPumpjack extends TileEntitySpecialRenderer<TileEntityMachineP
         for (int i = -1; i <= 1; i += 2) {
             double xi = 0.53125 * i;
 
-            double y1 = 1.5D + rot.yCoord;
-            double z1 = -5.5D + rot.zCoord;
+            double y1 = 1.5D + rot.y;
+            double z1 = -5.5D + rot.z;
 
-            double y2 = 3.5 + backPos.yCoord;
-            double z2 = -3.5 + backPos.zCoord;
+            double y2 = 3.5 + backPos.y;
+            double z2 = -3.5 + backPos.z;
 
             buf.pos(xi, y1, z1 - 0.0625).color(lr, lg, lb, la).endVertex();
             buf.pos(xi, y1, z1 + 0.0625).color(lr, lg, lb, la).endVertex();
@@ -113,26 +107,26 @@ public class RenderPumpjack extends TileEntitySpecialRenderer<TileEntityMachineP
 
             float pRot = -(float) (Math.sin(Math.toRadians(rotation)) * 0.25);
 
-            Vec3 frontPos = Vec3.createVectorHelper(0, 0, 1);
-            frontPos.rotateAroundX(pRot);
+            Vec3NT frontPos = Vec3NT.createVectorHelper(0, 0, 1);
+            frontPos.rotatePitchSelf(pRot);
 
             double dist = 0.03125D;
-            Vec3 frontRad = Vec3.createVectorHelper(0, 0, 2.5 + dist);
+            Vec3NT frontRad = Vec3NT.createVectorHelper(0, 0, 2.5 + dist);
             double cutlet = 360D / 32D;
-            frontRad.rotateAroundX(pRot);
-            frontRad.rotateAroundX(-(float) Math.toRadians(cutlet * -3));
+            frontRad.rotatePitchSelf(pRot);
+            frontRad.rotatePitchSelf(-(float) Math.toRadians(cutlet * -3));
 
             for (int j = 0; j < 4; j++) {
 
-                double sumY1 = frontPos.yCoord + frontRad.yCoord;
-                double sumZ1 = frontPos.zCoord + frontRad.zCoord;
-                if (frontRad.yCoord < 0) sumZ1 = 3.5 + dist * 0.5;
+                double sumY1 = frontPos.y + frontRad.y;
+                double sumZ1 = frontPos.z + frontRad.z;
+                if (frontRad.y < 0) sumZ1 = 3.5 + dist * 0.5;
 
-                frontRad.rotateAroundX(-(float) Math.toRadians(cutlet));
+                frontRad.rotatePitchSelf(-(float) Math.toRadians(cutlet));
 
-                double sumY2 = frontPos.yCoord + frontRad.yCoord;
-                double sumZ2 = frontPos.zCoord + frontRad.zCoord;
-                if (frontRad.yCoord < 0) sumZ2 = 3.5 + dist * 0.5;
+                double sumY2 = frontPos.y + frontRad.y;
+                double sumZ2 = frontPos.z + frontRad.z;
+                if (frontRad.y < 0) sumZ2 = 3.5 + dist * 0.5;
 
                 double xL = (width - pd) * i;
                 double xR = (width + pd) * i;
@@ -143,9 +137,9 @@ public class RenderPumpjack extends TileEntitySpecialRenderer<TileEntityMachineP
                 buf.pos(xL, 3.5 + sumY2, -3.5 + sumZ2).color(dr, dg, db, la).endVertex();
             }
 
-            double sumY = frontPos.yCoord + frontRad.yCoord;
-            double sumZ = frontPos.zCoord + frontRad.zCoord;
-            if (frontRad.yCoord < 0) sumZ = 3.5 + dist * 0.5;
+            double sumY = frontPos.y + frontRad.y;
+            double sumZ = frontPos.z + frontRad.z;
+            if (frontRad.y < 0) sumZ = 3.5 + dist * 0.5;
 
             double xR = (width + pd) * i;
             double xL = (width - pd) * i;

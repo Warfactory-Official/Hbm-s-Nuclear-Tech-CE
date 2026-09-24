@@ -34,11 +34,15 @@ public class ItemBedrockOreBase extends Item {
     }
 
     public static void setOreAmount(ItemStack stack, int x, int z) {
+        setOreAmount(stack, x, z, 1D);
+    }
+
+    public static void setOreAmount(ItemStack stack, int x, int z, double mult) {
         if(!stack.hasTagCompound()) stack.setTagCompound(new NBTTagCompound());
         NBTTagCompound data = stack.getTagCompound();
 
         for(ItemBedrockOreNew.BedrockOreType type : ItemBedrockOreNew.BedrockOreType.VALUES) {
-            data.setDouble(type.suffix, getOreLevel(x, z, type));
+            data.setDouble(type.suffix, getOreLevel(x, z, type) * mult);
         }
     }
 

@@ -1,9 +1,12 @@
 package com.hbm.items.tool;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.hbm.Tags;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.ClaimedModelLocationRegistry;
+import com.hbm.items.IClaimedModelLocation;
 import com.hbm.items.IDynamicModels;
 import com.hbm.items.ModItems;
 import com.hbm.main.MainRegistry;
@@ -21,6 +24,7 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.model.IModel;
+import net.minecraftforge.client.model.ItemLayerModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.relauncher.Side;
@@ -28,7 +32,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import static com.hbm.items.ItemEnumMulti.ROOT_PATH;
 
-public class ItemCanister extends Item implements IDynamicModels {
+public class ItemCanister extends Item implements IDynamicModels, IClaimedModelLocation {
 
     public static final ModelResourceLocation fluidCanisterModel = new ModelResourceLocation(Tags.MODID + ":canister_empty", "inventory");
     public static final String overlay = "canister_overlay";
@@ -46,6 +50,7 @@ public class ItemCanister extends Item implements IDynamicModels {
         this.cap = cap;
         ModItems.ALL_ITEMS.add(this);
         IDynamicModels.INSTANCES.add(this);
+        ClaimedModelLocationRegistry.register(this);
     }
 
     public static ItemStack getStackFromFluid(FluidType f) {
@@ -113,7 +118,6 @@ public class ItemCanister extends Item implements IDynamicModels {
 
         map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + base));
         map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + overlay));
-        map.registerSprite(canisterFullLoc);
     }
 
     @SideOnly(Side.CLIENT)
@@ -136,5 +140,20 @@ public class ItemCanister extends Item implements IDynamicModels {
 
 
         };
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public boolean ownsModelLocation(ModelResourceLocation location) {
+        return IClaimedModelLocation.isInventoryLocation(location, canisterFullLoc);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IModel loadModel(ModelResourceLocation location) {
+        return new ItemLayerModel(ImmutableList.of(
+                new ResourceLocation(Tags.MODID, ROOT_PATH + base),
+                new ResourceLocation(Tags.MODID, ROOT_PATH + overlay)
+        ));
     }
 }

@@ -38,14 +38,19 @@ public class SlotPattern extends SlotItemHandler {
         super.putStack(stack);
     }
 
+    public SlotPattern allowStackSize() {
+        this.allowStackSize = true;
+        return this;
+    }
+
     @Override
     public int getSlotStackLimit() {
-        return 1;
+        return allowStackSize ? 64 : 1;
     }
 
     @Override
     public int getItemStackLimit(@NotNull ItemStack stack) {
-        return 1;
+        return allowStackSize ? stack.getMaxStackSize() : 1;
     }
 
     public SlotPattern disableHover() {

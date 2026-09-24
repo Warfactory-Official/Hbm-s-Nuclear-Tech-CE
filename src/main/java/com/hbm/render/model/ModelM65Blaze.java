@@ -123,8 +123,8 @@ public class ModelM65Blaze extends ModelBiped {
 		GlStateManager.pushMatrix();
 		double d = 1D / 16D * 18D;
 		//GlStateManager.translate(0, 1/16D, 0);
-		GL11.glScaled(d, d, d);
-		GL11.glScaled(1.01D, 1.01D, 1.01D);
+		GlStateManager.scale(d, d, d);
+		GlStateManager.scale(1.01D, 1.01D, 1.01D);
 		this.mask.render(par7);
 		GlStateManager.popMatrix();
 	}

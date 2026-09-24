@@ -5,10 +5,12 @@ import com.hbm.handler.ArmorUtil;
 import com.hbm.items.ModItems;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -119,6 +121,13 @@ public abstract class BlockGasBase extends Block {
         return true;
     }
 
+    // Report as air so vanilla treats a gas cell like empty space: World.destroyBlock no-ops on air
+    // (no event 2001 break sound/particles when a fluid is poured into gas), matching vanilla air.
+    @Override
+    public boolean isAir(IBlockState state, IBlockAccess world, BlockPos pos) {
+        return true;
+    }
+
     @Override
     public void updateTick(World world, BlockPos pos, IBlockState state, Random rand) {
         if (!world.isRemote) {
@@ -140,7 +149,7 @@ public abstract class BlockGasBase extends Block {
 
         if (!world.isBlockLoaded(newPos)) {
             return false;
-        } else if (world.isAirBlock(newPos)) {
+        } else if (world.getBlockState(newPos).getBlock() == Blocks.AIR) {
             world.setBlockToAir(new BlockPos(x, y, z));
             world.setBlockState(newPos, this.getDefaultState());
             return true;
@@ -164,15 +173,10 @@ public abstract class BlockGasBase extends Block {
         EntityPlayer p = MainRegistry.proxy.me();
         if (ArmorUtil.checkArmorPiece(p, ModItems.ashglasses, 3)) {
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("type", "vanillaExt");
-            data.setString("mode", "cloud");
-            data.setDouble("posX", pos.getX() + 0.5);
-            data.setDouble("posY", pos.getY() + 0.5);
-            data.setDouble("posZ", pos.getZ() + 0.5);
             data.setFloat("r", red);
             data.setFloat("g", green);
             data.setFloat("b", blue);
-            MainRegistry.proxy.effectNT(data);
+            MainRegistry.proxy.effectNT(HbmEffectNT.VanillaExt_Cloud, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, data);
         }
     }
 }

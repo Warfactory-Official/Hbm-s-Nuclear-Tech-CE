@@ -66,10 +66,10 @@ public class ParticleDecalFlow extends Particle {
 		if(this.particleAge > this.particleMaxAge){
 			numParticles --;
 			setExpired();
-			GL11.glDeleteLists(data[0], 1);
-			GL11.glDeleteTextures(data[2]);
+			GlStateManager.glDeleteLists(data[0], 1);
+			GlStateManager.deleteTexture(data[2]);
 			GLCompat.deleteFramebuffers(data[1]);
-			GL11.glDeleteTextures(data[4]);
+			GlStateManager.deleteTexture(data[4]);
 			GLCompat.deleteFramebuffers(data[3]);
 		}
 	}
@@ -90,7 +90,7 @@ public class ParticleDecalFlow extends Particle {
 	        float u = (texIdx%rows)*size;
 	        float v = (texIdx/4)*size;
 	        GlStateManager.translate(u, v, 0);
-	        GL11.glScaled(size, size, 1);
+	        GlStateManager.scale(size, size, 1);
 			GlStateManager.matrixMode(GL11.GL_MODELVIEW);
 		}
 		
@@ -108,7 +108,7 @@ public class ParticleDecalFlow extends Particle {
         double entPosZ = entityIn.lastTickPosZ + (entityIn.posZ - entityIn.lastTickPosZ)*partialTicks;
 		GlStateManager.translate(posX-entPosX, posY-entPosY, posZ-entPosZ);
 		GlStateManager.bindTexture(data[pong ? 4 : 2]);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 		GlStateManager.alphaFunc(GL11.GL_GREATER, 0);
 		GlStateManager.enableBlend();
 		GlStateManager.depthMask(false);
@@ -119,13 +119,13 @@ public class ParticleDecalFlow extends Particle {
 		float fade = (float)(this.particleAge-particleMaxAge+30+partialTicks)/30F;
 		GlStateManager.color(0.5F, 0.1F, 0.1F, 1-fade);
 		GlStateManager.doPolygonOffset(-5, -5);
-		GL11.glCallList(data[0]);
+		GlStateManager.callList(data[0]);
 		GlStateManager.disablePolygonOffset();
 		GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
 		GlStateManager.disableBlend();
 		GlStateManager.depthMask(true);
 		GlStateManager.popMatrix();
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 		Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.turbofan_blades_tex);
 		
 		if(texIdx != -1){

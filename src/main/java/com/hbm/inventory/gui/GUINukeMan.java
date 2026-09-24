@@ -4,16 +4,15 @@ import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerNukeMan;
 import com.hbm.tileentity.bomb.TileEntityNukeMan;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.client.renderer.GlStateManager;
 
-public class GUINukeMan extends GuiContainer {
+public class GUINukeMan extends GuiInfoContainer {
 
-	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/fatManSchematic.png");
-	private TileEntityNukeMan testNuke;
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/weapon/fatManSchematic.png");
+	private final TileEntityNukeMan testNuke;
 	
 	public GUINukeMan(InventoryPlayer invPlayer, TileEntityNukeMan tedf) {
 		super(new ContainerNukeMan(invPlayer, tedf));
@@ -62,7 +61,10 @@ public class GUINukeMan extends GuiContainer {
 		{
 			drawTexturedModalRect(guiLeft + 134, guiTop + 35, 176, 48, 16, 16);
 		}
+
+		this.drawInfoPanel(guiLeft - 16, guiTop + 16, 16, 16, 2);
 	}
+
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		super.drawScreen(mouseX, mouseY, partialTicks);

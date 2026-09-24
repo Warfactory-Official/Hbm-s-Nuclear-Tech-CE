@@ -41,8 +41,8 @@ public class RenderUFO extends Render<EntityUFO> {
 		
 		GlStateManager.pushMatrix();
 		double rot = (ufo.ticksExisted + partialTicks) * 5 % 360D;
-		GL11.glRotated(rot, 0, 1, 0);
-		GL11.glScaled(scale, scale, scale);
+		GlStateManager.rotate((float) (rot), 0, 1, 0);
+		GlStateManager.scale(scale, scale, scale);
 		GlStateManager.shadeModel(GL11.GL_SMOOTH);
 		ResourceManager.ufo.renderAll();
 		GlStateManager.shadeModel(GL11.GL_FLAT);

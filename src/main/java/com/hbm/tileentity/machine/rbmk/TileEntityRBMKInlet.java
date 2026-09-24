@@ -25,7 +25,7 @@ public class TileEntityRBMKInlet extends TileEntityLoadedBase implements ITickab
 	public FluidTankNTM water;
 
 	public TileEntityRBMKInlet() {
-		water = new FluidTankNTM(Fluids.WATER, 32000);
+		water = new FluidTankNTM(Fluids.WATER, 32000).withOwner(this);
 	}
 
 	@Override

@@ -1,0 +1,21 @@
+{
+	"name": "High-Cetane Diesel",
+	"icon": [
+		"hbm:fluid_icon",
+		1,
+		97
+	],
+	"trigger": [
+		[
+			"hbm:fluid_icon",
+			1,
+			97
+		]
+	],
+	"title": {
+		"en_us": "High-Cetane Diesel"
+	},
+	"content": {
+		"en_us": "High-cetane diesel can first be obtained by mixing [[reformate|Reformate]] and [[diesel|Diesel]]. It is used as a combustible [[fuel|Fuels]] source. It may also be obtained by [[fractioning|Fractioning Tower]] [[desulfurized naphtha|Desulfurized Naphtha]] or [[desulfurized light oil|Desulfurized Light Oil]].<br><br>{{Template:Oil3}}"
+	}
+}

@@ -34,6 +34,7 @@ import java.util.List;
 @AutoRegister
 public class TileEntityFurnaceSteel extends TileEntityMachineBase implements IGUIProvider, ITickable {
 
+	private AxisAlignedBB bb;
 	public int[] progress = new int[3];
 	public int[] bonus = new int[3];
 	public static final int processTime = 40_000; // assuming vanilla furnace rules with 200 ticks of coal fire burning at 200HU/t
@@ -41,7 +42,7 @@ public class TileEntityFurnaceSteel extends TileEntityMachineBase implements IGU
 	public int heat;
 	public static final int maxHeat = 100_000;
 	public static final double diffusion = 0.05D;
-	private ItemStack[] lastItems = new ItemStack[3];
+	private final ItemStack[] lastItems = new ItemStack[] {ItemStack.EMPTY, ItemStack.EMPTY, ItemStack.EMPTY};
 	
 	public boolean wasOn = false;
 	    
@@ -67,7 +68,7 @@ public class TileEntityFurnaceSteel extends TileEntityMachineBase implements IGU
 			for(int i = 0; i < 3; i++) {
 				ItemStack input = inventory.getStackInSlot(i);
 				
-				if(input.isEmpty() || lastItems[i].isEmpty() || !input.isItemEqual(lastItems[i])) {
+				if(input.isEmpty() || lastItems == null || lastItems[i].isEmpty() || !input.isItemEqual(lastItems[i])) {
 					progress[i] = 0;
 					bonus[i] = 0;
 				}
@@ -286,8 +287,8 @@ public class TileEntityFurnaceSteel extends TileEntityMachineBase implements IGU
 
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-	
-		return INFINITE_EXTENT_AABB;
+		if (bb == null) bb = new AxisAlignedBB(pos.getX() - 1, pos.getY(), pos.getZ() - 1, pos.getX() + 2, pos.getY() + 2, pos.getZ() + 2);
+		return bb;
 	}
 	
 	@Override

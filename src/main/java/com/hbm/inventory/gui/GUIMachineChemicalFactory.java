@@ -2,6 +2,7 @@ package com.hbm.inventory.gui;
 
 import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerMachineChemicalFactory;
+import com.hbm.inventory.gui.element.GUIElements;
 import com.hbm.inventory.recipes.ChemicalPlantRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.machine.ItemBlueprints;
@@ -47,7 +48,7 @@ public class GUIMachineChemicalFactory extends GuiInfoContainer {
         for(int i = 0; i < 4; i++) if(guiLeft + 74 <= mouseX && guiLeft + 74 + 18 > mouseX && guiTop + 19 + i * 22 < mouseY && guiTop + 19 + i * 22 + 18 >= mouseY) {
             if(this.chemplant.chemplantModule[i].recipe != null && ChemicalPlantRecipes.INSTANCE.recipeNameMap.containsKey(this.chemplant.chemplantModule[i].recipe)) {
                 GenericRecipe recipe = ChemicalPlantRecipes.INSTANCE.recipeNameMap.get(this.chemplant.chemplantModule[i].recipe);
-                this.drawHoveringText(recipe.print(), mouseX, mouseY);
+                GUIElements.drawHoveringTextRecipe(recipe.print(), mouseX, mouseY, this.fontRenderer, itemRender, this.width, this.height);
             } else {
                 this.drawHoveringText(TextFormatting.YELLOW + I18nUtil.resolveKey("gui.recipe.setRecipe"), mouseX, mouseY);
             }

@@ -72,30 +72,26 @@ public class ItemDetonator extends Item {
 		ItemStack stack = player.getHeldItem(handIn);
 		if(stack.getTagCompound() == null)
 		{
-			if(world.isRemote)
+			if(!world.isRemote)
 				player.sendMessage(new TextComponentTranslation("§c"+I18nUtil.resolveKey("chat.posnoseterror")+"§r"));
 		} else {
 			 int x = stack.getTagCompound().getInteger("x");
 			 int y = stack.getTagCompound().getInteger("y");
 			 int z = stack.getTagCompound().getInteger("z");
 			 BlockPos pos = new BlockPos(x, y, z);
-			 if(world.isBlockLoaded(pos) && world.getBlockState(pos).getBlock() instanceof IBomb)
+			 if(world.getBlockState(pos).getBlock() instanceof IBomb)
 			 {
 				world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.techBleep, SoundCategory.AMBIENT, 1.0F, 1.0F);
-				
-				
+
 				if(!world.isRemote)
 				{
 					((IBomb)world.getBlockState(pos).getBlock()).explode(world, pos, player);
 		    		if(GeneralConfig.enableExtendedLogging)
 		    			MainRegistry.logger.log(Level.INFO, "[DET] Tried to detonate block at " + x + " / " + y + " / " + z + " by " + player.getDisplayName() + "!");
-				}
-				if(world.isRemote)
-				{
 		    		player.sendMessage(new TextComponentTranslation("§2["+I18nUtil.resolveKey("chat.detonated")+"]"+"§r"));
 				}
 			 } else {
-				if(world.isRemote)
+				if(!world.isRemote)
 				{
 					player.sendMessage(new TextComponentTranslation("§c"+I18nUtil.resolveKey("chat.postoofarerror")+"§r"));
 				}

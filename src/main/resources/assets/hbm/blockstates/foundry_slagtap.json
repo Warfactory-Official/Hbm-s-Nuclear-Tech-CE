@@ -1,0 +1,15 @@
+{
+	"forge_marker": 1,
+	"defaults": {
+		"textures": {},
+		"custom": { "flip-v": true },
+		"model": "hbm:foundry_slagtap.obj"
+	},
+	"variants": {
+		"facing=north": [{ "y": 90}],
+		"facing=south": [{ "y": 270 }],
+		"facing=west": [{ }],
+		"facing=east": [{ "y": 180 }],
+		"inventory": [{ "transform": "forge:default-block" }]
+	}
+}

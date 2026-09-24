@@ -49,6 +49,10 @@ public class ModelRadio extends ModelBase {
 		Lever.render(f5);
 	}
 
+	public void setLeverDegrees(int deg) {
+		Lever.rotateAngleX = -(float)(deg / 180F * Math.PI);
+	}
+
 	private void setRotation(ModelRenderer model, float x, float y, float z) {
 		model.rotateAngleX = x;
 		model.rotateAngleY = y;

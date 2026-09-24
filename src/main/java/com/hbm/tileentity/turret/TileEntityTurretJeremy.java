@@ -10,7 +10,8 @@ import com.hbm.items.weapon.sedna.factory.XFactoryTurret;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.particle.helper.CasingCreator;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.util.Vec3NT;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.util.Vec3dUtil;
 import net.minecraft.client.gui.GuiScreen;
@@ -104,19 +105,17 @@ public class TileEntityTurretJeremy extends TileEntityTurretBaseNT implements IG
                 this.consumeAmmo(conf.ammo);
                 this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.jeremy_fire, SoundCategory.BLOCKS, 4.0F, 1.0F);
 
-                Vec3 pos = new Vec3(this.getTurretPos());
-                Vec3 vec = Vec3.createVectorHelper(this.getBarrelLength(), 0, 0);
-                vec.rotateAroundZ((float) -this.rotationPitch);
-                vec.rotateAroundY((float) -(this.rotationYaw + Math.PI * 0.5));
+                Vec3NT pos = new Vec3NT(this.getTurretPos());
+                Vec3NT vec = Vec3NT.createVectorHelper(this.getBarrelLength(), 0, 0);
+                vec.rotateRollSelf((float) -this.rotationPitch);
+                vec.rotateYawSelf((float) -(this.rotationYaw + Math.PI * 0.5));
 
                 reload = 20;
 
                 NBTTagCompound data = new NBTTagCompound();
-                data.setString("type", "vanillaExt");
-                data.setString("mode", "largeexplode");
                 data.setFloat("size", 0F);
                 data.setByte("count", (byte) 5);
-                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.xCoord + vec.xCoord, pos.yCoord + vec.yCoord, pos.zCoord + vec.zCoord), new TargetPoint(world.provider.getDimension(), this.pos.getX(), this.pos.getY(), this.pos.getZ(), 50));
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.VanillaExt_LargeExplode, data, pos.x + vec.x, pos.y + vec.y, pos.z + vec.z), new TargetPoint(world.provider.getDimension(), this.pos.getX(), this.pos.getY(), this.pos.getZ(), 50));
             }
         }
     }
@@ -126,8 +125,8 @@ public class TileEntityTurretJeremy extends TileEntityTurretBaseNT implements IG
     protected Vec3d getCasingSpawnPos() {
         Vec3d pos = this.getTurretPos();
         Vec3d vec = new Vec3d(-2, 0, 0);
-        Vec3dUtil.rotateRoll(vec, (float) -this.rotationPitch);
-        vec.rotateYaw((float) -(this.rotationYaw + Math.PI * 0.5));
+        vec = Vec3dUtil.rotateRoll(vec, (float) -this.rotationPitch);
+        vec = vec.rotateYaw((float) -(this.rotationYaw + Math.PI * 0.5));
         return pos.add(vec);
     }
 

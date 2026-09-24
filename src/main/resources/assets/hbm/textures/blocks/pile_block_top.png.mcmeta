@@ -1,0 +1,14 @@
+{
+	"ctm": {
+		"ctm_version": 1,
+		"type": "CTM",
+		"textures": [
+			"hbm:blocks/pile_block_top_ct"
+		],
+        "extra": {
+            "connect_to": [
+                { "block": "hbm:pile_block" }
+            ]
+        }
+	}
+}

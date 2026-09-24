@@ -99,7 +99,7 @@ public class BlockBedrockOreTE extends BlockContainer implements ILookOverlay {
 			super.readFromNBT(nbt);
 			this.resource = new ItemStack(Item.getItemById(nbt.getInteger("0id")), nbt.getByte("size"), nbt.getShort("meta"));
 			if(this.resource.isEmpty()) this.resource = new ItemStack(ModItems.powder_iron);
-			FluidType type = Fluids.fromID(nbt.getInteger("fluid"));
+			FluidType type = Fluids.readType(nbt, "fluid"); //name-based, with legacy numeric-ID fallback
 
 			if(type != Fluids.NONE) {
 				this.acidRequirement = new FluidStack(type, nbt.getInteger("amount"));
@@ -121,7 +121,7 @@ public class BlockBedrockOreTE extends BlockContainer implements ILookOverlay {
 			}
 
 			if(this.acidRequirement != null) {
-				nbt.setInteger("fluid", this.acidRequirement.type.getID());
+				Fluids.writeType(nbt, "fluid", this.acidRequirement.type); //stored by name, IDs shift when fluids are added/removed
 				nbt.setInteger("amount", this.acidRequirement.fill);
 			}
 

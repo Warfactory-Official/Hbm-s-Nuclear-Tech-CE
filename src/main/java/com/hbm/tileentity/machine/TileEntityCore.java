@@ -17,7 +17,9 @@ import com.hbm.items.special.ItemAMSCore;
 import com.hbm.lib.Library;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.main.AdvancementManager;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
+import com.hbm.saveddata.satellites.SatelliteRayScan;
+import com.hbm.saveddata.satellites.SatelliteRayScan.RayEvent;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.Vec3NT;
@@ -49,6 +51,7 @@ import java.util.Map;
 public class TileEntityCore extends TileEntityMachineBase implements ITickable, IGUIProvider {
 
 
+    private AxisAlignedBB bb;
     public int field;
     public int heat;
     public int prevHeat;
@@ -63,8 +66,8 @@ public class TileEntityCore extends TileEntityMachineBase implements ITickable, 
     public TileEntityCore() {
         super(3);
         tanks = new FluidTankNTM[2];
-        tanks[0] = new FluidTankNTM(Fluids.DEUTERIUM, 128000);
-        tanks[1] = new FluidTankNTM(Fluids.TRITIUM, 128000);
+        tanks[0] = new FluidTankNTM(Fluids.DEUTERIUM, 128000).withOwner(this);
+        tanks[1] = new FluidTankNTM(Fluids.TRITIUM, 128000).withOwner(this);
     }
 
     @Override
@@ -153,8 +156,11 @@ public class TileEntityCore extends TileEntityMachineBase implements ITickable, 
             else
                 color = 0;
 
-            if (heat > 0)
+            if (heat > 0) {
                 radiation();
+                if (world.getTotalWorldTime() % 100 == 0)
+                    SatelliteRayScan.reportEvent(world, pos.getX(), pos.getY(), pos.getZ(), RayEvent.INFO_PARTICLE, 200);
+            }
 
             prevHeat = heat;
             networkPackNT(250);
@@ -349,7 +355,8 @@ public class TileEntityCore extends TileEntityMachineBase implements ITickable, 
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
+        if (bb == null) bb = new AxisAlignedBB(pos.getX() - 8, pos.getY() - 8, pos.getZ() - 8, pos.getX() + 9, pos.getY() + 9, pos.getZ() + 9);
+        return bb;
     }
 
     @Override

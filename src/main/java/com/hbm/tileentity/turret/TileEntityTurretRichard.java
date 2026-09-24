@@ -7,14 +7,15 @@ import com.hbm.inventory.gui.GUITurretRichard;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactoryRocket;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.tileentity.IGUIProvider;
+import com.hbm.util.Vec3NT;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -138,13 +139,13 @@ public class TileEntityTurretRichard extends TileEntityTurretBaseNT implements I
 
 	@Override
 	public void spawnBullet(BulletConfig bullet, float baseDamage){
-		Vec3 pos = new Vec3(this.getTurretPos());
-		Vec3 vec = Vec3.createVectorHelper(this.getBarrelLength(), 0, 0);
-		vec.rotateAroundZ((float) -this.rotationPitch);
-		vec.rotateAroundY((float) -(this.rotationYaw + Math.PI * 0.5));
+		Vec3d pos = this.getTurretPos();
+		Vec3NT vec = new Vec3NT(this.getBarrelLength(), 0, 0);
+		vec.rotatePitchSelf((float) -this.rotationPitch);
+		vec.rotateYawSelf((float) -(this.rotationYaw + Math.PI * 0.5));
 
 		EntityBulletBaseMK4 proj = new EntityBulletBaseMK4(world, bullet, baseDamage, bullet.spread, (float) rotationYaw, (float) rotationPitch);
-		proj.setPositionAndRotation(pos.xCoord + vec.xCoord, pos.yCoord + vec.yCoord, pos.zCoord + vec.zCoord, 0.0F, 0.0F);
+		proj.setPositionAndRotation(pos.x + vec.x, pos.y + vec.y, pos.z + vec.z, proj.rotationYaw, proj.rotationPitch);
 
 		proj.lockonTarget = this.target;
 		world.spawnEntity(proj);

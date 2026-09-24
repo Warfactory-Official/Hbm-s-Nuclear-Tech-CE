@@ -15,10 +15,11 @@ import com.hbm.items.weapon.sedna.mags.MagazineFullReload;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 import com.hbm.particle.helper.ExplosionCreator;
+import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.render.anim.sedna.AnimationEnums;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna.IType;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
 import com.hbm.render.anim.sedna.BusAnimationSequenceSedna;
-import com.hbm.render.anim.sedna.HbmAnimationsSedna;
 import com.hbm.render.misc.RenderScreenOverlay;
 import com.hbm.tileentity.IRepairable;
 import com.hbm.util.CompatExternal;
@@ -90,14 +91,11 @@ public class XFactoryTool {
     public static Consumer<Entity> LAMBDA_WATER_UPDATE = (bullet) -> {
         if(bullet.world.isRemote) {
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("type", "vanillaExt");
-            data.setString("mode", "blockdust");
             data.setInteger("block", Block.getIdFromBlock(Blocks.WATER));
-            data.setDouble("posX", bullet.posX); data.setDouble("posY", bullet.posY); data.setDouble("posZ", bullet.posZ);
             data.setDouble("mX", bullet.motionX + bullet.world.rand.nextGaussian() * 0.05);
             data.setDouble("mY", bullet.motionY - 0.2 + bullet.world.rand.nextGaussian() * 0.05);
             data.setDouble("mZ", bullet.motionZ + bullet.world.rand.nextGaussian() * 0.05);
-            MainRegistry.proxy.effectNT(data);
+            MainRegistry.proxy.effectNT(HbmEffectNT.VanillaExt_BlockDust, bullet.posX, bullet.posY, bullet.posZ, data);
         } else {
             int x = (int)Math.floor(bullet.posX);
             int y = (int)Math.floor(bullet.posY);
@@ -166,14 +164,11 @@ public class XFactoryTool {
     public static Consumer<Entity> LAMBDA_FOAM_UPDATE = (bullet) -> {
         if(bullet.world.isRemote) {
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("type", "vanillaExt");
-            data.setString("mode", "blockdust");
             data.setInteger("block", Block.getIdFromBlock(ModBlocks.block_foam));
-            data.setDouble("posX", bullet.posX); data.setDouble("posY", bullet.posY); data.setDouble("posZ", bullet.posZ);
             data.setDouble("mX", bullet.motionX + bullet.world.rand.nextGaussian() * 0.1);
             data.setDouble("mY", bullet.motionY - 0.2 + bullet.world.rand.nextGaussian() * 0.1);
             data.setDouble("mZ", bullet.motionZ + bullet.world.rand.nextGaussian() * 0.1);
-            MainRegistry.proxy.effectNT(data);
+            MainRegistry.proxy.effectNT(HbmEffectNT.VanillaExt_BlockDust, bullet.posX, bullet.posY, bullet.posZ, data);
         }
     };
 
@@ -219,14 +214,11 @@ public class XFactoryTool {
     public static Consumer<Entity> LAMBDA_SAND_UPDATE = (bullet) -> {
         if(bullet.world.isRemote) {
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("type", "vanillaExt");
-            data.setString("mode", "blockdust");
             data.setInteger("block", Block.getIdFromBlock(ModBlocks.sand_boron));
-            data.setDouble("posX", bullet.posX); data.setDouble("posY", bullet.posY); data.setDouble("posZ", bullet.posZ);
             data.setDouble("mX", bullet.motionX + bullet.world.rand.nextGaussian() * 0.1);
             data.setDouble("mY", bullet.motionY - 0.2 + bullet.world.rand.nextGaussian() * 0.1);
             data.setDouble("mZ", bullet.motionZ + bullet.world.rand.nextGaussian() * 0.1);
-            MainRegistry.proxy.effectNT(data);
+            MainRegistry.proxy.effectNT(HbmEffectNT.VanillaExt_BlockDust, bullet.posX, bullet.posY, bullet.posZ, data);
         }
     };
 
@@ -315,12 +307,12 @@ public class XFactoryTool {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_CT))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_CT_ANIMS).orchestra(Orchestras.ORCHESTRA_CHARGE_THROWER)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.CT_MORTAR, 3);
     }
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_RECOIL_CT = (stack, ctx) -> ItemGunBaseNT.setupRecoil(10, (float) (ctx.getPlayer().getRNG().nextGaussian() * 1.5));
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_CT_ANIMS = (stack, type) -> switch (type) {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> LAMBDA_CT_ANIMS = (stack, type) -> switch (type) {
         case EQUIP -> new BusAnimationSedna()
                 .addBus("EQUIP", new BusAnimationSequenceSedna().addPos(-45, 0, 0, 0).addPos(0, 0, 0, 500, IType.SIN_DOWN));
         case CYCLE -> new BusAnimationSedna()

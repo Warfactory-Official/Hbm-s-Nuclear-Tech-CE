@@ -5,6 +5,7 @@ import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.TrackerUtil;
 import com.hbm.util.Vec3NT;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.network.datasync.DataParameter;
@@ -15,10 +16,11 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 @AutoRegister(name = "entity_bullet_mk4", trackingRange = 256)
-public class EntityBulletBaseMK4 extends EntityThrowableInterp {
+public class EntityBulletBaseMK4 extends EntityThrowableInterp implements IEntityAdditionalSpawnData {
 
 
     private static final DataParameter<Integer> BULLET_CONFIG_ID =
@@ -76,7 +78,7 @@ public class EntityBulletBaseMK4 extends EntityThrowableInterp {
         this.setLocationAndAngles(thrower.posX, thrower.posY + thrower.getEyeHeight(), thrower.posZ, thrower.rotationYaw, thrower.rotationPitch);
 
         Vec3NT offset = new Vec3NT(sideOffset, heightOffset, frontOffset);
-        offset.rotateAroundXRad(this.rotationPitch / 180F * (float) Math.PI);
+        offset.rotateAroundXRad(-this.rotationPitch / 180F * (float) Math.PI);
         offset.rotateAroundYRad(-this.rotationYaw / 180F * (float) Math.PI);
 
         this.posX += offset.x;
@@ -271,5 +273,16 @@ public class EntityBulletBaseMK4 extends EntityThrowableInterp {
     @SideOnly(Side.CLIENT)
     public boolean canRenderOnFire() {
         return false;
+    }
+
+    @Override
+    public void writeSpawnData(ByteBuf buf) {
+        buf.writeInt(this.thrower != null ? this.thrower.getEntityId() : -1);
+    }
+
+    @Override
+    public void readSpawnData(ByteBuf buf) {
+        Entity e = this.world.getEntityByID(buf.readInt());
+        if(e instanceof EntityLivingBase) this.thrower = (EntityLivingBase) e;
     }
 }

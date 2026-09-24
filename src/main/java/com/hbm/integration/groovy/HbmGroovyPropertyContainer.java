@@ -29,7 +29,6 @@ public class HbmGroovyPropertyContainer extends GroovyPropertyContainer {
 
     public static final AnvilSmithing ANVILSMITHING = createProperty(new AnvilSmithing());
     public static final AnvilConstruction ANVILCONSTRUCTION = createProperty(new AnvilConstruction());
-    public static final Assembler ASSEMBLER = createProperty(new Assembler());
     public static final Press PRESS = createProperty(new Press());
     public static final BlastFurnaceFuel BLASTFURNACEFUEL = createProperty(new BlastFurnaceFuel());
     public static final BlastFurnace BLASTFURNACE = createProperty(new BlastFurnace());
@@ -41,6 +40,41 @@ public class HbmGroovyPropertyContainer extends GroovyPropertyContainer {
     public static final SILEX SILEX = createProperty(new SILEX());
     public static final IrradiationChannel IRRADIATIONCHANNEL = createProperty(new IrradiationChannel());
     public static final WasteDrum WASTEDRUM = createProperty(new WasteDrum());
+
+    public static final AssemblyMachine ASSEMBLYMACHINE = createProperty(new AssemblyMachine());
+    public static final SuperComputer SUPERCOMPUTER = createProperty(new SuperComputer());
+    public static final ChemicalPlant CHEMICALPLANT = createProperty(new ChemicalPlant());
+    public static final ArcWelder ARCWELDER = createProperty(new ArcWelder());
+    public static final Soldering SOLDERING = createProperty(new Soldering());
+    public static final PrecisionAssembly PRECISIONASSEMBLY = createProperty(new PrecisionAssembly());
+    public static final RockMill ROCKMILL = createProperty(new RockMill());
+    public static final BlastFurnaceNT BLASTFURNACENT = createProperty(new BlastFurnaceNT());
+    public static final FusionReactor FUSIONREACTOR = createProperty(new FusionReactor());
+    public static final PurexProcessor PUREXPROCESSOR = createProperty(new PurexProcessor());
+    public static final PlasmaForge PLASMAFORGE = createProperty(new PlasmaForge());
+    public static final AmmoPress AMMOPRESS = createProperty(new AmmoPress());
+    public static final ExposureChamber EXPOSURECHAMBER = createProperty(new ExposureChamber());
+    public static final ParticleAccelerator PARTICLEACCELERATOR = createProperty(new ParticleAccelerator());
+    public static final Pedestal PEDESTAL = createProperty(new Pedestal());
+    public static final PyroOven PYROOVEN = createProperty(new PyroOven());
+    public static final Coker COKER = createProperty(new Coker());
+    public static final Hydrotreating HYDROTREATING = createProperty(new Hydrotreating());
+    public static final Reforming REFORMING = createProperty(new Reforming());
+    public static final FluidBreeder FLUIDBREEDER = createProperty(new FluidBreeder());
+    public static final Solidification SOLIDIFICATION = createProperty(new Solidification());
+    public static final ElectrolyserFluid ELECTROLYSERFLUID = createProperty(new ElectrolyserFluid());
+    public static final Annihilator ANNIHILATOR = createProperty(new Annihilator());
+    public static final ArcFurnace ARCFURNACE = createProperty(new ArcFurnace());
+    public static final Combination COMBINATION = createProperty(new Combination());
+    public static final Compressor COMPRESSOR = createProperty(new Compressor());
+    public static final Crystallizer CRYSTALLIZER = createProperty(new Crystallizer());
+    public static final Cyclotron CYCLOTRON = createProperty(new Cyclotron());
+    public static final Mixer MIXER = createProperty(new Mixer());
+    public static final Fraction FRACTION = createProperty(new Fraction());
+    public static final Cracking CRACKING = createProperty(new Cracking());
+    public static final Heat HEAT = createProperty(new Heat());
+    public static final CustomMachine CUSTOMMACHINE = createProperty(new CustomMachine());
+    public static final Liquefaction LIQUEFACTION = createProperty(new Liquefaction());
 
     private static RecipeOverrideManager activeRecipeOverrides;
 

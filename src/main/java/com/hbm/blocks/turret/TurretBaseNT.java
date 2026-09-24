@@ -3,6 +3,7 @@ package com.hbm.blocks.turret;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.main.MainRegistry;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumFacing;
@@ -36,20 +37,7 @@ public abstract class TurretBaseNT extends BlockDummyable {
 	}
 	
 	@Override
-	public boolean onBlockActivated(World world, BlockPos bpos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ){
-		if(world.isRemote) {
-			return true;
-		} else if(!player.isSneaking()) {
-			int[] pos = this.findCore(world, bpos.getX(), bpos.getY(), bpos.getZ());
-
-			if(pos == null)
-				return false;
-
-			FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, pos[0], pos[1], pos[2]);
-			return true;
-		} else {
-			return false;
-		}
+	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ){
+		return this.standardOpenBehavior(world, pos, player, 0);
 	}
-	
 }

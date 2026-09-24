@@ -1,12 +1,12 @@
 {
 	"variants": {
-		"normal": { "model": "hbm:fallout_0" },
-		"meta=0": { "model": "hbm:fallout_0" },
-		"meta=1": { "model": "hbm:fallout_1" },
-		"meta=2": { "model": "hbm:fallout_2" },
-		"meta=3": { "model": "hbm:fallout_3" },
-		"meta=4": { "model": "hbm:fallout_4" },
-		"meta=5": { "model": "hbm:fallout_5" },
-		"meta=6": { "model": "hbm:fallout_6" }
+		"normal": { "model": "hbm:ash" },
+		"meta=0": { "model": "hbm:ash" },
+		"meta=1": { "model": "hbm:ash" },
+		"meta=2": { "model": "hbm:ash" },
+		"meta=3": { "model": "hbm:ash" },
+		"meta=4": { "model": "hbm:ash" },
+		"meta=5": { "model": "hbm:ash" },
+		"meta=6": { "model": "hbm:ash" }
 	}
 }

@@ -2,13 +2,12 @@ package com.hbm.tileentity.network;
 
 import com.hbm.api.fluidmk2.FluidNode;
 import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.uninos.UniNodespace;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -25,6 +24,7 @@ import java.util.List;
 public abstract class TileEntityPipelineBase extends TileEntityPipeBaseNT {
 
     protected List<int[]> connected = new ArrayList<>();
+    private AxisAlignedBB bb;
 
     @Override
     public FluidNode createNode(FluidType type) {
@@ -36,10 +36,20 @@ public abstract class TileEntityPipelineBase extends TileEntityPipeBaseNT {
     public void addConnection(int x, int y, int z) {
 
         connected.add(new int[] {x, y, z});
+        this.bb = null;
 
-        FluidNode node = UniNodespace.getNode(world, pos, this.type.getNetworkProvider());
-        node.recentlyChanged = true;
-        node.addConnection(new DirPos(x, y, z, ForgeDirection.UNKNOWN));
+        if(this.node == null || this.node.expired) {
+            if(this.shouldCreateNode()) {
+                this.node = UniNodespace.getNode(world, pos, type.getNetworkProvider());
+                if(this.node == null || this.node.expired) {
+                    this.node = this.createNode(type);
+                    UniNodespace.createNode(world, this.node);
+                }
+            }
+        }
+
+        this.node.recentlyChanged = true;
+        this.node.addConnection(new DirPos(x, y, z, ForgeDirection.UNKNOWN));
 
         this.markDirty();
 
@@ -50,7 +60,45 @@ public abstract class TileEntityPipelineBase extends TileEntityPipeBaseNT {
         }
     }
 
+    @Override
+    public void update() {
+
+        if(!world.isRemote && (this.node == null || this.node.expired) && pruneStaleConnections()) {
+            this.bb = null;
+            this.markDirty();
+            IBlockState state = world.getBlockState(pos);
+            world.notifyBlockUpdate(pos, state, state, 3);
+            world.markBlockRangeForRenderUpdate(pos, pos);
+        }
+
+        super.update();
+    }
+
+    private boolean pruneStaleConnections() {
+
+        boolean changed = false;
+
+        for(int i = 0; i < connected.size(); i++) {
+            int[] con = connected.get(i);
+            BlockPos target = new BlockPos(con[0], con[1], con[2]);
+
+            if(target.equals(pos)) continue;
+            if(!world.isBlockLoaded(target)) continue;
+
+            IBlockState targetState = world.getBlockState(target);
+            if(targetState.getBlock().hasTileEntity(targetState)) continue;
+
+            connected.remove(i);
+            i--;
+            changed = true;
+        }
+
+        return changed;
+    }
+
     public void disconnectAll() {
+
+        if(world.isRemote) return;
 
         for(int[] pos : connected) {
             BlockPos idfkPos = new BlockPos(pos[0], pos[1], pos[2]);
@@ -69,6 +117,7 @@ public abstract class TileEntityPipelineBase extends TileEntityPipeBaseNT {
                     }
                 }
 
+                pipeline.bb = null;
                 pipeline.markDirty();
 
                 if (world instanceof WorldServer) {
@@ -93,13 +142,18 @@ public abstract class TileEntityPipelineBase extends TileEntityPipeBaseNT {
      * 0: Connected<br>
      * 1: Connections are incompatible<br>
      * 2: Both parties are the same block<br>
-     * 3: Connection length exceeds maximum
+     * 3: Connection length exceeds maximum<br>
      * 4: Pipeline fluid types do not match
      */
     public static int canConnect(TileEntityPipelineBase first, TileEntityPipelineBase second) {
 
         if(first.getConnectionType() != second.getConnectionType()) return 1;
         if(first == second) return 2;
+
+        // connect with NONE type anchors
+        if(first.type == Fluids.NONE && second.type != first.type) first.setType(second.type);
+        if(second.type == Fluids.NONE && first.type != second.type) second.setType(first.type);
+
         if(first.type != second.type) return 4;
 
         double len = Math.min(first.getMaxPipeLength(), second.getMaxPipeLength());
@@ -146,26 +200,11 @@ public abstract class TileEntityPipelineBase extends TileEntityPipeBaseNT {
         int count = nbt.getInteger("conCount");
 
         this.connected.clear();
+        this.bb = null;
 
         for(int i = 0; i < count; i++) {
             connected.add(nbt.getIntArray("con" + i));
         }
-    }
-
-    @Override
-    public SPacketUpdateTileEntity getUpdatePacket() {
-        NBTTagCompound nbt = new NBTTagCompound();
-        writeToNBT(nbt);
-        return new SPacketUpdateTileEntity(pos, 0, nbt);
-    }
-
-    @Override
-    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-        readFromNBT(pkt.getNbtCompound());
-        if (world != null) {
-            world.markBlockRangeForRenderUpdate(pos, pos);
-        }
-        this.lastType = this.type;
     }
 
     public enum ConnectionType {
@@ -174,7 +213,18 @@ public abstract class TileEntityPipelineBase extends TileEntityPipeBaseNT {
 
     @Override
     public @NotNull AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB; // not great!
+        if (bb != null) return bb;
+        double minX = pos.getX(), minY = pos.getY(), minZ = pos.getZ();
+        double maxX = pos.getX() + 1, maxY = pos.getY() + 1, maxZ = pos.getZ() + 1;
+        for (int[] c : connected) {
+            if (c[0] < minX) minX = c[0];
+            if (c[1] < minY) minY = c[1];
+            if (c[2] < minZ) minZ = c[2];
+            if (c[0] + 1 > maxX) maxX = c[0] + 1;
+            if (c[1] + 1 > maxY) maxY = c[1] + 1;
+            if (c[2] + 1 > maxZ) maxZ = c[2] + 1;
+        }
+        return bb = new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
     @Override

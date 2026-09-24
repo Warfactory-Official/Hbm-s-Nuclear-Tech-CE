@@ -30,104 +30,54 @@ public class ModelArmorRPA extends ModelArmorBase {
     }
 
     @Override
-    public void render(Entity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor) {
-
-        super.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entity);
-        //body.copyTo(fan);
-        this.body.copyTo(this.glow);
-
-        GlStateManager.pushMatrix();
-        GlStateManager.shadeModel(GL11.GL_SMOOTH);
-
-        switch(type) {
-            case 0 -> {
+    public void renderArmor(Entity par1Entity, float par7) {
+        switch (type) {
+            case 3 -> {
                 bindTexture(ResourceManager.rpa_helmet);
-                this.head.render(scaleFactor);
+                head.render(par7);
             }
-            case 1 -> {
-                bindTexture(ResourceManager.rpa_arm);
-                this.leftArm.render(scaleFactor);
-                this.rightArm.render(scaleFactor);
+            case 2 -> {
+                this.body.copyTo(this.glow);
 
                 bindTexture(ResourceManager.rpa_chest);
-                this.body.render(scaleFactor);
+                body.render(par7);
+                bindTexture(ResourceManager.rpa_arm);
+                leftArm.render(par7);
+                rightArm.render(par7);
 
-                // START GLOW //
+                bindTexture(ResourceManager.rpa_chest);
                 float lastX = OpenGlHelper.lastBrightnessX;
                 float lastY = OpenGlHelper.lastBrightnessY;
                 RenderUtil.pushAttrib(GL11.GL_LIGHTING_BIT);
                 OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
                 GlStateManager.disableLighting();
-                this.glow.render(scaleFactor);
+                this.glow.render(par7);
                 GlStateManager.enableLighting();
                 RenderUtil.popAttrib();
                 OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lastX, lastY);
                 // END GLOW //
 
                 // START FAN //
+                bindTexture(ResourceManager.rpa_chest);
                 GlStateManager.pushMatrix();
                 double px = 0.0625D;
-                GlStateManager.translate(this.body.offsetX * (float) px, this.body.offsetY * (float) px, this.body.offsetZ * (float) px);
-                GlStateManager.translate(this.body.rotationPointX * (float) px, this.body.rotationPointY * (float) px, this.body.rotationPointZ * (float) px);
-
-                if(this.body.rotateAngleZ != 0.0F) {
-                    GlStateManager.rotate(this.body.rotateAngleZ * (180F / (float) Math.PI), 0.0F, 0.0F, 1.0F);
-                }
-
-                if(this.body.rotateAngleY != 0.0F) {
-                    GlStateManager.rotate(this.body.rotateAngleY * (180F / (float) Math.PI), 0.0F, 1.0F, 0.0F);
-                }
-
-                if(this.body.rotateAngleX != 0.0F) {
-                    GlStateManager.rotate(this.body.rotateAngleX * (180F / (float) Math.PI), 1.0F, 0.0F, 0.0F);
-                }
-
+                this.body.applyTransform(par7);
                 GlStateManager.translate(0, 4.875 * px, 0);
-                GlStateManager.rotate(-System.currentTimeMillis() / 2D % 360, 0, 0, 1);
+                GlStateManager.rotate((float) (-System.currentTimeMillis() / 2D % 360), 0, 0, 1);
                 GlStateManager.translate(0, -4.875 * px, 0);
-                this.fan.render(scaleFactor);
+                this.fan.render(par7);
                 GlStateManager.popMatrix();
                 // END FAN //
             }
-            case 2 -> {
-                bindTexture(ResourceManager.rpa_leg);
-                this.leftLeg.render(scaleFactor);
-                this.rightLeg.render(scaleFactor);
-            }
-            case 3 -> {
-                bindTexture(ResourceManager.rpa_leg);
-                this.leftFoot.render(scaleFactor);
-                this.rightFoot.render(scaleFactor);
-            }
-        }
-
-        GlStateManager.shadeModel(GL11.GL_FLAT);
-        GlStateManager.popMatrix();
-    }
-
-    @Override
-    public void renderArmor(Entity par1Entity, float par7) {
-        switch (type) {
-            case 3 -> {
-                bindTexture(ResourceManager.rpa_helmet);
-                head.render(par7 * 1.05F);
-            }
-            case 2 -> {
-                bindTexture(ResourceManager.rpa_chest);
-                body.render(par7 * 1.05F);
-                bindTexture(ResourceManager.rpa_arm);
-                leftArm.render(par7 * 1.05F);
-                rightArm.render(par7 * 1.05F);
-            }
             case 1 -> {
                 bindTexture(ResourceManager.rpa_leg);
-                leftLeg.render(par7 * 1.05F);
-                rightLeg.render(par7 * 1.05F);
+                leftLeg.render(par7);
+                rightLeg.render(par7);
             }
             case 0 -> {
                 bindTexture(ResourceManager.rpa_leg);
-                leftFoot.render(par7 * 1.05F);
-                rightFoot.render(par7 * 1.05F);
+                leftFoot.render(par7);
+                rightFoot.render(par7);
             }
         }
     }

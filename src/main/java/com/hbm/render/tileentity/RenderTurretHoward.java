@@ -44,12 +44,12 @@ public class RenderTurretHoward extends RenderTurretBase<TileEntityTurretHoward>
             turret.lastRotationPitch
                 + (turret.rotationPitch - turret.lastRotationPitch) * partialTicks);
 
-    GL11.glRotated(yaw, 0, 1, 0);
+    GlStateManager.rotate((float) (yaw), 0, 1, 0);
     bindTexture(ResourceManager.turret_carriage_ciws_tex);
     ResourceManager.turret_howard.renderPart("Carriage");
 
     GlStateManager.translate(0, 2.25, 0);
-    GL11.glRotated(pitch, 0, 0, 1);
+    GlStateManager.rotate((float) (pitch), 0, 0, 1);
     GlStateManager.translate(0, -2.25, 0);
     bindTexture(ResourceManager.turret_howard_tex);
     ResourceManager.turret_howard.renderPart("Body");
@@ -60,14 +60,14 @@ public class RenderTurretHoward extends RenderTurretBase<TileEntityTurretHoward>
 
     GlStateManager.pushMatrix();
     GlStateManager.translate(0, 2.5, 0);
-    GL11.glRotated(rot, -1, 0, 0);
+    GlStateManager.rotate((float) (rot), -1, 0, 0);
     GlStateManager.translate(0, -2.5, 0);
     ResourceManager.turret_howard.renderPart("BarrelsTop");
     GlStateManager.popMatrix();
 
     GlStateManager.pushMatrix();
     GlStateManager.translate(0, 2, 0);
-    GL11.glRotated(rot, 1, 0, 0);
+    GlStateManager.rotate((float) (rot), 1, 0, 0);
     GlStateManager.translate(0, -2, 0);
     ResourceManager.turret_howard.renderPart("BarrelsBottom");
     GlStateManager.popMatrix();

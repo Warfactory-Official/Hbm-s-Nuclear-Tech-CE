@@ -37,53 +37,36 @@ public class ModelArmorWings extends ModelArmorBase {
 	}
 
 	@Override
-	public void render(Entity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale) {
-		
-		setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale, entity);
-		
+	protected void renderArmor(Entity entity, float scale) {
+
 		GlStateManager.pushMatrix();
 
-        float yaw = entity instanceof EntityLivingBase living ? living.renderYawOffset : entity.rotationYaw;
-        GlStateManager.rotate(yaw - 180.0, 0.0F, 1.0F, 0.0F);
 		bindTexture(this.getTexture());
-		
+
 		double px = 0.0625D;
 
-		double rot = Math.sin((entity.ticksExisted) * 0.2D) * 20;
-		double rot2 = Math.sin((entity.ticksExisted) * 0.2D - Math.PI * 0.5) * 50 + 30;
-		
+		float rot = (float) (Math.sin((entity.ticksExisted) * 0.2D) * 20);
+		float rot2 = (float) (Math.sin((entity.ticksExisted) * 0.2D - Math.PI * 0.5) * 50 + 30);
+
 		int pivotSideOffset = 1;
 		int pivotFrontOffset = 5;
 		int pivotZOffset = 3;
 		int tipSideOffset = 16;
 		int tipZOffset = 2;
-		double inwardAngle = 10D;
-		
+		float inwardAngle = 10F;
+
 		GlStateManager.pushMatrix();
 
-		GlStateManager.translate(body.offsetX * (float) px, body.offsetY * (float) px, body.offsetZ * (float) px);
-		GlStateManager.translate(body.rotationPointX * (float) px, body.rotationPointY * (float) px, body.rotationPointZ * (float) px);
+		body.applyTransform(scale);
 
-		if(body.rotateAngleZ != 0.0F) {
-			GlStateManager.rotate(body.rotateAngleZ * (180F / (float) Math.PI), 0.0F, 0.0F, 1.0F);
-		}
-
-		if(body.rotateAngleY != 0.0F) {
-			GlStateManager.rotate(body.rotateAngleY * (180F / (float) Math.PI), 0.0F, 1.0F, 0.0F);
-		}
-
-		if(body.rotateAngleX != 0.0F) {
-			GlStateManager.rotate(body.rotateAngleX * (180F / (float) Math.PI), 1.0F, 0.0F, 0.0F);
-		}
-		
 		if(this.type != 1 && entity.onGround) {
 			rot = 20;
 			rot2 = 160;
 		}
-		
+
 		if(this.type == 1) {
 
-            if(entity.onGround) {
+			if(entity.onGround) {
 				rot = 30;
 				rot2 = -30;
 			} else if(entity.motionY < -0.1) {
@@ -94,67 +77,62 @@ public class ModelArmorWings extends ModelArmorBase {
 				rot2 = 20;
 			}
 		}
-		
+
 		GlStateManager.translate(0, -2 * px, 0);
-		
+
 		GlStateManager.enableCull();
 		GlStateManager.pushMatrix();
-			
-			GL11.glRotated(-inwardAngle, 0, 1, 0);
-			
-			GlStateManager.translate(pivotSideOffset * px, pivotFrontOffset * px, pivotZOffset * px);
-			GL11.glRotated(rot * 0.5, 0, 1, 0);
-			GL11.glRotated(rot + 5, 0, 0, 1);
-			GL11.glRotated(45, 1, 0, 0);
-			GlStateManager.translate(-pivotSideOffset * px, -pivotFrontOffset * px, -pivotZOffset * px);
-			
-			GlStateManager.translate(pivotSideOffset * px, pivotFrontOffset * px, pivotZOffset * px);
-			GL11.glRotated(rot, 0, 0, 1);
-			GlStateManager.translate(-pivotSideOffset * px, -pivotFrontOffset * px, -pivotZOffset * px);
-			wingLB.render(scale);
-			
-			GlStateManager.translate(tipSideOffset * px, pivotFrontOffset * px, tipZOffset * px);
-			GL11.glRotated(rot2, 0, 1, 0);
-			if(doesRotateZ())
-				GL11.glRotated(rot2 * 0.25 + 5, 0, 0, 1);
-			GlStateManager.translate(-tipSideOffset * px, -pivotFrontOffset * px, -tipZOffset * px);
-			wingLT.render(scale);
-			
+
+		GlStateManager.rotate(-inwardAngle, 0, 1, 0);
+
+		GlStateManager.translate(pivotSideOffset * px, pivotFrontOffset * px, pivotZOffset * px);
+		GlStateManager.rotate(rot * 0.5F, 0, 1, 0);
+		GlStateManager.rotate(rot + 5, 0, 0, 1);
+		GlStateManager.rotate(45, 1, 0, 0);
+		GlStateManager.translate(-pivotSideOffset * px, -pivotFrontOffset * px, -pivotZOffset * px);
+
+		GlStateManager.translate(pivotSideOffset * px, pivotFrontOffset * px, pivotZOffset * px);
+		GlStateManager.rotate(rot, 0, 0, 1);
+		GlStateManager.translate(-pivotSideOffset * px, -pivotFrontOffset * px, -pivotZOffset * px);
+		wingLB.render(scale);
+
+		GlStateManager.translate(tipSideOffset * px, pivotFrontOffset * px, tipZOffset * px);
+		GlStateManager.rotate(rot2, 0, 1, 0);
+		if(doesRotateZ())
+			GlStateManager.rotate(rot2 * 0.25F + 5, 0, 0, 1);
+		GlStateManager.translate(-tipSideOffset * px, -pivotFrontOffset * px, -tipZOffset * px);
+		wingLT.render(scale);
+
 		GlStateManager.popMatrix();
-		
+
 		GlStateManager.pushMatrix();
-			
-			GL11.glRotated(inwardAngle, 0, 1, 0);
-			
-			GlStateManager.translate(-pivotSideOffset * px, pivotFrontOffset * px, pivotZOffset * px);
-			GL11.glRotated(-rot * 0.5, 0, 1, 0);
-			GL11.glRotated(-rot - 5, 0, 0, 1);
-			GL11.glRotated(45, 1, 0, 0);
-			GlStateManager.translate(pivotSideOffset * px, -pivotFrontOffset * px, -pivotZOffset * px);
-			
-			GlStateManager.translate(-pivotSideOffset * px, pivotFrontOffset * px, pivotZOffset * px);
-			GL11.glRotated(-rot, 0, 0, 1);
-			GlStateManager.translate(pivotSideOffset * px, -pivotFrontOffset * px, -pivotZOffset * px);
-			wingRB.render(scale);
-			
-			GlStateManager.translate(-tipSideOffset * px, pivotFrontOffset * px, tipZOffset * px);
-			GL11.glRotated(-rot2, 0, 1, 0);
-			if(doesRotateZ())
-				GL11.glRotated(-rot2 * 0.25 - 5, 0, 0, 1);
-			GlStateManager.translate(tipSideOffset * px, -pivotFrontOffset * px, -tipZOffset * px);
-			wingRT.render(scale);
-			
+
+		GlStateManager.rotate(inwardAngle, 0, 1, 0);
+
+		GlStateManager.translate(-pivotSideOffset * px, pivotFrontOffset * px, pivotZOffset * px);
+		GlStateManager.rotate(-rot * 0.5F, 0, 1, 0);
+		GlStateManager.rotate(-rot - 5, 0, 0, 1);
+		GlStateManager.rotate(45, 1, 0, 0);
+		GlStateManager.translate(pivotSideOffset * px, -pivotFrontOffset * px, -pivotZOffset * px);
+
+		GlStateManager.translate(-pivotSideOffset * px, pivotFrontOffset * px, pivotZOffset * px);
+		GlStateManager.rotate(-rot, 0, 0, 1);
+		GlStateManager.translate(pivotSideOffset * px, -pivotFrontOffset * px, -pivotZOffset * px);
+		wingRB.render(scale);
+
+		GlStateManager.translate(-tipSideOffset * px, pivotFrontOffset * px, tipZOffset * px);
+		GlStateManager.rotate(-rot2, 0, 1, 0);
+		if(doesRotateZ())
+			GlStateManager.rotate(-rot2 * 0.25F - 5, 0, 0, 1);
+		GlStateManager.translate(tipSideOffset * px, -pivotFrontOffset * px, -tipZOffset * px);
+		wingRT.render(scale);
+
 		GlStateManager.popMatrix();
 		GlStateManager.disableCull();
-			
-		GlStateManager.popMatrix();
-		
-		GlStateManager.popMatrix();
-	}
 
-	@Override
-	protected void renderArmor(Entity entity, float scale) {
+		GlStateManager.popMatrix();
 
+		GlStateManager.popMatrix();
 	}
 
 	protected boolean doesRotateZ() {

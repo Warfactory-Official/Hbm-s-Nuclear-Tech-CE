@@ -1,8 +1,0 @@
-{
-	"parent": "block/cube_bottom_top",
-	"textures": {
-		"top": "hbm:blocks/crate_template",
-		"bottom": "hbm:blocks/crate_template",
-		"side": "hbm:blocks/crate_template"
-	}
-}

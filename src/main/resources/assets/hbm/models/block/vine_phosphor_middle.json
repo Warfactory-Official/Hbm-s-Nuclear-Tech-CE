@@ -1,0 +1,7 @@
+{
+    "parent": "hbm:block/vine_phosphor_cross",
+    "textures": {
+        "base": "hbm:blocks/vine_phosphor",
+        "spots": "hbm:blocks/vine_phosphor_spots"
+    }
+}

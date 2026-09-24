@@ -5,6 +5,7 @@ import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.anim.sedna.HbmAnimationsSedna;
+import com.hbm.render.tileentity.RenderPlushie;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.item.ItemStack;
@@ -102,9 +103,8 @@ public class ItemRenderTeslaCannon extends ItemRenderWeaponBase {
 		GlStateManager.translate(yomi[0], yomi[1], yomi[2]);
 		GlStateManager.rotate(135F, 0, 1, 0);
 		GlStateManager.scale(squeeze[0], squeeze[1], squeeze[2]);
-		// TODO
-		/*Minecraft.getMinecraft().renderEngine.bindTexture(RenderPlushie.yomiTex);
-		RenderPlushie.yomiModel.renderAll();*/
+		Minecraft.getMinecraft().renderEngine.bindTexture(RenderPlushie.yomiTex);
+		ResourceManager.plushie_yomi.renderAll();
 		GlStateManager.popMatrix();
 	}
 

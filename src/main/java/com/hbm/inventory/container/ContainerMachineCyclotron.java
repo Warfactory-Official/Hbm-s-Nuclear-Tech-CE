@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotCraftingOutput;
 import com.hbm.inventory.slot.SlotUpgrade;
@@ -17,8 +18,17 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerMachineCyclotron extends Container {
 
 	private TileEntityMachineCyclotron cyclotron;
-	
-	public ContainerMachineCyclotron(InventoryPlayer invPlayer, TileEntityMachineCyclotron tile) {
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(12)
+                                                                              .rule(0, 3,
+                                                                                      s -> s.getItem() == ModItems.part_lithium || s.getItem() == ModItems.part_beryllium || s.getItem() == ModItems.part_carbon || s.getItem() == ModItems.part_copper || s.getItem() == ModItems.part_plutonium)
+                                                                              .rule(3, 9,
+                                                                                      ContainerMachineCyclotron::isNormal)
+                                                                              .rule(9, 10, Library::isBattery)
+                                                                              .rule(10, 12, Library::isMachineUpgrade)
+                                                                              .build();
+
+    public ContainerMachineCyclotron(InventoryPlayer invPlayer, TileEntityMachineCyclotron tile) {
 		cyclotron = tile;
 
 		//Input
@@ -38,7 +48,7 @@ public class ContainerMachineCyclotron extends Container {
 		//Upgrades
 		this.addSlotToContainer(new SlotUpgrade(tile.inventory, 10, 60, 81));
 		this.addSlotToContainer(new SlotUpgrade(tile.inventory, 11, 78, 81));
-		
+
 		for(int i = 0; i < 3; i++)
 		{
 			for(int j = 0; j < 9; j++)
@@ -46,8 +56,8 @@ public class ContainerMachineCyclotron extends Container {
 				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 15 + j * 18, 133 + i * 18));
 			}
 		}
-		
-		for(int i = 0; i < 9; i++)
+
+        for(int i = 0; i < 9; i++)
 		{
 			this.addSlotToContainer(new Slot(invPlayer, i, 15 + i * 18, 191));
 		}
@@ -59,17 +69,12 @@ public class ContainerMachineCyclotron extends Container {
 
 	@Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 12,
-                s -> s.getItem() == ModItems.part_lithium || s.getItem() == ModItems.part_beryllium ||
-                        s.getItem() == ModItems.part_carbon || s.getItem() == ModItems.part_copper || s.getItem() == ModItems.part_plutonium, 3,
-                        ContainerMachineCyclotron::isNormal, 9,
-                        Library::isBattery, 10,
-                        Library::isMachineUpgrade, 12);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
 	@Override
 	public boolean canInteractWith(EntityPlayer player) {
 		return cyclotron.isUseableByPlayer(player);
 	}
-	
+
 }

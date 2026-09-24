@@ -9,7 +9,7 @@ import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
 import com.hbm.items.weapon.sedna.mags.MagazineFluid;
-import com.hbm.render.anim.sedna.HbmAnimationsSedna;
+import com.hbm.render.anim.sedna.AnimationEnums;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -80,7 +80,7 @@ public class ItemGunChemthrower extends ItemGunBaseNT implements IFillableItem {
         EntityLivingBase entity = ctx.entity;
         EntityPlayer player = ctx.getPlayer();
         int index = ctx.configIndex;
-        ItemGunBaseNT.playAnimation(player, stack, HbmAnimationsSedna.GunAnimation.CYCLE, ctx.configIndex);
+        ItemGunBaseNT.playAnimation(player, stack, AnimationEnums.GunAnimation.CYCLE, ctx.configIndex);
 
         Receiver primary = ctx.config.getReceivers(stack)[0];
         IMagazine mag = primary.getMagazine(stack);

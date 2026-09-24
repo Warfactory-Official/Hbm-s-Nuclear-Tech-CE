@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKOutgasser;
 import com.hbm.util.InventoryUtil;
@@ -13,6 +14,10 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerRBMKOutgasser extends Container {
 
 	private TileEntityRBMKOutgasser rbmk;
+
+	private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(2)
+                                                                              .genericMachineRange(0)
+                                                                              .build();
 
 	public ContainerRBMKOutgasser(InventoryPlayer invPlayer, TileEntityRBMKOutgasser tedf) {
 		rbmk = tedf;
@@ -33,7 +38,7 @@ public class ContainerRBMKOutgasser extends Container {
 
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 2);
+		return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
 	}
 
 	@Override

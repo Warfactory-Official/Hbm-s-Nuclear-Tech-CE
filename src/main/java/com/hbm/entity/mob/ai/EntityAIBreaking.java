@@ -1,6 +1,6 @@
 package com.hbm.entity.mob.ai;
 
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving;
@@ -60,7 +60,7 @@ public class EntityAIBreaking extends EntityAIBase {
 
 		if(markedLoc != null)  {
 
-			Vec3 vector = Vec3.createVectorHelper(
+			Vec3NT vector = Vec3NT.createVectorHelper(
 					markedLoc[0] - entityDigger.posX,
 					markedLoc[1] - (entityDigger.posY + entityDigger.getEyeHeight()),
 					markedLoc[2] - entityDigger.posZ);
@@ -181,7 +181,7 @@ public class EntityAIBreaking extends EntityAIBase {
 
     public static RayTraceResult RayCastBlocks(World world, double x, double y, double z, float yaw, float pitch, double dist, boolean liquids)
     {
-        Vec3 vec3 = Vec3.createVectorHelper(x, y, z);
+        Vec3NT vec3 = Vec3NT.createVectorHelper(x, y, z);
         float f3 = MathHelper.cos(-yaw * 0.017453292F - (float)Math.PI);
         float f4 = MathHelper.sin(-yaw * 0.017453292F - (float)Math.PI);
         float f5 = -MathHelper.cos(-pitch * 0.017453292F);
@@ -189,11 +189,11 @@ public class EntityAIBreaking extends EntityAIBase {
         float f7 = f4 * f5;
         float f8 = f3 * f5;
         double d3 = dist; // Ray Distance
-        Vec3 vec31 = vec3.add((double)f7 * d3, (double)f6 * d3, (double)f8 * d3);
+        Vec3NT vec31 = vec3.add((double)f7 * d3, (double)f6 * d3, (double)f8 * d3);
         return RayCastBlocks(world, vec3, vec31, liquids);
     }
 
-    public static RayTraceResult RayCastBlocks(World world, Vec3 vector1, Vec3 vector2, boolean liquids)
+    public static RayTraceResult RayCastBlocks(World world, Vec3NT vector1, Vec3NT vector2, boolean liquids)
     {
         return world.rayTraceBlocks(vector1.toVec3d(), vector2.toVec3d(), liquids, !liquids, false);
     }

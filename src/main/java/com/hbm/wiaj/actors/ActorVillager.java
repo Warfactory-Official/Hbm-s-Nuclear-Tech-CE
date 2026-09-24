@@ -28,7 +28,7 @@ public class ActorVillager implements ISpecialActor {
 		double z = data.getDouble("z");
 		double yaw = data.getDouble("yaw");
 		GlStateManager.translate(x, y, z);
-		GL11.glRotated(yaw, 0, 1, 0);
+		GlStateManager.rotate((float) (yaw), 0, 1, 0);
 		Minecraft.getMinecraft().getRenderManager().renderEntity(villager, 0D, 0D, 0D, 0F, interp, false);
 	}
 

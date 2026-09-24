@@ -2,11 +2,11 @@ package com.hbm.inventory.control_panel;
 
 import com.hbm.inventory.control_panel.nodes.Node;
 import com.hbm.render.NTMRenderHelper;
+import com.hbm.render.util.NTMImmediate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 public class NodeButton extends NodeElement {
 
@@ -19,16 +19,16 @@ public class NodeButton extends NodeElement {
     @Override
     public void render(float mX, float mY){
         Minecraft.getMinecraft().getTextureManager().bindTexture(NodeSystem.node_tex);
-        Tessellator.getInstance().getBuffer().begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
+        NTMImmediate.INSTANCE.beginPositionTexColorQuads(1);
         float x = offsetX+4;
         float y = offsetY+8;
         NTMRenderHelper.drawGuiRectBatchedColor(x, y, 0F, 0.890625F, 32, 6, 0.609375F, 0.984375F, 1, 1, 1, 1);
-        Tessellator.getInstance().draw();
+        NTMImmediate.INSTANCE.draw();
 
         FontRenderer font = Minecraft.getMinecraft().fontRenderer;
         GlStateManager.pushMatrix();
         GlStateManager.translate(x, y, 0);
-        GL11.glScaled(0.35, 0.35, 0.35);
+        GlStateManager.scale(0.35, 0.35, 0.35);
         GlStateManager.translate(-x, -y, 0);
         font.drawString(name, x+43-font.getStringWidth(name)/2F, y+5, 0xFF5F5F5F, false);
         GlStateManager.popMatrix();

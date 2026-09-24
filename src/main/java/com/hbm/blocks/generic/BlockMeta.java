@@ -3,10 +3,14 @@ package com.hbm.blocks.generic;
 import com.google.common.collect.ImmutableMap;
 import com.hbm.blocks.BlockBase;
 import com.hbm.blocks.ICustomBlockItem;
+import com.hbm.items.ClaimedModelLocationRegistry;
 import com.hbm.items.IDynamicModels;
 import com.hbm.items.IModelRegister;
 import com.hbm.main.MainRegistry;
+import com.hbm.main.client.NTMClientRegistry;
 import com.hbm.render.block.BlockBakeFrame;
+import com.hbm.render.block.CTMModelWrapper;
+import com.hbm.util.Compat;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
@@ -35,6 +39,7 @@ import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -44,7 +49,7 @@ import java.util.List;
 import java.util.Random;
 
 
-public class BlockMeta extends BlockBase implements ICustomBlockItem, IDynamicModels, IMetaBlock {
+public class BlockMeta extends BlockBase implements ICustomBlockItem, IDynamicModels {
 
     //Norwood:Yes you could use strings, enums or whatever, but this is much simpler and more efficient, as well as has exactly same scope as 1.7.10
     public static final PropertyInteger META = PropertyInteger.create("meta", 0, 15);
@@ -110,19 +115,31 @@ public class BlockMeta extends BlockBase implements ICustomBlockItem, IDynamicMo
         return false;
     }
 
+    protected boolean useCTM() {
+        return false;
+    }
+
     @Override
     @SideOnly(Side.CLIENT)
     public void registerModel() {
+        Item item = Item.getItemFromBlock(this);
+        ModelResourceLocation syntheticLocation = NTMClientRegistry.getSyntheticTeisrModelLocation(item);
+        if (syntheticLocation != null) {
+            for (int meta = 0; meta < this.META_COUNT; meta++) {
+                ModelLoader.setCustomModelResourceLocation(item, meta, syntheticLocation);
+            }
+            return;
+        }
         if (useSpecialRenderer()) {
             for (int meta = 0; meta < this.META_COUNT; meta++) {
-                ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), meta,
+                ModelLoader.setCustomModelResourceLocation(item, meta,
                         new ModelResourceLocation(this.getRegistryName(), "inventory"));
             }
             return;
         }
         for (int meta = 0; meta < this.META_COUNT; meta++) {
             ModelLoader.setCustomModelResourceLocation(
-                    Item.getItemFromBlock(this),
+                    item,
                     meta,
                     new ModelResourceLocation(this.getRegistryName(), "meta=" + meta)
             );
@@ -154,12 +171,14 @@ public class BlockMeta extends BlockBase implements ICustomBlockItem, IDynamicMo
                 IBakedModel blockBaked = blockRetextured.bake(ModelRotation.X0_Y0, DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter());
                 ModelResourceLocation worldLocation = new ModelResourceLocation(getRegistryName(), "normal");
                 event.getModelRegistry().putObject(worldLocation, blockBaked);
-                IModel itemBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
-                ImmutableMap<String, String> itemTextures = ImmutableMap.of("layer0", "hbm:blocks/" + getRegistryName().getPath());
-                IModel itemRetextured = itemBaseModel.retexture(itemTextures);
-                IBakedModel itemBaked = itemRetextured.bake(ModelRotation.X0_Y0, DefaultVertexFormats.ITEM, ModelLoader.defaultTextureGetter());
-                ModelResourceLocation inventoryLocation = new ModelResourceLocation(getRegistryName(), "inventory");
-                event.getModelRegistry().putObject(inventoryLocation, itemBaked);
+                if (!ClaimedModelLocationRegistry.hasSyntheticTeisrBinding(Item.getItemFromBlock(this))) {
+                    IModel itemBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
+                    ImmutableMap<String, String> itemTextures = ImmutableMap.of("layer0", "hbm:blocks/" + getRegistryName().getPath());
+                    IModel itemRetextured = itemBaseModel.retexture(itemTextures);
+                    IBakedModel itemBaked = itemRetextured.bake(ModelRotation.X0_Y0, DefaultVertexFormats.ITEM, ModelLoader.defaultTextureGetter());
+                    ModelResourceLocation inventoryLocation = new ModelResourceLocation(getRegistryName(), "inventory");
+                    event.getModelRegistry().putObject(inventoryLocation, itemBaked);
+                }
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -169,7 +188,7 @@ public class BlockMeta extends BlockBase implements ICustomBlockItem, IDynamicMo
         for (int meta = 0; meta < META_COUNT; meta++) {
             BlockBakeFrame blockFrame = blockFrames[meta % blockFrames.length];
             try {
-                IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation(blockFrame.getBaseModel()));
+                IModel baseModel = ModelLoaderRegistry.getModel(blockFrame.getBaseModelLocation());
                 ImmutableMap.Builder<String, String> textureMap = ImmutableMap.builder();
 
                 blockFrame.putTextures(textureMap);
@@ -177,6 +196,7 @@ public class BlockMeta extends BlockBase implements ICustomBlockItem, IDynamicMo
                 IBakedModel bakedModel = retexturedModel.bake(
                         ModelRotation.X0_Y0, DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()
                 );
+                if (useCTM() && Loader.isModLoaded(Compat.ModIds.CTM)) bakedModel = CTMModelWrapper.wrap(retexturedModel, bakedModel);
 
                 ModelResourceLocation modelLocation = new ModelResourceLocation(getRegistryName(), "meta=" + meta);
                 event.getModelRegistry().putObject(modelLocation, bakedModel);
@@ -329,6 +349,13 @@ public class BlockMeta extends BlockBase implements ICustomBlockItem, IDynamicMo
 
         @Override
         public void registerModels() {
+            ModelResourceLocation syntheticLocation = NTMClientRegistry.getSyntheticTeisrModelLocation(this);
+            if (syntheticLocation != null) {
+                for (int meta = 0; meta < metaBlock.META_COUNT; meta++) {
+                    ModelLoader.setCustomModelResourceLocation(this, meta, syntheticLocation);
+                }
+                return;
+            }
             for (int meta = 0; meta < metaBlock.META_COUNT; meta++) {
                 MainRegistry.logger.info("Registering model for " + this.block.getRegistryName() + " meta=" + meta);
                 if (metaBlock.useSpecialRenderer()) {

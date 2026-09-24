@@ -5,8 +5,11 @@ import com.hbm.config.GeneralConfig;
 import com.hbm.inventory.OreDictManager;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ItemEnums;
-import com.hbm.items.ItemEnums.*;
+import com.hbm.items.ItemEnums.EnumCircuitType;
 import com.hbm.items.ModItems;
+import com.hbm.items.food.ItemConserve.EnumFoodType;
+import com.hbm.items.machine.ItemBatteryPack;
+import com.hbm.items.weapon.grenade.ItemGrenadeFilling.EnumGrenadeFilling;
 import com.hbm.items.weapon.sedna.factory.GunFactory;
 import com.hbm.main.CraftingManager;
 import net.minecraft.init.Blocks;
@@ -26,9 +29,8 @@ public class ConsumableRecipes {
 
         //Airstikes
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.bomb_caller, 1, 0),"TTT", "TRT", "TTT", 'T', Blocks.TNT, 'R', ModItems.rangefinder );
-        CraftingManager.addRecipeAuto(new ItemStack(ModItems.bomb_caller, 1, 1),"TTT", "TRT", "TTT", 'T', ModItems.grenade_gascan, 'R', ModItems.rangefinder );
+        CraftingManager.addRecipeAuto(new ItemStack(ModItems.bomb_caller, 1, 1),"TTT", "TRT", "TTT", 'T', new ItemStack(ModItems.grenade_filling, 1, EnumGrenadeFilling.INC.ordinal()), 'R', ModItems.rangefinder );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.bomb_caller, 1, 2),"TTT", "TRT", "TTT", 'T', ModItems.pellet_gas, 'R', ModItems.rangefinder );
-        CraftingManager.addRecipeAuto(new ItemStack(ModItems.bomb_caller, 1, 3),"TRT", 'T', ModItems.grenade_cloud, 'R', ModItems.rangefinder );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.bomb_caller, 1, 4),"TRC", 'T', OreDictManager.DictFrame.fromOne(ModItems.ammo_standard, GunFactory.EnumAmmo.NUKE_HIGH), 'R', ModItems.rangefinder, 'C', OreDictManager.DictFrame.fromOne(ModItems.circuit, EnumCircuitType.CONTROLLER) );
 
         //Food
@@ -60,6 +62,8 @@ public class ConsumableRecipes {
         CraftingManager.addShapelessAuto(new ItemStack(ModItems.ingot_smore),Items.WHEAT, new ItemStack(ModItems.marshmallow_roasted), new ItemStack(Items.DYE, 1, 3) );
         CraftingManager.addShapelessAuto(new ItemStack(ModItems.marshmallow),Items.STICK, Items.SUGAR, Items.WHEAT_SEEDS );
         CraftingManager.addShapelessAuto(new ItemStack(ModItems.quesadilla, 3),ModItems.cheese, ModItems.cheese, Items.BREAD );
+        CraftingManager.addShapelessAuto(new ItemStack(ModItems.canned_conserve, 1, EnumFoodType.RECURSION.ordinal()),
+                new ItemStack(ModItems.canned_conserve, 1, EnumFoodType.RECURSION.ordinal()));
 
         //Peas
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.peas)," S ", "SNS", " S ", 'S', Items.WHEAT_SEEDS, 'N', GOLD.nugget() );
@@ -167,7 +171,7 @@ public class ConsumableRecipes {
 
         //Servos
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.servo_set, 1),"MBM", "PBP", "MBM", 'M', ModItems.motor, 'B', STEEL.bolt(), 'P', IRON.plate() );
-        CraftingManager.addRecipeAuto(new ItemStack(ModItems.servo_set_desh, 1),"MBM", "PSP", "MBM", 'M', ModItems.motor_desh, 'B', DURA.bolt(), 'P', ALLOY.plate(), 'S', ModItems.servo_set );
+        CraftingManager.addRecipeAuto(new ItemStack(ModItems.servo_set_desh, 1),"MBM", "PSP", "MBM", 'M', ModItems.motor_desh, 'B', DURA.bolt(), 'P', ModItems.plate_desh, 'S', ModItems.servo_set );
 
         //Helmet Mods
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.attachment_mask, 1),"DID", "IGI", " F ", 'D', ModItems.ducttape, 'I', ANY_RUBBER.ingot(), 'G', KEY_ANYPANE, 'F', IRON.plate() );
@@ -179,13 +183,13 @@ public class ConsumableRecipes {
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.pads_static, 1),"CDC", "ISI", "CDC", 'C', CU.ingot(), 'D', ModItems.ducttape, 'I', ANY_RUBBER.ingot(), 'S', ModItems.pads_slime );
 
         //Batteries
-        CraftingManager.addRecipeAuto(new ItemStack(ModItems.armor_battery, 1),"PCP", "PCP", "PCP", 'P', STEEL.plate(), 'C', ModBlocks.capacitor_gold );
-        CraftingManager.addRecipeAuto(new ItemStack(ModItems.armor_battery_mk2, 1),"PCP", "PCP", "PCP", 'P', ANY_PLASTIC.ingot(), 'C', ModBlocks.capacitor_niobium );
-        CraftingManager.addRecipeAuto(new ItemStack(ModItems.armor_battery_mk3, 1),"PCP", "PCP", "PCP", 'P', GOLD.plate(), 'C', ModBlocks.capacitor_tantalium );
+        CraftingManager.addRecipeAuto(new ItemStack(ModItems.armor_battery, 1), "PWP", "PCP", "PWP", 'P', STEEL.plate(), 'C', new ItemStack(ModItems.battery_pack, 1, ItemBatteryPack.EnumBatteryPack.CAPACITOR_GOLD.ordinal()), 'W', MINGRADE.wireDense());
+        CraftingManager.addRecipeAuto(new ItemStack(ModItems.armor_battery_mk2, 1), "PWP", "PCP", "PWP", 'P', ANY_PLASTIC.ingot(), 'C', new ItemStack(ModItems.battery_pack, 1, ItemBatteryPack.EnumBatteryPack.CAPACITOR_NIOBIUM.ordinal()), 'W', MINGRADE.wireDense());
+        CraftingManager.addRecipeAuto(new ItemStack(ModItems.armor_battery_mk3, 1), "PWP", "PCP", "PWP", 'P', GOLD.plate(), 'C', new ItemStack(ModItems.battery_pack, 1, ItemBatteryPack.EnumBatteryPack.CAPACITOR_TANTALUM.ordinal()), 'W', MINGRADE.wireDense());
 
         //Special Mods
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.horseshoe_magnet, 1),"L L", "I I", "ILI", 'L', ModItems.lodestone, 'I', IRON.ingot() );
-        CraftingManager.addRecipeAuto(new ItemStack(ModItems.industrial_magnet, 1),"SMS", " B ", "SMS", 'S', STEEL.ingot(), 'M', ModItems.horseshoe_magnet, 'B', new ItemStack(ModBlocks.hadron_coil_alloy, 1, 0) );
+        CraftingManager.addRecipeAuto(new ItemStack(ModItems.industrial_magnet, 1),"SMS", " B ", "SMS", 'S', STEEL.ingot(), 'M', ModItems.horseshoe_magnet, 'B', MINGRADE.wireDense() );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.heart_container, 1),"HAH", "ACA", "HAH", 'H', ModItems.heart_piece, 'A', AL.ingot(), 'C', ModItems.coin_creeper );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.heart_booster, 1),"GHG", "MCM", "GHG", 'G', GOLD.ingot(), 'H', ModItems.heart_container, 'M', ModItems.morning_glory, 'C', ModItems.coin_maskman );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.heart_fab, 1),"GHG", "MCM", "GHG", 'G', PO210.billet(), 'H', ModItems.heart_booster, 'M', ANY_COKE.gem(), 'C', ModItems.coin_worm );

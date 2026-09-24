@@ -34,36 +34,36 @@ public class ModelMaskMan extends ModelBase {
 
         double swing = Math.toDegrees(MathHelper.cos(f7 / 2F + (float)Math.PI) * 1.4F * f6);
 
-		GL11.glRotated(swing * -0.1, 1, 0, 0);
+		GlStateManager.rotate((float) (swing * -0.1), 1, 0, 0);
 		ResourceManager.maskman.renderPart("Torso");
 
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(-0.5F, 1.75F, -0.5F);
-		GL11.glRotated(swing, 0, 0, 1);
+		GlStateManager.rotate((float) (swing), 0, 0, 1);
 		ResourceManager.maskman.renderPart("LLeg");
 		GlStateManager.popMatrix();
 
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(-0.5F, 1.75F, 0.5F);
-		GL11.glRotated(swing * -1, 0, 0, 1);
+		GlStateManager.rotate((float) (swing * -1), 0, 0, 1);
 		ResourceManager.maskman.renderPart("RLeg");
 		GlStateManager.popMatrix();
 
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(-0.5F, 3.75F, -1.5F);
-		GL11.glRotated(swing * 0.25, 0, 0, 1);
+		GlStateManager.rotate((float) (swing * 0.25), 0, 0, 1);
 		ResourceManager.maskman.renderPart("LArm");
 		GlStateManager.popMatrix();
 
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(-0.5F, 3.75F, 1.5F);
-		GL11.glRotated(swing * -0.25, 0, 0, 1);
+		GlStateManager.rotate((float) (swing * -0.25), 0, 0, 1);
 		ResourceManager.maskman.renderPart("RArm");
 		GlStateManager.popMatrix();
 		
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(0.5F, 4F, 0);
-		GL11.glRotated(-f3, 0, 1, 0);
+		GlStateManager.rotate((float) (-f3), 0, 1, 0);
 
 		if(man.getHealth() >= man.getMaxHealth() / 2) {
 			ResourceManager.maskman.renderPart("Head");

@@ -7,7 +7,7 @@
 		"ru_ru": "Радий-226"
     },
 	"content": {
-		"en_us": "Rare radioactive material found in [[uranium|Uranium]] and [[thorium|Thorium-232]] ores, may be extracted using a [[centrifuge|Centrifuge]]. Used with [[beryllium|Beryllium]] in Ra226Be neutron sources, which are vital for kickstarting the [[Chicago Pile]], [[PWR]], [[research reactor|Research Reactor]] and [[RBMK]]. The first available neutron source, and often times the cheapest.<br><br>Moderately radioactive.",
+		"en_us": "Rare radioactive material found in [[uranium|Uranium]] and [[thorium|Thorium-232]] ores, may be extracted using a [[centrifuge|Centrifuge]]. Used with [[beryllium|Beryllium]] in Ra226Be neutron sources, which are vital for kickstarting the [[Chicago Pile]], [[PWR]], Research Reactor and [[RBMK]]. The first available neutron source, and often times the cheapest.<br><br>Moderately radioactive.",
 		"ru_ru": "Редкий радиоактивный материал, встречается в рудах [[урана|Uranium]] и [[тория-232|Thorium-232]], может быть извлечён с помощью [[центрифуги|Centrifuge]]. Используется с [[бериллием|Beryllium]] в нейтронных источниках Ra226Be, которые жизненно важны для запуска [[чикагской поленницы|Chicago Pile]], [[ВВЭР|PWR]], [[исследовательского реактора|Research Reactor]] и [[РБМК|RBMK]]. Первый доступный нейтронный источник и зачастую самый дешёвый.<br><br>Умеренно радиоактивен."
 	}
 }

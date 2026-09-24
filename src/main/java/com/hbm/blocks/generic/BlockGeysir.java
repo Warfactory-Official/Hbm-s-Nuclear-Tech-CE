@@ -59,13 +59,6 @@ public class BlockGeysir extends BlockContainer {
     public void randomDisplayTick(IBlockState stateIn, @NotNull World worldIn, @NotNull BlockPos pos, @NotNull Random rand) {
         boolean active = stateIn.getValue(ACTIVE);
 
-        if (this == ModBlocks.geysir_vapor && active) {
-            float f = pos.getX() + 0.5F;
-            float f1 = pos.getY() + 1.0F;
-            float f2 = pos.getZ() + 0.5F;
-
-            worldIn.spawnParticle(EnumParticleTypes.CLOUD, f, f1, f2, 0.0D, 0.1D, 0.0D);
-        }
         if (this == ModBlocks.geysir_nether) {
             worldIn.spawnParticle(EnumParticleTypes.FLAME, pos.getX() + 0.5F, pos.getY() + 1.0625F, pos.getZ() + 0.5F, 0.0D, 0.0D, 0.0D);
         }

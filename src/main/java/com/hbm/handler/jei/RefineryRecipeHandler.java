@@ -7,13 +7,18 @@ import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.gui.*;
 import mezz.jei.api.gui.IDrawableAnimated.StartDirection;
 import mezz.jei.api.ingredients.IIngredients;
+import mezz.jei.api.ingredients.VanillaTypes;
 import mezz.jei.api.recipe.IRecipeCategory;
 import net.minecraft.client.Minecraft;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+
+import java.util.List;
 
 public class RefineryRecipeHandler implements IRecipeCategory<RefineryRecipe> {
 
 	public static final ResourceLocation gui_rl = new ResourceLocation(Tags.MODID, "textures/gui/jei/gui_nei_refinery.png");
+	private static final int[][] OUTPUT_POS = {{109, 1}, {127, 10}, {109, 19}, {127, 28}, {109, 37}};
 	
 	protected final IDrawable background;
 	protected final IDrawableStatic progressStatic;
@@ -59,17 +64,14 @@ public class RefineryRecipeHandler implements IRecipeCategory<RefineryRecipe> {
 	
 	@Override
 	public void setRecipe(IRecipeLayout recipeLayout, RefineryRecipe recipeWrapper, IIngredients ingredients) {
-		IGuiItemStackGroup guiItemStacks = recipeLayout.getItemStacks();
-		
-		guiItemStacks.init(0, true, 46, 19);
-		
-		guiItemStacks.init(1, false, 109, 1);
-		guiItemStacks.init(2, false, 127, 10);
-		guiItemStacks.init(3, false, 109, 19);
-		guiItemStacks.init(4, false, 127, 28);
-		guiItemStacks.init(5, false, 109, 37);
-		
-		guiItemStacks.set(ingredients);
+		List<List<ItemStack>> inputs = ingredients.getInputs(VanillaTypes.ITEM);
+		List<List<ItemStack>> outputs = ingredients.getOutputs(VanillaTypes.ITEM);
+
+		if(!inputs.isEmpty()) EmiCompat.initSlot(recipeLayout, 0, true, 46, 19, inputs.get(0));
+
+		for(int i = 0; i < outputs.size() && i < OUTPUT_POS.length; i++) {
+			EmiCompat.initSlot(recipeLayout, i + 1, false, OUTPUT_POS[i][0], OUTPUT_POS[i][1], outputs.get(i));
+		}
 	}
 
 }

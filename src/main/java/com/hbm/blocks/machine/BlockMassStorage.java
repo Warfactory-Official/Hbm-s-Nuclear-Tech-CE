@@ -7,11 +7,14 @@ import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemLock;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
+import com.hbm.render.block.BlockBakeFrame;
 import com.hbm.tileentity.machine.TileEntityLockableBase;
 import com.hbm.tileentity.machine.storage.TileEntityMassStorage;
-import net.minecraft.block.BlockContainer;
+import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.PropertyDirection;
+import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityLivingBase;
@@ -21,221 +24,233 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.Mirror;
+import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
-//import static com.hbm.handler.BulletConfigSyncingUtil.i;
+public class BlockMassStorage extends BlockContainerBakeable implements ILookOverlay, ITooltipProvider {
 
-// окей, теперь заметка для металлолома, вроде как №3. по-хорошему я бы это въебал через BlockEnumMulti потому что метаданные тут сами по себе
-// ну нихуя не работают, но мне лень его писать, так что пока так поживём
-public class BlockMassStorage extends BlockContainer implements ILookOverlay, ITooltipProvider {
+    public static final PropertyDirection FACING = BlockHorizontal.FACING;
+    private static boolean dropInv = true;
 
+    public BlockMassStorage(Material material, String s, String tier) {
+        super(material, s, createBakeFrame(tier));
+        this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
+        this.setSoundType(SoundType.METAL);
+    }
 
-	public BlockMassStorage(Material material, String s) {
-		super(material);
-		this.setTranslationKey(s);
-		this.setRegistryName(s);
-		this.setSoundType(SoundType.METAL);
+    private static BlockBakeFrame createBakeFrame(String tier) {
+        String suffix = (tier == null || tier.isEmpty()) ? "" : "_" + tier;
+        return BlockBakeFrame.cube("mass_storage_top" + suffix, "mass_storage_top" + suffix, "mass_storage_side" + suffix, "mass_storage_front" + suffix, "mass_storage_side" + suffix, "mass_storage_side" + suffix);
+    }
 
-		ModBlocks.ALL_BLOCKS.add(this);
-	}
+    @Override
+    public TileEntity createNewTileEntity(@NotNull World world, int meta) {
+        return new TileEntityMassStorage(getCapacity());
+    }
 
-	@Override
-	public TileEntity createNewTileEntity(World world, int meta) {
-		return new TileEntityMassStorage(getCapacity());
-	}
+    public int getCapacity() {
+        return this == ModBlocks.mass_storage_wood ? 1000 : this == ModBlocks.mass_storage_iron ? 10_000 : this == ModBlocks.mass_storage_desh ? 100_000 : this == ModBlocks.mass_storage ? 1_000_000 : 0;
+    }
 
+    @Override
+    public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
+        return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
+    }
 
-	public int getCapacity() {
-		return this == ModBlocks.mass_storage_wood ? 1000 : this == ModBlocks.mass_storage_iron ? 10_000 : this == ModBlocks.mass_storage_desh ? 100_000 : this == ModBlocks.mass_storage ? 1_000_000 : 0;
-	}
+    @Override
+    public IBlockState getStateFromMeta(int meta) {
+        return this.getDefaultState().withProperty(FACING, EnumFacing.byHorizontalIndex(meta));
+    }
 
-	@Override
-	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-		if(world.isRemote) {
-			return true;
-		} else if(!player.getHeldItemMainhand().isEmpty() && (player.getHeldItemMainhand().getItem() instanceof ItemLock || player.getHeldItemMainhand().getItem() == ModItems.key_kit)) {
-			return false;
-		} else if(!player.isSneaking()) {
-			TileEntity entity = world.getTileEntity(pos);
-			if(entity instanceof TileEntityMassStorage && ((TileEntityMassStorage) entity).canAccess(player)) {
-				FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
-			}
-			return true;
-		} else {
-			return false;
-		}
-	}
+    @Override
+    public int getMetaFromState(IBlockState state) {
+        return state.getValue(FACING).getHorizontalIndex();
+    }
 
-	private static boolean dropInv = true;
+    @Override
+    protected BlockStateContainer createBlockState() {
+        return new BlockStateContainer(this, FACING);
+    }
 
-	@Override
-	public boolean removedByPlayer(IBlockState state, World world, BlockPos pos, EntityPlayer player, boolean willHarvest) {
+    @Override
+    public IBlockState withRotation(IBlockState state, Rotation rot) {
+        return state.withProperty(FACING, rot.rotate(state.getValue(FACING)));
+    }
 
-		if (!player.capabilities.isCreativeMode && !world.isRemote && willHarvest) {
+    @Override
+    public IBlockState withMirror(IBlockState state, Mirror mirrorIn) {
+        return state.withRotation(mirrorIn.toRotation(state.getValue(FACING)));
+    }
 
-			ItemStack drop = new ItemStack(this);
-			TileEntity te = world.getTileEntity(pos);
+    @Override
+    public boolean onBlockActivated(World world, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull EntityPlayer player, @NotNull EnumHand hand, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ) {
+        if (world.isRemote) {
+            return true;
+        } else if (!player.getHeldItemMainhand().isEmpty() && (player.getHeldItemMainhand().getItem() instanceof ItemLock || player.getHeldItemMainhand().getItem() == ModItems.key_kit)) {
+            return false;
+        } else if (!player.isSneaking()) {
+            TileEntity entity = world.getTileEntity(pos);
+            if (entity instanceof TileEntityMassStorage && ((TileEntityMassStorage) entity).canAccess(player)) {
+                FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-			NBTTagCompound nbt = new NBTTagCompound();
+    @Override
+    public boolean removedByPlayer(@NotNull IBlockState state, @NotNull World world, @NotNull BlockPos pos, EntityPlayer player, boolean willHarvest) {
 
-			if(te != null) {
-				IItemHandler inventory = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        if (!player.capabilities.isCreativeMode && !world.isRemote && willHarvest) {
 
-				for(int i = 0; i < inventory.getSlots(); i++) {
+            ItemStack drop = new ItemStack(this);
+            TileEntity te = world.getTileEntity(pos);
 
-					ItemStack stack = inventory.getStackInSlot(i);
-					if(stack.isEmpty())
-						continue;
+            NBTTagCompound nbt = new NBTTagCompound();
 
-					NBTTagCompound slot = new NBTTagCompound();
-					stack.writeToNBT(slot);
-					nbt.setTag("slot" + i, slot);
-				}
-			}
+            if (te != null) {
+                IItemHandler inventory = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
 
-			if(te instanceof TileEntityLockableBase) {
-				TileEntityLockableBase lockable = (TileEntityLockableBase) te;
+                for (int i = 0; i < inventory.getSlots(); i++) {
 
-				if(lockable.isLocked()) {
-					nbt.setInteger("lock", lockable.getPins());
-					nbt.setDouble("lockMod", lockable.getMod());
-				}
-			}
+                    ItemStack stack = inventory.getStackInSlot(i);
+                    if (stack.isEmpty()) continue;
 
-			if(te instanceof TileEntityMassStorage && nbt.getKeySet().size() > 0) {
-				TileEntityMassStorage storage = (TileEntityMassStorage) te;
-				nbt.setInteger("stack", storage.getStockpile());
-			}
+                    NBTTagCompound slot = new NBTTagCompound();
+                    stack.writeToNBT(slot);
+                    nbt.setTag("slot" + i, slot);
+                }
+            }
 
-			if(!nbt.isEmpty()) {
-				drop.setTagCompound(nbt);
-			}
+            if (te instanceof TileEntityLockableBase lockable) {
 
-			InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), drop);
-		}
+                if (lockable.isLocked()) {
+                    nbt.setInteger("lock", lockable.getPins());
+                    nbt.setDouble("lockMod", lockable.getMod());
+                }
+            }
 
-		dropInv = false;
-		boolean flag = world.setBlockToAir(pos);
-		dropInv = true;
+            if (te instanceof TileEntityMassStorage storage && !nbt.getKeySet().isEmpty()) {
+                nbt.setInteger("stack", storage.getStockpile());
+            }
 
-		return flag;
-	}
+            if (!nbt.isEmpty()) {
+                drop.setTagCompound(nbt);
+            }
 
+            InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), drop);
+        }
 
-	@Override
-	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
+        dropInv = false;
+        boolean flag = world.setBlockToAir(pos);
+        dropInv = true;
 
-		TileEntity te = world.getTileEntity(pos);
+        return flag;
+    }
 
-		if (te != null && stack.hasTagCompound()) {
-			IItemHandler inventory = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+    @Override
+    public void onBlockPlacedBy(World world, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull EntityLivingBase placer, @NotNull ItemStack stack) {
 
-			NBTTagCompound nbt = stack.getTagCompound();
-			for (int i = 0; i < inventory.getSlots(); i++) {
-				inventory.insertItem(i, new ItemStack(nbt.getCompoundTag("slot" + i)), false);
-			}
+        TileEntity te = world.getTileEntity(pos);
 
-			if (te instanceof TileEntityMassStorage) {
-				TileEntityMassStorage lockable = (TileEntityMassStorage) te;
+        if (te != null && stack.hasTagCompound()) {
+            IItemHandler inventory = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
 
-				if (nbt.hasKey("lock")) {
-					lockable.setPins(nbt.getInteger("lock"));
-					lockable.setMod(nbt.getDouble("lockMod"));
-					lockable.lock();
-				}
+            NBTTagCompound nbt = stack.getTagCompound();
+            for (int i = 0; i < inventory.getSlots(); i++) {
+                inventory.insertItem(i, new ItemStack(nbt.getCompoundTag("slot" + i)), false);
+            }
 
-				lockable.setStockpile(nbt.getInteger("stack"));
-			}
-		}
+            if (te instanceof TileEntityMassStorage lockable) {
 
-		super.onBlockPlacedBy(world, pos, state, placer, stack);
-	}
+                if (nbt.hasKey("lock")) {
+                    lockable.setPins(nbt.getInteger("lock"));
+                    lockable.setMod(nbt.getDouble("lockMod"));
+                    lockable.lock();
+                }
 
+                lockable.setStockpile(nbt.getInteger("stack"));
+            }
+        }
 
-	@Override
-	public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+        super.onBlockPlacedBy(world, pos, state, placer, stack);
+    }
 
-		if (this.dropInv) {
-			InventoryHelper.dropInventoryItems(worldIn, pos, worldIn.getTileEntity(pos));
-		}
-		super.breakBlock(worldIn, pos, state);
-	}
+    @Override
+    public void breakBlock(@NotNull World worldIn, @NotNull BlockPos pos, @NotNull IBlockState state) {
+        if (dropInv) {
+            InventoryHelper.dropInventoryItems(worldIn, pos, worldIn.getTileEntity(pos));
+        }
+        super.breakBlock(worldIn, pos, state);
+    }
 
-	@Override
-	public Item getItemDropped(IBlockState state, Random rand, int fortune) {
-		return ItemStack.EMPTY.getItem();
-	}
+    @Override
+    public @NotNull Item getItemDropped(@NotNull IBlockState state, @NotNull Random rand, int fortune) {
+        return ItemStack.EMPTY.getItem();
+    }
 
-	@Override
-	public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
+    @Override
+    public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
 
-		TileEntity te = world.getTileEntity(pos);
+        TileEntity te = world.getTileEntity(pos);
 
-		if (!(te instanceof TileEntityMassStorage))
-			return;
+        if (!(te instanceof TileEntityMassStorage storage)) return;
 
-		TileEntityMassStorage storage = (TileEntityMassStorage) te;
+        List<String> text = new ArrayList<>();
+        String title = "Empty";
+        boolean full = storage.type != null && !storage.type.isEmpty() && storage.type.getItem() != Items.AIR;
 
-		List<String> text = new ArrayList();
-		String title = "Empty";
-		boolean full =  storage.type != null && !storage.type.isEmpty() && storage.type.getItem() != Items.AIR;
+        if (full) {
 
-		if (full) {
+            title = storage.type.getDisplayName();
+            text.add(String.format(Locale.US, "%,d", storage.getStockpile()) + " / " + String.format(Locale.US, "%,d", storage.getCapacity()));
 
-			title = storage.type.getDisplayName();
-			text.add(String.format(Locale.US, "%,d", storage.getStockpile()) + " / " + String.format(Locale.US, "%,d", storage.getCapacity()));
+            double percent = (double) storage.getStockpile() / (double) storage.getCapacity();
+            int charge = (int) Math.floor(percent * 10_000D);
+            int color = ((int) (0xFF - 0xFF * percent)) << 16 | ((int) (0xFF * percent) << 8);
 
-			double percent = (double) storage.getStockpile() / (double) storage.getCapacity();
-			int charge = (int) Math.floor(percent * 10_000D);
-			int color = ((int) (0xFF - 0xFF * percent)) << 16 | ((int) (0xFF * percent) << 8);
+            text.add("&[" + color + "&]" + (charge / 100D) + "%");
+        }
 
-			text.add("&[" + color + "&]" + (charge / 100D) + "%");
-		}
+        ILookOverlay.printGeneric(event, title, full ? 0xffff00 : 0x00ffff, full ? 0x404000 : 0x004040, text);
+    }
 
-		ILookOverlay.printGeneric(event, title, full ? 0xffff00 : 0x00ffff, full ? 0x404000 : 0x004040, text);
-	}
+    @Override
+    public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
 
-	@Override
-	public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
+        if (!stack.hasTagCompound()) return;
 
-		if (!stack.hasTagCompound()) return;
+        ItemStack type = new ItemStack(stack.getTagCompound().getCompoundTag("slot1"));
 
-		ItemStack type = new ItemStack(stack.getTagCompound().getCompoundTag("slot1"));
+        if (!type.isEmpty()) {
+            tooltip.add("§6" + type.getDisplayName());
+            tooltip.add(String.format(Locale.US, "%,d", stack.getTagCompound().getInteger("stack")) + " / " + String.format(Locale.US, "%,d", getCapacity()));
+        }
+    }
 
-		if (!type.isEmpty()) {
-			tooltip.add("§6" + type.getDisplayName());
-			tooltip.add(String.format(Locale.US, "%,d", stack.getTagCompound().getInteger("stack")) + " / " + String.format(Locale.US, "%,d", getCapacity()));
-		}
-	}
+    @Override
+    public boolean hasComparatorInputOverride(IBlockState state) {
+        return true;
+    }
 
-	@Override
-	public EnumBlockRenderType getRenderType(IBlockState state){
-		return EnumBlockRenderType.MODEL;
-	}
+    @Override
+    public int getComparatorInputOverride(IBlockState blockState, World worldIn, BlockPos pos) {
+        TileEntity te = worldIn.getTileEntity(pos);
+        return te instanceof TileEntityMassStorage ? ((TileEntityMassStorage) te).redstone : 0;
+    }
 }
-/*
-	@Override
-	public boolean hasComparatorInputOverride() {
-		return true;
-	}
-	
-	@Override
-	public int getComparatorInputOverride(World world, int x, int y, int z, int side) {
-		return ((TileEntityMassStorage) world.getTileEntity(x, y, z)).redstone;
-	}
-}
-
- */

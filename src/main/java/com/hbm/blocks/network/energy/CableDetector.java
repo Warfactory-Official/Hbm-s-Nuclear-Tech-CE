@@ -35,12 +35,26 @@ public class CableDetector extends BlockContainer {
 	
 	@Override
 	public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
+		if(world.isRemote) return;
+
 		boolean on = world.isBlockPowered(pos);
-		if(on) {
-			world.setBlockState(pos, world.getBlockState(pos).withProperty(STATE, true), 2);
-			world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.reactorStart, SoundCategory.BLOCKS, 1.0F, 0.3F);
-		} else {
-			world.setBlockState(pos, world.getBlockState(pos).withProperty(STATE, false), 2);
+		boolean wasOn = state.getValue(STATE);
+
+		boolean update = false;
+
+		if(on && !wasOn) {
+			world.setBlockState(pos, state.withProperty(STATE, true), 2);
+			world.playSound(null, pos, HBMSoundHandler.reactorStart, SoundCategory.BLOCKS, 1.0F, 1.0F);
+			update = true;
+		} else if(!on && wasOn) {
+			world.setBlockState(pos, state.withProperty(STATE, false), 2);
+			world.playSound(null, pos, HBMSoundHandler.reactorStart, SoundCategory.BLOCKS, 1.0F, 0.85F);
+			update = true;
+		}
+
+		if(update) {
+			TileEntityCableSwitch te = (TileEntityCableSwitch) world.getTileEntity(pos);
+			te.updateState();
 		}
 	}
 	

@@ -23,6 +23,11 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.saveddata.satellites.*;
+import com.hbm.saveddata.satellites.SatelliteDetector;
+import com.hbm.saveddata.satellites.SatelliteDetector.BurstIntensity;
+import com.hbm.saveddata.satellites.SatelliteRayScan;
+import com.hbm.saveddata.satellites.SatelliteRayScan.RayEvent;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IConfigurableMachine;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IRadarCommandReceiver;
@@ -64,9 +69,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -76,7 +79,7 @@ import java.util.function.Function;
  */
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 @AutoRegister
-public class TileEntityMachineRadarNT extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IGUIProvider, IConfigurableMachine, IControlReceiver, SimpleComponent, CompatHandler.OCComponent {
+public class TileEntityMachineRadarNT extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IGUIProvider, IConfigurableMachine, IControlReceiver, SimpleComponent, CompatHandler.OCComponent, IConnectionAnchors {
 
     protected final static int maxTimer = 80;
     public static int maxPower = 100_000;
@@ -112,7 +115,7 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
     AxisAlignedBB bb = null;
 
     public TileEntityMachineRadarNT() {
-        super(10);
+        super(10, false, true);
     }
 
     /**
@@ -160,8 +163,7 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
         //IRadarDetectableNT
         converters.add(x -> {
             Entity e = x.getX();
-            if (e instanceof IRadarDetectableNT) {
-                IRadarDetectableNT detectable = (IRadarDetectableNT) e;
+            if (e instanceof IRadarDetectableNT detectable) {
                 if (detectable.canBeSeenBy(x.getY()) && detectable.paramsApplicable(x.getZ()))
                     return new RadarEntry(detectable, e, detectable.suppliesRedstone(x.getZ()));
             }
@@ -445,6 +447,11 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
                 }
             }
         }
+
+        if (world.getTotalWorldTime() % 20 == 0) {
+            SatelliteDetector.reportEvent(world, SatelliteDetector.DURATION_MEDIUM, BurstIntensity.MEDIUM, pos.getX(), pos.getZ());
+            SatelliteRayScan.reportEvent(world, pos.getX(), pos.getY(), pos.getZ(), RayEvent.INFO_RADAR, 200);
+        }
     }
 
     public int getRedPower() {
@@ -506,10 +513,6 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
     @Override
     public boolean hasPermission(EntityPlayer player) {
         return this.isUseableByPlayer(player);
-    }
-
-    @Override
-    public void receiveControl(NBTTagCompound data) {
     }
 
     @Override

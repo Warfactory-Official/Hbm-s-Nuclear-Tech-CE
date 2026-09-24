@@ -56,7 +56,7 @@ public class CrucibleCastingHandler implements IRecipeCategory<CrucibleCastingHa
     public void setRecipe(@NotNull IRecipeLayout recipeLayout, @NotNull Wrapper wrapper, @NotNull IIngredients ingredients) {
         IGuiItemStackGroup stacks = recipeLayout.getItemStacks();
 
-        // Индексы слотов: 0=input, 1=mold, 2=basin, 3=output
+        // 0=input, 1=mold, 2=basin, 3=output
         stacks.init(0, true, 47, 23); // input
         stacks.init(1, true, 74, 5);  // mold
         stacks.init(2, true, 74, 41); // basin

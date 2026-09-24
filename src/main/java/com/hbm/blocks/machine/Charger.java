@@ -1,7 +1,8 @@
 package com.hbm.blocks.machine;
 
 import com.google.common.collect.ImmutableMap;
-import com.hbm.items.IDynamicModels;
+import com.hbm.items.ClaimedModelLocationRegistry;
+import com.hbm.main.client.NTMClientRegistry;
 import com.hbm.render.block.BlockBakeFrame;
 import com.hbm.tileentity.machine.TileEntityCharger;
 import com.hbm.world.gen.nbt.INBTBlockTransformable;
@@ -46,7 +47,7 @@ public class Charger extends BlockContainerBakeable implements INBTBlockTransfor
     private static final AxisAlignedBB AABB_EAST   = new AxisAlignedBB(0.0D, 0.25D, 5 * f, 4 * f, 0.75D, 11 * f);
 
     public Charger(Material mat, String s) {
-        super(mat, s, new BlockBakeFrame("block_steel"));
+        super(mat, s, BlockBakeFrame.cubeAll("block_steel"));
         this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
     }
 
@@ -131,16 +132,18 @@ public class Charger extends BlockContainerBakeable implements INBTBlockTransfor
             );
             ModelResourceLocation worldLocation = new ModelResourceLocation(getRegistryName(), "normal");
             event.getModelRegistry().putObject(worldLocation, blockBaked);
-            IModel itemBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
-            ImmutableMap<String, String> itemTextures = ImmutableMap.of("layer0", "hbm:blocks/" + getRegistryName().getPath());
-            IModel itemRetextured = itemBaseModel.retexture(itemTextures);
-            IBakedModel itemBaked = itemRetextured.bake(
-                    ModelRotation.X0_Y0,
-                    DefaultVertexFormats.ITEM,
-                    ModelLoader.defaultTextureGetter()
-            );
-            ModelResourceLocation inventoryLocation = new ModelResourceLocation(getRegistryName(), "inventory");
-            event.getModelRegistry().putObject(inventoryLocation, itemBaked);
+            if (!ClaimedModelLocationRegistry.hasSyntheticTeisrBinding(Item.getItemFromBlock(this))) {
+                IModel itemBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
+                ImmutableMap<String, String> itemTextures = ImmutableMap.of("layer0", "hbm:blocks/" + getRegistryName().getPath());
+                IModel itemRetextured = itemBaseModel.retexture(itemTextures);
+                IBakedModel itemBaked = itemRetextured.bake(
+                        ModelRotation.X0_Y0,
+                        DefaultVertexFormats.ITEM,
+                        ModelLoader.defaultTextureGetter()
+                );
+                ModelResourceLocation inventoryLocation = new ModelResourceLocation(getRegistryName(), "inventory");
+                event.getModelRegistry().putObject(inventoryLocation, itemBaked);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -151,7 +154,9 @@ public class Charger extends BlockContainerBakeable implements INBTBlockTransfor
     @Override
     @SideOnly(Side.CLIENT)
     public void registerModel() {
-        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0, new ModelResourceLocation(this.getRegistryName(), "inventory"));
+        Item item = Item.getItemFromBlock(this);
+        ModelResourceLocation syntheticLocation = NTMClientRegistry.getSyntheticTeisrModelLocation(item);
+        ModelLoader.setCustomModelResourceLocation(item, 0, syntheticLocation != null ? syntheticLocation : new ModelResourceLocation(this.getRegistryName(), "inventory"));
     }
 
     @Override

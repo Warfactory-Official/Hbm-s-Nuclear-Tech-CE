@@ -6,6 +6,7 @@ import com.hbm.handler.threading.PacketThreading;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.particle.helper.AshesCreator;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.particle.helper.SkeletonCreator;
 import com.hbm.util.DamageResistanceHandler;
 import net.minecraft.entity.EntityLivingBase;
@@ -67,10 +68,9 @@ public class ConfettiUtil {
         if(entity instanceof EntitySkeleton) return;
 
         NBTTagCompound vdat = new NBTTagCompound();
-        vdat.setString("type", "giblets");
         vdat.setInteger("ent", entity.getEntityId());
         vdat.setInteger("gibType", type);
-        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(vdat, entity.posX, entity.posY + entity.height * 0.5, entity.posZ), new NetworkRegistry.TargetPoint(entity.dimension, entity.posX, entity.posY + entity.height * 0.5, entity.posZ, 150));
+        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Giblets, vdat, entity.posX, entity.posY + entity.height * 0.5, entity.posZ), new NetworkRegistry.TargetPoint(entity.dimension, entity.posX, entity.posY + entity.height * 0.5, entity.posZ, 150));
         entity.world.playSound(
                 null,
                 entity.posX, entity.posY, entity.posZ,

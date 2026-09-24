@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.items.ModItems;
 import com.hbm.tileentity.bomb.TileEntityNukeMan;
 import com.hbm.util.InventoryUtil;
@@ -13,7 +14,15 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerNukeMan extends Container {
 
 	private TileEntityNukeMan nukeMan;
-	
+
+	private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(6)
+                                                                              .rule(0, 1, s -> s.getItem() == ModItems.man_igniter)
+                                                                              .rule(1, 5, s -> s.getItem() == ModItems.early_explosive_lenses)
+                                                                              .rule(5, 6, s -> s.getItem() == ModItems.man_core)
+                                                                              .ruleDispatchMode(TransferStrategy.RuleDispatchMode.FALLTHROUGH_ON_FAILURE)
+                                                                              .playerFallbackMode(TransferStrategy.PlayerFallbackMode.REBALANCE_SECTIONS)
+                                                                              .build();
+
 	public ContainerNukeMan(InventoryPlayer invPlayer, TileEntityNukeMan tedf) {
 
 		nukeMan = tedf;
@@ -38,10 +47,7 @@ public class ContainerNukeMan extends Container {
 
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 6,
-                s -> s.getItem() == ModItems.man_igniter, 1,
-                s -> s.getItem() == ModItems.early_explosive_lenses, 5,
-                s -> s.getItem() == ModItems.man_core, 6);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
 	}
 
 	@Override

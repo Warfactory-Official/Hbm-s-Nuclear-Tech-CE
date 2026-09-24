@@ -4,7 +4,7 @@ import com.hbm.config.MobConfig;
 import com.hbm.config.RadiationConfig;
 import com.hbm.entity.mob.glyphid.EntityGlyphidDigger;
 import com.hbm.entity.mob.glyphid.EntityGlyphidScout;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -42,7 +42,7 @@ public class PollutionHandler {
     public static final float HEAVY_METAL_PER_SECOND = 1F / 50F;
     /** Baserate for poison when spilled */
     public static final float POISON_PER_SECOND = 1F / 50F;
-    public static Vec3 targetCoords;
+    public static Vec3NT targetCoords;
 
     ///////////////////////
     /// UTILITY METHODS ///
@@ -365,7 +365,7 @@ public class PollutionHandler {
 
     @SubscribeEvent
     public void rampantTargetSetter(PlayerSleepInBedEvent event){
-        if (MobConfig.rampantGlyphidGuidance) targetCoords = Vec3.createVectorHelper(event.getPos().getX(), event.getPos().getY(), event.getPos().getZ());
+        if (MobConfig.rampantGlyphidGuidance) targetCoords = Vec3NT.createVectorHelper(event.getPos().getX(), event.getPos().getY(), event.getPos().getZ());
     }
 
     @SubscribeEvent

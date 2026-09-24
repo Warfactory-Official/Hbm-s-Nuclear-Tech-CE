@@ -1,36 +1,42 @@
 package com.hbm.blocks.network;
 
+import com.hbm.api.block.IToolable;
 import com.hbm.api.conveyor.IConveyorBelt;
 import com.hbm.api.conveyor.IConveyorItem;
 import com.hbm.api.conveyor.IConveyorPackage;
 import com.hbm.api.conveyor.IEnterableBlock;
 import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.ILookOverlay;
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.entity.item.EntityMovingItem;
-import com.hbm.entity.item.EntityMovingPackage;
 import com.hbm.handler.MultiblockHandlerXR;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityProxyCombo;
 import com.hbm.tileentity.network.TileEntityCraneSplitter;
-import net.minecraft.block.Block;
+import com.hbm.util.I18nUtil;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
-public class CraneSplitter extends BlockDummyable implements IConveyorBelt, IEnterableBlock {
+public class CraneSplitter extends BlockDummyable implements IConveyorBelt, IEnterableBlock, ITooltipProvider, IToolable, ILookOverlay {
 
     public CraneSplitter(Material materialIn, String s) {
         super(materialIn, s);
@@ -38,7 +44,7 @@ public class CraneSplitter extends BlockDummyable implements IConveyorBelt, IEnt
 
     @Override
     public int[] getDimensions() {
-        return new int[] {0, 0, 0, 0, 1, 0};
+        return new int[] {0, 0, 0, 0, 0, 1};
     }
 
     @Override
@@ -47,48 +53,51 @@ public class CraneSplitter extends BlockDummyable implements IConveyorBelt, IEnt
     }
 
     @Override
-    public TileEntity createNewTileEntity(World worldIn, int meta) {
+    public TileEntity createNewTileEntity(@NotNull World worldIn, int meta) {
 
         if(meta >= 12) return new TileEntityCraneSplitter();
-        if(meta >= 6) return new TileEntityProxyCombo(false, true, true);
+        if(meta >= 6) return new TileEntityProxyCombo(false, false, false);
 
         return null;
 
     }
 
     @Override
-    public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+    public @NotNull Item getItemDropped(@NotNull IBlockState state, @NotNull Random rand, int fortune) {
         return Item.getItemFromBlock(ModBlocks.crane_splitter);
     }
 
     @Override
-    public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
+    public @NotNull ItemStack getPickBlock(@NotNull IBlockState state, @NotNull RayTraceResult target, @NotNull World world, @NotNull BlockPos pos, @NotNull EntityPlayer player) {
         return new ItemStack(ModBlocks.crane_splitter);
     }
 
     private EnumFacing getCustomMap(int meta){
-        switch(meta){
-            case 4: return EnumFacing.NORTH;
-            case 2: return EnumFacing.EAST;
-            case 5: return EnumFacing.SOUTH;
-            case 3: return EnumFacing.WEST;
-
-            case 13: return EnumFacing.NORTH;
-            case 14: return EnumFacing.EAST;
-            case 12: return EnumFacing.SOUTH;
-            case 15: return EnumFacing.WEST;
-            default: return EnumFacing.NORTH;
-        }
+        return switch (meta) {
+            case 2, 14 -> EnumFacing.EAST;
+            case 5, 12 -> EnumFacing.SOUTH;
+            case 3, 15 -> EnumFacing.WEST;
+            default -> EnumFacing.NORTH;
+        };
     }
 
     @Override 
     public boolean canItemEnter(World world, int x, int y, int z, EnumFacing dir, IConveyorItem entity) { 
-        return getTravelDirection(world, new BlockPos(x, y, z), null) == dir; 
+        return getTravelDirection(world, new BlockPos(x, y, z)) == dir;
     }
 
-    public EnumFacing getTravelDirection(World world, BlockPos pos, Vec3d itemPos) {
-        Block block = world.getBlockState(pos).getBlock();
-        int meta = block.getMetaFromState(world.getBlockState(pos));
+    public EnumFacing getTravelDirection(World world, BlockPos pos) {
+        IBlockState state = world.getBlockState(pos);
+        int meta = state.getBlock().getMetaFromState(state);
+
+        if (meta < 12) {
+            BlockPos corePos = findCore(world, pos);
+            if (corePos != null) {
+                IBlockState coreState = world.getBlockState(corePos);
+                meta = coreState.getBlock().getMetaFromState(coreState);
+            }
+        }
+
         return getCustomMap(meta).getOpposite();
     }
 
@@ -97,37 +106,13 @@ public class CraneSplitter extends BlockDummyable implements IConveyorBelt, IEnt
         return true;
     }
 
-    @Override 
-    public boolean canPackageEnter(World world, int x, int y, int z, EnumFacing dir, IConveyorPackage entity) { return true; }
-    
-    @Override 
-    public void onPackageEnter(World world, int x, int y, int z, EnumFacing dir, IConveyorPackage entity) {
-        if (entity == null) {
-            return;
-        }
-        BlockPos pos = new BlockPos(x, y, z);
-        int[] core = this.findCore(world, pos.getX(), pos.getY(), pos.getZ());
-        if (core == null) return;
-        pos = new BlockPos(core[0], core[1], core[2]);
-        TileEntity tile = world.getTileEntity(pos);
-        if (!(tile instanceof TileEntityCraneSplitter)) return;
-        TileEntityCraneSplitter splitter = (TileEntityCraneSplitter) tile;
-
-        boolean pos1 = splitter.getPosition();
-        EnumFacing rot = getCustomMap(splitter.getBlockMetadata()).rotateY().rotateY().rotateY();
-
-        if(pos1){
-            this.spawnMovingBox(world, pos.getX(), pos.getY(), pos.getZ(), entity.getItemStacks());
-        } else {
-            this.spawnMovingBox(world, pos.getX() + rot.getXOffset(), pos.getY(), pos.getZ() + rot.getZOffset(), entity.getItemStacks());
-        }
-        splitter.setPosition(!pos1);
-    }
+    @Override public boolean canPackageEnter(World world, int x, int y, int z, EnumFacing dir, IConveyorPackage entity) { return false; }
+    @Override public void onPackageEnter(World world, int x, int y, int z, EnumFacing dir, IConveyorPackage entity) { }
 
     @Override
     public Vec3d getTravelLocation(World world, int x, int y, int z, Vec3d itemPos, double speed) {
         BlockPos pos = new BlockPos(x, y, z);
-        EnumFacing dir = this.getTravelDirection(world, pos, itemPos);
+        EnumFacing dir = this.getTravelDirection(world, pos);
         Vec3d snap = this.getClosestSnappingPosition(world, pos, itemPos);
         Vec3d dest = new Vec3d(
                 snap.x - dir.getXOffset() * speed,
@@ -138,16 +123,15 @@ public class CraneSplitter extends BlockDummyable implements IConveyorBelt, IEnt
                 dest.y - itemPos.y,
                 dest.z - itemPos.z);
         double len = motion.length();
-        Vec3d ret = new Vec3d(
+        return new Vec3d(
                 itemPos.x + motion.x / len * speed,
                 itemPos.y + motion.y / len * speed,
                 itemPos.z + motion.z / len * speed);
-        return ret;
     }
 
     @Override
     public Vec3d getClosestSnappingPosition(World world, BlockPos pos, Vec3d itemPos) {
-        EnumFacing dir = this.getTravelDirection(world, pos, itemPos);
+        EnumFacing dir = this.getTravelDirection(world, pos);
 
         double posX = MathHelper.clamp(itemPos.x, pos.getX(), pos.getX() + 1);
         double posZ = MathHelper.clamp(itemPos.z, pos.getZ(), pos.getZ() + 1);
@@ -170,37 +154,16 @@ public class CraneSplitter extends BlockDummyable implements IConveyorBelt, IEnt
             return;
         }
         BlockPos pos = new BlockPos(x, y, z);
-        int[] core = this.findCore(world, pos.getX(), pos.getY(), pos.getZ());
-        if (core == null) return;
-        pos = new BlockPos(core[0], core[1], core[2]);
-        TileEntity tile = world.getTileEntity(pos);
-        if (!(tile instanceof TileEntityCraneSplitter)) return;
-        TileEntityCraneSplitter splitter = (TileEntityCraneSplitter) tile;
+        TileEntity tile = this.findCoreTE(world, pos);
+        if (!(tile instanceof TileEntityCraneSplitter splitter)) return;
 
-        boolean pos1 = splitter.getPosition();
-        ItemStack stack = entity.getItemStack();
-        EnumFacing rot = getCustomMap(splitter.getBlockMetadata()).rotateY().rotateY().rotateY();
+        ForgeDirection rot = ForgeDirection.getOrientation(splitter.getBlockMetadata() - offset).getRotation(ForgeDirection.DOWN);
 
-        if (stack.getCount() % 2 == 0) {
-            stack.setCount(stack.getCount()>>1);
-            this.spawnMovingItem(world, pos.getX(), pos.getY(), pos.getZ(), stack.copy());
-            this.spawnMovingItem(world, pos.getX() + rot.getXOffset(), pos.getY(), pos.getZ() + rot.getZOffset(), stack.copy());
-        } else {
-            int baseSize = stack.getCount()>>1;
-            if(baseSize == 0){
-                if(pos1){
-                    this.spawnMovingItem(world, pos.getX(), pos.getY(), pos.getZ(), stack.copy());
-                } else {
-                    this.spawnMovingItem(world, pos.getX() + rot.getXOffset(), pos.getY(), pos.getZ() + rot.getZOffset(), stack.copy());
-                }
-            } else {
-                stack.setCount(baseSize + (pos1 ? 0 : 1));
-                this.spawnMovingItem(world, pos.getX(), pos.getY(), pos.getZ(), stack.copy());
-                stack.setCount(baseSize + (pos1 ? 1 : 0));
-                this.spawnMovingItem(world, pos.getX() + rot.getXOffset(), pos.getY(), pos.getZ() + rot.getZOffset(), stack.copy());
-            }
-            splitter.setPosition(!pos1);
-        }
+        ItemStack[] splits = splitter.splitStack(entity.getItemStack());
+
+        BlockPos corePos = splitter.getPos();
+        spawnMovingItem(world, corePos.getX(), corePos.getY(), corePos.getZ(), splits[0]);
+        spawnMovingItem(world, corePos.getX() + rot.offsetX, corePos.getY(), corePos.getZ() + rot.offsetZ, splits[1]);
     }
 
     private void spawnMovingItem(World worldIn, int x, int y, int z, ItemStack stack) {
@@ -208,7 +171,7 @@ public class CraneSplitter extends BlockDummyable implements IConveyorBelt, IEnt
         int xCoord = pos1.getX();
         int yCoord = pos1.getY();
         int zCoord = pos1.getZ();
-        if (stack.getCount() <= 0) return;
+        if (stack.isEmpty() || stack.getCount() <= 0) return;
         EntityMovingItem moving = new EntityMovingItem(worldIn);
         Vec3d itemPos = new Vec3d(xCoord + 0.5, yCoord + 0.5, zCoord + 0.5);
         Vec3d snap = this.getClosestSnappingPosition(worldIn, pos1, itemPos);
@@ -217,42 +180,42 @@ public class CraneSplitter extends BlockDummyable implements IConveyorBelt, IEnt
         worldIn.spawnEntity(moving);
     }
 
-    private void spawnMovingBox(World worldIn, int x, int y, int z, ItemStack[] stacks) {
-        BlockPos pos1 = new BlockPos(x, y, z);
-        int xCoord = pos1.getX();
-        int yCoord = pos1.getY();
-        int zCoord = pos1.getZ();
-        EntityMovingPackage moving = new EntityMovingPackage(worldIn);
-        Vec3d itemPos = new Vec3d(xCoord + 0.5, yCoord + 0.5, zCoord + 0.5);
-        Vec3d snap = this.getClosestSnappingPosition(worldIn, pos1, itemPos);
-        moving.setPosition(snap.x, snap.y, snap.z);
-        moving.setItemStacks(stacks);
-        worldIn.spawnEntity(moving);
+    @Override
+    public void addInformation(@NotNull ItemStack stack, World player, @NotNull List<String> tooltip, @NotNull ITooltipFlag advanced) {
+        this.addStandardInfo(tooltip);
     }
 
     @Override
-    public boolean isOpaqueCube(@NotNull IBlockState state) {
-        return false;
+    public boolean onScrew(World world, EntityPlayer player, int x, int y, int z, EnumFacing side, float fX, float fY, float fZ, EnumHand hand, ToolType tool) {
+        if(world.isRemote) return true;
+        if(tool != ToolType.SCREWDRIVER) return false;
+
+        if(!(findCoreTE(world, new BlockPos(x, y, z)) instanceof TileEntityCraneSplitter crane)) return false;
+
+        // The core of the dummy is always the left hand block
+        boolean isLeft = x == crane.getPos().getX() && y == crane.getPos().getY() && z == crane.getPos().getZ();
+        int adjust = player.isSneaking() ? -1 : 1;
+
+        if(isLeft) {
+            crane.leftRatio = (byte)MathHelper.clamp(crane.leftRatio + adjust, 1, 16);
+        } else {
+            crane.rightRatio = (byte)MathHelper.clamp(crane.rightRatio + adjust, 1, 16);
+        }
+
+        crane.markDirty();
+        crane.networkPackNT(15);
+
+        return true;
     }
 
     @Override
-    public boolean isBlockNormalCube(@NotNull IBlockState state) {
-        return false;
-    }
+    public void printHook(RenderGameOverlayEvent.Pre event, World world, BlockPos pos) {
+        if(!(findCoreTE(world, pos) instanceof TileEntityCraneSplitter crane)) return;
 
-    @Override
-    public boolean isNormalCube(@NotNull IBlockState state) {
-        return false;
-    }
+        List<String> text = new ArrayList<>();
+        text.add("Splitter ratio: " + crane.leftRatio + ":" + crane.rightRatio);
 
-    @Override
-    public boolean isNormalCube(@NotNull IBlockState state, @NotNull IBlockAccess world, @NotNull BlockPos pos) {
-        return false;
-    }
-
-    @Override
-    public boolean shouldSideBeRendered(@NotNull IBlockState blockState, @NotNull IBlockAccess blockAccess, @NotNull BlockPos pos, @NotNull EnumFacing side) {
-        return false;
+        ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getTranslationKey() + ".name"), 0xffff00, 0x404000, text);
     }
 
     @Override

@@ -10,14 +10,26 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.Rotation;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 public class BlockConveyorLift extends BlockConveyorChute {
 
+    // The top exit segment (TYPE 2) only models up to Y=0.5, so its collision box must match.
+    private static final AxisAlignedBB TOP_AABB = new AxisAlignedBB(0, 0, 0, 1, 0.5, 1);
+
     public BlockConveyorLift(Material materialIn, String s) {
         super(materialIn, s);
+    }
+
+    @Override
+    public @NotNull AxisAlignedBB getBoundingBox(@NotNull IBlockState state, @NotNull IBlockAccess source, BlockPos pos) {
+        if (state.getValue(TYPE) == 2) return TOP_AABB;
+        return super.getBoundingBox(state, source, pos);
     }
 
     @Override

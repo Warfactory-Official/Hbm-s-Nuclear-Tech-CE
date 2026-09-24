@@ -13,16 +13,17 @@ import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
+import com.hbm.items.weapon.sedna.mags.MagazineFullReload;
 import com.hbm.items.weapon.sedna.mags.MagazineSingleReload;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
 import com.hbm.particle.SpentCasing;
+import com.hbm.render.anim.sedna.AnimationEnums;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna.IType;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
 import com.hbm.render.anim.sedna.BusAnimationSequenceSedna;
-import com.hbm.render.anim.sedna.HbmAnimationsSedna;
 import com.hbm.render.misc.RenderScreenOverlay;
 import com.hbm.util.DamageResistanceHandler;
 import com.hbm.util.EntityDamageUtil;
@@ -65,7 +66,7 @@ public class XFactory40mm {
         Lego.standardExplode(bullet, mop, 5F); bullet.setDead();
     };
     public static BiConsumer<EntityBulletBaseMK4, RayTraceResult> LAMBDA_STANDARD_EXPLODE_HEAT = (bullet, mop) -> {
-        if(mop.typeOfHit == mop.typeOfHit.ENTITY && bullet.ticksExisted < 3) return;
+        if(mop.typeOfHit == mop.typeOfHit.ENTITY && bullet.ticksExisted < 3 && mop.entityHit == bullet.getThrower()) return;
         Lego.standardExplode(bullet, mop, 3.5F); bullet.setDead();
         if(mop.typeOfHit == mop.typeOfHit.ENTITY && mop.entityHit instanceof EntityLivingBase living) {
             EntityDamageUtil.attackEntityFromNT(living, bullet.config.getDamage(bullet, bullet.getThrower(), DamageResistanceHandler.DamageClass.EXPLOSIVE), bullet.damage * 3F, true, true, 0.5F, 3F, 0.15F);
@@ -74,7 +75,7 @@ public class XFactory40mm {
         }
     };
     public static BiConsumer<EntityBulletBaseMK4, RayTraceResult> LAMBDA_STANDARD_EXPLODE_DEMO = (bullet, mop) -> {
-        if(mop.typeOfHit == mop.typeOfHit.ENTITY && bullet.ticksExisted < 3) return;
+        if(mop.typeOfHit == mop.typeOfHit.ENTITY && bullet.ticksExisted < 3 && mop.entityHit == bullet.getThrower()) return;
         ExplosionVNT vnt = new ExplosionVNT(bullet.world, mop.hitVec.x, mop.hitVec.y, mop.hitVec.z, 5F, bullet.getThrower());
         vnt.setBlockAllocator(new BlockAllocatorStandard());
         vnt.setBlockProcessor(new BlockProcessorStandard());
@@ -88,7 +89,7 @@ public class XFactory40mm {
     public static BiConsumer<EntityBulletBaseMK4, RayTraceResult> LAMBDA_STANDARD_EXPLODE_PHOSPHORUS = (bullet, mop) -> spawnFire(bullet, mop, true, 400);
 
     public static void spawnFire(EntityBulletBaseMK4 bullet, RayTraceResult mop, boolean phosphorus, int duration) {
-        if(mop.typeOfHit == mop.typeOfHit.ENTITY && bullet.ticksExisted < 3) return;
+        if(mop.typeOfHit == mop.typeOfHit.ENTITY && bullet.ticksExisted < 3 && mop.entityHit == bullet.getThrower()) return;
         World world = bullet.world;
         Lego.standardExplode(bullet, mop, 3F);
         EntityFireLingering fire = new EntityFireLingering(world).setArea(5, 2).setDuration(duration).setType(phosphorus ? EntityFireLingering.TYPE_PHOSPHORUS : EntityFireLingering.TYPE_DIESEL);
@@ -158,10 +159,10 @@ public class XFactory40mm {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_GL))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_FLAREGUN_ANIMS).orchestra(Orchestras.ORCHESTRA_FLAREGUN)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.G26_FLARE, 3);
 
         ModItems.gun_congolake = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_congolake", new GunConfig()
-                .dura(400).draw(7).inspect(39).reloadSequential(true).crosshair(RenderScreenOverlay.Crosshair.L_CIRCUMFLEX).smoke(LAMBDA_SMOKE)
+                .dura(400).draw(7).inspect(39).reloadSequential(true).reloadChangeType(true).crosshair(RenderScreenOverlay.Crosshair.L_CIRCUMFLEX).smoke(LAMBDA_SMOKE)
                 .rec(new Receiver(0)
                         .dmg(20F).delay(24).reload(16, 16, 16, 0).jam(0).sound(HBMSoundHandler.glShoot, 1.0F, 1.0F)
                         .mag(new MagazineSingleReload(0, 4).addConfigs(g40_he, g40_heat, g40_demo, g40_inc, g40_phosphorus))
@@ -169,14 +170,27 @@ public class XFactory40mm {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_GL))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_CONGOLAKE_ANIMS).orchestra(Orchestras.ORCHESTRA_CONGOLAKE)
-        );
+        ).setDefaultAmmo(GunFactory.EnumAmmo.G40_HE, 8);
+
+        ModItems.gun_mk108 = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_mk108", new GunConfig()
+                .dura(5_000).draw(20).inspect(65).crosshair(RenderScreenOverlay.Crosshair.L_CIRCUMFLEX).hideCrosshair(false)
+                .rec(new Receiver(0)
+                        .dmg(25F).delay(10).auto(true).dryfireAfterAuto(true).reload(135).jam(25).sound(HBMSoundHandler.mk108Shoot, 1.0F, 1.0F)
+                        .mag(new MagazineFullReload(0, 30).addConfigs(g40_he, g40_heat, g40_demo, g40_inc, g40_phosphorus))
+                        .offset(0.75, -0.125, -0.125)
+                        .setupStandardFire().recoil(LAMBDA_RECOIL_MK108))
+                .setupStandardConfiguration()
+                .anim(LAMBDA_MK108_ANIMS).orchestra(Orchestras.ORCHESTRA_MK108)
+        ).setDefaultAmmo(GunFactory.EnumAmmo.G40_HE, 50);
     }
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_SMOKE = (stack, ctx) -> Lego.handleStandardSmoke(ctx.entity, stack, 1500, 0.025D, 1.05D, 0);
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_RECOIL_GL = (stack, ctx) -> ItemGunBaseNT.setupRecoil(10, (float) (ctx.getPlayer().getRNG().nextGaussian() * 1.5));
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_FLAREGUN_ANIMS = (stack, type) -> switch (type) {
+    public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_RECOIL_MK108 = (stack, ctx) -> ItemGunBaseNT.setupRecoil((float) (ctx.getPlayer().getRNG().nextGaussian() * 1.0) + 1F, (float) (ctx.getPlayer().getRNG().nextGaussian()));
+
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> LAMBDA_FLAREGUN_ANIMS = (stack, type) -> switch (type) {
         case EQUIP -> new BusAnimationSedna()
                 .addBus("EQUIP", new BusAnimationSequenceSedna().addPos(-90, 0, 0, 0).addPos(0, 0, 0, 350, IType.SIN_DOWN));
         case CYCLE -> new BusAnimationSedna()
@@ -196,7 +210,7 @@ public class XFactory40mm {
         default -> null;
     };
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_CONGOLAKE_ANIMS = (stack, type) -> {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> LAMBDA_CONGOLAKE_ANIMS = (stack, type) -> {
         int ammo = ((ItemGunBaseNT) stack.getItem()).getConfig(stack, 0).getReceivers(stack)[0].getMagazine(stack).getAmount(stack, MainRegistry.proxy.me().inventory);
         return switch (type) {
             case EQUIP -> ResourceManager.congolake_anim.get("Equip");
@@ -209,5 +223,48 @@ public class XFactory40mm {
             default -> null;
         };
 
+    };
+
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> LAMBDA_MK108_ANIMS = (stack, type) -> {
+        switch (type) {
+            case EQUIP: return new BusAnimationSedna()
+                    .addBus("EQUIP", new BusAnimationSequenceSedna().setPos(45, 0, 0).addPos(0, 0, 0, 1000, IType.SIN_DOWN));
+            case CYCLE:
+                int amount = ((ItemGunBaseNT) stack.getItem()).getConfig(stack, 0).getReceivers(stack)[0].getMagazine(stack).getAmount(stack, null);
+                return new BusAnimationSedna()
+                        .addBus("RECOIL", new BusAnimationSequenceSedna().hold(50).addPos(0, 0, -0.25, 100, IType.SIN_DOWN).addPos(0, 0, 0, 150, IType.SIN_FULL))
+                        .addBus("BARREL", new BusAnimationSequenceSedna().addPos(0, 0, -1, 100, IType.SIN_DOWN).addPos(0, 0, 0, 250, IType.SIN_FULL))
+                        .addBus("CYCLE", new BusAnimationSequenceSedna().addPos(0, 0, 0, 100).addPos(1, 0, 0, 150))
+                        .addBus("SHELLS", new BusAnimationSequenceSedna().setPos(amount - 1, 0, 0));
+            case CYCLE_DRY: return new BusAnimationSedna()
+                    .addBus("HAMMER", new BusAnimationSequenceSedna().addPos(15, 0, 0, 50).addPos(15, 0, 0, 550).addPos(0, 0, 0, 100));
+            case RELOAD: return new BusAnimationSedna()
+                    .addBus("LIFT", new BusAnimationSequenceSedna().addPos(10, 0, 0, 500, IType.SIN_FULL).holdUntil(1250).addPos(-50, 0, 0, 750, IType.SIN_FULL).holdUntil(5500).addPos(0, 0, 0, 500, IType.SIN_FULL).hold(500).addPos(1, 0, 0, 100, IType.SIN_UP).addPos(0, 0, 0, 150, IType.SIN_FULL))
+                    .addBus("LID", new BusAnimationSequenceSedna().addPos(60, 0, 0, 500, IType.SIN_FULL).holdUntil(6000).addPos(0, 0, 0, 500, IType.SIN_UP))
+                    .addBus("BELT", new BusAnimationSequenceSedna().setPos(1, 0, 0).hold(500).addPos(0, 0, 0, 750, IType.SIN_UP).holdUntil(4500).addPos(1, 0, 0, 750, IType.SIN_UP))
+                    .addBus("DRUM", new BusAnimationSequenceSedna().hold(2000).addPos(2.5, 0, 0, 500, IType.SIN_DOWN).addPos(2.5, -2, -8, 500, IType.SIN_UP).setPos(4, -3, -8).addPos(2.5, 0, 0, 1000, IType.SIN_FULL).addPos(0, 0, 0, 500, IType.SIN_UP));
+            case JAMMED: return new BusAnimationSedna()
+                    .addBus("LID", new BusAnimationSequenceSedna().hold(250).addPos(45, 0, 0, 500, IType.SIN_FULL).addPos(0, 0, 0, 250, IType.SIN_UP))
+                    .addBus("LIFT", new BusAnimationSequenceSedna().hold(1000).addPos(1, 0, 0, 100, IType.SIN_UP).addPos(0, 0, 0, 150, IType.SIN_FULL));
+            case INSPECT:
+                int yeetHorizontal = 750;
+                int untilImpact = yeetHorizontal * 9 / 15;
+                int delay = 250;
+                int height = 6;
+                int arcUp = untilImpact * 5 / 8;
+                int arcDown = untilImpact * 3 / 8;
+                return new BusAnimationSedna()
+                        .addBus("LIFT", new BusAnimationSequenceSedna().hold(untilImpact).addPos(1, 0, 0, 50, IType.SIN_UP).addPos(0, 0, 0, 100, IType.SIN_FULL).hold(delay - 150).addPos(1, 0, 0, 50, IType.SIN_UP).addPos(0, 0, 0, 100, IType.SIN_FULL).hold(delay - 150).addPos(1, 0, 0, 50, IType.SIN_UP).addPos(0, 0, 0, 100, IType.SIN_FULL))
+                        .addBus("GRENH1", new BusAnimationSequenceSedna().setPos(9, 0, 0).addPos(-6, 0, 0, yeetHorizontal))
+                        .addBus("GRENV1", new BusAnimationSequenceSedna().setPos(0, -2, 0).addPos(0, height, 0, arcUp, IType.SIN_DOWN).addPos(0, 2, 0, arcDown, IType.SIN_UP).addPos(0, 3, 0, yeetHorizontal - untilImpact, IType.SIN_DOWN))
+                        .addBus("GRENS1", new BusAnimationSequenceSedna().addPos(360 * 2, 0, 0, untilImpact).setPos(0, 0, 0).addPos(360 * 1, 0, 0, yeetHorizontal - untilImpact))
+                        .addBus("GRENH2", new BusAnimationSequenceSedna().setPos(9, 0, 0).hold(delay).addPos(-6, 0, 0, yeetHorizontal))
+                        .addBus("GRENV2", new BusAnimationSequenceSedna().setPos(0, -2, 0).hold(delay).addPos(0, height, 0, arcUp, IType.SIN_DOWN).addPos(0, 2, 0, arcDown, IType.SIN_UP).addPos(0, 3, 0, yeetHorizontal - untilImpact, IType.SIN_DOWN))
+                        .addBus("GRENS2", new BusAnimationSequenceSedna().hold(delay).addPos(360 * 2, 0, 0, untilImpact).setPos(0, 0, 0).addPos(360 * 1, 0, 0, yeetHorizontal - untilImpact))
+                        .addBus("GRENH3", new BusAnimationSequenceSedna().setPos(9, 0, 0).hold(delay * 2).addPos(-6, 0, 0, yeetHorizontal))
+                        .addBus("GRENV3", new BusAnimationSequenceSedna().setPos(0, -2, 0).hold(delay * 2).addPos(0, height, 0, arcUp, IType.SIN_DOWN).addPos(0, 2, 0, arcDown, IType.SIN_UP).addPos(0, 3, 0, yeetHorizontal - untilImpact, IType.SIN_DOWN))
+                        .addBus("GRENS3", new BusAnimationSequenceSedna().hold(delay * 2).addPos(360 * 2, 0, 0, untilImpact).setPos(0, 0, 0).addPos(360 * 1, 0, 0, yeetHorizontal - untilImpact));
+        }
+        return null;
     };
 }

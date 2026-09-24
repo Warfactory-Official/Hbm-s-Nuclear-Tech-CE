@@ -14,12 +14,6 @@ import org.lwjgl.opengl.GL11;
 import java.util.Random;
 @AutoRegister
 public class RenderCore extends TileEntitySpecialRenderer<TileEntityCore> {
-
-    @Override
-    public boolean isGlobalRenderer(TileEntityCore te) {
-        return true;
-    }
-
     @Override
     public void render(TileEntityCore core, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
         if (core.heat == 0) {

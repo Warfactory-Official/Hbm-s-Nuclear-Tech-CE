@@ -1,5 +1,6 @@
 package com.hbm.explosion;
 
+import com.hbm.util.CompatDynamicTrees;
 import com.hbm.blocks.generic.DecoBlockAlt;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
@@ -104,8 +105,10 @@ public class ExplosionFleija
 			for (int y = (int)(dist / this.explosionCoefficient2); y > -dist / this.explosionCoefficient; y--)
 			{
 				pos.setPos(this.posX+x, this.posY+y, this.posZ+z);
-				if(!(this.worldObj.getBlockState(pos).getBlock().getExplosionResistance(null) > 2_000_000 && this.posY+y <= 0) && !(this.worldObj.getBlockState(pos).getBlock() instanceof DecoBlockAlt))
+				if(!(this.worldObj.getBlockState(pos).getBlock().getExplosionResistance(null) > 2_000_000 && this.posY+y <= 0) && !(this.worldObj.getBlockState(pos).getBlock() instanceof DecoBlockAlt)) {
+					if(CompatDynamicTrees.destroyTreeAt(this.worldObj, pos)) continue;
 					this.worldObj.setBlockToAir(pos);
+				}
 			}
 		}
 	}

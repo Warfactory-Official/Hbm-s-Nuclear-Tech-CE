@@ -114,6 +114,29 @@ public class ItemBlueprintFolder extends ItemBakedBase {
 
     @Override
     @SideOnly(Side.CLIENT)
+    public boolean ownsModelLocation(ModelResourceLocation location) {
+        return mrlBase.equals(location) || mrlDiscover.equals(location) || mrlSecret.equals(location);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IModel loadModel(ModelResourceLocation location) {
+        ResourceLocation sprite;
+        if (mrlBase.equals(location)) sprite = spriteBase;
+        else if (mrlDiscover.equals(location)) sprite = spriteDiscover;
+        else if (mrlSecret.equals(location)) sprite = spriteSecret;
+        else return super.loadModel(location);
+
+        try {
+            IModel generated = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/generated"));
+            return generated.retexture(ImmutableMap.of("layer0", sprite.toString()));
+        } catch (Exception e) {
+            return super.loadModel(location);
+        }
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
     public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
         if (!this.isInCreativeTab(tab)) return;
         for (int i = 0; i < 2; i++) items.add(new ItemStack(this, 1, i));

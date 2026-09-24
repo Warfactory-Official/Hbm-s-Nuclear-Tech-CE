@@ -165,7 +165,7 @@ public class ItemRenderFolly extends ItemRenderWeaponBase {
                 GlStateManager.glNormal3f(0.0F, 0.0F, -1.0F * fontSize);
                 for (String line : tty) {
                     font.drawString(line, 0, 0, new Color(variance, variance * 0.5F, 0F).getRGB());
-                    GL11.glTranslated(0, (font.FONT_HEIGHT + 2), 0);
+                    GlStateManager.translate(0, (font.FONT_HEIGHT + 2), 0);
                 }
                 GlStateManager.popMatrix();
             }

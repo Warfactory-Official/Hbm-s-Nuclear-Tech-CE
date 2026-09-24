@@ -1,13 +1,12 @@
 package com.hbm.util;
 
-import com.hbm.capability.HbmLivingCapability;
 import com.hbm.capability.HbmLivingCapability.EntityHbmProps;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.config.CompatibilityConfig;
 import com.hbm.config.GeneralConfig;
 import com.hbm.entity.effect.EntityNukeTorex;
-import com.hbm.entity.grenade.EntityGrenadeASchrab;
-import com.hbm.entity.grenade.EntityGrenadeNuclear;
+import com.hbm.entity.grenade.EntityGrenadeUniversal;
+import com.hbm.items.weapon.grenade.ItemGrenadeFilling.EnumGrenadeFilling;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.entity.missile.EntityMIRV;
 import com.hbm.entity.mob.EntityCreeperNuclear;
@@ -26,13 +25,15 @@ import com.hbm.items.ModItems;
 import com.hbm.lib.Library;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.potion.HbmPotion;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.util.ArmorRegistry.HazardClass;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityHanging;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityArmorStand;
+import net.minecraft.entity.item.EntityBoat;
 import net.minecraft.entity.monster.EntitySkeleton;
 import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.passive.EntityMooshroom;
@@ -91,52 +92,7 @@ public class ContaminationUtil {
         return Math.pow(koeff, -(getConfigEntityRadResistance(entity) + HazmatRegistry.getResistance(entity))) * mult;
     }
 
-    private static void applyRadData(Entity e, double f) {
-
-		if(e instanceof IRadiationImmune)
-			return;
-		
-		if(!(e instanceof EntityLivingBase entity))
-			return;
-
-		if(entity instanceof EntityPlayer player && (player.capabilities.isCreativeMode || player.isSpectator()))
-			return;
-		
-		if(e instanceof EntityPlayer && e.ticksExisted < 200)
-			return;
-
-        f *= calculateRadiationMod(entity);
-
-		if(entity.hasCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null)) {
-            HbmLivingCapability.IEntityHbmProps ent = entity.getCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null);
-            ent.increaseRads(f);
-        }
-    }
-
-    private static void applyRadDirect(Entity entity, double f) {
-
-		if(entity instanceof IRadiationImmune)
-			return;
-
-        if (entity.getEntityData().hasKey(RAD_MULT_KEY, 99))
-            f *= entity.getEntityData().getFloat(RAD_MULT_KEY);
-
-		if(entity instanceof EntityPlayer player && (player.capabilities.isCreativeMode || player.isSpectator()))
-			return;
-		
-		if(!(entity instanceof EntityLivingBase))
-			return;
-
-		if(((EntityLivingBase) entity).isPotionActive(HbmPotion.mutation))
-			return;
-
-		if(entity.hasCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null)) {
-            HbmLivingCapability.IEntityHbmProps ent = entity.getCapability(HbmLivingCapability.EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null);
-            ent.increaseRads(f);
-        }
-    }
-
-    public static void printGeigerData(EntityPlayer player) {
+	public static void printGeigerData(EntityPlayer player) {
         double rawRadMod = ContaminationUtil.calculateRadiationMod(player);
         double eRad = HbmLivingProps.getRadiation(player);
         double rads = ChunkRadiationManager.proxy.getRadiation(player.world, player.getPosition());
@@ -475,10 +431,6 @@ public class ContaminationUtil {
 		}
 	}
 
-	public static void applyCoal(Entity e, int i, int dmg) {
-		applyCoal(e, i, dmg, 1);
-	}
-
 	/// COAL ///
 	public static void applyCoal(Entity e, int i, int dmg, int chance) {
 
@@ -530,22 +482,8 @@ public class ContaminationUtil {
 		if(!(entity instanceof EntityPlayer && ArmorUtil.checkForDigamma((EntityPlayer) entity)))
 			HbmLivingProps.incrementDigamma(entity, f);
 	}
-		
-	public static void applyDigammaDirect(Entity e, double f) {
 
-		if(!(e instanceof EntityLivingBase entity))
-			return;
-
-		if(e instanceof IRadiationImmune)
-			return;
-
-		if(entity instanceof EntityPlayer player && (player.capabilities.isCreativeMode || player.isSpectator()))
-			return;
-
-        HbmLivingProps.incrementDigamma(entity, f);
-	}
-
-    public static double getDigamma(Entity e) {
+	public static double getDigamma(Entity e) {
         if (!(e instanceof EntityLivingBase entity))
             return 0.0D;
         return HbmLivingProps.getDigamma(entity);
@@ -569,7 +507,7 @@ public class ContaminationUtil {
 		for(Entity e : entities) {
 			if(isExplosionExempt(e)) continue;
 
-			Vec3 vec = Vec3.createVectorHelper(e.posX - x, (e.posY + e.getEyeHeight()) - y, e.posZ - z);
+			Vec3NT vec = Vec3NT.createVectorHelper(e.posX - x, (e.posY + e.getEyeHeight()) - y, e.posZ - z);
 			double len = vec.length();
 
 			if(len > range) continue;
@@ -580,9 +518,9 @@ public class ContaminationUtil {
 			
 			for(int i = 1; i < len; i++) {
 
-				int ix = (int)Math.floor(x + vec.xCoord * i);
-				int iy = (int)Math.floor(y + vec.yCoord * i);
-				int iz = (int)Math.floor(z + vec.zCoord * i);
+				int ix = (int)Math.floor(x + vec.x * i);
+				int iy = (int)Math.floor(y + vec.y * i);
+				int iz = (int)Math.floor(z + vec.z * i);
 				res += world.getBlockState(pos.setPos(ix, iy, iz)).getBlock().getExplosionResistance(null);
 			}
 			boolean isLiving = e instanceof EntityLivingBase;
@@ -616,8 +554,10 @@ public class ContaminationUtil {
 							p.setHeldItem(EnumHand.OFF_HAND, new ItemStack(ModItems.marshmallow_roasted));
 						}
 					}
-					e.attackEntityFrom(DamageSource.IN_FIRE, fireDmg);
-					e.setFire(5);
+					if(!isFireExempt(e)) {
+						e.attackEntityFrom(DamageSource.IN_FIRE, fireDmg);
+						e.setFire(5);
+					}
 				}
 			}
 
@@ -630,11 +570,15 @@ public class ContaminationUtil {
 					else
 						e.attackEntityFrom(ModDamageSource.blast, blastDmg);
 				}
-				e.motionX += vec.xCoord * 0.005D * blastDmg;
-				e.motionY += vec.yCoord * 0.005D * blastDmg;
-				e.motionZ += vec.zCoord * 0.005D * blastDmg;
+				e.motionX += vec.x * 0.005D * blastDmg;
+				e.motionY += vec.y * 0.005D * blastDmg;
+				e.motionZ += vec.z * 0.005D * blastDmg;
 			}
 		}
+	}
+
+	private static boolean isFireExempt(Entity e) {
+		return e instanceof EntityArmorStand || e instanceof EntityBoat || e instanceof EntityHanging;
 	}
 
 	private static boolean isExplosionExempt(Entity e) {
@@ -645,8 +589,6 @@ public class ContaminationUtil {
 				e instanceof EntityMIRV ||
 				e instanceof EntityMiniNuke ||
 				e instanceof EntityMiniMIRV ||
-				e instanceof EntityGrenadeASchrab ||
-				e instanceof EntityGrenadeNuclear ||
 				e instanceof EntityExplosiveBeam ||
 				e instanceof EntityBulletBase ||
 				(e instanceof EntityPlayer &&
@@ -654,10 +596,17 @@ public class ContaminationUtil {
 			return true;
 		}
 
+		if (e instanceof EntityGrenadeUniversal) {
+			EnumGrenadeFilling filling = ((EntityGrenadeUniversal) e).getFilling();
+			if (filling == EnumGrenadeFilling.NUCLEAR || filling == EnumGrenadeFilling.NUCLEAR_DEMO || filling == EnumGrenadeFilling.SCHRAB) {
+				return true;
+			}
+		}
+
         return e instanceof EntityPlayer && (((EntityPlayer) e).isCreative() || ((EntityPlayer) e).isSpectator());
     }
 
-	
+	// TODO clean it up
 	public enum HazardType {
 		MONOXIDE,
 		RADIATION,
@@ -666,9 +615,6 @@ public class ContaminationUtil {
 	}
 	
 	public enum ContaminationType {
-		GAS,				//filterable by gas mask
-		GAS_NON_REACTIVE,	//not filterable by gas mask
-		GOGGLES,			//preventable by goggles
 		FARADAY,			//preventable by metal armor
 		HAZMAT,				//preventable by hazmat
 		HAZMAT2,			//preventable by heavy hazmat
@@ -693,7 +639,6 @@ public class ContaminationUtil {
 		if(entity instanceof EntityPlayer player) {
 			if (player.isSpectator()) return false;
             switch(cont) {
-			case GOGGLES:			if(ArmorUtil.checkForGoggles(player))	return false; break;
 			case FARADAY:			if(ArmorUtil.checkForFaraday(player))	return false; break;
 			case HAZMAT:			if(ArmorUtil.checkForHazmat(player))	return false; break;
 			case HAZMAT2:			if(ArmorUtil.checkForHaz2(player))		return false; break;

@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import net.minecraft.client.renderer.GlStateManager;
 import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerFunnel;
 import com.hbm.packet.PacketDispatcher;
@@ -61,7 +62,7 @@ public class GUIFunnel extends GuiInfoContainer {
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         super.drawDefaultBackground();
-        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 

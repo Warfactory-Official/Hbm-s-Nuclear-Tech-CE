@@ -12,14 +12,13 @@ import com.hbm.tileentity.machine.TileEntityMachineAssemblyFactory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import org.lwjgl.opengl.GL11;
 @AutoRegister
@@ -159,32 +158,24 @@ public class RenderAssemblyFactory extends TileEntitySpecialRenderer<TileEntityM
                 GlStateManager.translate(0, 1.0625, 0);
 
                 GenericRecipe recipe = AssemblyMachineRecipes.INSTANCE.recipeNameMap.get(assemfac.assemblerModule[i].recipe);
-                if(recipe != null) {
+                if (recipe != null) {
                     ItemStack stack = recipe.getIcon();
-                    stack.setCount(1);
+                    if (stack != null && !stack.isEmpty()) {
+                        stack.setCount(1);
 
-                    if (stack.getItem() instanceof ItemBlock) {
                         IBakedModel model = Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(stack, assemfac.getWorld(), null);
                         if (model.isGui3d()) {
-                            GlStateManager.translate(0, -0.0625, 0);
+                            GlStateManager.translate(0, 0.125, 0);
+                            GlStateManager.scale(1.25, 1.25, 1.25);
                         } else {
-                            GlStateManager.translate(0, -0.125, 0);
-                            GlStateManager.scale(0.5, 0.5, 0.5);
+                            GlStateManager.translate(0, 0.015, 0);
+                            GlStateManager.rotate(-90F, 1F, 0F, 0F);
+                            GlStateManager.rotate(-90F, 0F, 0F, 1F);
+                            GlStateManager.scale(0.85, 0.85, 0.85);
                         }
-                    } else {
-                        GlStateManager.rotate(-90F, 1F, 0F, 0F);
-                        GlStateManager.translate(0, -0.25, 0);
+
+                        Minecraft.getMinecraft().getRenderItem().renderItem(stack, ItemCameraTransforms.TransformType.FIXED);
                     }
-
-                    GlStateManager.scale(1.25, 1.25, 1.25);
-
-                    if (dummy == null || dummy.world != assemfac.getWorld()) {
-                        dummy = new EntityItem(assemfac.getWorld(), 0, 0, 0, stack);
-                    }
-                    dummy.setItem(stack);
-                    dummy.hoverStart = 0.0F;
-
-                    Minecraft.getMinecraft().getRenderManager().renderEntity(dummy, 0.0D, 0.0D, 0.0D, 0.0F, 0.0F, false); // FIXME incorrect position
                 }
                 GlStateManager.popMatrix();
             }

@@ -1,0 +1,25 @@
+{
+    "variants": {
+        "facing=down": {
+            "model": "hbm:piston_inserter"
+        },
+        "facing=up": {
+            "model": "hbm:piston_inserter"
+        },
+        "facing=north": {
+            "model": "hbm:piston_inserter"
+        },
+        "facing=south": {
+            "model": "hbm:piston_inserter"
+        },
+        "facing=west": {
+            "model": "hbm:piston_inserter"
+        },
+        "facing=east": {
+            "model": "hbm:piston_inserter"
+        },
+        "normal": {
+            "model": "hbm:piston_inserter"
+        }
+    }
+}

@@ -3,7 +3,7 @@ package com.hbm.explosion;
 import com.hbm.config.BombConfig;
 import com.hbm.config.CompatibilityConfig;
 import com.hbm.interfaces.IExplosionRay;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -79,11 +79,11 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
 
 	// Get Cartesian coordinates for spherical coordinates
 	// 90 X-Axis rotation for more efficient chunk scanning
-	private Vec3 getSpherical2cartesian(){
+	private Vec3NT getSpherical2cartesian(){
 		double dx = Math.sin(this.gspX) * Math.cos(this.gspY);
 		double dy = Math.sin(this.gspX) * Math.sin(this.gspY);
 		double dz = Math.cos(this.gspX);
-		return Vec3.createVectorHelper(dx, dy, dz);
+		return Vec3NT.createVectorHelper(dx, dy, dz);
 	}
 
 	public void addPos(int x, int y, int z){
@@ -105,7 +105,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
 		Block b;
 		int iX, iY, iZ, radius;
 		float rayStrength;
-		Vec3 vec;
+		Vec3NT vec;
 		age++;
 		if(age == 120){
 			System.out.println("NTM C "+raysProcessed+" "+Math.round(10000D * 100D*gspNum/(double)gspNumMax)/10000D+"% "+gspNum+"/"+gspNumMax);
@@ -121,15 +121,15 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
 			//Finding the end of the ray
 			for(int r = 0; r < radius+1; r ++) {
 
-				iY = (int) Math.floor(posY + (vec.yCoord * r));
+				iY = (int) Math.floor(posY + (vec.y * r));
 				
 				if(iY < minY || iY > maxY){
 					isContained = false;
 					break;
 				}
 
-				iX = (int) Math.floor(posX + (vec.xCoord * r));
-				iZ = (int) Math.floor(posZ + (vec.zCoord * r));
+				iX = (int) Math.floor(posX + (vec.x * r));
+				iZ = (int) Math.floor(posZ + (vec.z * r));
 
 
 				pos.setPos(iX, iY, iZ);

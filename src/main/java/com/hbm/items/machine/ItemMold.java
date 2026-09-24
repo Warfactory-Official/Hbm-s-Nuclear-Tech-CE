@@ -7,9 +7,7 @@ import com.hbm.inventory.OreDictManager;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
-import com.hbm.items.IModelRegister;
-import com.hbm.items.ItemEnums;
-import com.hbm.items.ModItems;
+import com.hbm.items.*;
 import com.hbm.main.MainRegistry;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -41,7 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class ItemMold extends Item implements IModelRegister {
+public class ItemMold extends Item implements IModelRegister, IClaimedModelLocation {
 
     public static List<Mold> molds = new ArrayList<>(); //molds in "pretty" order, variable between versions
     public static HashMap<Integer, Mold> moldById = new HashMap<>(); //molds by their static ID -> stack item damage
@@ -55,6 +53,7 @@ public class ItemMold extends Item implements IModelRegister {
         this.setHasSubtypes(true);
         this.setMaxDamage(0);
         this.setCreativeTab(MainRegistry.templateTab);
+        ClaimedModelLocationRegistry.register(this);
 
         blockOverrides.put(Mats.MAT_STONE,		new ItemStack(Blocks.STONE));
         blockOverrides.put(Mats.MAT_OBSIDIAN,	new ItemStack(Blocks.OBSIDIAN));
@@ -73,8 +72,7 @@ public class ItemMold extends Item implements IModelRegister {
 
         registerMold(new MoldMulti(6, S, "blades", MaterialShapes.INGOT.q(4),
                 Mats.MAT_STEEL,         (Supplier<ItemStack>) () -> new ItemStack(ModItems.blades_steel),
-                Mats.MAT_TITANIUM,      (Supplier<ItemStack>) () -> new ItemStack(ModItems.blades_titanium),
-                Mats.MAT_ALLOY,         (Supplier<ItemStack>) () -> new ItemStack(ModItems.blades_advanced_alloy)));
+                Mats.MAT_TITANIUM,      (Supplier<ItemStack>) () -> new ItemStack(ModItems.blades_titanium)));
 
         registerMold(new MoldMulti(7, S, "stamp", MaterialShapes.INGOT.q(4),
                 Mats.MAT_STONE,         (Supplier<ItemStack>) () -> new ItemStack(ModItems.stamp_stone_flat),
@@ -92,6 +90,7 @@ public class ItemMold extends Item implements IModelRegister {
         registerMold(new MoldSingle(13, L, "pipes",
                 () -> new ItemStack(ModItems.pipes_steel),
                 Mats.MAT_STEEL, MaterialShapes.BLOCK.q(3)));
+        registerMold(new MoldShape(     15, L, "plates_cast", MaterialShapes.CASTPLATE, 3));
 
         registerMold(new MoldMulti(16, S, "c9", MaterialShapes.PLATE.q(1, 4),
                 Mats.MAT_GUNMETAL,      (Supplier<ItemStack>) () -> OreDictManager.DictFrame.fromOne(ModItems.casing, ItemEnums.EnumCasingType.SMALL),
@@ -181,6 +180,18 @@ public class ItemMold extends Item implements IModelRegister {
         return mold != null ? mold : molds.get(0);
     }
 
+    @Override
+    @SideOnly(Side.CLIENT)
+    public boolean ownsModelLocation(ModelResourceLocation location) {
+        for (Mold mold : molds) {
+            ResourceLocation resourceLocation = new ResourceLocation(Tags.MODID, "items/mold_" + mold.name);
+            if (IClaimedModelLocation.isInventoryLocation(location, resourceLocation)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static int nextOrder = 0;
 
     public abstract class Mold {
@@ -226,7 +237,9 @@ public class ItemMold extends Item implements IModelRegister {
                 if(!ores.isEmpty()) {
                     //prioritize NTM items
                     for(ItemStack ore : ores) {
-                        if(Item.REGISTRY.getNameForObject(ore.getItem()).toString().startsWith(Tags.MODID)) {
+                        String registry = Item.REGISTRY.getNameForObject(ore.getItem()).toString();
+                        if(registry.contains("fragment")) continue;
+                        if(registry.startsWith(Tags.MODID)) {
                             ItemStack copy = ore.copy();
                             copy.setCount(this.amount);
                             return copy;

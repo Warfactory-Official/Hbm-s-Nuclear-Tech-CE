@@ -33,11 +33,11 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.Random;
 
 @AutoRegister
-public class TileEntityMachineRefinery extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IOverpressurable, IPersistentNBT, IRepairable, IFluidStandardTransceiver, IGUIProvider, IFluidCopiable {
+public class TileEntityMachineRefinery extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IOverpressurable, IPersistentNBT, IRepairable, IFluidStandardTransceiver, IGUIProvider, IFluidCopiable, IConnectionAnchors {
 
     public static final int maxSulfur = 100;
     public static final long maxPower = 1000;
@@ -68,11 +68,11 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
     public TileEntityMachineRefinery() {
         super(13, true, true);
         tanks = new FluidTankNTM[5];
-        tanks[0] = new FluidTankNTM(Fluids.HOTOIL, 64_000);
-        tanks[1] = new FluidTankNTM(Fluids.HEAVYOIL, 24_000);
-        tanks[2] = new FluidTankNTM(Fluids.NAPHTHA, 24_000);
-        tanks[3] = new FluidTankNTM(Fluids.LIGHTOIL, 24_000);
-        tanks[4] = new FluidTankNTM(Fluids.PETROLEUM, 24_000);
+        tanks[0] = new FluidTankNTM(Fluids.HOTOIL, 64_000).withOwner(this);
+        tanks[1] = new FluidTankNTM(Fluids.HEAVYOIL, 24_000).withOwner(this);
+        tanks[2] = new FluidTankNTM(Fluids.NAPHTHA, 24_000).withOwner(this);
+        tanks[3] = new FluidTankNTM(Fluids.LIGHTOIL, 24_000).withOwner(this);
+        tanks[4] = new FluidTankNTM(Fluids.PETROLEUM, 24_000).withOwner(this);
     }
 
     public String getDefaultName() {
@@ -114,6 +114,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
     @Override
     public void update() {
         if (!world.isRemote) {
+            this.checkTilt(TiltType.CONFIG, false);
 
             this.isOn = false;
 
@@ -348,16 +349,6 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
         return maxPower;
     }
 
-    @Override
-    public @NotNull AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
-    }
-
-    @Override
-    @SideOnly(Side.CLIENT)
-    public double getMaxRenderDistanceSquared() {
-        return 65536.0D;
-    }
 
     @Override
     public FluidTankNTM[] getSendingTanks() {
@@ -466,4 +457,13 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
         if (this.world.getTileEntity(this.pos) != this) return false;
         return player.getDistanceSq(this.pos.getX() + 0.5D, this.pos.getY() + 0.5D, this.pos.getZ() + 0.5D) <= 1024.0D;
     }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public double getMaxRenderDistanceSquared() {
+        return 65536.0D;
+    }
+
+    @Override public int getFloorCount() { return 2 * 2; }
+    @Override public BlockPos getFloorPosFromIndex(int index) { return this.standardFloor3x3(index); }
 }

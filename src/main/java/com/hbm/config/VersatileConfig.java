@@ -11,7 +11,7 @@ public class VersatileConfig {
 		if(GeneralConfig.enableLBSM)
 			return 20;
 
-		return 100;
+		return 250;
 	}
 	
 	public static void applyPotionSickness(EntityLivingBase entity, int duration) {

@@ -4,6 +4,7 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.particle.book.ParticleBookCircle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.ITickable;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -13,6 +14,7 @@ public class TileEntityBlackBook extends TileEntity implements ITickable {
 
 	public int effectTime;
 	public boolean end = true;
+	private AxisAlignedBB bb;
 	
 	@Override
 	public void update() {
@@ -45,5 +47,11 @@ public class TileEntityBlackBook extends TileEntity implements ITickable {
 			}
 		}
 	}
-	
+
+	@Override
+	public AxisAlignedBB getRenderBoundingBox() {
+		if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+		return bb;
+	}
+
 }

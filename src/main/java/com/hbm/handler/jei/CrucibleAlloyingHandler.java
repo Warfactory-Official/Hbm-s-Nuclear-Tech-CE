@@ -3,8 +3,8 @@ package com.hbm.handler.jei;
 import com.hbm.Tags;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.inventory.material.Mats;
+import com.hbm.inventory.recipes.CrucibleRecipe;
 import com.hbm.inventory.recipes.CrucibleRecipes;
-import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemScraps;
 import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.gui.IDrawable;
@@ -64,16 +64,13 @@ public class CrucibleAlloyingHandler implements IRecipeCategory<CrucibleAlloying
             stacks.init(i, true, x, y);
         }
 
-        int templateIndex = dynamicInputs;
-        stacks.init(templateIndex, true, 74, 5);
-
-        int crucibleIndex = dynamicInputs + 1;
+        int crucibleIndex = dynamicInputs;
         stacks.init(crucibleIndex, true, 74, 41);
 
         for (int i = 0; i < outputLists.size(); i++) {
             int x = 101 + (i % 3) * 18;
             int y = 5 + (i / 3) * 18;
-            stacks.init(dynamicInputs + 2 + i, false, x, y);
+            stacks.init(dynamicInputs + 1 + i, false, x, y);
         }
 
         stacks.set(ingredients);
@@ -81,24 +78,21 @@ public class CrucibleAlloyingHandler implements IRecipeCategory<CrucibleAlloying
 
     public static class Wrapper implements IRecipeWrapper {
         final List<ItemStack> inputs;
-        final ItemStack template;
         final ItemStack crucible;
         final List<ItemStack> outputs;
 
-        public Wrapper(CrucibleRecipes.CrucibleRecipe recipe) {
+        public Wrapper(CrucibleRecipe recipe) {
             this.inputs = new ArrayList<>();
             this.outputs = new ArrayList<>();
             for (Mats.MaterialStack s : recipe.input) this.inputs.add(ItemScraps.create(s, true));
             for (Mats.MaterialStack s : recipe.output) this.outputs.add(ItemScraps.create(s, true));
-            this.template = new ItemStack(ModItems.crucible_template, 1, recipe.getId());
             this.crucible = new ItemStack(ModBlocks.machine_crucible);
         }
 
         @Override
         public void getIngredients(IIngredients ingredients) {
-            List<List<ItemStack>> ins = new ArrayList<>(inputs.size() + 2);
+            List<List<ItemStack>> ins = new ArrayList<>(inputs.size() + 1);
             for (ItemStack in : inputs) ins.add(Collections.singletonList(in.copy()));
-            ins.add(Collections.singletonList(template.copy()));
             ins.add(Collections.singletonList(crucible.copy()));
             ingredients.setInputLists(VanillaTypes.ITEM, ins);
 
@@ -110,7 +104,7 @@ public class CrucibleAlloyingHandler implements IRecipeCategory<CrucibleAlloying
 
     public static List<Wrapper> getRecipes() {
         List<Wrapper> list = new ArrayList<>();
-        for (CrucibleRecipes.CrucibleRecipe r : CrucibleRecipes.recipes) {
+        for (CrucibleRecipe r : CrucibleRecipes.INSTANCE.recipeOrderedList) {
             list.add(new Wrapper(r));
         }
         return list;

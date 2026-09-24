@@ -1,8 +1,10 @@
 package com.hbm.items.food;
 
 import com.google.common.collect.ImmutableMap;
+import com.hbm.items.ClaimedModelLocationRegistry;
 import com.hbm.Tags;
 import com.hbm.items.IDynamicModels;
+import com.hbm.items.IClaimedModelLocation;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemChemicalDye;
 import com.hbm.util.EnumUtil;
@@ -29,7 +31,7 @@ import static com.hbm.items.ItemEnumMulti.ROOT_PATH;
 
 //mlbv: the original base texture from 1.7 has overlapping parts with overlay, causing z-fighting as noted in #1325;
 //I made the base's overlapping parts transparent to fix it. There should be no behavioral changes except the flickering.
-public class ItemCrayon extends ItemFood implements IDynamicModels {
+public class ItemCrayon extends ItemFood implements IDynamicModels, IClaimedModelLocation {
     protected String baseName;
 
     public ItemCrayon(String s) {
@@ -42,6 +44,7 @@ public class ItemCrayon extends ItemFood implements IDynamicModels {
 
         ModItems.ALL_ITEMS.add(this);
         INSTANCES.add(this);
+        ClaimedModelLocationRegistry.register(this);
     }
 
     @Override
@@ -89,6 +92,30 @@ public class ItemCrayon extends ItemFood implements IDynamicModels {
             event.getModelRegistry().putObject(bakedModelLocation, bakedModel);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public boolean ownsModelLocation(ModelResourceLocation location) {
+        return IClaimedModelLocation.isInventoryLocation(location, new ResourceLocation(Tags.MODID, ROOT_PATH + baseName));
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IModel loadModel(ModelResourceLocation location) {
+        if (!ownsModelLocation(location)) {
+            return IClaimedModelLocation.super.loadModel(location);
+        }
+
+        try {
+            IModel generated = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/generated"));
+            return generated.retexture(ImmutableMap.of(
+                    "layer0", new ResourceLocation(Tags.MODID, ROOT_PATH + baseName).toString(),
+                    "layer1", new ResourceLocation(Tags.MODID, ROOT_PATH + baseName + "_overlay").toString()
+            ));
+        } catch (Exception e) {
+            return IClaimedModelLocation.super.loadModel(location);
         }
     }
 

@@ -11,12 +11,6 @@ import net.minecraft.item.Item;
 
 @AutoRegister
 public class RenderRadar extends TileEntitySpecialRenderer<TileEntityMachineRadarNT> implements IItemRendererProvider {
-
-    @Override
-    public boolean isGlobalRenderer(TileEntityMachineRadarNT te) {
-        return true;
-    }
-
     @Override
     public void render(TileEntityMachineRadarNT radar, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
         GlStateManager.pushMatrix();
@@ -48,14 +42,13 @@ public class RenderRadar extends TileEntitySpecialRenderer<TileEntityMachineRada
         return new ItemRenderBase() {
             public void renderInventory() {
                 GlStateManager.translate(0, -4, 0);
-                GlStateManager.scale(6, 6, 6);
+                GlStateManager.scale(5, 5, 5);
             }
 
             public void renderCommon() {
                 GlStateManager.disableCull();
                 bindTexture(ResourceManager.radar_base_tex);
                 ResourceManager.radar.renderPart("Base");
-                GlStateManager.rotate(System.currentTimeMillis() % 3600 * 0.1F, 0, -1, 0);
                 GlStateManager.translate(-0.125, 0, 0);
                 bindTexture(ResourceManager.radar_dish_tex);
                 ResourceManager.radar.renderPart("Dish");

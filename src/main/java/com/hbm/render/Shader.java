@@ -1,5 +1,6 @@
 package com.hbm.render;
 
+import net.minecraft.client.renderer.GlStateManager;
 import com.hbm.Tags;
 import com.hbm.main.MainRegistry;
 import net.minecraft.client.Minecraft;
@@ -90,7 +91,7 @@ public class Shader {
 
     public void use() {
         if(!hasLoaded) return;
-        previousProgram = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
+        previousProgram = GlStateManager.glGetInteger(GL20.GL_CURRENT_PROGRAM);
         GL20.glUseProgram(shaderProgram);
     }
 

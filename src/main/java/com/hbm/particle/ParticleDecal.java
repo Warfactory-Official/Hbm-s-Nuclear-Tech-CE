@@ -45,7 +45,7 @@ public class ParticleDecal extends Particle {
 		this.particleAge ++;
 		if(this.particleAge > this.particleMaxAge){
 			setExpired();
-			GL11.glDeleteLists(displayList, 1);
+			GlStateManager.glDeleteLists(displayList, 1);
 		}
 	}
 	
@@ -65,7 +65,7 @@ public class ParticleDecal extends Particle {
 	        float u = (texIdx%rows)*size;
 	        float v = (texIdx/4)*size;
 	        GlStateManager.translate(u, v, 0);
-	        GL11.glScaled(size, size, 1);
+	        GlStateManager.scale(size, size, 1);
 			GlStateManager.matrixMode(GL11.GL_MODELVIEW);
 		}
 		
@@ -84,8 +84,8 @@ public class ParticleDecal extends Particle {
         double entPosZ = entityIn.lastTickPosZ + (entityIn.posZ - entityIn.lastTickPosZ)*partialTicks;
 		GlStateManager.translate(posX-entPosX, posY-entPosY, posZ-entPosZ);
 		Minecraft.getMinecraft().getTextureManager().bindTexture(tex);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 		GlStateManager.alphaFunc(GL11.GL_GREATER, 0);
 		GlStateManager.enableBlend();
 		GlStateManager.depthMask(false);
@@ -96,7 +96,7 @@ public class ParticleDecal extends Particle {
 		float fade = (this.particleAge-particleMaxAge+30+partialTicks) /30F;
 		GlStateManager.color(0.5F, 0.1F, 0.1F, 1-fade);
 		GlStateManager.doPolygonOffset(-5, -5);
-		GL11.glCallList(displayList);
+		GlStateManager.callList(displayList);
 		GlStateManager.disablePolygonOffset();
 		GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
 		GlStateManager.disableBlend();

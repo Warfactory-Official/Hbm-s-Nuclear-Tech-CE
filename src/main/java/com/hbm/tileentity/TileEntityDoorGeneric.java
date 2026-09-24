@@ -2,23 +2,25 @@ package com.hbm.tileentity;
 
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.generic.BlockDoorGeneric;
+import com.hbm.config.MachineConfig;
 import com.hbm.handler.radiation.RadiationSystemNT;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IAnimatedDoor;
 import com.hbm.inventory.control_panel.ControlEvent;
 import com.hbm.inventory.control_panel.ControlEventSystem;
-import com.hbm.inventory.control_panel.DataValueFloat;
 import com.hbm.inventory.control_panel.IControllable;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
-import com.hbm.packet.PacketDispatcher;
-import com.hbm.packet.toclient.TEDoorAnimationPacket;
+import com.hbm.render.anim.sedna.HbmAnimationsSedna.Animation;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.machine.TileEntityLockableBase;
+import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.longs.LongIterable;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.block.BlockAir;
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -27,7 +29,6 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
@@ -36,6 +37,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 @AutoRegister
 public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITickable, IAnimatedDoor, IControllable {
@@ -45,10 +47,15 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
     public long animStartTime = 0;
     public boolean shouldUseBB = false;
     protected DoorDecl doorType;
-    private int openTicks = 0;
+    public int openTicks = 0;
     private int redstonePower;
     private AudioWrapper audio;
     private AudioWrapper audio2;
+
+    // new door
+    public Animation currentAnimation;
+    private byte skinIndex = 0;
+
     // For T flip-flop redstone behavior
     private boolean wasPowered = false;
     private boolean redstoneOnly = false;
@@ -60,98 +67,109 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
     public void update() {
         if (getDoorType() == null && this.getBlockType() instanceof BlockDoorGeneric)
             setDoorType(((BlockDoorGeneric) this.getBlockType()).type);
-        if (state == DoorState.OPENING) {
-            openTicks++;
-            if (openTicks >= getDoorType().timeToOpen()) {
-                openTicks = getDoorType().timeToOpen();
+        try {
+            Consumer<TileEntityDoorGeneric> update = getDoorType().onDoorUpdate();
+            if (update != null) {
+                update.accept(this);
             }
-        } else if (state == DoorState.CLOSING) {
-            openTicks--;
-            if (openTicks <= 0) {
-                openTicks = 0;
-            }
-        }
-
-        if (!world.isRemote) {
-            int[][] ranges = getDoorType().getDoorOpenRanges();
-            ForgeDirection dir = ForgeDirection.getOrientation(getBlockMetadata() - BlockDummyable.offset);
             if (state == DoorState.OPENING) {
-                for (int i = 0; i < ranges.length; i++) {
-                    int[] range = ranges[i];
-                    BlockPos startPos = new BlockPos(range[0], range[1], range[2]);
-                    float time = getDoorType().getDoorRangeOpenTime(openTicks, i);
-                    for (int j = 0; j < Math.abs(range[3]); j++) {
-                        if ((float) j / (Math.abs(range[3] - 1)) > time) break;
-                        for (int k = 0; k < range[4]; k++) {
-                            new BlockPos(0, 0, 0);
-                            BlockPos add = switch (EnumFacing.Axis.values()[range[5]]) {
-                                case X -> new BlockPos(0, k, Math.signum(range[3]) * j);
-                                case Y -> new BlockPos(k, Math.signum(range[3]) * j, 0);
-                                case Z -> new BlockPos(Math.signum(range[3]) * j, k, 0);
-                            };
-                            Rotation r = dir.getBlockRotation();
-                            if (dir.toEnumFacing().getAxis() == EnumFacing.Axis.X) r = r.add(Rotation.CLOCKWISE_180);
-                            BlockPos finalPos = startPos.add(add).rotate(r).add(pos);
-                            if (finalPos.equals(this.pos)) {
-                                this.shouldUseBB = true;
-                            } else {
-                                ((BlockDummyable) getBlockType()).makeExtra(world, finalPos.getX(), finalPos.getY(), finalPos.getZ());
-                            }
-                        }
-                    }
+                openTicks++;
+                if (openTicks >= getDoorType().timeToOpen()) {
+                    openTicks = getDoorType().timeToOpen();
                 }
             } else if (state == DoorState.CLOSING) {
-                for (int i = 0; i < ranges.length; i++) {
-                    int[] range = ranges[i];
-                    BlockPos startPos = new BlockPos(range[0], range[1], range[2]);
-                    float time = getDoorType().getDoorRangeOpenTime(openTicks, i);
-                    for (int j = Math.abs(range[3]) - 1; j >= 0; j--) {
-                        if ((float) j / (Math.abs(range[3] - 1)) < time) break;
-                        for (int k = 0; k < range[4]; k++) {
-                            new BlockPos(0, 0, 0);
-                            BlockPos add = switch (EnumFacing.Axis.values()[range[5]]) {
-                                case X -> new BlockPos(0, k, Math.signum(range[3]) * j);
-                                case Y -> new BlockPos(k, Math.signum(range[3]) * j, 0);
-                                case Z -> new BlockPos(Math.signum(range[3]) * j, k, 0);
-                            };
-                            Rotation r = dir.getBlockRotation();
-                            if (dir.toEnumFacing().getAxis() == EnumFacing.Axis.X) r = r.add(Rotation.CLOCKWISE_180);
-                            BlockPos finalPos = startPos.add(add).rotate(r).add(pos);
-                            if (finalPos.equals(this.pos)) {
-                                this.shouldUseBB = false;
-                            } else {
-                                ((BlockDummyable) getBlockType()).removeExtra(world, finalPos.getX(), finalPos.getY(), finalPos.getZ());
+                openTicks--;
+                if (openTicks <= 0) {
+                    openTicks = 0;
+                }
+            }
+
+            if (!world.isRemote) {
+                int[][] ranges = getDoorType().getDoorOpenRanges();
+                ForgeDirection dir = ForgeDirection.getOrientation(getBlockMetadata() - BlockDummyable.offset);
+                if (state == DoorState.OPENING) {
+                    for (int i = 0; i < ranges.length; i++) {
+                        int[] range = ranges[i];
+                        BlockPos startPos = new BlockPos(range[0], range[1], range[2]);
+                        float time = getDoorType().getDoorRangeOpenTime(openTicks, i);
+                        for (int j = 0; j < Math.abs(range[3]); j++) {
+                            if ((float) j / (Math.abs(range[3] - 1)) > time) break;
+                            for (int k = 0; k < range[4]; k++) {
+                                new BlockPos(0, 0, 0);
+                                BlockPos add = switch (EnumFacing.Axis.values()[range[5]]) {
+                                    case X -> new BlockPos(0, k, Math.signum(range[3]) * j);
+                                    case Y -> new BlockPos(k, Math.signum(range[3]) * j, 0);
+                                    case Z -> new BlockPos(Math.signum(range[3]) * j, k, 0);
+                                };
+                                Rotation r = dir.getBlockRotation();
+                                if (dir.toEnumFacing().getAxis() == EnumFacing.Axis.X)
+                                    r = r.add(Rotation.CLOCKWISE_180);
+                                BlockPos finalPos = startPos.add(add).rotate(r).add(pos);
+                                if (finalPos.equals(this.pos)) {
+                                    this.shouldUseBB = true;
+                                } else {
+                                    ((BlockDummyable) getBlockType()).makeExtra(world, finalPos.getX(), finalPos.getY(), finalPos.getZ());
+                                }
+                            }
+                        }
+                    }
+                } else if (state == DoorState.CLOSING) {
+                    for (int i = 0; i < ranges.length; i++) {
+                        int[] range = ranges[i];
+                        BlockPos startPos = new BlockPos(range[0], range[1], range[2]);
+                        float time = getDoorType().getDoorRangeOpenTime(openTicks, i);
+                        for (int j = Math.abs(range[3]) - 1; j >= 0; j--) {
+                            if ((float) j / (Math.abs(range[3] - 1)) < time) break;
+                            for (int k = 0; k < range[4]; k++) {
+                                new BlockPos(0, 0, 0);
+                                BlockPos add = switch (EnumFacing.Axis.values()[range[5]]) {
+                                    case X -> new BlockPos(0, k, Math.signum(range[3]) * j);
+                                    case Y -> new BlockPos(k, Math.signum(range[3]) * j, 0);
+                                    case Z -> new BlockPos(Math.signum(range[3]) * j, k, 0);
+                                };
+                                Rotation r = dir.getBlockRotation();
+                                if (dir.toEnumFacing().getAxis() == EnumFacing.Axis.X)
+                                    r = r.add(Rotation.CLOCKWISE_180);
+                                BlockPos finalPos = startPos.add(add).rotate(r).add(pos);
+                                if (finalPos.equals(this.pos)) {
+                                    this.shouldUseBB = false;
+                                } else {
+                                    ((BlockDummyable) getBlockType()).removeExtra(world, finalPos.getX(), finalPos.getY(), finalPos.getZ());
+                                }
                             }
                         }
                     }
                 }
-            }
-            if (state == DoorState.OPENING && openTicks == getDoorType().timeToOpen()) {
-                state = DoorState.OPEN;
-                broadcastControlEvt();
-            }
-            if (state == DoorState.CLOSING && openTicks == 0) {
-                state = DoorState.CLOSED;
-                broadcastControlEvt();
+                if (state == DoorState.OPENING && openTicks == getDoorType().timeToOpen()) {
+                    state = DoorState.OPEN;
+                    broadcastControlEvt();
+                }
+                if (state == DoorState.CLOSING && openTicks == 0) {
+                    state = DoorState.CLOSED;
+                    broadcastControlEvt();
 
-                // With door finally closed, mark chunk for rad update since door is now rad resistant
-                // No need to update when open as well, as opening door should update
-                RadiationSystemNT.markSectionsForRebuild(world, getOccupiedSections());
-            }
-            PacketDispatcher.wrapper.sendToAllAround(new TEDoorAnimationPacket(pos, (byte) state.ordinal(), (byte) (shouldUseBB ? 1 : 0)),
-                    new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
+                    // With door finally closed, mark chunk for rad update since door is now rad resistant
+                    // No need to update when open as well, as opening door should update
+                    RadiationSystemNT.markSectionsForRebuild(world, getOccupiedSections());
+                }
+                //PacketDispatcher.wrapper.sendToAllAround(new TEDoorAnimationPacket(pos, (byte) state.ordinal(), (byte) (shouldUseBB ? 1 : 0)),
+                //        new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
 
-            // T-Flip-Flop
-            boolean isPowered = redstonePower > 0;
-            if (isPowered && !wasPowered) {
-                tryToggle(-1); // -1 for no passcode check with redstone
-            }
-            wasPowered = isPowered;
+                this.networkPackNT(100);
 
-            if (redstonePower == -1) {
-                redstonePower = 0;
+                // T-Flip-Flop
+                boolean isPowered = redstonePower > 0;
+                if (isPowered && !wasPowered) {
+                    tryToggle(-1); // -1 for no passcode check with redstone
+                }
+                wasPowered = isPowered;
+
+                if (redstonePower == -1) {
+                    redstonePower = 0;
+                }
             }
-        }
+        } catch (NullPointerException e) {} // Th3_Sl1ze: it's caused while generating structures containing these doors.
+        // and no, delayed tick didn't solve the problem.
     }
 
     @Override
@@ -168,10 +186,10 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
 
     @Override
     public void onLoad() {
-        setDoorType(((BlockDoorGeneric) this.getBlockType()).type);
+        if(this.getBlockType() instanceof BlockDoorGeneric door) setDoorType(door.type);
     }
 
-    public boolean tryToggle(EntityPlayer player) {
+    public boolean tryToggle() {
         if (state == DoorState.CLOSED) {
             if (!world.isRemote) {
                 open();
@@ -289,8 +307,23 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
             }
 
             this.state = newState;
-            if (newState.isMovingState()) animStartTime = System.currentTimeMillis();
+            if(state.isMovingState()) {
+                animStartTime = System.currentTimeMillis();
+                currentAnimation = this.doorType.getSEDNAAnim(state, this.skinIndex);
+            }
         }
+    }
+
+    public int getSkinIndex() {
+        return skinIndex;
+    }
+
+    public boolean cycleSkinIndex() {
+        if(!getDoorType().hasSkins()) return false;
+        this.skinIndex++;
+        this.skinIndex %= getDoorType().getSkinCount();
+        this.markDirty();
+        return true;
     }
 
     //Ah yes piggy backing on this packet
@@ -299,9 +332,61 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
         shouldUseBB = tex > 0;
     }
 
+    private AxisAlignedBB bb;
+
     @Override
     public @NotNull AxisAlignedBB getRenderBoundingBox() {
-        return INFINITE_EXTENT_AABB;
+        if (bb != null) return bb;
+        if (doorType == null) return new AxisAlignedBB(pos, pos.add(1, 1, 1));
+        int[] d = doorType.getDimensions();
+        int h = Math.max(Math.max(d[2], d[3]), Math.max(d[4], d[5]));
+        int up = d[0], down = d[1];
+        int[][] extra = doorType.getExtraDimensions();
+        if (extra != null) {
+            for (int[] e : extra) {
+                h = Math.max(h, Math.max(Math.max(Math.abs(e[2]), Math.abs(e[3])), Math.max(Math.abs(e[4]), Math.abs(e[5]))));
+                up = Math.max(up, e[0]);
+                down = Math.max(down, e[1]);
+            }
+        }
+        int minX = -h, maxX = 1 + h;
+        int minY = -down, maxY = 1 + up;
+        int minZ = -h, maxZ = 1 + h;
+
+        int[][] ranges = doorType.getDoorOpenRanges();
+        ForgeDirection dir = ForgeDirection.getOrientation(getBlockMetadata() - BlockDummyable.offset);
+        Rotation r = dir.getBlockRotation();
+        if (dir.toEnumFacing().getAxis() == EnumFacing.Axis.X) r = r.add(Rotation.CLOCKWISE_180);
+
+        for (int[] range : ranges) {
+            int absExt = Math.abs(range[3]);
+            int signExt = (int) Math.signum(range[3]);
+            for (int j = 0; j < absExt; j++) {
+                for (int k = 0; k < range[4]; k++) {
+                    int ax = 0, ay = 0, az = 0;
+                    switch (range[5]) {
+                        case 0 -> { ay = k; az = signExt * j; }
+                        case 1 -> { ax = k; ay = signExt * j; }
+                        case 2 -> { ax = signExt * j; ay = k; }
+                    }
+                    int rx = range[0] + ax, ry = range[1] + ay, rz = range[2] + az;
+                    int rotX = rx, rotZ = rz;
+                    switch (r) {
+                        case CLOCKWISE_90 -> { rotX = -rz; rotZ = rx; }
+                        case CLOCKWISE_180 -> { rotX = -rx; rotZ = -rz; }
+                        case COUNTERCLOCKWISE_90 -> { rotX = rz; rotZ = -rx; }
+                    }
+                    minX = Math.min(minX, rotX);
+                    maxX = Math.max(maxX, rotX + 1);
+                    minY = Math.min(minY, ry);
+                    maxY = Math.max(maxY, ry + 1);
+                    minZ = Math.min(minZ, rotZ);
+                    maxZ = Math.max(maxZ, rotZ + 1);
+                }
+            }
+        }
+        return bb = new AxisAlignedBB(pos.getX() + minX, pos.getY() + minY, pos.getZ() + minZ,
+                pos.getX() + maxX, pos.getY() + maxY, pos.getZ() + maxZ);
     }
 
     @Override
@@ -310,14 +395,40 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
     }
 
     @Override
+    public void deserialize(ByteBuf buf) {
+        super.deserialize(buf);
+        DoorState newState = DoorState.VALUES[buf.readUnsignedByte()];
+        byte newSkinIndex = buf.readByte();
+        boolean newShouldUseBB = buf.readBoolean();
+        Minecraft.getMinecraft().addScheduledTask(() -> {
+            if (world == null || !world.isRemote || isInvalid() || world.getTileEntity(pos) != this) {
+                return;
+            }
+
+            handleNewState(newState);
+            skinIndex = newSkinIndex;
+            shouldUseBB = newShouldUseBB;
+        });
+    }
+
+    @Override
+    public void serialize(ByteBuf buf) {
+        super.serialize(buf);
+        buf.writeByte(state.ordinal());
+        buf.writeByte(skinIndex);
+        buf.writeBoolean(shouldUseBB);
+    }
+
+    @Override
     public void readFromNBT(NBTTagCompound tag) {
-        this.state = DoorState.values()[tag.getByte("state")];
+        this.state = DoorState.VALUES[tag.getByte("state")];
         this.openTicks = tag.getInteger("openTicks");
         this.animStartTime = tag.getInteger("animStartTime");
         this.redstonePower = tag.getInteger("redstoned");
         this.shouldUseBB = tag.getBoolean("shouldUseBB");
         this.wasPowered = tag.getBoolean("wasPowered");
         this.redstoneOnly = tag.getBoolean("redstoneOnly");
+        this.skinIndex = tag.getByte("skin");
         NBTTagCompound activatedBlocks = tag.getCompoundTag("activatedBlocks");
         this.activatedBlocks.clear();
         for (int i = 0; i < activatedBlocks.getKeySet().size() / 3; i++) {
@@ -336,6 +447,8 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
         tag.setBoolean("shouldUseBB", shouldUseBB);
         tag.setBoolean("wasPowered", this.wasPowered);
         tag.setBoolean("redstoneOnly", this.redstoneOnly);
+        if(getDoorType().hasSkins())
+            tag.setByte("skin", skinIndex);
         NBTTagCompound activatedBlocks = new NBTTagCompound();
         int i = 0;
         for (BlockPos p : this.activatedBlocks) {
@@ -412,6 +525,10 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
             activatedBlocks.add(pos);
             if (redstonePower == -1) {
                 redstonePower = 0;
+
+                if(MachineConfig.holdDoorRedstone) {
+                    tryToggle();
+                }
             }
             redstonePower++;
         } else if (contained && !powered) {
@@ -419,6 +536,10 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase implements ITi
             redstonePower--;
             if (redstonePower == 0) {
                 redstonePower = -1;
+
+                if(MachineConfig.holdDoorRedstone) {
+                    tryToggle();
+                }
             }
         }
     }

@@ -1,6 +1,6 @@
 package com.hbm.physics;
 
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.util.math.AxisAlignedBB;
 
@@ -14,7 +14,7 @@ public class AABBCollider extends Collider {
 	//Only use if this is a static collider.
 	public AABBCollider(AxisAlignedBB box) {
 		this.box = box;
-		this.localCentroid = new Vec3(box.getCenter());
+		this.localCentroid = new Vec3NT(box.getCenter());
 	}
 	
 	public AABBCollider(AxisAlignedBB box, float density) {
@@ -24,7 +24,7 @@ public class AABBCollider extends Collider {
 		float d = (float) (box.maxZ-box.minZ);
 		float vol = w*h*d;
 		this.mass = density*vol;
-		this.localCentroid = new Vec3(box.getCenter());
+		this.localCentroid = new Vec3NT(box.getCenter());
 		//https://en.wikipedia.org/wiki/List_of_moments_of_inertia
 		float i_mass = mass/12F;
 		this.localInertiaTensor = new Matrix3f(
@@ -34,11 +34,11 @@ public class AABBCollider extends Collider {
 	}
 
 	@Override
-	public Vec3 support(Vec3 direction) {
-		return new Vec3(
-				direction.xCoord > 0 ? box.maxX : box.minX,
-				direction.yCoord > 0 ? box.maxY : box.minY,
-				direction.zCoord > 0 ? box.maxZ : box.minZ);
+	public Vec3NT support(Vec3NT direction) {
+		return new Vec3NT(
+				direction.x > 0 ? box.maxX : box.minX,
+				direction.y > 0 ? box.maxY : box.minY,
+				direction.z > 0 ? box.maxZ : box.minZ);
 	}
 
 	@Override

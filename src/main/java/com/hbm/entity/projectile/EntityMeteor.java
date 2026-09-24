@@ -1,11 +1,12 @@
 package com.hbm.entity.projectile;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.config.GeneralConfig;
+import com.hbm.config.WorldConfig;
 import com.hbm.explosion.ExplosionLarge;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.world.Meteorite;
 import net.minecraft.block.Block;
@@ -104,7 +105,7 @@ public class EntityMeteor extends Entity {
 
     @Override
     public void onUpdate() {
-        if (!world.isRemote && !GeneralConfig.enableMeteorStrikes) {
+        if (!world.isRemote && !WorldConfig.enableMeteorStrikes) {
             this.setDead();
             return;
         }
@@ -124,7 +125,7 @@ public class EntityMeteor extends Entity {
             if (this.onGround) {
                 world.createExplosion(this, this.posX, this.posY, this.posZ, 5F + rand.nextFloat(), !safe);
 
-                if (GeneralConfig.enableMeteorTails) {
+                if (WorldConfig.enableMeteorTails) {
                     ExplosionLarge.spawnRubble(world, this.posX, this.posY, this.posZ, 15);
 
                     ExplosionLarge.spawnParticles(world, posX, posY + 5, posZ, 75);
@@ -185,17 +186,12 @@ public class EntityMeteor extends Entity {
                 }
             }
 
-            if (GeneralConfig.enableMeteorTails) {
+            if (WorldConfig.enableMeteorTails) {
                 NBTTagCompound data = new NBTTagCompound();
-                data.setString("type", "exhaust");
-                data.setString("mode", "meteor");
                 data.setInteger("count", 10);
                 data.setDouble("width", 1);
-                data.setDouble("posX", posX - motionX);
-                data.setDouble("posY", posY - motionY);
-                data.setDouble("posZ", posZ - motionZ);
 
-                MainRegistry.proxy.effectNT(data);
+                MainRegistry.proxy.effectNT(HbmEffectNT.Exhaust_Meteor, posX - motionX, posY - motionY, posZ - motionZ, data);
             }
         }
     }

@@ -1,5 +1,7 @@
 package com.hbm.main;
 
+import net.minecraft.client.renderer.GlStateManager;
+import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ICustomBlockHighlight;
 import com.hbm.config.RadiationConfig;
 import com.hbm.handler.pollution.PollutionHandler.PollutionType;
@@ -17,11 +19,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.entity.RenderPlayer;
-import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
@@ -30,8 +33,8 @@ import net.minecraft.world.biome.Biome;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.client.event.EntityViewRenderEvent.FogColors;
 import net.minecraftforge.client.event.EntityViewRenderEvent.FogDensity;
-import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.minecraftforge.client.event.RenderSpecificHandEvent;
 import net.minecraftforge.common.ForgeModContainer;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -58,6 +61,15 @@ public class ModEventHandlerRenderer {
 		}
 		EntityPlayer player = MainRegistry.proxy.me();
 		ItemStack held = player.getHeldItemMainhand();
+
+		if(!held.isEmpty() && held.getItem() instanceof ItemBlock) {
+			Block b = Block.getBlockFromItem(held.getItem());
+			if(b instanceof BlockDummyable) {
+				((BlockDummyable) b).drawPlacementHighlight(player, event.getPartialTicks());
+				event.setCanceled(true);
+				return;
+			}
+		}
 
 		if (!held.isEmpty() && held.getItem() == ModItems.gun_drill) {
 			XFactoryDrill.drawBlockHighlight(player, held, event.getPartialTicks());
@@ -94,11 +106,11 @@ public class ModEventHandlerRenderer {
 			
 			float farPlaneDistance = (float) (Minecraft.getMinecraft().gameSettings.renderDistanceChunks * 16);
 			float fogDist = farPlaneDistance / (1 + soot * 5F / (float) RadiationConfig.sootFogDivisor);
-			GL11.glFogf(GL11.GL_FOG_START, 0);
-			GL11.glFogf(GL11.GL_FOG_END, fogDist);
+			GlStateManager.setFogStart( 0);
+			GlStateManager.setFogEnd( fogDist);
 
 			if(GLContext.getCapabilities().GL_NV_fog_distance) {
-				GL11.glFogi(34138, 34139);
+				GlStateManager.glFogi(34138, 34139);
 			}
 			
 			event.setCanceled(true);
@@ -120,22 +132,20 @@ public class ModEventHandlerRenderer {
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
-	public void onRenderHand(RenderHandEvent event) {
-		if (ShaderHelper.isShadowPass()) {
-			return;
-		}
-		//can't use plaxer.getHeldItem() here because the item rendering persists for a few frames after hitting the switch key
-		ItemRenderer itemRenderer = Minecraft.getMinecraft().entityRenderer.itemRenderer;
-		ItemStack toRender = itemRenderer.itemStackMainHand;
+	public void onRenderSpecificHand(RenderSpecificHandEvent event) {
+        if (ShaderHelper.isShadowPass()) return;
 
-		if(toRender != null) {
-			TileEntityItemStackRenderer render = toRender.getItem().getTileEntityItemStackRenderer();
+        //can't use plaxer.getHeldItem() here because the item rendering persists for a few frames after hitting the switch key
+        ItemRenderer itemRenderer = Minecraft.getMinecraft().entityRenderer.itemRenderer;
+        ItemStack toRender = itemRenderer.itemStackMainHand;
 
-			if(render instanceof ItemRenderWeaponBase) {
-				((ItemRenderWeaponBase) render).setPerspectiveAndRender(toRender, event.getPartialTicks());
-				event.setCanceled(true);
-			}
-		}
+        if (toRender.getItem().getTileEntityItemStackRenderer() instanceof ItemRenderWeaponBase weapon) {
+            EnumHand hand = event.getHand();
+            if (hand == EnumHand.MAIN_HAND && !ShaderHelper.isSkipRenderHand(hand)) {
+                weapon.setPerspectiveAndRender(toRender, event.getPartialTicks());
+            }
+            event.setCanceled(true);
+        }
 	}
 
 	@SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)

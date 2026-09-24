@@ -3,7 +3,7 @@ package com.hbm.render.tileentity;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.misc.BeamPronter;
 import com.hbm.render.misc.BeamPronter.EnumBeamType;
@@ -17,12 +17,6 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister
 public class RenderLaserMiner extends TileEntitySpecialRenderer<TileEntityMachineMiningLaser>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityMachineMiningLaser te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityMachineMiningLaser laser,
@@ -47,21 +41,21 @@ public class RenderLaserMiner extends TileEntitySpecialRenderer<TileEntityMachin
     double vy = ty - laser.getPos().getY() + 3;
     double vz = tz - laser.getPos().getZ();
 
-    Vec3 nVec = Vec3.createVectorHelper(vx, vy, vz);
+    Vec3NT nVec = Vec3NT.createVectorHelper(vx, vy, vz);
     nVec = nVec.normalize();
 
     double d = 1.5D;
-    nVec.xCoord *= d;
-    nVec.yCoord *= d;
-    nVec.zCoord *= d;
+    nVec.setX(nVec.x * (d));
+    nVec.setY(nVec.y * (d));
+    nVec.setZ(nVec.z * (d));
 
-    Vec3 vec = Vec3.createVectorHelper(vx - nVec.xCoord, vy - nVec.yCoord, vz - nVec.zCoord);
+    Vec3NT vec = Vec3NT.createVectorHelper(vx - nVec.x, vy - nVec.y, vz - nVec.z);
 
     double length = vec.length();
-    double yaw = Math.toDegrees(Math.atan2(vec.xCoord, vec.zCoord));
-    double sqrt = MathHelper.sqrt(vec.xCoord * vec.xCoord + vec.zCoord * vec.zCoord);
-    double pitch = Math.toDegrees(Math.atan2(vec.yCoord, sqrt));
-    // turns out using tan(vec.yCoord, length) was inaccurate,
+    double yaw = Math.toDegrees(Math.atan2(vec.x, vec.z));
+    double sqrt = MathHelper.sqrt(vec.x * vec.x + vec.z * vec.z);
+    double pitch = Math.toDegrees(Math.atan2(vec.y, sqrt));
+    // turns out using tan(vec.y, length) was inaccurate,
     // the emitter wouldn't match the laser perfectly when pointing down
 
     bindTexture(ResourceManager.mining_laser_base_tex);
@@ -69,15 +63,15 @@ public class RenderLaserMiner extends TileEntitySpecialRenderer<TileEntityMachin
 
     // GlStateManager.shadeModel(GL11.GL_SMOOTH);
     GlStateManager.pushMatrix();
-    GL11.glRotated(yaw, 0, 1, 0);
+    GlStateManager.rotate((float) (yaw), 0, 1, 0);
     bindTexture(ResourceManager.mining_laser_pivot_tex);
     ResourceManager.mining_laser.renderPart("Pivot");
     GlStateManager.popMatrix();
 
     GlStateManager.pushMatrix();
-    GL11.glRotated(yaw, 0, 1, 0);
+    GlStateManager.rotate((float) (yaw), 0, 1, 0);
     GlStateManager.translate(0, -1, 0);
-    GL11.glRotated(pitch + 90, -1, 0, 0);
+    GlStateManager.rotate((float) (pitch + 90), -1, 0, 0);
     GlStateManager.translate(0, 1, 0);
     bindTexture(ResourceManager.mining_laser_laser_tex);
     ResourceManager.mining_laser.renderPart("Laser");
@@ -86,7 +80,7 @@ public class RenderLaserMiner extends TileEntitySpecialRenderer<TileEntityMachin
 
     if (laser.beam) {
       length = vec.length();
-      GlStateManager.translate(nVec.xCoord, nVec.yCoord - 1, nVec.zCoord);
+      GlStateManager.translate(nVec.x, nVec.y - 1, nVec.z);
       int range = (int) Math.ceil(length * 0.5);
       BeamPronter.prontBeam(
           vec.toVec3d(), EnumWaveType.STRAIGHT, EnumBeamType.SOLID, 0xa00000, 0xFFFFFF, 0, 1, 0, 3, 0.09F);

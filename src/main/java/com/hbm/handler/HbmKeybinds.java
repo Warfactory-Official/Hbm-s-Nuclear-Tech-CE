@@ -34,6 +34,7 @@ public class HbmKeybinds {
     public static KeyBinding calculatorKey = new KeyBinding(category + ".calculator", Keyboard.KEY_N, category);
 	public static KeyBinding jetpackKey = new KeyBinding(category + ".toggleBack", Keyboard.KEY_C, category);
 	public static KeyBinding hudKey = new KeyBinding(category + ".toggleHUD", Keyboard.KEY_V, category);
+	public static KeyBinding magnetKey = new KeyBinding(category + ".toggleMagnet", Keyboard.KEY_Z, category);
 	public static KeyBinding reloadKey = new KeyBinding(category + ".reload", Keyboard.KEY_R, category);
 	public static KeyBinding dashKey = new KeyBinding(category + ".dash", Keyboard.KEY_LSHIFT, category);
 
@@ -48,6 +49,7 @@ public class HbmKeybinds {
 	public static KeyBinding abilityCycle = new KeyBinding(category + ".ability", -99, category);
 	public static KeyBinding abilityAlt = new KeyBinding(category + ".abilityAlt", Keyboard.KEY_LMENU, category);
 	public static KeyBinding copyToolAlt = new KeyBinding(category + ".copyToolAlt", Keyboard.KEY_LMENU, category);
+	public static KeyBinding copyToolCtrl = new KeyBinding(category + ".copyToolCtrl", Keyboard.KEY_LCONTROL, category);
 	public static KeyBinding gunSecondaryKey = new KeyBinding(category + ".gunSecondary", -99, category);
 	public static KeyBinding gunTertiaryKey = new KeyBinding(category + ".gunTertitary", -98, category);
 	
@@ -55,6 +57,7 @@ public class HbmKeybinds {
         ClientRegistry.registerKeyBinding(calculatorKey);
 		ClientRegistry.registerKeyBinding(jetpackKey);
 		ClientRegistry.registerKeyBinding(hudKey);
+		ClientRegistry.registerKeyBinding(magnetKey);
 		ClientRegistry.registerKeyBinding(reloadKey);
 		ClientRegistry.registerKeyBinding(dashKey);
 
@@ -68,6 +71,8 @@ public class HbmKeybinds {
 		ClientRegistry.registerKeyBinding(craneLoadKey);
 		ClientRegistry.registerKeyBinding(abilityCycle);
 		ClientRegistry.registerKeyBinding(abilityAlt);
+		ClientRegistry.registerKeyBinding(copyToolAlt);
+		ClientRegistry.registerKeyBinding(copyToolCtrl);
 		ClientRegistry.registerKeyBinding(qmaw);
 	}
 
@@ -131,6 +136,7 @@ public class HbmKeybinds {
 		JETPACK,
 		TOGGLE_JETPACK,
 		TOGGLE_HEAD,
+		TOGGLE_MAGNET,
 		RELOAD,
 		DASH,
 		CRANE_UP,
@@ -141,6 +147,7 @@ public class HbmKeybinds {
 		ABILITY_CYCLE,
 		ABILITY_ALT,
 		TOOL_ALT,
+		TOOL_CTRL,
 		GUN_PRIMARY,
 		GUN_SECONDARY,
 		GUN_TERTIARY;
@@ -148,10 +155,14 @@ public class HbmKeybinds {
         public static final EnumKeybind[] VALUES = values();
 	}
 
+	private static boolean isValidKeyCode(int keyCode) {
+		return keyCode != Keyboard.KEY_NONE && keyCode >= -100;
+	}
+
 	/** Handles keybind overlap. Make sure this runs first before referencing the keybinds set by the extprops */
 	public static void handleOverlap(boolean state, int keyCode) {
 		Minecraft mc = Minecraft.getMinecraft();
-		if(GeneralConfig.enableKeybindOverlap && (mc.currentScreen == null || mc.currentScreen.allowUserInput)) {
+		if(GeneralConfig.enableKeybindOverlap && isValidKeyCode(keyCode) && (mc.currentScreen == null || mc.currentScreen.allowUserInput)) {
             KeyBindingMap HASH;
             try {
                 HASH = (KeyBindingMap) hashHandle.invokeExact();
@@ -166,7 +177,7 @@ public class HbmKeybinds {
 
 				KeyModifier mod = key.getKeyModifier();
 				if (mod != KeyModifier.NONE && !mod.isActive()) continue;
-				if (HASH.lookupActive(key.getKeyCode()) == key) continue;
+				if (HASH.lookupActive(key.getKeyCode()) == key && !category.equals(key.getKeyCategory())) continue;
 
 				key.pressed = state;
 				if (state && key.pressTime == 0) {
@@ -205,6 +216,7 @@ public class HbmKeybinds {
 	}
 
 	public static void handleProps(boolean state, int keyCode) {
+		if(!isValidKeyCode(keyCode)) return;
 
 		/// KEYBIND PROPS ///
 		EntityPlayer player = MainRegistry.proxy.me();

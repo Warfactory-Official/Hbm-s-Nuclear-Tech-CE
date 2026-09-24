@@ -11,10 +11,10 @@ import static com.hbm.render.NTMRenderHelper.bindTexture;
 public class ItemRenderGearLarge extends ItemRenderBase {
   @Override
   public void renderInventory() {
-    GL11.glTranslated(0, -7, 0);
+    GlStateManager.translate(0, -7, 0);
     GlStateManager.scale(6, 6, 6);
-    GL11.glRotated(-45, 0, 1, 0);
-    GL11.glRotated(30, 1, 0, 0);
+    GlStateManager.rotate(-45, 0, 1, 0);
+    GlStateManager.rotate(30, 1, 0, 0);
     GlStateManager.translate(0, 1.375, 0);
     GlStateManager.rotate(System.currentTimeMillis() % 3600 * 0.1F, 0, 0, 1);
     GlStateManager.translate(0, -1.375, 0);

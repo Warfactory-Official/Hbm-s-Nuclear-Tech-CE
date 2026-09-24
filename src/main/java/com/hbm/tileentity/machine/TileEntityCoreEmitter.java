@@ -11,6 +11,7 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.gui.GUICoreEmitter;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.ModDamageSource;
+import com.hbm.render.chunk.SectionGeometry;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import io.netty.buffer.ByteBuf;
@@ -41,10 +42,11 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
 
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 @AutoRegister
-public class TileEntityCoreEmitter extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2,  ILaserable, IFluidStandardReceiver, IGUIProvider, SimpleComponent, CompatHandler.OCComponent {
+public class TileEntityCoreEmitter extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2,  ILaserable, IFluidStandardReceiver, IGUIProvider, SimpleComponent, CompatHandler.OCComponent, IRORInteractive {
 
 	public long power;
 	public static final long maxPower = 1000000000L;
@@ -54,12 +56,13 @@ public class TileEntityCoreEmitter extends TileEntityMachineBase implements ITic
 	public boolean isOn;
 	public FluidTankNTM tank;
 	public long prev;
+    private int prevBeam;
 
 	public static final int range = 50;
 	
 	public TileEntityCoreEmitter() {
 		super(0, true, true);
-		tank = new FluidTankNTM(Fluids.CRYOGEL,64000);
+		tank = new FluidTankNTM(Fluids.CRYOGEL,64000).withOwner(this);
 	}
 
 	@Override
@@ -162,6 +165,11 @@ public class TileEntityCoreEmitter extends TileEntityMachineBase implements ITic
 			this.markDirty();
 
 			this.networkPackNT(250);
+        } else {
+            if (prevBeam != beam) {
+                prevBeam = beam;
+                world.markBlockRangeForRenderUpdate(pos, pos);
+            }
 		}
 
 	}
@@ -218,7 +226,9 @@ public class TileEntityCoreEmitter extends TileEntityMachineBase implements ITic
 		this.power = buf.readLong();
 		this.watts = buf.readInt();
 		this.prev = buf.readLong();
+		int prevBeam = beam;
 		this.beam = buf.readInt();
+		if (beam != prevBeam) SectionGeometry.renderBoundsChanged(this);
 		this.isOn = buf.readBoolean();
 		tank.deserialize(buf);
 	}
@@ -232,7 +242,18 @@ public class TileEntityCoreEmitter extends TileEntityMachineBase implements ITic
 
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+        if (beam <= 0) {
+            return new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1,
+                    pos.getZ() + 1);
+        }
+        ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata());
+        int endX = pos.getX() + dir.offsetX * beam;
+        int endY = pos.getY() + dir.offsetY * beam;
+        int endZ = pos.getZ() + dir.offsetZ * beam;
+        return new AxisAlignedBB(
+                Math.min(pos.getX(), endX), Math.min(pos.getY(), endY), Math.min(pos.getZ(), endZ),
+                Math.max(pos.getX(), endX) + 1, Math.max(pos.getY(), endY) + 1, Math.max(pos.getZ(), endZ) + 1
+        );
 	}
 	
 	@Override
@@ -338,4 +359,44 @@ public class TileEntityCoreEmitter extends TileEntityMachineBase implements ITic
 		return new GUICoreEmitter(player, this);
 	}
 
+
+	@Override
+	public String[] getFunctionInfo() {
+		return new String[] {
+				PREFIX_FUNCTION + "setpower" + NAME_SEPARATOR + "percent",
+				PREFIX_FUNCTION + "toggle",
+				PREFIX_FUNCTION + "switch" + NAME_SEPARATOR + "on/off"
+		};
+	}
+
+	@Override
+	public String runRORFunction(String name, String[] params) {
+
+		if((PREFIX_FUNCTION + "setpower").equals(name) && params.length > 0) {
+			this.watts = IRORInteractive.parseInt(params[0], 0, 100);
+			this.markDirty();
+			return null;
+		}
+
+		if((PREFIX_FUNCTION + "toggle").equals(name)) {
+			this.isOn = !this.isOn;
+			this.markDirty();
+			return null;
+		}
+
+		if((PREFIX_FUNCTION + "switch").equals(name) && params.length > 0) {
+			if("on".equals(params[0])) {
+				this.isOn = true;
+				this.markDirty();
+				return null;
+			}
+			if("off".equals(params[0])) {
+				this.isOn = false;
+				this.markDirty();
+				return null;
+			}
+		}
+
+		return null;
+	}
 }

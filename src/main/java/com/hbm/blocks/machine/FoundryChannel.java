@@ -74,19 +74,15 @@ public class FoundryChannel extends BlockContainer implements ICrucibleAcceptor 
 	}
 
 	@Override
-	public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-		updateMeta(worldIn, pos);
+	public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
+		return this.getDefaultState().withProperty(META, getConnectionMeta(worldIn, pos));
 	}
 
 	private void updateMeta(World world, BlockPos pos) {
 		IBlockState oldState = world.getBlockState(pos);
 		int oldMeta = oldState.getValue(META);
 
-		int meta = 0;
-		if (canConnectTo(world, pos, EnumFacing.EAST)) meta |= 1;
-		if (canConnectTo(world, pos, EnumFacing.WEST)) meta |= 2;
-		if (canConnectTo(world, pos, EnumFacing.SOUTH)) meta |= 4;
-		if (canConnectTo(world, pos, EnumFacing.NORTH)) meta |= 8;
+		int meta = getConnectionMeta(world, pos);
 
 		if (meta == oldMeta) return;
 
@@ -107,12 +103,21 @@ public class FoundryChannel extends BlockContainer implements ICrucibleAcceptor 
 		}
 	}
 
+	private int getConnectionMeta(World world, BlockPos pos) {
+		int meta = 0;
+		if (canConnectTo(world, pos, EnumFacing.EAST)) meta |= 1;
+		if (canConnectTo(world, pos, EnumFacing.WEST)) meta |= 2;
+		if (canConnectTo(world, pos, EnumFacing.SOUTH)) meta |= 4;
+		if (canConnectTo(world, pos, EnumFacing.NORTH)) meta |= 8;
+		return meta;
+	}
+
 	public boolean canConnectTo(World world, BlockPos pos, EnumFacing direction) {
 		BlockPos neighborPos = pos.offset(direction);
 		IBlockState neighborState = world.getBlockState(neighborPos);
 		Block neighborBlock = neighborState.getBlock();
 
-		if (neighborBlock == ModBlocks.foundry_outlet) {
+		if (neighborBlock instanceof FoundryOutlet) {
 			if (neighborBlock.getMetaFromState(neighborState) == direction.getIndex()) return true;
 		}
 

@@ -111,12 +111,6 @@ public class CranePartitioner extends BlockContainer implements IConveyorBelt, I
     }
 
     @Override
-    public void onBlockPlacedBy(World worldIn, @NotNull BlockPos pos, IBlockState state, EntityLivingBase placer, @NotNull ItemStack stack) {
-        EnumFacing facing = placer.getHorizontalFacing().getOpposite();
-        worldIn.setBlockState(pos, state.withProperty(FACING, facing), 2);
-    }
-
-    @Override
     public @NotNull IBlockState getStateForPlacement(@NotNull World worldIn, @NotNull BlockPos pos, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, @NotNull EnumHand hand) {
         return getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
     }

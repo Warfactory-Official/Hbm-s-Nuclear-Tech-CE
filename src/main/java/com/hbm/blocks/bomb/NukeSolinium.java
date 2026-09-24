@@ -82,8 +82,12 @@ public class NukeSolinium extends BlockContainer implements IBomb {
 	}
 
 	@Override
+	public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
+		return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
+	}
+
+	@Override
 	public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-		worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()));
 		if (worldIn.getTileEntity(pos) instanceof TileEntityNukeSolinium solinium && placer instanceof EntityPlayerMP playerMP)
 			solinium.placerID = playerMP.getUniqueID();
 	}
@@ -137,7 +141,17 @@ public class NukeSolinium extends BlockContainer implements IBomb {
 	
 	@Override
 	public EnumBlockRenderType getRenderType(IBlockState state) {
-		return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
+		return EnumBlockRenderType.MODEL;
+	}
+
+	@Override
+	public BlockRenderLayer getRenderLayer() {
+		return BlockRenderLayer.CUTOUT;
+	}
+
+	@Override
+	public boolean canRenderInLayer(IBlockState state, BlockRenderLayer layer) {
+		return layer == BlockRenderLayer.CUTOUT;
 	}
 	
 	@Override

@@ -13,6 +13,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 public class RBMKAutoloader extends BlockDummyable {
 
@@ -24,7 +25,7 @@ public class RBMKAutoloader extends BlockDummyable {
     }
 
     @Override
-    public TileEntity createNewTileEntity(World world, int meta) {
+    public TileEntity createNewTileEntity(@NotNull World world, int meta) {
         if(meta >= 12) return new TileEntityRBMKAutoloader();
         return new TileEntityProxyCombo().inventory();
     }
@@ -40,7 +41,7 @@ public class RBMKAutoloader extends BlockDummyable {
     }
 
     @Override
-    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+    public boolean onBlockActivated(@NotNull World worldIn, BlockPos pos, @NotNull IBlockState state, @NotNull EntityPlayer playerIn, @NotNull EnumHand hand, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ) {
         return this.standardOpenBehavior(worldIn, pos.getX(), pos.getY(), pos.getZ(), playerIn, 0);
     }
 }

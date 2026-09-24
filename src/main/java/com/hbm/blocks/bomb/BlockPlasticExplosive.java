@@ -42,6 +42,7 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import java.util.List;
 import java.util.Objects;
 
 public class BlockPlasticExplosive extends BlockDetonatable implements IBomb {
@@ -102,7 +103,7 @@ public class BlockPlasticExplosive extends BlockDetonatable implements IBomb {
     public void bakeModel(ModelBakeEvent event) {
         var blockFrame = blockFrames[0];
         try {
-            IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation(blockFrame.getBaseModel()));
+            IModel baseModel = ModelLoaderRegistry.getModel(blockFrame.getBaseModelLocation());
 
             ImmutableMap.Builder<String, String> textureMap = ImmutableMap.builder();
             blockFrame.putTextures(textureMap);
@@ -153,8 +154,15 @@ public class BlockPlasticExplosive extends BlockDetonatable implements IBomb {
 
     //The ugly stuff, aka forcing all overridden methods to bypass BlockMeta's changes
     @Override
-    public void getDrops(NonNullList list, IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
-        ((Block) this).getDrops(list, world, pos, state, fortune);
+    public void getDrops(NonNullList<ItemStack> drops, IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
+        drops.add(new ItemStack(Item.getItemFromBlock(this), 1, 0));
+    }
+
+    @Override
+    public List<ItemStack> getDrops(IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
+        NonNullList<ItemStack> drops = NonNullList.create();
+        getDrops(drops, world, pos, state, fortune);
+        return drops;
     }
 
     @Override

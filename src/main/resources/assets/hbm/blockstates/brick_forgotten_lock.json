@@ -1,0 +1,16 @@
+{
+    "variants": {
+        "meta=0": {
+            "model": "hbm:brick_forgotten_lock_0"
+        },
+        "meta=1": {
+            "model": "hbm:brick_forgotten_lock_1"
+        },
+        "meta=2": {
+            "model": "hbm:brick_forgotten_lock_2"
+        },
+        "meta=3": {
+            "model": "hbm:brick_forgotten_lock_3"
+        }
+    }
+}

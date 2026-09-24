@@ -19,7 +19,7 @@ public class AnvilSmithingRecipe {
 		this.output = out;
 		this.left = left;
 		this.right = right;
-		if(GeneralConfig.enableLBSMShorterDecay && GeneralConfig.enableLBSMUnlockAnvil && GeneralConfig.enableLBSM) this.tier = 1;
+		if(GeneralConfig.enableLBSM && GeneralConfig.enableLBSMUnlockAnvil) this.tier = 1;
 	}
 	
 	public AnvilSmithingRecipe makeShapeless() {

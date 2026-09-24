@@ -1,5 +1,7 @@
 package com.hbm.inventory.control_panel.controls;
 
+import com.hbm.inventory.control_panel.types.DataValueEnum;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
 import com.hbm.render.loader.WaveFrontObjectVAO;
 import com.hbm.inventory.control_panel.*;
 import com.hbm.inventory.control_panel.nodes.*;
@@ -20,8 +22,8 @@ import java.util.List;
 
 public class ButtonPush extends Control {
 
-    public ButtonPush(String name, ControlPanel panel) {
-        super(name, panel);
+    public ButtonPush(String name,String registryName,ControlPanel panel) {
+        super(name,registryName, panel);
         vars.put("isPushed", new DataValueFloat(0));
         vars.put("isLit", new DataValueFloat(0));
         vars.put("color", new DataValueEnum<>(EnumDyeColor.RED));
@@ -83,6 +85,7 @@ public class ButtonPush extends Control {
         }
 
         GlStateManager.shadeModel(GL11.GL_FLAT);
+        GlStateManager.color(1F, 1F, 1F, 1F);
     }
 
     @Override
@@ -142,6 +145,6 @@ public class ButtonPush extends Control {
 
     @Override
     public Control newControl(ControlPanel panel) {
-        return new ButtonPush(name, panel);
+        return new ButtonPush(name,registryName,panel);
     }
 }

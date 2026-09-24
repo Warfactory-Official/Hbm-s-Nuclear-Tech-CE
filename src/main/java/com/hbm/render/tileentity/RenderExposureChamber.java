@@ -146,12 +146,6 @@ public class RenderExposureChamber extends TileEntitySpecialRenderer<TileEntityM
                 GlStateManager.shadeModel(GL11.GL_FLAT);
                 GlStateManager.enableCull();
             }
-
-            @Override
-            public void renderNonInv() {
-                GlStateManager.rotate(-45, 0, 1, 0);
-                GlStateManager.translate(-0.5F, -0.5F, 0);
-            }
         };
     }
 }

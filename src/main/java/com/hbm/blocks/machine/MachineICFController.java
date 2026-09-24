@@ -6,6 +6,7 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.BlockICFLaserComponent.EnumICFPart;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.machine.TileEntityICFController;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.I18nUtil;
@@ -205,12 +206,11 @@ public class MachineICFController extends BlockBase implements ITileEntityProvid
     private void sendError(World world, BlockPos pos, String message, EntityPlayer player) {
         if (player instanceof EntityPlayerMP) {
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("type", "marker");
             data.setInteger("color", 0xff0000);
             data.setInteger("expires", 5_000);
             data.setDouble("dist", 128D);
             if (message != null) data.setString("label", message);
-            PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(data, pos.getX(), pos.getY(), pos.getZ()), (EntityPlayerMP) player);
+            PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Marker, data, pos.getX(), pos.getY(), pos.getZ()), (EntityPlayerMP) player);
         }
     }
 

@@ -1,7 +1,8 @@
 package com.hbm.world;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.config.GeneralConfig;
+import com.hbm.blocks.generic.BlockScaffold;
+import com.hbm.blocks.generic.BlockScaffold.EnumScaffoldOrient;
 import com.hbm.handler.WeightedRandomChestContentFrom1710;
 import com.hbm.itempool.ItemPool;
 import com.hbm.itempool.ItemPoolsLegacy;
@@ -294,8 +295,8 @@ public class Satellite extends AbstractPhasedStructure {
 		world.setBlockState(pos.setPos(x + 18, y + -1, z + 30), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + -1, z + 30), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 20, y + -1, z + 30), Library.getRandomConcrete(rand).getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + 0, z + 8), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[3]), 3);
-		world.setBlockState(pos.setPos(x + 13, y + 0, z + 8), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[3]), 3);
+		world.setBlockState(pos.setPos(x + 5, y + 0, z + 8), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_NS), 3);
+		world.setBlockState(pos.setPos(x + 13, y + 0, z + 8), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_NS), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 0, z + 8), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 20, y + 0, z + 8), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 21, y + 0, z + 8), ModBlocks.fence_metal.getDefaultState(), 3);
@@ -325,11 +326,11 @@ public class Satellite extends AbstractPhasedStructure {
 		world.setBlockState(pos.setPos(x + 20, y + 0, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 0, z + 17), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 0, z + 17), Block4.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + 0, z + 23), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[5]), 3);
+		world.setBlockState(pos.setPos(x + 5, y + 0, z + 23), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_EW), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 0, z + 29), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 0, z + 29), Block4.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + 1, z + 8), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[3]), 3);
-		world.setBlockState(pos.setPos(x + 13, y + 1, z + 8), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[3]), 3);
+		world.setBlockState(pos.setPos(x + 5, y + 1, z + 8), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_NS), 3);
+		world.setBlockState(pos.setPos(x + 13, y + 1, z + 8), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_NS), 3);
 		world.setBlockState(pos.setPos(x + 17, y + 1, z + 8), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 18, y + 1, z + 8), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 1, z + 8), ModBlocks.fence_metal.getDefaultState(), 3);
@@ -360,11 +361,11 @@ public class Satellite extends AbstractPhasedStructure {
 		world.setBlockState(pos.setPos(x + 20, y + 1, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 1, z + 17), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 1, z + 17), Block4.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + 1, z + 23), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[5]), 3);
+		world.setBlockState(pos.setPos(x + 5, y + 1, z + 23), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_EW), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 1, z + 29), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 1, z + 29), Block4.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + 2, z + 8), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[3]), 3);
-		world.setBlockState(pos.setPos(x + 13, y + 2, z + 8), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[3]), 3);
+		world.setBlockState(pos.setPos(x + 5, y + 2, z + 8), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_NS), 3);
+		world.setBlockState(pos.setPos(x + 13, y + 2, z + 8), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_NS), 3);
 		world.setBlockState(pos.setPos(x + 15, y + 2, z + 8), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 16, y + 2, z + 8), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 17, y + 2, z + 8), ModBlocks.fence_metal.getDefaultState(), 3);
@@ -395,10 +396,10 @@ public class Satellite extends AbstractPhasedStructure {
 		world.setBlockState(pos.setPos(x + 20, y + 2, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 2, z + 17), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 2, z + 17), Block4.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + 2, z + 23), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[5]), 3);
+		world.setBlockState(pos.setPos(x + 5, y + 2, z + 23), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_EW), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 2, z + 29), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 2, z + 29), Block4.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + 3, z + 8), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[3]), 3);
+		world.setBlockState(pos.setPos(x + 5, y + 3, z + 8), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_NS), 3);
 		world.setBlockState(pos.setPos(x + 13, y + 3, z + 8), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 14, y + 3, z + 8), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 15, y + 3, z + 8), ModBlocks.fence_metal.getDefaultState(), 3);
@@ -429,10 +430,10 @@ public class Satellite extends AbstractPhasedStructure {
 		world.setBlockState(pos.setPos(x + 20, y + 3, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 3, z + 17), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 3, z + 17), Block4.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + 3, z + 23), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[5]), 3);
+		world.setBlockState(pos.setPos(x + 5, y + 3, z + 23), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_EW), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 3, z + 29), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 3, z + 29), Block4.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + 4, z + 8), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[3]), 3);
+		world.setBlockState(pos.setPos(x + 5, y + 4, z + 8), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_NS), 3);
 		world.setBlockState(pos.setPos(x + 11, y + 4, z + 8), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 12, y + 4, z + 8), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 13, y + 4, z + 8), ModBlocks.fence_metal.getDefaultState(), 3);
@@ -463,10 +464,10 @@ public class Satellite extends AbstractPhasedStructure {
 		world.setBlockState(pos.setPos(x + 20, y + 4, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 4, z + 17), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 4, z + 17), Block4.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + 4, z + 23), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[5]), 3);
+		world.setBlockState(pos.setPos(x + 5, y + 4, z + 23), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_EW), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 4, z + 29), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 4, z + 29), Block4.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + 5, z + 8), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[3]), 3);
+		world.setBlockState(pos.setPos(x + 5, y + 5, z + 8), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_NS), 3);
 		world.setBlockState(pos.setPos(x + 9, y + 5, z + 8), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 10, y + 5, z + 8), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 11, y + 5, z + 8), ModBlocks.fence_metal.getDefaultState(), 3);
@@ -497,10 +498,10 @@ public class Satellite extends AbstractPhasedStructure {
 		world.setBlockState(pos.setPos(x + 20, y + 5, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 5, z + 17), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 5, z + 17), Block4.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + 5, z + 23), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[5]), 3);
+		world.setBlockState(pos.setPos(x + 5, y + 5, z + 23), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_EW), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 5, z + 29), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 5, z + 29), Block4.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + 6, z + 8), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[3]), 3);
+		world.setBlockState(pos.setPos(x + 5, y + 6, z + 8), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_NS), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 6, z + 8), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 8, y + 6, z + 8), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 9, y + 6, z + 8), ModBlocks.fence_metal.getDefaultState(), 3);
@@ -531,7 +532,7 @@ public class Satellite extends AbstractPhasedStructure {
 		world.setBlockState(pos.setPos(x + 20, y + 6, z + 14), Library.getRandomConcrete(rand).getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 6, z + 17), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 6, z + 17), Block4.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + 6, z + 23), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[5]), 3);
+		world.setBlockState(pos.setPos(x + 5, y + 6, z + 23), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_EW), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 6, z + 29), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 6, z + 29), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 5, y + 7, z + 8), Block2.getDefaultState(), 3);
@@ -578,7 +579,7 @@ public class Satellite extends AbstractPhasedStructure {
 		world.setBlockState(pos.setPos(x + 6, y + 7, z + 16), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 7, z + 17), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 7, z + 17), Block4.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + 7, z + 23), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[5]), 3);
+		world.setBlockState(pos.setPos(x + 5, y + 7, z + 23), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_EW), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 7, z + 29), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 7, z + 29), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 5, y + 8, z + 8), ModBlocks.fence_metal.getDefaultState(), 3);
@@ -619,7 +620,7 @@ public class Satellite extends AbstractPhasedStructure {
 		world.setBlockState(pos.setPos(x + 19, y + 8, z + 17), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 5, y + 8, z + 18), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 6, y + 8, z + 18), Block2.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + 8, z + 23), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[5]), 3);
+		world.setBlockState(pos.setPos(x + 5, y + 8, z + 23), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_EW), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 8, z + 29), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 8, z + 29), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 18, y + 9, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
@@ -652,7 +653,7 @@ public class Satellite extends AbstractPhasedStructure {
 		world.setBlockState(pos.setPos(x + 6, y + 9, z + 19), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 5, y + 9, z + 20), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 6, y + 9, z + 20), Block2.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + 9, z + 23), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[5]), 3);
+		world.setBlockState(pos.setPos(x + 5, y + 9, z + 23), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_EW), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 9, z + 29), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 9, z + 29), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 18, y + 10, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
@@ -685,7 +686,7 @@ public class Satellite extends AbstractPhasedStructure {
 		world.setBlockState(pos.setPos(x + 6, y + 10, z + 21), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 5, y + 10, z + 22), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 6, y + 10, z + 22), Block2.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 5, y + 10, z + 23), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[5]), 3);
+		world.setBlockState(pos.setPos(x + 5, y + 10, z + 23), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_EW), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 10, z + 29), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 10, z + 29), Block4.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 18, y + 11, z + 10), Library.getRandomConcrete(rand).getDefaultState(), 3);
@@ -1065,7 +1066,7 @@ public class Satellite extends AbstractPhasedStructure {
 		world.setBlockState(pos.setPos(x + 14, y + 15, z + 23), Block6.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.SOUTH), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 15, z + 23), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 15, z + 24), ModBlocks.fence_metal.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 14, y + 15, z + 24), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[5]), 3);
+		world.setBlockState(pos.setPos(x + 14, y + 15, z + 24), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_EW), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 15, z + 24), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 15, z + 25), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 15, z + 26), Block2.getDefaultState(), 3);
@@ -1134,7 +1135,7 @@ public class Satellite extends AbstractPhasedStructure {
 		world.setBlockState(pos.setPos(x + 7, y + 16, z + 23), ModBlocks.fence_metal.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 16, z + 23), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 7, y + 16, z + 24), ModBlocks.fence_metal.getDefaultState(), 3);
-		world.setBlockState(pos.setPos(x + 14, y + 16, z + 24), Block3.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.VALUES[5]), 3);
+		world.setBlockState(pos.setPos(x + 14, y + 16, z + 24), Block3.getDefaultState().withProperty(BlockScaffold.ORIENT, EnumScaffoldOrient.HORIZONTAL_EW), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 16, z + 24), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 16, z + 25), Block2.getDefaultState(), 3);
 		world.setBlockState(pos.setPos(x + 19, y + 16, z + 26), Block2.getDefaultState(), 3);

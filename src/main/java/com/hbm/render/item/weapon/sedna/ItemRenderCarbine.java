@@ -114,10 +114,10 @@ public class ItemRenderCarbine extends ItemRenderWeaponBase {
 		super.setupInv(stack);
 		if(hasBayonet(stack)) {
 			double scale = 1.1875D;
-			GL11.glScaled(scale, scale, scale);
-			GL11.glRotated(25, 1, 0, 0);
-			GL11.glRotated(45, 0, 1, 0);
-			GL11.glTranslated(1.5, 0, 0);
+			GlStateManager.scale(scale, scale, scale);
+			GlStateManager.rotate(25, 1, 0, 0);
+			GlStateManager.rotate(45, 0, 1, 0);
+			GlStateManager.translate(1.5, 0, 0);
 		} else {
 			double scale = 1.375D;
 			GlStateManager.scale(scale, scale, scale);

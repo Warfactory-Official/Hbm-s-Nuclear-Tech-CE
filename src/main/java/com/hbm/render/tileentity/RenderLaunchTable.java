@@ -19,12 +19,6 @@ import net.minecraft.util.ResourceLocation;
 @AutoRegister
 public class RenderLaunchTable extends TileEntitySpecialRenderer<TileEntityLaunchTable>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityLaunchTable te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityLaunchTable launcher,

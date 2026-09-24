@@ -1,0 +1,7 @@
+{
+    "variants": {
+        "variant=default": { "model": "hbm:lightstone_tile_double_slab" },
+        "half=bottom,variant=default": { "model": "hbm:lightstone_tile_double_slab" },
+        "half=top,variant=default": { "model": "hbm:lightstone_tile_double_slab" }
+    }
+}

@@ -82,6 +82,17 @@ public interface IPersistentNBT {
         }
     }
 
+    /**
+     * True when the stack carries block contents in its persistent tag. Such stacks are unique and
+     * must never merge with one another, otherwise placing the merged stack hands out one crate's
+     * worth of contents once per item in it.
+     */
+    static boolean carriesContents(ItemStack stack) {
+        if (stack.isEmpty() || !stack.hasTagCompound()) return false;
+        NBTTagCompound tag = stack.getTagCompound();
+        return tag.hasKey(NBT_PERSISTENT_KEY) && !tag.getCompoundTag(NBT_PERSISTENT_KEY).isEmpty();
+    }
+
     default boolean shouldDrop() {
         return !isDestroyedByCreativePlayer();
     }

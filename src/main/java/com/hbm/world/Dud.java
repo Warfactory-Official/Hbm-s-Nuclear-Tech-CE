@@ -3,72 +3,43 @@ package com.hbm.world;
 import com.hbm.blocks.BlockEnumMeta;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.bomb.BlockCrashedBomb;
-import com.hbm.config.GeneralConfig;
+import com.hbm.lib.Library;
+import com.hbm.world.phased.AbstractPhasedStructure;
 import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.gen.feature.WorldGenerator;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
 
-// mlbv: this can't cause cascading worldgen..
-public class Dud extends WorldGenerator
-{
-	
-	protected Block[] GetValidSpawnBlocks()
-	{
-		return new Block[]
-		{
-			Blocks.GRASS,
-			Blocks.DIRT,
-			Blocks.STONE,
-			Blocks.SAND,
-			Blocks.SANDSTONE,
-		};
-	}
+public class Dud extends AbstractPhasedStructure {
 
-	public boolean LocationIsValidSpawn(World world, BlockPos pos)
- {
+	public static final Dud INSTANCE = new Dud();
 
-		IBlockState checkBlockState = world.getBlockState(pos.down());
-		Block checkBlock = checkBlockState.getBlock();
-		Block blockAbove = world.getBlockState(pos).getBlock();
-		Block blockBelow = world.getBlockState(pos.down(2)).getBlock();
-
-		for (Block i : GetValidSpawnBlocks())
-		{
-			if (blockAbove != Blocks.AIR)
-			{
-				return false;
-			}
-			if (checkBlock == i)
-			{
-				return true;
-			}
-			else if (checkBlock == Blocks.SNOW_LAYER && blockBelow == i)
-			{
-				return true;
-			}
-			else if (checkBlockState.getMaterial() == Material.PLANTS && blockBelow == i)
-			{
-				return true;
-			}
-		}
+	@Override
+	protected boolean isCacheable() {
 		return false;
 	}
 
 	@Override
-	public boolean generate(World world, Random rand, BlockPos pos)
-	{
-		if(!LocationIsValidSpawn(world, pos))
-		{
-			return false;
-		}
-
-		world.setBlockState(pos, ModBlocks.crashed_bomb.getDefaultState().withProperty(BlockEnumMeta.META, rand.nextInt(BlockCrashedBomb.EnumDudType.VALUES.length)), 2 | 16);
+	protected boolean useDynamicScheduler() {
 		return true;
+	}
+
+	@Override
+	protected boolean isValidSpawnBlock(Block block) {
+		return super.isValidSpawnBlock(block) || block == Blocks.SANDSTONE;
+	}
+
+	@Override
+	public void postGenerate(@NotNull World world, @NotNull Random rand, long finalOrigin) {
+		int x = Library.getBlockPosX(finalOrigin);
+		int z = Library.getBlockPosZ(finalOrigin);
+		int y = world.getHeight(x, z);
+
+		if(y <= 0 || y >= world.getHeight()) return;
+		if(!locationIsValidSpawn(world, Library.blockPosToLong(x, y, z))) return;
+
+		world.setBlockState(mutablePos.setPos(x, y, z), ModBlocks.crashed_bomb.getDefaultState().withProperty(BlockEnumMeta.META, rand.nextInt(BlockCrashedBomb.EnumDudType.VALUES.length)), 2 | 16);
 	}
 }

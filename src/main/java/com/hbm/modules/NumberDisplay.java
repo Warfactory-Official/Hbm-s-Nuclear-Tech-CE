@@ -12,8 +12,6 @@ import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nonnegative;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Arrays;
 
 
@@ -160,7 +158,9 @@ public class NumberDisplay {
         if (blink && !BobMathUtil.getBlink())
             return;
 
-        short gap = (short) (digitLength - num.length);
+        // Right-align within the display. Never let the starting gap go negative: an over-long number would
+        // otherwise render its leading digits to the left of the display origin, cut off and overlapping the GUI.
+        short gap = (short) Math.max(0, digitLength - num.length);
         for (int i = 0; i < num.length; i++)
         {
             if (num[i] == '.')
@@ -294,7 +294,7 @@ public class NumberDisplay {
     private void drawPeriod()
     {
         renderSegment(gui.getGuiLeft() + displayX + dispOffset + padding - (int) Math.ceil(padding / 2) + (horizontalLength + thickness),
-                gui.getGuiLeft() + displayY + 2 * (verticalLength + thickness), thickness, thickness);
+                gui.getGuiTop() + displayY + 2 * (verticalLength + thickness), thickness, thickness);
     }
 
     private void drawVertical(int posX, int posY)
@@ -415,21 +415,25 @@ public class NumberDisplay {
     }
     private void formatForFloat()
     {
-        BigDecimal bd = new BigDecimal(numIn.toString());
-        bd = bd.setScale(floatPad, RoundingMode.HALF_UP);
-
-//		char[] proc = new Double(bd.doubleValue()).toString().toCharArray();
-        char[] proc = bd.toString().toCharArray();
-        proc = Double.valueOf(BobMathUtil.roundDecimal(numIn.doubleValue(), floatPad)).toString().toCharArray();
-
-        if (proc.length == digitLength)
-            toDisp = proc;
-        else
+        toDisp = Double.valueOf(BobMathUtil.roundDecimal(numIn.doubleValue(), floatPad)).toString().toCharArray();
+        if (toDisp.length != digitLength)
             toDisp = truncOrExpand();
     }
     @Beta
     private char[] truncOrExpand()
     {
+        if (toDisp.length > digitLength)
+        {
+            char[] capped = new char[digitLength];
+            int start = 0;
+            if (toDisp[0] == '-' && digitLength > 1)
+            {
+                capped[0] = '-';
+                start = 1;
+            }
+            Arrays.fill(capped, start, digitLength, '9');
+            return capped;
+        }
         if (isFloat)
         {
             char[] out = Arrays.copyOf(toDisp, digitLength);

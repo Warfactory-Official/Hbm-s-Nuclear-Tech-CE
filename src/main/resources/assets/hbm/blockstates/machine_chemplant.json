@@ -1,8 +1,0 @@
-{
-	"variants": {
-		"facing=2": { "model": "hbm:machine_chemplant" },
-		"facing=3": { "model": "hbm:machine_chemplant" },
-		"facing=4": { "model": "hbm:machine_chemplant" },
-		"facing=5": { "model": "hbm:machine_chemplant" }
-	}
-}

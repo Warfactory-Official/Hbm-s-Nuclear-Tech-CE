@@ -3,6 +3,7 @@ package com.hbm.render.entity;
 import com.hbm.entity.projectile.EntityRailgunBlast;
 import com.hbm.entity.projectile.EntityTom;
 import com.hbm.interfaces.AutoRegister;
+import com.hbm.interfaces.IConstantRenderer;
 import com.hbm.main.ClientProxy;
 import com.hbm.render.misc.TomPronter2;
 import com.hbm.render.util.TomPronter;
@@ -57,6 +58,13 @@ public class RenderTom<T extends Entity> extends Render<T> {
 	@Override
 	protected ResourceLocation getEntityTexture(T entity) {
 		return null;
+	}
+
+	@Override
+	public void doRenderShadowAndFire(Entity entityIn, double x, double y, double z, float yaw, float partialTicks) {
+		if(entityIn instanceof IConstantRenderer)
+			return;
+		super.doRenderShadowAndFire(entityIn, x, y, z, yaw, partialTicks);
 	}
 
 }

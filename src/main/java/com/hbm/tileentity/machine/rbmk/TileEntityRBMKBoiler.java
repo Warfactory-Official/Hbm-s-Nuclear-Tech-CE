@@ -2,23 +2,30 @@ package com.hbm.tileentity.machine.rbmk;
 
 import com.hbm.api.fluid.IFluidStandardTransceiver;
 import com.hbm.api.fluidmk2.FluidNode;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.capability.NTMFluidHandlerWrapper;
 import com.hbm.entity.projectile.EntityRBMKDebris.DebrisType;
 import com.hbm.handler.CompatHandler;
+import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerRBMKBoiler;
-import com.hbm.inventory.control_panel.DataValue;
-import com.hbm.inventory.control_panel.DataValueFloat;
-import com.hbm.inventory.control_panel.DataValueString;
+import com.hbm.inventory.control_panel.types.DataValue;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
+import com.hbm.inventory.control_panel.types.DataValueString;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.gui.GUIRBMKBoiler;
 import com.hbm.lib.DirPos;
+import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.main.MainRegistry;
+import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.util.Vec3NT;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.machine.rbmk.RBMKColumn.ColumnType;
 import com.hbm.uninos.UniNodespace;
@@ -29,13 +36,16 @@ import li.cil.oc.api.machine.Context;
 import li.cil.oc.api.network.SimpleComponent;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fml.common.Optional;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
@@ -44,18 +54,19 @@ import javax.annotation.Nullable;
 import java.util.Map;
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 @AutoRegister
-public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements IControlReceiver, IFluidStandardTransceiver, SimpleComponent, IGUIProvider {
+public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements IControlReceiver, IFluidStandardTransceiver, SimpleComponent, IGUIProvider, IConnectionAnchors, IRORValueProvider {
 
     public FluidTankNTM feed;
     public FluidTankNTM steam;
     protected int consumption;
     protected int output;
+    protected int ventDelay;
 
     public TileEntityRBMKBoiler() {
         super(0);
 
-        feed = new FluidTankNTM(Fluids.WATER, 10000);
-        steam = new FluidTankNTM(Fluids.STEAM, 1000000);
+        feed = new FluidTankNTM(Fluids.WATER, 10000).withOwner(this);
+        steam = new FluidTankNTM(Fluids.STEAM, 1000000).withOwner(this);
     }
 
     public void getDiagData(NBTTagCompound nbt) {
@@ -76,6 +87,7 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
 
             this.consumption = 0;
             this.output = 0;
+            if(this.ventDelay > 0) this.ventDelay--;
 
             double heatCap = getHeatFromSteam(steam.getTankType());
             double heatProvided = this.heat - heatCap;
@@ -106,16 +118,24 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
                 feed.setFill(feed.getFill() - waterUsed);
                 steam.setFill(steam.getFill() + steamProduced);
 
-                if (steam.getFill() > steam.getMaxFill())
+                if(steam.getFill() > steam.getMaxFill()) {
                     steam.setFill(steam.getMaxFill());
+
+                    if(ventDelay <= 0) {
+                        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.RBMKSteam, new NBTTagCompound(), pos.getX() + 0.25 + world.rand.nextInt(2) * 0.5, pos.getY() + RBMKDials.getColumnHeight(world), pos.getZ() + 0.25 + world.rand.nextInt(2) * 0.5), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 100));
+                        MainRegistry.proxy.effectNT(HbmEffectNT.RBMKSteam, pos.getX() + 0.25 + world.rand.nextInt(2) * 0.5, pos.getY() + RBMKDials.getColumnHeight(world), pos.getZ() + 0.25 + world.rand.nextInt(2) * 0.5);
+                        this.ventDelay = 20 + world.rand.nextInt(10);
+                        this.world.playSound(null, pos.getX(), pos.getY() + RBMKDials.getColumnHeight(world), pos.getZ(), HBMSoundHandler.steamEngineOperate, SoundCategory.BLOCKS, 2F, 1F + world.rand.nextFloat() * 0.25F);
+                    }
+                }
 
                 this.heat -= waterUsed * HEAT_PER_MB_WATER;
             }
 
             this.trySubscribe(feed.getTankType(), world, pos.getX(), pos.getY() - 1, pos.getZ(), Library.NEG_Y);
-            for (DirPos pos : getOutputPos()) {
+            for (DirPos pos : getConPos()) {
                 if (this.steam.getFill() > 0)
-                    this.sendFluid(steam, world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
+                    this.tryProvide(steam, world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
             }
         }
 
@@ -138,7 +158,7 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
         return 0D;
     }
 
-    protected DirPos[] getOutputPos() {
+    public DirPos[] getConPos() {
 
         if (world.getBlockState(pos.down(1)).getBlock() == ModBlocks.rbmk_loader) {
             return new DirPos[]{
@@ -196,11 +216,11 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
 
     @Override
     public boolean hasPermission(EntityPlayer player) {
-        return Vec3.createVectorHelper(pos.getX() - player.posX, pos.getY() - player.posY, pos.getZ() - player.posZ).length() < 20;
+        return Vec3NT.createVectorHelper(pos.getX() - player.posX, pos.getY() - player.posY, pos.getZ() - player.posZ).length() < 20;
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if (data.hasKey("compression")) {
             this.cyceCompressor();
             this.markDirty();
@@ -209,6 +229,8 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
 
     // mlbv: why is it named cyceCompressor?
     public void cyceCompressor() {
+
+        if(this.heat > 50 && this.feed.getFill() > 0) return;
 
         FluidType type = steam.getTankType();
         if(type == Fluids.STEAM) {			steam.setTankType(Fluids.HOTSTEAM);			steam.setFill(steam.getFill() / 10); }
@@ -229,7 +251,7 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
         }
 
         if (RBMKDials.getOverpressure(world)) {
-            for (DirPos pos : getOutputPos()) {
+            for (DirPos pos : getConPos()) {
                 //mlbv: this is meant to retrieve all the ducts that are present and connected to this boiler to
                 //and then add to TileEntityRBMKBase#pipes. The pipes field is a temporary collector for all the
                 //ducts connected to boilers within a single meltdown event. Technically it should be a ThreadLocal..
@@ -375,5 +397,22 @@ public class TileEntityRBMKBoiler extends TileEntityRBMKSlottedBase implements I
     @SideOnly(Side.CLIENT)
     public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
         return new GUIRBMKBoiler(player.inventory, this);
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[] {
+                PREFIX_VALUE + "feed",
+                PREFIX_VALUE + "steam",
+                PREFIX_VALUE + "consumption"
+        };
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if((PREFIX_VALUE + "feed").equals(name))        return "" + this.feed.getFill();
+        if((PREFIX_VALUE + "steam").equals(name))       return "" + this.steam.getFill();
+        if((PREFIX_VALUE + "consumption").equals(name)) return "" + this.consumption;
+        return null;
     }
 }

@@ -12,6 +12,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.main.AdvancementManager;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
 import com.hbm.util.ContaminationUtil.HazardType;
@@ -223,11 +224,9 @@ public class EntityUFO extends EntityFlying implements IMob, IRadiationImmune {
 								ContaminationUtil.contaminate((EntityLivingBase)e, HazardType.RADIATION, ContaminationType.CREATIVE, 5F);
 						}
 					}
-					
-					NBTTagCompound data = new NBTTagCompound();
-					data.setString("type", "ufo");
-					PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, posX, iy + 0.5, posZ),  new TargetPoint(dimension, posX, iy + 0.5, posZ, 150));
-					PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, posX + this.motionX * 0.5, iy + 0.5, posZ + this.motionZ * 0.5),  new TargetPoint(dimension, posX + this.motionX * 0.5, iy + 0.5, posZ + this.motionZ * 0.5, 150));
+
+					PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.UFO, null, posX, iy + 0.5, posZ),  new TargetPoint(dimension, posX, iy + 0.5, posZ, 150));
+					PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.UFO, null, posX + this.motionX * 0.5, iy + 0.5, posZ + this.motionZ * 0.5),  new TargetPoint(dimension, posX + this.motionX * 0.5, iy + 0.5, posZ + this.motionZ * 0.5, 150));
 				}
 			}
 			

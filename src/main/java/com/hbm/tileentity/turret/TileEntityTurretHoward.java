@@ -13,7 +13,8 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.particle.SpentCasing;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.util.Vec3NT;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.util.EntityDamageUtil;
 import net.minecraft.client.gui.GuiScreen;
@@ -158,29 +159,27 @@ public class TileEntityTurretHoward extends TileEntityTurretBaseNT implements IG
 				if(world.rand.nextInt(100) + 1 <= WeaponConfig.ciwsHitrate)
 					EntityDamageUtil.attackEntityFromIgnoreIFrame(this.target, ModDamageSource.shrapnel, 2F + world.rand.nextInt(2));
 
-				Vec3 pos = new Vec3(this.getTurretPos());
-				Vec3 vec = Vec3.createVectorHelper(this.getBarrelLength(), 0, 0);
-				vec.rotateAroundZ((float) -this.rotationPitch);
-				vec.rotateAroundY((float) -(this.rotationYaw + Math.PI * 0.5));
+				Vec3NT pos = new Vec3NT(this.getTurretPos());
+				Vec3NT vec = Vec3NT.createVectorHelper(this.getBarrelLength(), 0, 0);
+				vec.rotateRollSelf((float) -this.rotationPitch);
+				vec.rotateYawSelf((float) -(this.rotationYaw + Math.PI * 0.5));
 
-				Vec3 hOff = Vec3.createVectorHelper(0, 0.25, 0);
-				hOff.rotateAroundZ((float) -this.rotationPitch);
-				hOff.rotateAroundY((float) -(this.rotationYaw + Math.PI * 0.5));
+				Vec3NT hOff = Vec3NT.createVectorHelper(0, 0.25, 0);
+				hOff.rotateRollSelf((float) -this.rotationPitch);
+				hOff.rotateYawSelf((float) -(this.rotationYaw + Math.PI * 0.5));
 
 				for(int i = 0; i < 2; i++) {
 
 					if(i == 1) {
-						hOff.xCoord *= -1;
-						hOff.yCoord *= -1;
-						hOff.zCoord *= -1;
+						hOff.setX(hOff.x * (-1));
+						hOff.setY(hOff.y * (-1));
+						hOff.setZ(hOff.z * (-1));
 					}
 
 					NBTTagCompound data = new NBTTagCompound();
-					data.setString("type", "vanillaExt");
-					data.setString("mode", "largeexplode");
 					data.setFloat("size", 1.5F);
 					data.setByte("count", (byte)1);
-					PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.xCoord + vec.xCoord + hOff.xCoord, pos.yCoord + vec.yCoord + hOff.yCoord, pos.zCoord + vec.zCoord + hOff.zCoord), new TargetPoint(world.provider.getDimension(), this.pos.getX(), this.pos.getY(), this.pos.getZ(), 50));
+					PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.VanillaExt_LargeExplode, data, pos.x + vec.x + hOff.x, pos.y + vec.y + hOff.y, pos.z + vec.z + hOff.z), new TargetPoint(world.provider.getDimension(), this.pos.getX(), this.pos.getY(), this.pos.getZ(), 50));
 				}
 			}
 		}
@@ -202,11 +201,11 @@ public class TileEntityTurretHoward extends TileEntityTurretBaseNT implements IG
 	protected Vec3d getCasingSpawnPos() {
 
 		Vec3d pos = this.getTurretPos();
-		Vec3 vec = Vec3.createVectorHelper(-0.875, 0.2, -0.125);
-		vec.rotateAroundZ((float) -this.rotationPitch);
-		vec.rotateAroundY((float) -(this.rotationYaw + Math.PI * 0.5));
+		Vec3NT vec = Vec3NT.createVectorHelper(-0.875, 0.2, -0.125);
+		vec.rotateRollSelf((float) -this.rotationPitch);
+		vec.rotateYawSelf((float) -(this.rotationYaw + Math.PI * 0.5));
 
-		return new Vec3d(pos.x+ vec.xCoord, pos.y+ vec.yCoord, pos.z+ vec.zCoord);
+		return new Vec3d(pos.x+ vec.x, pos.y+ vec.y, pos.z+ vec.z);
 	}
 
 	protected static CasingEjector ejector = new CasingEjector().setAngleRange(0.01F, 0.01F).setMotion(0, 0, -0.1);

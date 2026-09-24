@@ -9,7 +9,10 @@ import mezz.jei.api.gui.IGuiItemStackGroup;
 import mezz.jei.api.gui.IRecipeLayout;
 import mezz.jei.api.ingredients.IIngredients;
 import mezz.jei.api.recipe.IRecipeCategory;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+
+import java.util.Collections;
 
 public class SILEXRecipeHandler implements IRecipeCategory<SILEXRecipe> {
 
@@ -50,16 +53,16 @@ public class SILEXRecipeHandler implements IRecipeCategory<SILEXRecipe> {
 		
 		guiItemStacks.init(0, true, 13, 31);
 		
+		guiItemStacks.set(0, recipeWrapper.input.getFirst());
+
 		int rec_size = recipeWrapper.outputs.size();
 		int sep = rec_size > 6 ? 4 : rec_size > 4 ? 3 : 2;
 		for(int i = 0; i < rec_size; i ++){
-			if(i < sep) {
-				guiItemStacks.init(i+1, false, 72, 28 + i * 18 - 9 * ((Math.min(rec_size, sep) + 1) / 2));
-			} else {
-				guiItemStacks.init(i+1, false, 120, 28 + (i - sep) * 18 - 9 * ((Math.min(rec_size - sep, sep) + 1)/2));
-			}
+			int x = i < sep ? 72 : 120;
+			int y = i < sep ? 28 + i * 18 - 9 * ((Math.min(rec_size, sep) + 1) / 2) : 28 + (i - sep) * 18 - 9 * ((Math.min(rec_size - sep, sep) + 1) / 2);
+			ItemStack output = recipeWrapper.outputs.get(i);
+			EmiCompat.initDisplaySlot(recipeLayout, i + 1, false, x, y, Collections.singletonList(output));
+			EmiCompat.addHiddenOutput(recipeLayout, output.copy(), output.getCount() * recipeWrapper.produced * recipeWrapper.chances.get(i) / 100D);
 		}
-		
-		guiItemStacks.set(ingredients);
 	}
 }

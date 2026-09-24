@@ -1,5 +1,6 @@
 package com.hbm.particle;
 
+import net.minecraft.client.renderer.GlStateManager;
 import com.hbm.Tags;
 import com.hbm.render.NTMRenderHelper;
 import net.minecraft.client.particle.Particle;
@@ -65,7 +66,7 @@ public class ParticleRBMKMush extends Particle {
 		RenderHelper.disableStandardItemLighting();
 
         boolean fog = GL11.glIsEnabled(GL11.GL_FOG);
-        if (fog) GL11.glDisable(GL11.GL_FOG);
+        if (fog) GlStateManager.disableFog();
 
 		Tessellator tes = Tessellator.getInstance();
 		BufferBuilder buf = tes.getBuffer();
@@ -86,7 +87,7 @@ public class ParticleRBMKMush extends Particle {
 		GlStateManager.doPolygonOffset(0, 0);
         GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
 		GlStateManager.enableLighting();
-        if (fog) GL11.glEnable(GL11.GL_FOG);
+        if (fog) GlStateManager.enableFog();
         GlStateManager.depthMask(true);
 	}
 }

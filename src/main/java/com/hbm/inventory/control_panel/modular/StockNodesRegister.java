@@ -16,6 +16,8 @@ public class StockNodesRegister {
 	public static final float[] colorLogic = new float[]{.4F, .4F, 1};
 	//The outputs that get evaluated, such as broadcasting a new event or setting an arbitrary variable
 	public static final float[] colorOutput = new float[]{1, 0, 0};
+	//Composite series
+	public static final float[] colorComposite = new float[]{1F,0.399F,0.842F};
 
 	public static void register() {
 		NTMControlPanelRegistry.addMenuCategories.add("Input");
@@ -23,11 +25,13 @@ public class StockNodesRegister {
 		NTMControlPanelRegistry.addMenuCategories.add("Math");
 		NTMControlPanelRegistry.addMenuCategories.add("Boolean");
 		NTMControlPanelRegistry.addMenuCategories.add("Logic");
+		NTMControlPanelRegistry.addMenuCategories.add("Pack");
 		NTMControlPanelRegistry.addMenuControl.put("Input",new ArrayList<>(Collections.singletonList(new NCStockInput())));
 		NTMControlPanelRegistry.addMenuControl.put("Output",new ArrayList<>(Collections.singletonList(new NCStockOutput())));
 		NTMControlPanelRegistry.addMenuControl.put("Math",new ArrayList<>(Collections.singletonList(new NCStockMath())));
 		NTMControlPanelRegistry.addMenuControl.put("Boolean",new ArrayList<>(Collections.singletonList(new NCStockBoolean())));
 		NTMControlPanelRegistry.addMenuControl.put("Logic",new ArrayList<>(Collections.singletonList(new NCStockLogic())));
+		NTMControlPanelRegistry.addMenuControl.put("Pack",new ArrayList<>(Collections.singletonList(new NCStockComposite())));
 		NTMControlPanelRegistry.nbtNodeLoaders.add(new StockNodeLoader());
 	}
 }

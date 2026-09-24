@@ -43,18 +43,6 @@ public class ConstructionHandler extends JEIUniversalHandler {
 
         bufferedRecipes.put(watz, new ItemStack(ModBlocks.watz));
 
-        /* ITER ACKED*/
-
-
-        /* PLASMA HEATER */
-        ItemStack[] heater = new ItemStack[]{
-                new ItemStack(ModBlocks.fusion_heater, 7),
-                new ItemStack(ModBlocks.fusion_heater, 64),
-                new ItemStack(ModBlocks.fusion_heater, 64)
-        };
-
-        bufferedRecipes.put(heater, new ItemStack(ModBlocks.plasma_heater));
-
         /* COMPACT LAUNCHER */
         ItemStack[] launcher = new ItemStack[]{new ItemStack(ModBlocks.struct_launcher, 8)};
 

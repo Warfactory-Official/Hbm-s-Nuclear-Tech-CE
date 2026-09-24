@@ -94,7 +94,7 @@ public class ItemFluidIDMulti extends ItemBakedBase implements IItemFluidIdentif
             FMLNetworkHandler.openGui(player, MainRegistry.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
         }
 
-        return super.onItemRightClick(world, player, hand);
+        return new ActionResult<>(EnumActionResult.SUCCESS, stack);
     }
 
     @Override

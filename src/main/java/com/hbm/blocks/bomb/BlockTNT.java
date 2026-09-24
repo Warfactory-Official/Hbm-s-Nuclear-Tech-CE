@@ -7,7 +7,7 @@ import net.minecraft.world.World;
 
 public class BlockTNT extends BlockTNTBase {
 
-    private static final BlockBakeFrame frame = BlockBakeFrame.bottomTop("tnt_side", "tnt_top", "tnt_bottom");
+    private static final BlockBakeFrame frame = BlockBakeFrame.sideTopBottom("tnt_side", "tnt_top", "tnt_bottom");
 
     public BlockTNT(String s) {
         super(s, frame, frame);

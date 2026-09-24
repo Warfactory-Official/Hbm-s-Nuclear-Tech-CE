@@ -97,7 +97,7 @@ public class BlockSellafieldOre extends BlockSellafieldSlaked implements ICustom
     public void registerSprite(TextureMap map) {
         for (int i = 0; i < sellafieldTextures.length; i++) {
             ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, BlockBakeFrame.ROOT_PATH + this.getRegistryName().getPath() + "_" + i);
-            TextureAtlasSpriteMultipass layeredSprite = new TextureAtlasSpriteMultipass(spriteLoc.toString(), "blocks/" + sellafieldTextures[i].textureArray[0], "blocks/" + "ore_overlay_" + oreType.getName());
+            TextureAtlasSpriteMultipass layeredSprite = new TextureAtlasSpriteMultipass(spriteLoc.toString(), "blocks/" + sellafieldTextures[i].getPrimaryTexturePath(), "blocks/" + "ore_overlay_" + oreType.getName());
             map.setTextureEntry(layeredSprite);
         }
     }
@@ -109,7 +109,7 @@ public class BlockSellafieldOre extends BlockSellafieldSlaked implements ICustom
         for (int i = 0; i < sellafieldTextures.length; i++) {
             BlockBakeFrame blockFrame = sellafieldTextures[i % sellafieldTextures.length];
             try {
-                IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation(blockFrame.getBaseModel()));
+                IModel baseModel = ModelLoaderRegistry.getModel(blockFrame.getBaseModelLocation());
                 ImmutableMap.Builder<String, String> textureMap = ImmutableMap.builder();
 
                 ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, BlockBakeFrame.ROOT_PATH + this.getRegistryName().getPath() + "_" + i);

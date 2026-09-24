@@ -34,10 +34,9 @@ public class SkeletonCreator implements IParticleCreator {
     public static void composeEffect(World world, Entity toSkeletonize, float brightness) {
 
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "skeleton");
         data.setInteger("entityID", toSkeletonize.getEntityId());
         data.setFloat("brightness", brightness);
-        IParticleCreator.sendPacket(world, toSkeletonize.posX, toSkeletonize.posY, toSkeletonize.posZ, 100, data);
+        IParticleCreator.sendPacket(world, HbmEffectNT.Skeleton, toSkeletonize.posX, toSkeletonize.posY, toSkeletonize.posZ, 100, data);
     }
 
     public static void composeEffectGib(World world, Entity toSkeletonize, float force) {
@@ -47,7 +46,7 @@ public class SkeletonCreator implements IParticleCreator {
         data.setFloat("brightness", 1F);
         data.setFloat("force", force);
         data.setBoolean("gib", true);
-        IParticleCreator.sendPacket(world, toSkeletonize.posX, toSkeletonize.posY, toSkeletonize.posZ, 100, data);
+        IParticleCreator.sendPacket(world, HbmEffectNT.Skeleton, toSkeletonize.posX, toSkeletonize.posY, toSkeletonize.posZ, 100, data);
     }
 
     @Override

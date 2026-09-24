@@ -2,8 +2,8 @@ package com.hbm.handler;
 
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.HbmCollection;
+import com.hbm.render.anim.sedna.AnimationEnums;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
-import com.hbm.render.anim.sedna.HbmAnimationsSedna;
 import com.hbm.render.misc.RenderScreenOverlay;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
@@ -37,7 +37,7 @@ public class GunConfigurationSedna implements Cloneable {
     public int durability;
 
     //animations!
-    public HashMap<HbmAnimationsSedna.GunAnimation, BusAnimationSedna> animations = new HashMap<>();
+    public HashMap<AnimationEnums.GunAnimation, BusAnimationSedna> animations = new HashMap<>();
     //lazy-ish loading for animations, required for loading animations from ResourceManager, since that occurs after we've initialised the guns
     public Consumer<Void> loadAnimations;
     public boolean animationsLoaded = false;

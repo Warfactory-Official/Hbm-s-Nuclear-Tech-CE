@@ -1,6 +1,6 @@
 {
-	"parent": "block/cube_all",
-	"textures": {
-		"all": "hbm:blocks/industrial_generator"
-	}
+    "parent": "block/cube_all",
+    "textures": {
+        "all": "blocks/gold_block"
+    }
 }

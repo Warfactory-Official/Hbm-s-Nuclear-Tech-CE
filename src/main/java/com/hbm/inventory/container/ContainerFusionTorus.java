@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotNonRetarded;
 import com.hbm.items.ModItems;
@@ -16,6 +17,13 @@ import org.jetbrains.annotations.NotNull;
 public class ContainerFusionTorus extends Container {
 
     private TileEntityFusionTorus torus;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(3)
+                                                                              .rule(0, 1, Library::isBattery)
+                                                                              .rule(1, 2,
+                                                                                      s -> s.getItem() == ModItems.blueprints)
+                                                                              .genericMachineRange(2)
+                                                                              .build();
 
     public ContainerFusionTorus(InventoryPlayer invPlayer, TileEntityFusionTorus torus) {
         this.torus = torus;
@@ -37,9 +45,7 @@ public class ContainerFusionTorus extends Container {
 
     @Override
     public @NotNull ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 3,
-                Library::isBattery, 1,
-                s -> s.getItem() == ModItems.blueprints, 2);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
     @Override

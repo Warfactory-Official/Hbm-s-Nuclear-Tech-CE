@@ -3,23 +3,32 @@ package com.hbm.config;
 import com.hbm.inventory.recipes.PrecAssRecipes;
 import com.hbm.main.MainRegistry;
 import com.hbm.render.GLCompat;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+
+import java.util.Set;
 
 public class GeneralConfig {
 
+	public static boolean enableFluidContainersV2 = false;
 	public static double conversionRateHeToRF = 1.0F;
-	public static boolean autoCableConversion = false;
+	public static boolean autoCableConversion = true;
 	public static boolean enablePacketThreading = true;
 	public static int packetThreadingCoreCount = 1;
 	public static int packetThreadingMaxCount = 2;
 	public static boolean packetThreadingErrorBypass = false;
+	public static boolean enableZeroCopyCompatibilityMode = false;
     public static boolean enableThreadedNodeSpaceUpdate = true;
 	public static boolean enableDebugMode = false;
 	public static boolean enableDebugWorldGen = false;
 	public static boolean enableSkyboxes = true;
+	public static boolean enableImpactWorldProvider = true;
 	public static boolean enableKeybindOverlap = true;
 	public static boolean enableFluidContainerCompat = true;
+	public static Set<String> leadSafeForgeContainerWhitelist = new ObjectOpenHashSet<>();
 	public static boolean enableMycelium = false;
 	public static boolean enablePlutoniumOre = false;
 	public static boolean enableDungeons = true;
@@ -28,10 +37,6 @@ public class GeneralConfig {
 	public static boolean enableRad = true;
 	public static boolean enableNITAN = true;
 	public static boolean enableAutoCleanup = false;
-	public static boolean enableMeteorStrikes = true;
-	public static boolean enableMeteorShowers = true;
-	public static boolean enableMeteorTails = true;
-	public static boolean enableSpecialMeteors = true;
 	public static boolean enableBomberShortMode = false;
 	public static boolean enableVaults = true;
 	public static boolean enableRads = true;
@@ -45,11 +50,11 @@ public class GeneralConfig {
 	public static boolean advancedRadiation = true;
 	public static boolean enableCataclysm = false;
 	public static boolean enableExtendedLogging = false;
-	public static boolean enableHardcoreTaint = false;
 	public static boolean enableGuns = true;
 	public static boolean ssgAnim = true;
 	public static boolean enableVirus = true;
 	public static boolean enableCrosshairs = true;
+	public static boolean enableReflectorCompat = false;
 	public static boolean instancedParticles = true;
 	public static boolean callListModels = true;
 	public static boolean useShaders = false;
@@ -69,13 +74,13 @@ public class GeneralConfig {
 	public static boolean bulletHoleNormalMapping = true;
 	public static int flowingDecalAmountMax = 20;
 	public static boolean bloodFX = true;
-	public static int hintPos = 0;
 	public static int decoToIngotRate = 25;
 	public static int crucibleMaxCharges = 16;
 	public static boolean enableReEval = true;
-	public static boolean enableSteamParticles = true;
 	public static boolean enableServerRecipeSync = true;
+	public static boolean enableMachineGravity = false;
 	public static boolean enableExpensiveMode = false;
+	public static boolean dynamicTreesCompatMode = false;
 
 	public static boolean trueExp() {
 		return enableExpensiveMode && !PrecAssRecipes.INSTANCE.modified;
@@ -85,13 +90,19 @@ public class GeneralConfig {
 	public static boolean enable528ReasimBoilers = true;
 	public static boolean enable528ColtanDeposit = true;
 	public static boolean enable528ColtanSpawn = false;
-	public static boolean enable528BedrockDeposit = true;
-	public static boolean enable528BedrockSpawn = false;
-	public static boolean enableReflectorCompat = false;
+	public static boolean enable528BosniaSimulator = true;
+	public static boolean enable528NetherBurn = true;
+	public static boolean enable528PressurizedRecipes = true;
+	public static boolean enable528ExplosiveEnergistics = true;
+	public static boolean enable528MachineGravity = true;
 	public static int coltanRate = 2;
+	public static boolean true528() {
+		return enable528 && enable528ReasimBoilers && !enable528ColtanSpawn && enable528BosniaSimulator &&
+				enable528NetherBurn && enable528PressurizedRecipes && enable528ExplosiveEnergistics &&
+				enable528MachineGravity && coltanRate <= 2;
+	}
 	public static int bedrockRate = 50;
 	public static boolean enableThreadedAtmospheres = true;
-	public static boolean enableHardcoreDarkness = false;
 
 	public static boolean enableLBSM = false;
 	public static boolean enableLBSMFullSchrab = true;
@@ -107,7 +118,6 @@ public class GeneralConfig {
 	public static boolean enableLBSMSafeCrates = true;
 	public static boolean enableLBSMSafeMEDrives = true;
 	public static boolean enableLBSMIGen = true;
-    public static boolean enable528BosniaSimulator = false;
 
 	public static boolean enableBlockReplcement = false;
 	public static boolean enableAdvancements = true;
@@ -118,6 +128,7 @@ public class GeneralConfig {
 		packetThreadingMaxCount = config.get(CommonConfig.CATEGORY_GENERAL, "0.03_packetThreadingMaxCount", 2, "Maximum number of threads to create for packet threading. Must be greater than or equal to 0.02_packetThreadingCoreCount.").getInt(2);
 		packetThreadingErrorBypass = config.get(CommonConfig.CATEGORY_GENERAL, "0.04_packetThreadingErrorBypass", false, "Forces the bypassing of most packet threading errors, only enable this if directed to or if you know what you're doing.").getBoolean(false);
 		enableServerRecipeSync = config.get(CommonConfig.CATEGORY_GENERAL, "0.05_enableServerRecipeSync", true, "Syncs any recipes customised via JSON to clients connecting to the server.").getBoolean(true);
+		enableZeroCopyCompatibilityMode = config.get(CommonConfig.CATEGORY_GENERAL, "0.06_enableZeroCopyCompatibilityMode", false, "Routes non-NTM packets back through Forge's default networking path so mods with broken ByteBuf reference counting do not touch NTM's zero-copy hook.").getBoolean(false);
         enableThreadedNodeSpaceUpdate = config.get(CommonConfig.CATEGORY_GENERAL, "0.07_enableThreadedNodeSpaceUpdate", true, "Enables threaded updating of the nodespace. This can improve performance, but may cause issues with certain mods.").getBoolean(true);
 		enableBlockReplcement = config.get(CommonConfig.CATEGORY_GENERAL, "0.99_CE_01_enableBlockAutoReplacing", false, """
                 Enables automatic block replacement for missing blocks to avoid giant holes in the ground when they got removed. This may severely impact chunkloading performance,
@@ -127,7 +138,7 @@ public class GeneralConfig {
 		enableDebugMode = config.get(CommonConfig.CATEGORY_GENERAL, "1.00_enableDebugMode", false, "Enable debugging mode").getBoolean(false);
 		enableDebugWorldGen = config.get(CommonConfig.CATEGORY_GENERAL, "1.00_enableDebugWorldGen", false, "Enable debugging mode for phased structure generation. Separate from the previous option!").getBoolean(false);
 		enableSkyboxes = config.get(CommonConfig.CATEGORY_GENERAL, "1.00_enableSkybox", true, "If enabled, will try to use NTM's custom skyboxes.").getBoolean(true);
-		enableMycelium = config.get(CommonConfig.CATEGORY_GENERAL, "1.01_enableMyceliumSpread", false, "Allows glowing mycelium to spread").getBoolean(false);
+        enableMycelium = config.get(CommonConfig.CATEGORY_GENERAL, "1.01_enableMyceliumSpread", false, "Allows glowing mycelium to spread").getBoolean(false);
 		enablePlutoniumOre = config.get(CommonConfig.CATEGORY_GENERAL, "1.02_enablePlutoniumNetherOre", false, "Enables plutonium ore generation in the nether").getBoolean(false);
 		enableDungeons = config.get(CommonConfig.CATEGORY_GENERAL, "1.03_enableDungeonSpawn", true, "Allows structures and dungeons to spawn.").getBoolean(true);
 		enableMDOres = config.get(CommonConfig.CATEGORY_GENERAL, "1.04_enableOresInModdedDimensions", true, "Allows NTM ores to generate in modded dimensions").getBoolean(true);
@@ -135,16 +146,11 @@ public class GeneralConfig {
 		enableRad = config.get(CommonConfig.CATEGORY_GENERAL, "1.06_enableRadHotspotSpawn", true, "Allows radiation hotspots to generate").getBoolean(true);
 		enableNITAN = config.get(CommonConfig.CATEGORY_GENERAL, "1.07_enableNITANChestSpawn", true, "Allows chests to spawn at specific coordinates full of powders").getBoolean(true);
 		enableAutoCleanup = config.get(CommonConfig.CATEGORY_GENERAL, "1.09_enableAutomaticRadCleanup", false, "Allows for waste earth blocks (dirt, grass, mycellium) to turn back into dirt immediately.").getBoolean(false);
-		enableMeteorStrikes = config.get(CommonConfig.CATEGORY_GENERAL, "1.10_enableMeteorStrikes", true, "Enables the singular meteor strikes. If set to false, meteorites will never spawn.").getBoolean(true);
-		enableMeteorShowers = config.get(CommonConfig.CATEGORY_GENERAL, "1.11_enableMeteorShowers", true, "Enables the meteor shower event. Separate from the previous option!").getBoolean(true);
-		enableMeteorTails = config.get(CommonConfig.CATEGORY_GENERAL, "1.12_enableMeteorTails", true, "Enables the meteor smoke trail effect behind it.").getBoolean(true);
-		enableSpecialMeteors = config.get(CommonConfig.CATEGORY_GENERAL, "1.13_enableSpecialMeteors", false, "Allows for special meteors to spawn. NOT RECOMMENDED FOR REGULAR SURVIVAL").getBoolean(false);
 		enableBomberShortMode = config.get(CommonConfig.CATEGORY_GENERAL, "1.14_enableBomberShortMode", false, "Has bomber planes spawn in closer to the target for use with smaller render distances").getBoolean(false);
 		enableVaults = config.get(CommonConfig.CATEGORY_GENERAL, "1.15_enableVaultSpawn", true, "Allows locked safes to spawn").getBoolean(true);
 		enableRads = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.16_enableRadiation", "GENERAL SWITCH: Enables radiation system", true);
 		enableCataclysm = config.get(CommonConfig.CATEGORY_GENERAL, "1.17_enableCataclysm", false, "Causes satellites to fall whenever a mob dies").getBoolean(false);
 		enableExtendedLogging = config.get(CommonConfig.CATEGORY_GENERAL, "1.18_enableExtendedLogging", false, "Logs uses of the detonator, nuclear explosions, missile launches, grenades, etc.").getBoolean(false);
-		enableHardcoreTaint = config.get(CommonConfig.CATEGORY_GENERAL, "1.19_enableHardcoreTaint", false, "Allows taint blocks to basically be unstoppable. NOT RECOMMENDED FOR REGULAR SURVIVAL").getBoolean(false);
 		enableGuns = config.get(CommonConfig.CATEGORY_GENERAL, "1.20_enableGuns", true, "Prevents new system guns to be fired").getBoolean(true);
 		enableVirus = config.get(CommonConfig.CATEGORY_GENERAL, "1.21_enableVirus", false, "Allows virus blocks to spread").getBoolean(false);
 		enableCrosshairs = config.get(CommonConfig.CATEGORY_GENERAL, "1.22_enableCrosshairs", true, "Shows custom crosshairs when an NTM gun is being held").getBoolean(true);
@@ -152,7 +158,7 @@ public class GeneralConfig {
 		Property ssg_anim = config.get(CommonConfig.CATEGORY_GENERAL, "1.24_ssgAnimType", true);
 		ssg_anim.setComment("Which supershotgun reload animation to use. True is Drillgon's animation, false is Bob's animation");
 		ssgAnim = ssg_anim.getBoolean();
-		instancedParticles = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.25_instancedParticles", "Enables instanced particle rendering for some particles, which makes them render several times faster. May not work on all computers, and will break with shaders.", true);
+		instancedParticles = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.25_instancedParticles", "Enables instanced particle rendering for supported particles, including Torex cloudlets and RBMK particles, which makes them render several times faster. May not work on all computers, and will break with shaders.", true);
 		depthEffects = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.25_depthBufferEffects", "Enables effects that make use of reading from the depth buffer", true);
 		flashlight = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.25_flashlights", "Enables dynamic directional lights", true);
 		flashlightVolumetric = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.25_flashlight_volumetrics", "Enables volumetric lighting for directional lights", true);
@@ -170,8 +176,7 @@ public class GeneralConfig {
         enableExplosiveGas = config.get(CommonConfig.CATEGORY_GENERAL, "1.26_enableExplosiveGas", true, "Allows the explosive gas to spawn in the world.").getBoolean(true);
         enableMeltdownGas = config.get(CommonConfig.CATEGORY_GENERAL, "1.26_enableMeltdownGas", true, "Allows the meltdown gas to spawn (e.g. after ZIRNOX explosion).").getBoolean(true);
 		enableReEval = config.get(CommonConfig.CATEGORY_GENERAL, "1.27_enableReEval", true, "Allows re-evaluating power networks on link remove instead of destroying and recreating").getBoolean(true);
-		enableSteamParticles = config.get(CommonConfig.CATEGORY_GENERAL, "1.27.1_enableSteamParticles", true, "If disabled, auxiliary cooling towers and large cooling towers will not emit steam particles when in use.").getBoolean(true);
-		
+
 		recipes = config.get(CommonConfig.CATEGORY_GENERAL, "1.28_enableRecipes", true, "A general switch for ALL crafting table/smelting recipes. If set to false, all recipes will be disabled.").getBoolean(true);
 		registerTanks = config.get(CommonConfig.CATEGORY_GENERAL, "1.28_registerTanks", true, "A general switch for ALL the tanks items in the mod (e.g. universal fluid, lead, barrels, packed containers). If set to false, they won't be registered as items in the game." ).getBoolean(true);
 		
@@ -184,15 +189,28 @@ public class GeneralConfig {
 		Property adv_rads = config.get(CommonConfig.CATEGORY_GENERAL, "1.31_enableAdvancedRadiation", true);
 		adv_rads.setComment("Enables a 3 dimensional version of the radiation system that also allows some blocks (like concrete bricks) to stop it from spreading");
 		advancedRadiation = adv_rads.getBoolean(true);
-		
-		bloodFX = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.32_enable_blood_effects", "Enables the over-the-top blood visual effects for some weapons", true);
-	
-		if((instancedParticles || depthEffects || flowingDecalAmountMax > 0 || bloodFX || bloom || heatDistortion) && (!GLCompat.error.isEmpty() || !useShaders2)){
-			MainRegistry.logger.error("Warning - Open GL 3.3 not supported! Disabling 3.3 effects...");
+        enableImpactWorldProvider = config.get(CommonConfig.CATEGORY_GENERAL, "1.32_enableImpactWorldProvider", true, "If enabled, registers a custom overworld provider which modifies lighting and sky colors for post-impact effects.").getBoolean(true);
+        bloodFX = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.32_enable_blood_effects", "Enables the over-the-top blood visual effects for some weapons", true);
+
+		boolean clientSide = FMLCommonHandler.instance().getSide().isClient();
+		boolean advancedRenderingSupported = false;
+		if(clientSide) {
+			advancedRenderingSupported = GLCompat.error.isEmpty();
+		}
+
+		if(instancedParticles && !advancedRenderingSupported){
+			if(clientSide) {
+				MainRegistry.logger.error("Warning - Open GL 3.3 not supported! Disabling instanced particles...");
+			}
+			instancedParticles = false;
+		}
+		if((depthEffects || flowingDecalAmountMax > 0 || bloodFX || bloom || heatDistortion) && (!advancedRenderingSupported || !useShaders2)){
+			if(clientSide && !advancedRenderingSupported){
+				MainRegistry.logger.error("Warning - Open GL 3.3 not supported! Disabling shader-driven effects...");
+			}
 			if(!useShaders2){
 				MainRegistry.logger.error("Shader effects manually disabled");
 			}
-			instancedParticles = false;
 			depthEffects = false;
 			flowingDecalAmountMax = 0;
 			bloodFX = false;
@@ -213,17 +231,20 @@ public class GeneralConfig {
 		if(crucibleMaxCharges <= 0){
 			crucibleMaxCharges = 16;
 		}
-		conversionRateHeToRF = CommonConfig.createConfigDouble(config, CommonConfig.CATEGORY_GENERAL, "1.35_conversionRateHeToRF", "One HE is (insert number) RF - <number> (double)", 1.0D);
-		autoCableConversion = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.35.1_autoCableConversion", "If enabled, NTM cables will automatically convert FE <-> HE. Note: WILL MAKE ALL OTHER MODS' CABLES USELESS", false);
 
-		hintPos = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_GENERAL, "1.36_infoOverlayPosition", "Positions where the info overlay will appear (from 0 to 3). 0: Top left\n1: Top right\n2: Center right\n3: Center Left", 0);
+		conversionRateHeToRF = CommonConfig.createConfigDouble(config, CommonConfig.CATEGORY_GENERAL, "1.35_conversionRateHeToRF", "One HE is (insert number) RF - <number> (double)", 1.0D);
+		autoCableConversion = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.35.1_autoCableConversion", "If enabled, NTM cables will automatically convert FE <-> HE. Note: WILL MAKE ALL OTHER MODS' CABLES USELESS", true);
+
+		enableMOTD = config.get(CommonConfig.CATEGORY_GENERAL, "1.36_enableMOTD", true, "If enabled, shows the 'Loaded mod!' chat message as well as update notifications when joining a world").getBoolean(true);
 		enableFluidContainerCompat = config.get(CommonConfig.CATEGORY_GENERAL, "1.37_enableFluidContainerCompat", true, "If enabled, fluid containers will be oredicted and interchangable in recipes with other mods' containers. Should probably work with things like IE's/GC oil properly.").getBoolean(true);
-        enableMOTD = config.get(CommonConfig.CATEGORY_GENERAL, "1.36_enableMOTD", true, "If enabled, shows the 'Loaded mod!' chat message as well as update notifications when joining a world").getBoolean(true);
-        enableGuideBook = config.get(CommonConfig.CATEGORY_GENERAL, "1.37_enableGuideBook", true, "If enabled, gives players the guide book when joining the world for the first time").getBoolean(true);
-        decoToIngotRate = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_GENERAL, "1.38_decoToIngotConversionRate", "Chance of successful turning a deco block into an ingot. Default is 25%", 25);
-		enableThreadedAtmospheres = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.39_threadedAtmospheres", "If enabled, will run atmosphere blobbing in a separate thread for performance", true);
-		enableHardcoreDarkness = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.40_hardcoreDarkness", "If enabled, sets night-time minimum fog to zero, to complement hardcore darkness mods", false);
-		enableKeybindOverlap = config.get(CommonConfig.CATEGORY_GENERAL, "1.41_enableKeybindOverlap", true, "If enabled, will handle keybinds that would otherwise be ignored due to overlapping.").getBoolean(true);
+		enableGuideBook = config.get(CommonConfig.CATEGORY_GENERAL, "1.38_enableGuideBook", true, "If enabled, gives players the guide book when joining the world for the first time").getBoolean(true);
+        decoToIngotRate = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_GENERAL, "1.39_decoToIngotConversionRate", "Chance of successful turning a deco block into an ingot. Default is 25%", 25);
+		enableThreadedAtmospheres = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.40_threadedAtmospheres", "If enabled, will run atmosphere blobbing in a separate thread for performance", true);
+		enableKeybindOverlap = config.get(CommonConfig.CATEGORY_GENERAL, "1.42_enableKeybindOverlap", true, "If enabled, will handle keybinds that would otherwise be ignored due to overlapping.").getBoolean(true);
+		enableMachineGravity = config.get(CommonConfig.CATEGORY_GENERAL, "1.44_enableMachineGravity", false, "Requires large large machines to have a proper foundation, or else they tilt and break. Independent from the 528 version of this config, which does the same, but only works with 528 enabled.").getBoolean(false);
+		enableFluidContainersV2 = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_GENERAL, "1.99_CE_enableFluidContainersV2", "If enabled, 3 new enhanced version of base fluid barrels that supports partial fill and drain are added.", false);
+		leadSafeForgeContainerWhitelist = loadLeadSafeForgeContainerWhitelist(config);
+		dynamicTreesCompatMode = config.get(CommonConfig.CATEGORY_GENERAL, "1.67_dynamicTreesCompatMode", false, "Prevents HBM from reenabling tree, big shroom and cactus generation that was disabled by DynamicTrees").getBoolean(false);
 		enableExpensiveMode = config.get(CommonConfig.CATEGORY_GENERAL, "1.99_enableExpensiveMode", false, "It does what the name implies.").getBoolean(false);
         
 
@@ -237,10 +258,12 @@ public class GeneralConfig {
 		enable528ReasimBoilers = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_528, "X528_forceReasimBoilers", "Keeps the RBMK dial for ReaSim boilers on, preventing use of non-ReaSim boiler columns and forcing the use of steam in-/outlets", true);
 		enable528ColtanDeposit = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_528, "X528_enableColtanDepsoit", "Enables the coltan deposit. A large amount of coltan will spawn around a single random location in the world.", true);
 		enable528ColtanSpawn = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_528, "X528_enableColtanSpawning", "Enables coltan ore as a random spawn in the world. Unlike the deposit option, coltan will not just spawn in one central location.", false);
-		enable528BedrockDeposit = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_528, "X528_enableBedrockDepsoit", "Enables bedrock coltan ores in the coltan deposit. These ores can be drilled to extract infinite coltan, albeit slowly.", true);
-		enable528BedrockSpawn = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_528, "X528_enableBedrockSpawning", "Enables the bedrock coltan ores as a rare spawn. These will be rarely found anywhere in the world.", false);
+		enable528BosniaSimulator = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_528, "X528_enableBosniaSimulator", "Enables anti tank mines spawning all over the world.", true);
+		enable528NetherBurn = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_528, "X528_enable528NetherBurn", "Whether players burn in the nether", true);
+		enable528PressurizedRecipes = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_528, "X528_enable528PressurizedRecipes", "Sets some recipes to require pressurized input fluid", true);
+		enable528ExplosiveEnergistics = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_528, "X528_enable528ExplosiveEnergistics", "Renders AE2 unusable.", true);
+		enable528MachineGravity = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_528, "X528_enable528MachineGravity", "Requires most large machines to have a proper foundation, or else they tilt and break.", true);
 		coltanRate = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_528, "X528_oreColtanFrequency", "Determines how many coltan ore veins are to be expected in a chunk. These values do not affect the frequency in deposits, and only apply if random coltan spanwing is enabled.", 2);
-		bedrockRate = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_528, "X528_bedrockColtanFrequency", "Determines how often (1 in X) bedrock coltan ores spawn. Applies for both the bedrock ores in the coltan deposit (if applicable) and the random bedrock ores (if applicable)", 50);
 
 		config.addCustomCategoryComment(CommonConfig.CATEGORY_LBSM,
                 """
@@ -264,26 +287,52 @@ public class GeneralConfig {
 		enableLBSMIGen = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_LBSM, "LBSM_iGen", "When enabled, restores the industrial generator to pre-nerf power", true);
 
 		if(enable528) enableLBSM = false;
-		// Th3_Sl1ze: I'll temporarily move it here, if no one minds
-		// TODO: remove/rework Alc's parser to smth managable and bring these parameters back to WorldConfig
 
-		WorldConfig.newBedrockOres = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_ORES, "2.NB_newBedrockOres", "Enables the generation of bedrock ores", true);
-		WorldConfig.limestoneSpawn = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_ORES, "2.L02_limestoneSpawn", "Amount of limestone block veins per chunk", 1);
+		if(!enable528) {
+			enable528ReasimBoilers = false;
+			enable528BosniaSimulator = false;
+			enable528NetherBurn = false;
+			enable528PressurizedRecipes = false;
+			enable528ExplosiveEnergistics = false;
+			enable528MachineGravity = false;
+		}
+	}
 
-		WorldConfig.enableHematite = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_ORES, "2.L00_enableHematite", "Toggles hematite deposits", true);
-		WorldConfig.enableMalachite = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_ORES, "2.L01_enableMalachite", "Toggles malachite deposits", true);
-		WorldConfig.enableBauxite = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_ORES, "2.L02_enableBauxite", "Toggles bauxite deposits", true);
+	private static Set<String> loadLeadSafeForgeContainerWhitelist(Configuration config) {
+		String[] entries = CommonConfig.createConfigStringList(
+				config,
+				CommonConfig.CATEGORY_GENERAL,
+				"1.99_CE_forgeFluidLeadSafeContainers",
+				"Exact generic Forge Fluid containers that should be treated as lead-safe. Entries must use the format modid:item:meta. Default empty means generic Forge Fluid containers are not lead-safe.",
+				new String[0]
+		);
 
-		WorldConfig.enableSulfurCave = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_ORES, "2.C00_enableSulfurCave", "Toggles sulfur caves", true);
-		WorldConfig.enableAsbestosCave = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_ORES, "2.C01_enableAsbestosCave", "Toggles asbestos caves", true);
-        
-		WorldConfig.enableCraterBiomes = CommonConfig.createConfigBool(config, CommonConfig.CATEGORY_BIOMES, "17.B_toggle", "Enables the biome change caused by nuclear explosions", true);
-		WorldConfig.craterBiomeId = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_BIOMES, "17.B00_craterBiomeId", "The numeric ID for the crater biome", 80);
-		WorldConfig.craterBiomeInnerId = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_BIOMES, "17.B01_craterBiomeInnerId", "The numeric ID for the inner crater biome", 81);
-		WorldConfig.craterBiomeOuterId = CommonConfig.createConfigInt(config, CommonConfig.CATEGORY_BIOMES, "17.B02_craterBiomeOuterId", "The numeric ID for the outer crater biome", 82);
-		WorldConfig.craterBiomeRad = (float) CommonConfig.createConfigDouble(config, CommonConfig.CATEGORY_BIOMES, "17.R00_craterBiomeRad", "RAD/s for the crater biome", 5D);
-		WorldConfig.craterBiomeInnerRad = (float) CommonConfig.createConfigDouble(config, CommonConfig.CATEGORY_BIOMES, "17.R01_craterBiomeInnerRad", "RAD/s for the inner crater biome", 25D);
-		WorldConfig.craterBiomeOuterRad = (float) CommonConfig.createConfigDouble(config, CommonConfig.CATEGORY_BIOMES, "17.R02_craterBiomeOuterRad", "RAD/s for the outer crater biome", 0.5D);
-		WorldConfig.craterBiomeWaterMult = (float) CommonConfig.createConfigDouble(config, CommonConfig.CATEGORY_BIOMES, "17.R03_craterBiomeWaterMult", "Multiplier for RAD/s in crater biomes when in water", 5D);
+		Set<String> result = new ObjectOpenHashSet<>(entries.length);
+		for (String entry : entries) {
+			String normalized = normalizeLeadSafeForgeContainerEntry(entry);
+			result.add(normalized);
+		}
+		return result;
+	}
+
+	private static String normalizeLeadSafeForgeContainerEntry(String entry) {
+		String trimmed = entry.trim();
+		int split = trimmed.lastIndexOf(':');
+		if (split <= 0 || split == trimmed.length() - 1) {
+			throw new IllegalArgumentException("Invalid forge fluid lead-safe container override '" + entry + "'. Expected modid:item:meta.");
+		}
+
+		ResourceLocation itemId = new ResourceLocation(trimmed.substring(0, split));
+		int meta;
+		try {
+			meta = Integer.parseInt(trimmed.substring(split + 1));
+		} catch (NumberFormatException e) {
+			throw new IllegalArgumentException("Invalid forge fluid lead-safe container override '" + entry + "'. Meta must be an integer.", e);
+		}
+		if (meta < 0) {
+			throw new IllegalArgumentException("Invalid forge fluid lead-safe container override '" + entry + "'. Meta must be >= 0.");
+		}
+
+		return itemId + ":" + meta;
 	}
 }

@@ -3,10 +3,12 @@ package com.hbm.inventory.recipes;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
+import com.hbm.config.GeneralConfig;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.OreDictStack;
 import com.hbm.inventory.recipes.loader.SerializableRecipe;
+import com.hbm.items.ItemEnums;
 import com.hbm.items.ModItems;
 import net.minecraft.item.ItemStack;
 
@@ -56,8 +58,11 @@ public class ExposureChamberRecipes extends SerializableRecipe {
                 new ItemStack(ModItems.ingot_schrabidium)));
         recipes.add(new ExposureChamberRecipe(new ComparableStack(ModItems.particle_dark), new OreDictStack(PU.ingot()),
                 new ItemStack(ModItems.ingot_euphemium)));
-        recipes.add(new ExposureChamberRecipe(new ComparableStack(ModItems.particle_sparkticle), new OreDictStack(SBD.ingot()),
-                new ItemStack(ModItems.ingot_dineutronium)));
+        if(GeneralConfig.enableExpensiveMode) {
+            recipes.add(new ExposureChamberRecipe(new ComparableStack(ModItems.particle_sparkticle), new ComparableStack(ModItems.item_expensive, 1, ItemEnums.EnumExpensiveType.DEGENERATE_MATTER), new ItemStack(ModItems.ingot_dineutronium)));
+        } else {
+            recipes.add(new ExposureChamberRecipe(new ComparableStack(ModItems.particle_sparkticle), new OreDictStack(SBD.ingot()), new ItemStack(ModItems.ingot_dineutronium)));
+        }
     }
 
     @Override

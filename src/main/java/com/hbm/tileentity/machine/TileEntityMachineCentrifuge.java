@@ -9,6 +9,7 @@ import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerCentrifuge;
 import com.hbm.inventory.gui.GUIMachineCentrifuge;
 import com.hbm.inventory.recipes.CentrifugeRecipes;
+import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
@@ -44,8 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @AutoRegister
-public class TileEntityMachineCentrifuge extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IGUIProvider, IUpgradeInfoProvider
-		, IConfigurableMachine {
+public class TileEntityMachineCentrifuge extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IGUIProvider, IUpgradeInfoProvider, IConfigurableMachine {
 
     /*
      * So why do we do this now? You have a funny mekanism/thermal/whatever pipe and you want to output stuff from a side
@@ -112,7 +112,8 @@ public class TileEntityMachineCentrifuge extends TileEntityMachineBase implement
 
     @Override
     public boolean isItemValidForSlot(int i, ItemStack itemStack) {
-        return i == 0;
+        if (i == 0 && CentrifugeRecipes.getOutput(itemStack) != null) return true;
+        return i == 1 && itemStack.getItem() instanceof IBatteryItem;
     }
 
     @Override
@@ -277,8 +278,7 @@ public class TileEntityMachineCentrifuge extends TileEntityMachineBase implement
 
     @Override
     public AudioWrapper createAudioLoop() {
-        return MainRegistry.proxy.getLoopedSound(HBMSoundHandler.centrifugeOperate, SoundCategory.BLOCKS, pos.getX() + 0.5F, pos.getY() + 0.5F,
-                pos.getZ() + 0.5F, 1.0F, 10F, 1.0F, 20);
+        return MainRegistry.proxy.getLoopedSound(HBMSoundHandler.centrifugeOperate, SoundCategory.BLOCKS, pos.getX() + 0.5F, pos.getY() + 0.5F, pos.getZ() + 0.5F, 1.0F, 10F, 1.0F, 20);
     }
 
     @Override

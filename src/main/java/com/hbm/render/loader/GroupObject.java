@@ -1,5 +1,6 @@
 package com.hbm.render.loader;
 
+import com.hbm.render.util.NTMImmediate;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 
@@ -25,10 +26,9 @@ public class GroupObject {
 
 	public void render() {
 		if (this.faces.size() > 0) {
-			Tessellator tessellator = Tessellator.getInstance();
-			tessellator.getBuffer().begin(glDrawingMode, DefaultVertexFormats.POSITION_TEX_NORMAL);
-			render(tessellator);
-			tessellator.draw();
+			NTMImmediate.INSTANCE.begin(glDrawingMode, DefaultVertexFormats.POSITION_TEX_NORMAL);
+			render(Tessellator.getInstance());
+			NTMImmediate.INSTANCE.draw();
 		}
 	}
 

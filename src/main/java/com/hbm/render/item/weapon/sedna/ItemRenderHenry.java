@@ -15,8 +15,6 @@ public class ItemRenderHenry extends ItemRenderWeaponBase {
 
 	public ItemRenderHenry(ResourceLocation texture) {
 		this.texture = texture;
-		offsets = offsets.get(ItemCameraTransforms.TransformType.GUI).setScale(0.07).setPosition(-4, 14.75, 1.6).setRotation(202, 291, 0).getHelper()
-				.get(ItemCameraTransforms.TransformType.THIRD_PERSON_RIGHT_HAND).setScale(1.0f).setPosition(-0.55, 0.05, -0.95).setRotation(-16, 103, 0).getHelper();
 	}
 
 	@Override
@@ -144,6 +142,16 @@ public class ItemRenderHenry extends ItemRenderWeaponBase {
 		double scale = 1.75D;
 		GlStateManager.scale(scale, scale, scale);
 		GlStateManager.translate(0, 0.25, 3);
+	}
+
+	@Override
+	public void setupInv(ItemStack stack) {
+		super.setupInv(stack);
+		double scale = 1.5D;
+		GlStateManager.scale(scale, scale, scale);
+		GlStateManager.rotate(25, 1, 0, 0);
+		GlStateManager.rotate(45, 0, 1, 0);
+		GlStateManager.translate(-0.5, 0.5, 0);
 	}
 
 	@Override

@@ -1,0 +1,6 @@
+{
+    "parent": "block/rail_curved",
+    "textures": {
+        "rail": "hbm:blocks/rail_narrow_turned"
+    }
+}

@@ -7,6 +7,7 @@ import com.hbm.main.MainRegistry;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.packet.toserver.PacketMobSlicer;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.anim.HbmAnimations;
 import com.hbm.render.anim.HbmAnimations.Animation;
 import net.minecraft.client.Minecraft;
@@ -22,6 +23,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 public class ItemSwordCutter extends ItemSwordAbility implements IEquipReceiver {
 
@@ -41,7 +43,7 @@ public class ItemSwordCutter extends ItemSwordAbility implements IEquipReceiver 
 	}
 
 	@Override
-	public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand handIn) {
+	public @NotNull ActionResult<ItemStack> onItemRightClick(@NotNull World worldIn, @NotNull EntityPlayer playerIn, @NotNull EnumHand handIn) {
 		rightClickClient(worldIn, playerIn);
 		return super.onItemRightClick(worldIn, playerIn, handIn);
 	}
@@ -59,7 +61,7 @@ public class ItemSwordCutter extends ItemSwordAbility implements IEquipReceiver 
 	}
 	
 	@Override
-	public boolean onEntitySwing(EntityLivingBase entityLiving, ItemStack stack) {
+	public boolean onEntitySwing(EntityLivingBase entityLiving, @NotNull ItemStack stack) {
 		if(entityLiving.world.isRemote){
 			swingClient(entityLiving, stack);
 		}
@@ -67,7 +69,7 @@ public class ItemSwordCutter extends ItemSwordAbility implements IEquipReceiver 
 	}
 	
 	@Override
-	public boolean onLeftClickEntity(ItemStack stack, EntityPlayer player, Entity entity) {
+	public boolean onLeftClickEntity(@NotNull ItemStack stack, EntityPlayer player, @NotNull Entity entity) {
 		if(stack == player.getHeldItemMainhand()){
 			Animation a = HbmAnimations.getRelevantAnim(EnumHand.MAIN_HAND);
 			if(a != null && a.animation != null){
@@ -85,11 +87,10 @@ public class ItemSwordCutter extends ItemSwordAbility implements IEquipReceiver 
 			planeNormal = null;
 			clicked = false;
 			NBTTagCompound nbt = new NBTTagCompound();
-			nbt.setString("type", "anim");
 			nbt.setInteger("hand", EnumHand.MAIN_HAND.ordinal());
 			nbt.setString("mode", "swing");
 			nbt.setString("name", stack.getItem().getRegistryName().getPath());
-			MainRegistry.proxy.effectNT(nbt);
+			MainRegistry.proxy.effectNT(HbmEffectNT.Anim, 0, 0, 0, nbt);
 		}
 	}
 	
@@ -102,11 +103,10 @@ public class ItemSwordCutter extends ItemSwordAbility implements IEquipReceiver 
 		if(!(player instanceof EntityPlayerMP))
 			return;
 		NBTTagCompound nbt = new NBTTagCompound();
-		nbt.setString("type", "anim");
 		nbt.setInteger("hand", hand.ordinal());
 		nbt.setString("mode", "equip");
 		nbt.setString("name", this.getRegistryName().getPath());
-		PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(nbt, 0, 0, 0), (EntityPlayerMP)player);
+		PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Anim, nbt, 0, 0, 0), (EntityPlayerMP)player);
 	}
 
 }

@@ -31,11 +31,11 @@ public class RenderArtilleryShell extends Render<EntityArtilleryShell> {
 
         boolean fog = GL11.glIsEnabled(GL11.GL_FOG);
 
-        if(fog) GL11.glDisable(GL11.GL_FOG);
+        if(fog) GlStateManager.disableFog();
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
         ResourceManager.projectiles.renderPart("Grenade");
         GlStateManager.shadeModel(GL11.GL_FLAT);
-        if(fog) GL11.glEnable(GL11.GL_FOG);
+        if(fog) GlStateManager.enableFog();
 
         GlStateManager.popMatrix();
     }

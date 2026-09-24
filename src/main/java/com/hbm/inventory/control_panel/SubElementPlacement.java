@@ -17,6 +17,7 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
@@ -46,6 +47,7 @@ public class SubElementPlacement extends SubElement {
 	protected float gridScale = 0.1F;
 	private float prevMouseX;
 	private float prevMouseY;
+	private final float[] renderBox = new float[4];
 
 	private int ctrl_index = 0;
 	
@@ -91,7 +93,7 @@ public class SubElementPlacement extends SubElement {
 		float dWheel = Mouse.getDWheel();
 		float dScale = dWheel*gridScale*0.00075F;
 
-		btn_editControl.enabled = selectedControl != null;
+		btn_editControl.enabled = isEditableControl(selectedControl);
 		btn_deleteControl.enabled = selectedControl != null;
 
 		//Correction so we scale around mouse position
@@ -160,10 +162,10 @@ public class SubElementPlacement extends SubElement {
 		float spX = gui.getGuiLeft();
 		float spY = gui.getGuiTop();
 		GlStateManager.translate(spX, spY, 0);
-		GL11.glScaled(1/gridScale, 1/gridScale, 1/gridScale);
+		GlStateManager.scale(1/gridScale, 1/gridScale, 1/gridScale);
 		GlStateManager.translate(-spX, -spY, 0);
 		GlStateManager.translate(-gridX, gridY, 0);
-		GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, ClientProxy.AUX_GL_BUFFER);
+		GlStateManager.getFloat(GL11.GL_MODELVIEW_MATRIX, ClientProxy.AUX_GL_BUFFER);
 		Matrix4f mat = new Matrix4f();
 		mat.load(ClientProxy.AUX_GL_BUFFER);
 		ClientProxy.AUX_GL_BUFFER.rewind();
@@ -207,88 +209,9 @@ public class SubElementPlacement extends SubElement {
 	}
 
 	public void renderControl(Control c){
-		Tessellator tes = Tessellator.getInstance();
-		BufferBuilder buf = tes.getBuffer();
 		Minecraft.getMinecraft().getTextureManager().bindTexture(c.getGuiTexture());
-
-		if (c instanceof DisplaySevenSeg) {
-			for (int i = 0; i < c.getConfigs().get("digitCount").getNumber(); i++) {
-				buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
-				float[] box = c.getBox();
-				float cock = (box[2] - box[0]) / c.getConfigs().get("digitCount").getNumber();
-				box[0] += cock * i;
-				box[2] = box[0] + cock;
-				float[] rgb = new float[]{1, (c == selectedControl) ? .8F : 1F, 1F};
-				buf.pos(box[0], box[1], 0).tex(0, 0).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-				buf.pos(box[0], box[3], 0).tex(0, 1).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-				buf.pos(box[2], box[3], 0).tex(1, 1).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-				buf.pos(box[2], box[1], 0).tex(1, 0).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-				tes.draw();
-			}
-		}
-		else if (c instanceof Label) {
-			Label label = (Label) c;
-			String text = label.getConfigs().get("text").toString();
-			float scale = label.getConfigs().get("scale").getNumber()/500F;
-
-			int r = (int) (label.getConfigs().get("colorR").getNumber()*255);
-			int g = (int) (label.getConfigs().get("colorG").getNumber()*255 * ((c == selectedControl) ? .5F : 1F));
-			int b = (int) (label.getConfigs().get("colorB").getNumber()*255);
-			int rgb2 = (r << 16) | (g << 8) | b;
-
-			GlStateManager.pushMatrix();
-			GlStateManager.translate(c.posX, c.posY, 0);
-			GlStateManager.scale(scale, scale, scale);
-			GlStateManager.translate(-c.posX, -c.posY, 0);
-			gui.getFontRenderer().drawString(text, c.posX, c.posY, rgb2, false);
-			GlStateManager.popMatrix();
-		}
-		else if (c instanceof DisplayText) {
-			DisplayText thing = (DisplayText) c;
-
-			String text = thing.getVar("text").toString();
-			float scale = thing.getConfigs().get("scale").getNumber()/500F;
-
-			Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.white);
-			buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
-			float[] box = c.getBox();
-			float[] rgb = new float[]{.2F, (c == selectedControl) ? .1F : .2F, .2F};
-			buf.pos(box[0], box[1], 0).tex(0, 0).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-			buf.pos(box[0], box[3], 0).tex(0, 1).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-			buf.pos(box[2], box[3], 0).tex(1, 1).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-			buf.pos(box[2], box[1], 0).tex(1, 0).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-			tes.draw();
-
-			EnumDyeColor dyeColor = thing.getVar("color").getEnum(EnumDyeColor.class);
-			int color = dyeColor.getColorValue();
-
-			GlStateManager.pushMatrix();
-			GlStateManager.translate(c.posX, c.posY, 0);
-			GlStateManager.scale(scale, scale, scale);
-			GlStateManager.translate(-c.posX, -c.posY, 0);
-			gui.getFontRenderer().drawString(text, c.posX, c.posY, color, false);
-			GlStateManager.popMatrix();
-		}
-		else if (c instanceof DialLarge) {
-			buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
-			float[] box = c.getBox();
-			float[] rgb = new float[]{1, (c == selectedControl) ? .8F : 1F, 1F};
-			buf.pos(box[0], box[1], 0).tex(0, 0).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-			buf.pos(box[0], box[3], 0).tex(0, .5).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-			buf.pos(box[2], box[3], 0).tex(1, .5).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-			buf.pos(box[2], box[1], 0).tex(1, 0).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-			tes.draw();
-		}
-		else {
-			buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
-			float[] box = c.getBox();
-			float[] rgb = new float[]{1, (c == selectedControl) ? .8F : 1F, 1F};
-			buf.pos(box[0], box[1], 0).tex(0, 0).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-			buf.pos(box[0], box[3], 0).tex(0, 1).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-			buf.pos(box[2], box[3], 0).tex(1, 1).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-			buf.pos(box[2], box[1], 0).tex(1, 0).color(rgb[0], rgb[1], rgb[2], 1).endVertex();
-			tes.draw();
-		}
+		c.fillBox(renderBox);
+		c.renderControl(renderBox,selectedControl,gui);
 	}
 	
 	@Override
@@ -304,7 +227,7 @@ public class SubElementPlacement extends SubElement {
 			gui.pushElement(gui.panelResize);
 		}
 		else if (button == btn_variables) {
-			gui.currentEditControl = selectedControl; // allows access to a selected control's local vars
+			gui.currentEditControl = isEditableControl(selectedControl) ? selectedControl : null; // allows access to a selected control's local vars
 			gui.variables.isGlobalScope = true;
 			gui.pushElement(gui.variables);
 		}
@@ -313,7 +236,7 @@ public class SubElementPlacement extends SubElement {
 			gui.pushElement(gui.choice);
 		}
 		else if (button == btn_editControl) {
-			if (selectedControl != null) {
+			if (isEditableControl(selectedControl)) {
 				gui.currentEditControl = selectedControl;
 				gui.itemConfig.last_control = null;
 				gui.itemConfig.variants = ControlRegistry.getAllControlsOfType(gui.currentEditControl.getControlType());
@@ -327,6 +250,62 @@ public class SubElementPlacement extends SubElement {
 			gui.control.panel.controls.remove(selectedControl);
 			selectedControl = null;
 		}
+	}
+
+	public static Control clipboard = null;
+
+	@Override
+	protected void keyTyped(char typedChar,int code) {
+		if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)) {
+			if (code == Keyboard.KEY_C || code == Keyboard.KEY_X) { // Copy
+				if (isEditableControl(selectedControl)) {
+					clipboard = duplicateControl(selectedControl);
+					if(clipboard == null)
+						return;
+					if (code == Keyboard.KEY_X) {
+						gui.isEditMode = false;
+						gui.control.panel.controls.remove(selectedControl);
+						selectedControl = null;
+					}
+				}
+			} else if (code == Keyboard.KEY_V) {
+				if (clipboard != null) {
+					Control duplicate = duplicateControl(clipboard);
+					if(duplicate == null)
+						return;
+					gui.currentEditControl = duplicate;
+					float[] gridMouse = gui.placement.convertToGridSpace(gui.mouseX, gui.mouseY);
+					gui.currentEditControl.posX = gridMouse[0];
+					gui.currentEditControl.posY = gridMouse[1];
+					gui.placement.resetPrevPos();
+					controlGrabbed = false;
+					selectedControl = null;
+				}
+			}
+		}
+		if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
+			if (gui.currentEditControl != null) return;
+			if (code == Keyboard.KEY_A) { // Add new
+				gui.isEditMode = false;
+				gui.pushElement(gui.choice);
+			} else if (code == Keyboard.KEY_D && isEditableControl(selectedControl)) { // Duplicate
+				Control duplicate = duplicateControl(selectedControl);
+				if(duplicate == null)
+					return;
+				gui.currentEditControl = duplicate;
+				float[] gridMouse = gui.placement.convertToGridSpace(gui.mouseX, gui.mouseY);
+				gui.currentEditControl.posX = gridMouse[0];
+				gui.currentEditControl.posY = gridMouse[1];
+				gui.placement.resetPrevPos();
+				controlGrabbed = false;
+				selectedControl = null;
+			}
+		}
+	}
+
+	private @Nullable Control duplicateControl(Control source) {
+		Control duplicate = gui.control.panel.cloneControl(source);
+		return isEditableControl(duplicate) ? duplicate : null;
 	}
 
 	protected boolean canPlace(){
@@ -365,7 +344,7 @@ public class SubElementPlacement extends SubElement {
 				for(Control c : gui.control.panel.controls){
 					if(NTMRenderHelper.intersects2DBox(gridMX, gridMY, c.getBox())){
 						selectedControl = c;
-						controlGrabbed = true;
+						controlGrabbed = isEditableControl(c);
 						return;
 					}
 				}
@@ -426,5 +405,9 @@ public class SubElementPlacement extends SubElement {
 		float x = ((gridMX-gridX)-gui.getGuiLeft())/gridScale+gui.getGuiLeft();
 		float y = ((gridMY+gridY)-gui.getGuiTop())/gridScale+gui.getGuiTop();
 		return new float[]{x, y};
+	}
+
+	private static boolean isEditableControl(Control control) {
+		return control != null && ControlRegistry.isRegistered(control.registryName) && !(control instanceof UnknownControl);
 	}
 }

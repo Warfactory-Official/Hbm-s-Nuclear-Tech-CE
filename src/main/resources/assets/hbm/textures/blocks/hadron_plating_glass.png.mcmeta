@@ -1,9 +1,0 @@
-{
-	"ctm": {
-		"ctm_version": 1,
-		"type": "CTM",
-		"textures": [
-			"hbm:blocks/hadron_plating_glass_ctm"
-		]
-	}
-}

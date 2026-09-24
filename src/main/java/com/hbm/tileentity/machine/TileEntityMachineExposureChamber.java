@@ -12,6 +12,7 @@ import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -38,7 +39,7 @@ import java.util.List;
 
 @AutoRegister
 public class TileEntityMachineExposureChamber extends TileEntityMachineBase implements IGUIProvider, IEnergyReceiverMK2, IUpgradeInfoProvider,
-        ITickable {
+        ITickable, IConnectionAnchors {
 
     public static final long maxPower = 1_000_000;
     public static final int processTimeBase = 200;

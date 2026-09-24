@@ -5,7 +5,7 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.misc.BeamPronter;
 import com.hbm.render.misc.BeamPronter.EnumBeamType;
@@ -20,12 +20,6 @@ import java.awt.*;
 @AutoRegister
 public class RenderFEL extends TileEntitySpecialRenderer<TileEntityFEL>
         implements IItemRendererProvider {
-
-    @Override
-    public boolean isGlobalRenderer(TileEntityFEL fel) {
-        return true;
-    }
-
     @Override
     public void render(
             TileEntityFEL fel,
@@ -71,7 +65,7 @@ public class RenderFEL extends TileEntitySpecialRenderer<TileEntityFEL>
             GlStateManager.depthMask(true);
             GlStateManager.enableDepth();
             BeamPronter.prontBeam(
-                    Vec3.createVectorHelper(0, 0, -length - 1).toVec3d(),
+                    Vec3NT.createVectorHelper(0, 0, -length - 1).toVec3d(),
                     EnumWaveType.STRAIGHT,
                     EnumBeamType.SOLID,
                     color,

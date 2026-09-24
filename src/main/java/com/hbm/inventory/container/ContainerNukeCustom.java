@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.tileentity.bomb.TileEntityNukeCustom;
 import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
@@ -12,9 +13,13 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerNukeCustom extends Container {
 
 	private TileEntityNukeCustom nukeBoy;
-	
+
+	private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(27)
+                                                                              .genericMachineRange(0)
+                                                                              .build();
+
 	public ContainerNukeCustom(InventoryPlayer invPlayer, TileEntityNukeCustom tedf) {
-		
+
 		nukeBoy = tedf;
 
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 8, 18));
@@ -44,7 +49,7 @@ public class ContainerNukeCustom extends Container {
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 24, 116, 54));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 25, 134, 54));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 26, 152, 54));
-		
+
 		for(int i = 0; i < 3; i++)
 		{
 			for(int j = 0; j < 9; j++)
@@ -52,17 +57,17 @@ public class ContainerNukeCustom extends Container {
 				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18 + 56));
 			}
 		}
-		
+
 		for(int i = 0; i < 9; i++)
 		{
 			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 142 + 56));
 		}
 	}
-	
+
 	@Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 27);
+		return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
 	@Override

@@ -52,7 +52,7 @@ public class BlockWandLogic extends BlockContainerBakeable implements ILookOverl
     public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
 
     public BlockWandLogic(String s) {
-            super(Material.IRON, s, new BlockBakeFrame("wand_logic_top", "wand_logic"));
+            super(Material.IRON, s, BlockBakeFrame.column("wand_logic_top", "wand_logic"));
             this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
         }
 
@@ -209,7 +209,7 @@ public class BlockWandLogic extends BlockContainerBakeable implements ILookOverl
             public int placedRotation;
 
             Block disguise;
-            int disguiseMeta = -1;
+            int disguiseMeta = 0;
 
             public String actionID = "FODDER_WAVE";
             public String conditionID = "PLAYER_CUBE_5";
@@ -227,11 +227,14 @@ public class BlockWandLogic extends BlockContainerBakeable implements ILookOverl
             }
 
             private void replace() {
+                if (!world.isRemote) {
                 if (!(world.getBlockState(pos).getBlock() instanceof BlockWandLogic)) {
-                    MainRegistry.logger.warn("Somehow the block at: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + " isn't a logic block but we're doing a TE update as if it is, cancelling!");
+                    MainRegistry.logger.warn(
+                            "Somehow the block at: {}, {}, {} isn't a logic block but we're doing a TE update as if it is, cancelling!",
+                            pos.getX(), pos.getY(), pos.getZ());
                     return;
                 }
-                world.setBlockState(pos, ModBlocks.logic_block.getDefaultState(), 2);
+                world.setBlockState(pos, (disguise == null ? ModBlocks.logic_block_invis : ModBlocks.logic_block).getDefaultState(), 3);
 
                 TileEntity te = world.getTileEntity(pos);
 
@@ -248,6 +251,7 @@ public class BlockWandLogic extends BlockContainerBakeable implements ILookOverl
                     logic.direction = EnumFacing.byIndex(placedRotation);
                     logic.disguise = disguise;
                     logic.disguiseMeta = disguiseMeta;
+                }
                 }
             }
 
@@ -315,6 +319,7 @@ public class BlockWandLogic extends BlockContainerBakeable implements ILookOverl
                 nbt.setString("conditionID", conditionID);
                 if (interactionID != null)
                     nbt.setString("interactionID", interactionID);
+                nbt.setInteger("rotation", placedRotation);
                 if (disguise != null) {
                     nbt.setString("disguise", disguise.getRegistryName().toString());
                     nbt.setInteger("disguiseMeta", disguiseMeta);
@@ -328,6 +333,7 @@ public class BlockWandLogic extends BlockContainerBakeable implements ILookOverl
                 actionID = nbt.getString("actionID");
                 conditionID = nbt.getString("conditionID");
                 interactionID = nbt.getString("interactionID");
+                placedRotation = nbt.getInteger("rotation");
                 if (nbt.hasKey("disguise")) {
                     disguise = Block.getBlockFromName(nbt.getString("disguise"));
                     disguiseMeta = nbt.getInteger("disguiseMeta");

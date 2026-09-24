@@ -16,11 +16,14 @@ import com.hbm.items.weapon.sedna.mags.MagazineSingleReload;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.render.anim.sedna.AnimationEnums;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna.IType;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
 import com.hbm.render.anim.sedna.BusAnimationSequenceSedna;
-import com.hbm.render.anim.sedna.HbmAnimationsSedna;
 import com.hbm.render.misc.RenderScreenOverlay.Crosshair;
+import com.hbm.saveddata.satellites.SatelliteDetector;
+import com.hbm.saveddata.satellites.SatelliteDetector.BurstIntensity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.SoundCategory;
@@ -93,11 +96,11 @@ public class XFactoryCatapult {
 
         incrementRad(bullet.world, mop.hitVec.x, mop.hitVec.y, mop.hitVec.z, 1.5F);
 
+        SatelliteDetector.reportEvent(bullet.world, SatelliteDetector.DURATION_LOW, BurstIntensity.LOW, bullet.posX, bullet.posZ);
         bullet.world.playSound(null, mop.hitVec.x, mop.hitVec.y + 0.5, mop.hitVec.z, HBMSoundHandler.mukeExplosion, SoundCategory.HOSTILE, 15.0F, 1.0F);
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "muke");
         data.setBoolean("balefire", true);
-        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, mop.hitVec.x, mop.hitVec.y + 0.5, mop.hitVec.z), new NetworkRegistry.TargetPoint(bullet.dimension, mop.hitVec.x, mop.hitVec.y, mop.hitVec.z, 250));
+        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Muke, data, mop.hitVec.x, mop.hitVec.y + 0.5, mop.hitVec.z), new NetworkRegistry.TargetPoint(bullet.dimension, mop.hitVec.x, mop.hitVec.y, mop.hitVec.z, 250));
     };
 
     public static void incrementRad(World world, double posX, double posY, double posZ, float mult) {
@@ -110,6 +113,7 @@ public class XFactoryCatapult {
     }
 
     public static void spawnMush(EntityBulletBaseMK4 bullet, RayTraceResult mop) {
+        SatelliteDetector.reportEvent(bullet.world, SatelliteDetector.DURATION_LOW, BurstIntensity.LOW, bullet.posX, bullet.posZ);
         // mlbv: Sound disabled because Torex will handle it
 //        bullet.world.playSound(null, mop.hitVec.x, mop.hitVec.y + 0.5, mop.hitVec.z, HBMSoundHandler.mukeExplosion, SoundCategory.HOSTILE, 15.0F, 1.0F);
         if(MainRegistry.polaroidID == 11 || bullet.world.rand.nextInt(100) == 0) EntityNukeTorex.statFacBale(bullet.world, mop.hitVec.x, mop.hitVec.y + 0.5, mop.hitVec.z, 0.3F);
@@ -127,6 +131,7 @@ public class XFactoryCatapult {
         vnt.explode();
 
         incrementRad(bullet.world, mop.hitVec.x, mop.hitVec.y, mop.hitVec.z, 0.25F);
+        SatelliteDetector.reportEvent(bullet.world, SatelliteDetector.DURATION_LOW, BurstIntensity.LOW, bullet.posX, bullet.posZ);
         // mlbv: Sound disabled because Torex will handle it
 //        bullet.world.playSound(null, mop.hitVec.x, mop.hitVec.y + 0.5, mop.hitVec.z, HBMSoundHandler.mukeExplosion, SoundCategory.HOSTILE, 15.0F, 1.0F);
         if(MainRegistry.polaroidID == 11 || bullet.world.rand.nextInt(100) == 0) EntityNukeTorex.statFacBale(bullet.world, mop.hitVec.x, mop.hitVec.y + 0.5, mop.hitVec.z, 0.25F);
@@ -154,7 +159,7 @@ public class XFactoryCatapult {
         nuke_balefire = new BulletConfig().setItem(GunFactory.EnumAmmo.NUKE_BALEFIRE).setDamage(2.5F).setLife(300).setVel(3F).setGrav(0.025F).setOnImpact(LAMBDA_NUKE_BALEFIRE);
 
         ModItems.gun_fatman = new ItemGunBaseNT(ItemGunBaseNT.WeaponQuality.A_SIDE, "gun_fatman", new GunConfig()
-                .dura(300).draw(20).inspect(30).crosshair(Crosshair.L_CIRCUMFLEX).hideCrosshair(false)
+                .dura(300).draw(20).inspect(30).reloadChangeType(true).crosshair(Crosshair.L_CIRCUMFLEX).hideCrosshair(false)
                 .rec(new Receiver(0)
                         .dmg(100F).spreadHipfire(0F).delay(10).reload(57).jam(40).sound(HBMSoundHandler.fireFatman, 1.0F, 1.0F)
                         .mag(new MagazineSingleReload(0, 1).addConfigs(nuke_standard, nuke_demo, nuke_high, nuke_tots, nuke_hive, nuke_balefire))
@@ -162,12 +167,12 @@ public class XFactoryCatapult {
                         .setupStandardFire().recoil(LAMBDA_RECOIL_FATMAN))
                 .setupStandardConfiguration()
                 .anim(LAMBDA_FATMAN_ANIMS).orchestra(Orchestras.ORCHESTRA_FATMAN)
-        );
+        ).setDefaultAmmoExpensive(GunFactory.EnumAmmo.NUKE_STANDARD, 1);
     }
 
     public static BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_RECOIL_FATMAN = (stack, ctx) -> { };
 
-    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_FATMAN_ANIMS = (stack, type) -> {
+    @SuppressWarnings("incomplete-switch") public static BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> LAMBDA_FATMAN_ANIMS = (stack, type) -> {
         switch (type) {
             case EQUIP -> {
                 return new BusAnimationSedna()

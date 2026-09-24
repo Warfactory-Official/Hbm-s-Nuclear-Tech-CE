@@ -1,9 +1,6 @@
 package com.hbm.entity.particle;
 
-import com.hbm.blocks.ModBlocks;
 import com.hbm.items.ModItems;
-import com.hbm.packet.PacketDispatcher;
-import com.hbm.packet.toserver.ModFXCollidePacket;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
@@ -68,11 +65,6 @@ public class EntityPinkCloudFX extends Particle {
 		this.prevPosY = this.posY;
 		this.prevPosZ = this.posZ;
 
-		if (this.rand.nextInt(50) == 0 && this.world.isRemote) {
-			BlockPos p = new BlockPos((int) this.posX, (int) this.posY, (int) this.posZ);
-			PacketDispatcher.wrapper.sendToServer(new ModFXCollidePacket(ModFXCollidePacket.Action.EXPLOSION_PC, p, 2));
-		}
-
 		this.particleAge++;
 		if (this.particleAge >= this.particleMaxAge) {
 			this.setExpired();
@@ -96,13 +88,6 @@ public class EntityPinkCloudFX extends Particle {
 
 		BlockPos pos = new BlockPos((int) this.posX, (int) this.posY, (int) this.posZ);
 		IBlockState state = this.world.getBlockState(pos);
-
-		if (state.getBlock() == ModBlocks.radiorec) {
-			this.setExpired();
-			if (this.world.isRemote) {
-				PacketDispatcher.wrapper.sendToServer(new ModFXCollidePacket(ModFXCollidePacket.Action.CONVERT_RADIOREC, pos));
-			}
-		}
 
 		if (state.isNormalCube()) {
 			if (this.rand.nextInt(5) != 0) {

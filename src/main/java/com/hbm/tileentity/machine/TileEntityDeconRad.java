@@ -3,6 +3,7 @@ package com.hbm.tileentity.machine;
 import com.hbm.capability.HbmLivingCapability.EntityHbmPropsProvider;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.potion.HbmPotion;
 import com.hbm.util.ContaminationUtil;
 import net.minecraft.entity.Entity;
@@ -24,12 +25,12 @@ public class TileEntityDeconRad extends TileEntity implements ITickable {
 
 	public TileEntityDeconRad() {
 		super();
-		this.radRemove = 0.5F;
+		radRemove = 0.5F;
 	}
 
 	public TileEntityDeconRad(float rad) {
 		super();
-		this.radRemove = rad;
+		radRemove = rad;
 	}
 
 	@Override
@@ -45,8 +46,8 @@ public class TileEntityDeconRad extends TileEntity implements ITickable {
 						}
 					}
 					if(e.hasCapability(EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null)){
-						if(this.radRemove > 0.0F){
-							e.getCapability(EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null).decreaseRads(this.radRemove);
+						if(radRemove > 0.0F){
+							e.getCapability(EntityHbmPropsProvider.ENT_HBM_PROPS_CAP, null).decreaseRads(radRemove);
 						}
 					}
 					if(e instanceof EntityPlayer){
@@ -60,15 +61,10 @@ public class TileEntityDeconRad extends TileEntity implements ITickable {
 			Random rand = world.rand;
 
 			NBTTagCompound nbt = new NBTTagCompound();
-			nbt.setString("type", "vanillaExt");
-			nbt.setString("mode", "townaura");
-			nbt.setDouble("posX", pos.getX() + 0.125 + rand.nextDouble() * 0.75);
-			nbt.setDouble("posY", pos.getY() + 1.1);
-			nbt.setDouble("posZ", pos.getZ() + 0.125 + rand.nextDouble() * 0.75);
 			nbt.setDouble("mX", 0.0);
 			nbt.setDouble("mY", 0.04);
 			nbt.setDouble("mZ", 0.0);
-			MainRegistry.proxy.effectNT(nbt);
+			MainRegistry.proxy.effectNT(HbmEffectNT.VanillaExt_TownAura, pos.getX() + 0.125 + rand.nextDouble() * 0.75, pos.getY() + 1.1, pos.getZ() + 0.125 + rand.nextDouble() * 0.75, nbt);
 		}
 	}
 }

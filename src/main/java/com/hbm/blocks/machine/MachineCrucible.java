@@ -89,6 +89,7 @@ public class MachineCrucible extends BlockDummyable implements ICrucibleAcceptor
                 crucible.recipeStack.clear();
                 crucible.wasteStack.clear();
                 crucible.markDirty();
+                return true;
             }
         }
 

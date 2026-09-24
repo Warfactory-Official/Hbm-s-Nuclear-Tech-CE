@@ -6,11 +6,14 @@ import com.hbm.handler.jei.JeiRecipes.FluidRecipeInverse;
 import com.hbm.util.I18nUtil;
 import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.gui.IDrawable;
-import mezz.jei.api.gui.IGuiItemStackGroup;
 import mezz.jei.api.gui.IRecipeLayout;
 import mezz.jei.api.ingredients.IIngredients;
+import mezz.jei.api.ingredients.VanillaTypes;
 import mezz.jei.api.recipe.IRecipeCategory;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+
+import java.util.List;
 
 public class FluidRecipeHandler implements IRecipeCategory<FluidRecipe> {
 
@@ -44,13 +47,12 @@ public class FluidRecipeHandler implements IRecipeCategory<FluidRecipe> {
 
 	@Override
 	public void setRecipe(IRecipeLayout recipeLayout, FluidRecipe recipeWrapper, IIngredients ingredients) {
-		IGuiItemStackGroup guiItemStacks = recipeLayout.getItemStacks();
-		
 		boolean inverse = recipeWrapper instanceof FluidRecipeInverse;
-		
-		guiItemStacks.init(0, inverse, 5, 5);
-		guiItemStacks.init(1, !inverse, 78, 6);
-		guiItemStacks.set(ingredients);
+		List<ItemStack> input = ingredients.getInputs(VanillaTypes.ITEM).get(0);
+		List<ItemStack> output = ingredients.getOutputs(VanillaTypes.ITEM).get(0);
+
+		EmiCompat.initSlot(recipeLayout, 0, inverse, 5, 5, inverse ? input : output);
+		EmiCompat.initSlot(recipeLayout, 1, !inverse, 78, 6, inverse ? output : input);
 	}
 
 }

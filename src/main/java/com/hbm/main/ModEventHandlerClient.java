@@ -1,5 +1,6 @@
 package com.hbm.main;
 
+import net.minecraft.client.renderer.GlStateManager;
 import baubles.api.BaublesApi;
 import com.google.common.collect.Queues;
 import com.hbm.Tags;
@@ -12,6 +13,7 @@ import com.hbm.config.GeneralConfig;
 import com.hbm.entity.mob.EntityHunterChopper;
 import com.hbm.entity.projectile.EntityChopperMine;
 import com.hbm.handler.*;
+import com.hbm.handler.radiation.RadVisOverlay;
 import com.hbm.hazard.HazardSystem;
 import com.hbm.interfaces.*;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
@@ -19,9 +21,7 @@ import com.hbm.inventory.RecipesCommon.NbtComparableStack;
 import com.hbm.inventory.gui.GUIArmorTable;
 import com.hbm.inventory.recipes.loader.SerializableRecipe;
 import com.hbm.items.ModItems;
-import com.hbm.items.armor.ArmorNo9;
-import com.hbm.items.armor.ItemArmorMod;
-import com.hbm.items.armor.JetpackBase;
+import com.hbm.items.armor.*;
 import com.hbm.items.gear.ArmorFSB;
 import com.hbm.items.special.ItemCustomLore;
 import com.hbm.items.weapon.*;
@@ -37,7 +37,6 @@ import com.hbm.packet.toserver.GunButtonPacket;
 import com.hbm.packet.toserver.MeathookJumpPacket;
 import com.hbm.particle.ParticleBatchRenderer;
 import com.hbm.particle.ParticleFirstPerson;
-import com.hbm.particle.gluon.ParticleGluonBurnTrail;
 import com.hbm.physics.ParticlePhysicsBlocks;
 import com.hbm.qmaw.GuiQMAW;
 import com.hbm.qmaw.QMAWLoader;
@@ -48,21 +47,20 @@ import com.hbm.render.anim.HbmAnimations;
 import com.hbm.render.anim.HbmAnimations.Animation;
 import com.hbm.render.anim.HbmAnimations.BlenderAnimation;
 import com.hbm.render.anim.sedna.HbmAnimationsSedna;
-import com.hbm.render.item.weapon.ItemRenderGunEgon;
+import com.hbm.render.chunk.SectionGeometry;
 import com.hbm.render.item.weapon.sedna.ItemRenderWeaponBase;
-import com.hbm.render.misc.BeamPronter;
 import com.hbm.render.misc.RenderAccessoryUtility;
 import com.hbm.render.misc.RenderScreenOverlay;
 import com.hbm.render.misc.SoyuzPronter;
-import com.hbm.render.modelrenderer.EgonBackpackRenderer;
 import com.hbm.render.util.RenderOverhead;
 import com.hbm.render.world.RenderNTMSkyboxChainloader;
-import com.hbm.handler.radiation.RadVisOverlay;
+import com.hbm.render.world.RenderNTMSkyboxImpact;
 import com.hbm.sound.*;
 import com.hbm.sound.MovingSoundPlayerLoop.EnumHbmSound;
 import com.hbm.tileentity.bomb.TileEntityNukeCustom;
 import com.hbm.tileentity.bomb.TileEntityNukeCustom.CustomNukeEntry;
 import com.hbm.tileentity.bomb.TileEntityNukeCustom.EnumEntryType;
+import com.hbm.tileentity.machine.rbmk.RBMKDials;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKBase;
 import com.hbm.util.*;
 import com.hbm.util.ArmorRegistry.HazardClass;
@@ -73,6 +71,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
+import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.model.ModelBiped;
@@ -86,11 +85,11 @@ import net.minecraft.client.renderer.GlStateManager.DestFactor;
 import net.minecraft.client.renderer.GlStateManager.SourceFactor;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.init.MobEffects;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.Item;
@@ -105,11 +104,15 @@ import net.minecraft.util.math.*;
 import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldProviderSurface;
+import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.client.IRenderHandler;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.client.event.sound.PlaySoundEvent;
+import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -120,6 +123,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.RenderTickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.oredict.OreDictionary;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -137,6 +141,7 @@ public class ModEventHandlerClient {
     public static final int flashDuration = 5_000;
     public static final int shakeDuration = 1_500;
     private static final ResourceLocation poster = new ResourceLocation(Tags.MODID + ":textures/models/misc/poster.png");
+    private static final ResourceLocation poster_cat = new ResourceLocation(Tags.MODID + ":textures/models/misc/poster_cat.png");
     public static Set<EntityLivingBase> specialDeathEffectEntities = new HashSet<>();
     public static ArrayDeque<ParticleFirstPerson> firstPersonAuxParticles = Queues.newArrayDeque();
     public static float deltaMouseX;
@@ -275,18 +280,14 @@ public class ModEventHandlerClient {
             World world = mc.world;
             if (world == null) return;
             IRenderHandler sky = world.provider.getSkyRenderer();
-            //TODO: implement
-//            if(world.provider instanceof WorldProviderSurface) {
-//
-//                if(ImpactWorldHandler.getDustForClient(world) > 0 || ImpactWorldHandler.getFireForClient(world) > 0) {
-//
-//                    //using a chainloader isn't necessary since none of the sky effects should render anyway
-//                    if(!(sky instanceof RenderNTMSkyboxImpact)) {
-//                        world.provider.setSkyRenderer(new RenderNTMSkyboxImpact());
-//                        return;
-//                    }
-//                }
-//            }
+
+            if (world.provider instanceof WorldProviderSurface &&
+                    (ImpactWorldHandler.getDustForClient(world) > 0 || ImpactWorldHandler.getFireForClient(world) > 0)) {
+                if (!(sky instanceof RenderNTMSkyboxImpact)) {
+                    world.provider.setSkyRenderer(new RenderNTMSkyboxImpact());
+                }
+                return;
+            }
 
             if (world.provider.getDimension() == 0) {
                 if (!(sky instanceof RenderNTMSkyboxChainloader)) {
@@ -323,6 +324,7 @@ public class ModEventHandlerClient {
         Minecraft mc = Minecraft.getMinecraft();
         ArmorNo9.updateWorldHook(mc.world);
         if (e.phase == Phase.END) {
+            SectionGeometry.clientTick();
             if (!firstPersonAuxParticles.isEmpty()) {
                 Iterator<ParticleFirstPerson> i = firstPersonAuxParticles.iterator();
                 while (i.hasNext()) {
@@ -362,27 +364,8 @@ public class ModEventHandlerClient {
                 }
             }
             RadVisOverlay.clientTick(mc);
-        } else {
-
-            if (Minecraft.getMinecraft().world != null) {
-                //Drillgon200: If I add more guns like this, I'll abstract it.
-                for (EntityPlayer player : Minecraft.getMinecraft().world.playerEntities) {
-                    if (player.getHeldItemMainhand().getItem() == ModItems.gun_egon && !ItemGunEgon.soundsByPlayer.containsKey(player)) {
-                        boolean firing = player == Minecraft.getMinecraft().player ? ItemGunEgon.m1 && Library.countInventoryItem(player.inventory, ItemGunEgon.getBeltType(player, player.getHeldItemMainhand(), true)) >= 2 : ItemGunEgon.getIsFiring(player.getHeldItemMainhand());
-                        if (firing) {
-                            ItemGunEgon.soundsByPlayer.put(player, new GunEgonSoundHandler(player));
-                        }
-                    }
-                }
-            }
-            Iterator<GunEgonSoundHandler> itr = ItemGunEgon.soundsByPlayer.values().iterator();
-            while (itr.hasNext()) {
-                GunEgonSoundHandler g = itr.next();
-                g.update();
-                if (g.ticks == -1)
-                    itr.remove();
-            }
         }
+
         if (Minecraft.getMinecraft().player != null) {
             JetpackHandler.clientTick(e);
         }
@@ -415,38 +398,6 @@ public class ModEventHandlerClient {
         }
     }
 
-    //Sus
-    @SubscribeEvent
-    public void onArmorRenderEvent(RenderPlayerEvent.Pre event) {
-        EntityPlayer player = event.getEntityPlayer();
-        ModelPlayer model = event.getRenderer().getMainModel();
-
-        GlStateManager.pushMatrix();
-        GlStateManager.translate(0, player.isSneaking() ? 1.1 : 1.4, 0);
-        GL11.glRotated(180, 0, 0, 1);
-
-        for (int i = 0; i < 4; i++) {
-
-            ItemStack armor = player.inventory.armorItemInSlot(i);
-
-            if (armor != null && ArmorModHandler.hasMods(armor)) {
-
-                for (ItemStack mod : ArmorModHandler.pryMods(armor)) {
-
-                    if (mod != null && mod.getItem() instanceof ItemArmorMod) {
-                        ((ItemArmorMod) mod.getItem()).modRender(event, armor);
-                    }
-                }
-            }
-
-            //because armor that isn't ItemArmor doesn't render at all
-            if (armor != null && armor.getItem() instanceof JetpackBase) {
-                ((ItemArmorMod) armor.getItem()).modRender(event, armor);
-            }
-        }
-        GlStateManager.popMatrix();
-    }
-
     private boolean isFSBArmor(ItemStack stack) {
         return !stack.isEmpty() && stack.getItem() instanceof ArmorFSB;
     }
@@ -476,10 +427,10 @@ public class ModEventHandlerClient {
         Clock.update();
         HbmShaderManager2.createInvMVP();
         GlStateManager.enableDepth();
-        List<Entity> list = Minecraft.getMinecraft().world.loadedEntityList;
+        Minecraft mc = Minecraft.getMinecraft();
+        List<Entity> list = mc.world.loadedEntityList;
         ClientProxy.renderingConstant = true;
-
-        Entity entity = Minecraft.getMinecraft().getRenderViewEntity();
+        Entity entity = mc.getRenderViewEntity();
         float partialTicks = Minecraft.getMinecraft().getRenderPartialTicks();
         double d3 = entity.lastTickPosX + (entity.posX - entity.lastTickPosX) * (double) partialTicks;
         double d4 = entity.lastTickPosY + (entity.posY - entity.lastTickPosY) * (double) partialTicks;
@@ -491,7 +442,7 @@ public class ModEventHandlerClient {
                 double d2 = e.lastTickPosZ + (e.posZ - e.lastTickPosZ) * (double) partialTicks;
                 float f = e.prevRotationYaw + (e.rotationYaw - e.prevRotationYaw) * partialTicks;
 
-                Render<Entity> r = Minecraft.getMinecraft().getRenderManager().getEntityRenderObject(e);
+                Render<Entity> r = mc.getRenderManager().getEntityRenderObject(e);
                 r.doRender(e, d0 - d3, d1 - d4, d2 - d5, f, partialTicks);
             }
         }
@@ -500,9 +451,9 @@ public class ModEventHandlerClient {
 
         //SSG meathook icon projection
         if (ItemGunShotty.rayTrace != null) {
-            GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, MODELVIEW);
-            GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, PROJECTION);
-            GL11.glGetInteger(GL11.GL_VIEWPORT, VIEWPORT);
+            GlStateManager.getFloat(GL11.GL_MODELVIEW_MATRIX, MODELVIEW);
+            GlStateManager.getFloat(GL11.GL_PROJECTION_MATRIX, PROJECTION);
+            GlStateManager.glGetInteger(GL11.GL_VIEWPORT, VIEWPORT);
 
             Project.gluProject((float) (ItemGunShotty.rayTrace.x - d3), (float) (ItemGunShotty.rayTrace.y - d4), (float) (ItemGunShotty.rayTrace.z - d5), MODELVIEW, PROJECTION, VIEWPORT, POSITION);
 
@@ -534,9 +485,9 @@ public class ModEventHandlerClient {
 
             GlStateManager.pushMatrix();
             GlStateManager.translate(ssgChainPos.x, ssgChainPos.y, ssgChainPos.z);
-            GL11.glRotated(yaw + 90, 0, 1, 0);
-            GL11.glRotated(-pitch + 90, 0, 0, 1);
-            GL11.glScaled(0.125, 0.25, 0.125);
+            GlStateManager.rotate((float) (yaw + 90), 0, 1, 0);
+            GlStateManager.rotate((float) (-pitch + 90), 0, 0, 1);
+            GlStateManager.scale(0.125, 0.25, 0.125);
 
             double len = MathHelper.clamp(tester.length() * 2, 0, 40);
             Tessellator tessellator = Tessellator.getInstance();
@@ -580,25 +531,25 @@ public class ModEventHandlerClient {
 
 
             RenderHelper.enableStandardItemLighting();
-            GL11.glRotated(80, 0, 0, 1);
-            GL11.glRotated(30, 0, 1, 0);
+            GlStateManager.rotate(80, 0, 0, 1);
+            GlStateManager.rotate(30, 0, 1, 0);
 
             double sine = Math.sin(Clock.get_ms() * 0.0005) * 5;
             double sin3 = Math.sin(Clock.get_ms() * 0.0005 + Math.PI * 0.5) * 5;
-            GL11.glRotated(sine, 0, 0, 1);
-            GL11.glRotated(sin3, 1, 0, 0);
+            GlStateManager.rotate((float) (sine), 0, 0, 1);
+            GlStateManager.rotate((float) (sin3), 1, 0, 0);
 
             GlStateManager.translate(0, -3, 0);
             OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 6500F, 30F);
             SoyuzPronter.prontCapsule();
 
-            GL11.glRotated(Clock.get_ms() * 0.025 % 360, 0, -1, 0);
+            GlStateManager.rotate((float) (Clock.get_ms() * 0.025 % 360), 0, -1, 0);
 
             int rand = new Random(MainRegistry.startupTime).nextInt(HTTPHandler.capsule.size());
             String msg = HTTPHandler.capsule.get(rand);
 
             GlStateManager.translate(0, 3.75, 0);
-            GL11.glRotated(180, 1, 0, 0);
+            GlStateManager.rotate(180, 1, 0, 0);
 
             float rot = 0F;
 
@@ -651,57 +602,11 @@ public class ModEventHandlerClient {
             if (thermalSights) RenderOverhead.renderThermalSight(evt.getPartialTicks());
         }
 
-        if (entity instanceof EntityPlayer) {
-            EntityPlayer player = (EntityPlayer) entity;
+        if (entity instanceof EntityPlayer player) {
             net.minecraft.client.renderer.Tessellator tes = net.minecraft.client.renderer.Tessellator.getInstance();
             BufferBuilder buf = tes.getBuffer();
             if (player.getHeldItemMainhand().getItem() instanceof ItemSwordCutter && ItemSwordCutter.clicked) {
                 if (Mouse.isButtonDown(1) && ItemSwordCutter.startPos != null) {
-					/*ItemSwordCutter.x += deltaMouseX*0.01F;
-					ItemSwordCutter.y -= deltaMouseY*0.01F;
-					if(ItemSwordCutter.x + ItemSwordCutter.y == 0){
-						ItemSwordCutter.x = 1F;
-					}
-					double lenRcp = 1D/Math.sqrt(ItemSwordCutter.x*ItemSwordCutter.x+ItemSwordCutter.y*ItemSwordCutter.y);
-					ItemSwordCutter.x *= lenRcp;
-					ItemSwordCutter.y *= lenRcp;
-					double angle = Math.atan2(ItemSwordCutter.y, ItemSwordCutter.x);
-					GlStateManager.pushMatrix();
-					GlStateManager.translate(0, player.getEyeHeight(), 0);
-					GL11.glRotated(-player.rotationYaw-90, 0, 1, 0);
-					GL11.glRotated(-player.rotationPitch, 0, 0, 1);
-					GlStateManager.translate(-0.3, 0, 0);
-					GL11.glRotated(Math.toDegrees(angle), 1, 0, 0);
-					GlStateManager.translate(0, 0.2, 0);
-					GlStateManager.disableCull();
-					GlStateManager.disableTexture2D();
-					GlStateManager.enableBlend();
-					GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA);
-					GlStateManager.color(0.7F, 0.7F, 0.7F, 0.4F);
-					buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION);
-					buf.pos(0, 0, -2).endVertex();
-					buf.pos(3, 0, -2).endVertex();
-					buf.pos(3, 0, 2).endVertex();
-					buf.pos(0, 0, 2).endVertex();
-					tes.draw();
-					GlStateManager.enableTexture2D();
-					GlStateManager.disableBlend();
-					GlStateManager.enableCull();
-
-					Vec3d[] positions = BobMathUtil.worldFromLocal(new Vector4f(0, 0, -2, 1), new Vector4f(3, 0, -2, 1), new Vector4f(3, 0, 2, 1));
-					Vec3d norm = positions[1].subtract(positions[0]).crossProduct(positions[2].subtract(positions[0])).normalize();
-					ItemSwordCutter.plane = new Vec3d[]{positions[0], norm};
-					GlStateManager.popMatrix();
-					GlStateManager.disableTexture2D();
-					GlStateManager.color(1F, 0F, 0F, 1F);
-					buf.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION);
-					Vec3d pos1 = positions[1].subtract(player.getPositionEyes(partialTicks));
-					buf.pos(pos1.x, pos1.y+player.getEyeHeight(), pos1.z).endVertex();
-					buf.pos(pos1.x+norm.x, pos1.y+norm.y+player.getEyeHeight(), pos1.z+norm.z).endVertex();
-					tes.draw();
-					GlStateManager.enableTexture2D();
-					player.turn(deltaMouseX, deltaMouseY);
-					GlStateManager.color(1F, 1F, 1F, 1F);*/
                     if (!(player.getHeldItemMainhand().getItem() instanceof ItemCrucible && ItemCrucible.getCharges(player.getHeldItemMainhand()) == 0)) {
                         Vec3d pos1 = ItemSwordCutter.startPos;
                         Vec3d pos2 = player.getLook(partialTicks);
@@ -711,8 +616,8 @@ public class ModEventHandlerClient {
                         GlStateManager.pushMatrix();
                         GlStateManager.loadIdentity();
 
-                        GL11.glRotated(player.rotationPitch, 1, 0, 0);
-                        GL11.glRotated(player.rotationYaw + 180, 0, 1, 0);
+                        GlStateManager.rotate((float) (player.rotationPitch), 1, 0, 0);
+                        GlStateManager.rotate((float) (player.rotationYaw + 180), 0, 1, 0);
 
                         buf.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION);
                         buf.pos(pos1.x, pos1.y, pos1.z).endVertex();
@@ -732,52 +637,6 @@ public class ModEventHandlerClient {
                     ItemSwordCutter.clicked = false;
                     ItemSwordCutter.planeNormal = null;
                 }
-            }
-			/*Vec3d euler = BobMathUtil.getEulerAngles(player.getLookVec());
-			javax.vecmath.Matrix3f rot = BakedModelUtil.eulerToMat((float)Math.toRadians(euler.x), (float)Math.toRadians(euler.y+90), player.world.rand.nextFloat()*2F*(float)Math.PI);
-			Vec3d c1 = new Vec3d(rot.m00, rot.m01, rot.m02);
-			Vec3d c2 = new Vec3d(rot.m10, rot.m11, rot.m12);
-			Vec3d c3 = new Vec3d(rot.m20, rot.m21, rot.m22);
-			GlStateManager.pushMatrix();
-			GlStateManager.translate(0, player.getEyeHeight(), 0);
-			Vec3d look = player.getLook(partialTicks).scale(2);
-			GlStateManager.translate(look.x, look.y, look.z);
-			GlStateManager.disableTexture2D();
-			buf.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION);
-			buf.pos(0, 0, 0).endVertex();
-			buf.pos(c1.x, c1.y, c1.z).endVertex();
-			buf.pos(0, 0, 0).endVertex();
-			buf.pos(c2.x, c2.y, c2.z).endVertex();
-			buf.pos(0, 0, 0).endVertex();
-			buf.pos(c3.x, c3.y, c3.z).endVertex();
-			tes.draw();
-			GlStateManager.enableTexture2D();
-			GlStateManager.popMatrix();*/
-
-            //GLUON GUN//
-            if (player.getHeldItemMainhand().getItem() == ModItems.gun_egon && ItemGunEgon.activeTicks > 0 && Minecraft.getMinecraft().gameSettings.thirdPersonView == 0) {
-                GlStateManager.pushMatrix();
-                float[] angles = ItemGunEgon.getBeamDirectionOffset(player.world.getTotalWorldTime() + partialTicks);
-                Vec3d look = Library.changeByAngle(player.getLook(partialTicks), angles[0], angles[1]);
-                RayTraceResult r = Library.rayTraceIncludeEntitiesCustomDirection(player, look, 50, partialTicks);
-                Vec3d pos = player.getPositionEyes(partialTicks);
-                Vec3d hitPos = pos.add(look.scale(50));
-                if (r == null || r.typeOfHit == Type.MISS) {
-                } else {
-                    hitPos = r.hitVec.add(look.scale(-0.1));
-                }
-                float[] offset = ItemRenderGunEgon.getOffset(player.world.getTotalWorldTime() + partialTicks);
-                //I'll at least attempt to make it look consistent at different fovs
-                float fovDiff = (currentFOV - 70) * 0.0002F;
-                Vec3d start = new Vec3d(-0.18 + offset[0] * 0.075F - fovDiff, -0.2 + offset[1] * 0.1F, 0.35 - fovDiff * 30);
-                start = start.rotatePitch((float) Math.toRadians(-(player.prevRotationPitch + (player.rotationPitch - player.prevRotationPitch) * partialTicks)));
-                start = start.rotateYaw((float) Math.toRadians(-(player.prevRotationYaw + (player.rotationYaw - player.prevRotationYaw) * partialTicks)));
-
-                start = start.add(0, player.getEyeHeight(), 0);
-                GlStateManager.translate(start.x, start.y, start.z);
-                BeamPronter.gluonBeam(new Vec3d(0, 0, 0), new Vec3d(Vec3dUtil.convertToVec3i(hitPos.subtract(pos).subtract(start.subtract(0, player.getEyeHeight(), 0)))), 0.4F);
-                GlStateManager.popMatrix();
-
             }
         }
 
@@ -802,37 +661,6 @@ public class ModEventHandlerClient {
             }
             if (player.getHeldItemOffhand().getItem() instanceof ItemGunBase) {
                 ((ItemGunBase) player.getHeldItemOffhand().getItem()).playerWorldRender(player, evt, EnumHand.OFF_HAND);
-            }
-
-            //Gluon gun world rendering
-            if (player.getHeldItemMainhand().getItem() != ModItems.gun_egon) {
-                ItemGunEgon.activeTrailParticles.remove(player);
-                continue;
-            }
-            boolean firing = player == Minecraft.getMinecraft().player ? ItemGunEgon.m1 && Library.countInventoryItem(player.inventory, ItemGunEgon.getBeltType(player, player.getHeldItemMainhand(), true)) >= 2 : ItemGunEgon.getIsFiring(player.getHeldItemMainhand());
-            if (!firing) {
-                ItemGunEgon.activeTrailParticles.remove(player);
-                continue;
-            }
-            float[] angles = ItemGunEgon.getBeamDirectionOffset(player.world.getTotalWorldTime() + partialTicks);
-            Vec3d look = Library.changeByAngle(player.getLook(partialTicks), angles[0], angles[1]);
-            RayTraceResult r = Library.rayTraceIncludeEntitiesCustomDirection(player, look, 50, partialTicks);
-            if (r != null && r.hitVec != null && r.typeOfHit == Type.BLOCK) {
-                ParticleGluonBurnTrail currentTrailParticle = null;
-                if (!ItemGunEgon.activeTrailParticles.containsKey(player)) {
-                    currentTrailParticle = new ParticleGluonBurnTrail(player.world, 0.4F, player);
-                    Minecraft.getMinecraft().effectRenderer.addEffect(currentTrailParticle);
-                    ItemGunEgon.activeTrailParticles.put(player, currentTrailParticle);
-                } else {
-                    currentTrailParticle = ItemGunEgon.activeTrailParticles.get(player);
-                }
-                Vec3d normal = Library.normalFromRayTrace(r);
-                if (!currentTrailParticle.tryAddNewPosition(r.hitVec.add(normal.scale(0.02)), normal)) {
-                    currentTrailParticle = null;
-                    ItemGunEgon.activeTrailParticles.remove(player);
-                }
-            } else {
-                ItemGunEgon.activeTrailParticles.remove(player);
             }
         }
 
@@ -889,34 +717,56 @@ public class ModEventHandlerClient {
             ItemStack plate = player.inventory.armorInventory.get(2);
             ArmorFSB chestplate = (ArmorFSB) plate.getItem();
 
-            if (chestplate.vats) {
+            if (chestplate.vats && ClientConfig.HEALTHBAR_HUD.get()) {
 
                 int count = (int) Math.min(event.getEntity().getMaxHealth(), 100);
 
                 int bars = (int) Math.ceil(event.getEntity().getHealth() * count / event.getEntity().getMaxHealth());
 
-                String bar = TextFormatting.RED + "";
+                StringBuilder bar = new StringBuilder(TextFormatting.RED + "");
 
                 for (int i = 0; i < count; i++) {
 
                     if (i == bars)
-                        bar += TextFormatting.RESET + "";
+                        bar.append(TextFormatting.RESET);
 
-                    bar += "|";
+                    bar.append("|");
                 }
-                RenderOverhead.renderTag(event.getEntity(), event.getX(), event.getY(), event.getZ(), event.getRenderer(), bar, chestplate.thermal);
+                RenderOverhead.renderTag(event.getEntity(), event.getX(), event.getY(), event.getZ(), event.getRenderer(), bar.toString(), chestplate.thermal);
             }
         }
     }
 
-    public boolean hasBauble(EntityPlayer player, Item bauble) {
-        try {
-            if (BaublesApi.isBaubleEquipped(player, bauble) != -1) {
-                return true;
+    @SubscribeEvent
+    public void onOpenGUI(GuiOpenEvent event) {
+
+        if(event.getGui() instanceof GuiMainMenu main && ClientConfig.MAIN_MENU_WACKY_SPLASHES.get()) {
+            int rand = (int)(Math.random() * 150);
+
+            switch(rand) {
+                case 0: main.splashText = "Floppenheimer!"; break;
+                case 1: main.splashText = "i should dip my balls in sulfuric acid"; break;
+                case 2: main.splashText = "All answers are popbob!"; break;
+                case 3: main.splashText = "None may enter The Orb!"; break;
+                case 4: main.splashText = "Wacarb was here"; break;
+                case 5: main.splashText = "SpongeBoy me Bob I am overdosing on ketamine agagagagaga"; break;
+                case 6: main.splashText = TextFormatting.RED + "I know where you live, " + System.getProperty("user.name"); break;
+                case 7: main.splashText = "Nice toes, now hand them over."; break;
+                case 8: main.splashText = "I smell burnt toast!"; break;
+                case 9: main.splashText = "There are bugs under your skin!"; break;
+                case 10: main.splashText = "Fentanyl!"; break;
+                case 11: main.splashText = "Do drugs!"; break;
+                case 12: main.splashText = "Imagine being scared by splash texts!"; break;
+                case 13: main.splashText = "Semantic versioning? More like pedantic versioning."; break;
             }
-        } catch (Throwable t) {
+
+            double d = Math.random();
+            if(d < 0.1) main.splashText = "Redditors aren't people!";
         }
-        return false;
+    }
+
+    public static boolean hasBauble(EntityPlayer player, Item bauble) {
+        return Compat.BAUBLES_LOADED && BaublesApi.isBaubleEquipped(player, bauble) != -1;
     }
 
     @SubscribeEvent
@@ -924,7 +774,7 @@ public class ModEventHandlerClient {
         EntityPlayer player = Minecraft.getMinecraft().player;
 
         /// NUKE FLASH ///
-        if (event.getType() == ElementType.CROSSHAIRS && (flashTimestamp + flashDuration - System.currentTimeMillis()) > 0) {
+        if (event.getType() == ElementType.CROSSHAIRS && (flashTimestamp + flashDuration - System.currentTimeMillis()) > 0 && ClientConfig.NUKE_HUD_FLASH.get()) {
             int width = event.getResolution().getScaledWidth();
             int height = event.getResolution().getScaledHeight();
             int buff = -200; // that's for the shake effect - so the flash won't look like offset
@@ -937,10 +787,10 @@ public class ModEventHandlerClient {
             GlStateManager.depthMask(false);
             buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
             float brightness = (flashTimestamp + flashDuration - System.currentTimeMillis()) / (float) flashDuration;
-            buffer.pos(width - buff, buff, 0).color(1F, 1F, 1F, brightness * 1F).endVertex();
-            buffer.pos(buff, buff, 0).color(1F, 1F, 1F, brightness * 1F).endVertex();
-            buffer.pos(buff, height - buff, 0).color(1F, 1F, 1F, brightness * 1F).endVertex();
-            buffer.pos(width - buff, height - buff, 0).color(1F, 1F, 1F, brightness * 1F).endVertex();
+            buffer.pos(width - buff, buff, 0).color(1F, 1F, 1F, brightness).endVertex();
+            buffer.pos(buff, buff, 0).color(1F, 1F, 1F, brightness).endVertex();
+            buffer.pos(buff, height - buff, 0).color(1F, 1F, 1F, brightness).endVertex();
+            buffer.pos(width - buff, height - buff, 0).color(1F, 1F, 1F, brightness).endVertex();
             tess.draw();
             GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
             GlStateManager.enableTexture2D();
@@ -991,16 +841,29 @@ public class ModEventHandlerClient {
         }
 
         /// DODD DIAG HOOK FOR RBMK
-        if (event.getType() == ElementType.CROSSHAIRS) {
+        if (event.getType() == ElementType.CROSSHAIRS && ClientConfig.DODD_RBMK_DIAGNOSTIC.get()) {
             Minecraft mc = Minecraft.getMinecraft();
             World world = mc.world;
             RayTraceResult mop = mc.objectMouseOver;
 
-            if (mop != null && mop.typeOfHit == mop.typeOfHit.BLOCK) {
+            if (mop != null && mop.typeOfHit == Type.BLOCK) {
                 BlockPos pos = mop.getBlockPos();
-                Block blockHit = world.getBlockState(pos).getBlock();
-                if (blockHit instanceof ILookOverlay) {
+                IBlockState stateHit = world.getBlockState(pos);
+                Block blockHit = stateHit.getBlock();
+                ItemStack held = player.getHeldItemMainhand();
+
+                if (held.getItem() instanceof ILookOverlay) {
+                    ((ILookOverlay) held.getItem()).printHook(event, world, pos);
+                } else if (blockHit instanceof ILookOverlay) {
                     ((ILookOverlay) blockHit).printHook(event, world, pos);
+                }
+
+                if(ClientConfig.SHOW_BLOCK_META_OVERLAY.get()) {
+                    int i = blockHit.getMetaFromState(stateHit);
+                    List<String> text = new ArrayList<>();
+                    text.add(blockHit.getTranslationKey());
+                    text.add("Meta: " + i);
+                    ILookOverlay.printGeneric(event, "DEBUG", 0xffff00, 0x4040000, text);
                 }
             }
             TileEntityRBMKBase.diagnosticPrintHook(event);
@@ -1062,10 +925,8 @@ public class ModEventHandlerClient {
 
                 long time = System.currentTimeMillis() - animation.startMillis;
 
-                int duration = 0;
-                if (animation instanceof BlenderAnimation) {
-                    BlenderAnimation banim = ((BlenderAnimation) animation);
-                    //duration = (int) Math.ceil(banim.wrapper.anim.length * (1F/Math.abs(banim.wrapper.speedScale)));
+                int duration;
+                if (animation instanceof BlenderAnimation banim) {
                     EnumHand hand = i < 9 ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND;
                     if (!Minecraft.getMinecraft().player.getHeldItem(hand).getTranslationKey().equals(banim.key))
                         HbmAnimations.hotbar[i] = null;
@@ -1093,7 +954,7 @@ public class ModEventHandlerClient {
         }
 
         // NUKE GUI SHAKE //
-        if (event.getType() == ElementType.HOTBAR && (ModEventHandlerClient.shakeTimestamp + ModEventHandlerClient.shakeDuration - System.currentTimeMillis()) > 0) {
+        if (event.getType() == ElementType.HOTBAR && (ModEventHandlerClient.shakeTimestamp + ModEventHandlerClient.shakeDuration - System.currentTimeMillis()) > 0 && ClientConfig.NUKE_HUD_SHAKE.get()) {
             double mult = (ModEventHandlerClient.shakeTimestamp + ModEventHandlerClient.shakeDuration - System.currentTimeMillis()) / (double) ModEventHandlerClient.shakeDuration * 2;
             double horizontal = MathHelper.clamp(Math.sin(System.currentTimeMillis() * 0.02), -0.7, 0.7) * 15;
             double vertical = MathHelper.clamp(Math.sin(System.currentTimeMillis() * 0.01 + 2), -0.7, 0.7) * 3;
@@ -1115,6 +976,16 @@ public class ModEventHandlerClient {
         }
     }
 
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void onRenderHUD(RenderGameOverlayEvent.Pre event) {
+
+        // TODO: using ALL doesn't work as anticipated - still hides in F1. need a different event for this
+        // Th3_Sl1ze: I'm excluding everything that fucks with xaero's rendering, hopefully it'd work
+        if(event.getType() == RenderGameOverlayEvent.ElementType.TEXT) {
+            if(ClientConfig.BADGES_HUD.get()) RenderScreenOverlay.renderBadges(event.getResolution(), Minecraft.getMinecraft().ingameGUI);
+        }
+    }
+
     @SubscribeEvent(receiveCanceled = true)
     public void onHUDRenderShield(RenderGameOverlayEvent.Pre event) {
 
@@ -1125,6 +996,124 @@ public class ModEventHandlerClient {
             if (props.getEffectiveMaxShield(player) > 0) {
                 RenderScreenOverlay.renderShieldBar(event.getResolution(), Minecraft.getMinecraft().ingameGUI);
             }
+        }
+    }
+
+    private List<Tuple.Pair<Float, Integer>> getBars(ItemStack stack, EntityPlayer player) {
+
+        List<Tuple.Pair<Float, Integer>> bars = new ArrayList<>();
+
+        if(stack.getItem() instanceof ArmorFSBPowered && ArmorFSBPowered.hasFSBArmorIgnoreCharge(player)) {
+            float charge = 1F - (float) stack.getItem().getDurabilityForDisplay(stack);
+
+            bars.add(new Tuple.Pair<>(charge, 0x00FF00));
+        }
+
+        if(stack.getItem() instanceof JetpackFueledBase jetpack) {
+            float fuel = (float) JetpackFueledBase.getFuel(stack) / jetpack.maxFuel;
+
+            bars.add(new Tuple.Pair<>(fuel, jetpack.fuel.getColor()));
+        }
+
+        return bars;
+    }
+
+    @SubscribeEvent(receiveCanceled = true, priority = EventPriority.LOW)
+    public void onHUDRenderBar(RenderGameOverlayEvent.Post event) {
+
+        /// HANDLE ELECTRIC FSB HUD ///
+
+        EntityPlayer player = Minecraft.getMinecraft().player;
+        Tessellator tess = Tessellator.getInstance();
+        BufferBuilder buffer = tess.getBuffer();
+
+        if(event.getType() == ElementType.ARMOR) {
+
+            List<List<Tuple.Pair<Float, Integer>>> barsList = new ArrayList<>();
+
+            for (int i = 0; i < 4; i++) {
+
+                barsList.add(new ArrayList<>());
+
+                ItemStack stack = player.inventory.armorInventory.get(i);
+
+                if(stack.isEmpty())
+                    continue;
+
+                barsList.get(i).addAll(getBars(stack, player));
+
+                if (!(ArmorModHandler.hasMods(stack)))
+                    continue;
+
+                for (ItemStack mod : ArmorModHandler.pryMods(stack)) {
+                    if (mod.isEmpty()) continue;
+
+                    barsList.get(i).addAll(getBars(mod, player));
+                }
+            }
+
+            GlStateManager.disableTexture2D();
+            buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+
+            if(ForgeHooks.getTotalArmorValue(player) == 0) {
+                GuiIngameForge.left_height -= 10;
+            }
+
+            int width = event.getResolution().getScaledWidth();
+            int height = event.getResolution().getScaledHeight();
+            int left = width / 2 - 91;
+
+            for (List<Tuple.Pair<Float, Integer>> bars : barsList) {
+
+                if (bars.isEmpty())
+                    continue;
+
+                int top = height - GuiIngameForge.left_height + 7;
+
+                for (int i = 0; i < bars.size(); i++) {
+
+                    float val = bars.get(i).key;
+                    int hstart, hend;
+
+                    if (i == 0) {
+                        hstart = left;
+                        hend = hstart + (bars.size() == 1 ? 81 : 40);
+                    } else {
+                        int bl = (int) Math.ceil(40F / (bars.size() - 1));
+                        // :(
+                        hstart = left + 41 + bl * (i - 1);
+                        hend = i == bars.size() - 1 ? left + 81 : hstart + bl;
+
+                        if (i != 1) hstart += 1;
+                    }
+
+                    float r = 0.25f;
+                    float g = 0.25f;
+                    float b = 0.25f;
+
+                    buffer.pos(hstart, top - 1, 0).color(r, g, b, 1.0F).endVertex();
+                    buffer.pos(hstart, top + 2, 0).color(r, g, b, 1.0F).endVertex();
+                    buffer.pos(hend, top + 2, 0).color(r, g, b, 1.0F).endVertex();
+                    buffer.pos(hend, top - 1, 0).color(r, g, b, 1.0F).endVertex();
+
+                    float valx = hstart + (hend - hstart - 1) * val;
+
+                    int color = bars.get(i).value;
+                    r = ((color >> 16) & 0xFF) / 255F;
+                    g = ((color >> 8) & 0xFF) / 255F;
+                    b = (color & 0xFF) / 255F;
+
+                    buffer.pos(hstart + 1, top, 0).color(r, g, b, 1.0F).endVertex();
+                    buffer.pos(hstart + 1, top + 1, 0).color(r, g, b, 1.0F).endVertex();
+                    buffer.pos(valx, top + 1, 0).color(r, g, b, 1.0F).endVertex();
+                    buffer.pos(valx, top, 0).color(r, g, b, 1.0F).endVertex();
+                }
+
+                GuiIngameForge.left_height += 4;
+            }
+
+            tess.draw();
+            GlStateManager.enableTexture2D();
         }
     }
 
@@ -1163,24 +1152,20 @@ public class ModEventHandlerClient {
             }
         }
 
-        if (player.getHeldItem(EnumHand.MAIN_HAND) != null && player.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemGunBaseNT) {
+        if (!player.getHeldItem(EnumHand.MAIN_HAND).isEmpty() && player.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemGunBaseNT) {
             renderer.rightArmPose = ArmPose.BOW_AND_ARROW;
         }
-        if (player.getHeldItem(EnumHand.OFF_HAND) != null && player.getHeldItem(EnumHand.OFF_HAND).getItem() instanceof ItemGunBaseNT) {
+        if (!player.getHeldItem(EnumHand.OFF_HAND).isEmpty() && player.getHeldItem(EnumHand.OFF_HAND).getItem() instanceof ItemGunBaseNT) {
             renderer.leftArmPose = ArmPose.BOW_AND_ARROW;
         }
 
-        if (player.getHeldItem(EnumHand.MAIN_HAND) != null && player.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof IHoldableWeapon) {
+        if (!player.getHeldItem(EnumHand.MAIN_HAND).isEmpty() && player.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof IHoldableWeapon) {
             renderer.rightArmPose = ArmPose.BOW_AND_ARROW;
-            // renderer.getMainModel().bipedLeftArm.rotateAngleY = 90;
         }
-        if (player.getHeldItem(EnumHand.OFF_HAND) != null && player.getHeldItem(EnumHand.OFF_HAND).getItem() instanceof IHoldableWeapon) {
+        if (!player.getHeldItem(EnumHand.OFF_HAND).isEmpty() && player.getHeldItem(EnumHand.OFF_HAND).getItem() instanceof IHoldableWeapon) {
             renderer.leftArmPose = ArmPose.BOW_AND_ARROW;
         }
         JetpackHandler.preRenderPlayer(player);
-        if (player.getHeldItemMainhand().getItem() == ModItems.gun_egon) {
-            EgonBackpackRenderer.showBackpack = true;
-        }
 
         ResourceLocation cloak = RenderAccessoryUtility.getCloakFromPlayer(player);
         // GL11.glRotated(180, 1, 0, 0);
@@ -1195,18 +1180,15 @@ public class ModEventHandlerClient {
         if (specialDeathEffectEntities.contains(event.getEntity())) {
             event.setCanceled(true);
         }
-        if (event.getEntity() instanceof AbstractClientPlayer && event.getRenderer().getMainModel() instanceof ModelBiped) {
-            AbstractClientPlayer player = (AbstractClientPlayer) event.getEntity();
+        if (event.getEntity() instanceof AbstractClientPlayer player && event.getRenderer().getMainModel() instanceof ModelBiped renderer) {
 
-            ModelBiped renderer = (ModelBiped) event.getRenderer().getMainModel();
-
-            if (player.getHeldItem(EnumHand.MAIN_HAND) != null && player.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemGunBaseNT) {
+            if (!player.getHeldItem(EnumHand.MAIN_HAND).isEmpty() && player.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemGunBaseNT) {
                 renderer.rightArmPose = ArmPose.BOW_AND_ARROW;
             }
-            if (player.getHeldItem(EnumHand.MAIN_HAND) != null && player.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof IHoldableWeapon) {
+            if (!player.getHeldItem(EnumHand.MAIN_HAND).isEmpty() && player.getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof IHoldableWeapon) {
                 renderer.rightArmPose = ArmPose.BOW_AND_ARROW;
             }
-            if (player.getHeldItem(EnumHand.OFF_HAND) != null && player.getHeldItem(EnumHand.OFF_HAND).getItem() instanceof IHoldableWeapon) {
+            if (!player.getHeldItem(EnumHand.OFF_HAND).isEmpty() && player.getHeldItem(EnumHand.OFF_HAND).getItem() instanceof IHoldableWeapon) {
                 renderer.leftArmPose = ArmPose.BOW_AND_ARROW;
             }
         }
@@ -1216,40 +1198,18 @@ public class ModEventHandlerClient {
     public void postRenderPlayer(RenderPlayerEvent.Post event) {
         JetpackHandler.postRenderPlayer(event.getEntityPlayer());
         EntityPlayer player = event.getEntityPlayer();
-        //GLUON GUN//
-        boolean firing = player == Minecraft.getMinecraft().player ? ItemGunEgon.m1 && Library.countInventoryItem(player.inventory, ItemGunEgon.getBeltType(player, player.getHeldItemMainhand(), true)) >= 2 : ItemGunEgon.getIsFiring(player.getHeldItemMainhand());
-        EgonBackpackRenderer.showBackpack = false;
-        if (player.getHeldItemMainhand().getItem() == ModItems.gun_egon && firing) {
-            GlStateManager.pushMatrix();
-            float partialTicks = event.getPartialRenderTick();
-            float[] angles = ItemGunEgon.getBeamDirectionOffset(player.world.getTotalWorldTime() + partialTicks);
-            Vec3d look = Library.changeByAngle(player.getLook(partialTicks), angles[0], angles[1]);
-            RayTraceResult r = Library.rayTraceIncludeEntitiesCustomDirection(player, look, 50, event.getPartialRenderTick());
-            Vec3d pos = player.getPositionEyes(event.getPartialRenderTick());
-            Vec3d hitPos = pos.add(look.scale(50));
-            if (r == null || r.typeOfHit == Type.MISS) {
-            } else {
-                hitPos = r.hitVec.add(look.scale(-0.1));
-            }
-            Vec3d start = new Vec3d(-0.18, -0.1, 0.35);
-            start = start.rotatePitch((float) Math.toRadians(-(player.prevRotationPitch + (player.rotationPitch - player.prevRotationPitch) * partialTicks)));
-            start = start.rotateYaw((float) Math.toRadians(-(player.prevRotationYaw + (player.rotationYaw - player.prevRotationYaw) * partialTicks)));
-
-            Vec3d diff = player.getPositionEyes(partialTicks).subtract(TileEntityRendererDispatcher.staticPlayerX, TileEntityRendererDispatcher.staticPlayerY, TileEntityRendererDispatcher.staticPlayerZ);
-            GlStateManager.translate(start.x + diff.x, start.y + diff.y, start.z + diff.z);
-            BeamPronter.gluonBeam(new Vec3d(0, 0, 0), new Vec3d(Vec3dUtil.convertToVec3i(hitPos.subtract(pos))), 0.4F);
-            GlStateManager.popMatrix();
-        }
     }
 
     @SubscribeEvent
     public void clickHandler(MouseEvent event) {
         EntityPlayer player = Minecraft.getMinecraft().player;
-        /// OVERLAP HANDLING ///
-        HbmKeybinds.handleOverlap(event.isButtonstate(), event.getButton() - 100);
+        if (event.getButton() >= 0) {
+            /// OVERLAP HANDLING ///
+            HbmKeybinds.handleOverlap(event.isButtonstate(), event.getButton() - 100);
 
-        /// KEYBIND PROPS ///
-        HbmKeybinds.handleProps(event.isButtonstate(), event.getButton() - 100);
+            /// KEYBIND PROPS ///
+            HbmKeybinds.handleProps(event.isButtonstate(), event.getButton() - 100);
+        }
         if (event.getButton() == 1 && !event.isButtonstate())
             ItemSwordCutter.canClick = true;
 
@@ -1278,12 +1238,11 @@ public class ModEventHandlerClient {
                 }
             }
         }
-        if (player.getHeldItem(EnumHand.OFF_HAND) != null && player.getHeldItem(EnumHand.OFF_HAND).getItem() instanceof ItemGunBase) {
+        if (!player.getHeldItem(EnumHand.OFF_HAND).isEmpty() && player.getHeldItem(EnumHand.OFF_HAND).getItem() instanceof ItemGunBase item) {
 
             if (event.getButton() == 0)
                 event.setCanceled(true);
 
-            ItemGunBase item = (ItemGunBase) player.getHeldItem(EnumHand.OFF_HAND).getItem();
             if (event.getButton() == 0 && !m1 && !m2) {
                 ItemGunBase.m1 = true;
                 PacketDispatcher.wrapper.sendToServer(new GunButtonPacket(true, (byte) 0, EnumHand.OFF_HAND));
@@ -1368,6 +1327,14 @@ public class ModEventHandlerClient {
     @SubscribeEvent
     public void onPlayerLeaveServer(ClientDisconnectionFromServerEvent event) {
         SerializableRecipe.clearReceivedRecipes();
+        RBMKDials.resetClientColumnHeightRuleValue();
+    }
+
+    @SubscribeEvent
+    public void onClientWorldUnload(WorldEvent.Unload event) {
+        if (event.getWorld().isRemote) {
+            RBMKDials.resetClientColumnHeightRuleValue();
+        }
     }
 
     @SubscribeEvent
@@ -1460,18 +1427,20 @@ public class ModEventHandlerClient {
 
         /// CUSTOM NUKE ///
         ComparableStack comp = new NbtComparableStack(stack).makeSingular();
-        CustomNukeEntry entry = TileEntityNukeCustom.entries.get(comp);
+        if(ClientConfig.ITEM_TOOLTIP_SHOW_CUSTOM_NUKE.get()) {
+            CustomNukeEntry entry = TileEntityNukeCustom.entries.get(comp);
 
-        if (entry != null) {
+            if (entry != null) {
 
-            if (!list.isEmpty())
-                list.add("");
+                if (!list.isEmpty())
+                    list.add("");
 
-            if (entry.entry == EnumEntryType.ADD)
-                list.add(TextFormatting.GOLD + I18nUtil.resolveKey("desc.nstageadd", entry.value, entry.type));
+                if (entry.entry == EnumEntryType.ADD)
+                    list.add(TextFormatting.GOLD + I18nUtil.resolveKey("desc.nstageadd", entry.value, entry.type));
 
-            if (entry.entry == EnumEntryType.MULT)
-                list.add(TextFormatting.GOLD + I18nUtil.resolveKey("desc.nstagemult", entry.value, entry.type));
+                if (entry.entry == EnumEntryType.MULT)
+                    list.add(TextFormatting.GOLD + I18nUtil.resolveKey("desc.nstagemult", entry.value, entry.type));
+            }
         }
 
         /// CREATE-ISH HELP (WIAJ) ///
@@ -1487,7 +1456,10 @@ public class ModEventHandlerClient {
         }
 
         try {
-            QuickManualAndWiki qmaw = QMAWLoader.triggers.get(comp);
+            // QMAW triggers are registered as plain ComparableStacks, so an NBT-sensitive key never matches
+            ComparableStack plain = new ComparableStack(stack).makeSingular();
+            QuickManualAndWiki qmaw = QMAWLoader.triggers.get(plain);
+            if (qmaw == null) qmaw = QMAWLoader.triggers.get(new ComparableStack(plain.item, 1, OreDictionary.WILDCARD_VALUE));
             if (qmaw != null) {
                 list.add(TextFormatting.GREEN + I18nUtil.resolveKey("qmaw.tab", Keyboard.getKeyName(HbmKeybinds.qmaw.getKeyCode())));
                 lastQMAW = qmaw;
@@ -1498,9 +1470,9 @@ public class ModEventHandlerClient {
         }
 
         /// NEUTRON RADS ///
-        if (event.getFlags().isAdvanced()) {
+        if (event.getFlags().isAdvanced() && ClientConfig.ITEM_TOOLTIP_SHOW_OREDICT.get()) {
             List<String> names = ItemStackUtil.getOreDictNames(stack);
-            if (names.size() > 0) {
+            if (!names.isEmpty()) {
                 list.add("§bOre Dict:");
                 for (String s : names) {
                     list.add("§3 - " + s);
@@ -1518,24 +1490,28 @@ public class ModEventHandlerClient {
     @SubscribeEvent
     public void renderFrame(RenderItemInFrameEvent event) {
 
-        if (event.getItem() != null && event.getItem().getItem() == ModItems.flame_pony) {
-            event.setCanceled(true);
+        if (event.getItem().isEmpty()) return;
 
-            double p = 0.0625D;
-            double o = p * 2.75D;
+        Item item = event.getItem().getItem();
+        ResourceLocation texture = item == ModItems.flame_pony ? poster : item == Items.PAPER ? poster_cat : null;
+        if (texture == null) return;
 
-            GlStateManager.disableLighting();
-            Minecraft.getMinecraft().renderEngine.bindTexture(poster);
-            net.minecraft.client.renderer.Tessellator tess = net.minecraft.client.renderer.Tessellator.getInstance();
-            BufferBuilder buf = tess.getBuffer();
-            buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-            buf.pos(0.5, 0.5 + o, p * 0.5).tex(1, 0).endVertex();
-            buf.pos(-0.5, 0.5 + o, p * 0.5).tex(0, 0).endVertex();
-            buf.pos(-0.5, -0.5 + o, p * 0.5).tex(0, 1).endVertex();
-            buf.pos(0.5, -0.5 + o, p * 0.5).tex(1, 1).endVertex();
-            tess.draw();
-            GlStateManager.enableLighting();
-        }
+        event.setCanceled(true);
+
+        double z = -0.0625D * 0.5D;
+
+        GlStateManager.disableLighting();
+        GlStateManager.color(1F, 1F, 1F, 1F);
+        Minecraft.getMinecraft().renderEngine.bindTexture(texture);
+        Tessellator tess = Tessellator.getInstance();
+        BufferBuilder buf = tess.getBuffer();
+        buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+        buf.pos(-0.5, 0.5, z).tex(1, 0).endVertex();
+        buf.pos(0.5, 0.5, z).tex(0, 0).endVertex();
+        buf.pos(0.5, -0.5, z).tex(0, 1).endVertex();
+        buf.pos(-0.5, -0.5, z).tex(1, 1).endVertex();
+        tess.draw();
+        GlStateManager.enableLighting();
     }
 
     @SubscribeEvent

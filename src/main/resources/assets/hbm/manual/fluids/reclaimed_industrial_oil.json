@@ -1,0 +1,23 @@
+{
+	"name": "Reclaimed Industrial Oil",
+	"icon": [
+		"hbm:fluid_icon",
+		1,
+		16
+	],
+	"trigger": [
+		[
+			"hbm:fluid_icon",
+			1,
+			16
+		]
+	],
+	"title": {
+		"en_us": "Reclaimed Industrial Oil",
+		"ru_ru": "Очищенное промышленное масло"
+	},
+	"content": {
+		"en_us": "Reclaimed industrial oil can be obtained through [[processing|Chemical Plant]] [[industrial oil|Industrial Oil]]. It can be used as an ingredient in [[petroil|Petroil]] or as a fuel source for supplemental power.<br><br>{{Template:Oil1}}",
+		"ru_ru": "Очищенное промышленное масло можно получить путём [[переработки|Chemical Plant]] [[промышленного масла|Industrial Oil]]. Его можно использовать в качестве ингредиента для [[бензина|Petroil]] или как источник топлива для дополнительной выработки энергии.<br><br>{{Template:Oil1}}"
+	}
+}

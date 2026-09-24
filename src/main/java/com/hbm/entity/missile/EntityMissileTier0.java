@@ -17,6 +17,7 @@ import com.hbm.world.WorldUtil;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
@@ -43,7 +44,47 @@ public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
 		return 0.5F;
 	}
 
-	//mlbv: EntityMissileTest isn't here but since it's not craftable in survival ig there isn't a necessity to have it ported
+	@AutoRegister(name = "entity_missile_test_mk2", trackingRange = 1000)
+	public static class EntityMissileTest extends EntityMissileTier0 {
+		public EntityMissileTest(World world) { super(world); }
+		public EntityMissileTest(World world, float x, float y, float z, int a, int b) { super(world, x, y, z, a, b); }
+		@Override public ItemStack getDebrisRareDrop() { return null; }
+		@Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModItems.missile_micro); }
+
+		@Override public void onMissileImpact(RayTraceResult mop) {
+			if(this.world.isRemote) return;
+
+			int x = (int) Math.floor(posX);
+			int y = (int) Math.floor(posY);
+			int z = (int) Math.floor(posZ);
+			int range = 50;
+
+			BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+
+			for(int iX = -range; iX <= range; iX++) {
+				for(int iY = -range; iY <= range; iY++) {
+					for(int iZ = -range; iZ <= range; iZ++) {
+						double dist = Math.sqrt(iX * iX + iY * iY + iZ * iZ);
+						if(dist > range) continue;
+
+						pos.setPos(x + iX, y + iY, z + iZ);
+						if(pos.getY() < 0 || pos.getY() > 255) continue;
+
+						IBlockState state = world.getBlockState(pos);
+						int charMeta = (int) MathHelper.clamp(12 - (dist / range) * (dist / range) * 13, 0, 12);
+
+						if(state.isNormalCube()) {
+							if(state.getBlock() != ModBlocks.sellafield_slaked || state.getBlock().getMetaFromState(state) < charMeta) {
+								world.setBlockState(pos.toImmutable(), ModBlocks.sellafield_slaked.getStateFromMeta(charMeta), 3);
+							}
+						} else if(!state.getBlock().isAir(state, world, pos)) {
+							world.setBlockToAir(pos.toImmutable());
+						}
+					}
+				}
+			}
+		}
+	}
 
 	@AutoRegister(name = "entity_missile_micro", trackingRange = 1000)
 	public static class EntityMissileMicro extends EntityMissileTier0 {
@@ -89,7 +130,7 @@ public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
 			bl.posZ = this.posZ;
 			this.world.spawnEntity(bl);
 		}
-		@Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.grenade_black_hole, 1); }
+		@Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.black_hole, 1); }
 		@Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModItems.missile_bhole); }
 	}
 	@AutoRegister(name = "entity_missile_taint", trackingRange = 1000)

@@ -71,7 +71,7 @@ public class ParticleLetter extends Particle {
 
 		int col = color + (alpha << 24);
 
-	    GL11.glScaled(scale, scale, scale);
+	    GlStateManager.scale(scale, scale, scale);
 
 	    font.drawString(String.valueOf(c), -(int)(font.getStringWidth(String.valueOf(c)) * 0.5F), -(int)(font.FONT_HEIGHT * 0.5F), col);
 	    GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);

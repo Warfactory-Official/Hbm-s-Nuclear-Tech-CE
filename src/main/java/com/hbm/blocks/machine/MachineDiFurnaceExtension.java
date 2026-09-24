@@ -17,6 +17,7 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 
+@Deprecated
 public class MachineDiFurnaceExtension extends BlockContainer {
     public MachineDiFurnaceExtension(Material mat, String s) {
         super(mat);

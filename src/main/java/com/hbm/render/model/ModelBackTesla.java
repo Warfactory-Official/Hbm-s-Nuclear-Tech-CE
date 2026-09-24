@@ -12,12 +12,6 @@ public class ModelBackTesla extends ModelArmorBase {
 		body = new ModelRendererObj(ResourceManager.armor_mod_tesla);
 	}
 
-	@Override
-	public void setRotationAngles(float walkCycle, float walkAmplitude, float idleCycle, float headYaw, float headPitch, float scale,
-								  Entity entity) {
-		super.setRotationAngles(walkCycle, walkAmplitude, idleCycle, headYaw, headPitch, scale, entity);
-		this.body.rotateAngleY += (float) Math.toRadians(headYaw);
-	}
 
 	@Override
 	public void renderArmor(Entity par1Entity, float par7) {

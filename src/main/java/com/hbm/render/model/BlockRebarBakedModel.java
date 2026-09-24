@@ -20,7 +20,7 @@ public class BlockRebarBakedModel extends AbstractBakedModel {
     private List<BakedQuad> cacheSimple;
 
     public BlockRebarBakedModel(TextureAtlasSprite sprite) {
-        super(BakedModelTransforms.standardBlock());
+        super(BakedModelTransforms.isbrh());
         this.sprite = sprite;
     }
 

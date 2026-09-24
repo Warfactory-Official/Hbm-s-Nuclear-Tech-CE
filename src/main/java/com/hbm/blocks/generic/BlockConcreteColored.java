@@ -22,7 +22,7 @@ public class BlockConcreteColored extends BlockEnumMeta<EnumDyeColor> {
         BlockBakeFrame[] frames = new BlockBakeFrame[16];
         for (int meta = 0; meta < 16; meta++) {
             String color = EnumDyeColor.byMetadata(meta).getName();
-            frames[meta] = new BlockBakeFrame("concrete_" + color);
+            frames[meta] = BlockBakeFrame.cubeAll("concrete_" + color);
         }
         return frames;
     }

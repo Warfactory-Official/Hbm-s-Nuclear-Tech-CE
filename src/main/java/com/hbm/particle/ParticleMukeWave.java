@@ -1,13 +1,13 @@
 package com.hbm.particle;
 
 import com.hbm.Tags;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
@@ -50,7 +50,7 @@ public class ParticleMukeWave extends Particle {
         RenderHelper.disableStandardItemLighting();
 
         boolean fog = GL11.glIsEnabled(GL11.GL_FOG);
-        if (fog) GL11.glDisable(GL11.GL_FOG);
+        if (fog) GlStateManager.disableFog();
 
         this.particleAlpha = 1.0F - (((float) this.particleAge + partialTicks) / (float) this.particleMaxAge);
         float growth = (1.0F - (float) Math.exp((this.particleAge + partialTicks) * -0.125F)) * waveScale;
@@ -59,26 +59,26 @@ public class ParticleMukeWave extends Particle {
         float pZ = (float) (this.prevPosZ + (this.posZ - this.prevPosZ) * partialTicks - Particle.interpPosZ);
         final int j = 240;
         final int k = 240;
-        Tessellator tess = Tessellator.getInstance();
-        BufferBuilder buf = tess.getBuffer();
-        buf.begin(GL11.GL_QUADS, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
-        double y = pY - 0.25D;
-        double x0 = pX - growth;
-        double x1 = pX + growth;
-        double z0 = pZ - growth;
-        double z1 = pZ + growth;
-        buf.pos(x0, y, z0).tex(1, 1).color(1F, 1F, 1F, this.particleAlpha).lightmap(j, k).endVertex();
-        buf.pos(x0, y, z1).tex(1, 0).color(1F, 1F, 1F, this.particleAlpha).lightmap(j, k).endVertex();
-        buf.pos(x1, y, z1).tex(0, 0).color(1F, 1F, 1F, this.particleAlpha).lightmap(j, k).endVertex();
-        buf.pos(x1, y, z0).tex(0, 1).color(1F, 1F, 1F, this.particleAlpha).lightmap(j, k).endVertex();
-        tess.draw();
+        NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginParticlePositionTexColorLmap(GL11.GL_QUADS, 4);
+        float y = pY - 0.25F;
+        float x0 = pX - growth;
+        float x1 = pX + growth;
+        float z0 = pZ - growth;
+        float z1 = pZ + growth;
+        int packedColor = NTMBufferBuilder.packColor(1F, 1F, 1F, this.particleAlpha);
+        int packedLightmap = NTMBufferBuilder.packLightmap(j, k);
+        buf.appendParticlePositionTexColorLmapUnchecked(x0, y, z0, 1, 1, packedColor, packedLightmap);
+        buf.appendParticlePositionTexColorLmapUnchecked(x0, y, z1, 1, 0, packedColor, packedLightmap);
+        buf.appendParticlePositionTexColorLmapUnchecked(x1, y, z1, 0, 0, packedColor, packedLightmap);
+        buf.appendParticlePositionTexColorLmapUnchecked(x1, y, z0, 0, 1, packedColor, packedLightmap);
+        NTMImmediate.INSTANCE.draw();
 
 // Restore GL state
         GlStateManager.doPolygonOffset(0,0);
         GlStateManager.enableCull();
         GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
         GlStateManager.enableLighting();
-        if (fog) GL11.glEnable(GL11.GL_FOG);
+        if (fog) GlStateManager.enableFog();
         GlStateManager.depthMask(true);
     }
 

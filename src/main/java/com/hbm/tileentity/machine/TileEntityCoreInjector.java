@@ -8,6 +8,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.gui.GUICoreInjector;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.render.chunk.SectionGeometry;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import io.netty.buffer.ByteBuf;
@@ -36,12 +37,13 @@ public class TileEntityCoreInjector extends TileEntityMachineBase implements ITi
     public static final int range = 15;
     public FluidTankNTM[] tanks;
     public int beam;
+    private int prevBeam;
 
     public TileEntityCoreInjector() {
         super(4, true, false);
         tanks = new FluidTankNTM[2];
-        tanks[0] = new FluidTankNTM(Fluids.DEUTERIUM, 128000);
-        tanks[1] = new FluidTankNTM(Fluids.TRITIUM, 128000);
+        tanks[0] = new FluidTankNTM(Fluids.DEUTERIUM, 128000).withOwner(this);
+        tanks[1] = new FluidTankNTM(Fluids.TRITIUM, 128000).withOwner(this);
     }
 
     @Override
@@ -103,6 +105,11 @@ public class TileEntityCoreInjector extends TileEntityMachineBase implements ITi
             this.markDirty();
 
             this.networkPackNT(250);
+        } else {
+            if (prevBeam != beam) {
+                prevBeam = beam;
+                world.markBlockRangeForRenderUpdate(pos, pos);
+            }
         }
     }
 
@@ -115,7 +122,18 @@ public class TileEntityCoreInjector extends TileEntityMachineBase implements ITi
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
+        if (beam <= 0) {
+            return new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1,
+                    pos.getZ() + 1);
+        }
+        ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata());
+        int endX = pos.getX() + dir.offsetX * beam;
+        int endY = pos.getY() + dir.offsetY * beam;
+        int endZ = pos.getZ() + dir.offsetZ * beam;
+        return new AxisAlignedBB(
+                Math.min(pos.getX(), endX), Math.min(pos.getY(), endY), Math.min(pos.getZ(), endZ),
+                Math.max(pos.getX(), endX) + 1, Math.max(pos.getY(), endY) + 1, Math.max(pos.getZ(), endZ) + 1
+        );
     }
 
     @Override
@@ -138,7 +156,9 @@ public class TileEntityCoreInjector extends TileEntityMachineBase implements ITi
     public void deserialize(ByteBuf buf) {
         super.deserialize(buf);
 
+        int prevBeam = beam;
         this.beam = buf.readInt();
+        if (beam != prevBeam) SectionGeometry.renderBoundsChanged(this);
         tanks[0].deserialize(buf);
         tanks[1].deserialize(buf);
     }

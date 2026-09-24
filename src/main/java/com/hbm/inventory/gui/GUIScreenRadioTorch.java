@@ -33,8 +33,8 @@ public class GUIScreenRadioTorch extends GuiScreen {
 	protected GuiTextField frequency;
 	protected GuiTextField[] remap;
 
-	protected static final int textColor = 0x00FF00;
-	protected static final int disabledTextColor = 0x00FF00;
+	private static final int TEXT_COLOR = 0x00FF00;
+    private static final int DISABLED_TEXT_COLOR = 0x00FF00;
     private static final int MAPPING_SIZE = 16;
 	
 	public GUIScreenRadioTorch(TileEntityRadioTorchBase radio, boolean isSender) {
@@ -57,8 +57,8 @@ public class GUIScreenRadioTorch extends GuiScreen {
 		int in = isSenderTorch ? 18 : 0;
 
 		this.frequency = new GuiTextField(0, this.fontRenderer, guiLeft + 25 + oX, guiTop + 18 + oY, 90 - oX * 2, 14);
-		this.frequency.setTextColor(textColor);
-		this.frequency.setDisabledTextColour(disabledTextColor);
+		this.frequency.setTextColor(TEXT_COLOR);
+		this.frequency.setDisabledTextColour(DISABLED_TEXT_COLOR);
 		this.frequency.setEnableBackgroundDrawing(false);
 		this.frequency.setMaxStringLength(10);
 		this.frequency.setText(radio.channel == null ? "" : radio.channel);
@@ -67,8 +67,8 @@ public class GUIScreenRadioTorch extends GuiScreen {
 		
 		for(int i = 0; i < MAPPING_SIZE; i++) {
 			this.remap[i] = new GuiTextField(i + 1, this.fontRenderer, guiLeft + 7 + (130 * (i / 8)) + oX + in, guiTop + 53 + (18 * (i % 8)) + oY, 90 - oX * 2, 14);
-			this.remap[i].setTextColor(textColor);
-			this.remap[i].setDisabledTextColour(disabledTextColor);
+			this.remap[i].setTextColor(TEXT_COLOR);
+			this.remap[i].setDisabledTextColour(DISABLED_TEXT_COLOR);
 			this.remap[i].setEnableBackgroundDrawing(false);
 			this.remap[i].setMaxStringLength(32);
 			this.remap[i].setText(radio.mapping[i] == null ? "" : radio.mapping[i]);

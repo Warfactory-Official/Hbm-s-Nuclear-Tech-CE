@@ -4,6 +4,7 @@ import com.hbm.api.fluid.IFluidConnectorBlock;
 import com.hbm.blocks.BlockBase;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.trait.FT_Coolable;
 import com.hbm.inventory.fluid.trait.FT_Heatable;
 import com.hbm.lib.ForgeDirection;
@@ -25,7 +26,7 @@ public class RBMKLoader extends BlockBase implements IFluidConnectorBlock, ITool
     @Override // this method is purely visual, actual logic at TileEntityRBMKBoiler
     public boolean canConnect(FluidType type, IBlockAccess world, int x, int y, int z, ForgeDirection dir) {
         if (dir == ForgeDirection.UP) return type.hasTrait(FT_Heatable.class);
-        return type.hasTrait(FT_Coolable.class);
+        return type.hasTrait(FT_Coolable.class) || type == Fluids.PERFLUOROMETHYL;
     }
 
     @Override

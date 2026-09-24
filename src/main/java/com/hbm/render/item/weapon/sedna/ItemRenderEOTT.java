@@ -17,7 +17,7 @@ import net.minecraft.item.ItemStack;
 @AutoRegister(item = "gun_aberrator_eott")
 public class ItemRenderEOTT extends ItemRenderWeaponBase {
 
-	public ItemRenderEOTT() { offsets = offsets.get(ItemCameraTransforms.TransformType.GUI).setPosition(0, 16.5, -7.25).getHelper(); }
+	public ItemRenderEOTT() {}
 
 	@Override
 	public boolean isAkimbo() { return true; }

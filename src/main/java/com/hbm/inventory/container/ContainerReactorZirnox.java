@@ -1,6 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.FluidContainerRegistry;
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.machine.ItemZirnoxRod;
@@ -16,6 +17,14 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerReactorZirnox extends Container {
 
     private TileEntityReactorZirnox zirnox;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(28)
+                                                                              .rule(0, 24, s -> s.getItem() instanceof ItemZirnoxRod)
+                                                                              .rule(24, 26, s -> FluidContainerRegistry.getFluidContent(s, Fluids.CARBONDIOXIDE) > 0)
+                                                                              .rule(26, 28, s -> FluidContainerRegistry.getFluidContent(s, Fluids.WATER) > 0)
+                                                                              .ruleDispatchMode(TransferStrategy.RuleDispatchMode.FALLTHROUGH_ON_FAILURE)
+                                                                              .playerFallbackMode(TransferStrategy.PlayerFallbackMode.REBALANCE_SECTIONS)
+                                                                              .build();
 
     public ContainerReactorZirnox(InventoryPlayer invPlayer, TileEntityReactorZirnox te) {
         zirnox = te;
@@ -65,11 +74,7 @@ public class ContainerReactorZirnox extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 28,
-                s -> s.getItem() instanceof ItemZirnoxRod, 24,
-                s -> FluidContainerRegistry.getFluidContent(s, Fluids.CARBONDIOXIDE) > 0, 26,
-                s -> FluidContainerRegistry.getFluidContent(s, Fluids.WATER) > 0, 28
-        );
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
     @Override

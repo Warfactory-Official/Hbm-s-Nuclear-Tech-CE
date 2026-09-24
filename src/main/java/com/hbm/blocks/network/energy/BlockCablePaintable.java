@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.hbm.Tags;
 import com.hbm.api.block.IToolable;
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.blocks.generic.BlockBakeBase;
 import com.hbm.blocks.network.SimpleUnlistedProperty;
 import com.hbm.interfaces.AutoRegister;
@@ -11,21 +12,25 @@ import com.hbm.interfaces.ICopiable;
 import com.hbm.render.block.BlockBakeFrame;
 import com.hbm.render.model.BakedModelTransforms;
 import com.hbm.tileentity.network.energy.TileEntityCableBaseNT;
+import com.hbm.util.Compat;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.properties.PropertyBool;
+import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.*;
+import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
@@ -37,19 +42,25 @@ import net.minecraftforge.common.property.ExtendedBlockState;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.common.Optional;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.util.vector.Vector3f;
+import team.chisel.ctm.api.IFacade;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class BlockCablePaintable extends BlockBakeBase implements IToolable {
+@Optional.Interface(iface = "team.chisel.ctm.api.IFacade", modid = Compat.ModIds.CTM)
+public class BlockCablePaintable extends BlockBakeBase implements IToolable, ITooltipProvider, IFacade {
 
     public static final IUnlistedProperty<IBlockState> DISGUISED_STATE = new SimpleUnlistedProperty<>("disguised_state", IBlockState.class);
+    public static final PropertyBool DEFUSED = PropertyBool.create("defused");
 
     @SideOnly(Side.CLIENT)
     private static TextureAtlasSprite baseSprite;
@@ -57,14 +68,25 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable {
     private static TextureAtlasSprite overlaySprite;
 
     public BlockCablePaintable(String name) {
-        super(Material.IRON, name, new BlockBakeFrame("red_cable_base"));
-        this.setDefaultState(this.blockState.getBaseState());
+        super(Material.IRON, name, BlockBakeFrame.cubeAll("red_cable_base"));
+        this.setDefaultState(this.blockState.getBaseState().withProperty(DEFUSED, false));
         this.useNeighborBrightness = true;
     }
 
     @Override
     protected BlockStateContainer createBlockState() {
-        return new ExtendedBlockState(this, new IProperty[0], new IUnlistedProperty[]{DISGUISED_STATE});
+        return new ExtendedBlockState(this, new IProperty[]{DEFUSED}, new IUnlistedProperty[]{DISGUISED_STATE});
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public StateMapperBase getStateMapper(ResourceLocation loc) {
+        return new StateMapperBase() {
+            @Override
+            protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
+                return new ModelResourceLocation(loc, "normal");
+            }
+        };
     }
 
     @Override
@@ -79,12 +101,12 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable {
 
     @Override
     public IBlockState getStateFromMeta(int meta) {
-        return this.getDefaultState();
+        return this.getDefaultState().withProperty(DEFUSED, meta != 0);
     }
 
     @Override
     public int getMetaFromState(IBlockState state) {
-        return 0;
+        return state.getValue(DEFUSED) ? 1 : 0;
     }
 
     @Override
@@ -125,6 +147,16 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable {
     }
 
     @Override
+    public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
+        return BlockFaceShape.SOLID;
+    }
+
+    @Override
+    public boolean isSideSolid(IBlockState base_state, IBlockAccess world, BlockPos pos, EnumFacing side) {
+        return true;
+    }
+
+    @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
         ItemStack stack = player.getHeldItem(hand);
         if (!stack.isEmpty() && stack.getItem() instanceof ItemBlock ib) {
@@ -156,22 +188,31 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable {
 
     @Override
     public boolean onScrew(World world, EntityPlayer player, int x, int y, int z, EnumFacing side, float fX, float fY, float fZ, EnumHand hand, ToolType tool) {
-        if (tool != ToolType.SCREWDRIVER) {
-            return false;
-        }
         BlockPos pos = new BlockPos(x, y, z);
 
-        TileEntity tile = world.getTileEntity(pos);
-        if (tile instanceof TileEntityCablePaintable cable && cable.block != null) {
+        if (tool == ToolType.SCREWDRIVER) {
+            TileEntity tile = world.getTileEntity(pos);
+            if (tile instanceof TileEntityCablePaintable cable && cable.block != null) {
+                if (!world.isRemote) {
+                    cable.block = null;
+                    cable.meta = 0;
+                    cable.markDirty();
+                    world.markChunkDirty(pos, cable);
+                    world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        if (tool == ToolType.DEFUSER) {
             if (!world.isRemote) {
-                cable.block = null;
-                cable.meta = 0;
-                cable.markDirty();
-                world.markChunkDirty(pos, cable);
-                world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
+                IBlockState state = world.getBlockState(pos);
+                world.setBlockState(pos, state.cycleProperty(DEFUSED), 3);
             }
             return true;
         }
+
         return false;
     }
 
@@ -181,11 +222,24 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable {
             TileEntity tile = world.getTileEntity(pos);
             if (tile instanceof TileEntityCablePaintable cable && cable.block != null) {
                 IBlockState disguiseState = cable.block.getStateFromMeta(cable.meta);
+                if (cable.block != this) {
+                    disguiseState = cable.block.getExtendedState(disguiseState, world, pos);
+                }
                 return ext.withProperty(DISGUISED_STATE, disguiseState);
             }
             return ext.withProperty(DISGUISED_STATE, null);
         }
         return state;
+    }
+
+    // CTM IFacade: report the painted block so connected-texture neighbours resolve the disguise instead of the cable.
+    @Override
+    public IBlockState getFacade(IBlockAccess world, BlockPos pos, EnumFacing side) {
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof TileEntityCablePaintable cable && cable.block != null) {
+            return cable.block.getStateFromMeta(cable.meta);
+        }
+        return world.getBlockState(pos);
     }
 
     @Override
@@ -209,6 +263,12 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable {
         event.getModelRegistry().putObject(inventory, model);
         event.getModelRegistry().putObject(normal, model);
     }
+
+    @Override
+    public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+        this.addStandardInfo(tooltip);
+    }
+
     @AutoRegister
     public static class TileEntityCablePaintable extends TileEntityCableBaseNT implements ICopiable {
 
@@ -256,22 +316,19 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable {
         }
 
         @Override
-        public SPacketUpdateTileEntity getUpdatePacket() {
-            NBTTagCompound nbt = new NBTTagCompound();
-            this.writeToNBT(nbt);
-            return new SPacketUpdateTileEntity(this.pos, 0, nbt);
+        public void serializeInitial(ByteBuf buf) {
+            super.serializeInitial(buf);
+            ResourceLocation key = block != null ? ForgeRegistries.BLOCKS.getKey(block) : null;
+            ByteBufUtils.writeUTF8String(buf, key != null ? key.toString() : "");
+            buf.writeInt(meta);
         }
 
         @Override
-        public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-            this.readFromNBT(pkt.getNbtCompound());
-        }
-
-        @Override
-        public NBTTagCompound getUpdateTag() {
-            NBTTagCompound nbt = super.getUpdateTag();
-            this.writeToNBT(nbt);
-            return nbt;
+        public void deserializeInitial(ByteBuf buf) {
+            super.deserializeInitial(buf);
+            String id = ByteBufUtils.readUTF8String(buf);
+            this.block = id.isEmpty() ? null : ForgeRegistries.BLOCKS.getValue(new ResourceLocation(id));
+            this.meta = buf.readInt();
         }
 
         @Override
@@ -315,6 +372,8 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable {
         private final ImmutableMap<EnumFacing, ImmutableList<BakedQuad>> overlayFaces;
         private final ImmutableList<BakedQuad> baseGeneral;
         private final ImmutableList<BakedQuad> overlayGeneral;
+        private final ImmutableList<BakedQuad> inventoryBaseGeneral;
+        private final ImmutableList<BakedQuad> inventoryOverlayGeneral;
 
         public CablePaintableModel(TextureAtlasSprite base, TextureAtlasSprite overlay) {
             this.particle = base;
@@ -322,6 +381,8 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable {
             this.overlayFaces = buildFaceMap(overlay, -1, true);
             this.baseGeneral = flatten(this.baseFaces);
             this.overlayGeneral = flatten(this.overlayFaces);
+            this.inventoryBaseGeneral = flatten(buildFaceMap(base, -1, false, ModelRotation.X0_Y90));
+            this.inventoryOverlayGeneral = flatten(buildFaceMap(overlay, -1, true, ModelRotation.X0_Y90));
         }
 
         @Override
@@ -330,13 +391,23 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable {
             BlockRenderLayer layer = MinecraftForgeClient.getRenderLayer();
             boolean renderCable = layer == null || layer == BlockRenderLayer.CUTOUT_MIPPED;
 
+            if (state == null) {
+                if (renderCable && side == null) {
+                    quads.addAll(inventoryBaseGeneral);
+                    quads.addAll(inventoryOverlayGeneral);
+                }
+                return quads;
+            }
+
+            boolean defused = state.getValue(DEFUSED);
             IBlockState disguiseState = null;
             if (state instanceof IExtendedBlockState) {
                 disguiseState = ((IExtendedBlockState) state).getValue(DISGUISED_STATE);
             }
 
             if (disguiseState != null) {
-                IBakedModel disguiseModel = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(disguiseState);
+                IBlockState lookup = disguiseState instanceof IExtendedBlockState ? ((IExtendedBlockState) disguiseState).getClean() : disguiseState;
+                IBakedModel disguiseModel = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(lookup);
                 quads.addAll(disguiseModel.getQuads(disguiseState, side, rand));
             } else if (renderCable) {
                 if (side == null) {
@@ -346,7 +417,7 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable {
                 }
             }
 
-            if (renderCable) {
+            if (renderCable && !defused) {
                 if (side == null) {
                     quads.addAll(overlayGeneral);
                 } else {
@@ -379,7 +450,7 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable {
 
         @Override
         public ItemCameraTransforms getItemCameraTransforms() {
-            return BakedModelTransforms.standardBlock();
+            return BakedModelTransforms.isbrh();
         }
 
         @Override
@@ -388,9 +459,14 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable {
         }
 
         private static ImmutableMap<EnumFacing, ImmutableList<BakedQuad>> buildFaceMap(TextureAtlasSprite sprite, int tintIndex, boolean offset) {
+            return buildFaceMap(sprite, tintIndex, offset, ModelRotation.X0_Y0);
+        }
+
+        private static ImmutableMap<EnumFacing, ImmutableList<BakedQuad>> buildFaceMap(TextureAtlasSprite sprite, int tintIndex,
+                                                                                       boolean offset, ModelRotation rotation) {
             ImmutableMap.Builder<EnumFacing, ImmutableList<BakedQuad>> builder = ImmutableMap.builder();
             for (EnumFacing face : EnumFacing.VALUES) {
-                builder.put(face, ImmutableList.of(createQuad(face, sprite, tintIndex, offset)));
+                builder.put(face, ImmutableList.of(createQuad(face, sprite, tintIndex, offset, rotation)));
             }
             return builder.build();
         }
@@ -403,7 +479,8 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable {
             return builder.build();
         }
 
-        private static BakedQuad createQuad(EnumFacing face, TextureAtlasSprite sprite, int tintIndex, boolean offset) {
+        private static BakedQuad createQuad(EnumFacing face, TextureAtlasSprite sprite, int tintIndex, boolean offset,
+                                            ModelRotation rotation) {
             float eps = 0.001F;
             Vector3f from = new Vector3f(0F, 0F, 0F);
             Vector3f to = new Vector3f(16F, 16F, 16F);
@@ -421,7 +498,7 @@ public class BlockCablePaintable extends BlockBakeBase implements IToolable {
 
             BlockFaceUV uv = new BlockFaceUV(new float[]{0F, 0F, 16F, 16F}, 0);
             BlockPartFace partFace = new BlockPartFace(null, tintIndex, "", uv);
-            return FACE_BAKERY.makeBakedQuad(from, to, partFace, sprite, face, ModelRotation.X0_Y0, null, false, true);
+            return FACE_BAKERY.makeBakedQuad(from, to, partFace, sprite, face, rotation, null, false, true);
         }
     }
 }

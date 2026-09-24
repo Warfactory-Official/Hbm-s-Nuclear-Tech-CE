@@ -12,12 +12,6 @@ import net.minecraft.item.Item;
 @AutoRegister
 public class RenderBlastDoor extends TileEntitySpecialRenderer<TileEntityBlastDoor>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityBlastDoor te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityBlastDoor tileEntity,

@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.slot.SlotUpgrade;
@@ -17,6 +18,15 @@ import org.jetbrains.annotations.NotNull;
 
 public class ContainerMachineArcWelder extends Container {
     private final TileEntityMachineArcWelder welder;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(8)
+                                                                              .rule(0, 4,
+                                                                                      ContainerMachineArcWelder::isNormal)
+                                                                              .rule(4, 5, Library::isBattery)
+                                                                              .rule(5, 6,
+                                                                                      s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                              .rule(6, 8, Library::isMachineUpgrade)
+                                                                              .build();
 
     public ContainerMachineArcWelder(InventoryPlayer playerInv, TileEntityMachineArcWelder tile) {
         welder = tile;
@@ -57,10 +67,6 @@ public class ContainerMachineArcWelder extends Container {
 
     @Override
     public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 8,
-                ContainerMachineArcWelder::isNormal, 4,
-                Library::isBattery, 5,
-                s -> s.getItem() instanceof IItemFluidIdentifier, 6,
-                Library::isMachineUpgrade, 8);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 }

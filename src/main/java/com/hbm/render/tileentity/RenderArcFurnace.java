@@ -11,6 +11,8 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.item.Item;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 
 @AutoRegister
@@ -134,6 +136,7 @@ public class RenderArcFurnace extends TileEntitySpecialRenderer<TileEntityMachin
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public ItemRenderBase getRenderer(Item item) {
         return new ItemRenderBase() {
             @Override

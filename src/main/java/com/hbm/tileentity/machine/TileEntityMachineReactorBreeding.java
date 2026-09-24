@@ -2,6 +2,7 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.ReactorResearch;
+import com.hbm.handler.CompatHandler;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.container.ContainerMachineReactorBreeding;
 import com.hbm.inventory.gui.GUIMachineReactorBreeding;
@@ -11,6 +12,10 @@ import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import io.netty.buffer.ByteBuf;
+import li.cil.oc.api.machine.Arguments;
+import li.cil.oc.api.machine.Callback;
+import li.cil.oc.api.machine.Context;
+import li.cil.oc.api.network.SimpleComponent;
 import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
@@ -23,12 +28,14 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
-public class TileEntityMachineReactorBreeding extends TileEntityMachineBase implements IBufPacketReceiver, IGUIProvider, ITickable {
+@Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
+public class TileEntityMachineReactorBreeding extends TileEntityMachineBase implements IBufPacketReceiver, IGUIProvider, ITickable, SimpleComponent, CompatHandler.OCComponent {
 
     public int flux;
     public float progress;
@@ -106,7 +113,7 @@ public class TileEntityMachineReactorBreeding extends TileEntityMachineBase impl
 
     public boolean canProcess() {
 
-        if(inventory.getStackInSlot(0) == null)
+        if(inventory.getStackInSlot(0).isEmpty())
             return false;
 
         BreederRecipes.BreederRecipe recipe = BreederRecipes.getOutput(inventory.getStackInSlot(0));
@@ -224,5 +231,50 @@ public class TileEntityMachineReactorBreeding extends TileEntityMachineBase impl
     @SideOnly(Side.CLIENT)
     public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
         return new GUIMachineReactorBreeding(player.inventory, this);
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public String getComponentName() {
+        return "breeding_reactor";
+    }
+
+    @Callback
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getFlux(Context context, Arguments args) {
+        return new Object[] {flux};
+    }
+
+    @Callback
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getProgress(Context context, Arguments args) {
+        return new Object[] {progress};
+    }
+
+    @Callback
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getInfo(Context context, Arguments args) {
+        return new Object[] {flux, progress};
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public String[] methods() {
+        return new String[] {
+            "getFlux",
+            "getProgress",
+            "getInfo"
+        };
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public Object[] invoke(String method, Context context, Arguments args) throws Exception {
+        switch (method) {
+            case "getFlux": return getFlux(context, args);
+            case "getProgress": return getProgress(context, args);
+            case "getInfo": return getInfo(context, args);
+        }
+        throw new NoSuchMethodException();
     }
 }

@@ -23,7 +23,7 @@ public class BlockBarrierBakedModel extends AbstractBakedModel {
     private List<BakedQuad> inventoryCache;
 
     public BlockBarrierBakedModel(TextureAtlasSprite sprite, boolean isInventory) {
-        super(BakedModelTransforms.standardBlock());
+        super(BakedModelTransforms.isbrh());
         this.sprite = sprite;
         this.isInventory = isInventory;
     }
@@ -36,9 +36,9 @@ public class BlockBarrierBakedModel extends AbstractBakedModel {
 
         if (isInventory) {
             if (inventoryCache != null) return inventoryCache;
-            addBox(quads, 0.4375f, 0.0f, 0.4375f, 0.5625f, 1.0f, 0.5625f, sprite);
-            addBox(quads, 0.5f, 0.0625f, 0.0f, 0.5625f, 0.4375f, 1.0f, sprite);
-            addBox(quads, 0.5f, 0.5625f, 0.0f, 0.5625f, 0.9375f, 1.0f, sprite);
+            addIsbrhY90Box(quads, 0.4375f, 0.0f, 0.4375f, 0.5625f, 1.0f, 0.5625f, sprite);
+            addIsbrhY90Box(quads, 0.5f, 0.0625f, 0.0f, 0.5625f, 0.4375f, 1.0f, sprite);
+            addIsbrhY90Box(quads, 0.5f, 0.5625f, 0.0f, 0.5625f, 0.9375f, 1.0f, sprite);
             return inventoryCache = Collections.unmodifiableList(quads);
         }
 

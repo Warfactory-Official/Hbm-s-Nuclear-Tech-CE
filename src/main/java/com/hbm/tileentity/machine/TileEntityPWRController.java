@@ -1,6 +1,8 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.fluid.IFluidStandardTransceiver;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.handler.CompatHandler;
 import com.hbm.interfaces.AutoRegister;
@@ -15,10 +17,15 @@ import com.hbm.inventory.fluid.trait.FT_Heatable.HeatingType;
 import com.hbm.inventory.fluid.trait.FT_PWRModerator;
 import com.hbm.inventory.gui.GUIPWR;
 import com.hbm.items.ModItems;
+import com.hbm.items.machine.ItemPWRPrinter;
+import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
+import com.hbm.saveddata.satellites.SatelliteRayScan;
+import com.hbm.saveddata.satellites.SatelliteRayScan.RayEvent;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.EnumUtil;
@@ -31,6 +38,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -54,7 +62,7 @@ import static com.hbm.items.machine.ItemPWRFuel.EnumPWRFuel;
 
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 @AutoRegister
-public class TileEntityPWRController extends TileEntityMachineBase implements ITickable, IGUIProvider, IControlReceiver, SimpleComponent, IFluidStandardTransceiver, CompatHandler.OCComponent {
+public class TileEntityPWRController extends TileEntityMachineBase implements ITickable, IGUIProvider, IControlReceiver, SimpleComponent, IFluidStandardTransceiver, IRORValueProvider, IRORInteractive, CompatHandler.OCComponent, IConnectionAnchors {
 
     public static final long coreHeatCapacityBase = 10_000_000;
     public static final long hullHeatCapacityBase = 10_000_000;
@@ -90,8 +98,8 @@ public class TileEntityPWRController extends TileEntityMachineBase implements IT
         super(3, true, false);
 
         this.tanks = new FluidTankNTM[2];
-        this.tanks[0] = new FluidTankNTM(Fluids.COOLANT, 128_000);
-        this.tanks[1] = new FluidTankNTM(Fluids.COOLANT_HOT, 128_000);
+        this.tanks[0] = new FluidTankNTM(Fluids.COOLANT, 128_000).withOwner(this);
+        this.tanks[1] = new FluidTankNTM(Fluids.COOLANT_HOT, 128_000).withOwner(this);
     }
 
     /**
@@ -173,7 +181,7 @@ public class TileEntityPWRController extends TileEntityMachineBase implements IT
 
         if (!world.isRemote) {
 
-            this.tanks[0].setType(2, inventory);
+            if(this.amountLoaded <= 0) this.tanks[0].setType(2, inventory);
             setupTanks();
 
             if (unloadDelay > 0) unloadDelay--;
@@ -181,11 +189,7 @@ public class TileEntityPWRController extends TileEntityMachineBase implements IT
             int chunkX = pos.getX() >> 4;
             int chunkZ = pos.getZ() >> 4;
 
-            if (world.getChunkProvider().getLoadedChunk(chunkX, chunkZ) == null ||
-                    world.getChunkProvider().getLoadedChunk(chunkX + 2, chunkZ + 2) == null ||
-                    world.getChunkProvider().getLoadedChunk(chunkX + 2, chunkZ - 2) == null ||
-                    world.getChunkProvider().getLoadedChunk(chunkX - 2, chunkZ + 2) == null ||
-                    world.getChunkProvider().getLoadedChunk(chunkX - 2, chunkZ - 2) == null) {
+            if (world.getChunkProvider().getLoadedChunk(chunkX, chunkZ) == null || world.getChunkProvider().getLoadedChunk(chunkX + 2, chunkZ + 2) == null || world.getChunkProvider().getLoadedChunk(chunkX + 2, chunkZ - 2) == null || world.getChunkProvider().getLoadedChunk(chunkX - 2, chunkZ + 2) == null || world.getChunkProvider().getLoadedChunk(chunkX - 2, chunkZ - 2) == null) {
                 this.unloadDelay = 60;
             }
 
@@ -220,6 +224,12 @@ public class TileEntityPWRController extends TileEntityMachineBase implements IT
                     if (this.rodTarget > this.rodLevel) this.rodLevel++;
                     if (this.rodTarget < this.rodLevel) this.rodLevel--;
 
+                    double multiplier = 1D;
+
+                    if (tanks[0].getTankType().hasTrait(FT_PWRModerator.class)) {
+                        multiplier = tanks[0].getTankType().getTrait(FT_PWRModerator.class).getMultiplier();
+                    }
+
                     int newFlux = this.sourceCount * 20;
 
                     if (typeLoaded != -1 && amountLoaded > 0) {
@@ -229,6 +239,10 @@ public class TileEntityPWRController extends TileEntityMachineBase implements IT
                         double outputPerRod = fuel.function.effonix(fluxPerRod);
                         double totalOutput = outputPerRod * amountLoaded * usedRods;
                         double totalHeatOutput = totalOutput * fuel.heatEmission;
+
+                        if (tanks[0].getFill() > 0) {
+                            totalHeatOutput *= multiplier;
+                        }
 
                         this.coreHeat += totalHeatOutput;
                         newFlux += totalOutput;
@@ -248,6 +262,9 @@ public class TileEntityPWRController extends TileEntityMachineBase implements IT
                             this.amountLoaded--;
                             this.markDirty();
                         }
+
+                        if (world.getTotalWorldTime() % 100 == 0)
+                            SatelliteRayScan.reportEvent(world, pos.getX(), pos.getY(), pos.getZ(), RayEvent.INFO_NUCLEAR, 200);
                     }
 
                     if (this.amountLoaded <= 0) {
@@ -269,8 +286,8 @@ public class TileEntityPWRController extends TileEntityMachineBase implements IT
 
                     this.flux = newFlux;
 
-                    if (tanks[0].getTankType().hasTrait(FT_PWRModerator.class) && tanks[0].getFill() > 0) {
-                        this.flux *= tanks[0].getTankType().getTrait(FT_PWRModerator.class).getMultiplier();
+                    if (tanks[0].getFill() > 0) {
+                        this.flux *= multiplier;
                     }
 
                     if (this.coreHeat > this.coreHeatCapacity) {
@@ -299,6 +316,20 @@ public class TileEntityPWRController extends TileEntityMachineBase implements IT
                 }
             }
         }
+    }
+
+    @Override
+    public DirPos[] getConPos() {
+        if (!this.assembled || ports.isEmpty()) return new DirPos[0];
+        DirPos[] result = new DirPos[ports.size() * 6];
+        int idx = 0;
+        for (BlockPos portPos : ports) {
+            for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
+                BlockPos t = portPos.offset(dir.toEnumFacing());
+                result[idx++] = new DirPos(t.getX(), t.getY(), t.getZ(), dir);
+            }
+        }
+        return result;
     }
 
     protected void meltDown() {
@@ -374,8 +405,17 @@ public class TileEntityPWRController extends TileEntityMachineBase implements IT
         return this.rodCount + (int) Math.ceil(this.heatsinkCount / 4D);
     }
 
+    public boolean isPrinting;
+
     @Override
     public void serialize(ByteBuf buf) {
+        buf.writeBoolean(this.isPrinting);
+        if(this.isPrinting) {
+            ItemPWRPrinter.serialize(world, buf);
+            this.isPrinting = false;
+            return;
+        }
+
         super.serialize(buf);
         buf.writeBoolean(this.assembled);
         buf.writeInt(this.rodCount);
@@ -395,6 +435,11 @@ public class TileEntityPWRController extends TileEntityMachineBase implements IT
 
     @Override
     public void deserialize(ByteBuf buf) {
+        if(buf.readBoolean()) {
+            ItemPWRPrinter.deserialize(world, buf);
+            return;
+        }
+
         super.deserialize(buf);
         this.assembled = buf.readBoolean();
         this.rodCount = buf.readInt();
@@ -447,7 +492,7 @@ public class TileEntityPWRController extends TileEntityMachineBase implements IT
     }
 
     @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir){
+    public boolean canConnect(FluidType type, ForgeDirection dir) {
         return type == tanks[0].getTankType() || type == tanks[1].getTankType();
     }
 
@@ -554,11 +599,46 @@ public class TileEntityPWRController extends TileEntityMachineBase implements IT
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if (data.hasKey("control")) {
             this.rodTarget = MathHelper.clamp(data.getInteger("control"), 0, 100);
             this.markDirty();
         }
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "rods", PREFIX_VALUE + "coreheat", PREFIX_VALUE + "hullheat", PREFIX_VALUE + "flux", PREFIX_VALUE + "depletion", PREFIX_FUNCTION + "setrods" + NAME_SEPARATOR + "percent", PREFIX_FUNCTION + "jettison",};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "rods").equals(name)) return "" + (int) this.rodLevel;
+        if ((PREFIX_VALUE + "coreheat").equals(name)) return "" + this.coreHeat;
+        if ((PREFIX_VALUE + "hullheat").equals(name)) return "" + this.hullHeat;
+        if ((PREFIX_VALUE + "flux").equals(name)) return "" + (int) this.flux;
+        if ((PREFIX_VALUE + "depletion").equals(name)) return "" + (int) (this.progress * 100 / this.processTime);
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+
+        if ((PREFIX_FUNCTION + "setrods").equals(name) && params.length > 0) {
+            this.rodTarget = IRORInteractive.parseInt(params[0], 0, 100);
+            this.markChanged();
+            return null;
+        }
+
+        if ((PREFIX_FUNCTION + "jettison").equals(name)) {
+            this.typeLoaded = -1;
+            this.amountLoaded = 0;
+            this.progress = 0;
+            this.markChanged();
+            return null;
+        }
+
+        return null;
     }
 
     @Override
@@ -571,7 +651,7 @@ public class TileEntityPWRController extends TileEntityMachineBase implements IT
     @Callback(direct = true)
     @Optional.Method(modid = "opencomputers")
     public Object[] getHeat(Context context, Arguments args) {
-        return new Object[]{coreHeat, hullHeat};
+        return new Object[]{coreHeat, hullHeat, coreHeatCapacity, hullHeatCapacityBase};
     }
 
     @SuppressWarnings("unused")
@@ -606,7 +686,7 @@ public class TileEntityPWRController extends TileEntityMachineBase implements IT
     @Callback(direct = true)
     @Optional.Method(modid = "opencomputers")
     public Object[] getInfo(Context context, Arguments args) {
-        return new Object[]{coreHeat, hullHeat, flux, rodTarget, rodLevel, amountLoaded, progress, processTime, tanks[0].getFill(), tanks[0].getMaxFill(), tanks[1].getFill(), tanks[1].getMaxFill()};
+        return new Object[]{coreHeat, hullHeat, coreHeatCapacity, hullHeatCapacityBase, flux, rodTarget, rodLevel, amountLoaded, progress, processTime, tanks[0].getFill(), tanks[0].getMaxFill(), tanks[1].getFill(), tanks[1].getMaxFill()};
     }
 
     @SuppressWarnings("unused")

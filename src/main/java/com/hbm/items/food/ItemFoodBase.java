@@ -5,19 +5,15 @@ import com.hbm.Tags;
 import com.hbm.config.BombConfig;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
+import com.hbm.items.ClaimedModelLocationRegistry;
+import com.hbm.items.IClaimedModelLocation;
 import com.hbm.items.IDynamicModels;
 import com.hbm.items.ModItems;
-import com.hbm.lib.ModDamageSource;
-import com.hbm.potion.HbmPotion;
-import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.client.renderer.block.model.ModelRotation;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.MobEffects;
-import net.minecraft.item.EnumRarity;
 import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
@@ -34,7 +30,7 @@ import java.util.List;
 
 import static com.hbm.items.ItemEnumMulti.ROOT_PATH;
 
-public class ItemFoodBase extends ItemFood implements IDynamicModels {
+public class ItemFoodBase extends ItemFood implements IDynamicModels, IClaimedModelLocation {
 	String texturePath;
 
 	public ItemFoodBase(int amount, float saturation, boolean isWolfFood, String s){
@@ -45,6 +41,7 @@ public class ItemFoodBase extends ItemFood implements IDynamicModels {
 		INSTANCES.add(this);
 
 		ModItems.ALL_ITEMS.add(this);
+        ClaimedModelLocationRegistry.register(this);
 	}
 	public ItemFoodBase(int amount, float saturation, boolean isWolfFood, String s, String texturePath){
 		super(amount, saturation, isWolfFood);
@@ -54,26 +51,11 @@ public class ItemFoodBase extends ItemFood implements IDynamicModels {
 		INSTANCES.add(this);
 
 		ModItems.ALL_ITEMS.add(this);
+        ClaimedModelLocationRegistry.register(this);
 	}
 
 	@Override
 	public void bakeModel(ModelBakeEvent event) {
-		try {
-			IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft", "item/generated"));
-			ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath);
-			IModel retexturedModel = baseModel.retexture(
-					ImmutableMap.of(
-							"layer0", spriteLoc.toString()
-					)
-
-			);
-			IBakedModel bakedModel = retexturedModel.bake(ModelRotation.X0_Y0, DefaultVertexFormats.ITEM, ModelLoader.defaultTextureGetter());
-			ModelResourceLocation bakedModelLocation = new ModelResourceLocation(spriteLoc, "inventory");
-			event.getModelRegistry().putObject(bakedModelLocation, bakedModel);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 
 
@@ -85,6 +67,23 @@ public class ItemFoodBase extends ItemFood implements IDynamicModels {
 	@Override
 	public void registerSprite(TextureMap map) {
 		map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath));
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public boolean ownsModelLocation(ModelResourceLocation location) {
+		return IClaimedModelLocation.isInventoryLocation(location, new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath));
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public IModel loadModel(ModelResourceLocation location) {
+		try {
+			IModel generated = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
+			return generated.retexture(ImmutableMap.of("layer0", new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath).toString()));
+		} catch (Exception e) {
+			return IClaimedModelLocation.super.loadModel(location);
+		}
 	}
 
 	@Override

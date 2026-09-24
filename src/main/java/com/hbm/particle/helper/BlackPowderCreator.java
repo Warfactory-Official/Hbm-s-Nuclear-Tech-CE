@@ -18,7 +18,6 @@ public class BlackPowderCreator implements IParticleCreator {
     public static void composeEffect(World world, double x, double y, double z, double headingX, double headingY, double headingZ, int cloudCount, float cloudScale, float cloudSpeedMult, int sparkCount, float sparkSpeedMult) {
 
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "blackPowder");
         data.setInteger("cloudCount", cloudCount);
         data.setFloat("cloudScale", cloudScale);
         data.setFloat("cloudSpeedMult", cloudSpeedMult);
@@ -27,7 +26,7 @@ public class BlackPowderCreator implements IParticleCreator {
         data.setDouble("hX", headingX);
         data.setDouble("hY", headingY);
         data.setDouble("hZ", headingZ);
-        IParticleCreator.sendPacket(world, x, y, z, 200, data);
+        IParticleCreator.sendPacket(world, HbmEffectNT.BlackPowder, x, y, z, 200, data);
     }
 
     @Override

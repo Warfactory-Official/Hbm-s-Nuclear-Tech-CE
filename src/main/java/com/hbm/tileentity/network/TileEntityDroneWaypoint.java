@@ -2,7 +2,7 @@ package com.hbm.tileentity.network;
 
 import com.hbm.entity.item.EntityDeliveryDrone;
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.util.ParticleUtil;
 import io.netty.buffer.ByteBuf;
@@ -31,7 +31,7 @@ public class TileEntityDroneWaypoint extends TileEntityLoadedBase implements IDr
             if(nextY != -1) {
                 List<EntityDeliveryDrone> drones = world.getEntitiesWithinAABB(EntityDeliveryDrone.class, new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1).offset(0, height, 0));
                 for(EntityDeliveryDrone drone : drones) {
-                    if(Vec3.createVectorHelper(drone.motionX, drone.motionY, drone.motionZ).length() < 0.05) {
+                    if(Vec3NT.createVectorHelper(drone.motionX, drone.motionY, drone.motionZ).length() < 0.05) {
                         drone.setTarget(nextX + 0.5, nextY, nextZ + 0.5);
                     }
                 }

@@ -4,6 +4,7 @@ import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.util.Vec3NT;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
@@ -49,13 +50,16 @@ public class EntityBulletBeamBase extends Entity implements IEntityAdditionalSpa
         this.isImmuneToFire = true;
     }
 
-    public EntityBulletBeamBase(EntityLivingBase entity, BulletConfig config, float baseDamage) {
-        this(entity.world);
+    public EntityBulletBeamBase(World world, BulletConfig config, float baseDamage) {
+        this(world);
 
-        this.thrower = entity;
         this.setBulletConfig(config);
-
         this.damage = baseDamage * this.config.damageMult;
+    }
+
+    public EntityBulletBeamBase(EntityLivingBase entity, BulletConfig config, float baseDamage) {
+        this(entity.world, config, baseDamage);
+        this.thrower = entity;
     }
 
     public EntityBulletBeamBase(EntityLivingBase entity, BulletConfig config, float baseDamage, float angularInaccuracy, double sideOffset, double heightOffset, double frontOffset) {
@@ -69,7 +73,7 @@ public class EntityBulletBeamBase extends Entity implements IEntityAdditionalSpa
         this.setLocationAndAngles(thrower.posX, thrower.posY + thrower.getEyeHeight(), thrower.posZ, thrower.rotationYaw + (float) rand.nextGaussian() * angularInaccuracy, thrower.rotationPitch + (float) rand.nextGaussian() * angularInaccuracy);
 
         Vec3NT offset = new Vec3NT(sideOffset, heightOffset, frontOffset);
-        offset.rotateAroundXRad(this.rotationPitch / 180F * (float) Math.PI);
+        offset.rotateAroundXRad(-this.rotationPitch / 180F * (float) Math.PI);
         offset.rotateAroundYRad(-this.rotationYaw / 180F * (float) Math.PI);
 
         this.posX += offset.x;
@@ -289,11 +293,9 @@ public class EntityBulletBeamBase extends Entity implements IEntityAdditionalSpa
                 world.spawnEntity(newBeam);
 
                 NBTTagCompound data = new NBTTagCompound();
-                data.setString("type", "vanillaExt");
-                data.setString("mode", "largeexplode");
                 data.setFloat("size", 1.5F);
                 data.setByte("count", (byte)1);
-                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, coinHit.hitVec.x, coinHit.hitVec.y, coinHit.hitVec.z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), coinHit.hitVec.x, coinHit.hitVec.y, coinHit.hitVec.z, 100));
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.VanillaExt_LargeExplode, data, coinHit.hitVec.x, coinHit.hitVec.y, coinHit.hitVec.z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), coinHit.hitVec.x, coinHit.hitVec.y, coinHit.hitVec.z, 100));
 
 
                 return;

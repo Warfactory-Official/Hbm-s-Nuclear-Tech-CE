@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.machine.IItemFluidIdentifier;
@@ -14,12 +15,18 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
-
 import java.util.function.Predicate;
 
 public class ContainerRadiolysis extends Container {
 
     private TileEntityMachineRadiolysis radiolysis;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(15)
+                                                                              .rule(0, 10, s -> s.getItem() instanceof ItemRTGPellet)
+                                                                              .rule(10, 11, s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                              .rule(11, 14, Predicate.not(Library::isChargeableBattery))
+                                                                              .rule(14, 15, Library::isChargeableBattery)
+                                                                              .build();
 
     public ContainerRadiolysis(InventoryPlayer playerInv, TileEntityMachineRadiolysis tile) {
         radiolysis = tile;
@@ -27,7 +34,7 @@ public class ContainerRadiolysis extends Container {
         //RTG
         for(byte i = 0; i < 2; i++) {
             for(byte j = 0; j < 5; j++) {
-                this.addSlotToContainer(new SlotItemHandler(tile.inventory, j + i * 5, 188 + i * 18, 8 + j * 18));
+                this.addSlotToContainer(SlotFiltered.withWhitelist(tile.inventory, j + i * 5, 188 + i * 18, 8 + j * 18, s -> s.getItem() instanceof ItemRTGPellet));
             }
         }
 
@@ -61,11 +68,6 @@ public class ContainerRadiolysis extends Container {
     /** my eye, my eye, coctor coctor coctor **/ //???
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 15,
-                s -> s.getItem() instanceof ItemRTGPellet, 10,
-                s -> s.getItem() instanceof IItemFluidIdentifier, 11,
-                Predicate.not(Library::isChargeableBattery), 14,
-                Library::isChargeableBattery, 15
-        );
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 }

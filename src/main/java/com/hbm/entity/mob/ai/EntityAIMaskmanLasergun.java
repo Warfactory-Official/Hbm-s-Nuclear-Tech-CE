@@ -3,7 +3,7 @@ package com.hbm.entity.mob.ai;
 import com.hbm.entity.projectile.EntityBulletBase;
 import com.hbm.handler.BulletConfigSyncingUtil;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.EntityAIBase;
@@ -31,7 +31,7 @@ public class EntityAIMaskmanLasergun extends EntityAIBase {
 
         } else {
             this.target = entity;
-            double dist = Vec3.createVectorHelper(target.posX - owner.posX, target.posY - owner.posY, target.posZ - owner.posZ).length();
+            double dist = Vec3NT.createVectorHelper(target.posX - owner.posX, target.posY - owner.posY, target.posZ - owner.posZ).length();
             return dist > 10;
         }
 	}
@@ -59,10 +59,10 @@ public class EntityAIMaskmanLasergun extends EntityAIBase {
 
 			case MISSILE:
 				EntityBulletBase missile = new EntityBulletBase(owner.world, BulletConfigSyncingUtil.MASKMAN_ROCKET, owner, target, 1.0F, 0);
-				Vec3 vec = Vec3.createVectorHelper(target.posX - owner.posX, 0, target.posZ - owner.posZ);
-				missile.motionX = vec.xCoord * 0.05D;
+				Vec3NT vec = Vec3NT.createVectorHelper(target.posX - owner.posX, 0, target.posZ - owner.posZ);
+				missile.motionX = vec.x * 0.05D;
 				missile.motionY = 0.5D + owner.getRNG().nextDouble() * 0.5D;
-				missile.motionZ = vec.zCoord * 0.05D;
+				missile.motionZ = vec.z * 0.05D;
 
 				owner.world.spawnEntity(missile);
 				owner.playSound(HBMSoundHandler.hkShoot, 1.0F, 1.0F);

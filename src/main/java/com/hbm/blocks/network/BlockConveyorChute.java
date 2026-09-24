@@ -12,7 +12,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -105,9 +104,9 @@ public class BlockConveyorChute extends BlockConveyorBase {
     }
 
     @Override
-    public void onBlockPlacedBy(World worldIn, @NotNull BlockPos pos, IBlockState state, EntityLivingBase placer, @NotNull ItemStack stack) {
+    public @NotNull IBlockState getStateForPlacement(World worldIn, @NotNull BlockPos pos, @NotNull EnumFacing side, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
         EnumFacing facing = placer.getHorizontalFacing().getOpposite();
-        worldIn.setBlockState(pos, state.withProperty(FACING, facing).withProperty(TYPE, getUpdatedType(worldIn, pos, facing)), 3);
+        return this.getDefaultState().withProperty(FACING, facing).withProperty(TYPE, getUpdatedType(worldIn, pos, facing));
     }
 
     @Override

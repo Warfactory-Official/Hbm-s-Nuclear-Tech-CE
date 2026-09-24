@@ -158,7 +158,11 @@ public class GUIRBMKControlAuto extends GuiInfoContainer {
 		
 		int f = rod.function.ordinal();
 		drawTexturedModalRect(guiLeft + 59, guiTop + 27, 184, f * 19, 26, 19);
-		
+
+		if(rod.isPowered()) {
+			drawTexturedModalRect(guiLeft + 136, guiTop + 21, 210, rod.hasPower ? 16 : 0, 16, 16);
+		}
+
 		for(int i = 0; i < 4; i++) {
 			this.fields[i].drawTextBox();
 		}

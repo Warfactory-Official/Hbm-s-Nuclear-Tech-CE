@@ -4,6 +4,7 @@ import com.hbm.explosion.ExplosionLarge;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
@@ -62,15 +63,10 @@ public class EntityBobmazon extends Entity {
 
 
 			NBTTagCompound data = new NBTTagCompound();
-			data.setString("type", "exhaust");
-			data.setString("mode", "meteor");
 			data.setInteger("count", 1);
 			data.setDouble("width", 0);
-			data.setDouble("posX", posX);
-			data.setDouble("posY", posY + 1);
-			data.setDouble("posZ", posZ);
 			
-			MainRegistry.proxy.effectNT(data);
+			MainRegistry.proxy.effectNT(HbmEffectNT.Exhaust_Meteor, posX, posY + 1, posZ, data);
 		}
 	}
 	

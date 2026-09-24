@@ -1,5 +1,5 @@
 {
-	"variants": {
-		"normal": { "model": "hbm:turret_sentry_damaged" }
-	}
+  "variants": {
+    "normal": { "model": "hbm:turret_sentry_damaged" }
+  }
 }

@@ -44,12 +44,12 @@ public class RenderTurretRichard extends RenderTurretBase<TileEntityTurretRichar
             turret.lastRotationPitch
                 + (turret.rotationPitch - turret.lastRotationPitch) * partialTicks);
 
-    GL11.glRotated(yaw, 0, 1, 0);
+    GlStateManager.rotate((float) (yaw), 0, 1, 0);
     bindTexture(ResourceManager.turret_carriage_tex);
     ResourceManager.turret_chekhov.renderPart("Carriage");
 
     GlStateManager.translate(0, 1.5, 0);
-    GL11.glRotated(pitch, 0, 0, 1);
+    GlStateManager.rotate((float) (pitch), 0, 0, 1);
     GlStateManager.translate(0, -1.5, 0);
     bindTexture(ResourceManager.turret_richard_tex);
     ResourceManager.turret_richard.renderPart("Launcher");

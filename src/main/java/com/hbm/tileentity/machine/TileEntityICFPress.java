@@ -42,8 +42,8 @@ public class TileEntityICFPress extends TileEntityMachineBase implements IFluidS
     public TileEntityICFPress() {
         super(8, true, false);
         this.tanks = new FluidTankNTM[2];
-        this.tanks[0] = new FluidTankNTM(Fluids.DEUTERIUM, 16_000);
-        this.tanks[1] = new FluidTankNTM(Fluids.TRITIUM, 16_000);
+        this.tanks[0] = new FluidTankNTM(Fluids.DEUTERIUM, 16_000).withOwner(this);
+        this.tanks[1] = new FluidTankNTM(Fluids.TRITIUM, 16_000).withOwner(this);
     }
 
     @Override

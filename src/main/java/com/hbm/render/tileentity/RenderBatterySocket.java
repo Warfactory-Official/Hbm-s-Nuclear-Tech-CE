@@ -35,10 +35,10 @@ public class RenderBatterySocket extends TileEntitySpecialRenderer<TileEntityBat
         GlStateManager.enableCull();
 
         switch(tile.getBlockMetadata() - 10) {
-            case 2: GL11.glRotatef(90, 0F, 1F, 0F); break;
-            case 4: GL11.glRotatef(180, 0F, 1F, 0F); break;
-            case 3: GL11.glRotatef(270, 0F, 1F, 0F); break;
-            case 5: GL11.glRotatef(0, 0F, 1F, 0F); break;
+            case 2: GlStateManager.rotate(90, 0F, 1F, 0F); break;
+            case 4: GlStateManager.rotate(180, 0F, 1F, 0F); break;
+            case 3: GlStateManager.rotate(270, 0F, 1F, 0F); break;
+            case 5: GlStateManager.rotate(0, 0F, 1F, 0F); break;
         }
 
         GlStateManager.translate(-0.5D, 0D, 0.5D);
@@ -46,6 +46,10 @@ public class RenderBatterySocket extends TileEntitySpecialRenderer<TileEntityBat
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
         bindTexture(ResourceManager.battery_socket_tex);
         ResourceManager.battery_socket.renderPart("Socket");
+
+        if(tile.frame) {
+            ResourceManager.battery_socket.renderPart("Supports");
+        }
 
         ItemStack render = tile.syncStack;
         if(render != null) {
@@ -60,7 +64,7 @@ public class RenderBatterySocket extends TileEntitySpecialRenderer<TileEntityBat
             } else if(render.getItem() == ModItems.battery_creative) {
                 GlStateManager.pushMatrix();
                 GlStateManager.scale(0.75, 0.75, 0.75);
-                GlStateManager.rotate((tile.getWorld().getTotalWorldTime() % 360 + partialTicks) * 25D, 0, -1, 0);
+                GlStateManager.rotate((float) ((tile.getWorld().getTotalWorldTime() % 360 + partialTicks) * 25D), 0, -1, 0);
                 this.bindTexture(blorbo);
                 HorsePronter.reset();
                 HorsePronter.enableHorn();

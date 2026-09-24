@@ -24,7 +24,7 @@ public class BlockBallsSpawner extends Block {
 
 	@Override
 	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-		if(player.getHeldItem(hand) != null && player.getHeldItem(hand).getItem() == ModItems.mech_key) {
+		if(!player.getHeldItem(hand).isEmpty() && player.getHeldItem(hand).getItem() == ModItems.mech_key) {
 			player.getHeldItem(hand).shrink(1);
 
 			if(!world.isRemote) {

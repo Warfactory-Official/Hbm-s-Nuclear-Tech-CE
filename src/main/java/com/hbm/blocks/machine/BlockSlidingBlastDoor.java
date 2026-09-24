@@ -9,11 +9,13 @@ import com.hbm.interfaces.IKeypadHandler;
 import com.hbm.interfaces.IRadResistantBlock;
 import com.hbm.items.tool.ItemTooling;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.TileEntitySlidingBlastDoorKeypad;
 import com.hbm.tileentity.machine.TileEntitySlidingBlastDoor;
 import com.hbm.util.I18nUtil;
 import com.hbm.util.KeypadClient;
 import micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock;
+import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
@@ -39,6 +41,13 @@ public class BlockSlidingBlastDoor extends BlockDummyable implements IRadResista
 
 	public BlockSlidingBlastDoor(Material materialIn, String s) {
 		super(materialIn, s, true);
+	}
+
+	@Override
+	protected boolean isSameMultiblock(Block other) {
+		return other == ModBlocks.sliding_blast_door_legacy
+			|| other == ModBlocks.sliding_blast_door_2
+			|| other == ModBlocks.sliding_blast_door_keypad;
 	}
 
 	public boolean isSealed(World world, BlockPos blockPos, EnumFacing direction){
@@ -73,7 +82,7 @@ public class BlockSlidingBlastDoor extends BlockDummyable implements IRadResista
 		if(hardness > 50){
 			tooltip.add("§6" + I18nUtil.resolveKey("trait.blastres", hardness));
 		}
-		if(this == ModBlocks.sliding_blast_door){
+		if(this == ModBlocks.sliding_blast_door_legacy){
 			tooltip.add(I18nUtil.resolveKey("desc.varwin"));
 		} else if(this == ModBlocks.sliding_blast_door_2){
 			tooltip.add(I18nUtil.resolveKey("desc.varkey"));
@@ -153,13 +162,13 @@ public class BlockSlidingBlastDoor extends BlockDummyable implements IRadResista
 			return FULL_BLOCK_AABB;
 		if(hasExtra(meta)) {
 			if(source.getBlockState(pos.up()).getBlock() == this) {
-				return new AxisAlignedBB(0, 0, 0, 0, 0, 0);
+				return Library.EMPTY_AABB;
 			}
 			return new AxisAlignedBB(0, 0.5, 0, 1, 1, 1);
 		}
 		TileEntity te = source.getTileEntity(pos);
 		if(te instanceof TileEntitySlidingBlastDoor && !((TileEntitySlidingBlastDoor) te).shouldUseBB) {
-			return new AxisAlignedBB(0, 0, 0, 0, 0, 0);
+			return Library.EMPTY_AABB;
 		}
 		return FULL_BLOCK_AABB;
 	}

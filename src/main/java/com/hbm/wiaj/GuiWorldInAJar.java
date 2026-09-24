@@ -2,6 +2,7 @@ package com.hbm.wiaj;
 
 import com.hbm.Tags;
 import com.hbm.main.MainRegistry;
+import com.hbm.render.util.NTMImmediate;
 import com.hbm.util.I18nUtil;
 import com.hbm.wiaj.actors.ActorFancyPanel;
 import com.hbm.wiaj.actors.ActorFancyPanel.Orientation;
@@ -20,8 +21,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
-import org.lwjgl.opengl.GL12;
+import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -76,7 +76,7 @@ public class GuiWorldInAJar extends GuiScreen {
             GlStateManager.enableLighting();
         } catch (Exception ex) {
             MainRegistry.logger.error("Client-side WIAJ encountered an expected error", ex);
-            this.mc.displayGuiScreen((GuiScreen) null);
+            this.mc.displayGuiScreen(null);
             this.mc.setIngameFocus();
         }
     }
@@ -195,8 +195,7 @@ public class GuiWorldInAJar extends GuiScreen {
 
         Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
-        BufferBuilder buffer = Tessellator.getInstance().getBuffer();
-        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+        BufferBuilder buffer = NTMImmediate.INSTANCE.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
 
         for (int x = 0; x < jarScript.world.sizeX; x++) {
             for (int y = 0; y < jarScript.world.sizeY; y++) {
@@ -212,11 +211,11 @@ public class GuiWorldInAJar extends GuiScreen {
             }
         }
 
-        Tessellator.getInstance().draw();
+        NTMImmediate.INSTANCE.draw();
         GlStateManager.shadeModel(GL11.GL_FLAT);
         GlStateManager.popMatrix();
 
-        GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+        GlStateManager.enableRescaleNormal();
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 
         GlStateManager.pushMatrix();
@@ -238,14 +237,14 @@ public class GuiWorldInAJar extends GuiScreen {
         double scale = -10;
 
         GlStateManager.translate(width / 2, height / 2, 400);
-        GL11.glScaled(scale, scale, scale);
-        GL11.glScaled(1, 1, 0.5); //incredible flattening power
+        GlStateManager.scale(scale, scale, scale);
+        GlStateManager.scale(1, 1, 0.5); //incredible flattening power
 
         double zoom = jarScript.zoom();
-        GL11.glScaled(zoom, zoom, zoom);
+        GlStateManager.scale(zoom, zoom, zoom);
 
-        GL11.glRotated(jarScript.pitch(), 1, 0, 0);
-        GL11.glRotated(jarScript.yaw(), 0, 1, 0);
+        GlStateManager.rotate((float) (jarScript.pitch()), 1, 0, 0);
+        GlStateManager.rotate((float) (jarScript.yaw()), 0, 1, 0);
         GlStateManager.translate(jarScript.world.sizeX / -2D, -jarScript.world.sizeY / 2D, jarScript.world.sizeZ / -2D);
         GlStateManager.translate(jarScript.offsetX(), jarScript.offsetY(), jarScript.offsetZ());
     }
@@ -261,7 +260,7 @@ public class GuiWorldInAJar extends GuiScreen {
         y += height / 2;
 
         if (!lines.isEmpty()) {
-            GL11.glDisable(GL12.GL_RESCALE_NORMAL);
+            GlStateManager.disableRescaleNormal();
             RenderHelper.disableStandardItemLighting();
             GlStateManager.disableLighting();
             GlStateManager.disableDepth();
@@ -328,13 +327,14 @@ public class GuiWorldInAJar extends GuiScreen {
 
             for (int index = 0; index < lines.size(); ++index) {
 
-                Object[] line = (Object[]) lines.get(index);
+                Object[] line = lines.get(index);
                 int indent = 0;
                 boolean hasStack = false;
 
                 for (Object o : line) {
                     if (!(o instanceof String)) {
                         hasStack = true;
+                        break;
                     }
                 }
 
@@ -345,7 +345,7 @@ public class GuiWorldInAJar extends GuiScreen {
                         indent += font.getStringWidth((String) o) + 2;
                     } else {
                         ItemStack stack = (ItemStack) o;
-                        GL11.glColor3f(1F, 1F, 1F);
+                        GlStateManager.color(1F, 1F, 1F);
 
                         if (stack.getCount() == 0) {
                             this.drawGradientRect(minX + indent - 1, minY - 1, minX + indent + 17, minY + 17, 0xffff0000, 0xffff0000);
@@ -371,7 +371,7 @@ public class GuiWorldInAJar extends GuiScreen {
             GlStateManager.enableLighting();
             GlStateManager.enableDepth();
             RenderHelper.enableStandardItemLighting();
-            GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+            GlStateManager.enableRescaleNormal();
         }
     }
 }

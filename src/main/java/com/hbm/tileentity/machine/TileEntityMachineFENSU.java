@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 @AutoRegister
 public class TileEntityMachineFENSU extends TileEntityMachineBattery {
 
+	private AxisAlignedBB bb;
 	public EnumDyeColor color = EnumDyeColor.LIGHT_BLUE;
 
 	public static final long maxTransfer = 10_000_000_000_000_000L; //10E
@@ -78,7 +79,8 @@ public class TileEntityMachineFENSU extends TileEntityMachineBattery {
 
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		if (bb == null) bb = new AxisAlignedBB(pos.getX() - 2, pos.getY(), pos.getZ() - 2, pos.getX() + 3, pos.getY() + 5, pos.getZ() + 3);
+		return bb;
 	}
 
 	@Override

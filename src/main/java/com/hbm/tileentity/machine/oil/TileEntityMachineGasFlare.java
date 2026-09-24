@@ -19,6 +19,8 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
@@ -30,15 +32,17 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
@@ -54,7 +58,7 @@ import java.util.List;
 public class TileEntityMachineGasFlare extends TileEntityMachineBase
         implements ITickable, IEnergyProviderMK2,
         IFluidStandardReceiver, IGUIProvider,
-        IControlReceiver, IFluidCopiable, IUpgradeInfoProvider {
+        IControlReceiver, IFluidCopiable, IUpgradeInfoProvider, IConnectionAnchors {
     public static final long maxPower = 1000000;
     private final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
     public long power;
@@ -76,7 +80,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
             }
 
             @Override
-            public void setStackInSlot(int slot, ItemStack stack) {
+            public void setStackInSlot(int slot, @NotNull ItemStack stack) {
                 super.setStackInSlot(slot, stack);
                 if (Library.isMachineUpgrade(stack) && slot >= 4 && slot <= 5)
                     SoundUtil.playUpgradePlugSound(world, pos);
@@ -84,7 +88,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         };
 
         tankType = Fluids.GAS.getFF();
-        tank = new FluidTankNTM(Fluids.GAS, 64000);
+        tank = new FluidTankNTM(Fluids.GAS, 64000).withOwner(this);
     }
 
     @Override
@@ -119,6 +123,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
     public void update() {
 
         if (!world.isRemote) {
+            this.checkTilt(TiltType.CONFIG, false);
 
             this.fluidUsed = 0;
             this.output = 0;
@@ -134,11 +139,11 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
             int maxVent = 50;
             int maxBurn = 10;
 
-            if (isOn && tank.getFill() > 0) {
+            if (isOn && tank.getFill() > 0 && !this.tilted) {
                 upgradeManager.checkSlots(inventory, 4, 5);
 
-                int burn = Math.min(upgradeManager.getLevel(UpgradeType.SPEED), 6);
-                int yield = Math.min(upgradeManager.getLevel(UpgradeType.EFFECT), 6);
+                int burn = upgradeManager.getLevel(UpgradeType.SPEED);
+                int yield = upgradeManager.getLevel(UpgradeType.EFFECT);
 
                 maxVent += maxVent * burn;
                 maxBurn += maxBurn * burn;
@@ -150,6 +155,13 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
                         this.fluidUsed = eject;
                         tank.setFill(tank.getFill() - eject);
                         tank.getTankType().onFluidRelease(this, tank, eject);
+
+                        if(world.getTotalWorldTime() % 7 == 0)
+                            this.world.playSound(null, this.pos.getX(), this.pos.getY() + 11, this.pos.getZ(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, getVolume(1.5F), 0.5F);
+
+                        if(world.getTotalWorldTime() % 5 == 0 && eject > 0) {
+                            FT_Polluting.pollute(world, pos.getX(), pos.getY(), pos.getZ(), tank.getTankType(), FluidTrait.FluidReleaseType.SPILL, eject * 5);
+                        }
                     }
                 } else {
 
@@ -173,9 +185,6 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
                             power = maxPower;
 
                         ParticleUtil.spawnGasFlame(world, pos.getX() + 0.5F, pos.getY() + 11.75F, pos.getZ() + 0.5F, world.rand.nextGaussian() * 0.15, 0.2, world.rand.nextGaussian() * 0.15);
-
-                        if (this.world.getTotalWorldTime() % 5 == 0)
-                            this.world.playSound(null, pos.getX(), pos.getY() + 11, pos.getZ(), HBMSoundHandler.flamethrowerShoot, SoundCategory.BLOCKS, 1.5F, 1F);
 
                         List<Entity> list = world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(pos.add(-1, 12, -2), pos.add(2, 17, 2)));
                         for (Entity e : list) {
@@ -204,40 +213,35 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
                 if ((!doesBurn || !(tank.getTankType().hasTrait(FT_Flammable.class))) && (tank.getTankType().hasTrait(FluidTraitSimple.FT_Gaseous.class) || tank.getTankType().hasTrait(FluidTraitSimple.FT_Gaseous_ART.class))) {
 
                     NBTTagCompound data = new NBTTagCompound();
-                    data.setString("type", "tower");
                     data.setFloat("lift", 1F);
                     data.setFloat("base", 0.25F);
                     data.setFloat("max", 3F);
                     data.setInteger("life", 150 + world.rand.nextInt(20));
                     data.setInteger("color", tank.getTankType().getColor());
 
-                    data.setDouble("posX", pos.getX() + 0.5);
-                    data.setDouble("posZ", pos.getZ() + 0.5);
-                    data.setDouble("posY", pos.getY() + 11);
-
-                    MainRegistry.proxy.effectNT(data);
+                    MainRegistry.proxy.effectNT(HbmEffectNT.Tower, pos.getX() + .5, pos.getY() + 11, pos.getZ() + .5, data);
 
                 }
 
                 if (doesBurn && tank.getTankType().hasTrait(FT_Flammable.class) && MainRegistry.proxy.me().getDistanceSq(pos.getX(), pos.getY() + 10, pos.getZ()) <= 1024) {
 
                     NBTTagCompound data = new NBTTagCompound();
-                    data.setString("type", "vanillaExt");
-                    data.setString("mode", "smoke");
                     data.setBoolean("noclip", true);
                     data.setInteger("overrideAge", 50);
 
+                    double posX, posY, posZ;
+
                     if (world.getTotalWorldTime() % 2 == 0) {
-                        data.setDouble("posX", pos.getX() + 1.5);
-                        data.setDouble("posZ", pos.getZ() + 1.5);
-                        data.setDouble("posY", pos.getY() + 10.75);
+                        posX = pos.getX() + 1.5;
+                        posZ = pos.getZ() + 1.5;
+                        posY = pos.getY() + 10.75;
                     } else {
-                        data.setDouble("posX", pos.getX() + 1.125);
-                        data.setDouble("posZ", pos.getZ() - 0.5);
-                        data.setDouble("posY", pos.getY() + 11.75);
+                        posX = pos.getX() + 1.125;
+                        posZ = pos.getZ() - 0.5;
+                        posY = pos.getY() + 11.75;
                     }
 
-                    MainRegistry.proxy.effectNT(data);
+                    MainRegistry.proxy.effectNT(HbmEffectNT.VanillaExt_Smoke, posX, posY, posZ, data);
                 }
             }
         }
@@ -275,16 +279,6 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         };
     }
 
-    @Override
-    public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
-    }
-
-    @Override
-    @SideOnly(Side.CLIENT)
-    public double getMaxRenderDistanceSquared() {
-        return 65536.0D;
-    }
 
     @Override
     public FluidTankNTM[] getReceivingTanks() {
@@ -328,7 +322,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if (data.hasKey("valve")) this.isOn = !this.isOn;
         if (data.hasKey("dial")) this.doesBurn = !this.doesBurn;
         markDirty();
@@ -380,4 +374,13 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         upgrades.put(UpgradeType.EFFECT, 3);
         return upgrades;
     }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public double getMaxRenderDistanceSquared() {
+        return 65536.0D;
+    }
+
+    @Override public int getFloorCount() { return 2 * 2; }
+    @Override public BlockPos getFloorPosFromIndex(int index) { return this.standardFloor3x3(index); }
 }

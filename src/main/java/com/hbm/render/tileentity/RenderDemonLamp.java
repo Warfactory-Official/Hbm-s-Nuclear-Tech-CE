@@ -5,7 +5,7 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.render.loader.HFRWavefrontObject;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.render.loader.IModelCustom;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.tileentity.machine.TileEntityDemonLamp;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -27,12 +27,6 @@ public class RenderDemonLamp extends TileEntitySpecialRenderer<TileEntityDemonLa
           new ResourceLocation(Tags.MODID, "models/blocks/demon_lamp.obj"));
   public static final ResourceLocation tex =
       new ResourceLocation(Tags.MODID, "textures/models/machines/demon_lamp.png");
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityDemonLamp te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityDemonLamp te,
@@ -54,7 +48,7 @@ public class RenderDemonLamp extends TileEntitySpecialRenderer<TileEntityDemonLa
     Tessellator tess = Tessellator.getInstance();
     BufferBuilder buf = tess.getBuffer();
     buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
-    Vec3 vec = Vec3.createVectorHelper(1, 0, 0);
+    Vec3NT vec = Vec3NT.createVectorHelper(1, 0, 0);
 
     GlStateManager.depthMask(false);
     GlStateManager.disableTexture2D();
@@ -75,19 +69,19 @@ public class RenderDemonLamp extends TileEntitySpecialRenderer<TileEntityDemonLa
 
       for (int i = 0; i < 16; i++) {
 
-        buf.pos(vec.xCoord * near, 0.5D + j * 0.125D, vec.zCoord * near)
+        buf.pos(vec.x * near, 0.5D + j * 0.125D, vec.z * near)
             .color(0F, 0.75F, 1F, 0.25F)
             .endVertex();
-        buf.pos(vec.xCoord * far, 0.5D + j * 0.125D + height, vec.zCoord * far)
+        buf.pos(vec.x * far, 0.5D + j * 0.125D + height, vec.z * far)
             .color(0F, 0.75F, 1F, 0F)
             .endVertex();
 
-        vec.rotateAroundY((float) Math.PI * 2F / 16F);
+        vec.rotateYawSelf((float) Math.PI * 2F / 16F);
 
-        buf.pos(vec.xCoord * far, 0.5D + j * 0.125D + height, vec.zCoord * far)
+        buf.pos(vec.x * far, 0.5D + j * 0.125D + height, vec.z * far)
             .color(0F, 0.75F, 1F, 0F)
             .endVertex();
-        buf.pos(vec.xCoord * near, 0.5D + j * 0.125D, vec.zCoord * near)
+        buf.pos(vec.x * near, 0.5D + j * 0.125D, vec.z * near)
             .color(0F, 0.75F, 1F, 0.25F)
             .endVertex();
       }

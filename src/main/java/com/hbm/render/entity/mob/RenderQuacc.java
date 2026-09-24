@@ -1,5 +1,6 @@
 package com.hbm.render.entity.mob;
 
+import net.minecraft.client.renderer.GlStateManager;
 import com.hbm.Tags;
 import com.hbm.entity.mob.EntityQuackos;
 import com.hbm.interfaces.AutoRegister;
@@ -46,6 +47,6 @@ public class RenderQuacc extends RenderChicken {
      */
 	@Override
 	protected void preRenderCallback(EntityChicken DUCC, float partialTickTime) {
-		GL11.glScaled(25, 25, 25);
+		GlStateManager.scale(25, 25, 25);
 	}
 }

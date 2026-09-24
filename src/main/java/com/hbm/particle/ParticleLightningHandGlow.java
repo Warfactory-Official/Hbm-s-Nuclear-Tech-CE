@@ -2,18 +2,18 @@ package com.hbm.particle;
 
 import com.hbm.main.ClientProxy;
 import com.hbm.main.ResourceManager;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.DestFactor;
 import net.minecraft.client.renderer.GlStateManager.SourceFactor;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 public class ParticleLightningHandGlow extends Particle {
 
@@ -64,7 +64,7 @@ public class ParticleLightningHandGlow extends Particle {
 	    GlStateManager.translate(f5, f6, f7);
 	    
 	    
-		GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, ClientProxy.AUX_GL_BUFFER);
+		GlStateManager.getFloat(GL11.GL_MODELVIEW_MATRIX, ClientProxy.AUX_GL_BUFFER);
 		ClientProxy.AUX_GL_BUFFER.put(0, 1);
 		ClientProxy.AUX_GL_BUFFER.put(1, 0);
 		ClientProxy.AUX_GL_BUFFER.put(2, 0);
@@ -85,12 +85,14 @@ public class ParticleLightningHandGlow extends Particle {
 		float f4 = 0.1F * this.particleScale * scale;
         
 		Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.fresnel_ms);
-		buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
-		buffer.pos(f4, f4, 0).tex(1, 1).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(240, 240).endVertex();
-        buffer.pos(-f4, f4, 0).tex(1, 0).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(240, 240).endVertex();
-        buffer.pos(-f4, -f4, 0).tex(0, 0).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(240, 240).endVertex();
-        buffer.pos(f4, -f4, 0).tex(0, 1).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(240, 240).endVertex();
-        Tessellator.getInstance().draw();
+		NTMBufferBuilder fastBuffer = NTMImmediate.INSTANCE.beginParticlePositionTexColorLmap(GL11.GL_QUADS, 4);
+        int packedColor = NTMBufferBuilder.packColor(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha);
+        int packedLightmap = NTMBufferBuilder.packLightmap(240, 240);
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked(f4, f4, 0, 1, 1, packedColor, packedLightmap);
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked(-f4, f4, 0, 1, 0, packedColor, packedLightmap);
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked(-f4, -f4, 0, 0, 0, packedColor, packedLightmap);
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked(f4, -f4, 0, 0, 1, packedColor, packedLightmap);
+        NTMImmediate.INSTANCE.draw();
         
         GlStateManager.enableAlpha();
         GlStateManager.disableBlend();

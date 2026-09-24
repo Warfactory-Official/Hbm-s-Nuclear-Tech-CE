@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import net.minecraft.client.renderer.GlStateManager;
 import com.hbm.Tags;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerRBMKAutoloader;
@@ -66,7 +67,7 @@ public class GUIRBMKAutoloader extends GuiInfoContainer {
 
     @Override
     protected void drawGuiContainerBackgroundLayer(float p_146976_1_, int p_146976_2_, int p_146976_3_) {
-        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
     }

@@ -12,6 +12,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+@Deprecated
 public class TEDoorAnimationPacket implements IMessage {
 
 	public int x, y, z;
@@ -65,7 +66,7 @@ public class TEDoorAnimationPacket implements IMessage {
 				BlockPos pos = new BlockPos(m.x, m.y, m.z);
 				TileEntity te = Minecraft.getMinecraft().world.getTileEntity(pos);
 				if(te instanceof IAnimatedDoor){
-					((IAnimatedDoor) te).handleNewState(IDoor.DoorState.values()[m.state]);
+					((IAnimatedDoor) te).handleNewState(IDoor.DoorState.VALUES[m.state]);
 					((IAnimatedDoor) te).setTextureState(m.texture);
 				}
 			});

@@ -1,6 +1,6 @@
 package com.hbm.entity.mob.ai;
 
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
@@ -51,7 +51,7 @@ public class EntityAI_MLPF extends EntityAIBase {
     public void startExecuting() {
 
     	//create a path line from mover to target
-    	Vec3 vec = Vec3.createVectorHelper(
+    	Vec3NT vec = Vec3NT.createVectorHelper(
     			target.posX - mover.posX,
     			target.posY - mover.posY,
     			target.posZ - mover.posZ);
@@ -64,14 +64,14 @@ public class EntityAI_MLPF extends EntityAIBase {
     		mover.setAttackTarget(target);
 
     	vec = vec.normalize();
-    	vec.xCoord *= range;
-    	vec.yCoord *= range;
-    	vec.zCoord *= range;
+    	vec.setX(vec.x * (range));
+    	vec.setY(vec.y * (range));
+    	vec.setZ(vec.z * (range));
 
     	//target positions are set (with randomized Y-offset)
-    	double x = mover.posX + vec.xCoord;
-    	double y = mover.posY + vec.yCoord - 5 + mover.getRNG().nextInt(11);
-    	double z = mover.posZ + vec.zCoord;
+    	double x = mover.posX + vec.x;
+    	double y = mover.posY + vec.y - 5 + mover.getRNG().nextInt(11);
+    	double z = mover.posZ + vec.z;
 
     	//System.out.println("Routing to " + x + "/" + y + "/" + z);
 

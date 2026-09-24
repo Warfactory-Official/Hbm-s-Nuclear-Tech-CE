@@ -2,6 +2,7 @@ package com.hbm.render.model;
 
 import com.hbm.blocks.network.energy.BlockCable;
 import com.hbm.render.loader.HFRWavefrontObject;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -24,7 +25,7 @@ public class BlockCableBakedModel extends AbstractWavefrontBakedModel {
     private List<BakedQuad> itemQuads;
 
     private BlockCableBakedModel(HFRWavefrontObject model, TextureAtlasSprite sprite, boolean forBlock, float baseScale, float tx, float ty, float tz, float itemYaw) {
-        super(model, forBlock ? DefaultVertexFormats.BLOCK : DefaultVertexFormats.ITEM, baseScale, tx, ty, tz, BakedModelTransforms.pipeItem());
+        super(model, forBlock ? DefaultVertexFormats.BLOCK : DefaultVertexFormats.ITEM, baseScale, tx, ty, tz, BakedModelTransforms.isbrh());
         this.sprite = sprite;
         this.forBlock = forBlock;
         this.itemYaw = itemYaw;
@@ -34,8 +35,8 @@ public class BlockCableBakedModel extends AbstractWavefrontBakedModel {
         return new BlockCableBakedModel(model, sprite, true, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F);
     }
 
-    public static BlockCableBakedModel forItem(HFRWavefrontObject model, TextureAtlasSprite sprite, float baseScale, float tx, float ty, float tz, float yaw) {
-        return new BlockCableBakedModel(model, sprite, false, baseScale, tx, ty, tz, yaw);
+    public static BlockCableBakedModel forItem(HFRWavefrontObject model, TextureAtlasSprite sprite) {
+        return new BlockCableBakedModel(model, sprite, false, 1.25F, 0.5F, 0.5F, 0.5F, (float) Math.PI);
     }
 
     public static BlockCableBakedModel empty(TextureAtlasSprite sprite) {
@@ -75,7 +76,7 @@ public class BlockCableBakedModel extends AbstractWavefrontBakedModel {
     }
 
     private List<BakedQuad> buildWorldQuads(boolean pX, boolean nX, boolean pY, boolean nY, boolean pZ, boolean nZ) {
-        List<String> parts = new ArrayList<>();
+        Set<String> parts = new ObjectOpenHashSet<>();
 
         if (pX && nX && !pY && !nY && !pZ && !nZ) {
             parts.add("CX");
@@ -97,8 +98,8 @@ public class BlockCableBakedModel extends AbstractWavefrontBakedModel {
     }
 
     private List<BakedQuad> buildItemQuads() {
-        List<String> parts = Arrays.asList("Core", "posX", "negX", "posZ", "negZ");
-        return bakeSimpleQuads(parts, 0.0F, 0.0F, itemYaw, false, false, sprite);
+        Set<String> parts = Set.of("Core", "posX", "negX", "posZ", "negZ");
+        return bakeSimpleQuads(parts, 0.0F, 0.0F, itemYaw, true, false, sprite);
     }
 
     @Override

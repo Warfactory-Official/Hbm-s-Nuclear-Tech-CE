@@ -1,5 +1,6 @@
 package com.hbm.render;
 
+import net.minecraft.client.renderer.GlStateManager;
 import com.hbm.entity.missile.EntityMissileAntiBallistic;
 import com.hbm.entity.missile.EntityMissileBaseNT;
 import com.hbm.entity.missile.EntityMissileCustom;
@@ -8,6 +9,8 @@ import com.hbm.lib.Library;
 import com.hbm.main.ClientProxy;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import com.hbm.util.BobMathUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
@@ -96,11 +99,11 @@ public class NTMRenderHelper {
 	 */
 	public static float[] getScreenAreaFromQuad(Vec3d lb, Vec3d rb, Vec3d rt, Vec3d lt){
 		FloatBuffer mmatrix = GLAllocation.createDirectFloatBuffer(16);
-		GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, mmatrix);
+		GlStateManager.getFloat(GL11.GL_MODELVIEW_MATRIX, mmatrix);
 		FloatBuffer pmatrix = GLAllocation.createDirectFloatBuffer(16);
-		GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, pmatrix);
+		GlStateManager.getFloat(GL11.GL_PROJECTION_MATRIX, pmatrix);
 		IntBuffer vport = GLAllocation.createDirectIntBuffer(16);
-		GL11.glGetInteger(GL11.GL_VIEWPORT, vport);
+		GlStateManager.glGetInteger(GL11.GL_VIEWPORT, vport);
 		
 		FloatBuffer[] points = new FloatBuffer[4];
 		FloatBuffer buf0 = GLAllocation.createDirectFloatBuffer(3);
@@ -157,14 +160,17 @@ public class NTMRenderHelper {
 	}
 
 	//TODO: add some documentation
-	public static void addQuad(BufferBuilder buffer, double x1, double y1, double z1, double x2, double y2, double z2,
-                               double x3, double y3, double z3, double x4, double y4, double z4, int r, int g, int b) {
-		buffer.pos(x1, y1, z1).color(r, g, b, 255).endVertex();
-		buffer.pos(x2, y2, z2).color(r, g, b, 255).endVertex();
-		buffer.pos(x3, y3, z3).color(r, g, b, 255).endVertex();
-		buffer.pos(x4, y4, z4).color(r, g, b, 255).endVertex();
+	public static void addQuad(BufferBuilder buffer, float x1, float y1, float z1, float x2, float y2, float z2,
+                               float x3, float y3, float z3, float x4, float y4, float z4, int r, int g, int b) {
+		((NTMBufferBuilder) buffer).appendPositionColorQuadUnchecked(
+				x1, y1, z1,
+				x2, y2, z2,
+				x3, y3, z3,
+				x4, y4, z4,
+				NTMBufferBuilder.packColor(r, g, b, 255)
+		);
 	}
-	
+
 	public static TextureAtlasSprite getItemTexture(Item item){
 		return getItemTexture(item, 0);
 	}
@@ -173,35 +179,34 @@ public class NTMRenderHelper {
 		return Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(item, null, null).getParticleTexture();
 	}
 	
-	public static void addVertexWithUV(double x, double y, double z, double u, double v){
+	public static void addVertexWithUV(float x, float y, float z, float u, float v){
 		addVertexWithUV(x, y, z, u, v, Tessellator.getInstance());
 	}
-	public static void addVertex(double x, double y, double z){
-		Tessellator.getInstance().getBuffer().pos(x, y, z).endVertex();
+	public static void addVertex(float x, float y, float z){
+		((NTMBufferBuilder) Tessellator.getInstance().getBuffer()).appendPosition(x, y, z);
 	}
-	
-	public static void addVertexWithUV(double x, double y, double z, double u, double v, Tessellator tes){
-		BufferBuilder buf = tes.getBuffer();
-		buf.pos(x, y, z).tex(u, v).endVertex();
+
+	public static void addVertexWithUV(float x, float y, float z, float u, float v, Tessellator tes){
+		((NTMBufferBuilder) tes.getBuffer()).appendPositionTex(x, y, z, u, v);
 	}
 
 	public static void startDrawingTexturedQuads(){
 		startDrawingTexturedQuads(Tessellator.getInstance());
 	}
 	public static void startDrawingQuads(){
-		Tessellator.getInstance().getBuffer().begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION);
+		NTMImmediate.INSTANCE.beginPositionQuads(1);
 	}
 	public static void startDrawingTexturedQuads(Tessellator tes){
-		tes.getBuffer().begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+		NTMImmediate.INSTANCE.beginPositionTexQuads(1);
 	}
 	public static void startDrawingColoredTriangles(Tessellator tes){
-		tes.getBuffer().begin(GL11.GL_TRIANGLE_FAN, DefaultVertexFormats.POSITION_COLOR);
+		NTMImmediate.INSTANCE.beginPositionColor(GL11.GL_TRIANGLE_FAN, 0);
 	}
 	public static void draw(){
 		draw(Tessellator.getInstance());
 	}
 	public static void draw(Tessellator tes){
-		tes.draw();
+		NTMImmediate.INSTANCE.draw();
 	}
 	
 	public static void bindTexture(ResourceLocation resource){
@@ -230,7 +235,7 @@ public class NTMRenderHelper {
 		addVertexWithUV(posX, posY, zLevel, left, down);
 	}
 
-	public static void drawFullTexture(TextureAtlasSprite icon, double posX, double posY, double sizeX, double sizeY, double zLevel, boolean flipped){
+	public static void drawFullTexture(TextureAtlasSprite icon, float posX, float posY, float sizeX, float sizeY, float zLevel, boolean flipped){
 		float up = icon.getInterpolatedV(0);
 		float down = icon.getInterpolatedV(16);
 		float left = icon.getInterpolatedU(0);
@@ -247,7 +252,7 @@ public class NTMRenderHelper {
 			addVertexWithUV(posX, posY, zLevel, left, down);
 		}
 	}
-	
+
 	//Drillgon200: using GLStateManager for this because it caches color values
 	public static void setColor(int color) {
 
@@ -274,16 +279,16 @@ public class NTMRenderHelper {
 		Tessellator.getInstance().getBuffer().begin(i, DefaultVertexFormats.POSITION_COLOR);
 	}
 	
-	public static void addVertexColor(double x, double y, double z, int red, int green, int blue, int alpha){
-		Tessellator.getInstance().getBuffer().pos(x, y, z).color(red, green, blue, alpha).endVertex();
-	}
-	
-	public static void addVertexColor(double x, double y, double z, float red, float green, float blue, float alpha){
-		Tessellator.getInstance().getBuffer().pos(x, y, z).color(red, green, blue, alpha).endVertex();
+	public static void addVertexColor(float x, float y, float z, int red, int green, int blue, int alpha){
+		((NTMBufferBuilder) Tessellator.getInstance().getBuffer()).appendPositionColor(x, y, z, NTMBufferBuilder.packColor(red, green, blue, alpha));
 	}
 
-	public static void addVertexColor(double x, double y, double z, float red, float green, float blue, float alpha, Tessellator tess){
-		tess.getBuffer().pos(x, y, z).color(red, green, blue, alpha).endVertex();
+	public static void addVertexColor(float x, float y, float z, float red, float green, float blue, float alpha){
+		((NTMBufferBuilder) Tessellator.getInstance().getBuffer()).appendPositionColor(x, y, z, NTMBufferBuilder.packColor(red, green, blue, alpha));
+	}
+
+	public static void addVertexColor(float x, float y, float z, float red, float green, float blue, float alpha, Tessellator tess){
+		((NTMBufferBuilder) tess.getBuffer()).appendPositionColor(x, y, z, NTMBufferBuilder.packColor(red, green, blue, alpha));
 	}
 
 	public static void renderAll(IBakedModel boxcar) {
@@ -339,55 +344,59 @@ public class NTMRenderHelper {
 	}
 	
 	public static void drawGuiRect(float x, float y, float u, float v, float width, float height, float uMax, float vMax){
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferbuilder = tessellator.getBuffer();
-        bufferbuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-        bufferbuilder.pos(x, y + height, 0.0D).tex(u, vMax).endVertex();
-        bufferbuilder.pos(x + width, y + height, 0.0D).tex(uMax, vMax).endVertex();
-        bufferbuilder.pos(x + width, y, 0.0D).tex(uMax, v).endVertex();
-        bufferbuilder.pos(x, y, 0.0D).tex(u, v).endVertex();
-        tessellator.draw();
+        NTMBufferBuilder bufferbuilder = NTMImmediate.INSTANCE.beginPositionTexQuads(1);
+        bufferbuilder.appendPositionTexQuadUnchecked(
+                x, y + height, 0.0F, u, vMax,
+                x + width, y + height, 0.0F, uMax, vMax,
+                x + width, y, 0.0F, uMax, v,
+                x, y, 0.0F, u, v
+        );
+        NTMImmediate.INSTANCE.draw();
 	}
 	
 	public static void drawGuiRectColor(float x, float y, float u, float v, float width, float height, float uMax, float vMax, float r, float g, float b, float a){
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferbuilder = tessellator.getBuffer();
-        bufferbuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
-        bufferbuilder.pos(x, y + height, 0.0D).tex(u, vMax).color(r, g, b, a).endVertex();
-        bufferbuilder.pos(x + width, y + height, 0.0D).tex(uMax, vMax).color(r, g, b, a).endVertex();
-        bufferbuilder.pos(x + width, y, 0.0D).tex(uMax, v).color(r, g, b, a).endVertex();
-        bufferbuilder.pos(x, y, 0.0D).tex(u, v).color(r, g, b, a).endVertex();
-        tessellator.draw();
+        NTMBufferBuilder bufferbuilder = NTMImmediate.INSTANCE.beginPositionTexColorQuads(1);
+        int packedColor = NTMBufferBuilder.packColor(r, g, b, a);
+        bufferbuilder.appendPositionTexColorQuadUnchecked(
+                x, y + height, 0.0F, u, vMax, packedColor,
+                x + width, y + height, 0.0F, uMax, vMax, packedColor,
+                x + width, y, 0.0F, uMax, v, packedColor,
+                x, y, 0.0F, u, v, packedColor
+        );
+        NTMImmediate.INSTANCE.draw();
 	}
 	
 	public static void drawGuiRectBatched(float x, float y, float u, float v, float width, float height, float uMax, float vMax){
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferbuilder = tessellator.getBuffer();
-        bufferbuilder.pos(x, y + height, 0.0D).tex(u, vMax).endVertex();
-        bufferbuilder.pos(x + width, y + height, 0.0D).tex(uMax, vMax).endVertex();
-        bufferbuilder.pos(x + width, y, 0.0D).tex(uMax, v).endVertex();
-        bufferbuilder.pos(x, y, 0.0D).tex(u, v).endVertex();
+        NTMBufferBuilder bufferbuilder = (NTMBufferBuilder) Tessellator.getInstance().getBuffer();
+        bufferbuilder.appendPositionTexQuadUnchecked(
+                x, y + height, 0.0F, u, vMax,
+                x + width, y + height, 0.0F, uMax, vMax,
+                x + width, y, 0.0F, uMax, v,
+                x, y, 0.0F, u, v
+        );
 	}
 	
 	public static void drawGuiRectBatchedColor(float x, float y, float u, float v, float width, float height, float uMax, float vMax, float r, float g, float b, float a){
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferbuilder = tessellator.getBuffer();
-        bufferbuilder.pos(x, y + height, 0.0D).tex(u, vMax).color(r, g, b, a).endVertex();
-        bufferbuilder.pos(x + width, y + height, 0.0D).tex(uMax, vMax).color(r, g, b, a).endVertex();
-        bufferbuilder.pos(x + width, y, 0.0D).tex(uMax, v).color(r, g, b, a).endVertex();
-        bufferbuilder.pos(x, y, 0.0D).tex(u, v).color(r, g, b, a).endVertex();
+        NTMBufferBuilder bufferbuilder = (NTMBufferBuilder) Tessellator.getInstance().getBuffer();
+        int packedColor = NTMBufferBuilder.packColor(r, g, b, a);
+        bufferbuilder.appendPositionTexColorQuadUnchecked(
+                x, y + height, 0.0F, u, vMax, packedColor,
+                x + width, y + height, 0.0F, uMax, vMax, packedColor,
+                x + width, y, 0.0F, uMax, v, packedColor,
+                x, y, 0.0F, u, v, packedColor
+        );
 	}
 	
 	@Deprecated
 	private static void initializeFL(){
 		shadowFbo = GL30.glGenFramebuffers();
-		shadowFboTex = GL11.glGenTextures();
+		shadowFboTex = GlStateManager.generateTexture();
 		GlStateManager.bindTexture(shadowFboTex);
 		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL14.GL_DEPTH_COMPONENT32, 1024, 1024, 0, GL11.GL_DEPTH_COMPONENT, GL11.GL_UNSIGNED_INT, (FloatBuffer)null);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
 		GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, shadowFbo);
 		GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL11.GL_TEXTURE_2D, shadowFboTex, 0);
 		clearFLShadowBuffer();
@@ -413,11 +422,11 @@ public class NTMRenderHelper {
 	
 	@Deprecated
 	private static void deleteDeferredFbo(){
-		GL11.glDeleteTextures(deferredColorTex);
-		GL11.glDeleteTextures(deferredPositionTex);
-		GL11.glDeleteTextures(deferredProjCoordTex);
-		GL11.glDeleteTextures(deferredNormalTex);
-		GL11.glDeleteTextures(deferredDepthTex);
+		GlStateManager.deleteTexture(deferredColorTex);
+		GlStateManager.deleteTexture(deferredPositionTex);
+		GlStateManager.deleteTexture(deferredProjCoordTex);
+		GlStateManager.deleteTexture(deferredNormalTex);
+		GlStateManager.deleteTexture(deferredDepthTex);
 		GL30.glDeleteFramebuffers(deferredFbo);
 		deferredColorTex = -1;
 		deferredPositionTex = -1;
@@ -429,48 +438,48 @@ public class NTMRenderHelper {
 	@Deprecated
 	private static void recreateDeferredFbo(){
 		deferredFbo = GL30.glGenFramebuffers();
-		deferredColorTex = GL11.glGenTextures();
+		deferredColorTex = GlStateManager.generateTexture();
 		if(!useFullPost){
-			deferredPositionTex = GL11.glGenTextures();
-			deferredProjCoordTex = GL11.glGenTextures();
-			deferredNormalTex = GL11.glGenTextures();
+			deferredPositionTex = GlStateManager.generateTexture();
+			deferredProjCoordTex = GlStateManager.generateTexture();
+			deferredNormalTex = GlStateManager.generateTexture();
 		} else {
-			deferredDepthTex = GL11.glGenTextures();
+			deferredDepthTex = GlStateManager.generateTexture();
 		}
 		
 		GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, deferredFbo);
 		
 		GlStateManager.bindTexture(deferredColorTex);
 		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, width, height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (FloatBuffer)null);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
 		GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, deferredColorTex, 0);
 		
 		if(!useFullPost){
 			GlStateManager.bindTexture(deferredPositionTex);
 			GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL30.GL_RGBA16F, width, height, 0, GL11.GL_RGBA, GL11.GL_FLOAT, (FloatBuffer)null);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+			GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+			GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+			GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+			GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
 			GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT1, GL11.GL_TEXTURE_2D, deferredPositionTex, 0);
 			
 			GlStateManager.bindTexture(deferredProjCoordTex);
 			GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL30.GL_RGBA16F, width, height, 0, GL11.GL_RGBA, GL11.GL_FLOAT, (FloatBuffer)null);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+			GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+			GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+			GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+			GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
 			GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT2, GL11.GL_TEXTURE_2D, deferredProjCoordTex, 0);
 			
 			GlStateManager.bindTexture(deferredNormalTex);
 			GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL30.GL_RGBA16F, width, height, 0, GL11.GL_RGBA, GL11.GL_FLOAT, (FloatBuffer)null);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+			GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+			GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+			GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+			GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
 			GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT3, GL11.GL_TEXTURE_2D, deferredNormalTex, 0);
 			
 			GL30.glBindRenderbuffer(GL30.GL_RENDERBUFFER, Minecraft.getMinecraft().getFramebuffer().depthBuffer);
@@ -486,10 +495,10 @@ public class NTMRenderHelper {
 		} else {
 			GlStateManager.bindTexture(deferredDepthTex);
 			GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL14.GL_DEPTH_COMPONENT24, width, height, 0, GL11.GL_DEPTH_COMPONENT, GL11.GL_FLOAT, (FloatBuffer)null);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+			GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+			GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+			GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+			GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
 			GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL11.GL_TEXTURE_2D, deferredDepthTex, 0);
 		}
 		
@@ -527,9 +536,9 @@ public class NTMRenderHelper {
 		
     	GlStateManager.pushMatrix();
     	//GlStateManager.translate(0, Minecraft.getMinecraft().getRenderViewEntity().getEyeHeight(), 0);
-    	GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, ClientProxy.AUX_GL_BUFFER);
+    	GlStateManager.getFloat(GL11.GL_MODELVIEW_MATRIX, ClientProxy.AUX_GL_BUFFER);
     	GlStateManager.popMatrix();
-		GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, ClientProxy.AUX_GL_BUFFER2);
+		GlStateManager.getFloat(GL11.GL_PROJECTION_MATRIX, ClientProxy.AUX_GL_BUFFER2);
 		Matrix4f view = new Matrix4f();
 		Matrix4f proj = new Matrix4f();
 		view.load(ClientProxy.AUX_GL_BUFFER);
@@ -621,10 +630,10 @@ public class NTMRenderHelper {
 		GlStateManager.glLineWidth(4);
         RenderGlobal.drawSelectionBoundingBox(box.offset(-entPosX, -entPosY, -entPosZ), 1, 1, 1, 1);
         //WHY WON'T THE TESSELLATOR WORK
-        GL11.glBegin(GL11.GL_LINES);
+        GlStateManager.glBegin(GL11.GL_LINES);
         GL11.glVertex3d(start.x - entPosX, start.y - entPosY, start.z - entPosZ);
         GL11.glVertex3d(end.x - entPosX, end.y - entPosY, end.z - entPosZ);
-        GL11.glEnd();
+        GlStateManager.glEnd();
         GlStateManager.enableTexture2D();
         GlStateManager.popMatrix();
         
@@ -653,12 +662,12 @@ public class NTMRenderHelper {
         GlStateManager.matrixMode(GL11.GL_MODELVIEW);
         Vec3d angles = BobMathUtil.getEulerAngles(startToEnd.normalize());
        // GL11.glRotated(180, 0, 1, 0);
-        GL11.glRotated(-angles.y+270, 1, 0, 0);
-        GL11.glRotated(-angles.x+180, 0, 1, 0);
+        GlStateManager.rotate((float) (-angles.y+270), 1, 0, 0);
+        GlStateManager.rotate((float) (-angles.x+180), 0, 1, 0);
        
         GlStateManager.translate(-(start.x-entPosX), -(start.y-entPosY), -(start.z-entPosZ));
-        GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, ClientProxy.AUX_GL_BUFFER);
-        GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, ClientProxy.AUX_GL_BUFFER2);
+        GlStateManager.getFloat(GL11.GL_PROJECTION_MATRIX, ClientProxy.AUX_GL_BUFFER);
+        GlStateManager.getFloat(GL11.GL_MODELVIEW_MATRIX, ClientProxy.AUX_GL_BUFFER2);
         float[] projecion = new float[16];
         float[] view = new float[16];
         ClientProxy.AUX_GL_BUFFER.get(projecion);
@@ -778,8 +787,8 @@ public class NTMRenderHelper {
 		GlStateManager.pushMatrix();
 		Vec3d angles = BobMathUtil.getEulerAngles(normal);
 		GlStateManager.translate(start.x, start.y, start.z);
-		GL11.glRotated(angles.x+180, 0, 1, 0);
-		GL11.glRotated(angles.y+180, 1, 0, 0);
+		GlStateManager.rotate((float) (angles.x+180), 0, 1, 0);
+		GlStateManager.rotate((float) (angles.y+180), 1, 0, 0);
         
 		
         Tessellator tes = Tessellator.getInstance();
@@ -951,13 +960,11 @@ public class NTMRenderHelper {
         GlStateManager.enableColorMaterial();
 
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferbuilder = tessellator.getBuffer();
-        bufferbuilder.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX);
-        bufferbuilder.pos(-1, -1, 0.0D).tex(0, 0).endVertex();
-        bufferbuilder.pos(3, -1, 0.0D).tex(2, 0).endVertex();
-        bufferbuilder.pos(-1, 3, 0.0D).tex(0, 2).endVertex();
-        tessellator.draw();
+        NTMBufferBuilder bufferbuilder = NTMImmediate.INSTANCE.beginPositionTex(GL11.GL_TRIANGLES, 3);
+        bufferbuilder.appendPositionTex(-1, -1, 0.0F, 0, 0);
+        bufferbuilder.appendPositionTex(3, -1, 0.0F, 2, 0);
+        bufferbuilder.appendPositionTex(-1, 3, 0.0F, 0, 2);
+        NTMImmediate.INSTANCE.draw();
         GlStateManager.depthMask(true);
         GlStateManager.enableDepth();
         GlStateManager.enableAlpha();
@@ -976,18 +983,18 @@ public class NTMRenderHelper {
 	}
 	
 	public static float[] project(float x, float y, float z){
-		GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, MODELVIEW);
-		GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, PROJECTION);
-		GL11.glGetInteger(GL11.GL_VIEWPORT, VIEWPORT);
+		GlStateManager.getFloat(GL11.GL_MODELVIEW_MATRIX, MODELVIEW);
+		GlStateManager.getFloat(GL11.GL_PROJECTION_MATRIX, PROJECTION);
+		GlStateManager.glGetInteger(GL11.GL_VIEWPORT, VIEWPORT);
 		
 		Project.gluProject(x, y, z, MODELVIEW, PROJECTION, VIEWPORT, POSITION);
 		return new float[]{POSITION.get(0), POSITION.get(1), POSITION.get(2)};
 	}
 	
 	public static float[] unproject(float x, float y, float z){
-		GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, MODELVIEW);
-		GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, PROJECTION);
-		GL11.glGetInteger(GL11.GL_VIEWPORT, VIEWPORT);
+		GlStateManager.getFloat(GL11.GL_MODELVIEW_MATRIX, MODELVIEW);
+		GlStateManager.getFloat(GL11.GL_PROJECTION_MATRIX, PROJECTION);
+		GlStateManager.glGetInteger(GL11.GL_VIEWPORT, VIEWPORT);
 		
 		Project.gluUnProject(x, y, z, MODELVIEW, PROJECTION, VIEWPORT, POSITION);
 		return new float[]{POSITION.get(0), POSITION.get(1), POSITION.get(2)};

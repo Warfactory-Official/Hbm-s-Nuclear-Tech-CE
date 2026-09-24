@@ -12,6 +12,7 @@ import com.hbm.lib.TLPool;
 import com.hbm.lib.queues.MpscUnboundedXaddArrayLongQueue;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.saveddata.AuxSavedData;
 import com.hbm.util.DecodeException;
 import com.hbm.util.ObjectPool;
@@ -115,7 +116,7 @@ public final class RadiationSystemNT {
     static final ByteBuffer BUF = ByteBuffer.allocateDirect(65536 * 10 + 4);
 
     static final double RAD_EPSILON = 1.0e-5D;
-    static final double RAD_MAX = Double.MAX_VALUE / 2.0D;
+    public static double RAD_MAX = Double.MAX_VALUE / 2.0D;
     static final double[] TEMP_DENSITIES = new double[MAX_POCKETS];
     static final long DESTROY_PROB_U64 = Long.divideUnsigned(-1L, 100L);
 
@@ -431,14 +432,17 @@ public final class RadiationSystemNT {
 
     @ServerThread
     public static void markSectionForRebuild(World world, BlockPos pos) {
-        if (world.isRemote || !GeneralConfig.advancedRadiation) return;
+        if (world == null || world.isRemote || !GeneralConfig.advancedRadiation) return;
+        if (!(world instanceof WorldServer)) return;
         if (isOutsideWorld(pos)) return;
+
         markSectionForRebuild(world, Library.blockPosToSectionLong(pos));
     }
 
     @ServerThread
     public static void markSectionForRebuild(World world, long sck) {
-        if (world.isRemote || !GeneralConfig.advancedRadiation) return;
+        if (world == null || world.isRemote || !GeneralConfig.advancedRadiation) return;
+        if (!(world instanceof WorldServer)) return;
         WorldServer ws = (WorldServer) world;
         long ck = Library.sectionToChunkLong(sck);
         Chunk chunk = ws.getChunkProvider().loadedChunks.get(ck);
@@ -453,7 +457,8 @@ public final class RadiationSystemNT {
 
     @ServerThread
     public static void markSectionsForRebuild(World world, LongIterable sections) {
-        if (world.isRemote || !GeneralConfig.advancedRadiation) return;
+        if (world == null || world.isRemote || !GeneralConfig.advancedRadiation) return;
+        if (!(world instanceof WorldServer)) return;
         WorldServer ws = (WorldServer) world;
         WorldRadiationData data = getWorldRadData(ws);
         LongIterator it = sections.iterator();
@@ -2047,9 +2052,7 @@ public final class RadiationSystemNT {
                 if (!nearGround) continue;
 
                 float fx = x + 0.5F, fy = y + 0.5F, fz = z + 0.5F;
-                NBTTagCompound tag = new NBTTagCompound();
-                tag.setString("type", "radiationfog");
-                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(tag, fx, fy, fz),
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.RadFog, null, fx, fy, fz),
                         new TargetPoint(world.provider.getDimension(), fx, fy, fz, 100));
                 break;
             }

@@ -4,7 +4,7 @@ import com.hbm.api.block.ICrucibleAcceptor;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
@@ -17,7 +17,7 @@ public class CrucibleUtil {
     /**
      * Standard pouring, casting a hitscan straight down at the given coordinates with the given range. Returns the leftover material, just like ICrucibleAcceptor's pour.
      * The method directly modifies the original stack, so be careful and make a copy beforehand if you don't want that.
-     * Pass an empty Vec3 instance in order to get the impact position of the stream.
+     * Pass an empty Vec3NT instance in order to get the impact position of the stream.
      */
     public static Mats.MaterialStack pourSingleStack(World world, double x, double y, double z, double range, boolean safe, Mats.MaterialStack stack, int quanta, MutableVec3d impactPosHolder) {
 
@@ -47,7 +47,7 @@ public class CrucibleUtil {
     /**
      * Standard pouring, casting a hitscan straight down at the given coordinates with the given range. Returns the materialStack that has been removed.
      * The method doesn't make copies of the MaterialStacks in the list, so the materials being subtracted or outright removed will apply to the original list.
-     * Pass an empty Vec3 instance in order to get the impact position of the stream.
+     * Pass an empty Vec3NT instance in order to get the impact position of the stream.
      */
     public static Mats.MaterialStack pourFullStack(World world, double x, double y, double z, double range, boolean safe, List<Mats.MaterialStack> stacks, int quanta, MutableVec3d impactPosHolder) {
 
@@ -81,7 +81,7 @@ public class CrucibleUtil {
     }
 
     /**
-     * Tries to pour the stack onto the supplied crucible acceptor instance. Also features our friend the Vec3 dummy, which will be filled with the stream's impact position.
+     * Tries to pour the stack onto the supplied crucible acceptor instance. Also features our friend the Vec3NT dummy, which will be filled with the stream's impact position.
      * Returns whatever is left of the stack when successful or null when unsuccessful (potential spillage).
      */
     public static Mats.MaterialStack tryPourStack(World world, ICrucibleAcceptor acc, RayTraceResult mop, Mats.MaterialStack stack, MutableVec3d impactPosHolder) {

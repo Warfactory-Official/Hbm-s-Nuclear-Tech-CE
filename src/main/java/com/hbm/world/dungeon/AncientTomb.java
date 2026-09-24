@@ -113,7 +113,7 @@ public class AncientTomb {
                 }
             }
 
-            sVec.rotateYaw(sRot);
+            sVec.rotateYawSelf(sRot);
         }
 
         for (int dx = x + 4; dx < x + 8; dx++) {
@@ -132,7 +132,7 @@ public class AncientTomb {
         Vec3NT vec = new Vec3NT(20, 0, 0);
         float rot = (float) Math.toRadians(360F / spikeCount);
         for (int i = 0; i < spikeCount; i++) {
-            vec.rotateYaw(rot);
+            vec.rotateYawSelf(rot);
             double variance = 1D + rand.nextDouble() * 0.4D;
             int ix = (int) (x + vec.x * variance);
             int iz = (int) (z + vec.z * variance);

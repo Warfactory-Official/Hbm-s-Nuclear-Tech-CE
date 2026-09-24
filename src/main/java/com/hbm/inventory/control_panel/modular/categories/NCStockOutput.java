@@ -1,14 +1,9 @@
 package com.hbm.inventory.control_panel.modular.categories;
 
-import com.hbm.inventory.control_panel.DataValue;
-import com.hbm.inventory.control_panel.DataValueFloat;
 import com.hbm.inventory.control_panel.ItemList;
 import com.hbm.inventory.control_panel.SubElementNodeEditor;
 import com.hbm.inventory.control_panel.modular.INodeMenuCreator;
 import com.hbm.inventory.control_panel.nodes.*;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class NCStockOutput implements INodeMenuCreator {
 	@Override
@@ -18,7 +13,9 @@ public class NCStockOutput implements INodeMenuCreator {
 		} else if(s2.equals("Cancel")){
 			return new NodeCancelEvent(x, y);
 		} else if(s2.equals("Set Variable")){
-			return new NodeSetVar(x, y, editor.gui.currentEditControl);
+			return new NodeSetVar(x, y, editor.currentSystem.parent);
+		} else if(s2.equals("Redstone Output")){
+			return new NodeRedstoneOutput(x, y);
 		}
 		return null;
 	}
@@ -31,5 +28,6 @@ public class NCStockOutput implements INodeMenuCreator {
 			list.addItems("Cancel");
 		}
 		list.addItems("Set Variable");
+		list.addItems("Redstone Output");
 	}
 }

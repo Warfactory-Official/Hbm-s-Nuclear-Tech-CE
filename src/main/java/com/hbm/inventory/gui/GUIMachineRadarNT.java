@@ -4,7 +4,7 @@ import com.hbm.Tags;
 import com.hbm.api.entity.RadarEntry;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.packet.toserver.NBTControlPacket;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.tileentity.machine.TileEntityMachineRadarNT;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.I18nUtil;
@@ -169,13 +169,13 @@ public class GUIMachineRadarNT extends GuiScreen {
             GlStateManager.enableTexture2D();
         }
 
-        Vec3 tr = Vec3.createVectorHelper(100, 0, 0);
-        Vec3 tl = Vec3.createVectorHelper(100, 0, 0);
-        Vec3 bl = Vec3.createVectorHelper(0, -5, 0);
+        Vec3NT tr = Vec3NT.createVectorHelper(100, 0, 0);
+        Vec3NT tl = Vec3NT.createVectorHelper(100, 0, 0);
+        Vec3NT bl = Vec3NT.createVectorHelper(0, -5, 0);
         float rot = (float) -Math.toRadians(radar.prevRotation + (radar.rotation - radar.prevRotation) * f + 180F);
-        tr.rotateAroundZ(rot);
-        tl.rotateAroundZ(rot + 0.25F);
-        bl.rotateAroundZ(rot);
+        tr.rotateRollSelf(rot);
+        tl.rotateRollSelf(rot + 0.25F);
+        bl.rotateRollSelf(rot);
 
         GlStateManager.disableTexture2D();
         GlStateManager.enableBlend();
@@ -185,9 +185,9 @@ public class GUIMachineRadarNT extends GuiScreen {
         BufferBuilder buf = tess.getBuffer();
         buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
         buf.pos(guiLeft + 108, guiTop + 117, this.zLevel).color(0, 255, 0, 0).endVertex();
-        buf.pos(guiLeft + 108 + tr.xCoord, guiTop + 117 + tr.yCoord, this.zLevel).color(0, 255, 0, 255).endVertex();
-        buf.pos(guiLeft + 108 + tl.xCoord, guiTop + 117 + tl.yCoord, this.zLevel).color(0, 255, 0, 0).endVertex();
-        buf.pos(guiLeft + 108 + bl.xCoord, guiTop + 117 + bl.yCoord, this.zLevel).color(0, 255, 0, 0).endVertex();
+        buf.pos(guiLeft + 108 + tr.x, guiTop + 117 + tr.y, this.zLevel).color(0, 255, 0, 255).endVertex();
+        buf.pos(guiLeft + 108 + tl.x, guiTop + 117 + tl.y, this.zLevel).color(0, 255, 0, 0).endVertex();
+        buf.pos(guiLeft + 108 + bl.x, guiTop + 117 + bl.y, this.zLevel).color(0, 255, 0, 0).endVertex();
         tess.draw();
         GlStateManager.enableTexture2D();
         GlStateManager.disableBlend();

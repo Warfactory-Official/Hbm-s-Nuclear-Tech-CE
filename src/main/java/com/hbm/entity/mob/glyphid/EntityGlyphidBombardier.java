@@ -4,7 +4,7 @@ import com.hbm.entity.projectile.EntityAcidBomb;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.ResourceManager;
 import com.hbm.entity.mob.glyphid.GlyphidStats.StatBundle;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -62,7 +62,7 @@ public class EntityGlyphidBombardier extends EntityGlyphid {
                 double velY = e.posY - lastY;
                 double velZ = e.posZ - lastZ;
 
-                if(this.lastTarget != e || Vec3.createVectorHelper(velX, velY, velZ).length() > 30) {
+                if(this.lastTarget != e || Vec3NT.createVectorHelper(velX, velY, velZ).length() > 30) {
                     velX = velY = velZ = 0;
                 }
 
@@ -71,13 +71,13 @@ public class EntityGlyphidBombardier extends EntityGlyphid {
                 }
 
                 int prediction = topAttack ? 60 : 20;
-                Vec3 delta = Vec3.createVectorHelper(e.posX - posX + velX * prediction, (e.posY + e.height / 2) - (posY + 1) + velY * prediction, e.posZ - posZ + velZ * prediction);
+                Vec3NT delta = Vec3NT.createVectorHelper(e.posX - posX + velX * prediction, (e.posY + e.height / 2) - (posY + 1) + velY * prediction, e.posZ - posZ + velZ * prediction);
                 double len = delta.length();
                 if(len < 3) return;
-                double targetYaw = -Math.atan2(delta.xCoord, delta.zCoord);
+                double targetYaw = -Math.atan2(delta.x, delta.z);
 
-                double x = Math.sqrt(delta.xCoord * delta.xCoord + delta.zCoord * delta.zCoord);
-                double y = delta.yCoord;
+                double x = Math.sqrt(delta.x * delta.x + delta.z * delta.z);
+                double y = delta.y;
                 double v0 = getV0();
                 double v02 = v0 * v0;
                 double g = 0.04D;
@@ -86,14 +86,14 @@ public class EntityGlyphidBombardier extends EntityGlyphid {
 
                 if(!Double.isNaN(targetPitch)) {
 
-                    Vec3 fireVec = Vec3.createVectorHelper(v0, 0, 0);
-                    fireVec.rotateAroundZ((float) -targetPitch);
-                    fireVec.rotateAroundY((float) -(targetYaw + Math.PI * 0.5));
+                    Vec3NT fireVec = Vec3NT.createVectorHelper(v0, 0, 0);
+                    fireVec.rotateRollSelf((float) -targetPitch);
+                    fireVec.rotateYawSelf((float) -(targetYaw + Math.PI * 0.5));
 
                     for(int i = 0; i < getBombCount(); i++) {
                         EntityAcidBomb bomb = new EntityAcidBomb(world, posX, posY + 1, posZ);
                         bomb.setThrower(this);
-                        bomb.shoot(fireVec.xCoord, fireVec.yCoord, fireVec.zCoord, (float) v0, i * getSpreadMult());
+                        bomb.shoot(fireVec.x, fireVec.y, fireVec.z, (float) v0, i * getSpreadMult());
                         bomb.damage = getBombDamage();
                         world.spawnEntity(bomb);
                     }

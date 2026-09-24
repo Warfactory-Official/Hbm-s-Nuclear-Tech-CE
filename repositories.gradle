@@ -30,4 +30,8 @@ repositories {
         name = 'CoFH Maven'
         url = 'https://maven.covers1624.net'
     }
+    maven {
+        name = 'OC Maven'
+        url = 'https://maven.cil.li'
+    }
 }

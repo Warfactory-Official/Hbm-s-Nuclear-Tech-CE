@@ -4,6 +4,8 @@ import com.hbm.inventory.RecipesCommon.ComparableStack;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
@@ -144,6 +146,12 @@ public class ItemStackUtil {
 
         return stack;
     }
+
+	public static void addNBTFromString(ItemStack stack, String nbt) {
+		try {
+			stack.setTagCompound(JsonToNBT.getTagFromJson(nbt));
+		} catch(NBTException ignored) { }
+	}
 
 	public static void addStacksToNBT(final ItemStack stack, final ItemStack... stacks) {
 

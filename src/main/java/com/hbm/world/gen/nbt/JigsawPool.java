@@ -23,7 +23,12 @@ public class JigsawPool {
 		totalWeight += weight;
 	}
 
-	protected JigsawPool clone() throws CloneNotSupportedException {
+	public int getAverageWeight() {
+		if(pieces.isEmpty()) return 1;
+		return totalWeight / pieces.size();
+	}
+
+	protected JigsawPool clone() {
 		JigsawPool clone = new JigsawPool();
 		clone.pieces = new ArrayList<>(this.pieces);
 		clone.fallback = this.fallback;

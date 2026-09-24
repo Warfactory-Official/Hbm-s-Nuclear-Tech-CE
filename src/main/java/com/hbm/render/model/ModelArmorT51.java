@@ -23,60 +23,25 @@ public class ModelArmorT51 extends ModelArmorBase {
     }
 
     @Override
-    public void render(Entity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor) {
-
-        super.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entity);
-
-        GL11.glPushMatrix();
-        GL11.glShadeModel(GL11.GL_SMOOTH);
-
-        if(this.type == 0) {
-            bindTexture(ResourceManager.t51_helmet);
-            this.head.render(scaleFactor);
-        }
-        if(this.type == 1) {
-            bindTexture(ResourceManager.t51_chest);
-            this.body.render(scaleFactor);
-
-            bindTexture(ResourceManager.t51_arm);
-            this.leftArm.render(scaleFactor);
-            this.rightArm.render(scaleFactor);
-        }
-        if(this.type == 2) {
-            bindTexture(ResourceManager.t51_leg);
-            this.leftLeg.render(scaleFactor);
-            this.rightLeg.render(scaleFactor);
-        }
-        if(this.type == 3) {
-            bindTexture(ResourceManager.t51_leg);
-            this.leftFoot.render(scaleFactor);
-            this.rightFoot.render(scaleFactor);
-        }
-
-        GL11.glShadeModel(GL11.GL_FLAT);
-        GL11.glPopMatrix();
-    }
-
-    @Override
     public void renderArmor(Entity par1Entity, float scale) {
         switch (type) {
-            case 3 -> {
+            case 0 -> {
                 bindTexture(ResourceManager.t51_helmet);
                 head.render(scale * 1.001F);
             }
-            case 2 -> {
+            case 1 -> {
                 bindTexture(ResourceManager.t51_chest);
                 body.render(scale);
                 bindTexture(ResourceManager.t51_arm);
                 leftArm.render(scale);
                 rightArm.render(scale);
             }
-            case 1 -> {
+            case 2 -> {
                 bindTexture(ResourceManager.t51_leg);
                 leftLeg.render(scale);
                 rightLeg.render(scale);
             }
-            case 0 -> {
+            case 3 -> {
                 bindTexture(ResourceManager.t51_leg);
                 leftFoot.render(scale);
                 rightFoot.render(scale);

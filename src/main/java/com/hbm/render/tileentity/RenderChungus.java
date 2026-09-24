@@ -15,12 +15,6 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister
 public class RenderChungus extends TileEntitySpecialRenderer<TileEntityChungus>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityChungus te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityChungus turbine,

@@ -11,6 +11,7 @@ import com.hbm.packet.toserver.AuxButtonPacket;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.particle.ParticleCrucibleLightning;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.anim.HbmAnimations;
 import com.hbm.render.anim.HbmAnimations.Animation;
 import com.hbm.render.anim.HbmAnimations.BlenderAnimation;
@@ -36,6 +37,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.UUID;
@@ -67,14 +69,14 @@ public class ItemCrucible extends ItemSwordCutter implements IPostRender {
 	}
 	
 	@Override
-	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items){
+	public void getSubItems(@NotNull CreativeTabs tab, @NotNull NonNullList<ItemStack> items){
 		if(tab == this.getCreativeTab() || tab == CreativeTabs.SEARCH){
 			items.add(charge(new ItemStack(this)));
 		}
 	}
 	
 	@Override
-	public boolean onEntitySwing(EntityLivingBase entityLiving, ItemStack stack) {
+	public boolean onEntitySwing(EntityLivingBase entityLiving, @NotNull ItemStack stack) {
 		if(!(entityLiving instanceof EntityPlayerMP)){
 			super.onEntitySwing(entityLiving, stack);
 			return true;
@@ -83,11 +85,10 @@ public class ItemCrucible extends ItemSwordCutter implements IPostRender {
 			EnumHand hand = stack == entityLiving.getHeldItemMainhand() ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND;
 			
 			NBTTagCompound nbt = new NBTTagCompound();
-			nbt.setString("type", "anim");
 			nbt.setInteger("hand", hand.ordinal());
 			nbt.setString("mode", "cSwing");
 			nbt.setString("name", this.getRegistryName().getPath());
-			PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(nbt, 0, 0, 0), (EntityPlayerMP)entityLiving);
+			PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Anim, nbt, 0, 0, 0), (EntityPlayerMP)entityLiving);
 		}
 		if(getCharges(stack) > 0)
 			entityLiving.world.playSound(null, entityLiving.posX, entityLiving.posY, entityLiving.posZ, HBMSoundHandler.crucibleSwing, SoundCategory.PLAYERS, 1, 1);
@@ -101,7 +102,7 @@ public class ItemCrucible extends ItemSwordCutter implements IPostRender {
 	}
 	
 	@Override
-	public void onUpdate(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
+	public void onUpdate(@NotNull ItemStack stack, @NotNull World worldIn, @NotNull Entity entityIn, int itemSlot, boolean isSelected) {
 		if(isSelected && worldIn.isRemote && getCharges(stack) > 0 && entityIn instanceof EntityPlayer){
 			updateClient(worldIn, (EntityPlayer) entityIn, itemSlot);
 		}
@@ -136,12 +137,10 @@ public class ItemCrucible extends ItemSwordCutter implements IPostRender {
 				int count = Math.min((int)Math.ceil(victim.getMaxHealth() / 3D), 250);
 
 				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "vanillaburst");
 				data.setInteger("count", count * 4);
 				data.setDouble("motion", 0.1D);
-				data.setString("mode", "blockdust");
 				data.setInteger("block", Block.getIdFromBlock(Blocks.REDSTONE_BLOCK));
-				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, victim.posX, victim.posY + victim.height * 0.5, victim.posZ), new TargetPoint(victim.dimension, victim.posX, victim.posY + victim.height * 0.5, victim.posZ, 50));
+				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.VanillaBurst_BlockDust, data, victim.posX, victim.posY + victim.height * 0.5, victim.posZ), new TargetPoint(victim.dimension, victim.posX, victim.posY + victim.height * 0.5, victim.posZ, 50));
 			}
 		}
 		return super.hitEntity(stack, victim, attacker);
@@ -149,18 +148,18 @@ public class ItemCrucible extends ItemSwordCutter implements IPostRender {
 	
 	@Override
 	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn){
-		String charge = TextFormatting.RED + "Charge [";
+		StringBuilder charge = new StringBuilder(TextFormatting.RED + "Charge [");
 		
 		int charges = getCharges(stack);
 		for(int i = 0; i < GeneralConfig.crucibleMaxCharges; i++)
 			if(charges > i)
-				charge += "||||||";
+				charge.append("||||||");
 			else
-				charge += "   ";
+				charge.append("   ");
 		
-		charge += "]";
+		charge.append("]");
 		
-		list.add(charge);
+		list.add(charge.toString());
 	}
 	
 	public static int getCharges(ItemStack stack){
@@ -184,18 +183,18 @@ public class ItemCrucible extends ItemSwordCutter implements IPostRender {
 	}
 	
 	@Override
-	public boolean showDurabilityBar(ItemStack stack){
+	public boolean showDurabilityBar(@NotNull ItemStack stack){
 		return true;
 	}
 	
 	@Override
-	public double getDurabilityForDisplay(ItemStack stack){
+	public double getDurabilityForDisplay(@NotNull ItemStack stack){
 		return 1-(double)getCharges(stack)/GeneralConfig.crucibleMaxCharges;
 	}
 	
 	@Override
-	public Multimap<String, AttributeModifier> getAttributeModifiers(EntityEquipmentSlot slot, ItemStack stack){
-		Multimap<String, AttributeModifier> map = HashMultimap.<String, AttributeModifier> create();
+	public @NotNull Multimap<String, AttributeModifier> getAttributeModifiers(@NotNull EntityEquipmentSlot slot, @NotNull ItemStack stack){
+		Multimap<String, AttributeModifier> map = HashMultimap.create();
 		boolean charged = getCharges(stack) > 0;
 		if(slot == EntityEquipmentSlot.MAINHAND) {
 			map.put(SharedMonsterAttributes.MOVEMENT_SPEED.getName(), new AttributeModifier(UUID.fromString("91AEAA56-376B-4498-935B-2F7F68070635"), "Tool modifier", charged ? movement : movement*0.8F, 1));

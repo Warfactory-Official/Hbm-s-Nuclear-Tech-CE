@@ -5,6 +5,7 @@ import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
@@ -47,10 +48,7 @@ public class TileEntityFireworks extends TileEntity implements ITickable {
 					charges--;
 					this.markDirty();
 
-					NBTTagCompound data = new NBTTagCompound();
-					data.setString("type", "vanillaExt");
-					data.setString("mode", "flame");
-					PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.getX() + 0.5 + offX, pos.getY() + 1.125, pos.getZ() + 0.5 + offZ), new TargetPoint(this.world.provider.getDimension(), pos.getX() + 0.5 + offX, pos.getY() + 1.125, pos.getZ() + 0.5 + offZ, 100));
+					PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.VanillaExt_Flame, null, pos.getX() + 0.5 + offX, pos.getY() + 1.125, pos.getZ() + 0.5 + offZ), new TargetPoint(this.world.provider.getDimension(), pos.getX() + 0.5 + offX, pos.getY() + 1.125, pos.getZ() + 0.5 + offZ, 100));
 
 					index++;
 

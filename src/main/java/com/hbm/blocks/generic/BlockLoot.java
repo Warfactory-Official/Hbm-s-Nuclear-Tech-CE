@@ -45,7 +45,7 @@ import java.util.Objects;
 
 public class BlockLoot extends BlockContainer implements IDynamicModels {
 
-    private final BlockBakeFrame blockFrame = new BlockBakeFrame("block_steel");
+    private final BlockBakeFrame blockFrame = BlockBakeFrame.cubeAll("block_steel");
 
     private static final AxisAlignedBB SLAB_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 1.0D, 0.0625D, 1.0D);
 
@@ -140,6 +140,7 @@ public class BlockLoot extends BlockContainer implements IDynamicModels {
     @AutoRegister
     public static class TileEntityLoot extends TileEntity {
         public final List<Quartet<ItemStack, Double, Double, Double>> items = new ArrayList<>();
+        private AxisAlignedBB bb;
 
         public TileEntityLoot addItem(ItemStack stack, double x, double y, double z) {
             items.add(new Quartet<>(stack, x, y, z));
@@ -203,13 +204,19 @@ public class BlockLoot extends BlockContainer implements IDynamicModels {
             }
             return nbt;
         }
+
+        @Override
+        public AxisAlignedBB getRenderBoundingBox() {
+            if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 3, pos.getZ() + 1);
+            return bb;
+        }
     }
 
     @SideOnly(Side.CLIENT)
     @Override
     public void bakeModel(ModelBakeEvent event) {
         try {
-            IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation(blockFrame.getBaseModel()));
+            IModel baseModel = ModelLoaderRegistry.getModel(blockFrame.getBaseModelLocation());
             ImmutableMap.Builder<String, String> textureMap = ImmutableMap.builder();
             blockFrame.putTextures(textureMap);
             IModel retexturedModel = baseModel.retexture(textureMap.build());

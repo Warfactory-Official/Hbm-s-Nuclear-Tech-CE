@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.slot.SlotNonRetarded;
 import com.hbm.items.machine.ItemMold;
@@ -15,6 +16,11 @@ import org.jetbrains.annotations.NotNull;
 public class ContainerMachineStrandCaster extends Container {
 
   protected TileEntityMachineStrandCaster caster;
+
+  private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(7)
+                                                                            .rule(0, 1, s -> s.getItem() instanceof ItemMold)
+                                                                            .genericMachineRange(1)
+                                                                            .build();
 
   public ContainerMachineStrandCaster(
       InventoryPlayer invPlayer, TileEntityMachineStrandCaster caster) {
@@ -44,8 +50,7 @@ public class ContainerMachineStrandCaster extends Container {
 
   @Override
   public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-    return InventoryUtil.transferStack(this.inventorySlots, index, 7,
-            s -> s.getItem() instanceof ItemMold, 1);
+    return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
   }
 
   @Override

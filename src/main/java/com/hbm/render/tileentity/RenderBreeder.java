@@ -14,12 +14,6 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister
 public class RenderBreeder extends TileEntitySpecialRenderer<TileEntityMachineReactorBreeding>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityMachineReactorBreeding te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityMachineReactorBreeding breeder,
@@ -68,7 +62,7 @@ public class RenderBreeder extends TileEntitySpecialRenderer<TileEntityMachineRe
         GlStateManager.popMatrix();
       }
 
-    GL11.glScaled(0.5, 0.5, 0.5);
+    GlStateManager.scale(0.5, 0.5, 0.5);
 
     bindTexture(ResourceManager.breeder_tex);
 

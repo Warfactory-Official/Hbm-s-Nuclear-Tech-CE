@@ -1,8 +1,8 @@
 {
 	"variants": {
 		"facing=north": { "model": "hbm:bomb_multi" },
-     	   	"facing=south": { "model": "hbm:bomb_multi", "y": 180 },
-      	  	"facing=west":  { "model": "hbm:bomb_multi", "y": 270 },
-      		"facing=east":  { "model": "hbm:bomb_multi", "y": 90 }
+		"facing=south": { "model": "hbm:bomb_multi", "y": 180 },
+		"facing=west":  { "model": "hbm:bomb_multi", "y": 90 },
+		"facing=east":  { "model": "hbm:bomb_multi", "y": 270 }
 	}
 }

@@ -1,6 +1,6 @@
 package com.hbm.physics;
 
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.util.BobMathUtil;
 
 public class ContactManifold {
@@ -30,7 +30,7 @@ public class ContactManifold {
 				removeContact(i);
 				i --;
 			} else {
-				Vec3 proj = c.globalA.subtract(c.normal.mult(c.depth));
+				Vec3NT proj = c.globalA.subtract(c.normal.mult(c.depth));
 				double orthoDistToB = proj.subtract(c.globalB).lengthSquared();
 				if(orthoDistToB > CONTACT_BREAK_SQ){
 					removeContact(i);
@@ -89,23 +89,23 @@ public class ContactManifold {
 		}
 		double res0 = 0F, res1 = 0F, res2 = 0F, res3 = 0F;
 		if(deepIdx != 0){
-			Vec3 a = c.localA.subtract(contacts[1].localA);
-			Vec3 b = contacts[3].localA.subtract(contacts[2].localA);
+			Vec3NT a = c.localA.subtract(contacts[1].localA);
+			Vec3NT b = contacts[3].localA.subtract(contacts[2].localA);
 			res0 = a.crossProduct(b).lengthSquared();
 		}
 		if(deepIdx != 1){
-			Vec3 a = c.localA.subtract(contacts[0].localA);
-			Vec3 b = contacts[3].localA.subtract(contacts[2].localA);
+			Vec3NT a = c.localA.subtract(contacts[0].localA);
+			Vec3NT b = contacts[3].localA.subtract(contacts[2].localA);
 			res1 = a.crossProduct(b).lengthSquared();
 		}
 		if(deepIdx != 2){
-			Vec3 a = c.localA.subtract(contacts[0].localA);
-			Vec3 b = contacts[3].localA.subtract(contacts[1].localA);
+			Vec3NT a = c.localA.subtract(contacts[0].localA);
+			Vec3NT b = contacts[3].localA.subtract(contacts[1].localA);
 			res2 = a.crossProduct(b).lengthSquared();
 		}
 		if(deepIdx != 3){
-			Vec3 a = c.localA.subtract(contacts[0].localA);
-			Vec3 b = contacts[2].localA.subtract(contacts[1].localA);
+			Vec3NT a = c.localA.subtract(contacts[0].localA);
+			Vec3NT b = contacts[2].localA.subtract(contacts[1].localA);
 			res3 = a.crossProduct(b).lengthSquared();
 		}
 		return BobMathUtil.absMaxIdx(res0, res1, res2, res3);

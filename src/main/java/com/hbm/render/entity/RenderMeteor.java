@@ -46,35 +46,35 @@ public class RenderMeteor extends Render<EntityMeteor> {
 		GlStateManager.rotate(180, 0F, 0F, 1F);
 		NTMRenderHelper.startDrawingTexturedQuads();
 		
-			NTMRenderHelper.addVertexWithUV(-0.5, -0.5, -0.5, 1, 0);
-			NTMRenderHelper.addVertexWithUV(+0.5, -0.5, -0.5, 0, 0);
-			NTMRenderHelper.addVertexWithUV(+0.5, +0.5, -0.5, 0, 1);
-			NTMRenderHelper.addVertexWithUV(-0.5, +0.5, -0.5, 1, 1);
+			NTMRenderHelper.addVertexWithUV(-0.5F, -0.5F, -0.5F, 1, 0);
+			NTMRenderHelper.addVertexWithUV(+0.5F, -0.5F, -0.5F, 0, 0);
+			NTMRenderHelper.addVertexWithUV(+0.5F, +0.5F, -0.5F, 0, 1);
+			NTMRenderHelper.addVertexWithUV(-0.5F, +0.5F, -0.5F, 1, 1);
 
-			NTMRenderHelper.addVertexWithUV(-0.5, -0.5, +0.5, 1, 0);
-			NTMRenderHelper.addVertexWithUV(-0.5, -0.5, -0.5, 0, 0);
-			NTMRenderHelper.addVertexWithUV(-0.5, +0.5, -0.5, 0, 1);
-			NTMRenderHelper.addVertexWithUV(-0.5, +0.5, +0.5, 1, 1);
+			NTMRenderHelper.addVertexWithUV(-0.5F, -0.5F, +0.5F, 1, 0);
+			NTMRenderHelper.addVertexWithUV(-0.5F, -0.5F, -0.5F, 0, 0);
+			NTMRenderHelper.addVertexWithUV(-0.5F, +0.5F, -0.5F, 0, 1);
+			NTMRenderHelper.addVertexWithUV(-0.5F, +0.5F, +0.5F, 1, 1);
 
-			NTMRenderHelper.addVertexWithUV(+0.5, -0.5, +0.5, 1, 0);
-			NTMRenderHelper.addVertexWithUV(-0.5, -0.5, +0.5, 0, 0);
-			NTMRenderHelper.addVertexWithUV(-0.5, +0.5, +0.5, 0, 1);
-			NTMRenderHelper.addVertexWithUV(+0.5, +0.5, +0.5, 1, 1);
+			NTMRenderHelper.addVertexWithUV(+0.5F, -0.5F, +0.5F, 1, 0);
+			NTMRenderHelper.addVertexWithUV(-0.5F, -0.5F, +0.5F, 0, 0);
+			NTMRenderHelper.addVertexWithUV(-0.5F, +0.5F, +0.5F, 0, 1);
+			NTMRenderHelper.addVertexWithUV(+0.5F, +0.5F, +0.5F, 1, 1);
 
-			NTMRenderHelper.addVertexWithUV(+0.5, -0.5, -0.5, 1, 0);
-			NTMRenderHelper.addVertexWithUV(+0.5, -0.5, +0.5, 0, 0);
-			NTMRenderHelper.addVertexWithUV(+0.5, +0.5, +0.5, 0, 1);
-			NTMRenderHelper.addVertexWithUV(+0.5, +0.5, -0.5, 1, 1);
+			NTMRenderHelper.addVertexWithUV(+0.5F, -0.5F, -0.5F, 1, 0);
+			NTMRenderHelper.addVertexWithUV(+0.5F, -0.5F, +0.5F, 0, 0);
+			NTMRenderHelper.addVertexWithUV(+0.5F, +0.5F, +0.5F, 0, 1);
+			NTMRenderHelper.addVertexWithUV(+0.5F, +0.5F, -0.5F, 1, 1);
 
-			NTMRenderHelper.addVertexWithUV(-0.5, -0.5, +0.5, 1, 0);
-			NTMRenderHelper.addVertexWithUV(+0.5, -0.5, +0.5, 0, 0);
-			NTMRenderHelper.addVertexWithUV(+0.5, -0.5, -0.5, 0, 1);
-			NTMRenderHelper.addVertexWithUV(-0.5, -0.5, -0.5, 1, 1);
+			NTMRenderHelper.addVertexWithUV(-0.5F, -0.5F, +0.5F, 1, 0);
+			NTMRenderHelper.addVertexWithUV(+0.5F, -0.5F, +0.5F, 0, 0);
+			NTMRenderHelper.addVertexWithUV(+0.5F, -0.5F, -0.5F, 0, 1);
+			NTMRenderHelper.addVertexWithUV(-0.5F, -0.5F, -0.5F, 1, 1);
 
-			NTMRenderHelper.addVertexWithUV(+0.5, +0.5, +0.5, 1, 0);
-			NTMRenderHelper.addVertexWithUV(-0.5, +0.5, +0.5, 0, 0);
-			NTMRenderHelper.addVertexWithUV(-0.5, +0.5, -0.5, 0, 1);
-			NTMRenderHelper.addVertexWithUV(+0.5, +0.5, -0.5, 1, 1);
+			NTMRenderHelper.addVertexWithUV(+0.5F, +0.5F, +0.5F, 1, 0);
+			NTMRenderHelper.addVertexWithUV(-0.5F, +0.5F, +0.5F, 0, 0);
+			NTMRenderHelper.addVertexWithUV(-0.5F, +0.5F, -0.5F, 0, 1);
+			NTMRenderHelper.addVertexWithUV(+0.5F, +0.5F, -0.5F, 1, 1);
 		NTMRenderHelper.draw();
 		GlStateManager.popMatrix();
 		

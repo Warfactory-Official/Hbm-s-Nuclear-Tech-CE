@@ -199,8 +199,6 @@ public class TileEntityDiFurnaceRTG extends TileEntityMachineBase implements ITi
             if (new1.getCount() <= 0) new1 = ItemStack.EMPTY;
             inventory.setStackInSlot(1, new1);
         }
-
-        this.markDirty();
     }
 
     public boolean hasPower() {

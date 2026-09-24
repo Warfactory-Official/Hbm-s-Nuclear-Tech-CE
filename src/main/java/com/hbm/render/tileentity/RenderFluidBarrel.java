@@ -19,7 +19,7 @@ public class RenderFluidBarrel extends TileEntitySpecialRenderer<TileEntityBarre
 		GlStateManager.enableLighting();
 		FluidType type = barrel.tankNew.getTankType();
 
-		if(type != null && type != Fluids.NONE) {
+		if(type != Fluids.NONE) {
 			RenderHelper.disableStandardItemLighting();
 			GlStateManager.pushMatrix();
 
@@ -31,8 +31,8 @@ public class RenderFluidBarrel extends TileEntitySpecialRenderer<TileEntityBarre
 			for(int j = 0; j < 4; j++) {
 
 				GlStateManager.pushMatrix();
-				GlStateManager.translate(0.4, 0.25, -0.15);
-				GlStateManager.scale(1.0F, 0.35F, 0.35F);
+				GlStateManager.translate(0.4, 0.30, -0.24);
+				GlStateManager.scale(1.0F, 0.25F, 0.25F);
 				DiamondPronter.pront(poison, flammability, reactivity, symbol);
 				GlStateManager.popMatrix();
 				GlStateManager.rotate(90, 0, 1, 0);

@@ -5,7 +5,7 @@ import com.hbm.handler.HbmShaderManager2;
 import com.hbm.main.ClientProxy;
 import com.hbm.physics.RigidBody;
 import com.hbm.render.NTMRenderHelper;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -26,7 +26,7 @@ public class ParticleSlicedMob extends Particle {
 	public RigidBody body;
 	
 	public ParticleSlicedMob(World worldIn, RigidBody body, int cutMob, int cap, ResourceLocation tex, ResourceLocation capTex, float capBloom) {
-		super(worldIn, body.globalCentroid.xCoord, body.globalCentroid.yCoord, body.globalCentroid.zCoord);
+		super(worldIn, body.globalCentroid.x, body.globalCentroid.y, body.globalCentroid.z);
 		this.body = body;
 		this.cutMob = cutMob;
 		this.cap = cap;
@@ -39,14 +39,14 @@ public class ParticleSlicedMob extends Particle {
 	@Override
 	public void onUpdate() {
 		body.minecraftTimestep();
-		this.posX = body.globalCentroid.xCoord;
-		this.posY = body.globalCentroid.yCoord;
-		this.posZ = body.globalCentroid.zCoord;
+		this.posX = body.globalCentroid.x;
+		this.posY = body.globalCentroid.y;
+		this.posZ = body.globalCentroid.z;
 		this.particleAge ++;
 		if(particleAge >= particleMaxAge){
 			setExpired();
-			GL11.glDeleteLists(cutMob, 1);
-			GL11.glDeleteLists(cap, 1);
+			GlStateManager.glDeleteLists(cutMob, 1);
+			GlStateManager.glDeleteLists(cap, 1);
 		}
 	}
 	
@@ -70,8 +70,8 @@ public class ParticleSlicedMob extends Particle {
 		Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
 		NTMRenderHelper.resetParticleInterpPos(entityIn, partialTicks);
 		NTMRenderHelper.resetColor();
-		body.doGlTransform(new Vec3(interpPosX, interpPosY, interpPosZ), partialTicks);
-		GL11.glCallList(cutMob);
+		body.doGlTransform(new Vec3NT(interpPosX, interpPosY, interpPosZ), partialTicks);
+		GlStateManager.callList(cutMob);
 		Minecraft.getMinecraft().getTextureManager().bindTexture(capTex);
 		GlStateManager.enablePolygonOffset();
 		GlStateManager.doPolygonOffset(-1, -1);
@@ -80,12 +80,12 @@ public class ParticleSlicedMob extends Particle {
 		if(capBloom > 0){
 			OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240, 240);
 		}
-		GL11.glCallList(cap);
+		GlStateManager.callList(cap);
 		
 		
 		if(capBloom > 0 && GeneralConfig.bloom){
 			float[] matrix = new float[16];
-			GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, ClientProxy.AUX_GL_BUFFER);
+			GlStateManager.getFloat(GL11.GL_MODELVIEW_MATRIX, ClientProxy.AUX_GL_BUFFER);
 			ClientProxy.AUX_GL_BUFFER.get(matrix);
 			ClientProxy.AUX_GL_BUFFER.rewind();
 			ClientProxy.deferredRenderers.add(() -> {
@@ -102,7 +102,7 @@ public class ParticleSlicedMob extends Particle {
 				float y = OpenGlHelper.lastBrightnessY;
 				OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240, 240);
 				GlStateManager.doPolygonOffset(-1, -1);
-				GL11.glCallList(cap);
+				GlStateManager.callList(cap);
 				GlStateManager.disablePolygonOffset();
 				GlStateManager.enableLighting();
 				OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, x, y);

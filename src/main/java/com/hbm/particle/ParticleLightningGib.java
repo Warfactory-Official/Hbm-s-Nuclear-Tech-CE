@@ -101,7 +101,7 @@ public class ParticleLightningGib extends Particle {
 		this.motionZ *= onGround ? 0.85 : 0.9;
 		if(particleAge >= particleMaxAge){
 			this.setExpired();
-			GL11.glDeleteLists(dl, 1);
+			GlStateManager.glDeleteLists(dl, 1);
 			return;
 		}
 		Iterator<Particle> itr = subParticles.iterator();
@@ -203,22 +203,22 @@ public class ParticleLightningGib extends Particle {
 	        GlStateManager.translate(f5, f6, f7);
 	        Minecraft.getMinecraft().getTextureManager().bindTexture(tex);
 			if(dl == -1){
-				dl = GL11.glGenLists(1);
-				GL11.glNewList(dl, GL11.GL_COMPILE);
+				dl = GlStateManager.glGenLists(1);
+				GlStateManager.glNewList(dl, GL11.GL_COMPILE);
 				//Moves it so the origin is in the middle. I hope this makes for slightly better rotations.
 				buffer.setTranslation(-cubeMidX, -cubeMidY, -cubeMidZ);
 				box.render(buffer, 0.0625F);
 				buffer.setTranslation(0, 0, 0);
-				GL11.glEndList();
+				GlStateManager.glEndList();
 			}
-			GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, ClientProxy.AUX_GL_BUFFER);
+			GlStateManager.getFloat(GL11.GL_MODELVIEW_MATRIX, ClientProxy.AUX_GL_BUFFER);
 			//Ah yes, spaghetti code.
 			ClientProxy.AUX_GL_BUFFER2.put(matrix);
 			ClientProxy.AUX_GL_BUFFER2.rewind();
-			GL11.glMultMatrix(ClientProxy.AUX_GL_BUFFER2);
-			GL11.glRotated(rotateX, 1, 0, 0);
-			GL11.glRotated(rotateY, 0, 1, 0);
-			GL11.glRotated(rotateZ, 0, 0, 1);
+			GlStateManager.multMatrix(ClientProxy.AUX_GL_BUFFER2);
+			GlStateManager.rotate((float) (rotateX), 1, 0, 0);
+			GlStateManager.rotate((float) (rotateY), 0, 1, 0);
+			GlStateManager.rotate((float) (rotateZ), 0, 0, 1);
 			
 			OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240, 240);
 			RenderHelper.enableStandardItemLighting();
@@ -235,11 +235,11 @@ public class ParticleLightningGib extends Particle {
 	        int k = i & 65535;
 			OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, k, j);
 			ResourceManager.lightning_gib.uniform1i("bloom", 0);
-			GL11.glCallList(dl);
+			GlStateManager.callList(dl);
 			HbmShaderManager2.bloomData.bindFramebuffer(false);
 			GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE);
 			ResourceManager.lightning_gib.uniform1i("bloom", 1);
-			GL11.glCallList(dl);
+			GlStateManager.callList(dl);
 			Minecraft.getMinecraft().getFramebuffer().bindFramebuffer(false);
 			HbmShaderManager2.releaseShader();
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
@@ -256,7 +256,7 @@ public class ParticleLightningGib extends Particle {
 			
 			
 			Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.fresnel_ms);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+			GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 			GlStateManager.depthMask(false);
 			GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE);
 			for(Particle p : subParticles){

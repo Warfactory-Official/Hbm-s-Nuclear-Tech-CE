@@ -1,6 +1,6 @@
 {
 	"parent": "item/generated",
 	"textures": {
-		"layer0": "hbm:items/plant_tall"
+		"layer0": "hbm:blocks/plant_tall_hemp_lower"
 	}
 }

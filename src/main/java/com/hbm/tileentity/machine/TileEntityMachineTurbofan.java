@@ -18,7 +18,9 @@ import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.*;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
@@ -33,7 +35,6 @@ import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
@@ -50,8 +51,9 @@ import java.util.HashMap;
 import java.util.List;
 
 @AutoRegister
-public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implements ITickable, IEnergyProviderMK2, IFluidStandardTransceiver, IUpgradeInfoProvider, IGUIProvider, IFluidCopiable, IFFtoNTMF {
+public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implements ITickable, IEnergyProviderMK2, IFluidStandardTransceiver, IUpgradeInfoProvider, IGUIProvider, IFluidCopiable, IFFtoNTMF, IConnectionAnchors {
 
+	private AxisAlignedBB bb;
 	public long power;
 	public static final long maxPower = 1_000_000;
 	public FluidTankNTM tank;
@@ -93,8 +95,8 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
             }
         };
 
-		tank = new FluidTankNTM(Fluids.KEROSENE, 24000);
-		blood = new FluidTankNTM(Fluids.BLOOD, 24000);
+		tank = new FluidTankNTM(Fluids.KEROSENE, 24000).withOwner(this);
+		blood = new FluidTankNTM(Fluids.BLOOD, 24000).withOwner(this);
 		upgradeManager = new UpgradeManagerNT(this);
 	}
 
@@ -132,7 +134,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 		return (power * i) / maxPower;
 	}
 
-	protected DirPos[] getConPos() {
+	public DirPos[] getConPos() {
 
 		ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10).getRotation(ForgeDirection.UP);
 		ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
@@ -212,11 +214,10 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 						double speed = 2 + world.rand.nextDouble() * 3;
 						double deviation = world.rand.nextGaussian() * 0.2;
 						NBTTagCompound data = new NBTTagCompound();
-						data.setString("type", "gasfire");
 						data.setDouble("mX", -dir.offsetX * speed + deviation);
 						data.setDouble("mZ", -dir.offsetZ * speed + deviation);
 						data.setFloat("scale", 8F);
-						PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, this.pos.getX() + 0.5F - dir.offsetX * (3 - i), this.pos.getY() + 1.5F, this.pos.getZ() + 0.5F - dir.offsetZ * (3 - i)), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 150));
+						PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.GasFlame, data, this.pos.getX() + 0.5F - dir.offsetX * (3 - i), this.pos.getY() + 1.5F, this.pos.getZ() + 0.5F - dir.offsetZ * (3 - i)), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 150));
 					}
 
 					/*if(this.afterburner > 90 && worldObj.rand.nextInt(60) == 0) {
@@ -229,10 +230,9 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 
 					if(this.afterburner > 90) {
 						NBTTagCompound data = new NBTTagCompound();
-						data.setString("type", "gasfire");
 						data.setDouble("mY", 0.1 * world.rand.nextDouble());
 						data.setFloat("scale", 4F);
-						PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data,
+						PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.GasFlame, data,
 								this.pos.getX() + 0.5F + dir.offsetX * (world.rand.nextDouble() * 4 - 2) + rot.offsetX * (world.rand.nextDouble() * 2 - 1),
 								this.pos.getY() + 1F + world.rand.nextDouble() * 2,
 								this.pos.getZ() + 0.5F - dir.offsetZ * (world.rand.nextDouble() * 4 - 2) + rot.offsetZ * (world.rand.nextDouble() * 2 - 1)
@@ -282,10 +282,9 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 
 					if(!e.isEntityAlive() && e instanceof EntityLivingBase) {
 						NBTTagCompound vdat = new NBTTagCompound();
-						vdat.setString("type", "giblets");
 						vdat.setInteger("ent", e.getEntityId());
 						vdat.setInteger("cDiv", 5);
-						PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(vdat, e.posX, e.posY + e.height * 0.5, e.posZ), new TargetPoint(e.dimension, e.posX, e.posY + e.height * 0.5, e.posZ, 150));
+						PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Giblets, vdat, e.posX, e.posY + e.height * 0.5, e.posZ), new TargetPoint(e.dimension, e.posX, e.posY + e.height * 0.5, e.posZ, 150));
 
 						world.playSound(null, e.posX, e.posY, e.posZ, SoundEvents.ENTITY_ZOMBIE_BREAK_DOOR_WOOD, SoundCategory.BLOCKS, 2.0F, 0.95F + world.rand.nextFloat() * 0.2F);
 
@@ -351,7 +350,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 			 * All movement related stuff has to be repeated on the client, but only for the client's player
 			 * Otherwise this could lead to desync since the motion is never sent form the server
 			 */
-			if(tank.getFill() > 0 && !MainRegistry.proxy.me().capabilities.isCreativeMode) {
+			if(wasOn && tank.getFill() > 0 && !MainRegistry.proxy.me().capabilities.isCreativeMode) {
 				ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10).getRotation(ForgeDirection.UP);
 				ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
 
@@ -463,7 +462,8 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 	@NotNull
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		if (bb == null) bb = new AxisAlignedBB(pos.getX() - 3, pos.getY(), pos.getZ() - 3, pos.getX() + 4, pos.getY() + 3, pos.getZ() + 4);
+		return bb;
 	}
 
 	@Override

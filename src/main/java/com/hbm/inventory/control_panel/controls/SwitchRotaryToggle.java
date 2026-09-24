@@ -1,5 +1,6 @@
 package com.hbm.inventory.control_panel.controls;
 
+import com.hbm.inventory.control_panel.types.DataValueFloat;
 import com.hbm.render.loader.WaveFrontObjectVAO;
 import com.hbm.inventory.control_panel.*;
 import com.hbm.inventory.control_panel.nodes.NodeBoolean;
@@ -19,8 +20,8 @@ import java.util.List;
 
 public class SwitchRotaryToggle extends Control {
 
-    public SwitchRotaryToggle(String name, ControlPanel panel) {
-        super(name, panel);
+    public SwitchRotaryToggle(String name,String registryName,ControlPanel panel) {
+        super(name,registryName, panel);
         vars.put("isOn", new DataValueFloat(0));
     }
 
@@ -98,6 +99,6 @@ public class SwitchRotaryToggle extends Control {
 
     @Override
     public Control newControl(ControlPanel panel) {
-        return new SwitchRotaryToggle(name, panel);
+        return new SwitchRotaryToggle(name,registryName,panel);
     }
 }

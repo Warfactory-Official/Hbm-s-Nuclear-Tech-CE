@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.tileentity.machine.TileEntityWatz;
 import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
@@ -10,9 +11,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerWatz extends Container {
-	
+
 	protected TileEntityWatz watz;
-	
+
+	private final TransferStrategy transferStrategy = TransferStrategy.builder(() -> this.watz.inventory.getSlots())
+                                                                      .genericMachineRange(0)
+                                                                      .build();
+
 	public ContainerWatz(InventoryPlayer invPlayer, TileEntityWatz tedf) {
 		watz = tedf;
 
@@ -26,7 +31,7 @@ public class ContainerWatz extends Container {
 				}
 			}
 		}
-		
+
 		for(int i = 0; i < 3; i++) {
 			for(int j = 0; j < 9; j++) {
 				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 147 + i * 18));
@@ -40,7 +45,7 @@ public class ContainerWatz extends Container {
 
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-		return InventoryUtil.transferStack(this.inventorySlots, index, watz.inventory.getSlots());
+		return InventoryUtil.transferStack(this.inventorySlots, index, this.transferStrategy, player);
 	}
 
 	@Override

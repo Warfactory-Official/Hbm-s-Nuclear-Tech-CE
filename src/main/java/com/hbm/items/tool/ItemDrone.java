@@ -56,7 +56,10 @@ public class ItemDrone extends ItemEnumMulti<ItemDrone.EnumDroneType> {
 
         if (drone != null) {
             drone.setPosition(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5);
-            worldIn.spawnEntity(drone);
+            if(!worldIn.spawnEntity(drone)) {
+                drone.clearChunkLoader();
+                return EnumActionResult.FAIL;
+            }
         }
 
         stack.shrink(1);

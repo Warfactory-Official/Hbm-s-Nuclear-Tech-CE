@@ -1,6 +1,8 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.ILookOverlay;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
@@ -126,7 +128,7 @@ public class BlockPWR extends BlockContainer implements ILookOverlay {
     }
 
     @AutoRegister
-    public static class TileEntityBlockPWR extends TileEntity implements ITickable, IFluidHandler, IFluidReceiverMK2 {
+    public static class TileEntityBlockPWR extends TileEntity implements ITickable, IFluidHandler, IFluidReceiverMK2, IRORValueProvider, IRORInteractive {
 
         public IBlockState originalBlockState;
         public BlockPos corePos;
@@ -280,9 +282,9 @@ public class BlockPWR extends BlockContainer implements ILookOverlay {
         @Override
         public long transferFluid(FluidType type, int pressure, long fluid) {
 
-            if(!world.getBlockState(pos).getValue(IO_ENABLED)) return fluid;
+            if (!world.getBlockState(pos).getValue(IO_ENABLED)) return fluid;
 
-            if(getCore() != null) {
+            if (getCore() != null) {
                 return getCore().transferFluid(type, pressure, fluid);
             }
             return fluid;
@@ -290,8 +292,8 @@ public class BlockPWR extends BlockContainer implements ILookOverlay {
 
         @Override
         public long getDemand(FluidType type, int pressure) {
-            if(!world.getBlockState(pos).getValue(IO_ENABLED)) return 0;
-            if(getCore() != null) {
+            if (!world.getBlockState(pos).getValue(IO_ENABLED)) return 0;
+            if (getCore() != null) {
                 return getCore().getDemand(type, pressure);
             }
             return 0;
@@ -299,8 +301,8 @@ public class BlockPWR extends BlockContainer implements ILookOverlay {
 
         @Override
         public boolean canConnect(FluidType type, ForgeDirection dir) {
-            if(!world.getBlockState(pos).getValue(IO_ENABLED)) return false;
-            if(getCore() != null) {
+            if (!world.getBlockState(pos).getValue(IO_ENABLED)) return false;
+            if (getCore() != null) {
                 return getCore().canConnect(type, dir);
             }
             return true;
@@ -308,11 +310,35 @@ public class BlockPWR extends BlockContainer implements ILookOverlay {
 
         @Override
         public FluidTankNTM[] getAllTanks() {
-            if(!world.getBlockState(pos).getValue(IO_ENABLED)) return new FluidTankNTM[0];
-            if(getCore() != null) {
+            if (!world.getBlockState(pos).getValue(IO_ENABLED)) return new FluidTankNTM[0];
+            if (getCore() != null) {
                 return getCore().getAllTanks();
             }
             return new FluidTankNTM[0];
+        }
+
+        @Override
+        public String[] getFunctionInfo() {
+            if (!world.getBlockState(pos).getValue(IO_ENABLED)) return new String[0];
+            TileEntityPWRController controller = getCore();
+            if (controller != null) return controller.getFunctionInfo();
+            return new String[0];
+        }
+
+        @Override
+        public String provideRORValue(String name) {
+            if (!world.getBlockState(pos).getValue(IO_ENABLED)) return "";
+            TileEntityPWRController controller = getCore();
+            if (controller != null) return controller.provideRORValue(name);
+            return "";
+        }
+
+        @Override
+        public String runRORFunction(String name, String[] params) {
+            if (!world.getBlockState(pos).getValue(IO_ENABLED)) return "";
+            TileEntityPWRController controller = getCore();
+            if (controller != null) return controller.runRORFunction(name, params);
+            return "";
         }
     }
 }

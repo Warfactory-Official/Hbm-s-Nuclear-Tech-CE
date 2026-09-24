@@ -4,8 +4,9 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.ResourceManager;
 import com.hbm.render.RenderSparks;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.render.item.ItemRenderBase;
+import com.hbm.render.item.ItemRenderBaseLegacy;
 import com.hbm.tileentity.bomb.TileEntityRailgun;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
@@ -59,13 +60,13 @@ public class RenderRailgun extends TileEntitySpecialRenderer<TileEntityRailgun>
                     / TileEntityRailgun.cooldownDurationMillis);
 
     if (System.currentTimeMillis() < gun.fireTime + TileEntityRailgun.cooldownDurationMillis) {
-      Vec3 vec = Vec3.createVectorHelper(5.375, 0, 0);
-      vec.rotateAroundZ((float) (pitch * Math.PI / 180D));
-      vec.rotateAroundY((float) (yaw * Math.PI / 180D));
+      Vec3NT vec = Vec3NT.createVectorHelper(5.375, 0, 0);
+      vec.rotateRollSelf((float) (pitch * Math.PI / 180D));
+      vec.rotateYawSelf((float) (yaw * Math.PI / 180D));
 
-      double fX = vec.xCoord;
-      double fY = 1 + vec.yCoord;
-      double fZ = vec.zCoord;
+      double fX = vec.x;
+      double fY = 1 + vec.y;
+      double fZ = vec.z;
       GlStateManager.rotate(180, 0F, 1F, 0F);
       for (int i = 0; i < count; i++)
         RenderSparks.renderSpark(
@@ -114,7 +115,7 @@ public class RenderRailgun extends TileEntitySpecialRenderer<TileEntityRailgun>
 
   @Override
   public ItemRenderBase getRenderer(Item item) {
-    return new ItemRenderBase() {
+    return new ItemRenderBaseLegacy() {
       public void renderInventory() {
         GlStateManager.translate(0, 2, -4);
         GlStateManager.scale(2.5, 2.5, 2.5);

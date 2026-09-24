@@ -63,12 +63,12 @@ public class RenderPylonMedium extends RenderPylonBase implements IItemRendererP
     return new ItemRenderBase() {
       public void renderInventory() {
         GlStateManager.translate(1, -5, 0);
-        GL11.glScaled(4.5, 4.5, 4.5);
+        GlStateManager.scale(4.5, 4.5, 4.5);
       }
 
       public void renderCommon(ItemStack stack) {
         GlStateManager.rotate(90, 0F, 1F, 0F);
-        GL11.glScaled(0.5, 0.5, 0.5);
+        GlStateManager.scale(0.5, 0.5, 0.5);
         GlStateManager.translate(0.75, 0, 0);
 
         if (stack.getItem() == Item.getItemFromBlock(ModBlocks.red_pylon_medium_steel) || stack.getItem() == Item.getItemFromBlock(ModBlocks.red_pylon_medium_steel_transformer))

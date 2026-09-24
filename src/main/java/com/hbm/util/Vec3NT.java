@@ -1,10 +1,14 @@
 package com.hbm.util;
 
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+
+import javax.vecmath.Matrix3f;
 
 public class Vec3NT extends MutableVec3d {
 
@@ -350,7 +354,7 @@ public class Vec3NT extends MutableVec3d {
     @Contract(mutates = "this")
     public @NotNull Vec3NT rotateAroundXRad(double a) {
         double c = Math.cos(a), s = Math.sin(a);
-        double ny = this.y * c - this.z * s, nz = this.y * s + this.z * c;
+        double ny = this.y * c + this.z * s, nz = this.z * c - this.y * s;
         set(this.x, ny, nz);
         return this;
     }
@@ -366,7 +370,7 @@ public class Vec3NT extends MutableVec3d {
     @Contract(mutates = "this")
     public @NotNull Vec3NT rotateAroundZRad(double a) {
         double c = Math.cos(a), s = Math.sin(a);
-        double nx = this.x * c - this.y * s, ny = this.x * s + this.y * c;
+        double nx = this.x * c + this.y * s, ny = this.y * c - this.x * s;
         set(nx, ny, this.z);
         return this;
     }
@@ -395,6 +399,81 @@ public class Vec3NT extends MutableVec3d {
     @Contract("-> new")
     public @NotNull Vec3NT clone() {
         return (Vec3NT) super.clone();
+    }
+
+    @Contract("_, _, _ -> new")
+    public static @NotNull Vec3NT createVectorHelper(double x, double y, double z) {
+        return new Vec3NT(x, y, z);
+    }
+
+    @Contract("_ -> new")
+    public static @NotNull Vec3NT createVectorHelper(@NotNull Entity e) {
+        return new Vec3NT(e.posX, e.posY, e.posZ);
+    }
+
+    public double distanceTo(@NotNull Entity e) {
+        return distanceTo(e.posX, e.posY, e.posZ);
+    }
+
+    @Contract("-> new")
+    public @NotNull Vec3NT negate() {
+        return new Vec3NT(-this.x, -this.y, -this.z);
+    }
+
+    @Contract("-> new")
+    public @NotNull Vec3NT copy() {
+        return new Vec3NT(this.x, this.y, this.z);
+    }
+
+    @Contract("_ -> new")
+    public @NotNull Vec3NT mult(float mult) {
+        return new Vec3NT(this.x * mult, this.y * mult, this.z * mult);
+    }
+
+    @Contract("_ -> new")
+    public @NotNull Vec3NT multd(double mult) {
+        return new Vec3NT(this.x * mult, this.y * mult, this.z * mult);
+    }
+
+    @Contract("_, _ -> new")
+    public @NotNull Vec3NT interpolate(@NotNull Vec3d other, double inter) {
+        return lerp(other, inter);
+    }
+
+    @Contract(mutates = "this")
+    public @NotNull Vec3NT setComponents(double x, double y, double z) {
+        return set(x, y, z);
+    }
+
+    @Contract("_ -> new")
+    public @NotNull Vec3NT max(double d) {
+        return new Vec3NT(Math.max(this.x, d), Math.max(this.y, d), Math.max(this.z, d));
+    }
+
+    @Contract("_ -> new")
+    public @NotNull Vec3NT min(double d) {
+        return new Vec3NT(Math.min(this.x, d), Math.min(this.y, d), Math.min(this.z, d));
+    }
+
+    @Contract("-> new")
+    public @NotNull BlockPos toBlockPos() {
+        return new BlockPos(this.x, this.y, this.z);
+    }
+
+    @Contract("_ -> new")
+    public @NotNull Matrix3f outerProduct(@NotNull Vec3d other) {
+        return new Matrix3f(
+                (float) (this.x * other.x), (float) (this.x * other.y), (float) (this.x * other.z),
+                (float) (this.y * other.x), (float) (this.y * other.y), (float) (this.y * other.z),
+                (float) (this.z * other.x), (float) (this.z * other.y), (float) (this.z * other.z));
+    }
+
+    @Contract("_ -> new")
+    public @NotNull Vec3NT matTransform(@NotNull Matrix3f mat) {
+        return new Vec3NT(
+                mat.m00 * this.x + mat.m01 * this.y + mat.m02 * this.z,
+                mat.m10 * this.x + mat.m11 * this.y + mat.m12 * this.z,
+                mat.m20 * this.x + mat.m21 * this.y + mat.m22 * this.z);
     }
 
     @Override

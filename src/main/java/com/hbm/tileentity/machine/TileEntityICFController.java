@@ -4,8 +4,11 @@ import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.MachineICFController;
 import com.hbm.capability.NTMEnergyCapabilityWrapper;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.IConfigurableMachine;
 import com.hbm.tileentity.TileEntityTickingBase;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.state.IBlockState;
@@ -21,12 +24,16 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
 @AutoRegister
-public class TileEntityICFController extends TileEntityTickingBase implements IEnergyReceiverMK2 {
+public class TileEntityICFController extends TileEntityTickingBase implements IEnergyReceiverMK2, IConfigurableMachine {
+
+    public static int capacitorPower = 2_500_000;
+    public static int turboPower = 5_000_000;
 
     private final List<BlockPos> ports = new ArrayList<>();
     public long power;
@@ -177,6 +184,15 @@ public class TileEntityICFController extends TileEntityTickingBase implements IE
     }
 
     @Override
+    public void serializeInitial(ByteBuf buf) {
+        super.serialize(buf);
+        buf.writeLong(this.power);
+        buf.writeInt(this.capacitorCount);
+        buf.writeInt(this.turbochargerCount);
+        buf.writeInt(this.laserLength);
+    }
+
+    @Override
     public void serialize(ByteBuf buf) {
         super.serialize(buf);
         buf.writeLong(powerSync);
@@ -246,7 +262,24 @@ public class TileEntityICFController extends TileEntityTickingBase implements IE
 
     @Override
     public long getMaxPower() {
-        return (long) (Math.sqrt(capacitorCount) * 2_500_000 + Math.sqrt(Math.min(turbochargerCount, capacitorCount)) * 5_000_000);
+        return (long) (Math.sqrt(capacitorCount) * capacitorPower + Math.sqrt(Math.min(turbochargerCount, capacitorCount)) * turboPower);
+    }
+
+    @Override
+    public String getConfigName() {
+        return "icfLaser";
+    }
+
+    @Override
+    public void readIfPresent(JsonObject obj) {
+        capacitorPower = IConfigurableMachine.grab(obj, "I:capacitorPower", capacitorPower);
+        turboPower = IConfigurableMachine.grab(obj, "I:turboPower", turboPower);
+    }
+
+    @Override
+    public void writeConfig(JsonWriter writer) throws IOException {
+        writer.name("I:capacitorPower").value(capacitorPower);
+        writer.name("I:turboPower").value(turboPower);
     }
 
     @Override

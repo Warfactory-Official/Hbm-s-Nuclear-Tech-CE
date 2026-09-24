@@ -4,6 +4,8 @@ import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluid.IFluidStandardTransceiver;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
+import com.hbm.inventory.RecipesCommon.AStack;
+import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerMachineCyclotron;
 import com.hbm.inventory.fluid.Fluids;
@@ -12,15 +14,18 @@ import com.hbm.inventory.gui.GUIMachineCyclotron;
 import com.hbm.inventory.recipes.CyclotronRecipes;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemMachineUpgrade;
+import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.I18nUtil;
 import com.hbm.util.SoundUtil;
+import com.hbm.util.Tuple.Pair;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
@@ -42,8 +47,9 @@ import java.util.HashMap;
 import java.util.List;
 
 @AutoRegister
-public class TileEntityMachineCyclotron extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiver, IGUIProvider, IUpgradeInfoProvider, IFluidCopiable {
+public class TileEntityMachineCyclotron extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiver, IGUIProvider, IUpgradeInfoProvider, IFluidCopiable, IConnectionAnchors {
 
+	private AxisAlignedBB bb;
 	public long power;
 	public static final long maxPower = 100000000;
 	public static int consumption = 1_000_000;
@@ -67,15 +73,16 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 			}
 			@Override
 			public void setStackInSlot(int slot, ItemStack stack) {
-				if(stack != ItemStack.EMPTY && slot >= 14 && slot <= 15 && stack.getItem() instanceof ItemMachineUpgrade)
-					SoundUtil.playUpgradePlugSound(world, pos);
 				super.setStackInSlot(slot, stack);
+
+				if(!stack.isEmpty() && slot >= 10 && slot <= 11 && stack.getItem() instanceof ItemMachineUpgrade)
+					SoundUtil.playUpgradePlugSound(world, pos);
 			}
 		};
 		this.tanks = new FluidTankNTM[3];
-		this.tanks[0] = new FluidTankNTM(Fluids.WATER, 32000);
-		this.tanks[1] = new FluidTankNTM(Fluids.SPENTSTEAM, 32000);
-		this.tanks[2] = new FluidTankNTM(Fluids.AMAT, 8000);
+		this.tanks[0] = new FluidTankNTM(Fluids.WATER, 32000).withOwner(this);
+		this.tanks[1] = new FluidTankNTM(Fluids.SPENTSTEAM, 32000).withOwner(this);
+		this.tanks[2] = new FluidTankNTM(Fluids.AMAT, 8000).withOwner(this);
 	}
 	
 	@Override
@@ -98,7 +105,26 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 
 		return new int[] {6, 7, 8};
 	}
-	
+
+	@Override
+	public boolean isItemValidForSlot(int slot, ItemStack stack) {
+		if(slot < 3) {
+			for(Pair<ComparableStack, AStack> key : CyclotronRecipes.recipes.keySet()) {
+				if(key.getKey().matchesRecipe(stack, true)) return true;
+			}
+		} else if(slot < 6) {
+			for(Pair<ComparableStack, AStack> key : CyclotronRecipes.recipes.keySet()) {
+				if(key.getValue().matchesRecipe(stack, true)) return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public boolean canExtractItem(int slot, ItemStack stack, int amount) {
+		return slot >= 6 && slot <= 8;
+	}
+
 	@Override
 	public void update() {
 		if(!world.isRemote) {
@@ -210,16 +236,13 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 
 			if(out == null)
 				continue;
-			
-			ItemStack item1 = inventory.getStackInSlot(i).copy();
-			ItemStack item2 = inventory.getStackInSlot(i + 3).copy();
-			ItemStack item3 = inventory.getStackInSlot(i + 6).copy();
-			item1.shrink(1);
-			item2.shrink(1);
-			if(inventory.getStackInSlot(i + 6).isEmpty()) {
 
-				this.inventory.setStackInSlot(i, item1);
-				this.inventory.setStackInSlot(i + 3, item2);
+			ItemStack output = inventory.getStackInSlot(i + 6);
+
+			if(output.isEmpty()) {
+
+				inventory.getStackInSlot(i).shrink(1);
+				inventory.getStackInSlot(i + 3).shrink(1);
 				inventory.setStackInSlot(i + 6, out);
 
 				this.tanks[2].setFill(this.tanks[2].getFill() + (Integer)res[1]);
@@ -227,12 +250,11 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 				continue;
 			}
 
-			if(inventory.getStackInSlot(i + 6).getItem() == out.getItem() && inventory.getStackInSlot(i + 6).getItemDamage() == out.getItemDamage() && inventory.getStackInSlot(i + 6).getCount() < out.getMaxStackSize()) {
+			if(output.getItem() == out.getItem() && output.getItemDamage() == out.getItemDamage() && output.getCount() < out.getMaxStackSize()) {
 
-				this.inventory.setStackInSlot(i, item1);
-				this.inventory.setStackInSlot(i + 3, item2);
-				item3.grow(1);
-				inventory.setStackInSlot(i + 6, item3);
+				inventory.getStackInSlot(i).shrink(1);
+				inventory.getStackInSlot(i + 3).shrink(1);
+				output.grow(1);
 
 				this.tanks[2].setFill(this.tanks[2].getFill() + (Integer)res[1]);
 			}
@@ -243,17 +265,17 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 	}
 
 	public int getSpeed() {
-		return upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.SPEED) + 1;
+		return upgradeManager.getLevel(UpgradeType.SPEED) + 1;
 	}
 
 	public int getConsumption() {
-		int efficiency = upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.POWER);
+		int efficiency = upgradeManager.getLevel(UpgradeType.POWER);
 
 		return consumption - 100_000 * efficiency;
 	}
 
 	public int getCoolantConsumption() {
-		int efficiency = upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.EFFECT);
+		int efficiency = upgradeManager.getLevel(UpgradeType.EFFECT);
 		//half a small tower's worth
 		return 500 / (efficiency + 1) * getSpeed();
 	}
@@ -335,7 +357,8 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 	
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return new AxisAlignedBB(pos.getX() - 2, pos.getY(), pos.getZ() - 2, pos.getX() + 3, pos.getY() + 4, pos.getZ() + 3);
+		if (bb == null) bb = new AxisAlignedBB(pos.getX() - 2, pos.getY(), pos.getZ() - 2, pos.getX() + 3, pos.getY() + 4, pos.getZ() + 3);
+		return bb;
 	}
 
 	@Override
@@ -386,31 +409,31 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase implements
 	}
 
 	@Override
-	public boolean canProvideInfo(ItemMachineUpgrade.UpgradeType type, int level, boolean extendedInfo) {
-		return type == ItemMachineUpgrade.UpgradeType.SPEED || type == ItemMachineUpgrade.UpgradeType.POWER || type == ItemMachineUpgrade.UpgradeType.EFFECT;
+	public boolean canProvideInfo(UpgradeType type, int level, boolean extendedInfo) {
+		return type == UpgradeType.SPEED || type == UpgradeType.POWER || type == UpgradeType.EFFECT;
 	}
 
 	@Override
-	public void provideInfo(ItemMachineUpgrade.UpgradeType type, int level, List<String> info, boolean extendedInfo) {
+	public void provideInfo(UpgradeType type, int level, List<String> info, boolean extendedInfo) {
 		info.add(IUpgradeInfoProvider.getStandardLabel(ModBlocks.machine_cyclotron));
-		if(type == ItemMachineUpgrade.UpgradeType.SPEED) {
+		if(type == UpgradeType.SPEED) {
 			info.add(TextFormatting.GREEN + I18nUtil.resolveKey(this.KEY_DELAY, "-" + (100 - 100 / (level + 1)) + "%"));
 			info.add(TextFormatting.RED + I18nUtil.resolveKey(this.KEY_COOLANT_CONSUMPTION, "+" + (level * 100) + "%"));
 		}
-		if(type == ItemMachineUpgrade.UpgradeType.POWER) {
+		if(type == UpgradeType.POWER) {
 			info.add(TextFormatting.GREEN + I18nUtil.resolveKey(this.KEY_CONSUMPTION, "-" + (level * 10) + "%"));
 		}
-		if(type == ItemMachineUpgrade.UpgradeType.EFFECT) {
+		if(type == UpgradeType.EFFECT) {
 			info.add(TextFormatting.GREEN + I18nUtil.resolveKey(this.KEY_COOLANT_CONSUMPTION, "-" + (100 - 100 / (level + 1)) + "%"));
 		}
 	}
 
 	@Override
-	public HashMap<ItemMachineUpgrade.UpgradeType, Integer> getValidUpgrades() {
-		HashMap<ItemMachineUpgrade.UpgradeType, Integer> upgrades = new HashMap<>();
-		upgrades.put(ItemMachineUpgrade.UpgradeType.SPEED, 3);
-		upgrades.put(ItemMachineUpgrade.UpgradeType.POWER, 3);
-		upgrades.put(ItemMachineUpgrade.UpgradeType.EFFECT, 3);
+	public HashMap<UpgradeType, Integer> getValidUpgrades() {
+		HashMap<UpgradeType, Integer> upgrades = new HashMap<>();
+		upgrades.put(UpgradeType.SPEED, 3);
+		upgrades.put(UpgradeType.POWER, 3);
+		upgrades.put(UpgradeType.EFFECT, 3);
 		return upgrades;
 	}
 

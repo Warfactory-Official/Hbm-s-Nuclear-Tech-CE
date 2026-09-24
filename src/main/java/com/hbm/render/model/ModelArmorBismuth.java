@@ -36,45 +36,6 @@ public class ModelArmorBismuth extends ModelArmorBase {
   }
 
   @Override
-  public void render(
-      Entity entity,
-      float limbSwing,
-      float limbSwingAmount,
-      float ageInTicks,
-      float netHeadYaw,
-      float headPitch,
-      float scaleFactor) {
-    super.setRotationAngles(
-        limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entity);
-
-    GlStateManager.pushMatrix();
-    GlStateManager.shadeModel(GL11.GL_SMOOTH);
-
-    bindTexture(ResourceManager.armor_bismuth_tex);
-
-    switch (type) {
-      case 0 -> this.head.render(scaleFactor);
-      case 1 -> {
-        this.body.render(scaleFactor);
-
-        this.leftArm.render(scaleFactor);
-        this.rightArm.render(scaleFactor);
-      }
-      case 2 -> {
-        this.leftLeg.render(scaleFactor);
-        this.rightLeg.render(scaleFactor);
-      }
-      case 3 -> {
-        this.leftFoot.render(scaleFactor);
-        this.rightFoot.render(scaleFactor);
-      }
-    }
-
-    GlStateManager.shadeModel(GL11.GL_FLAT);
-    GlStateManager.popMatrix();
-  }
-
-  @Override
   public void renderArmor(Entity par1Entity, float par7) {
     bindTexture(ResourceManager.armor_bismuth_tex);
 

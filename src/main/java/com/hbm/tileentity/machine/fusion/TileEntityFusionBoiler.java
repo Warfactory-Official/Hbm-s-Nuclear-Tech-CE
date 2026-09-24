@@ -1,28 +1,43 @@
 package com.hbm.tileentity.machine.fusion;
 
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.capability.NTMEnergyCapabilityWrapper;
+import com.hbm.capability.NTMFluidHandlerWrapper;
+import com.hbm.handler.CompatHandler;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FT_Heatable;
+import com.hbm.lib.CapabilityContextProvider;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.uninos.UniNodespace;
 import com.hbm.uninos.networkproviders.PlasmaNetwork;
 import io.netty.buffer.ByteBuf;
+import li.cil.oc.api.machine.Arguments;
+import li.cil.oc.api.machine.Callback;
+import li.cil.oc.api.machine.Context;
+import li.cil.oc.api.network.SimpleComponent;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.energy.CapabilityEnergy;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
-public class TileEntityFusionBoiler extends TileEntityLoadedBase implements ITickable, IFluidStandardTransceiverMK2, IFusionPowerReceiver {
+@Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
+public class TileEntityFusionBoiler extends TileEntityLoadedBase implements ITickable, IFluidStandardTransceiverMK2, IFusionPowerReceiver, IConnectionAnchors, SimpleComponent, CompatHandler.OCComponent {
 
     protected PlasmaNetwork.PlasmaNode plasmaNode;
 
@@ -32,8 +47,8 @@ public class TileEntityFusionBoiler extends TileEntityLoadedBase implements ITic
 
     public TileEntityFusionBoiler() {
         this.tanks = new FluidTankNTM[2];
-        this.tanks[0] = new FluidTankNTM(Fluids.WATER, 32_000);
-        this.tanks[1] = new FluidTankNTM(Fluids.SUPERHOTSTEAM, 32_000);
+        this.tanks[0] = new FluidTankNTM(Fluids.WATER, 32_000).withOwner(this);
+        this.tanks[1] = new FluidTankNTM(Fluids.SUPERHOTSTEAM, 32_000).withOwner(this);
     }
 
     @Override
@@ -84,7 +99,7 @@ public class TileEntityFusionBoiler extends TileEntityLoadedBase implements ITic
     @Override public boolean receivesFusionPower() { return true; }
 
     @Override
-    public void receiveFusionPower(long fusionPower, double neutronPower) {
+    public void receiveFusionPower(long fusionPower, double neutronPower, float r, float g, float b) {
         this.plasmaEnergy = fusionPower;
 
         int waterCycles = Math.min(tanks[0].getFill(), tanks[1].getMaxFill() - tanks[1].getFill());
@@ -172,6 +187,74 @@ public class TileEntityFusionBoiler extends TileEntityLoadedBase implements ITic
     @SideOnly(Side.CLIENT)
     public double getMaxRenderDistanceSquared() {
         return 65536.0D;
+    }
+
+    @Override
+    public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+        if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY) return true;
+        return super.hasCapability(capability, facing);
+    }
+
+    @Override
+    public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+        if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY) {
+            BlockPos accessorPos = facing == null ? null : CapabilityContextProvider.getAccessor(pos);
+            return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(new NTMFluidHandlerWrapper(this, accessorPos));
+        }
+        return super.getCapability(capability, facing);
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public String getComponentName() {
+        return "ntm_fusion_boiler";
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getPlasmaEnergy(Context context, Arguments args) {
+        return new Object[] {plasmaEnergySync};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getFluid(Context context, Arguments args) {
+        return new Object[] {
+            tanks[0].getFill(), tanks[0].getMaxFill(),
+            tanks[1].getFill(), tanks[1].getMaxFill()
+        };
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getInfo(Context context, Arguments args) {
+        return new Object[] {
+            plasmaEnergySync,
+
+            tanks[0].getFill(), tanks[0].getMaxFill(),
+            tanks[1].getFill(), tanks[1].getMaxFill(),
+        };
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public String[] methods() {
+        return new String[] {
+            "getPlasmaEnergy",
+            "getFluid",
+            "getInfo"
+        };
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public Object[] invoke(String method, Context context, Arguments args) throws Exception {
+        switch (method) {
+            case "getPlasmaEnergy": return getPlasmaEnergy(context, args);
+            case "getFluid": return getFluid(context, args);
+            case "getInfo": return getInfo(context, args);
+        }
+        throw new NoSuchMethodException();
     }
 }
 

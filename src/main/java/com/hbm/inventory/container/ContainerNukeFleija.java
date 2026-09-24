@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.items.ModItems;
 import com.hbm.tileentity.bomb.TileEntityNukeFleija;
 import com.hbm.util.InventoryUtil;
@@ -13,9 +14,17 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerNukeFleija extends Container {
 
 	private TileEntityNukeFleija nukeTsar;
-	
+
+	private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(11)
+                                                                              .rule(0, 2, s -> s.getItem() == ModItems.fleija_igniter)
+                                                                              .rule(2, 5, s -> s.getItem() == ModItems.fleija_propellant)
+                                                                              .rule(5, 11, s -> s.getItem() == ModItems.fleija_core)
+                                                                              .ruleDispatchMode(TransferStrategy.RuleDispatchMode.FALLTHROUGH_ON_FAILURE)
+                                                                              .playerFallbackMode(TransferStrategy.PlayerFallbackMode.REBALANCE_SECTIONS)
+                                                                              .build();
+
 	public ContainerNukeFleija(InventoryPlayer invPlayer, TileEntityNukeFleija tedf) {
-		
+
 		nukeTsar = tedf;
 
         //igniters
@@ -32,7 +41,7 @@ public class ContainerNukeFleija extends Container {
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 8, 98, 36));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 9, 80, 54));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 10, 98, 54));
-		
+
 		for(int i = 0; i < 3; i++)
 		{
 			for(int j = 0; j < 9; j++)
@@ -40,22 +49,19 @@ public class ContainerNukeFleija extends Container {
 				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18 + 56));
 			}
 		}
-		
+
 		for(int i = 0; i < 9; i++)
 		{
 			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 142 + 56));
 		}
 	}
-	
+
 	@Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 11,
-                s -> s.getItem() == ModItems.fleija_igniter, 2,
-                s -> s.getItem() == ModItems.fleija_propellant, 5,
-                s -> s.getItem() == ModItems.fleija_core, 11);
+		return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
-	
+
 	@Override
 	public boolean canInteractWith(EntityPlayer playerIn) {
 		return nukeTsar.isUseableByPlayer(playerIn);

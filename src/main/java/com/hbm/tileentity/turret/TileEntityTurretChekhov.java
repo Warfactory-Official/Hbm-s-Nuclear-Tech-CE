@@ -1,5 +1,6 @@
 package com.hbm.tileentity.turret;
 
+import com.hbm.handler.CasingEjector;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.container.ContainerTurretBase;
@@ -8,13 +9,15 @@ import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactory50;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IGUIProvider;
+import com.hbm.util.Vec3NT;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
@@ -85,19 +88,35 @@ public class TileEntityTurretChekhov extends TileEntityTurretBaseNT implements I
 				this.consumeAmmo(conf.ammo);
 				this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.chekhov_fire, SoundCategory.BLOCKS, 2.0F, 1.0F);
 				
-				Vec3 pos = new Vec3(this.getTurretPos());
-				Vec3 vec = Vec3.createVectorHelper(this.getBarrelLength(), 0, 0);
-				vec.rotateAroundZ((float) -this.rotationPitch);
-				vec.rotateAroundY((float) -(this.rotationYaw + Math.PI * 0.5));
+				Vec3NT pos = new Vec3NT(this.getTurretPos());
+				Vec3NT vec = new Vec3NT(this.getBarrelLength(), 0, 0);
+				vec.rotateAroundZRad(-this.rotationPitch);
+				vec.rotateAroundYRad(-(this.rotationYaw + Math.PI * 0.5));
 				
 				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "vanillaExt");
-				data.setString("mode", "largeexplode");
 				data.setFloat("size", 1.5F);
 				data.setByte("count", (byte)1);
-				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, pos.xCoord + vec.xCoord, pos.yCoord + vec.yCoord, pos.zCoord + vec.zCoord), new TargetPoint(world.provider.getDimension(), this.pos.getX(), this.pos.getY(), this.pos.getZ(), 50));
+				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.VanillaExt_LargeExplode, data, pos.x + vec.x, pos.y + vec.y, pos.z + vec.z), new TargetPoint(world.provider.getDimension(), this.pos.getX(), this.pos.getY(), this.pos.getZ(), 50));
 			}
 		}
+	}
+
+	@Override
+	protected Vec3d getCasingSpawnPos() {
+
+		Vec3NT pos = new Vec3NT(this.getTurretPos());
+		Vec3NT vec = new Vec3NT(-1.125, 0.125, 0.25);
+		vec.rotateAroundZRad(-this.rotationPitch);
+		vec.rotateAroundYRad(-(this.rotationYaw + Math.PI * 0.5));
+
+		return new Vec3d(pos.x + vec.x, pos.y + vec.y, pos.z + vec.z);
+	}
+
+	protected static CasingEjector ejector = new CasingEjector().setMotion(-0.8, 0.8, 0).setAngleRange(0.1F, 0.1F);
+
+	@Override
+	protected CasingEjector getEjector() {
+		return ejector;
 	}
 	
 	public int getDelay() {
@@ -147,6 +166,11 @@ public class TileEntityTurretChekhov extends TileEntityTurretBaseNT implements I
 	@Override
 	public void manualSetup(){
 		manual = true;
+	}
+
+	@Override
+	public boolean usesCasings() {
+		return true;
 	}
 
 	@Override

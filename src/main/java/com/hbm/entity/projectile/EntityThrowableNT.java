@@ -40,8 +40,8 @@ public abstract class EntityThrowableNT extends Entity implements IProjectile, I
     private int stuckBlockZ = -1;
     private Block stuckBlock;
     private String throwerName;
-    private int ticksInGround;
-    private int ticksInAir;
+    protected int ticksInGround;
+    protected int ticksInAir;
 
     public EntityThrowableNT(World worldIn) {
         super(worldIn);

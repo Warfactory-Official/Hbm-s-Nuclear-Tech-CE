@@ -1,6 +1,7 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.fluid.IFluidStandardTransceiver;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.forgefluid.FFUtils;
@@ -15,12 +16,14 @@ import com.hbm.inventory.fluid.trait.FT_Coolable;
 import com.hbm.inventory.gui.GUIHeaterHeatex;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ITickable;
@@ -37,7 +40,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nonnull;
 
 @AutoRegister
-public class TileEntityHeaterHeatex extends TileEntityMachineBase implements IHeatSource, IControlReceiver, IGUIProvider, IFluidStandardTransceiver, ITickable, IFFtoNTMF, IFluidCopiable {
+public class TileEntityHeaterHeatex extends TileEntityMachineBase implements IHeatSource, IControlReceiver, IGUIProvider, IFluidStandardTransceiver, ITickable, IFFtoNTMF, IFluidCopiable, IConnectionAnchors, IRORValueProvider {
 
     public FluidTankNTM[] tanksNew;
     public FluidTank[] tanks;
@@ -52,8 +55,8 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase implements IHe
         super(1, true, false);
 
         this.tanksNew = new FluidTankNTM[2];
-        this.tanksNew[0] = new FluidTankNTM(Fluids.COOLANT_HOT, 24_000, 0);
-        this.tanksNew[1] = new FluidTankNTM(Fluids.COOLANT, 24_000, 1);
+        this.tanksNew[0] = new FluidTankNTM(Fluids.COOLANT_HOT, 24_000, 0).withOwner(this);
+        this.tanksNew[1] = new FluidTankNTM(Fluids.COOLANT, 24_000, 1).withOwner(this);
 
         this.tanks = new FluidTank[2];
         this.tankTypes = new Fluid[2];
@@ -154,7 +157,7 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase implements IHe
         this.markDirty();
     }
 
-    private DirPos[] getConPos() {
+    public DirPos[] getConPos() {
         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
 
@@ -273,10 +276,27 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase implements IHe
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if(data.hasKey("toCool")) this.amountToCool = MathHelper.clamp(data.getInteger("toCool"), 1, tanksNew[0].getMaxFill());
         if(data.hasKey("delay")) this.tickDelay = Math.max(data.getInteger("delay"), 1);
 
         this.markDirty();
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{
+                PREFIX_VALUE + "hotfluid",
+                PREFIX_VALUE + "coldfluid",
+                PREFIX_VALUE + "heat"
+        };
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if((PREFIX_VALUE + "hotfluid").equals(name)) return "" + tanksNew[0].getFill();
+        if((PREFIX_VALUE + "coldfluid").equals(name)) return "" + tanksNew[1].getFill();
+        if((PREFIX_VALUE + "heat").equals(name)) return "" + heatEnergy;
+        return null;
     }
 }

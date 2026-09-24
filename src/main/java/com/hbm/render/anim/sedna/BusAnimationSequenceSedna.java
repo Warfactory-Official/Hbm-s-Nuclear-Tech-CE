@@ -30,7 +30,7 @@ public class BusAnimationSequenceSedna {
     public double[] rotMode = new double[] { 0, 1, 2 };
 
     public BusAnimationSequenceSedna() {
-        // Initialise our keyframe storage, since it's multidimensional
+        // Initialize our keyframe storage, since it's multidimensional
         for(int i = 0; i < 9; i++) {
             transformKeyframes.add(new ArrayList<BusAnimationKeyframeSedna>());
         }
@@ -90,7 +90,7 @@ public class BusAnimationSequenceSedna {
 
         for(Dimension dim : Dimension.VALUES) {
             List<BusAnimationKeyframeSedna> keyframes = transformKeyframes.get(dim.ordinal());
-            for(BusAnimationKeyframeSedna keyframe : keyframes) keyframe.duration *= mult;
+            for(BusAnimationKeyframeSedna keyframe : keyframes) keyframe.duration = (int) (keyframe.originalDuration * mult);
         }
         return this;
     }

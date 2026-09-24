@@ -10,10 +10,7 @@ import com.hbm.blocks.generic.BlockCrate;
 import com.hbm.capability.HbmCapability;
 import com.hbm.capability.HbmLivingCapability;
 import com.hbm.capability.NTMBatteryCapabilityHandler;
-import com.hbm.command.CommandHbm;
-import com.hbm.command.CommandLocate;
-import com.hbm.command.CommandPacketInfo;
-import com.hbm.command.CommandRadiation;
+import com.hbm.command.*;
 import com.hbm.config.*;
 import com.hbm.creativetabs.*;
 import com.hbm.datagen.AdvGen;
@@ -23,6 +20,7 @@ import com.hbm.entity.siege.SiegeTier;
 import com.hbm.explosion.ExplosionNukeGeneric;
 import com.hbm.handler.*;
 import com.hbm.handler.imc.IMCHandler;
+import com.hbm.handler.imc.IMCOutbound;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.radiation.RadiationSystemNT;
 import com.hbm.handler.threading.BombForkJoinPool;
@@ -88,7 +86,7 @@ import java.io.File;
 import java.util.Random;
 
 @Mod(modid = Tags.MODID, version = Tags.VERSION, name = Tags.MODNAME,
-        dependencies = "required-client:ctm;"
+        dependencies = "required-after:mixinbooter;required-client:ctm;"
 )
 public class MainRegistry {
 
@@ -132,13 +130,12 @@ public class MainRegistry {
     public static File configDir;
     public static File configHbmDir;
 
-    static {
-        HBMSoundHandler.init();
-        FluidRegistry.enableUniversalBucket();
-        MaterialRegistry.init();
-    }
-
     Random rand = new Random();
+
+    @EventHandler
+    public void construction(FMLConstructionEvent event) {
+        FluidRegistry.enableUniversalBucket();
+    }
 
     public static void reloadConfig() {
         Configuration config = new Configuration(new File(proxy.getDataDir().getPath() + "/config/hbm/hbm.cfg"));
@@ -152,9 +149,9 @@ public class MainRegistry {
         ToolConfig.loadFromConfig(config);
         WeaponConfig.loadFromConfig(config);
         MobConfig.loadFromConfig(config);
-        SpaceConfig.loadFromConfig(config);
         StructureConfig.loadFromConfig(config);
         reloadCompatConfig();
+        WorldConfig.loadFromConfig(config);
         BedrockOreJsonConfig.init();
         CassetteJsonConfig.init();
         config.save();
@@ -193,6 +190,9 @@ public class MainRegistry {
         if (logger == null)
             logger = event.getModLog();
 
+        HBMSoundHandler.init();
+        MaterialRegistry.init();
+
         if (generalOverride > 0 && generalOverride < 19) {
             polaroidID = generalOverride;
         } else {
@@ -204,6 +204,8 @@ public class MainRegistry {
         configHbmDir = new File(configDir.getAbsolutePath() + File.separatorChar + "hbmConfig");
 
         if (!configHbmDir.exists()) configHbmDir.mkdir();
+
+        Identity.init(configDir);
 
         if (SharedMonsterAttributes.MAX_HEALTH.clampValue(Integer.MAX_VALUE) <= 2000) {
             ((RangedAttribute) SharedMonsterAttributes.MAX_HEALTH).maximumValue = Integer.MAX_VALUE;
@@ -229,14 +231,12 @@ public class MainRegistry {
             MinecraftForge.EVENT_BUS.register(keyHandler);
         }
 
-        HbmPotion.init();
+        HbmPotion.preinit();
 
         CapabilityManager.INSTANCE.register(HbmLivingCapability.IEntityHbmProps.class, new HbmLivingCapability.EntityHbmPropsStorage(), HbmLivingCapability.EntityHbmProps.FACTORY);
         CapabilityManager.INSTANCE.register(HbmCapability.IHBMData.class, new HbmCapability.HBMDataStorage(), HbmCapability.HBMData.FACTORY);
         Fluids.init();
         ModFluids.init();
-        ModItems.preInit();
-        ModBlocks.preInit();
         BulletConfigSyncingUtil.loadConfigsForSync();
         CellularDungeonFactory.init();
         Satellite.register();
@@ -244,12 +244,9 @@ public class MainRegistry {
         MultiblockBBHandler.init();
         ControlEvent.init();
         SiegeTier.registerTiers();
-        HazardRegistry.registerItems();
         HazardRegistry.registerTrafos();
-        XWeaponModManager.init();
 
         proxy.registerRenderInfo();
-        HbmWorld.mainRegistry();
         proxy.preInit(event);
 
         StockNodesRegister.register();
@@ -257,13 +254,10 @@ public class MainRegistry {
 
         MaterialRegistry.initFixMaterials();
         AutoRegistry.registerTileEntities();
+        com.hbm.integration.ae2.NTMCraftingMachineAE2Registration.registerIfPresent();
         AutoRegistry.loadAuxiliaryData();
         NetworkRegistry.INSTANCE.registerGuiHandler(instance, new GuiHandler());
 
-        int i = 0;
-
-
-        AutoRegistry.registerEntities(i);
         ForgeChunkManager.setForcedChunkLoadingCallback(this, (tickets, world) -> {
             for (Ticket ticket : tickets) {
 
@@ -275,11 +269,8 @@ public class MainRegistry {
 
         GrenadeDispenserRegistry.registerDispenserBehaviors();
         GrenadeDispenserRegistry.registerDispenserBehaviorFertilizer();
-        TileEntityLaunchPadBase.registerLaunchables();
         TileEntityMachineRadarNT.registerEntityClasses();
         TileEntityMachineRadarNT.registerConverters();
-
-        EntityMappings.writeSpawns();
     }
 
     @EventHandler
@@ -290,6 +281,10 @@ public class MainRegistry {
         ModItems.init();
         proxy.init(event);
         ModBlocks.init();
+        HbmWorld.mainRegistry();
+        HazardRegistry.registerItems();
+        XWeaponModManager.init();
+        TileEntityLaunchPadBase.registerLaunchables();
         HazmatRegistry.registerHazmats();
         ControlRegistry.init();
         OreDictManager.registerOres();
@@ -299,6 +294,7 @@ public class MainRegistry {
         PacketDispatcher.registerPackets();
         PacketThreading.init();
         IMCHandler.init();
+        IMCOutbound.send();
     }
 
     @EventHandler
@@ -308,12 +304,9 @@ public class MainRegistry {
         // IMPORTANT: fluids have to load before recipes. weird shit happens if not.
         Fluids.reloadFluids();
         ModItems.postInit();
-        ModBlocks.postInit();
         DamageResistanceHandler.init();
         BlockCrate.setDrops();
-        BedrockOreRegistry.registerBedrockOres();
         ExplosionNukeGeneric.loadSoliniumFromFile();
-        HadronRecipes.register();
         MagicRecipes.register();
         SILEXRecipes.register();
         GasCentrifugeRecipes.register();
@@ -322,6 +315,7 @@ public class MainRegistry {
         SerializableRecipe.initialize();
         AnvilRecipes.register();
         ClientConfig.initConfig();
+        ServerConfig.initConfig();
         RefineryRecipes.registerRefinery();
         ModFluids.setFromRegistry();
         FluidContainerRegistry.register();
@@ -330,7 +324,6 @@ public class MainRegistry {
         RBMKFuelRecipes.registerRecipes();
         DFCRecipes.register();
         StorageDrumRecipes.registerRecipes();
-        NuclearTransmutationRecipes.registerRecipes();
         EngineRecipes.registerEngineRecipes();
         FluidCombustionRecipes.registerFluidCombustionRecipes();
         HbmDetox.init();
@@ -358,11 +351,10 @@ public class MainRegistry {
         if (WorldConfig.enableMalachite)
             new OreLayer3D(ModBlocks.stone_resource, BlockEnums.EnumStoneType.MALACHITE.ordinal()).setScaleH(0.1D).setScaleV(0.15D).setThreshold(275);
 
-        if (event.getSide() == Side.CLIENT) {
-            BedrockOreRegistry.registerOreColors();
-        }
         proxy.postInit(event);
         AdvGen.generate();
+
+        CommandReloadClient.register();
     }
 
     /**
@@ -375,6 +367,8 @@ public class MainRegistry {
         evt.registerServerCommand(new CommandHbm());
         evt.registerServerCommand(new CommandLocate());
         evt.registerServerCommand(new CommandPacketInfo());
+        evt.registerServerCommand(new CommandReloadServer());
+        evt.registerServerCommand(new CommandReapNetworks());
         AdvancementManager.init(evt.getServer());
         //MUST be initialized AFTER achievements!!
         BobmazonOfferFactory.init();
@@ -386,7 +380,6 @@ public class MainRegistry {
     @EventHandler
     public void serverStopping(FMLServerStoppingEvent evt) {
         RadiationSystemNT.onServerStopping();
-        ChunkUtil.onServerStopping();
         RecipesCommon.onServerStopping();
         ModEventHandler.RBMK_COL_HEIGHT_MAP.clear();
     }
@@ -410,6 +403,7 @@ public class MainRegistry {
         PhasedEventHandler.onServerStopped();
         PhasedStructureRegistry.onServerStopped();
         BombForkJoinPool.onServerStopped();
+        ChunkUtil.onServerStopped();
     }
 
     @EventHandler
@@ -423,6 +417,13 @@ public class MainRegistry {
         HazardSystem.clearCaches();
         if (!HazardSystem.locationRateRegisterList.isEmpty()) {
             HazardSystem.locationRateRegisterList.clear();
+        }
+
+        EntityMappings.writeSpawns();
+        BedrockOreRegistry.registerBedrockOres();
+        ModBlocks.initializeHazardsAndPlacables();
+        if (evt.getSide() == Side.CLIENT) {
+            BedrockOreRegistry.registerOreColors();
         }
     }
 }

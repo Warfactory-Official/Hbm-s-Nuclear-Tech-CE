@@ -2,7 +2,6 @@ package com.hbm.particle.helper;
 
 import com.hbm.particle.ParticleSpentCasing;
 import com.hbm.particle.SpentCasing;
-import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.util.Vec3NT;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -38,7 +37,7 @@ public class CasingCreator implements IParticleCreator {
         if(player.isSneaking()) heightOffset -= 0.075F;
 
         Vec3NT offset = new Vec3NT(sideOffset, heightOffset, frontOffset);
-        offset.rotateAroundXRad(player.rotationPitch / 180F * (float) Math.PI);
+        offset.rotateAroundXRad(-player.rotationPitch / 180F * (float) Math.PI);
         offset.rotateAroundYRad(-player.rotationYaw / 180F * (float) Math.PI);
 
         double x = player.posX + offset.x;
@@ -54,7 +53,6 @@ public class CasingCreator implements IParticleCreator {
         double mZ = player.motionZ + motion.z + player.getRNG().nextGaussian() * motionVariance;
 
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "casingNT");
         data.setDouble("mX", mX);
         data.setDouble("mY", mY);
         data.setDouble("mZ", mZ);
@@ -68,20 +66,19 @@ public class CasingCreator implements IParticleCreator {
         data.setDouble("smokeLift", smokeLift);
         data.setInteger("nodeLife", nodeLife);
 
-        IParticleCreator.sendPacket(world, x, y, z, 50, data);
+        IParticleCreator.sendPacket(world, HbmEffectNT.CasingNT, x, y, z, 50, data);
     }
     public static void composeEffect(World world, Vec3d vec, float yaw, float pitch, double frontMotion, double heightMotion, double sideMotion, double motionVariance, float mPitch, float mYaw, String casing, boolean smoking, int smokeLife, double smokeLift, int nodeLife) {
 
-        Vec3d motion = new Vec3d(sideMotion, heightMotion, frontMotion);
-        motion.rotatePitch(-pitch / 180F * (float) Math.PI);
-        motion.rotateYaw(-yaw / 180F * (float) Math.PI);
+        Vec3NT motion = new Vec3NT(sideMotion, heightMotion, frontMotion);
+        motion.rotatePitchSelf(-pitch / 180F * (float) Math.PI);
+        motion.rotateYawSelf(-yaw / 180F * (float) Math.PI);
 
         double mX = motion.x+ world.rand.nextGaussian() * motionVariance;
         double mY = motion.y+ world.rand.nextGaussian() * motionVariance;
         double mZ = motion.z+ world.rand.nextGaussian() * motionVariance;
 
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "casingNT");
         data.setDouble("mX", mX);
         data.setDouble("mY", mY);
         data.setDouble("mZ", mZ);
@@ -95,7 +92,7 @@ public class CasingCreator implements IParticleCreator {
         data.setDouble("smokeLift", smokeLift);
         data.setInteger("nodeLife", nodeLife);
 
-        IParticleCreator.sendPacket(world, vec.x, vec.y, vec.z, 50, data);
+        IParticleCreator.sendPacket(world, HbmEffectNT.CasingNT, vec.x, vec.y, vec.z, 50, data);
     }
     @Override
     @SideOnly(Side.CLIENT)

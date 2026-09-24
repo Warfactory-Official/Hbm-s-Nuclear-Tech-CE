@@ -131,7 +131,7 @@ public class GUIScreenFluid extends GuiScreen {
                 return;
 
             Color color = new Color(type.getColor());
-            GL11.glColor3f(color.getRed() / 255F, color.getGreen() / 255F, color.getBlue() / 255F);
+            GlStateManager.color(color.getRed() / 255F, color.getGreen() / 255F, color.getBlue() / 255F);
             drawTexturedModalRect(guiLeft + 12 + k * 18, guiTop + 31, 12 + k * 18, 56, 8, 14);
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 

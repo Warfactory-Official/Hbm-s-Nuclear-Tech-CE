@@ -1,15 +1,16 @@
 package com.hbm.explosion.vanillant.standard;
 
+import com.hbm.entity.grenade.EntityGrenadeUniversal;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.interfaces.ICustomDamageHandler;
 import com.hbm.explosion.vanillant.interfaces.IEntityProcessor;
 import com.hbm.explosion.vanillant.interfaces.IEntityRangeMutator;
+import com.hbm.interfaces.NotableComments;
 import com.hbm.lib.ForgeDirection;
 import net.minecraft.enchantment.EnchantmentProtection;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityDamageSource;
@@ -23,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@NotableComments
 /** The amount of good decisions in NTM is few and far between, but the VNT explosion surely is one of them. */
 public class EntityProcessorCross implements IEntityProcessor {
 
@@ -33,7 +35,11 @@ public class EntityProcessorCross implements IEntityProcessor {
     protected double knockbackMult = 1D;
 	protected boolean allowSelfDamage = false;
 
-	public EntityProcessorCross(double nodeDist) {
+    public EntityProcessorCross() {
+        this(0);
+    }
+
+    public EntityProcessorCross(double nodeDist) {
 		this.nodeDist = nodeDist;
 	}
 
@@ -45,6 +51,12 @@ public class EntityProcessorCross implements IEntityProcessor {
     public EntityProcessorCross setKnockback(double mult) {
         this.knockbackMult = mult;
         return this;
+    }
+
+    public static boolean shouldDealKnockback(Entity entity) {
+        if (entity instanceof EntityBulletBaseMK4) return false;
+        if (entity instanceof EntityGrenadeUniversal) return false;
+        return true;
     }
 
 	@Override //add
@@ -69,11 +81,18 @@ public class EntityProcessorCross implements IEntityProcessor {
 
 		ForgeEventFactory.onExplosionDetonate(world, explosion.compat, list, size);
 
-		Vec3d[] nodes = new Vec3d[7];
+        Vec3d[] nodes;
 
-		for(int i = 0; i < 7; i++) {
-			ForgeDirection dir = ForgeDirection.getOrientation(i);
-			nodes[i] = new Vec3d(x + dir.offsetX * nodeDist, y + dir.offsetY * nodeDist, z + dir.offsetZ * nodeDist);
+        if (this.nodeDist > 0) {
+            nodes = new Vec3d[7];
+            for (int i = 0; i < 7; i++) {
+                ForgeDirection dir = ForgeDirection.getOrientation(i);
+                nodes[i] = new Vec3d(x + dir.offsetX * nodeDist, y + dir.offsetY * nodeDist,
+                        z + dir.offsetZ * nodeDist);
+            }
+        } else {
+            nodes = new Vec3d[1];
+            nodes[0] = new Vec3d(x, y, z);
 		}
 
 		HashMap<Entity, Float> damageMap = new HashMap();
@@ -81,7 +100,14 @@ public class EntityProcessorCross implements IEntityProcessor {
 		for(int index = 0; index < list.size(); ++index) {
 
 			Entity entity = (Entity) list.get(index);
-			double distanceScaled = entity.getDistance(x, y, z) / size;
+            AxisAlignedBB box = entity.getEntityBoundingBox();
+            double xDist = (box.minX <= x && box.maxX >= x) ? 0 : Math.min(Math.abs(box.minX - x),
+                    Math.abs(box.maxX - x));
+            double yDist = (box.minY <= y && box.maxY >= y) ? 0 : Math.min(Math.abs(box.minY - y),
+                    Math.abs(box.maxY - y));
+            double zDist = (box.minZ <= z && box.maxZ >= z) ? 0 : Math.min(Math.abs(box.minZ - z),
+                    Math.abs(box.maxZ - z));
+            double distanceScaled = Math.sqrt(xDist * xDist + yDist * yDist + zDist * zDist) / size;
 
 			if(distanceScaled <= 1.0D) {
 
@@ -111,14 +137,16 @@ public class EntityProcessorCross implements IEntityProcessor {
 					if(!damageMap.containsKey(entity) || damageMap.get(entity) < dmg) damageMap.put(entity, dmg);
 					double enchKnockback = entity instanceof EntityLivingBase entityLivingBase ? EnchantmentProtection.getBlastDamageReduction(entityLivingBase, knockback) : knockback; //1.12 requires EntityLiving base oppose to just entity
 
-					if(!(entity instanceof EntityBulletBaseMK4)) {
-						entity.motionX += deltaX * enchKnockback;
-						entity.motionY += deltaY * enchKnockback;
-						entity.motionZ += deltaZ * enchKnockback;
+                    if (shouldDealKnockback(entity)) {
+                        entity.motionX += deltaX * enchKnockback * knockbackMult;
+                        entity.motionY += deltaY * enchKnockback * knockbackMult;
+                        entity.motionZ += deltaZ * enchKnockback * knockbackMult;
 					}
 
 					if(entity instanceof EntityPlayer) {
-						affectedPlayers.put((EntityPlayer) entity, new Vec3d(deltaX * knockback, deltaY * knockback, deltaZ * knockback));
+                        affectedPlayers.put((EntityPlayer) entity,
+                                new Vec3d(deltaX * knockback * knockbackMult, deltaY * knockback * knockbackMult,
+                                        deltaZ * knockback * knockbackMult));
 					}
 				}
 			}
@@ -130,7 +158,14 @@ public class EntityProcessorCross implements IEntityProcessor {
 			attackEntity(entity, explosion, entry.getValue());
 
 			if(damage != null) {
-				double distanceScaled = entity.getDistance(x, y, z) / size;
+                AxisAlignedBB box = entity.getEntityBoundingBox();
+                double xDist = (box.minX <= x && box.maxX >= x) ? 0 : Math.min(Math.abs(box.minX - x),
+                        Math.abs(box.maxX - x));
+                double yDist = (box.minY <= y && box.maxY >= y) ? 0 : Math.min(Math.abs(box.minY - y),
+                        Math.abs(box.maxY - y));
+                double zDist = (box.minZ <= z && box.maxZ >= z) ? 0 : Math.min(Math.abs(box.minZ - z),
+                        Math.abs(box.maxZ - z));
+                double distanceScaled = Math.sqrt(xDist * xDist + yDist * yDist + zDist * zDist) / size;
 				damage.handleAttack(explosion, entity, distanceScaled);
 			}
 		}
@@ -138,7 +173,7 @@ public class EntityProcessorCross implements IEntityProcessor {
 		return affectedPlayers;
 	}
 
-	public void attackEntity(Entity entity, ExplosionVNT source, float amount) {
+    public void attackEntity(Entity entity, ExplosionVNT source, float amount) {
 		entity.attackEntityFrom(setExplosionSource(source.compat), amount);
 	}
 
@@ -153,12 +188,7 @@ public class EntityProcessorCross implements IEntityProcessor {
 	}
 
 	public EntityProcessorCross withRangeMod(float mod) {
-		range = new IEntityRangeMutator() {
-			@Override
-			public float mutateRange(ExplosionVNT explosion, float range) {
-				return range * mod;
-			}
-		};
+        range = (_, range) -> range * mod;
 		return this;
 	}
 

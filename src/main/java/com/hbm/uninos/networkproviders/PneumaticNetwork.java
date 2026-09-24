@@ -1,5 +1,7 @@
 package com.hbm.uninos.networkproviders;
 
+import com.hbm.api.ntl.ISlotMonitorProvider;
+import com.hbm.api.ntl.StackCache;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineAutocrafter;
 import com.hbm.tileentity.network.TileEntityPneumoTube;
@@ -42,6 +44,8 @@ public class PneumaticNetwork extends NodeNet<PneumaticNetwork.ReceiverTarget, T
     protected static final int TIMEOUT_MS = 1_000;
     // not actually individual items, but rather the total "mass", based on max stack size
     public static final int ITEMS_PER_TRANSFER = 64;
+    public final HashMap<ISlotMonitorProvider, Long> storages = new HashMap<>();
+    public final LinkedHashSet<StackCache> accessors = new LinkedHashSet<>();
 
     public record ReceiverTarget(BlockPos pos, ForgeDirection pipeDir, TileEntityPneumoTube endpointTube) {
         public ReceiverTarget(BlockPos pos, ForgeDirection pipeDir, TileEntityPneumoTube endpointTube) {
@@ -74,6 +78,28 @@ public class PneumaticNetwork extends NodeNet<PneumaticNetwork.ReceiverTarget, T
         super.addReceiver(receiver);
     }
 
+    public void addStackCache(StackCache accessor) {
+        if (accessors.add(accessor)) {
+            for (ISlotMonitorProvider storage : storages.keySet()) storage.onNewCacheHasJoined(accessor, this);
+        }
+    }
+
+    @Override
+    public void destroy() {
+        super.destroy();
+        for (StackCache cache : accessors) cache.dissolveCache();
+        accessors.clear();
+        storages.clear();
+    }
+
+    @Override
+    public void joinNetworks(NodeNet<ReceiverTarget, TileEntityPneumoTube, TileEntityPneumoTube.PneumaticNode, PneumaticNetwork> network) {
+        super.joinNetworks(network);
+        // dissolve all caches so access points re-register against the merged network next tick
+        for (StackCache cache : accessors) cache.dissolveCache();
+        accessors.clear();
+    }
+
     @Override
     public void update() {
         long now = System.currentTimeMillis();
@@ -98,6 +124,9 @@ public class PneumaticNetwork extends NodeNet<PneumaticNetwork.ReceiverTarget, T
                 it.remove();
             }
         }
+
+        this.storages.entrySet().removeIf(e -> now - e.getValue() > TIMEOUT_MS);
+        this.accessors.removeIf(x -> x.hasExpired);
     }
 
     public boolean send(TileEntity sourceTile, TileEntityPneumoTube tube, ForgeDirection accessDir, int sendOrder, int receiveOrder, int maxRange,
@@ -120,120 +149,138 @@ public class PneumaticNetwork extends NodeNet<PneumaticNetwork.ReceiverTarget, T
         IItemHandler sourceHandler = resolveItemHandlerStrict(sourceTile, accessDir);
         if (sourceHandler == null || sourceHandler.getSlots() <= 0) return false;
 
-        List<ReceiverCandidate> candidates = collectCandidates(world);
-        if (candidates.isEmpty()) return false;
-
-        // for round robin, receivers are ordered by proximity to the source
-        candidates.sort(new ReceiverComparator(tube));
-        ReceiverCandidate chosen = selectCandidate(candidates, receiveOrder, nextReceiver);
-        if (chosen == null) return false;
-
-        TileEntity destTile = chosen.tile;
-
-        // range check (only if both are TEs — always true here)
-        int dx = sourceTile.getPos().getX() - destTile.getPos().getX();
-        int dy = sourceTile.getPos().getY() - destTile.getPos().getY();
-        int dz = sourceTile.getPos().getZ() - destTile.getPos().getZ();
-        int sq = dx * dx + dy * dy + dz * dz;
-        if (sq > maxRange * maxRange) return false;
-
-        IItemHandler destHandler = chosen.handler;
-
         int[] sourceSlotOrder = buildSlotOrder(sourceHandler);
         if (sendOrder == SEND_LAST) BobMathUtil.reverseIntArray(sourceSlotOrder);
         if (sendOrder == SEND_RANDOM) BobMathUtil.shuffleIntArray(sourceSlotOrder);
 
-        int itemsLeftToSend = ITEMS_PER_TRANSFER;
-        int itemHardCap = chosen.autocrafter ? 1 : ITEMS_PER_TRANSFER;
-        boolean didSomething = false;
-
+        // return early if there aren't any sendable items in the source inventory, saves on some cpu usage for idle networks
+        boolean hasItem = false;
         for (int sourceSlot : sourceSlotOrder) {
-            if (itemsLeftToSend <= 0) break;
-
-            ItemStack sourceStack = sourceHandler.getStackInSlot(sourceSlot);
-            if (sourceStack.isEmpty()) continue;
-
-            // sender filter
-            boolean match = tube.matchesFilter(sourceStack);
+            ItemStack stack = sourceHandler.getStackInSlot(sourceSlot);
+            if (stack.isEmpty()) continue;
+            boolean match = tube.matchesFilter(stack);
             if ((match && !tube.whitelist) || (!match && tube.whitelist)) continue;
+            hasItem = true;
+            break;
+        }
+        if (!hasItem) return false;
 
-            // receiver filter (endpoint tube)
-            TileEntityPneumoTube endpointTube = chosen.endpointTube;
-            if (endpointTube != null && endpointTube != tube) {
-                match = endpointTube.matchesFilter(sourceStack);
-                if ((match && !endpointTube.whitelist) || (!match && endpointTube.whitelist)) continue;
-            }
+        List<ReceiverCandidate> candidates = collectCandidates(world);
+        if (candidates.isEmpty()) return false;
 
-            // the "mass" of an item. something that only stacks to 4 has a "mass" of 16. max transfer mass is 64, i.e. one standard stack, or one single unstackable item
-            int proportionalValue = MathHelper.clamp(64 / sourceStack.getMaxStackSize(), 1, 64);
+        // for round robin, receivers are ordered by proximity to the source
+        if (receiveOrder == RECEIVE_RANDOM) Collections.shuffle(candidates, rand);
+        else candidates.sort(new ReceiverComparator(tube));
 
-            if (itemsLeftToSend < proportionalValue) continue;
+        // try every receiver instead of bailing out after the first failure, which would stall the tube for a whole send cycle
+        for (int attempts = 0; attempts < candidates.size(); attempts++) {
 
-            // fill existing stacks first
-            for (int destSlot = 0; destSlot < destHandler.getSlots(); destSlot++) {
-                if (itemsLeftToSend < proportionalValue) break;
+            int index = receiveOrder == RECEIVE_RANDOM ? attempts : Math.floorMod(nextReceiver + attempts, candidates.size());
+            ReceiverCandidate chosen = candidates.get(index);
+            TileEntity destTile = chosen.tile;
 
-                ItemStack destStack = destHandler.getStackInSlot(destSlot);
-                if (destStack.isEmpty()) continue;
-                if (!ItemStackUtil.areStacksCompatible(sourceStack, destStack)) continue;
+            // range check (only if both are TEs — always true here)
+            int dx = sourceTile.getPos().getX() - destTile.getPos().getX();
+            int dy = sourceTile.getPos().getY() - destTile.getPos().getY();
+            int dz = sourceTile.getPos().getZ() - destTile.getPos().getZ();
+            int sq = dx * dx + dy * dy + dz * dz;
+            if (sq > maxRange * maxRange) continue;
 
-                int capacity = Math.min(destHandler.getSlotLimit(destSlot), destStack.getMaxStackSize());
-                int space = capacity - destStack.getCount();
-                if (space <= 0) continue;
+            IItemHandler destHandler = chosen.handler;
 
-                int maxByMass = Math.min(itemsLeftToSend / proportionalValue, itemHardCap);
-                if (maxByMass <= 0) break;
+            int itemsLeftToSend = ITEMS_PER_TRANSFER;
+            int itemHardCap = chosen.autocrafter ? 1 : ITEMS_PER_TRANSFER;
+            boolean didSomething = false;
 
-                ItemStack currentSource = sourceHandler.getStackInSlot(sourceSlot);
-                if (currentSource.isEmpty()) break;
+            for (int sourceSlot : sourceSlotOrder) {
+                if (itemsLeftToSend <= 0) break;
 
-                int attempt = Math.min(Math.min(space, currentSource.getCount()), maxByMass);
-                if (attempt <= 0) continue;
+                ItemStack sourceStack = sourceHandler.getStackInSlot(sourceSlot);
+                if (sourceStack.isEmpty()) continue;
 
-                int moved = transferItems(sourceHandler, sourceSlot, destHandler, destSlot, attempt);
-                if (moved > 0) {
-                    itemsLeftToSend -= moved * proportionalValue;
-                    didSomething = true;
-                    if (itemsLeftToSend <= 0) break;
-                    sourceStack = sourceHandler.getStackInSlot(sourceSlot);
-                    if (sourceStack.isEmpty()) break;
+                // sender filter
+                boolean match = tube.matchesFilter(sourceStack);
+                if ((match && !tube.whitelist) || (!match && tube.whitelist)) continue;
+
+                // receiver filter (endpoint tube)
+                TileEntityPneumoTube endpointTube = chosen.endpointTube;
+                if (endpointTube != null && endpointTube != tube) {
+                    match = endpointTube.matchesFilter(sourceStack);
+                    if ((match && !endpointTube.whitelist) || (!match && endpointTube.whitelist)) continue;
+                }
+
+                // the "mass" of an item. something that only stacks to 4 has a "mass" of 16. max transfer mass is 64, i.e. one standard stack, or one single unstackable item
+                int proportionalValue = MathHelper.clamp(64 / sourceStack.getMaxStackSize(), 1, 64);
+
+                if (itemsLeftToSend < proportionalValue) continue;
+
+                // fill existing stacks first
+                for (int destSlot = 0; destSlot < destHandler.getSlots(); destSlot++) {
+                    if (itemsLeftToSend < proportionalValue) break;
+
+                    ItemStack destStack = destHandler.getStackInSlot(destSlot);
+                    if (destStack.isEmpty()) continue;
+                    if (!ItemStackUtil.areStacksCompatible(sourceStack, destStack)) continue;
+
+                    int capacity = Math.min(destHandler.getSlotLimit(destSlot), destStack.getMaxStackSize());
+                    int space = capacity - destStack.getCount();
+                    if (space <= 0) continue;
+
+                    int maxByMass = Math.min(itemsLeftToSend / proportionalValue, itemHardCap);
+                    if (maxByMass <= 0) break;
+
+                    ItemStack currentSource = sourceHandler.getStackInSlot(sourceSlot);
+                    if (currentSource.isEmpty()) break;
+
+                    int attempt = Math.min(Math.min(space, currentSource.getCount()), maxByMass);
+                    if (attempt <= 0) continue;
+
+                    int moved = transferItems(sourceHandler, sourceSlot, destHandler, destSlot, attempt);
+                    if (moved > 0) {
+                        itemsLeftToSend -= moved * proportionalValue;
+                        didSomething = true;
+                        if (itemsLeftToSend <= 0) break;
+                        sourceStack = sourceHandler.getStackInSlot(sourceSlot);
+                        if (sourceStack.isEmpty()) break;
+                    }
+                }
+
+                if (itemsLeftToSend <= 0) break;
+                if (itemsLeftToSend < proportionalValue) continue;
+
+                // empty slots
+                for (int destSlot = 0; destSlot < destHandler.getSlots(); destSlot++) {
+                    if (itemsLeftToSend < proportionalValue) break;
+
+                    ItemStack destStack = destHandler.getStackInSlot(destSlot);
+                    if (!destStack.isEmpty()) continue;
+
+                    ItemStack currentSource = sourceHandler.getStackInSlot(sourceSlot);
+                    if (currentSource.isEmpty()) break;
+
+                    int slotLimit = destHandler.getSlotLimit(destSlot);
+                    int maxByMass = Math.min(itemsLeftToSend / proportionalValue, itemHardCap);
+
+                    int attempt = Math.min(Math.min(slotLimit, currentSource.getMaxStackSize()), Math.min(currentSource.getCount(), maxByMass));
+                    if (attempt <= 0) continue;
+
+                    int moved = transferItems(sourceHandler, sourceSlot, destHandler, destSlot, attempt);
+                    if (moved > 0) {
+                        itemsLeftToSend -= moved * proportionalValue;
+                        didSomething = true;
+                        if (itemsLeftToSend <= 0) break;
+                    }
                 }
             }
 
-            if (itemsLeftToSend <= 0) break;
-            if (itemsLeftToSend < proportionalValue) continue;
-
-            // empty slots
-            for (int destSlot = 0; destSlot < destHandler.getSlots(); destSlot++) {
-                if (itemsLeftToSend < proportionalValue) break;
-
-                ItemStack destStack = destHandler.getStackInSlot(destSlot);
-                if (!destStack.isEmpty()) continue;
-
-                ItemStack currentSource = sourceHandler.getStackInSlot(sourceSlot);
-                if (currentSource.isEmpty()) break;
-
-                int slotLimit = destHandler.getSlotLimit(destSlot);
-                int maxByMass = Math.min(itemsLeftToSend / proportionalValue, itemHardCap);
-
-                int attempt = Math.min(Math.min(slotLimit, currentSource.getMaxStackSize()), Math.min(currentSource.getCount(), maxByMass));
-                if (attempt <= 0) continue;
-
-                int moved = transferItems(sourceHandler, sourceSlot, destHandler, destSlot, attempt);
-                if (moved > 0) {
-                    itemsLeftToSend -= moved * proportionalValue;
-                    didSomething = true;
-                    if (itemsLeftToSend <= 0) break;
-                }
+            if (didSomething) {
+                sourceTile.markDirty();
+                destTile.markDirty();
+                return true;
             }
         }
 
-        if (didSomething) {
-            sourceTile.markDirty();
-            destTile.markDirty();
-        }
-
-        return didSomething;
+        return false;
     }
 
     private List<ReceiverCandidate> collectCandidates(World world) {
@@ -260,13 +307,6 @@ public class PneumaticNetwork extends NodeNet<PneumaticNetwork.ReceiverTarget, T
         }
 
         return list;
-    }
-
-    private ReceiverCandidate selectCandidate(List<ReceiverCandidate> candidates, int receiveOrder, int nextReceiver) {
-        if (candidates.isEmpty()) return null;
-        if (receiveOrder == RECEIVE_RANDOM) return candidates.get(rand.nextInt(candidates.size()));
-        int idx = Math.floorMod(nextReceiver, candidates.size());
-        return candidates.get(idx);
     }
 
     private static int[] buildSlotOrder(IItemHandler handler) {

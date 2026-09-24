@@ -137,7 +137,7 @@ public class ItemRenderUziAkimbo extends ItemRenderWeaponBase {
     @Override
     public void setupInv(ItemStack stack) {
         GlStateManager.alphaFunc(GL11.GL_GREATER, 0F);
-        GL11.glEnable(GL11.GL_ALPHA_TEST);
+        GlStateManager.enableAlpha();
         GlStateManager.scale(1, 1, -1);
         GlStateManager.translate(8, 8, 0);
         double scale = 1.5D;
@@ -232,8 +232,8 @@ public class ItemRenderUziAkimbo extends ItemRenderWeaponBase {
         GlStateManager.translate(0, 1, 0);
         if(anySilenced) {
             double scale = 0.625D;
-            GL11.glScaled(scale, scale, scale);
-            GL11.glTranslated(0, 0, -4);
+            GlStateManager.scale(scale, scale, scale);
+            GlStateManager.translate(0, 0, -4);
         }
         Minecraft.getMinecraft().renderEngine.bindTexture(isSaturnite(stack, 0) ? ResourceManager.uzi_saturnite_tex : ResourceManager.uzi_tex);
         ResourceManager.uzi.renderPart("GunMirror");

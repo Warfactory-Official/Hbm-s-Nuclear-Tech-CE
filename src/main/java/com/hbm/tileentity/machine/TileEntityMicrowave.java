@@ -2,6 +2,7 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.capability.NTMEnergyCapabilityWrapper;
+import com.hbm.handler.CompatHandler;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.ICopiable;
 import com.hbm.inventory.container.ContainerMicrowave;
@@ -11,6 +12,10 @@ import com.hbm.lib.Library;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import io.netty.buffer.ByteBuf;
+import li.cil.oc.api.machine.Arguments;
+import li.cil.oc.api.machine.Callback;
+import li.cil.oc.api.machine.Context;
+import li.cil.oc.api.network.SimpleComponent;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -24,12 +29,14 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
+import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
-public class TileEntityMicrowave extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IGUIProvider, ICopiable {
+@Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
+public class TileEntityMicrowave extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IGUIProvider, ICopiable, SimpleComponent, CompatHandler.OCComponent {
 
 	public long power;
 	public static final long maxPower = 50000;
@@ -38,6 +45,7 @@ public class TileEntityMicrowave extends TileEntityMachineBase implements ITicka
 	public int time;
 	public int speed;
 	public static final int maxSpeed = 5;
+	private AxisAlignedBB bb;
 	
 	public TileEntityMicrowave() {
 		super(3);
@@ -192,7 +200,8 @@ public class TileEntityMicrowave extends TileEntityMachineBase implements ITicka
 
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+		return bb;
 	}
 
 	@Override
@@ -261,4 +270,29 @@ public class TileEntityMicrowave extends TileEntityMachineBase implements ITicka
 	public String[] infoForDisplay(World world, int x, int y, int z) {
 		return new String[]{ "copyTool.speed"};
 	}
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public String getComponentName() {
+        return "microwave";
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] test(Context context, Arguments args) {
+        return new Object[] {"This is a testing device for everything OC."};
+    }
+
+    @Callback(direct = true, getter = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] variableget(Context context, Arguments args) {
+        return new Object[] {speed, "test of the `getter` callback function"};
+    }
+
+    @Callback(direct = true, setter = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] variableset(Context context, Arguments args) {
+        speed = net.minecraft.util.math.MathHelper.clamp(args.checkInteger(0), 0, 5);
+        return new Object[] {"test of the `setter` callback function"};
+    }
 }

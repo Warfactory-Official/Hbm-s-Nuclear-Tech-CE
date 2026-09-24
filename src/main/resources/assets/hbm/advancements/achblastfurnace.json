@@ -2,7 +2,7 @@
   "parent": "hbm:achburnerpress",
   "display": {
     "icon": {
-      "item": "hbm:machine_press"
+      "item": "hbm:machine_blast_furnace"
     },
     "title": {
       "translate": "achievement.blastFurnace"
@@ -16,12 +16,12 @@
     "hidden": false
   },
   "criteria": {
-    "crafting_hbm_machine_difurnace_off": {
+    "crafting_hbm_machine_blast_furnace": {
       "trigger": "minecraft:inventory_changed",
       "conditions": {
         "items": [
           {
-            "item": "hbm:machine_difurnace_off"
+            "item": "hbm:machine_blast_furnace"
           }
         ]
       }
@@ -29,7 +29,7 @@
   },
   "requirements": [
     [
-      "crafting_hbm_machine_difurnace_off"
+      "crafting_hbm_machine_blast_furnace"
     ]
   ]
 }

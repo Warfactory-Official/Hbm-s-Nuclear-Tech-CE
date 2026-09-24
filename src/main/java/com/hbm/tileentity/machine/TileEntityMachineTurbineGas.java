@@ -2,6 +2,8 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluid.IFluidStandardTransceiver;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.handler.CompatHandler;
 import com.hbm.handler.pollution.PollutionHandler;
@@ -20,8 +22,10 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.lib.DirPos;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -33,6 +37,7 @@ import li.cil.oc.api.machine.Context;
 import li.cil.oc.api.network.SimpleComponent;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ITickable;
@@ -47,7 +52,7 @@ import java.util.HashMap;
 
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 @AutoRegister
-public class TileEntityMachineTurbineGas extends TileEntityMachineBase implements IFluidStandardTransceiver, IEnergyProviderMK2, IControlReceiver, IGUIProvider, SimpleComponent, CompatHandler.OCComponent, IFluidCopiable, ITickable {
+public class TileEntityMachineTurbineGas extends TileEntityMachineBase implements IFluidStandardTransceiver, IEnergyProviderMK2, IControlReceiver, IGUIProvider, SimpleComponent, CompatHandler.OCComponent, IFluidCopiable, IRORValueProvider, IRORInteractive, ITickable, IConnectionAnchors {
 
 	public long power;
 	public static final long maxPower = 1000000L;
@@ -71,7 +76,7 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase implement
 
 	private AudioWrapper audio;
 
-	public static HashMap<FluidType, Double> fuelMaxCons = new HashMap(); //fuel consumption per tick at max power
+	public static HashMap<FluidType, Double> fuelMaxCons = new HashMap<>(); //fuel consumption per tick at max power
 
 	static {
 		fuelMaxCons.put(Fluids.GAS, 50D);			// natgas doesn't burn well so it burns faster to compensate
@@ -86,10 +91,10 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase implement
 	public TileEntityMachineTurbineGas() {
 		super(2, true, true);
 		this.tanks = new FluidTankNTM[4];
-		tanks[0] = new FluidTankNTM(Fluids.GAS, 100000);
-		tanks[1] = new FluidTankNTM(Fluids.LUBRICANT, 16000);
-		tanks[2] = new FluidTankNTM(Fluids.WATER, 16000);
-		tanks[3] = new FluidTankNTM(Fluids.HOTSTEAM, 160000);
+		tanks[0] = new FluidTankNTM(Fluids.GAS, 100000).withOwner(this);
+		tanks[1] = new FluidTankNTM(Fluids.LUBRICANT, 16000).withOwner(this);
+		tanks[2] = new FluidTankNTM(Fluids.WATER, 16000).withOwner(this);
+		tanks[3] = new FluidTankNTM(Fluids.HOTSTEAM, 160000).withOwner(this);
 	}
 
 	private long powerBeforeNet;
@@ -102,7 +107,7 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase implement
 			waterToBoil = 0; //reset
 			throttle = powerSliderPos * 100 / 60;
 
-			if(inventory.getStackInSlot(1) != null && inventory.getStackInSlot(1).getItem() instanceof IItemFluidIdentifier) {
+			if(!inventory.getStackInSlot(1).isEmpty() && inventory.getStackInSlot(1).getItem() instanceof IItemFluidIdentifier) {
 				FluidType fluid = ((IItemFluidIdentifier) inventory.getStackInSlot(1).getItem()).getType(world, getPos().getX(), getPos().getY(), getPos().getZ(), inventory.getStackInSlot(1));
 				if(fluid.hasTrait(FT_Combustible.class) && fluid.getTrait(FT_Combustible.class).getGrade() == FuelGrade.GAS) {
 					tanks[0].setTankType(fluid);
@@ -264,8 +269,8 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase implement
 		else if (counter <= 40)
 			rpm = 100 - 5 * (counter - 20);
 		else if (counter > 50) {
-			rpm = (int) (rpmIdle * (counter - 50) / 530); //slowly ramps up temp and RPM
-			temp = (int) (tempIdle * (counter - 50) / 530);
+			rpm = rpmIdle * (counter - 50) / 530; //slowly ramps up temp and RPM
+			temp = tempIdle * (counter - 50) / 530;
 		}
 
 		if(counter == 50) {
@@ -273,6 +278,7 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase implement
 		}
 
 		if(counter == 580) {
+			counter = 225; // ensures it shuts down properly when done immediately after startup
 			state = 1;
 		}
 	}
@@ -301,8 +307,8 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase implement
 
 			counter--;
 
-			rpm = (int) (rpmLast * (counter) / 225);
-			temp = (int) (tempLast * (counter) / 225);
+			rpm = rpmLast * (counter) / 225;
+			temp = tempLast * (counter) / 225;
 
 		} else if(rpm > 11) { //quickly slows down the turbine to idle before shutdown
 			counter = 42069; //absolutely necessary to avoid fuckeries on shutdown
@@ -395,9 +401,9 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase implement
 		}
 		this.power += instantPowerOutput;
 
-		double waterPerTick = (consMax * energy * (temp - tempIdle) / 220000); //it just works fuck you
+        //it just works fuck you
 
-		this.waterToBoil = waterPerTick; //caching in a field for the EC compat to use
+        this.waterToBoil = (consMax * energy * (temp - tempIdle) / 220000); //caching in a field for the EC compat to use
 		
 		int heatCycles = (int) Math.floor(waterToBoil);
 		int waterCycles = tanks[2].getFill();
@@ -409,6 +415,20 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase implement
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	@Override
+	public DirPos[] getConPos() {
+		ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
+		ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+		return new DirPos[] {
+				new DirPos(pos.getX() - dir.offsetZ * 5, pos.getY() + 1, pos.getZ() + dir.offsetX * 5, rot),
+				new DirPos(pos.getX() - dir.offsetX * 2 + rot.offsetX, pos.getY(), pos.getZ() - dir.offsetZ * 2 + rot.offsetZ, dir.getOpposite()),
+				new DirPos(pos.getX() + dir.offsetX * 2 + rot.offsetX, pos.getY(), pos.getZ() + dir.offsetZ * 2 + rot.offsetZ, dir),
+				new DirPos(pos.getX() - dir.offsetX * 2 + rot.offsetX * -4, pos.getY(), pos.getZ() - dir.offsetZ * 2 + rot.offsetZ * -4, dir.getOpposite()),
+				new DirPos(pos.getX() + dir.offsetX * 2 + rot.offsetX * -4, pos.getY(), pos.getZ() + dir.offsetZ * 2 + rot.offsetZ * -4, dir),
+				new DirPos(pos.getX() + dir.offsetZ * 6, pos.getY() + 1, pos.getZ() - dir.offsetX * 6, rot.getOpposite())
+		};
+	}
 
 	@Override
 	public void readFromNBT(NBTTagCompound nbt) {
@@ -456,7 +476,7 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase implement
 	}
 
 	@Override
-	public void receiveControl(NBTTagCompound data) {
+	public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
 
 		if(data.hasKey("slidPos"))
 			powerSliderPos = data.getInteger("slidPos");
@@ -472,7 +492,7 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase implement
 
 	@Override
 	public boolean hasPermission(EntityPlayer player) {
-		return Vec3.createVectorHelper(pos.getX() - player.posX, pos.getY() - player.posY, pos.getZ() - player.posZ).length() < 25;
+		return Vec3NT.createVectorHelper(pos.getX() - player.posX, pos.getY() - player.posY, pos.getZ() - player.posZ).length() < 25;
 	}
 
 	@Override
@@ -607,8 +627,11 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase implement
 	@Callback(direct = true, limit = 4)
 	@Optional.Method(modid = "opencomputers")
 	public Object[] setThrottle(Context context, Arguments args) {
-		powerSliderPos = (int) (args.checkInteger(0) * 60D / 100D);
-		return new Object[] {};
+		double input = args.checkInteger(0) * 60D / 100D;
+		if (input < 0 || input > 100)
+			return new Object[] {null, "Input out of range."};
+		powerSliderPos = (int) (input);
+		return new Object[] {true};
 	}
 
 	@Callback(direct = true, limit = 4)
@@ -621,14 +644,14 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase implement
 	@Callback(direct = true, limit = 4)
 	@Optional.Method(modid = "opencomputers")
 	public Object[] start(Context context, Arguments args) {
-		state = -1;
+		if (state == 0) state = -1;
 		return new Object[] {};
 	}
 
 	@Callback(direct = true, limit = 4)
 	@Optional.Method(modid = "opencomputers")
 	public Object[] stop(Context context, Arguments args) {
-		state = 0;
+		if (state == 1) state = 0;
 		return new Object[] {};
 	}
 
@@ -663,32 +686,21 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase implement
 	@Override
 	@Optional.Method(modid = "opencomputers")
 	public Object[] invoke(String method, Context context, Arguments args) throws Exception {
-		switch(method) {
-			case ("getFluid"):
-				return getFluid(context, args);
-			case ("getType"):
-				return getType(context, args);
-			case ("getPower"):
-				return getPower(context, args);
-			case ("getThrottle"):
-				return getThrottle(context, args);
-			case ("getState"):
-				return getState(context, args);
-			case ("getAuto"):
-				return getAuto(context, args);
-			case ("setThrottle"):
-				return setThrottle(context, args);
-			case ("setAuto"):
-				return setAuto(context, args);
-			case ("start"):
-				return start(context, args);
-			case ("stop"):
-				return stop(context, args);
-			case ("getInfo"):
-				return getInfo(context, args);
-		}
-		throw new NoSuchMethodException();
-	}
+        return switch (method) {
+            case ("getFluid") -> getFluid(context, args);
+            case ("getType") -> getType(context, args);
+            case ("getPower") -> getPower(context, args);
+            case ("getThrottle") -> getThrottle(context, args);
+            case ("getState") -> getState(context, args);
+            case ("getAuto") -> getAuto(context, args);
+            case ("setThrottle") -> setThrottle(context, args);
+            case ("setAuto") -> setAuto(context, args);
+            case ("start") -> start(context, args);
+            case ("stop") -> stop(context, args);
+            case ("getInfo") -> getInfo(context, args);
+            default -> throw new NoSuchMethodException();
+        };
+    }
 
 	@Override
 	public Container provideContainer(int ID, EntityPlayer player, World world, int x, int y, int z) {
@@ -700,17 +712,75 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase implement
 	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		return new GUIMachineTurbineGas(player.inventory, this);
 	}
-/*
+
 	@Override
-	public void provideExtraInfo(NBTTagCompound data) {
-		data.setBoolean(CompatEnergyControl.B_ACTIVE, this.state == 1);
-		data.setDouble(CompatEnergyControl.D_HEAT_C, Math.max(20D, this.temp));
-		data.setDouble(CompatEnergyControl.D_TURBINE_PERCENT, this.powerSliderPos * 100D / 60D);
-		data.setInteger(CompatEnergyControl.I_TURBINE_SPEED, this.rpm);
-		data.setDouble(CompatEnergyControl.D_OUTPUT_HE, this.instantPowerOutput);
-		data.setDouble(CompatEnergyControl.D_CONSUMPTION_MB, this.waterToBoil);
-		data.setDouble(CompatEnergyControl.D_OUTPUT_MB, this.waterToBoil * 10);
+	public String[] getFunctionInfo() {
+		return new String[] {
+				PREFIX_VALUE + "turbinepercent",
+				PREFIX_VALUE + "turbinespeed",
+				PREFIX_VALUE + "output",
+				PREFIX_VALUE + "state",
+				PREFIX_VALUE + "automode",
+				PREFIX_VALUE + "temp",
+				PREFIX_VALUE + "power",
+				PREFIX_VALUE + "fuel",
+				PREFIX_VALUE + "lubricant",
+				PREFIX_VALUE + "water",
+				PREFIX_VALUE + "steam",
+				PREFIX_FUNCTION + "setauto" + NAME_SEPARATOR + "auto",
+				PREFIX_FUNCTION + "setthrottle" + NAME_SEPARATOR + "percent",
+				PREFIX_FUNCTION + "setstate" + NAME_SEPARATOR + "state"
+		};
 	}
 
- */
+	@Override
+	public String provideRORValue(String name) {
+		if((PREFIX_VALUE + "turbinepercent").equals(name))	return	"" + (int) (this.powerSliderPos * 100D / 60D);
+		if((PREFIX_VALUE + "turbinespeed").equals(name))	return	"" + this.rpm;
+		if((PREFIX_VALUE + "output").equals(name))			return	"" + (this.instantPowerOutput * 20);
+		if((PREFIX_VALUE + "state").equals(name))			return	"" + this.state;
+		if((PREFIX_VALUE + "automode").equals(name))		return	"" + (this.autoMode ? 1 : 0);
+		if((PREFIX_VALUE + "temp").equals(name))			return	"" + this.temp;
+		if((PREFIX_VALUE + "power").equals(name))			return	"" + this.power;
+		if((PREFIX_VALUE + "fuel").equals(name))			return	"" + tanks[0].getFill();
+		if((PREFIX_VALUE + "lubricant").equals(name))		return	"" + tanks[1].getFill();
+		if((PREFIX_VALUE + "water").equals(name))			return	"" + tanks[2].getFill();
+		if((PREFIX_VALUE + "steam").equals(name))			return	"" + tanks[3].getFill();
+		return null;
+	}
+
+	@Override
+	public String runRORFunction(String name, String[] params) {
+		if((PREFIX_FUNCTION + "setauto").equals(name) && params.length > 0) {
+			try {
+				int val = Integer.parseInt(params[0]);
+				this.autoMode = (val == 1);
+				this.markDirty();
+			} catch(NumberFormatException _) {}
+			return null;
+		}
+		if((PREFIX_FUNCTION + "setthrottle").equals(name) && params.length > 0) {
+			try {
+				int percent = Integer.parseInt(params[0]);
+				if(percent < 0) percent = 0;
+				if(percent > 100) percent = 100;
+				this.powerSliderPos = percent * 60 / 100;
+				this.markDirty();
+			} catch(NumberFormatException _) {}
+			return null;
+		}
+		if((PREFIX_FUNCTION + "setstate").equals(name) && params.length > 0) {
+			try {
+				int newState = Integer.parseInt(params[0]);
+				if(newState == 1) {
+					if(this.state == 0) this.state = -1; // startup
+				} else if(newState == 0) {
+					if(this.state == 1) this.state = 0; // shutdown
+				}
+				this.markDirty();
+			} catch(NumberFormatException _) {}
+			return null;
+		}
+		return null;
+	}
 }

@@ -7,8 +7,8 @@ import com.hbm.items.armor.IPAWeaponsProvider;
 import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
+import com.hbm.render.anim.sedna.AnimationEnums;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
-import com.hbm.render.anim.sedna.HbmAnimationsSedna;
 import com.hbm.render.misc.RenderScreenOverlay;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
@@ -45,7 +45,7 @@ public class XFactoryPA {
         if(component != null) component.orchestra(stack, ctx);
     };
 
-    public static BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> LAMBDA_MELEE_ANIMS = (stack, type) -> {
+    public static BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> LAMBDA_MELEE_ANIMS = (stack, type) -> {
         IPAMelee component = IPAWeaponsProvider.getMeleeComponentClient();
         if(component != null) return component.playAnim(stack, type);
         return null;
@@ -60,7 +60,7 @@ public class XFactoryPA {
         if(component != null) component.clickSecondary(stack, ctx);
     };
 
-    public static void doSwing(ItemStack stack, ItemGunBaseNT.LambdaContext ctx, HbmAnimationsSedna.GunAnimation anim, int cooldown) {
+    public static void doSwing(ItemStack stack, ItemGunBaseNT.LambdaContext ctx, AnimationEnums.GunAnimation anim, int cooldown) {
 
         EntityPlayer player = ctx.getPlayer();
         int index = ctx.configIndex;

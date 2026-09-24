@@ -217,8 +217,8 @@ public class ColladaLoader {
 			if(positions.length == 0)
 				continue;
 			
-			int displayList = GL11.glGenLists(1);
-			GL11.glNewList(displayList, GL11.GL_COMPILE);
+			int displayList = GlStateManager.glGenLists(1);
+			GlStateManager.glNewList(displayList, GL11.GL_COMPILE);
 			BufferBuilder buf = Tessellator.getInstance().getBuffer();
 			buf.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_NORMAL);
 			if(indices.length > 0){
@@ -237,7 +237,7 @@ public class ColladaLoader {
 			}
 			
 			Tessellator.getInstance().draw();
-			GL11.glEndList();
+			GlStateManager.glEndList();
 			
 			allGeometry.put(name, displayList);
 		}

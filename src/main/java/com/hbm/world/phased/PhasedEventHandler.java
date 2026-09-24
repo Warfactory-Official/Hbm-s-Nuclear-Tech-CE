@@ -125,20 +125,19 @@ public final class PhasedEventHandler {
             }
         }
 
-        // If count mismatch, reset entire section
+        // If count mismatch, rewrite using only entries that succeeded in the first pass
         if (actuallyWritten != validCount) {
             out.writerIndex(startIndex);
-            written.clear();
-            if (actuallyWritten == 0) return 0;
+            if (written.isEmpty()) return 0;
 
-            BufferUtil.writeVarInt(out, actuallyWritten);
-            for (PhasedStructureStart start : bucket) {
-                if (start == null || !start.isSerializable()) continue;
+            BufferUtil.writeVarInt(out, written.size());
+            for (PhasedStructureStart start : written) {
                 try {
                     start.writeToBuf(out);
-                    written.add(start);
                 } catch (Exception e) {
                     MainRegistry.logger.warn("Failed to serialize phased structure in fallback loop: {}", e.getMessage());
+                    out.writerIndex(startIndex);
+                    return 0;
                 }
             }
         }

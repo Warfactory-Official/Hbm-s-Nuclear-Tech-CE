@@ -10,7 +10,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.render.anim.sedna.BusAnimationKeyframeSedna.IType;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
 import com.hbm.render.anim.sedna.BusAnimationSequenceSedna;
-import com.hbm.render.anim.sedna.HbmAnimationsSedna.GunAnimation;
+import com.hbm.render.anim.sedna.AnimationEnums.GunAnimation;
 import com.hbm.util.EntityDamageUtil;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;

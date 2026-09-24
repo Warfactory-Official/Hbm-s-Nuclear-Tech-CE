@@ -1,6 +1,8 @@
 package com.hbm.blocks.fluid;
 
+import com.hbm.blocks.BlockEnums;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.generic.BlockMeta;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.util.ContaminationUtil;
@@ -49,29 +51,24 @@ public class VolcanicBlock extends BlockFluidClassic implements IFluidFog {
 	public void neighborChanged(IBlockState state, World world, BlockPos pos, Block neighborBlock, BlockPos neighbourPos){
 		super.neighborChanged(state, world, pos, neighborBlock, neighbourPos);
 		for(ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-			Block b = getReaction(world, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ);
+			IBlockState b = getReaction(world, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ);
 			
 			if(b != null)
-				world.setBlockState(new BlockPos(pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ), b.getDefaultState());
+				world.setBlockState(new BlockPos(pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ), b);
 		}
 	}
 	
-	public Block getReaction(World world, int x, int y, int z) {
+	public IBlockState getReaction(World world, int x, int y, int z) {
 		
 		IBlockState state = world.getBlockState(new BlockPos(x, y, z));
 		Block b = state.getBlock();
 		if(state.getMaterial() == Material.WATER) {
-			return Blocks.STONE;
+			return Blocks.STONE.getDefaultState();
 		}
-		if(b instanceof BlockLog) {
-			return ModBlocks.waste_log;
-		}
-		if(b == Blocks.PLANKS) {
-			return ModBlocks.waste_planks;
-		}
-		if(b instanceof BlockLeaves) {
-			return Blocks.FIRE;
-		}
+		if(b instanceof BlockLog) return ModBlocks.waste_log.getDefaultState();
+		if(b == Blocks.PLANKS) return ModBlocks.waste_planks.getDefaultState();
+		if(b instanceof BlockLeaves) return Blocks.FIRE.getDefaultState();
+        if(b == Blocks.DIAMOND_ORE) return basalt_ore.getDefaultState().withProperty(BlockMeta.META, GEM.ordinal());
 		return null;
 	}
 
@@ -88,39 +85,46 @@ public class VolcanicBlock extends BlockFluidClassic implements IFluidFog {
 	@Override
 	public void updateTick(World world, BlockPos pos, IBlockState state, Random rand){
 		super.updateTick(world, pos, state, rand);
-		
+
 		int lavaCount = 0;
 		int basaltCount = 0;
-		
+		Block basalt = getBasaltForCheck();
+
 		for(ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
 			Block b = world.getBlockState(new BlockPos(pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ)).getBlock();
-			
+
 			if(b == this)
 				lavaCount++;
-			if(b == ModBlocks.basalt) {
+			if(b == basalt) {
 				basaltCount++;
 			}
 		}
-		
-		if(!world.isRemote && ((!this.isSourceBlock(world, pos) && lavaCount < 2) || (rand.nextInt(5) == 0) && lavaCount < 5) && world.getBlockState(pos.down()).getBlock() != this) {
-			
-			int r = rand.nextInt(200);
-			
-			Block above = world.getBlockState(pos.up(10)).getBlock();
-			boolean canMakeGem = lavaCount + basaltCount == 6 && lavaCount < 3 && (above == ModBlocks.basalt || above == ModBlocks.volcanic_lava_block);
-			
-			if(r < 2)
-				world.setBlockState(pos, stateFromEnum(basalt_ore, SULFUR));
 
-			else if(r == 2)
-				world.setBlockState(pos, stateFromEnum(basalt_ore, ASBESTOS));
-			else if(r == 3)
-				world.setBlockState(pos, stateFromEnum(basalt_ore, FLUORITE));
-			else if(r < 14 && canMakeGem)
-				world.setBlockState(pos, stateFromEnum(basalt_ore, GEM));
-			else
-				world.setBlockState(pos, ModBlocks.basalt.getDefaultState());
+		if(!world.isRemote && ((!this.isSourceBlock(world, pos) && lavaCount < 2) || (rand.nextInt(5) == 0) && lavaCount < 5) && world.getBlockState(pos.down()).getBlock() != this) {
+			onSolidify(world, pos, lavaCount, basaltCount, rand);
 		}
+	}
+
+	public Block getBasaltForCheck() {
+		return ModBlocks.basalt;
+	}
+
+	public void onSolidify(World world, BlockPos pos, int lavaCount, int basaltCount, Random rand) {
+		int r = rand.nextInt(200);
+
+		Block above = world.getBlockState(pos.up(10)).getBlock();
+		boolean canMakeGem = lavaCount + basaltCount == 6 && lavaCount < 3 && (above == ModBlocks.basalt || above == ModBlocks.volcanic_lava_block);
+
+		if(r < 2)
+			world.setBlockState(pos, stateFromEnum(basalt_ore, SULFUR));
+		else if(r == 2)
+			world.setBlockState(pos, stateFromEnum(basalt_ore, ASBESTOS));
+		else if(r == 3)
+			world.setBlockState(pos, stateFromEnum(basalt_ore, FLUORITE));
+		else if(r < 14 && canMakeGem)
+			world.setBlockState(pos, stateFromEnum(basalt_ore, GEM));
+		else
+			world.setBlockState(pos, ModBlocks.basalt.getDefaultState());
 	}
 	
 	@Override

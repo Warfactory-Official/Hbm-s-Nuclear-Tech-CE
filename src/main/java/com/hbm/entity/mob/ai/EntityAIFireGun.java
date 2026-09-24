@@ -13,12 +13,13 @@ public class EntityAIFireGun extends EntityAIBase {
 
     private final EntityLiving host;
 
-    private double attackMoveSpeed = 1.0D; // how fast we move while in this state
-    private double maxRange = 20; // how far our target can be before we stop shooting
-    private int burstTime = 10; // maximum number of ticks in a burst (for automatic weapons)
-    private int minWait = 10; // minimum number of ticks to wait between bursts/shots
-    private int maxWait = 40; // maximum number of ticks to wait between bursts/shots
-    private float inaccuracy = 30; // how many degrees of inaccuracy does the AI have
+    public double attackMoveSpeed = 1.0D; // how fast we move while in this state
+    public double maxRange = 20; // how far our target can be before we stop shooting
+    public int burstTime = 10; // maximum number of ticks in a burst (for automatic weapons)
+    public int minWait = 10; // minimum number of ticks to wait between bursts/shots
+    public int maxWait = 40; // maximum number of ticks to wait between bursts/shots
+    public float inaccuracy = 30; // how many degrees of inaccuracy does the AI have
+    public boolean randomBurst = true; //whether the burst time should be fixed or random
 
     // state timers
     private int attackTimer = 0;
@@ -87,7 +88,8 @@ public class EntityAIFireGun extends EntityAIBase {
                 if(rec.getMagazine(stack).getAmount(stack, null) <= 0) {
                     updateState(FireState.RELOADING, 20, gun, stack);
                 } else if(ItemGunBaseNT.getState(stack, 0) == ItemGunBaseNT.GunState.IDLE) {
-                    updateState(FireState.FIRING, host.world.rand.nextInt(burstTime), gun, stack);
+                    int time = randomBurst ? host.world.rand.nextInt(burstTime) : burstTime;
+                    updateState(FireState.FIRING, time, gun, stack);
                 }
             }
         }
@@ -112,8 +114,9 @@ public class EntityAIFireGun extends EntityAIBase {
         // Turn body to face firing direction, since the gun is attached to that, not the head
         // Also apply accuracy debuff just before firing
         if(bind != null && bind != HbmKeybinds.EnumKeybind.RELOAD) {
-            host.rotationYawHead += (host.world.rand.nextFloat() - 0.5F) * inaccuracy;
-            host.rotationPitch += (host.world.rand.nextFloat() - 0.5F) * inaccuracy;
+            float inacc = inaccuracy * (getYerGun().getConfig(stack, 0).getReceivers(stack)[0].getHipfireSpread(stack) * 20);
+            host.rotationYawHead += (host.world.rand.nextFloat() - 0.5F) * inacc;
+            host.rotationPitch += (host.world.rand.nextFloat() - 0.5F) * inacc;
             host.rotationYaw = host.rotationYawHead;
         }
 

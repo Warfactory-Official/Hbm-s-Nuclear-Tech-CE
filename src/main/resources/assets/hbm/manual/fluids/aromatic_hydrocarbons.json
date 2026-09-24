@@ -1,0 +1,23 @@
+{
+	"name": "Aromatic Hydrocarbons",
+	"icon": [
+		"hbm:fluid_icon",
+		1,
+		67
+	],
+	"trigger": [
+		[
+			"hbm:fluid_icon",
+			1,
+			67
+		]
+	],
+	"title": {
+		"en_us": "Aromatic Hydrocarbons",
+		"ru_ru": "Ароматические углеводороды"
+	},
+	"content": {
+		"en_us": "Obtained after [[refining|Oil Refinery]] [[heated|Boiler]] cracked crude oil. Aromatic hydrocarbons are primarily used in the production of [[bakelite|Bakelite]] and [[solvent|Solvent]].<br><br>{{Template:Oil2}}",
+		"ru_ru": "Получается после [[переработки|Oil Refinery]] [[нагретой|Boiler]] крекированной сырой нефти. Ароматические углеводороды в основном используются для производства [[бакелита|Bakelite]] и [[растворителя|Solvent]].<br><br>{{Template:Oil2}}"
+	}
+}

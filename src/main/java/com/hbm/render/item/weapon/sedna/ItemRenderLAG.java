@@ -12,7 +12,7 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister(item = "gun_lag")
 public class ItemRenderLAG extends ItemRenderWeaponBase {
 
-    public ItemRenderLAG() { offsets = offsets.get(ItemCameraTransforms.TransformType.GUI).setPosition(3, 15.75, -15).getHelper(); }
+    public ItemRenderLAG() {}
 
     @Override
     protected float getTurnMagnitude(ItemStack stack) { return ItemGunBaseNT.getIsAiming(stack) ? 2.5F : -0.25F; }

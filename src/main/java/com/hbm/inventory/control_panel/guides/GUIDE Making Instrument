@@ -1,0 +1,6 @@
+1. Create a class extending Control
+2. Create a static field of an instance of ControlType somewhere
+3. Put a sample instance in ControlRegistry.addonControls
+4. The GUI for instrument selection gets configured from list of all registered ControlTypes
+   automatically
+Done!

@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.tileentity.machine.TileEntityAshpit;
 import com.hbm.util.InventoryUtil;
@@ -12,6 +13,10 @@ import net.minecraft.item.ItemStack;
 public class ContainerAshpit extends Container {
 
     protected TileEntityAshpit ashpit;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(5)
+                                                                              .genericMachineRange(0)
+                                                                              .build();
 
     public ContainerAshpit(InventoryPlayer invPlayer, TileEntityAshpit ashpit) {
         this.ashpit = ashpit;
@@ -31,7 +36,7 @@ public class ContainerAshpit extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 5);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
     @Override

@@ -125,6 +125,8 @@ public class RecipesCommon {
 
         public abstract AStack copy();
 
+        public abstract AStack copy(int stacksize);
+
         public abstract ItemStack getStack();
 
         public abstract List<ItemStack> getStackList();
@@ -143,9 +145,9 @@ public class RecipesCommon {
         @Contract("_, -> !null")
         public ItemStack extractForCyclingDisplay(int cycle) {
             List<ItemStack> list = extractForJEI();
-
             cycle *= 50;
 
+            if(list.isEmpty()) return new ItemStack(ModItems.nothing);
             return list.get((int) (System.currentTimeMillis() % (cycle * list.size()) / cycle));
         }
     }
@@ -165,7 +167,7 @@ public class RecipesCommon {
         }
 
         public ComparableStack(Item item) {
-            this.item = item;
+            this.item = item != null ? item : ModItems.nothing;
             this.stacksize = 1;
             this.meta = 0;
         }
@@ -255,7 +257,7 @@ public class RecipesCommon {
             if (item == null) {
                 MainRegistry.logger.error("ComparableStack has a null item! This is a serious issue!");
                 Thread.dumpStack();
-                item = Items.STICK;
+                item = ModItems.nothing;
             }
 
             ResourceLocation name = Item.REGISTRY.getNameForObject(item);
@@ -263,7 +265,7 @@ public class RecipesCommon {
             if (name == null) {
                 MainRegistry.logger.error("ComparableStack holds an item that does not seem to be registered. How does that even happen?");
                 Thread.dumpStack();
-                item = Items.STICK; //we know sticks have a name, so sure, why not
+                item = ModItems.nothing;
             }
 
             if (name != null)
@@ -323,6 +325,12 @@ public class RecipesCommon {
         @Override
         @Contract("-> new")
         public AStack copy() {
+            return new ComparableStack(item, stacksize, meta);
+        }
+
+        @Override
+        @Contract("_ -> new")
+        public AStack copy(int stacksize) {
             return new ComparableStack(item, stacksize, meta);
         }
 
@@ -394,6 +402,14 @@ public class RecipesCommon {
         @Contract("-> new")
         public AStack copy() {
             return new NbtComparableStack(stack);
+        }
+
+        @Override
+        @Contract("_ -> new")
+        public AStack copy(int stacksize) {
+            ItemStack st = stack.copy();
+            st.setCount(stacksize);
+            return new NbtComparableStack(st);
         }
 
         @Override
@@ -512,6 +528,12 @@ public class RecipesCommon {
         @Override
         @Contract("-> new")
         public AStack copy() {
+            return new OreDictStack(name, stacksize);
+        }
+
+        @Override
+        @Contract("_ -> new")
+        public AStack copy(int stacksize) {
             return new OreDictStack(name, stacksize);
         }
 

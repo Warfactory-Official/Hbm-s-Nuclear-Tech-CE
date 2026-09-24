@@ -188,12 +188,12 @@ public class ItemRenderDANI extends ItemRenderWeaponBase {
 
 	@Override
 	public void renderModTable(ItemStack stack, int index) {
-		GL11.glEnable(GL11.GL_LIGHTING);
+		GlStateManager.enableLighting();
 
-		GL11.glShadeModel(GL11.GL_SMOOTH);
+		GlStateManager.shadeModel(GL11.GL_SMOOTH);
 		Minecraft.getMinecraft().renderEngine.bindTexture(index == 1 ? ResourceManager.dani_celestial_tex : ResourceManager.dani_lunar_tex);
 		ResourceManager.bio_revolver.renderAll();
-		GL11.glShadeModel(GL11.GL_FLAT);
+		GlStateManager.shadeModel(GL11.GL_FLAT);
 	}
 
 	@Override

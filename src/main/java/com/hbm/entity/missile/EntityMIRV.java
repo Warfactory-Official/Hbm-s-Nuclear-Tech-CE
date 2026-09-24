@@ -12,6 +12,7 @@ import com.hbm.interfaces.IConstantRenderer;
 import com.hbm.main.MainRegistry;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.projectile.EntityThrowable;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.init.Blocks;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
@@ -36,6 +37,7 @@ public class EntityMIRV extends EntityThrowable implements IChunkLoader, IConsta
 	private Ticket loaderTicket;
 	public static final DataParameter<Integer> HEALTH = EntityDataManager.createKey(EntityMIRV.class, DataSerializers.VARINT);
 	public int health = 25;
+	private boolean awaitingTicketRestore;
 	
 	public boolean attackEntityFrom(DamageSource p_70097_1_, float p_70097_2_) {
 			if(!this.isDead && !this.world.isRemote) {
@@ -61,12 +63,14 @@ public class EntityMIRV extends EntityThrowable implements IChunkLoader, IConsta
 	}
 	@Override
 	protected void entityInit() {
-		init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, Type.ENTITY));
 		this.getDataManager().register(HEALTH, Integer.valueOf(this.health));
 	}
 
 	@Override
 	public void onUpdate() {
+		if(!world.isRemote) {
+			requestChunkLoaderTicketIfNeeded();
+		}
 		this.prevPosX = this.posX;
 		this.prevPosY = this.posY;
 		this.prevPosZ = this.posZ;
@@ -74,6 +78,10 @@ public class EntityMIRV extends EntityThrowable implements IChunkLoader, IConsta
 		this.posX += this.motionX;
 		this.posY += this.motionY;
 		this.posZ += this.motionZ;
+
+		if(!world.isRemote) {
+			loadNeighboringChunks((int) Math.floor(posX / 16D), (int) Math.floor(posZ / 16D));
+		}
 		
 		this.motionY -= 0.03;
         
@@ -89,7 +97,6 @@ public class EntityMIRV extends EntityThrowable implements IChunkLoader, IConsta
 				}
     		}
     		this.setDead();
-    		ForgeChunkManager.unforceChunk(loaderTicket, new ChunkPos(chunkCoordX, chunkCoordZ));
         }
 	}
 	
@@ -146,6 +153,8 @@ public class EntityMIRV extends EntityThrowable implements IChunkLoader, IConsta
 	            	loaderTicket = ticket;
 	            	loaderTicket.bindEntity(this);
 	            	loaderTicket.getModData();
+	              } else if(loaderTicket != ticket) {
+	              	ForgeChunkManager.releaseTicket(ticket);
 	              }
 
 	            ForgeChunkManager.forceChunk(loaderTicket, new ChunkPos(chunkCoordX, chunkCoordZ));
@@ -174,6 +183,43 @@ public class EntityMIRV extends EntityThrowable implements IChunkLoader, IConsta
 				ForgeChunkManager.forceChunk(loaderTicket, chunk);
 			}
 		}
+	}
+
+	@Override
+	public void setDead() {
+		super.setDead();
+		this.clearChunkLoader();
+	}
+
+	private void clearChunkLoader() {
+		if (!world.isRemote && loaderTicket != null) {
+			for (ChunkPos chunk : loadedChunks) {
+				ForgeChunkManager.unforceChunk(loaderTicket, chunk);
+			}
+			loadedChunks.clear();
+			ForgeChunkManager.releaseTicket(loaderTicket);
+			loaderTicket = null;
+		}
+	}
+
+	@Override
+	public void readEntityFromNBT(NBTTagCompound compound) {
+		super.readEntityFromNBT(compound);
+		awaitingTicketRestore = true;
+	}
+
+	@Override
+	public void writeEntityToNBT(NBTTagCompound compound) {
+		super.writeEntityToNBT(compound);
+	}
+
+	private void requestChunkLoaderTicketIfNeeded() {
+		if(world.isRemote || loaderTicket != null) return;
+		if(awaitingTicketRestore) {
+			awaitingTicketRestore = false;
+			return;
+		}
+		init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, Type.ENTITY));
 	}
 
 	@Override

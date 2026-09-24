@@ -109,39 +109,4 @@ public abstract class EntityMissileTier3 extends EntityMissileBaseNT {
 		@Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_buster_large); }
 		@Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModItems.missile_drill); }
 	}
-
-	//mlbv: missiles below this comment does not exist in upstream.
-
-	@AutoRegister(name = "entity_missile_endo", trackingRange = 1000)
-	public static class EntityMissileEndo extends EntityMissileTier3{
-		public EntityMissileEndo(World world) { super(world); }
-		public EntityMissileEndo(World world, float x, float y, float z, int a, int b) { super(world, x, y, z, a, b); }
-		@Override
-		public void onMissileImpact(RayTraceResult mop) {
-			ExplosionThermo.freeze(this.world, null, (int)this.posX, (int)this.posY, (int)this.posZ, 30);
-			ExplosionThermo.freezer(this.world, (int)this.posX, (int)this.posY, (int)this.posZ, 40);
-		}
-		@Override
-		public ItemStack getDebrisRareDrop() {
-			return new ItemStack(ModItems.warhead_thermo_exo);
-		}
-
-		@Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModItems.missile_endo); }
-	}
-	@AutoRegister(name = "entity_missile_exo", trackingRange = 1000)
-	public static class EntityMissileExo extends EntityMissileTier3{
-		public EntityMissileExo(World world) { super(world); }
-		public EntityMissileExo(World world, float x, float y, float z, int a, int b) { super(world, x, y, z, a, b); }
-		@Override
-		public void onMissileImpact(RayTraceResult mop) {
-			ExplosionThermo.scorch(this.world, null, (int)this.posX, (int)this.posY, (int)this.posZ, 30);
-			ExplosionThermo.setEntitiesOnFire(this.world, (int)this.posX, (int)this.posY, (int)this.posZ, 40);
-		}
-		@Override
-		public ItemStack getDebrisRareDrop() {
-			return new ItemStack(ModItems.warhead_thermo_exo);
-		}
-
-		@Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModItems.missile_exo); }
-	}
 }

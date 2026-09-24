@@ -10,6 +10,7 @@ import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.potion.HbmPotion;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
@@ -27,6 +28,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
@@ -270,11 +272,10 @@ public class TileEntityTurretMaxwell extends TileEntityTurretBaseNT
 
       if (!this.target.isEntityAlive() && this.target instanceof EntityLivingBase) {
         NBTTagCompound nbt = new NBTTagCompound();
-        nbt.setString("type", "giblets");
         nbt.setInteger("ent", this.target.getEntityId());
         PacketThreading.createAllAroundThreadedPacket(
             new AuxParticlePacketNT(
-                nbt,
+                HbmEffectNT.Giblets, nbt,
                 this.target.posX,
                 this.target.posY + this.target.height * 0.5,
                 this.target.posZ),
@@ -326,6 +327,19 @@ public class TileEntityTurretMaxwell extends TileEntityTurretBaseNT
     if (buf.readBoolean()) {
       this.beam = 5;
     }
+  }
+
+  private AxisAlignedBB bb;
+
+  @Override
+  public AxisAlignedBB getRenderBoundingBox() {
+    if (bb == null) {
+      double r = 145 + getBarrelLength();
+      double h = getHeightOffset();
+      bb = new AxisAlignedBB(pos.getX() - r, pos.getY() - r, pos.getZ() - r,
+          pos.getX() + 1 + r, pos.getY() + 1 + h + r, pos.getZ() + 1 + r);
+    }
+    return bb;
   }
 
   @Override

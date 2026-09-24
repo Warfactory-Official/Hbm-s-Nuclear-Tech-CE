@@ -27,6 +27,7 @@ import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.threading.ThreadedPacket;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.*;
 import com.hbm.util.*;
 import io.netty.buffer.ByteBuf;
@@ -53,7 +54,7 @@ import java.util.List;
 
 @AutoRegister
 public class TileEntityElectrolyser extends TileEntityMachineBase implements IEnergyReceiverMK2, IFluidStandardTransceiver, IControlReceiver,
-        IGUIProvider, IUpgradeInfoProvider, IFluidCopiable, IMetalCopiable, ITickable {
+        IGUIProvider, IUpgradeInfoProvider, IFluidCopiable, IMetalCopiable, ITickable, IConnectionAnchors {
 
     public long power;
     public static final long maxPower = 20000000;
@@ -104,10 +105,10 @@ public class TileEntityElectrolyser extends TileEntityMachineBase implements IEn
         };
 
         tanks = new FluidTankNTM[4];
-        tanks[0] = new FluidTankNTM(Fluids.WATER, 16000);
-        tanks[1] = new FluidTankNTM(Fluids.HYDROGEN, 16000);
-        tanks[2] = new FluidTankNTM(Fluids.OXYGEN, 16000);
-        tanks[3] = new FluidTankNTM(Fluids.NITRIC_ACID, 16000);
+        tanks[0] = new FluidTankNTM(Fluids.WATER, 16000).withOwner(this);
+        tanks[1] = new FluidTankNTM(Fluids.HYDROGEN, 16000).withOwner(this);
+        tanks[2] = new FluidTankNTM(Fluids.OXYGEN, 16000).withOwner(this);
+        tanks[3] = new FluidTankNTM(Fluids.NITRIC_ACID, 16000).withOwner(this);
     }
 
     @Override
@@ -200,13 +201,12 @@ public class TileEntityElectrolyser extends TileEntityMachineBase implements IEn
 
                 if(didPour != null) {
                     NBTTagCompound data = new NBTTagCompound();
-                    data.setString("type", "foundry");
                     data.setInteger("color", didPour.material.moltenColor);
                     data.setByte("dir", (byte) dir.ordinal());
                     data.setFloat("off", 0.625F);
                     data.setFloat("base", 0.625F);
                     data.setFloat("len", Math.max(1F, pos.getY() - (float) (Math.ceil(impact.y) - 0.875) + 2));
-                    ThreadedPacket message = new AuxParticlePacketNT(data, pos.getX() + 0.5D + dir.offsetX * 5.875D, pos.getY() + 2, pos.getZ() + 0.5D + dir.offsetZ * 5.875D);
+                    ThreadedPacket message = new AuxParticlePacketNT(HbmEffectNT.Foundry, data, pos.getX() + 0.5D + dir.offsetX * 5.875D, pos.getY() + 2, pos.getZ() + 0.5D + dir.offsetZ * 5.875D);
                     PacketThreading.createAllAroundThreadedPacket(message,
                             new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 50));
 
@@ -231,7 +231,7 @@ public class TileEntityElectrolyser extends TileEntityMachineBase implements IEn
                     data.setFloat("off", 0.625F);
                     data.setFloat("base", 0.625F);
                     data.setFloat("len", Math.max(1F, pos.getY() - (float) (Math.ceil(impact.y) - 0.875) + 2));
-                    ThreadedPacket message = new AuxParticlePacketNT(data, pos.getX() + 0.5D + dir.offsetX * 5.875D, pos.getY() + 2, pos.getZ() + 0.5D + dir.offsetZ * 5.875D);
+                    ThreadedPacket message = new AuxParticlePacketNT(HbmEffectNT.Foundry, data, pos.getX() + 0.5D + dir.offsetX * 5.875D, pos.getY() + 2, pos.getZ() + 0.5D + dir.offsetZ * 5.875D);
                     PacketThreading.createAllAroundThreadedPacket(message,
                             new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 50));
 
@@ -296,9 +296,13 @@ public class TileEntityElectrolyser extends TileEntityMachineBase implements IEn
         boolean right = buf.readBoolean();
         if(left) {
             this.leftStack = new Mats.MaterialStack(Mats.matById.get(buf.readInt()), buf.readInt());
+        } else {
+            this.leftStack = null;
         }
         if(right) {
             this.rightStack = new Mats.MaterialStack(Mats.matById.get(buf.readInt()), buf.readInt());
+        } else {
+            this.rightStack = null;
         }
         this.lastSelectedGUI = buf.readInt();
     }
@@ -547,9 +551,6 @@ public class TileEntityElectrolyser extends TileEntityMachineBase implements IEn
         if(ID == 0) return new GUIElectrolyserFluid(player.inventory, this);
         return new GUIElectrolyserMetal(player.inventory, this);
     }
-
-    @Override
-    public void receiveControl(NBTTagCompound data) { }
 
     @Override
     public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {

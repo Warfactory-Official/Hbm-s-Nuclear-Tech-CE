@@ -1,6 +1,7 @@
 package com.hbm.blocks.bomb;
 
 import com.hbm.blocks.BlockBase;
+import com.hbm.config.CompatibilityConfig;
 import com.hbm.entity.mob.EntityCreeperTainted;
 import com.hbm.entity.mob.EntityTaintCrab;
 import com.hbm.entity.mob.EntityTeslaCrab;
@@ -68,6 +69,7 @@ public class BlockTaint extends BlockBase {
     @Override
     public void updateTick(World world, BlockPos pos, IBlockState state, Random rand) {
         if (world.isRemote) return;
+		if (!CompatibilityConfig.isWarDim(world)) return;
         final int age = state.getValue(TAINTAGE);
         if (age >= 15) return;
         final int baseX = pos.getX();

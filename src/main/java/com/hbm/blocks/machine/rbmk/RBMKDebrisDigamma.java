@@ -7,6 +7,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
 
@@ -17,7 +18,7 @@ public class RBMKDebrisDigamma extends RBMKDebris {
 	}
 
 	@Override
-	public void updateTick(World world, BlockPos pos, IBlockState state, Random rand){
+	public void updateTick(World world, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull Random rand){
 		if(!world.isRemote) {
 			
 			ContaminationUtil.radiate(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 32, 0, 200F, 0, 0, 0);
@@ -31,7 +32,7 @@ public class RBMKDebrisDigamma extends RBMKDebris {
 	}
 	
 	@Override
-	public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state){
+	public void onBlockAdded(@NotNull World worldIn, @NotNull BlockPos pos, @NotNull IBlockState state){
 		super.onBlockAdded(worldIn, pos, state);
 		worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
 	}

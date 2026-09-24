@@ -52,7 +52,7 @@ public class LogicBlock extends BlockContainerBakeable {
     public static final IUnlistedProperty<IBlockState> DISGUISED_STATE = new SimpleUnlistedProperty<>("disguised_state", IBlockState.class);
 
     public LogicBlock(String regName) {
-        super(Material.ROCK, regName, new BlockBakeFrame("logic_block"));
+        super(Material.ROCK, regName, BlockBakeFrame.cubeAll("logic_block"));
         this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
     }
 
@@ -125,7 +125,7 @@ public class LogicBlock extends BlockContainerBakeable {
     @Override
     public void bakeModel(ModelBakeEvent event) {
         try {
-            IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation(blockFrame.getBaseModel()));
+            IModel baseModel = ModelLoaderRegistry.getModel(blockFrame.getBaseModelLocation());
             ImmutableMap.Builder<String, String> textureMap = ImmutableMap.builder();
 
             blockFrame.putTextures(textureMap);
@@ -171,6 +171,8 @@ public class LogicBlock extends BlockContainerBakeable {
 
         public EnumFacing direction = EnumFacing.NORTH;
 
+        boolean disguised = false;
+
         @Override
         public void update() {
             if (!world.isRemote) {
@@ -194,6 +196,12 @@ public class LogicBlock extends BlockContainerBakeable {
                     timer = 0;
                 } else {
                     timer++;
+                }
+                if (!disguised) {
+                    markDirty();
+                    IBlockState state = world.getBlockState(pos);
+                    world.notifyBlockUpdate(pos, state, state, 3);
+                    disguised = true;
                 }
             }
         }
@@ -255,6 +263,8 @@ public class LogicBlock extends BlockContainerBakeable {
         @Override
         public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
             this.readFromNBT(pkt.getNbtCompound());
+            IBlockState state = world.getBlockState(pos);
+            world.notifyBlockUpdate(pos, state, state, 3);
         }
     }
 

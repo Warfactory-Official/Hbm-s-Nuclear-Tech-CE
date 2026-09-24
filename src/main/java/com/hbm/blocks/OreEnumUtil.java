@@ -31,6 +31,7 @@ public class OreEnumUtil {
     public static int const1(IBlockState state, int fortune, Random rand) { return 1; }
     public static int vanillaFortune(IBlockState state, int fortune, Random rand) { return 1 + applyFortune(rand, fortune); }
     public static int cobaltAmount(IBlockState state, int fortune, Random rand) { return 4 + rand.nextInt(6); }
+    public static int alexandriteAmount(IBlockState state, int fortune, Random rand) { return Math.min(1 + rand.nextInt(2) + fortune, 2); }
     public static int cobaltNetherAmount(IBlockState state, int fortune, Random rand) { return 5 + rand.nextInt(8); }
     public static int applyFortune(Random rand, int fortune) { return fortune <= 0 ? 0 : rand.nextInt(fortune); }
 
@@ -69,15 +70,16 @@ public class OreEnumUtil {
         PHOSPHORUS_NETHER(OreEnumUtil::phosphorusNetherDrop, OreEnumUtil::vanillaFortune),
         LIGNITE(() -> new ItemStack(lignite), OreEnumUtil::vanillaFortune),
         RARE_EARTHS(() -> new ItemStack(chunk_ore, 1, ItemEnums.EnumChunkType.RARE.ordinal()), OreEnumUtil::vanillaFortune),
-        BLOCK_METEOR(OreEnumUtil::blockMeteorDrop, OreEnumUtil::vanillaFortune),
+        BLOCK_METEOR(OreEnumUtil::blockMeteorDrop, OreEnumUtil::const1),
         CINNABAR(() -> new ItemStack(cinnabar), OreEnumUtil::base1Rand2Fortune),
-        ALEXANDRITE(() -> new ItemStack(gem_alexandrite), OreEnumUtil::base1Rand2Fortune),
+        ALEXANDRITE(() -> new ItemStack(gem_alexandrite), OreEnumUtil::alexandriteAmount),
         COLTAN(() -> new ItemStack(fragment_coltan), OreEnumUtil::vanillaFortune),
         RAD_GEM(() -> new ItemStack(gem_rad), OreEnumUtil::vanillaFortune),
         WASTE_TRINITE(() -> new ItemStack(trinitite), OreEnumUtil::vanillaFortune),
         ZIRCON(() -> new ItemStack(nugget_zirconium), OreEnumUtil::base2Rand2Fortune),
         NEODYMIUM(() -> new ItemStack(fragment_neodymium), OreEnumUtil::base2Rand2Fortune),
         NITAN(() -> new ItemStack(powder_nitan_mix), OreEnumUtil::const1),
+        OIL(() -> new ItemStack(oil_tar), OreEnumUtil::const1),
 
         CLUSTER_IRON(() -> new ItemStack(crystal_iron), OreEnumUtil::vanillaFortune),
         CLUSTER_TITANIUM(() -> new ItemStack(crystal_titanium), OreEnumUtil::vanillaFortune),

@@ -1,7 +1,7 @@
 package com.hbm.physics;
 
 import com.hbm.physics.GJK.GJKInfo;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.util.math.MathHelper;
 
 public class Contact {
@@ -10,17 +10,17 @@ public class Contact {
 	public RigidBody bodyB;
 	public Collider a;
 	public Collider b;
-	public Vec3 localA;
-	public Vec3 localB;
-	public Vec3 globalA;
-	public Vec3 globalB;
-	public Vec3 normal;
+	public Vec3NT localA;
+	public Vec3NT localB;
+	public Vec3NT globalA;
+	public Vec3NT globalB;
+	public Vec3NT normal;
 	public float depth;
-	public Vec3 tangent;
-	public Vec3 bitangent;
+	public Vec3NT tangent;
+	public Vec3NT bitangent;
 	
-	public Vec3 rA;
-	public Vec3 rB;
+	public Vec3NT rA;
+	public Vec3NT rB;
 	
 	public Jacobian normalContact;
 	public Jacobian tangentContact;
@@ -44,10 +44,10 @@ public class Contact {
 		normal = info.normal;
 		depth = info.depth;
 		//https://box2d.org/posts/2014/02/computing-a-basis/
-		if(Math.abs(normal.xCoord) >= 0.57735){
-			tangent = new Vec3(normal.yCoord, -normal.xCoord, 0).normalize();
+		if(Math.abs(normal.x) >= 0.57735){
+			tangent = new Vec3NT(normal.y, -normal.x, 0).normalize();
 		} else {
-			tangent = new Vec3(0, normal.zCoord, -normal.yCoord).normalize();
+			tangent = new Vec3NT(0, normal.z, -normal.y).normalize();
 		}
 		bitangent = normal.crossProduct(tangent);
 		
@@ -75,10 +75,10 @@ public class Contact {
 		
 		boolean tangent;
 		
-		Vec3 j_va;
-		Vec3 j_wa;
-		Vec3 j_vb;
-		Vec3 j_wb;
+		Vec3NT j_va;
+		Vec3NT j_wa;
+		Vec3NT j_vb;
+		Vec3NT j_wb;
 		
 		float bias;
 		double effectiveMass;
@@ -88,7 +88,7 @@ public class Contact {
 			this.tangent = tangent;
 		}
 		
-		public void init(Contact c, Vec3 dir, float dt){
+		public void init(Contact c, Vec3NT dir, float dt){
 			j_va = dir.negate();
 			j_wa = c.rA.crossProduct(dir).negate();
 			j_vb = dir;

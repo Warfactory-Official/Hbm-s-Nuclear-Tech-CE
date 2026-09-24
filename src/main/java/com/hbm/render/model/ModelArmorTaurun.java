@@ -33,52 +33,6 @@ public class ModelArmorTaurun extends ModelArmorBase {
         new ModelRendererObj(ResourceManager.armor_taurun, "RightBoot")
             .setRotationPoint(-1.9F, 12.0F, 0.0F);
   }
-
-  @Override
-  public void render(
-      Entity entity,
-      float limbSwing,
-      float limbSwingAmount,
-      float ageInTicks,
-      float netHeadYaw,
-      float headPitch,
-      float scaleFactor) {
-    super.setRotationAngles(
-        limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entity);
-
-    GlStateManager.pushMatrix();
-
-    switch (type) {
-      case 0 -> {
-        bindTexture(ResourceManager.taurun_helmet);
-        this.head.render(scaleFactor);
-      }
-      case 1 -> {
-        bindTexture(ResourceManager.taurun_chest);
-        this.body.render(scaleFactor);
-        bindTexture(ResourceManager.taurun_arm);
-        this.leftArm.render(scaleFactor);
-        this.rightArm.render(scaleFactor);
-      }
-      case 2 -> {
-        bindTexture(ResourceManager.taurun_leg);
-        GlStateManager.translate(-0.01, 0, 0);
-        this.leftLeg.render(scaleFactor);
-        GlStateManager.translate(0.02, 0, 0);
-        this.rightLeg.render(scaleFactor);
-      }
-      case 3 -> {
-        bindTexture(ResourceManager.taurun_leg);
-        GlStateManager.translate(-0.01, 0, 0);
-        this.leftFoot.render(scaleFactor);
-        GlStateManager.translate(0.02, 0, 0);
-        this.rightFoot.render(scaleFactor);
-      }
-    }
-
-    GlStateManager.popMatrix();
-  }
-
   @Override
   public void renderArmor(Entity par1Entity, float par7) {
     switch (type) {

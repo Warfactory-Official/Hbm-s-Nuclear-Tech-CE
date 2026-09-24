@@ -5,7 +5,7 @@ import com.hbm.explosion.ExplosionLarge;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.init.Blocks;
@@ -59,15 +59,15 @@ public class EntityBuilding extends EntityThrowable {
 	    		
 	    		for(int i = 0; i < 250; i++) {
 	    			
-	    			Vec3 vec = Vec3.createVectorHelper(1, 0, 0);
-	    			vec.rotateAroundZ((float) (-rand.nextFloat() * Math.PI / 2));
-	    			vec.rotateAroundY((float) (rand.nextFloat() * Math.PI * 2));
+	    			Vec3NT vec = Vec3NT.createVectorHelper(1, 0, 0);
+	    			vec.rotateRollSelf((float) (-rand.nextFloat() * Math.PI / 2));
+	    			vec.rotateYawSelf((float) (rand.nextFloat() * Math.PI * 2));
 	    			
 	    			EntityRubble rubble = new EntityRubble(world, posX, posY + 3, posZ);
 	    			rubble.setMetaBasedOnBlock(Blocks.BRICK_BLOCK, 0);
-	    			rubble.motionX = vec.xCoord;
-	    			rubble.motionY = vec.yCoord;
-	    			rubble.motionZ = vec.zCoord;
+	    			rubble.motionX = vec.x;
+	    			rubble.motionY = vec.y;
+	    			rubble.motionZ = vec.z;
 	    			world.spawnEntity(rubble);
 	    		}
 	    	}

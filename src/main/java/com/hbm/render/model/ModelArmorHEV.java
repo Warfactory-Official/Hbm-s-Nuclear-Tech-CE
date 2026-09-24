@@ -35,47 +35,6 @@ public class ModelArmorHEV extends ModelArmorBase {
   }
 
   @Override
-  public void render(
-      Entity entity,
-      float limbSwing,
-      float limbSwingAmount,
-      float ageInTicks,
-      float netHeadYaw,
-      float headPitch,
-      float scaleFactor) {
-    super.setRotationAngles(
-        limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entity);
-
-    GlStateManager.pushMatrix();
-
-    switch (type) {
-      case 0 -> {
-        bindTexture(ResourceManager.hev_helmet);
-        this.head.render(scaleFactor);
-      }
-      case 1 -> {
-        bindTexture(ResourceManager.hev_chest);
-        this.body.render(scaleFactor);
-        bindTexture(ResourceManager.hev_arm);
-        this.leftArm.render(scaleFactor);
-        this.rightArm.render(scaleFactor);
-      }
-      case 2 -> {
-        bindTexture(ResourceManager.hev_leg);
-        this.leftLeg.render(scaleFactor);
-        this.rightLeg.render(scaleFactor);
-      }
-      case 3 -> {
-        bindTexture(ResourceManager.hev_leg);
-        this.leftFoot.render(scaleFactor);
-        this.rightFoot.render(scaleFactor);
-      }
-    }
-
-    GlStateManager.popMatrix();
-  }
-
-  @Override
   public void renderArmor(Entity par1Entity, float par7) {
 
     switch (type) {

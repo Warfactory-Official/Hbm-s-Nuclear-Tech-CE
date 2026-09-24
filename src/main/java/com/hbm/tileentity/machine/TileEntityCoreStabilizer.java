@@ -1,6 +1,8 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.capability.NTMEnergyCapabilityWrapper;
 import com.hbm.handler.CompatHandler;
 import com.hbm.interfaces.AutoRegister;
@@ -9,6 +11,7 @@ import com.hbm.inventory.gui.GUICoreStabilizer;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemLens;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.render.chunk.SectionGeometry;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import io.netty.buffer.ByteBuf;
@@ -37,13 +40,14 @@ import org.jetbrains.annotations.NotNull;
 
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 @AutoRegister
-public class TileEntityCoreStabilizer extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, SimpleComponent, IGUIProvider, CompatHandler.OCComponent {
+public class TileEntityCoreStabilizer extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, SimpleComponent, IGUIProvider, CompatHandler.OCComponent, IRORValueProvider, IRORInteractive {
 
     public static final long maxPower = 2500000000L;
     public static final int range = 15;
     public long power;
     public int watts;
     public int beam;
+    private int prevBeam;
     public boolean isOn;
 
     public TileEntityCoreStabilizer() {
@@ -87,18 +91,21 @@ public class TileEntityCoreStabilizer extends TileEntityMachineBase implements I
 
                         if (dmg >= ((ItemLens) ModItems.ams_lens).maxDamage)
                             inventory.setStackInSlot(0, ItemStack.EMPTY);
-                        else
-                            ItemLens.setLensDamage(getLensSlot(), dmg);
+                        else ItemLens.setLensDamage(getLensSlot(), dmg);
 
                         break;
                     }
 
-                    if (!world.isAirBlock(pos))
-                        break;
+                    if (!world.isAirBlock(pos)) break;
                 }
             }
 
             this.networkPackNT(250);
+        } else {
+            if (prevBeam != beam) {
+                prevBeam = beam;
+                world.markBlockRangeForRenderUpdate(pos, pos);
+            }
         }
     }
 
@@ -127,7 +134,9 @@ public class TileEntityCoreStabilizer extends TileEntityMachineBase implements I
 
         this.power = buf.readLong();
         this.watts = buf.readInt();
+        int prevBeam = beam;
         this.beam = buf.readInt();
+        if (beam != prevBeam) SectionGeometry.renderBoundsChanged(this);
     }
 
 
@@ -161,7 +170,18 @@ public class TileEntityCoreStabilizer extends TileEntityMachineBase implements I
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
+        if (beam <= 0) {
+            return new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1,
+                    pos.getZ() + 1);
+        }
+        ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata());
+        int endX = pos.getX() + dir.offsetX * beam;
+        int endY = pos.getY() + dir.offsetY * beam;
+        int endZ = pos.getZ() + dir.offsetZ * beam;
+        return new AxisAlignedBB(
+                Math.min(pos.getX(), endX), Math.min(pos.getY(), endY), Math.min(pos.getZ(), endZ),
+                Math.max(pos.getX(), endX) + 1, Math.max(pos.getY(), endY) + 1, Math.max(pos.getZ(), endZ) + 1
+        );
     }
 
     @Override
@@ -203,14 +223,41 @@ public class TileEntityCoreStabilizer extends TileEntityMachineBase implements I
     @Override
     public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
         if (capability == CapabilityEnergy.ENERGY) {
-            return CapabilityEnergy.ENERGY.cast(
-                    new NTMEnergyCapabilityWrapper(this)
-            );
+            return CapabilityEnergy.ENERGY.cast(new NTMEnergyCapabilityWrapper(this));
         }
         return super.getCapability(capability, facing);
     }
 
-    // do some opencomputer stuff
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "durability", PREFIX_VALUE + "durabilitypercent", PREFIX_FUNCTION + "setpower" + NAME_SEPARATOR + "percent",};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "durability").equals(name)) {
+            ItemStack stack = inventory.getStackInSlot(0);
+            return (!stack.isEmpty() && stack.getItem() == ModItems.ams_lens) ? "" + (((ItemLens) stack.getItem()).maxDamage - ItemLens.getLensDamage(stack)) : "0";
+        }
+        if ((PREFIX_VALUE + "durabilitypercent").equals(name)) {
+            ItemStack stack = inventory.getStackInSlot(0);
+            return (!stack.isEmpty() && stack.getItem() == ModItems.ams_lens) ? "" + ((((ItemLens) stack.getItem()).maxDamage - ItemLens.getLensDamage(stack)) * 100 / ((ItemLens) stack.getItem()).maxDamage) : "0";
+        }
+
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "setpower").equals(name) && params.length > 0) {
+            this.watts = IRORInteractive.parseInt(params[0], 0, 100);
+            this.markChanged();
+            return null;
+        }
+
+        return null;
+    }
+
     @Override
     @Optional.Method(modid = "opencomputers")
     public String getComponentName() {

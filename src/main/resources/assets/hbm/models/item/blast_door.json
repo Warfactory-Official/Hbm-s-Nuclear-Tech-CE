@@ -1,6 +1,6 @@
 {
 	"parent": "item/generated",
 	"textures": {
-		"layer0": "hbm:block/blast_door"
+		"layer0": "hbm:blocks/blast_door"
 	}
 }

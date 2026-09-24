@@ -6,6 +6,7 @@ import com.hbm.items.ModItems;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.AdvancementManager;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -83,11 +84,10 @@ public class ItemCigarette extends Item {
             worldIn.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.cough, SoundCategory.PLAYERS, 1.0F, 1.0F);
 
             NBTTagCompound nbt = new NBTTagCompound();
-            nbt.setString("type", "vomit");
             nbt.setString("mode", "smoke");
             nbt.setInteger("count", 30);
             nbt.setInteger("entity", player.getEntityId());
-            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(nbt, 0, 0, 0), new TargetPoint(player.dimension, player.posX, player.posY, player.posZ, 25));
+            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Vomit, nbt, 0, 0, 0), new TargetPoint(player.dimension, player.posX, player.posY, player.posZ, 25));
         }
 
         return stack;

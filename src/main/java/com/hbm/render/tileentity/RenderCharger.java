@@ -100,8 +100,8 @@ public class RenderCharger extends TileEntitySpecialRenderer<TileEntityCharger> 
 	public ItemRenderBase getRenderer(Item item) {
 		return new ItemRenderBase() {
 			public void renderInventory() {
-				GlStateManager.translate(0, -3, 0);
-                GlStateManager.scale(6, 6, 6);
+				GlStateManager.translate(0, -7, 0);
+                GlStateManager.scale(10, 10, 10);
 			}
 			public void renderCommon() {
                 GlStateManager.scale(2, 2, 2);

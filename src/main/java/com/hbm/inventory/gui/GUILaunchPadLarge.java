@@ -110,7 +110,7 @@ public class GUILaunchPadLarge extends GuiInfoContainer {
 				}
 				
 				GlStateManager.rotate(90, 0, 1, 0);
-				GL11.glScaled(scale, scale, scale);
+				GlStateManager.scale(scale, scale, scale);
 				GlStateManager.scale(-8, -8, -8);
 
 				GlStateManager.pushMatrix();
@@ -118,9 +118,9 @@ public class GUILaunchPadLarge extends GuiInfoContainer {
 				RenderHelper.enableStandardItemLighting();
 				GlStateManager.popMatrix();
 				
-				GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+				GlStateManager.enableRescaleNormal();
 				renderer.accept(Minecraft.getMinecraft().getTextureManager());
-				GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+				GlStateManager.enableRescaleNormal();
 				GlStateManager.popMatrix();
 			}
 		}
@@ -131,17 +131,17 @@ public class GUILaunchPadLarge extends GuiInfoContainer {
 		String text = "";
 		int color = 0xffffff;
 		if(launchpad.state == TileEntityLaunchPadBase.STATE_MISSING) {
-			GL11.glScaled(0.5, 0.5, 1);
+			GlStateManager.scale(0.5, 0.5, 1);
 			text = "Not ready";
 			color = 0xff0000;
 		}
 		if(launchpad.state == TileEntityLaunchPadBase.STATE_LOADING) {
-			GL11.glScaled(0.6, 0.6, 1);
+			GlStateManager.scale(0.6, 0.6, 1);
 			text = "Loading...";
 			color = 0xff8000;
 		}
 		if(launchpad.state == TileEntityLaunchPadBase.STATE_READY) {
-			GL11.glScaled(0.8, 0.8, 1);
+			GlStateManager.scale(0.8, 0.8, 1);
 			text = "Ready";
 			color = 0x00ff000;
 		}

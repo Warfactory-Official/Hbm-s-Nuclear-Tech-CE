@@ -1,5 +1,6 @@
 package com.hbm.capability;
 
+import com.hbm.config.GeneralConfig;
 import com.hbm.inventory.FluidContainerRegistry;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -24,9 +25,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.Map;
-import java.util.OptionalInt;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Set;
 
 /**
@@ -34,6 +33,7 @@ import java.util.Set;
  *
  * @author mlbv
  */
+@ParametersAreNonnullByDefault
 public class NTMFluidCapabilityHandler {
 
     public static final ResourceLocation HBM_FLUID_CAPABILITY = new ResourceLocation("hbm", "fluid_container_wrapper");
@@ -74,25 +74,34 @@ public class NTMFluidCapabilityHandler {
     }
 
     @Nullable
-    public static FluidType getFluidType(@NotNull Fluid forgeFluid) {
+    public static FluidType getFluidType(Fluid forgeFluid) {
         return FF_TO_NTMF_MAP.get(forgeFluid.getName());
     }
 
-    public static boolean isNtmFluidContainer(@NotNull Item item) {
+    public static boolean canForgeContainerStoreFluid(ItemStack stack, @Nullable FluidType type) {
+        return type != null && (!type.needsLeadContainer() || isLeadSafeForgeContainer(stack));
+    }
+
+    public static boolean isLeadSafeForgeContainer(ItemStack stack) {
+        if (stack.isEmpty() || stack.getItem().getRegistryName() == null) return false;
+        return GeneralConfig.leadSafeForgeContainerWhitelist.contains(stack.getItem().getRegistryName() + ":" + stack.getMetadata());
+    }
+
+    public static boolean isNtmFluidContainer(Item item) {
         return NTM_CONTAINERS.contains(item);
     }
 
     /**
      * @return true if the item ever appears as a full container (meta-insensitive).
      */
-    public static boolean isFullNtmFluidContainer(@NotNull Item item) {
+    public static boolean isFullNtmFluidContainer(Item item) {
         return NTM_FULL_CONTAINERS.contains(item);
     }
 
     /**
      * @return true if the item ever appears as an empty container (meta-insensitive).
      */
-    public static boolean isEmptyNtmFluidContainer(@NotNull Item item) {
+    public static boolean isEmptyNtmFluidContainer(Item item) {
         return NTM_EMPTY_CONTAINERS.contains(item);
     }
 
@@ -106,18 +115,18 @@ public class NTMFluidCapabilityHandler {
     private static final class Wrapper implements ICapabilityProvider, IFluidHandlerItem {
         private ItemStack container;
 
-        private Wrapper(@NotNull ItemStack container) {
+        private Wrapper(ItemStack container) {
             this.container = container;
         }
 
         @Override
-        public boolean hasCapability(@NotNull Capability<?> capability, @Nullable EnumFacing facing) {
+        public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
             return capability == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY;
         }
 
         @Nullable
         @Override
-        public <T> T getCapability(@NotNull Capability<T> capability, @Nullable EnumFacing facing) {
+        public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
             if (capability == CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY) {
                 return CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY.cast(this);
             }

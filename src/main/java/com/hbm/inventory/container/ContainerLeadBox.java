@@ -2,6 +2,7 @@ package com.hbm.inventory.container;
 
 import com.cleanroommc.bogosorter.api.ISortableContainer;
 import com.cleanroommc.bogosorter.api.ISortingContextBuilder;
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.items.tool.ItemLeadBox;
 import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
@@ -13,12 +14,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.items.SlotItemHandler;
 
-// see comments at ContainerCrateTemplate
 @Optional.Interface(iface = "com.cleanroommc.bogosorter.api.ISortableContainer", modid = "bogosorter")
 public class ContainerLeadBox extends Container implements ISortableContainer {
 
     private ItemLeadBox.InventoryLeadBox box;
     private boolean isMainHand;
+
+    private final TransferStrategy transferStrategy = TransferStrategy.builder(() -> this.box.getSlots())
+                                                                      .genericMachineRange(0)
+                                                                      .build();
 
     public ContainerLeadBox(InventoryPlayer invPlayer, ItemLeadBox.InventoryLeadBox box) {
         this.box = box;
@@ -44,7 +48,7 @@ public class ContainerLeadBox extends Container implements ISortableContainer {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, box.getSlots(), true, player);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.transferStrategy, player);
     }
 
     @Override

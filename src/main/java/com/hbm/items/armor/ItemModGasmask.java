@@ -69,39 +69,24 @@ public class ItemModGasmask extends ItemArmorMod implements IGasMask {
 		list.add("§a  " + stack.getDisplayName() + " (gas protection)");
 		ArmorUtil.addGasMaskTooltip(stack, null, list, ITooltipFlag.TooltipFlags.NORMAL);
 	}
-	
+
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void modRender(Pre event, ItemStack armor){
 		if(this.modelM65 == null) {
 			this.modelM65 = new ModelM65();
 		}
-		RenderPlayer renderer = event.getRenderer();
-		ModelBiped model = renderer.getMainModel();
+
 		EntityPlayer player = event.getEntityPlayer();
-
-		copyRot(modelM65, model);
-
-		float interp = event.getPartialRenderTick();
-		float yawWrapped = MathHelper.wrapDegrees(player.prevRotationYawHead + (player.rotationYawHead - player.prevRotationYawHead) * interp + 180);
-		float pitch = player.rotationPitch;
 
 		if(this == ModItems.attachment_mask)
 			Minecraft.getMinecraft().renderEngine.bindTexture(tex);
 		if(this == ModItems.attachment_mask_mono)
 			Minecraft.getMinecraft().renderEngine.bindTexture(tex_mono);
-		
-		EntityPlayer me = MainRegistry.proxy.me();
-		boolean isMe = player == me;
-		if(!isMe){
-			GlStateManager.pushMatrix();
-			offset(player, me, interp);
-		}
-		if(model.isSneak) GlStateManager.translate(0, -0.1875F, 0);
-		modelM65.render(player, 0F, 0F, 0, yawWrapped, pitch, 0.0625F);
-		if(!isMe){
-			GlStateManager.popMatrix();
-		}
+
+		GlStateManager.pushMatrix();
+		modelM65.render(player, 0F, 0F, 0F, 0F, player.rotationPitch, 0.0625F);
+		GlStateManager.popMatrix();
 	}
 
 	@Override
@@ -142,7 +127,7 @@ public class ItemModGasmask extends ItemArmorMod implements IGasMask {
 			ItemStack stack = player.getHeldItem(hand);
 			ItemStack filter = this.getFilter(stack);
 			
-			if(filter != null) {
+			if(!filter.isEmpty()) {
 				ArmorUtil.removeFilter(stack);
 				
 				if(!player.inventory.addItemStackToInventory(filter)) {

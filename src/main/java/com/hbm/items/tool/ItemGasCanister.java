@@ -44,7 +44,7 @@ public class ItemGasCanister extends Item {
 		String s1 = (I18n.format(Fluids.fromID(stack.getItemDamage()).getConditionalName())).trim();
 
 		if(s1 != null) {
-			s = s + ": " + s1;
+			s = s + " " + s1;
 		}
 
 		return s;

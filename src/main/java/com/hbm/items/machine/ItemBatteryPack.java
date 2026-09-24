@@ -204,8 +204,12 @@ public class ItemBatteryPack extends ItemEnumMulti<ItemBatteryPack.EnumBatteryPa
     // Th3_Sl1ze: why from i = 1, mov?
     @Override
     public void redirectModel() {
+        ModelResourceLocation location = new ModelResourceLocation(getResourceLocationAsString(), "inventory");
+        if (getTileEntityItemStackRenderer() instanceof com.hbm.render.item.TEISRBase teisr) {
+            location = teisr.createModelBinding(this).getModelLocation();
+        }
         for (int i = 0; i < getSubitemCount(); i++) {
-            ModelLoader.setCustomModelResourceLocation(this, i, new ModelResourceLocation(getResourceLocationAsString(), "inventory"));
+            ModelLoader.setCustomModelResourceLocation(this, i, location);
         }
     }
 }

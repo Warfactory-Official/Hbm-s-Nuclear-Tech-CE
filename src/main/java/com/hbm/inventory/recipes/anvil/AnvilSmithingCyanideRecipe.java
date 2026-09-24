@@ -21,7 +21,7 @@ public class AnvilSmithingCyanideRecipe extends AnvilSmithingRecipe {
 	
 	@Override
 	public boolean matches(ItemStack left, ItemStack right) {
-		return doesStackMatch(right, this.right) && left.getItem() instanceof ItemFood;
+		return (doesStackMatch(right, this.right) || right.getItem() == ModItems.pill_red) && left.getItem() instanceof ItemFood;
 	}
 
 	@Override
@@ -37,8 +37,8 @@ public class AnvilSmithingCyanideRecipe extends AnvilSmithingRecipe {
 		if(!out.hasTagCompound())
 			out.setTagCompound(new NBTTagCompound());
 		
-		out.getTagCompound().setBoolean("ntmCyanide", true);
-		
+		out.getTagCompound().setBoolean(right.getItem() == ModItems.pill_red ? "ntmRedPill" : "ntmCyanide", true);
+
 		return out;
 	}
 }

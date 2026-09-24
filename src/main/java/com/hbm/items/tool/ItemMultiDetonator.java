@@ -79,7 +79,7 @@ public class ItemMultiDetonator extends Item {
 		ItemStack stack = player.getHeldItem(hand);
 		if(stack.getTagCompound() == null || getLocations(stack) == null)
 		{
-			if(world.isRemote)
+			if(!world.isRemote)
 				player.sendMessage(new TextComponentString("§c"+I18nUtil.resolveKey("chat.posnoseterror")+"§r"));
 			
 		} else {
@@ -102,13 +102,12 @@ public class ItemMultiDetonator extends Item {
 
 				    		if(GeneralConfig.enableExtendedLogging)
 				    			MainRegistry.logger.log(Level.INFO, "[DET] Tried to detonate block at " + x + " / " + y + " / " + z + " by " + player.getDisplayName() + "!");
-						}
-						
 						succ++;
+						}
 					}
 				}
 				
-				if (world.isRemote) {
+				if (!world.isRemote) {
 					player.sendMessage(new TextComponentString("§2"+I18nUtil.resolveKey("chat.detonatedmulti", succ, locs[0].length)));
 				}
 			} else {
@@ -119,7 +118,7 @@ public class ItemMultiDetonator extends Item {
 				
 		        world.playSound(null, player.posX, player.posY, player.posZ, HBMSoundHandler.techBoop, SoundCategory.AMBIENT, 2.0F, 1.0F);
 				
-				if(world.isRemote)
+				if(!world.isRemote)
 				{
 					player.sendMessage(new TextComponentString("§e"+I18nUtil.resolveKey("chat.removdedallpos")));
 				}

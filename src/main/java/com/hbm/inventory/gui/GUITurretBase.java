@@ -253,10 +253,10 @@ public abstract class GUITurretBase extends GuiInfoContainer {
 		
 		double scale = 2;
 		
-		GL11.glScaled(1D / scale, 1D / scale, 1);
+		GlStateManager.scale(1D / scale, 1D / scale, 1);
 		this.fontRenderer.drawString(n, (int)(12 * scale), (int)(51 * scale), 0x00ff00);
 		this.fontRenderer.drawString(t, (int)(12 * scale), (int)(69 * scale), 0x00ff00);
-		GL11.glScaled(scale, scale, 1);
+		GlStateManager.scale(scale, scale, 1);
 	}
 	
 	@Override

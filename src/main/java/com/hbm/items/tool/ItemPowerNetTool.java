@@ -69,15 +69,15 @@ public class ItemPowerNetTool extends ItemBakedBase {
                 player.sendMessage(ChatBuilder.start("End of diagnostic for network " + id).color(TextFormatting.GOLD).flush());
 
                 for (Nodespace.PowerNode link : net.links) {
-                    for (BlockPos linkPos : link.positions) {
-                        NBTTagCompound data = new NBTTagCompound();
-                        data.setString("type", "debug");
-                        data.setInteger("color", 0xffff00);
-                        data.setFloat("scale", 0.5F);
-                        data.setString("text", id);
-                        PacketThreading.createAllAroundThreadedPacket(
-                                new AuxParticlePacketNT(data, linkPos.getX() + 0.5D, linkPos.getY() + 1.5D, linkPos.getZ() + 0.5D),
-                                new NetworkRegistry.TargetPoint(worldIn.provider.getDimension(), linkPos.getX(), linkPos.getY(), linkPos.getZ(), RADIUS));
+                    for (BlockPos linkPos : link.positions) { // This did not do anything before and im too lazy to add this
+//                        NBTTagCompound data = new NBTTagCompound();
+//                        data.setString("type", "debug");
+//                        data.setInteger("color", 0xffff00);
+//                        data.setFloat("scale", 0.5F);
+//                        data.setString("text", id);
+//                        PacketThreading.createAllAroundThreadedPacket(
+//                                new AuxParticlePacketNT(data, linkPos.getX() + 0.5D, linkPos.getY() + 1.5D, linkPos.getZ() + 0.5D),
+//                                new NetworkRegistry.TargetPoint(worldIn.provider.getDimension(), linkPos.getX(), linkPos.getY(), linkPos.getZ(), RADIUS));
                     }
                 }
 

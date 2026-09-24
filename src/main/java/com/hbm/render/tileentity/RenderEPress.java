@@ -20,12 +20,6 @@ import net.minecraftforge.client.ForgeHooksClient;
 @AutoRegister
 public class RenderEPress extends TileEntitySpecialRenderer<TileEntityMachineEPress>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityMachineEPress te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityMachineEPress tileentity,

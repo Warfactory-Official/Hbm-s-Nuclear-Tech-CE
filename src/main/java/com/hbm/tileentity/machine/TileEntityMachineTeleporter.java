@@ -119,17 +119,15 @@ public class TileEntityMachineTeleporter extends TileEntityLoadedBase implements
 			return;
 
 		world.playSound(null, entity.getPosition(), SoundEvents.ENTITY_ENDERMEN_TELEPORT, SoundCategory.BLOCKS,  1.0F, 1.0F);
-		if (target == null && !this.linked) {
-			entity.attackEntityFrom(ModDamageSource.teleporter, 10000);
+		if (target == null) return;
+
+		if (entity instanceof EntityPlayerMP) {
+			entity.setPositionAndUpdate(target.getX() + 0.5D, target.getY() + 1.6D + entity.getYOffset(), target.getZ() + 0.5D);
 		} else {
-			if ((entity instanceof EntityPlayerMP)) {
-				((EntityPlayerMP) entity).setPositionAndUpdate(target.getX() + 0.5D, target.getY() + 1.6D + entity.getYOffset(), target.getZ() + 0.5D);
-			} else {
-				entity.setPositionAndRotation(target.getX() + 0.5D, target.getY() + 1.6D + entity.getYOffset(), target.getZ() + 0.5D, entity.rotationYaw, entity.rotationPitch);
-			}
-			world.playSound(null, target, SoundEvents.ENTITY_ENDERMEN_TELEPORT, SoundCategory.BLOCKS,  1.0F, 1.0F);
+			entity.setPositionAndRotation(target.getX() + 0.5D, target.getY() + 1.6D + entity.getYOffset(), target.getZ() + 0.5D, entity.rotationYaw, entity.rotationPitch);
 		}
-		
+		world.playSound(null, target, SoundEvents.ENTITY_ENDERMEN_TELEPORT, SoundCategory.BLOCKS,  1.0F, 1.0F);
+
 		this.power -= consumption;
 	}
 

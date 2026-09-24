@@ -1,7 +1,7 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.interfaces.AutoRegister;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
 import com.hbm.util.ContaminationUtil.HazardType;
@@ -20,6 +20,7 @@ import java.util.List;
 
 @AutoRegister
 public class TileEntityDemonLamp extends TileEntity implements ITickable {
+	private AxisAlignedBB bb;
 
 	@Override
 	public void update(){
@@ -37,7 +38,7 @@ public class TileEntityDemonLamp extends TileEntity implements ITickable {
 		List<EntityLivingBase> entities = world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(x + 0.5, y + 0.5, z + 0.5, x + 0.5, y + 0.5, z + 0.5).grow(range, range, range));
 		for(EntityLivingBase e : entities) {
 
-			Vec3 vec = Vec3.createVectorHelper(e.posX - (x + 0.5), (e.posY + e.getEyeHeight()) - (y + 0.5), e.posZ - (z + 0.5));
+			Vec3NT vec = Vec3NT.createVectorHelper(e.posX - (x + 0.5), (e.posY + e.getEyeHeight()) - (y + 0.5), e.posZ - (z + 0.5));
 			double len = vec.length();
 			vec = vec.normalize();
 
@@ -45,9 +46,9 @@ public class TileEntityDemonLamp extends TileEntity implements ITickable {
 
 			for(int i = 1; i < len; i++) {
 
-				int ix = (int)Math.floor(x + 0.5 + vec.xCoord * i);
-				int iy = (int)Math.floor(y + 0.5 + vec.yCoord * i);
-				int iz = (int)Math.floor(z + 0.5 + vec.zCoord * i);
+				int ix = (int)Math.floor(x + 0.5 + vec.x * i);
+				int iy = (int)Math.floor(y + 0.5 + vec.y * i);
+				int iz = (int)Math.floor(z + 0.5 + vec.z * i);
 				
 				BlockPos pos = new BlockPos(ix, iy, iz);
 				IBlockState state = world.getBlockState(pos);
@@ -70,7 +71,8 @@ public class TileEntityDemonLamp extends TileEntity implements ITickable {
 
 	@Override
 	public AxisAlignedBB getRenderBoundingBox(){
-		return TileEntity.INFINITE_EXTENT_AABB;
+		if (bb == null) bb = new AxisAlignedBB(pos.getX() - 16, pos.getY() - 1, pos.getZ() - 16, pos.getX() + 17, pos.getY() + 2, pos.getZ() + 17);
+		return bb;
 	}
 
 	@Override

@@ -2,6 +2,8 @@ package com.hbm.inventory.control_panel.nodes;
 
 import com.hbm.inventory.control_panel.*;
 import com.hbm.inventory.control_panel.modular.StockNodesRegister;
+import com.hbm.inventory.control_panel.types.DataValue;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
 import net.minecraft.nbt.NBTTagCompound;
 
 public class NodeConditional extends Node {

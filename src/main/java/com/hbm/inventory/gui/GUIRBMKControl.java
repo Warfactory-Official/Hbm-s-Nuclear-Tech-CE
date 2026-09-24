@@ -4,7 +4,9 @@ import com.hbm.Tags;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.inventory.container.ContainerRBMKControl;
 import com.hbm.packet.toserver.NBTControlPacket;
+import com.hbm.tileentity.machine.rbmk.TileEntityRBMKControl;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKControlManual;
+import com.hbm.util.BobMathUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
@@ -18,8 +20,8 @@ import static com.hbm.util.SoundUtil.playClickSound;
 
 public class GUIRBMKControl extends GuiInfoContainer {
 	
-	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/reactors/gui_rbmk_control.png");
-	private TileEntityRBMKControlManual rod;
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/reactors/gui_rbmk_control.png");
+	private final TileEntityRBMKControlManual rod;
 
 	public GUIRBMKControl(InventoryPlayer invPlayer, TileEntityRBMKControlManual tedf) {
 		super(new ContainerRBMKControl(invPlayer, tedf));
@@ -34,6 +36,9 @@ public class GUIRBMKControl extends GuiInfoContainer {
 		super.drawScreen(mouseX, mouseY, f);
 		
 		this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 71, guiTop + 29, 16, 56, mouseX, mouseY, new String[]{ (int)(rod.level * 100) + "%" } );
+		if(rod.isPowered()) {
+			this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 87, guiTop + 21, 16, 16, mouseX, mouseY, new String[]{ BobMathUtil.getShortNumber(rod.power) + " / " + BobMathUtil.getShortNumber(TileEntityRBMKControl.maxPower) + "HE" } );
+		}
 		super.renderHoveredToolTip(mouseX, mouseY);
 	}
 
@@ -87,6 +92,10 @@ public class GUIRBMKControl extends GuiInfoContainer {
 			int color = rod.color.ordinal();
 
 			drawTexturedModalRect(guiLeft + 28, guiTop + 26 + color * 11, 184, color * 10, 12, 10);
+		}
+
+		if(rod.isPowered()) {
+			drawTexturedModalRect(guiLeft + 87, guiTop + 21, 196, rod.hasPower ? 16 : 0, 16, 16);
 		}
 	}
 }

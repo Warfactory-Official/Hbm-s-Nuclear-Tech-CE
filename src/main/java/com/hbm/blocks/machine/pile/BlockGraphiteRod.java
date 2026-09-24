@@ -33,7 +33,7 @@ public class BlockGraphiteRod extends BlockGraphiteDrilledBase implements IToola
 			} else {
 				front = isOut ? "block_graphite_rod_out" : "block_graphite_rod_in";
 			}
-			this.blockFrames[meta] = new BlockBakeFrame(front, "block_graphite", front);
+			this.blockFrames[meta] = BlockBakeFrame.cubeBottomTop(front, "block_graphite", front);
 		}
 	}
 

@@ -11,7 +11,8 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.util.Vec3NT;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityFlying;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -63,7 +64,11 @@ public class EntityHunterChopper extends EntityFlying implements IMob, IRadiatio
 	
 	@Override
 	public boolean attackEntityFrom(DamageSource source, float amount) {
-		if (this.isEntityInvulnerable(source) || !(source == ModDamageSource.nuclearBlast || source == ModDamageSource.blackhole || source.isExplosion()  || ModDamageSource.getIsTau(source) || ModDamageSource.getIsSubatomic(source) || ModDamageSource.getIsDischarge(source))) {
+        if (!(source == ModDamageSource.shrapnel || source == ModDamageSource.nuclearBlast || source == ModDamageSource.blackhole || source.isExplosion() || ModDamageSource.getIsTau(
+                source) || ModDamageSource.getIsSubatomic(source)))
+            amount *= 0.1F;
+
+        if (this.isEntityInvulnerable(source) || source instanceof EntityDamageSource || this.getHealth() <= 0.1F) {
 			return false;
 		} else if(amount >= this.getHealth()) {
 			this.initDeath();
@@ -194,20 +199,20 @@ public class EntityHunterChopper extends EntityFlying implements IMob, IRadiatio
 					// EntityLargeFireball entitylargefireball = new
 					// EntityLargeFireball(this.world, this, d5, d6, d7);
 					EntityBullet entityarrow = new EntityBullet(this.world, this, 3.0F, 35, 45, false, "chopper", EnumHand.MAIN_HAND);
-					Vec3 vec2 = Vec3.createVectorHelper(d5 - 1 + rand.nextInt(3), d6 - 1 + rand.nextInt(3),
+					Vec3NT vec2 = Vec3NT.createVectorHelper(d5 - 1 + rand.nextInt(3), d6 - 1 + rand.nextInt(3),
 							d7 - 1 + rand.nextInt(3)).normalize();
 					double motion = 3;
-					entityarrow.motionX = vec2.xCoord * motion;
-					entityarrow.motionY = vec2.yCoord * motion;
-					entityarrow.motionZ = vec2.zCoord * motion;
+					entityarrow.motionX = vec2.x * motion;
+					entityarrow.motionY = vec2.y * motion;
+					entityarrow.motionZ = vec2.z * motion;
 					// entitylargefireball.field_92057_e =
 					// this.explosionStrength;
 					entityarrow.setDamage(3 + rand.nextInt(5));
-					// entitylargefireball.posX = this.posX + vec3.xCoord * d8;
+					// entitylargefireball.posX = this.posX + vec3.x * d8;
 					// entitylargefireball.posY = this.posY +
 					// (double)(this.height /
 					// 2.0F) + 0.5D;
-					// entitylargefireball.posZ = this.posZ + vec3.zCoord * d8;
+					// entitylargefireball.posZ = this.posZ + vec3.z * d8;
 					entityarrow.posX = xStart;
 					entityarrow.posY = yStart;
 					entityarrow.posZ = zStart;
@@ -270,11 +275,9 @@ public class EntityHunterChopper extends EntityFlying implements IMob, IRadiatio
 			if(!world.isRemote) {
 
 				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "exhaust");
-				data.setString("mode", "meteor");
 				data.setInteger("count", 10);
 				data.setDouble("width", 1);
-                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, posX, posY, posZ),  new NetworkRegistry.TargetPoint(dimension, posX, posY, posZ, 100));
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Exhaust_Meteor, data, posX, posY, posZ),  new NetworkRegistry.TargetPoint(dimension, posX, posY, posZ, 100));
 			}
 			
 			rotationYaw += 20;

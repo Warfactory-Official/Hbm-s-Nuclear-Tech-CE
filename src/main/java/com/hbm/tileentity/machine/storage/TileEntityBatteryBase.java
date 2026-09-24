@@ -5,6 +5,7 @@ import com.hbm.handler.CompatHandler;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.interfaces.ICopiable;
 import com.hbm.lib.DirPos;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.uninos.UniNodespace;
@@ -16,6 +17,7 @@ import li.cil.oc.api.machine.Callback;
 import li.cil.oc.api.machine.Context;
 import li.cil.oc.api.network.SimpleComponent;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -29,7 +31,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 @Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")
 public abstract class TileEntityBatteryBase extends TileEntityMachineBase implements ITickable, IEnergyConductorMK2, IEnergyProviderMK2,
-        IEnergyReceiverMK2, IControlReceiver, IGUIProvider, SimpleComponent, CompatHandler.OCComponent, ICopiable {
+        IEnergyReceiverMK2, IControlReceiver, IGUIProvider, SimpleComponent, CompatHandler.OCComponent, ICopiable, IConnectionAnchors {
 
     public byte lastRedstone = 0;
     public long prevPowerState = 0;
@@ -198,7 +200,7 @@ public abstract class TileEntityBatteryBase extends TileEntityMachineBase implem
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if (data.hasKey("low")) {
             this.redLow++;
             if (this.redLow > 3) this.redLow = 0;

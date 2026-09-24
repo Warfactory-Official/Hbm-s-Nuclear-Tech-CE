@@ -1,6 +1,6 @@
 package com.hbm.tileentity.network;
 
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.util.SwappedHashSet;
 import com.hbm.tileentity.network.RequestNetwork.PathNode;
@@ -38,6 +38,7 @@ public abstract class TileEntityRequestNetwork extends TileEntityLoadedBase impl
 
                 PathNode newNode = createNode(coord);
                 if (this.world.isBlockPowered(pos)) newNode.active = false;
+                else newNode.active = true;
                 // push new node
                 push(world, newNode);
 
@@ -101,9 +102,9 @@ public abstract class TileEntityRequestNetwork extends TileEntityLoadedBase impl
      * Performs a bidirectional scan to see if the nodes have line of sight
      */
     public static boolean hasPath(World world, BlockPos pos1, BlockPos pos2) {
-        Vec3 vec1 = Vec3.createVectorHelper(pos1.getX() + 0.5, pos1.getY() + 0.5, pos1.getZ() + 0.5);
-        Vec3 vec2 = Vec3.createVectorHelper(pos2.getX() + 0.5, pos2.getY() + 0.5, pos2.getZ() + 0.5);
-        Vec3 vec3 = vec1.subtract(vec2);
+        Vec3NT vec1 = Vec3NT.createVectorHelper(pos1.getX() + 0.5, pos1.getY() + 0.5, pos1.getZ() + 0.5);
+        Vec3NT vec2 = Vec3NT.createVectorHelper(pos2.getX() + 0.5, pos2.getY() + 0.5, pos2.getZ() + 0.5);
+        Vec3NT vec3 = vec1.subtract(vec2);
         if (vec3.length() > maxRange) return false;
         //for some fucking reason beyond any human comprehension, this function will randomly yield incorrect results but only from one side
         //therefore we just run the stupid fucking thing twice and then compare the results

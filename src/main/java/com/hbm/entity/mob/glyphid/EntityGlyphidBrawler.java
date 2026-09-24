@@ -3,7 +3,7 @@ package com.hbm.entity.mob.glyphid;
 import com.hbm.entity.mob.glyphid.GlyphidStats.StatBundle;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.ResourceManager;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -57,26 +57,26 @@ public class EntityGlyphidBrawler extends EntityGlyphid {
             }
 
             int prediction = 60;
-            Vec3 delta = Vec3.createVectorHelper(e.posX - posX + velX * prediction, (e.posY + e.height / 2) - (posY + 1) + velY * prediction, e.posZ - posZ + velZ * prediction);
+            Vec3NT delta = Vec3NT.createVectorHelper(e.posX - posX + velX * prediction, (e.posY + e.height / 2) - (posY + 1) + velY * prediction, e.posZ - posZ + velZ * prediction);
             double len = delta.length();
             if (len < 3) return;
-            double targetYaw = -Math.atan2(delta.xCoord, delta.zCoord);
+            double targetYaw = -Math.atan2(delta.x, delta.z);
 
-            double x = Math.sqrt(delta.xCoord * delta.xCoord + delta.zCoord * delta.zCoord);
-            double y = delta.yCoord;
+            double x = Math.sqrt(delta.x * delta.x + delta.z * delta.z);
+            double y = delta.y;
             double v0 = 1.5;
             double v02 = v0 * v0;
             double g = 0.01;
             double targetPitch = Math.atan((v02 + Math.sqrt(v02 * v02 - g * (g * x * x + 2 * y * v02)) * 1) / (g * x));
-            Vec3 fireVec = null;
+            Vec3NT fireVec = null;
             if (!Double.isNaN(targetPitch)) {
 
-                fireVec = Vec3.createVectorHelper(v0, 0, 0);
-                fireVec.rotateAroundZ((float) (-targetPitch / 3.5));
-                fireVec.rotateAroundY((float) -(targetYaw + Math.PI * 0.5));
+                fireVec = Vec3NT.createVectorHelper(v0, 0, 0);
+                fireVec.rotateRollSelf((float) (-targetPitch / 3.5));
+                fireVec.rotateYawSelf((float) -(targetYaw + Math.PI * 0.5));
             }
             if (fireVec != null)
-                this.launch(fireVec.xCoord, fireVec.yCoord, fireVec.zCoord, (float) v0, rand.nextFloat());
+                this.launch(fireVec.x, fireVec.y, fireVec.z, (float) v0, rand.nextFloat());
         }
     }
     //yeag this is now a motherfucking projectile

@@ -16,11 +16,13 @@
 
 这是一个HBM的核科技mod的1.12.2**权威移植**，在所有移植中完成度最高，因其他开发者未能持续更新与维护其它fork而生。
 
-> **注意：提交问题（Issue）时请严格遵循模板**  
+> [!IMPORTANT]
+> **提交问题（Issue）时请严格遵循模板**  
 > 鉴于我们每日收到的问题数量，我们**强制**执行模板中规定的报告规范。  
 未按模板提交的问题将会**直接关闭并锁定**。该规则**不追溯既往**。请尊重我们的时间，使用英文提交**高质量**的问题报告。
 
-> **注意：如安装了 Universal Tweaks，请将 `B:"Disable Fancy Missing Model"` 设为 `false` 以修复模型旋转问题**  
+> [!NOTE]
+> 如安装了 Universal Tweaks，请将 `B:"Disable Fancy Missing Model"` 设为 `false` 以修复模型旋转问题  
 > 配置位置：`config/Universal Tweaks - Tweaks.cfg`
 
 <br>
@@ -101,3 +103,52 @@ Alcater 在 CurseForge 上的版本已**超过 1.5 年**没有更新。他的版
        （已用 JVM 的路径可在 `/run/logs/latest.log` 中找到，如：  
        `Java is OpenJDK 64-Bit Server VM, version 1.8.0_442, running on Mac OS X:x86_64:15.3.2, installed at /this/is/the/path`）
     4) 重新执行“快速上手”步骤。
+
+## Maven
+
+### 快照 / Snapshots
+表示某个版本的最新提交构建。
+
+```groovy
+repositories {
+    maven {
+        name "Warfactory Snapshots"
+        url "https://repo.warfactory.co/snapshots"
+    }
+}
+dependencies {
+    // Java 8, 未混淆
+    implementation "com.hbm:ntm-ce:2.1.1.0-SNAPSHOT:dev"
+    // Java 25, 未混淆
+    implementation "com.hbm:ntm-ce-java25:2.1.1.0-SNAPSHOT:dev"
+    // Java 8, 混淆
+    implementation "com.hbm:ntm-ce:2.1.1.0-SNAPSHOT"
+    // Java 25, 混淆
+    implementation "com.hbm:ntm-ce-java25:2.1.1.0-SNAPSHOT"
+}
+```
+
+### 正式版本 / Releases
+对应 CurseForge / Modrinth 的正式发布版本。
+
+```groovy
+repositories {
+    maven {
+        name "Warfactory Releases"
+        url "https://repo.warfactory.co/releases"
+    }
+}
+dependencies {
+    // Java 8, 未混淆
+    implementation "com.hbm:ntm-ce:2.1.1.0:dev"
+    // Java 25, 未混淆
+    implementation "com.hbm:ntm-ce:2.1.1.0:dev-java25"
+    // Java 8, 混淆
+    implementation "com.hbm:ntm-ce:2.1.1.0"
+    // Java 25, 混淆
+    implementation "com.hbm:ntm-ce:2.1.1.0:java25"
+}
+```
+
+一般情况下在开发环境中应使用未混淆 jar。  
+在 Cleanroom + JDK 25 开发环境下 Java 8 和 Java 25 版本都能用；其他情况下建议使用 Java 8 版本。

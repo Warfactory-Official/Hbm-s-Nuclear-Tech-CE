@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.bomb.TileEntityCompactLauncher;
@@ -16,9 +17,16 @@ import java.util.function.Predicate;
 public class ContainerCompactLauncher extends Container {
 
 	private TileEntityCompactLauncher nukeBoy;
-	
-	public ContainerCompactLauncher(InventoryPlayer invPlayer, TileEntityCompactLauncher tedf) {
-		
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(8)
+                                                                              .rule(0, 5,
+                                                                                      Predicate.not(Library::isBattery))
+                                                                              .rule(5, 6, Library::isBattery)
+                                                                              .genericMachineRange(6)
+                                                                              .build();
+
+    public ContainerCompactLauncher(InventoryPlayer invPlayer, TileEntityCompactLauncher tedf) {
+
 		nukeBoy = tedf;
 
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 26, 36));
@@ -29,26 +37,24 @@ public class ContainerCompactLauncher extends Container {
 		this.addSlotToContainer(new SlotBattery(tedf.inventory, 5, 116, 108));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 6, 116, 90));
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 7, 134, 90));
-		
-		for(int i = 0; i < 3; i++)
+
+        for(int i = 0; i < 3; i++)
 		{
 			for(int j = 0; j < 9; j++)
 			{
 				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18 + 56));
 			}
 		}
-		
-		for(int i = 0; i < 9; i++)
+
+        for(int i = 0; i < 9; i++)
 		{
 			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 142 + 56));
 		}
 	}
-	
-	@Override
+
+    @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 8,
-                Predicate.not(Library::isBattery), 5,
-                Library::isBattery, 6);
+        return InventoryUtil.transferStack(this.inventorySlots, index, TRANSFER_STRATEGY, player);
     }
 
 	@Override

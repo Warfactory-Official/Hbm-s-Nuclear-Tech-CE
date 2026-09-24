@@ -37,7 +37,7 @@ public class RenderShrapnel extends Render<Entity> {
 		
 		if(rocket instanceof EntityShrapnel) {
 			if(rocket.getDataManager().get(EntityShrapnel.TRAIL) == 2) { //scale up lava blobs
-				GL11.glScaled(3, 3, 3);
+				GlStateManager.scale(3, 3, 3);
 			}
 		}
 		

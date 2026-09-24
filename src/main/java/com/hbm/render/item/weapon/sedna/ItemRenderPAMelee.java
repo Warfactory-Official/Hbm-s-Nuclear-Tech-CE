@@ -13,7 +13,7 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister(item = "gun_pa_melee")
 public class ItemRenderPAMelee extends ItemRenderWeaponBase {
 
-    public ItemRenderPAMelee() { offsets = offsets.get(ItemCameraTransforms.TransformType.GUI).setPosition(0.0, 13.75, 1.0).setRotation(126, -152, 15).getHelper(); }
+    public ItemRenderPAMelee() {}
     @Override public boolean isAkimbo() { return true; }
 
     @Override protected float getSwayMagnitude(ItemStack stack) { return 2F; }

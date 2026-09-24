@@ -2,6 +2,7 @@ package com.hbm.inventory.material;
 
 import com.hbm.inventory.OreDictManager.DictFrame;
 import com.hbm.main.MainRegistry;
+import com.hbm.util.I18nUtil;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
@@ -49,6 +50,10 @@ public class NTMMaterial {
 
 	public String getTranslationKey() {
 		return "hbmmat." + this.names[0].toLowerCase(Locale.US);
+	}
+
+	public String getLocalizedName() {
+		return I18nUtil.resolveKey(getTranslationKey());
 	}
 
 	public NTMMaterial setConversion(NTMMaterial mat, int in, int out) {

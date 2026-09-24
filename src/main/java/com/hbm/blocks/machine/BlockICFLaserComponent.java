@@ -18,12 +18,12 @@ public class BlockICFLaserComponent extends BlockEnumMeta<BlockICFLaserComponent
 
         for (EnumICFPart part : parts) {
             switch (part) {
-                case CASING -> frames[part.ordinal()] = new BlockBakeFrame("icf_casing");
-                case PORT -> frames[part.ordinal()] = new BlockBakeFrame("icf_port");
-                case CELL -> frames[part.ordinal()] = new BlockBakeFrame("icf_cell");
-                case EMITTER -> frames[part.ordinal()] = new BlockBakeFrame("icf_emitter");
-                case CAPACITOR -> frames[part.ordinal()] = new BlockBakeFrame("icf_capacitor_top", "icf_capacitor_side");
-                case TURBO -> frames[part.ordinal()] = new BlockBakeFrame("icf_capacitor_top", "icf_turbocharger");
+                case CASING -> frames[part.ordinal()] = BlockBakeFrame.cubeAll("icf_casing");
+                case PORT -> frames[part.ordinal()] = BlockBakeFrame.cubeAll("icf_port");
+                case CELL -> frames[part.ordinal()] = BlockBakeFrame.cubeAll("icf_cell");
+                case EMITTER -> frames[part.ordinal()] = BlockBakeFrame.cubeAll("icf_emitter");
+                case CAPACITOR -> frames[part.ordinal()] = BlockBakeFrame.column("icf_capacitor_top", "icf_capacitor_side");
+                case TURBO -> frames[part.ordinal()] = BlockBakeFrame.column("icf_capacitor_top", "icf_turbocharger");
             }
         }
         return frames;

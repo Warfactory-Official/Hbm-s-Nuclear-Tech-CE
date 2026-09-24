@@ -1,1 +1,3 @@
 com.hbm.processor.SuppressCheckedExceptionsPlugin
+com.hbm.processor.UpgradeInfoProviderSourcePlugin
+com.hbm.processor.VAORenderCallsitePlugin

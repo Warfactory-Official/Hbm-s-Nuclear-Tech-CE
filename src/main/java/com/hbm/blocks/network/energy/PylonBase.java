@@ -70,9 +70,15 @@ public abstract class PylonBase extends BlockContainer implements ITooltipProvid
 
     @Override
     public boolean onBlockActivated(World world, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull EntityPlayer player, @NotNull EnumHand hand, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ) {
-        if(world.isRemote) {
-            return true;
-        } else if(!player.isSneaking()) {
+//        if(world.isRemote) {
+//            return true;
+//        } else
+        //mlbv: commented the above logic out to fix the bug where attempting to connect two pylons that are too faraway
+        //does not show warning in chat. This is caused by world.isRemote unconditionally returning true and thereby skipping
+        //the following onItemUse, which made the world.isRemote -> sendMessage route effectively unreachable.
+        //this is the most simple approach to solve the problem; an alternative way is to send messages at server side,
+        //at the cost of server pressure
+        if(!player.isSneaking()) {
             TileEntityPylonBase te = (TileEntityPylonBase) world.getTileEntity(pos);
             return te != null && te.setColor(player.getHeldItem(hand));
         } else {

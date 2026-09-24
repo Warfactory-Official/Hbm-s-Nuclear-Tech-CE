@@ -85,7 +85,9 @@ public class SerializableRecipePacket extends PrecompiledPacket {
                 } catch (Exception e) {
                     MainRegistry.logger.catching(e);
                 } finally {
-                    m.payload.release();
+                    // reinit=true packets never populate payload at all (fromBytes returns early for
+                    // them, matching toBytes) - only release it when there actually is one.
+                    if (m.payload != null) m.payload.release();
                 }
             });
             return null;

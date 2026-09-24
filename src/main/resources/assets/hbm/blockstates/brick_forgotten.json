@@ -1,0 +1,25 @@
+{
+    "variants": {
+        "meta=0": {
+            "model": "hbm:brick_forgotten_0"
+        },
+        "meta=1": {
+            "model": "hbm:brick_forgotten_1"
+        },
+        "meta=2": {
+            "model": "hbm:brick_forgotten_2"
+        },
+        "meta=3": {
+            "model": "hbm:brick_forgotten_3"
+        },
+        "meta=4": {
+            "model": "hbm:brick_forgotten_4"
+        },
+        "meta=5": {
+            "model": "hbm:brick_forgotten_5"
+        },
+        "meta=6": {
+            "model": "hbm:brick_forgotten_6"
+        }
+    }
+}

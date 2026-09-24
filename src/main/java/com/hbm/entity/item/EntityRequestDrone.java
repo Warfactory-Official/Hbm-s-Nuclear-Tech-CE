@@ -8,7 +8,7 @@ import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemDrone.EnumDroneType;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.tileentity.network.TileEntityDroneDock;
 import com.hbm.tileentity.network.TileEntityDroneProvider;
 import com.hbm.tileentity.network.TileEntityDroneRequester;
@@ -66,7 +66,7 @@ public class EntityRequestDrone extends EntityDroneBase {
     @Override
     public void onUpdate() {
         if (!world.isRemote) {
-            if (Vec3.createVectorHelper(motionX, motionY, motionZ).length() < 0.01) {
+            if (Vec3NT.createVectorHelper(motionX, motionY, motionZ).length() < 0.01) {
                 if (nextActionTimer > 0) {
                     nextActionTimer--;
                 } else {
@@ -83,8 +83,8 @@ public class EntityRequestDrone extends EntityDroneBase {
                         this.setTarget(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
                     } else if (next instanceof AStack aStack && heldItem.isEmpty()) {
                         //to make DAMN sure this fuckin idiot doesnt miss the dock
-                        Vec3 pos = Vec3.createVectorHelper(this.posX, this.posY, this.posZ);
-                        Vec3 nextPos = Vec3.createVectorHelper(this.posX, this.posY - 4, this.posZ);
+                        Vec3NT pos = Vec3NT.createVectorHelper(this.posX, this.posY, this.posZ);
+                        Vec3NT nextPos = Vec3NT.createVectorHelper(this.posX, this.posY - 4, this.posZ);
                         RayTraceResult result = this.world.rayTraceBlocks(pos.toVec3d(), nextPos.toVec3d());
 
                         if (result != null && result.typeOfHit == RayTraceResult.Type.BLOCK) {
@@ -107,8 +107,8 @@ public class EntityRequestDrone extends EntityDroneBase {
                         }
                         nextActionTimer = 5;
                     } else if (next == DroneProgram.UNLOAD && !this.heldItem.isEmpty()) {
-                        Vec3 pos = Vec3.createVectorHelper(this.posX, this.posY, this.posZ);
-                        Vec3 nextPos = Vec3.createVectorHelper(this.posX, this.posY - 4, this.posZ);
+                        Vec3NT pos = Vec3NT.createVectorHelper(this.posX, this.posY, this.posZ);
+                        Vec3NT nextPos = Vec3NT.createVectorHelper(this.posX, this.posY - 4, this.posZ);
                         RayTraceResult result = this.world.rayTraceBlocks(pos.toVec3d(), nextPos.toVec3d());
 
                         if (result != null && result.typeOfHit == RayTraceResult.Type.BLOCK) {
@@ -145,8 +145,8 @@ public class EntityRequestDrone extends EntityDroneBase {
                         }
                         nextActionTimer = 5;
                     } else if (next == DroneProgram.DOCK) {
-                        Vec3 pos = Vec3.createVectorHelper(this.posX, this.posY, this.posZ);
-                        Vec3 nextPos = Vec3.createVectorHelper(this.posX, this.posY - 4, this.posZ);
+                        Vec3NT pos = Vec3NT.createVectorHelper(this.posX, this.posY, this.posZ);
+                        Vec3NT nextPos = Vec3NT.createVectorHelper(this.posX, this.posY - 4, this.posZ);
                         RayTraceResult mop = this.world.rayTraceBlocks(pos.toVec3d(), nextPos.toVec3d());
 
                         if (mop != null && mop.typeOfHit == RayTraceResult.Type.BLOCK) {

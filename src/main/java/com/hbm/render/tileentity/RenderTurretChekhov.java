@@ -44,12 +44,12 @@ public class RenderTurretChekhov extends RenderTurretBase<TileEntityTurretChekho
             turret.lastRotationPitch
                 + (turret.rotationPitch - turret.lastRotationPitch) * partialTicks);
 
-    GL11.glRotated(yaw, 0, 1, 0);
+    GlStateManager.rotate((float) (yaw), 0, 1, 0);
     bindTexture(ResourceManager.turret_carriage_tex);
     ResourceManager.turret_chekhov.renderPart("Carriage");
 
     GlStateManager.translate(0, 1.5, 0);
-    GL11.glRotated(pitch, 0, 0, 1);
+    GlStateManager.rotate((float) (pitch), 0, 0, 1);
     GlStateManager.translate(0, -1.5, 0);
     bindTexture(ResourceManager.turret_chekhov_tex);
     ResourceManager.turret_chekhov.renderPart("Body");
@@ -57,7 +57,7 @@ public class RenderTurretChekhov extends RenderTurretBase<TileEntityTurretChekho
     float rot = turret.lastSpin + (turret.spin - turret.lastSpin) * partialTicks;
 
     GlStateManager.translate(0, 1.5, 0);
-    GL11.glRotated(rot, -1, 0, 0);
+    GlStateManager.rotate((float) (rot), -1, 0, 0);
     GlStateManager.translate(0, -1.5, 0);
     bindTexture(ResourceManager.turret_chekhov_barrels_tex);
     ResourceManager.turret_chekhov.renderPart("Barrels");

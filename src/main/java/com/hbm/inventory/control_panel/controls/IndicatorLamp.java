@@ -1,5 +1,7 @@
 package com.hbm.inventory.control_panel.controls;
 
+import com.hbm.inventory.control_panel.types.DataValueEnum;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
 import com.hbm.render.loader.WaveFrontObjectVAO;
 import com.hbm.inventory.control_panel.*;
 import com.hbm.main.ResourceManager;
@@ -19,8 +21,8 @@ import java.util.List;
 
 public class IndicatorLamp extends Control {
 
-    public IndicatorLamp(String name, ControlPanel panel) {
-        super(name, panel);
+    public IndicatorLamp(String name,String registryName,ControlPanel panel) {
+        super(name,registryName, panel);
         vars.put("isLit", new DataValueFloat(0));
         vars.put("color", new DataValueEnum<>(EnumDyeColor.RED));
     }
@@ -100,6 +102,6 @@ public class IndicatorLamp extends Control {
 
     @Override
     public Control newControl(ControlPanel panel) {
-        return new IndicatorLamp(name, panel);
+        return new IndicatorLamp(name,registryName,panel);
     }
 }

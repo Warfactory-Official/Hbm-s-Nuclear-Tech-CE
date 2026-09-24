@@ -8,11 +8,10 @@ import com.hbm.inventory.material.Mats.MaterialStack;
 import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.util.CrucibleUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
@@ -94,13 +93,12 @@ public class TileEntityFoundryOutlet extends TileEntityFoundryBase {
 			double hitY = mop[0].getBlockPos().getY() + 1;
 			
 			NBTTagCompound data = new NBTTagCompound();
-			data.setString("type", "foundry");
 			data.setInteger("color", stack.material.moltenColor);
 			data.setByte("dir", (byte) dir.ordinal());
 			data.setFloat("off", 0.375F);
 			data.setFloat("base", 0F);
 			data.setFloat("len", Math.max(1F, p.getY() - (float) (Math.ceil(hitY) - 0.875)));
-			PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, p.getX() + 0.5D - dir.offsetX * 0.125, p.getY() + 0.125, p.getZ() + 0.5D - dir.offsetZ * 0.125), new TargetPoint(world.provider.getDimension(), p.getX() + 0.5, p.getY(), p.getZ() + 0.5, 50));
+			PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Foundry, data, p.getX() + 0.5D - dir.offsetX * 0.125, p.getY() + 0.125, p.getZ() + 0.5D - dir.offsetZ * 0.125), new TargetPoint(world.provider.getDimension(), p.getX() + 0.5, p.getY(), p.getZ() + 0.5, 50));
 		
 		}
 		
@@ -131,21 +129,6 @@ public class TileEntityFoundryOutlet extends TileEntityFoundryBase {
 		nbt.setBoolean("invertFilter", this.invertFilter);
 		nbt.setShort("filter", this.filter == null ? -1 : (short) this.filter.id);
 		return super.writeToNBT(nbt);
-	}
-
-	@Override
-	public @NotNull NBTTagCompound getUpdateTag() {
-		return this.writeToNBT(super.getUpdateTag());
-	}
-
-	@Override
-	public SPacketUpdateTileEntity getUpdatePacket() {
-		return new SPacketUpdateTileEntity(this.pos, 12, this.getUpdateTag());
-	}
-
-	@Override
-	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity packet) {
-		this.readFromNBT(packet.getNbtCompound());
 	}
 
 	@Override

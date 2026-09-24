@@ -5,6 +5,8 @@ import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.control_panel.*;
+import com.hbm.inventory.control_panel.types.*;
+import com.hbm.inventory.control_panel.types.DataValue.DataType;
 import com.hbm.packet.toclient.ControlPanelUpdatePacket;
 import com.hbm.tileentity.IGUIProvider;
 import li.cil.oc.api.machine.Arguments;
@@ -13,7 +15,9 @@ import li.cil.oc.api.machine.Context;
 import li.cil.oc.api.network.SimpleComponent;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
@@ -32,10 +36,7 @@ import net.minecraftforge.items.ItemStackHandler;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 @AutoRegister
@@ -44,6 +45,17 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 	public ItemStackHandler inventory;
 	public ControlPanel panel;
 	public BlockControlPanelType panelType = BlockControlPanelType.CUSTOM_PANEL;
+	private AxisAlignedBB bb;
+	private final int[] redstoneInputPower = new int[EnumFacing.VALUES.length];
+	private final int[] redstoneInputWeak = new int[EnumFacing.VALUES.length];
+	private final int[] redstoneInputStrong = new int[EnumFacing.VALUES.length];
+	private final int[] redstoneOutputWeak = new int[EnumFacing.VALUES.length];
+	private final int[] redstoneOutputStrong = new int[EnumFacing.VALUES.length];
+	private final int[] redstoneOutputWeakPending = new int[EnumFacing.VALUES.length];
+	private final int[] redstoneOutputStrongPending = new int[EnumFacing.VALUES.length];
+	private final Deque<RedstoneInputSnapshot> pendingRedstoneInputSnapshots = new ArrayDeque<>();
+	private RedstoneInputSnapshot activeRedstoneInputSnapshot;
+	private int redstoneOutputCollectionDepth = 0;
 
 	public TileEntityControlPanel() {
 		inventory = new ItemStackHandler(1){
@@ -53,6 +65,9 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 			}
 		};
 		this.panel = new ControlPanel(this, 0.25F, (float) Math.toRadians(20), 0, 0, 0.25F, 0);
+		Arrays.fill(redstoneInputPower, -1);
+		Arrays.fill(redstoneInputWeak, -1);
+		Arrays.fill(redstoneInputStrong, -1);
 	}
 
 	@Override
@@ -61,9 +76,13 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 			loadClient();
 		else {
 			for(Control c : panel.controls){
-				for(BlockPos b : c.connectedSet){
+				for (BlockPos b : c.taggedLinks.values()) {
 					ControlEventSystem.get(world).subscribeTo(this, b);
 				}
+			}
+			reinitializePanelState();
+			if(hasAnyRedstoneOutput()) {
+				notifyRedstoneNeighbors();
 			}
 		}
 	}
@@ -124,6 +143,9 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 
 	@Override
 	public void update(){
+		if(!world.isRemote) {
+			dispatchPendingRedstoneInputEvents(false);
+		}
 		panel.update();
 		if(!panel.changedVars.isEmpty()) {
 			markDirty();
@@ -134,12 +156,31 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound compound){
 		compound.setTag("panel", panel.writeToNBT(new NBTTagCompound()));
+		NBTTagCompound weakOutput = new NBTTagCompound();
+		NBTTagCompound strongOutput = new NBTTagCompound();
+		for(EnumFacing facing : EnumFacing.VALUES) {
+			weakOutput.setInteger(facing.getName(), redstoneOutputWeak[facing.getIndex()]);
+			strongOutput.setInteger(facing.getName(), redstoneOutputStrong[facing.getIndex()]);
+		}
+		compound.setTag("redstoneWeakOut", weakOutput);
+		compound.setTag("redstoneStrongOut", strongOutput);
 		return super.writeToNBT(compound);
+	}
+
+	@Override
+	protected void setWorldCreate(World worldIn) {
+		this.world = worldIn; // WHY IS THIS NOT THE DEFAULT SMH SMH SMH SMH SMH SMH SMH SMH SMH SMH SMH SMH SMH SMH SMH SMH SMH
 	}
 
 	@Override
 	public void readFromNBT(NBTTagCompound compound){
 		panel.readFromNBT(compound.getCompoundTag("panel"));
+		NBTTagCompound weakOutput = compound.getCompoundTag("redstoneWeakOut");
+		NBTTagCompound strongOutput = compound.getCompoundTag("redstoneStrongOut");
+		for(EnumFacing facing : EnumFacing.VALUES) {
+			redstoneOutputWeak[facing.getIndex()] = clampRedstoneStrength(weakOutput.getInteger(facing.getName()));
+			redstoneOutputStrong[facing.getIndex()] = clampRedstoneStrength(strongOutput.getInteger(facing.getName()));
+		}
 		super.readFromNBT(compound);
 	}
 
@@ -184,24 +225,25 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 	}
 
 	@Override
-	public void receiveControl(NBTTagCompound data){
+	public void receiveControl(EntityPlayerMP player, NBTTagCompound data){
 		if(data.hasKey("full_set")) {
 			markDirty();
 			for(Control c : panel.controls){
-				for(BlockPos b : c.connectedSet){
+				for (BlockPos b : c.taggedLinks.values()) {
 					ControlEventSystem.get(world).unsubscribeFrom(this, b);
 				}
 			}
 			this.panel.readFromNBT(data);
 			for(Control c : panel.controls){
-				for(BlockPos b : c.connectedSet){
+				for (BlockPos b : c.taggedLinks.values()) {
 					ControlEventSystem.get(world).subscribeTo(this, b);
 				}
 			}
+			reinitializePanelState();
             PacketThreading.createSendToAllTrackingThreadedPacket(new ControlPanelUpdatePacket(pos, data), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 1));
 		} else if(data.hasKey("click_control")) {
 			ControlEvent evt = ControlEvent.readFromNBT(data);
-			panel.controls.get(data.getInteger("click_control")).receiveEvent(evt);
+			panel.receiveDirectEvent(panel.controls.get(data.getInteger("click_control")), evt);
 		}
 	}
 
@@ -213,6 +255,210 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 	public void invalidate() {
 		super.invalidate();
 		ControlEventSystem.get(this.world).removeControllable(this);
+	}
+
+	public void captureRedstoneInputChanges() {
+		captureRedstoneInputChanges(false);
+	}
+
+	private void captureRedstoneInputChanges(boolean forceEventDispatch) {
+		if(world == null || world.isRemote) return;
+
+		int[] nextPower = Arrays.copyOf(redstoneInputPower, redstoneInputPower.length);
+		int[] nextWeak = Arrays.copyOf(redstoneInputWeak, redstoneInputWeak.length);
+		int[] nextStrong = Arrays.copyOf(redstoneInputStrong, redstoneInputStrong.length);
+		List<EnumFacing> changedFaces = new ArrayList<>();
+		for(EnumFacing facing : EnumFacing.VALUES) {
+			int idx = facing.getIndex();
+			BlockPos neighborPos = getPos().offset(facing);
+			IBlockState neighborState = world.getBlockState(neighborPos);
+			int effectivePower = world.getRedstonePower(neighborPos, facing); // Vanilla samples neighbor power as getRedstonePower(pos.offset(facing), facing).
+			int weakPower = neighborState.getWeakPower(world, neighborPos, facing);
+			int strongPower = neighborState.getStrongPower(world, neighborPos, facing);
+
+			boolean changed = effectivePower != redstoneInputPower[idx]
+					|| weakPower != redstoneInputWeak[idx]
+					|| strongPower != redstoneInputStrong[idx];
+			nextPower[idx] = effectivePower;
+			nextWeak[idx] = weakPower;
+			nextStrong[idx] = strongPower;
+			if(changed || forceEventDispatch) {
+				changedFaces.add(facing);
+			}
+		}
+
+		System.arraycopy(nextPower, 0, redstoneInputPower, 0, redstoneInputPower.length);
+		System.arraycopy(nextWeak, 0, redstoneInputWeak, 0, redstoneInputWeak.length);
+		System.arraycopy(nextStrong, 0, redstoneInputStrong, 0, redstoneInputStrong.length);
+		for(EnumFacing facing : changedFaces) {
+			pendingRedstoneInputSnapshots.addLast(new RedstoneInputSnapshot(facing, nextPower, nextWeak, nextStrong));
+		}
+	}
+
+	private static ControlEvent createRedstoneInputEvent(EnumFacing facing, int effectivePower, int weakPower, int strongPower) {
+		return ControlEvent.newEvent("redstone_input")
+				.setVar("facing", facing)
+				.setVar("power", effectivePower)
+				.setVar("weak", weakPower)
+				.setVar("strong", strongPower)
+				.setVar("isPowered", effectivePower > 0)
+				.setVar("isWeaklyPowered", weakPower > 0)
+				.setVar("isStronglyPowered", strongPower > 0);
+	}
+
+	private void dispatchPendingRedstoneInputEvents(boolean clearOutputsFirst) {
+		if(world == null || world.isRemote || pendingRedstoneInputSnapshots.isEmpty()) {
+			return;
+		}
+
+		beginRedstoneOutputCollection(clearOutputsFirst);
+		try {
+			BlockPos controlPos = getPos();
+			while(!pendingRedstoneInputSnapshots.isEmpty()) {
+				activeRedstoneInputSnapshot = pendingRedstoneInputSnapshots.removeFirst();
+				panel.receiveEvent(controlPos, activeRedstoneInputSnapshot.toControlEvent());
+			}
+		} finally {
+			activeRedstoneInputSnapshot = null;
+			finishRedstoneOutputCollection();
+		}
+	}
+
+	private void reinitializePanelState() {
+		if(world == null || world.isRemote) {
+			return;
+		}
+
+		pendingRedstoneInputSnapshots.clear();
+		beginRedstoneOutputCollection(true);
+		try {
+			for(Control control : panel.controls) {
+				control.receiveEvent(ControlEvent.newEvent("initialize"));
+			}
+			captureRedstoneInputChanges(true);
+			dispatchPendingRedstoneInputEvents(false);
+		} finally {
+			finishRedstoneOutputCollection();
+		}
+	}
+
+	public int getWeakRedstoneOutput(EnumFacing facing) {
+		return redstoneOutputWeak[facing.getIndex()];
+	}
+
+	public int getStrongRedstoneOutput(EnumFacing facing) {
+		return redstoneOutputStrong[facing.getIndex()];
+	}
+
+	private void notifyRedstoneNeighbors() {
+		world.notifyNeighborsOfStateChange(pos, getBlockType(), true);
+		for(EnumFacing facing : EnumFacing.VALUES) {
+			world.notifyNeighborsOfStateChange(pos.offset(facing), getBlockType(), true);
+		}
+	}
+
+	private boolean hasAnyRedstoneOutput() {
+		for(EnumFacing facing : EnumFacing.VALUES) {
+			if(redstoneOutputWeak[facing.getIndex()] > 0 || redstoneOutputStrong[facing.getIndex()] > 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public void beginRedstoneOutputCollection() {
+		beginRedstoneOutputCollection(false);
+	}
+
+	public void beginRedstoneOutputCollection(boolean clearPending) {
+		if(redstoneOutputCollectionDepth++ == 0) {
+			if(clearPending) {
+				Arrays.fill(redstoneOutputWeakPending, 0);
+				Arrays.fill(redstoneOutputStrongPending, 0);
+			} else {
+				System.arraycopy(redstoneOutputWeak, 0, redstoneOutputWeakPending, 0, redstoneOutputWeak.length);
+				System.arraycopy(redstoneOutputStrong, 0, redstoneOutputStrongPending, 0, redstoneOutputStrong.length);
+			}
+		}
+	}
+
+	public void finishRedstoneOutputCollection() {
+		if(redstoneOutputCollectionDepth == 0) {
+			return;
+		}
+		if(--redstoneOutputCollectionDepth == 0) {
+			applyRedstoneOutputs(redstoneOutputWeakPending, redstoneOutputStrongPending);
+		}
+	}
+
+	public int getRedstoneInputPower(EnumFacing facing) {
+		if(activeRedstoneInputSnapshot != null) {
+			return activeRedstoneInputSnapshot.getPower(facing);
+		}
+		return redstoneInputPower[facing.getIndex()] < 0 ? 0 : redstoneInputPower[facing.getIndex()];
+	}
+
+	public int getRedstoneInputWeak(EnumFacing facing) {
+		if(activeRedstoneInputSnapshot != null) {
+			return activeRedstoneInputSnapshot.getWeak(facing);
+		}
+		return redstoneInputWeak[facing.getIndex()] < 0 ? 0 : redstoneInputWeak[facing.getIndex()];
+	}
+
+	public int getRedstoneInputStrong(EnumFacing facing) {
+		if(activeRedstoneInputSnapshot != null) {
+			return activeRedstoneInputSnapshot.getStrong(facing);
+		}
+		return redstoneInputStrong[facing.getIndex()] < 0 ? 0 : redstoneInputStrong[facing.getIndex()];
+	}
+
+	public void setWeakRedstoneOutput(EnumFacing facing, int strength) {
+		int idx = facing.getIndex();
+		int clamped = clampRedstoneStrength(strength);
+		if(redstoneOutputCollectionDepth > 0) {
+			redstoneOutputWeakPending[idx] = clamped;
+			return;
+		}
+		int[] weakOutputs = Arrays.copyOf(redstoneOutputWeak, redstoneOutputWeak.length);
+		weakOutputs[idx] = clamped;
+		applyRedstoneOutputs(weakOutputs, redstoneOutputStrong);
+	}
+
+	public void setStrongRedstoneOutput(EnumFacing facing, int strength) {
+		int idx = facing.getIndex();
+		int clamped = clampRedstoneStrength(strength);
+		if(redstoneOutputCollectionDepth > 0) {
+			redstoneOutputStrongPending[idx] = clamped;
+			return;
+		}
+		int[] strongOutputs = Arrays.copyOf(redstoneOutputStrong, redstoneOutputStrong.length);
+		strongOutputs[idx] = clamped;
+		applyRedstoneOutputs(redstoneOutputWeak, strongOutputs);
+	}
+
+	private void applyRedstoneOutputs(int[] weakOutputs, int[] strongOutputs) {
+		boolean changed = false;
+		for(EnumFacing facing : EnumFacing.VALUES) {
+			int idx = facing.getIndex();
+			int weak = clampRedstoneStrength(weakOutputs[idx]);
+			int strong = clampRedstoneStrength(strongOutputs[idx]);
+			if(redstoneOutputWeak[idx] != weak) {
+				redstoneOutputWeak[idx] = weak;
+				changed = true;
+			}
+			if(redstoneOutputStrong[idx] != strong) {
+				redstoneOutputStrong[idx] = strong;
+				changed = true;
+			}
+		}
+		if(changed) {
+			markDirty();
+			notifyRedstoneNeighbors();
+		}
+	}
+
+	private static int clampRedstoneStrength(int strength) {
+		return Math.max(0, Math.min(15, strength));
 	}
 
 	public float[] getBox() {
@@ -294,6 +540,9 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 		if (Objects.requireNonNull(value.getType()) == DataValue.DataType.NUMBER) {
 			return new Object[]{value.getNumber()};
 		}
+		if (value.getType() == DataType.COMPOSITE) {
+			return new Object[]{((DataValueComposite) value).snapshot()};
+		}
 		return new Object[]{value.toString()};
 	}
 
@@ -310,6 +559,8 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 			panel.globalVars.put(name, new DataValueFloat((float) args.checkDouble(1)));
 		else if (args.isInteger(1))
 			panel.globalVars.put(name, new DataValueFloat((float) args.checkInteger(1)));
+		else if (args.isTable(1))
+			panel.globalVars.put(name, DataValueComposite.fromLuaTable(args.checkTable(1)));
 		else
 			return new Object[]{"ERROR: unsupported value type"};
 
@@ -330,6 +581,9 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 		DataValue value = panel.controls.get(index).getVar(name);
 		if (Objects.requireNonNull(value.getType()) == DataValue.DataType.NUMBER) {
 			return new Object[]{value.getNumber()};
+		}
+		if (value.getType() == DataType.COMPOSITE) {
+			return new Object[]{((DataValueComposite) value).snapshot()};
 		}
 		return new Object[]{value.toString()};
 	}
@@ -366,6 +620,8 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 			panel.controls.get(index).vars.put(name, new DataValueFloat((float) args.checkDouble(2)));
 		else if (args.isInteger(2))
 			panel.controls.get(index).vars.put(name, new DataValueFloat(args.checkInteger(2)));
+		else if (args.isTable(2))
+			panel.controls.get(index).vars.put(name, DataValueComposite.fromLuaTable(args.checkTable(2)));
 		else
 			return new Object[]{"ERROR: unsupported value type"};
 
@@ -381,6 +637,42 @@ public class TileEntityControlPanel extends TileEntity implements ITickable, ICo
 	@SideOnly(Side.CLIENT)
 	public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		return new GuiControlEdit(player.inventory, this);
+	}
+
+	@Override
+	public AxisAlignedBB getRenderBoundingBox() {
+		if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+		return bb;
+	}
+
+	private static final class RedstoneInputSnapshot {
+		private final EnumFacing changedFace;
+		private final int[] powerByFace;
+		private final int[] weakByFace;
+		private final int[] strongByFace;
+
+		private RedstoneInputSnapshot(EnumFacing changedFace, int[] powerByFace, int[] weakByFace, int[] strongByFace) {
+			this.changedFace = changedFace;
+			this.powerByFace = Arrays.copyOf(powerByFace, powerByFace.length);
+			this.weakByFace = Arrays.copyOf(weakByFace, weakByFace.length);
+			this.strongByFace = Arrays.copyOf(strongByFace, strongByFace.length);
+		}
+
+		private int getPower(EnumFacing facing) {
+			return Math.max(0, powerByFace[facing.getIndex()]);
+		}
+
+		private int getWeak(EnumFacing facing) {
+			return Math.max(0, weakByFace[facing.getIndex()]);
+		}
+
+		private int getStrong(EnumFacing facing) {
+			return Math.max(0, strongByFace[facing.getIndex()]);
+		}
+
+		private ControlEvent toControlEvent() {
+			return createRedstoneInputEvent(changedFace, getPower(changedFace), getWeak(changedFace), getStrong(changedFace));
+		}
 	}
 
 }

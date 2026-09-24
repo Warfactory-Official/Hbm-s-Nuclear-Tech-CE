@@ -3,6 +3,7 @@ package com.hbm.blocks.network;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.hbm.Tags;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.ILookOverlay;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.blocks.ModBlocks;
@@ -13,6 +14,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.IDynamicModels;
 import com.hbm.render.model.BakedModelTransforms;
 import com.hbm.tileentity.network.TileEntityPipeBaseNT;
+import com.hbm.util.ExponentialMovingAverage;
 import com.hbm.util.I18nUtil;
 import com.hbm.world.gen.nbt.INBTBlockTransformable;
 import io.netty.buffer.ByteBuf;
@@ -145,8 +147,8 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
     }
 
     @Override
-    public void onBlockPlacedBy(World worldIn, @NotNull BlockPos pos, IBlockState state, @NotNull EntityLivingBase placer, @NotNull ItemStack stack) {
-        worldIn.setBlockState(pos, state.withProperty(FACING, EnumFacing.getDirectionFromEntityLiving(pos, placer)), 2);
+    public @NotNull IBlockState getStateForPlacement(World worldIn, @NotNull BlockPos pos, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ, int meta, @NotNull EntityLivingBase placer) {
+        return this.getDefaultState().withProperty(FACING, EnumFacing.getDirectionFromEntityLiving(pos, placer));
     }
 
     @Override
@@ -164,7 +166,7 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
         List<String> text = new ArrayList<>();
         text.add("&[" + duct.getType().getColor() + "&]" + duct.getType().getLocalizedName());
         text.add(String.format(Locale.US, "%,d", duct.deltaTick) + " mB/t");
-        text.add(String.format(Locale.US, "%,d", duct.deltaLastSecond) + " mB/s");
+        text.add(String.format(Locale.US, "%,d", duct.lastSecond) + " mB/s");
         ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getTranslationKey() + ".name"), 0xFFFF00, 0x404000, text);
     }
 
@@ -199,8 +201,7 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
     @Override
     @SideOnly(Side.CLIENT)
     public void registerModel() {
-        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0,
-                new ModelResourceLocation(Objects.requireNonNull(getRegistryName()), "inventory"));
+        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0, new ModelResourceLocation(Objects.requireNonNull(getRegistryName()), "inventory"));
         ModelLoader.setCustomStateMapper(this, new StateMapperBase() {
             @Override
             protected @NotNull ModelResourceLocation getModelResourceLocation(@NotNull IBlockState state) {
@@ -211,11 +212,12 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
 
     @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
     @AutoRegister
-    public static class TileEntityPipeGauge extends TileEntityPipeBaseNT implements SimpleComponent, CompatHandler.OCComponent {
+    public static class TileEntityPipeGauge extends TileEntityPipeBaseNT implements SimpleComponent, IRORValueProvider, CompatHandler.OCComponent {
 
         private long deltaTick = 0;
         private long deltaSecond = 0;
-        private long deltaLastSecond = 0;
+        private long lastSecond = 0;
+        private final ExponentialMovingAverage secondEMA = new ExponentialMovingAverage(0.05);
 
         @Override
         public void update() {
@@ -225,7 +227,7 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
                 if (node != null && node.net != null && getType() != Fluids.NONE) {
                     deltaTick = node.net.fluidTracker;
                     if (world.getTotalWorldTime() % 20L == 0) {
-                        deltaLastSecond = deltaSecond;
+                        secondEMA.next(this.lastSecond = this.deltaSecond);
                         deltaSecond = 0;
                     }
                     deltaSecond += deltaTick;
@@ -237,13 +239,13 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
         @Override
         public void serialize(ByteBuf buf) {
             buf.writeLong(deltaTick);
-            buf.writeLong(deltaLastSecond);
+            buf.writeLong(secondEMA.getValue());
         }
 
         @Override
         public void deserialize(ByteBuf buf) {
             deltaTick = Math.max(buf.readLong(), 0);
-            deltaLastSecond = Math.max(buf.readLong(), 0);
+            lastSecond = Math.max(buf.readLong(), 0);
         }
 
         @Optional.Method(modid = "opencomputers")
@@ -254,7 +256,7 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
         @Callback(direct = true)
         @Optional.Method(modid = "opencomputers")
         public Object[] getTransfer(Context context, Arguments args) {
-            return new Object[]{deltaTick, deltaLastSecond};
+            return new Object[]{deltaTick, lastSecond};
         }
 
         @Callback(direct = true)
@@ -266,27 +268,20 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
         @Callback(direct = true)
         @Optional.Method(modid = "opencomputers")
         public Object[] getInfo(Context context, Arguments args) {
-            return new Object[]{deltaTick, deltaLastSecond, getType().getName(), pos.getX(), pos.getY(), pos.getZ()};
+            return new Object[]{deltaTick, lastSecond, getType().getName(), pos.getX(), pos.getY(), pos.getZ()};
         }
 
-        /*@Override
+        @Override
         public String[] getFunctionInfo() {
-            return new String[]{
-                    PREFIX_VALUE + "deltatick",
-                    PREFIX_VALUE + "deltasecond"
-            };
+            return new String[]{PREFIX_VALUE + "deltatick", PREFIX_VALUE + "deltasecond",};
         }
 
         @Override
         public String provideRORValue(String name) {
-            if ((PREFIX_VALUE + "deltatick").equals(name)) {
-                return Long.toString(deltaTick);
-            }
-            if ((PREFIX_VALUE + "deltasecond").equals(name)) {
-                return Long.toString(deltaLastSecond);
-            }
+            if ((PREFIX_VALUE + "deltatick").equals(name)) return "" + deltaTick;
+            if ((PREFIX_VALUE + "deltasecond").equals(name)) return "" + lastSecond;
             return null;
-        }*/
+        }
     }
 
     @SideOnly(Side.CLIENT)
@@ -300,6 +295,7 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
         private final ImmutableMap<EnumFacing, ImmutableList<BakedQuad>> gaugeFaces;
         private final ImmutableList<BakedQuad> baseGeneral;
         private final ImmutableList<BakedQuad> overlayGeneral;
+        private final ImmutableList<BakedQuad> inventoryGeneral;
 
         public FluidDuctGaugeModel(TextureAtlasSprite base, TextureAtlasSprite overlay, TextureAtlasSprite gauge) {
             this.particle = base;
@@ -308,6 +304,11 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
             this.gaugeFaces = buildFaceMap(gauge, -1, true);
             this.baseGeneral = flatten(baseFaces);
             this.overlayGeneral = flatten(overlayFaces);
+            ImmutableList.Builder<BakedQuad> inventory = ImmutableList.builder();
+            inventory.addAll(flatten(buildFaceMap(base, -1, false, ModelRotation.X0_Y90)));
+            inventory.addAll(flatten(buildFaceMap(overlay, -1, true, ModelRotation.X0_Y90)));
+            inventory.addAll(buildFaceMap(gauge, -1, true, ModelRotation.X0_Y90).get(EnumFacing.NORTH));
+            this.inventoryGeneral = inventory.build();
         }
 
         @Override
@@ -317,8 +318,12 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
                 return Collections.emptyList();
             }
 
+            if (state == null) {
+                return side == null ? inventoryGeneral : Collections.emptyList();
+            }
+
             EnumFacing facing = EnumFacing.NORTH;
-            if (state != null && state.getPropertyKeys().contains(FACING)) {
+            if (state.getPropertyKeys().contains(FACING)) {
                 facing = state.getValue(FACING);
             }
 
@@ -359,7 +364,7 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
 
         @Override
         public @NotNull ItemCameraTransforms getItemCameraTransforms() {
-            return BakedModelTransforms.standardBlock();
+            return BakedModelTransforms.isbrh();
         }
 
         @Override
@@ -368,9 +373,14 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
         }
 
         private static ImmutableMap<EnumFacing, ImmutableList<BakedQuad>> buildFaceMap(TextureAtlasSprite sprite, int tintIndex, boolean offset) {
+            return buildFaceMap(sprite, tintIndex, offset, ModelRotation.X0_Y0);
+        }
+
+        private static ImmutableMap<EnumFacing, ImmutableList<BakedQuad>> buildFaceMap(TextureAtlasSprite sprite, int tintIndex,
+                                                                                       boolean offset, ModelRotation rotation) {
             ImmutableMap.Builder<EnumFacing, ImmutableList<BakedQuad>> builder = ImmutableMap.builder();
             for (EnumFacing face : EnumFacing.VALUES) {
-                builder.put(face, ImmutableList.of(createQuad(face, sprite, tintIndex, offset)));
+                builder.put(face, ImmutableList.of(createQuad(face, sprite, tintIndex, offset, rotation)));
             }
             return builder.build();
         }
@@ -383,7 +393,8 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
             return builder.build();
         }
 
-        private static BakedQuad createQuad(EnumFacing face, TextureAtlasSprite sprite, int tintIndex, boolean offset) {
+        private static BakedQuad createQuad(EnumFacing face, TextureAtlasSprite sprite, int tintIndex, boolean offset,
+                                            ModelRotation rotation) {
             float eps = 0.001F;
             Vector3f from = new Vector3f(0F, 0F, 0F);
             Vector3f to = new Vector3f(16F, 16F, 16F);
@@ -401,7 +412,7 @@ public class FluidDuctGauge extends FluidDuctBase implements ILookOverlay, ITool
 
             BlockFaceUV uv = new BlockFaceUV(new float[]{0F, 0F, 16F, 16F}, 0);
             BlockPartFace partFace = new BlockPartFace(null, tintIndex, "", uv);
-            return FACE_BAKERY.makeBakedQuad(from, to, partFace, sprite, face, ModelRotation.X0_Y0, null, false, true);
+            return FACE_BAKERY.makeBakedQuad(from, to, partFace, sprite, face, rotation, null, false, true);
         }
     }
 }

@@ -27,6 +27,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.Random;
 
+@Deprecated
 public class MachineRtgFurnace extends BlockContainer {
 
 	public static final PropertyDirection FACING = BlockHorizontal.FACING;
@@ -50,7 +51,7 @@ public class MachineRtgFurnace extends BlockContainer {
 	
 	@Override
 	public Item getItemDropped(IBlockState state, Random rand, int fortune) {
-		return Item.getItemFromBlock(ModBlocks.machine_rtg_furnace_off);
+		return null;
 	}
 	
 	@Override
@@ -58,46 +59,9 @@ public class MachineRtgFurnace extends BlockContainer {
 		return new ItemStack(ModBlocks.machine_rtg_furnace_off);
 	}
 	
-	@Override
-	public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
-		super.onBlockAdded(worldIn, pos, state);
-		this.setDefaultFacing(worldIn, pos, state);
-	}
-	
-	private void setDefaultFacing(World worldIn, BlockPos pos, IBlockState state){
-		if (!worldIn.isRemote)
-        {
-            IBlockState iblockstate = worldIn.getBlockState(pos.north());
-            IBlockState iblockstate1 = worldIn.getBlockState(pos.south());
-            IBlockState iblockstate2 = worldIn.getBlockState(pos.west());
-            IBlockState iblockstate3 = worldIn.getBlockState(pos.east());
-            EnumFacing enumfacing = (EnumFacing)state.getValue(FACING);
-
-            if (enumfacing == EnumFacing.NORTH && iblockstate.isFullBlock() && !iblockstate1.isFullBlock())
-            {
-                enumfacing = EnumFacing.SOUTH;
-            }
-            else if (enumfacing == EnumFacing.SOUTH && iblockstate1.isFullBlock() && !iblockstate.isFullBlock())
-            {
-                enumfacing = EnumFacing.NORTH;
-            }
-            else if (enumfacing == EnumFacing.WEST && iblockstate2.isFullBlock() && !iblockstate3.isFullBlock())
-            {
-                enumfacing = EnumFacing.EAST;
-            }
-            else if (enumfacing == EnumFacing.EAST && iblockstate3.isFullBlock() && !iblockstate2.isFullBlock())
-            {
-                enumfacing = EnumFacing.WEST;
-            }
-
-            worldIn.setBlockState(pos, state.withProperty(FACING, enumfacing), 2);
-        }
-	}
 	
 	@Override
 	public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-		worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
-
         if (stack.hasDisplayName())
         {
             TileEntity tileentity = worldIn.getTileEntity(pos);

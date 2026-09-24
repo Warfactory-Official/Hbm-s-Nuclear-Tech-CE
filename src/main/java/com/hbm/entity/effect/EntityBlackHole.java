@@ -6,7 +6,7 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IConstantRenderer;
 import com.hbm.items.ModItems;
 import com.hbm.lib.ModDamageSource;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -138,7 +138,7 @@ public class EntityBlackHole extends Entity implements IConstantRenderer {
 				world.spawnEntity(rubble);
 			}
 
-			Vec3 vec = Vec3.createVectorHelper(posX - e.posX, posY - e.posY, posZ - e.posZ);
+			Vec3NT vec = Vec3NT.createVectorHelper(posX - e.posX, posY - e.posY, posZ - e.posZ);
 
 			double dist = vec.length();
 			if (dist > range)
@@ -147,12 +147,12 @@ public class EntityBlackHole extends Entity implements IConstantRenderer {
 			vec = vec.normalize();
 
 			if (!(e instanceof EntityItem))
-				vec.rotateAroundY((float) Math.toRadians(15));
+				vec.rotateYawSelf((float) Math.toRadians(15));
 
 			double speed = 0.1D;
-			e.motionX += vec.xCoord * speed;
-			e.motionY += vec.yCoord * speed * 2;
-			e.motionZ += vec.zCoord * speed;
+			e.motionX += vec.x * speed;
+			e.motionY += vec.y * speed * 2;
+			e.motionZ += vec.z * speed;
 
 			if (e instanceof EntityBlackHole)
 				continue;

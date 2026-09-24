@@ -7,7 +7,6 @@ import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.interfaces.IBomb;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
-import com.hbm.tileentity.bomb.TileEntityNukeBalefire;
 import com.hbm.tileentity.bomb.TileEntityNukeBoy;
 import com.hbm.util.I18nUtil;
 import net.minecraft.block.Block;
@@ -101,8 +100,12 @@ public class NukeBoy extends BlockContainer implements IBomb {
 	}
 
 	@Override
+	public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
+		return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
+	}
+
+	@Override
 	public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-		worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()));
 		if (worldIn.getTileEntity(pos) instanceof TileEntityNukeBoy boy && placer instanceof EntityPlayerMP playerMP)
 			boy.placerID = playerMP.getUniqueID();
 	}
@@ -127,7 +130,17 @@ public class NukeBoy extends BlockContainer implements IBomb {
 	
 	@Override
 	public EnumBlockRenderType getRenderType(IBlockState state) {
-		return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
+		return EnumBlockRenderType.MODEL;
+	}
+
+	@Override
+	public BlockRenderLayer getRenderLayer() {
+		return BlockRenderLayer.CUTOUT;
+	}
+
+	@Override
+	public boolean canRenderInLayer(IBlockState state, BlockRenderLayer layer) {
+		return layer == BlockRenderLayer.CUTOUT;
 	}
 	
 	@Override

@@ -19,6 +19,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
@@ -101,10 +102,16 @@ public class ItemWiring extends Item {
 										player.sendMessage(new TextComponentTranslation("chat.wiring.notcompatible"));
 									break;
 								case 2:
-									player.sendMessage(new TextComponentTranslation("chat.wiring.noself"));
+									if (world.isRemote)
+										player.sendMessage(new TextComponentTranslation("chat.wiring.noself"));
 									break;
 								case 3:
-									player.sendMessage(new TextComponentTranslation("chat.wiring.tofar"));
+									if (world.isRemote) {
+										Vec3d dp = thisPylon.getConnectionPoint().subtract(targetPylon.getConnectionPoint());
+										int dist = (int) dp.length();
+										int maxLen = (int) Math.min(thisPylon.getMaxWireLength(), targetPylon.getMaxWireLength());
+										player.sendMessage(new TextComponentTranslation("chat.wiring.tofar", dist, maxLen));
+									}
 									break;
 							}
 						}

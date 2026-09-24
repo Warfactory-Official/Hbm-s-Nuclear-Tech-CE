@@ -1,0 +1,15 @@
+{
+	"name": "Template:SatOverview",
+	"icon": [
+		"hbm:nothing"
+	],
+	"trigger": [],
+	"noindex": true,
+	"title": {
+		"en_us": "Template:SatOverview"
+	},
+	"content": {
+		"en_us": "See also:<br>[[Satellite]]<br>[[Satellite Ground Station]]",
+		"ru_ru": "См. также:<br>[[Спутник|Satellite]]<br>[[Спутниковая наземная станция|Satellite Ground Station]]"
+	}
+}

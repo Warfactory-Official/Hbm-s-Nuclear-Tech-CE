@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotUpgrade;
 import com.hbm.items.ModItems;
@@ -19,6 +20,14 @@ import java.util.function.Predicate;
 public class ContainerOreSlopper extends Container {
 
     public TileEntityMachineOreSlopper slopper;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(11)
+                                                                              .rule(0, 1, Library::isBattery)
+                                                                              .rule(1, 2, s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                              .rule(2, 3, s -> s.getItem() == ModItems.bedrock_ore_base)
+                                                                              .rule(3, 9, Predicate.not(Library::isMachineUpgrade))
+                                                                              .rule(9, 11, Library::isMachineUpgrade)
+                                                                              .build();
 
     public ContainerOreSlopper(InventoryPlayer player, TileEntityMachineOreSlopper slopper) {
         this.slopper = slopper;
@@ -53,13 +62,7 @@ public class ContainerOreSlopper extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 11,
-                Library::isBattery, 1,
-                s -> s.getItem() instanceof IItemFluidIdentifier, 2,
-                s -> s.getItem() == ModItems.bedrock_ore_base, 3,
-                Predicate.not(Library::isMachineUpgrade), 9,
-                Library::isMachineUpgrade, 11
-        );
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
     @Override

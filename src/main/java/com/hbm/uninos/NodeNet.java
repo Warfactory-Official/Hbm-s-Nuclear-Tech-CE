@@ -2,7 +2,7 @@ package com.hbm.uninos;
 
 import com.hbm.api.tile.ILoadedTile;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
 import net.minecraft.tileentity.TileEntity;
 
 import java.util.Random;
@@ -12,7 +12,7 @@ public abstract class NodeNet<R, P, L extends GenNode<N>, N extends NodeNet<R, P
     public static Random rand = new Random();
 
     public boolean valid = true;
-    public ObjectLinkedOpenHashSet<L> links = new ObjectLinkedOpenHashSet<>();
+    public ReferenceLinkedOpenHashSet<L> links = new ReferenceLinkedOpenHashSet<>();
 
     public Object2LongOpenHashMap<R> receiverEntries = new Object2LongOpenHashMap<>();
     public Object2LongOpenHashMap<P> providerEntries = new Object2LongOpenHashMap<>();

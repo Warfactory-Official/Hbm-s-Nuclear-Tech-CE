@@ -92,8 +92,8 @@ public class ParticleLightningStrip extends Particle {
 			ResourceManager.lightning.use();
 		    ResourceManager.lightning.uniform4f("duck", 1F, 1F, 1F, 1F);
 		    ResourceManager.lightning.uniform1f("age", this.particleAge+partialTicks);
-		    int list = GL11.glGenLists(1);
-		    GL11.glNewList(list, GL11.GL_COMPILE);
+		    int list = GlStateManager.glGenLists(1);
+		    GlStateManager.glNewList(list, GL11.GL_COMPILE);
 		    float time = (this.particleAge+partialTicks)*0.012F;
 		    List<Vec3d> currentPoints = new ArrayList<>(points.size());
 		    for(int i = 0; i < points.size(); i++){
@@ -119,14 +119,14 @@ public class ParticleLightningStrip extends Particle {
 			} else {
 				TrailRenderer2.draw(new Vec3d(0, 0, 0), currentPoints, width);
 			}
-			GL11.glEndList();
-			GL11.glCallList(list);
+			GlStateManager.glEndList();
+			GlStateManager.callList(list);
 			HbmShaderManager2.bloomData.bindFramebuffer(false);
 			ResourceManager.lightning.uniform4f("duck", 0.6F, 0.8F, 1F, 1F);
-			GL11.glCallList(list);
-			GL11.glCallList(list);
+			GlStateManager.callList(list);
+			GlStateManager.callList(list);
 			Minecraft.getMinecraft().getFramebuffer().bindFramebuffer(false);
-			GL11.glDeleteLists(list, 1);
+			GlStateManager.glDeleteLists(list, 1);
 			HbmShaderManager2.releaseShader();
 			GlStateManager.disableBlend();
 			if(doTransform){

@@ -4,6 +4,7 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.BlockClean;
 import com.hbm.config.RadiationConfig;
 import com.hbm.entity.effect.EntityFalloutRain;
+import com.hbm.explosion.ExplosionNukeGeneric;
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.hazard.modifier.IHazardModifier;
 import com.hbm.util.I18nUtil;
@@ -40,20 +41,20 @@ public class HazardTypeContaminating implements IHazardType {
         if (world == null || world.isRemote) return;
 
         if (item.onGround) {
-            if(world.getBlockState(item.getPosition().down()).getBlock() instanceof BlockClean clean){
-                getUsed(clean, item.getPosition().down(), world);
+            BlockPos pos = item.getPosition();
+            BlockPos down = pos.down();
+            if(world.getBlockState(down).getBlock() instanceof BlockClean clean){
+                getUsed(clean, down, world);
                 return;
             }
             int radius = computeRadius(level);
             if (radius > 1) {
                 //mlbv: with no biome change, the falloutrain would leave no radiation behind
                 //so I choose to manually compensate the radiation
-                ChunkRadiationManager.proxy.incrementRad(world, item.getPosition(), level);
-                EntityFalloutRain falloutRain = new EntityFalloutRain(world);
-                falloutRain.setPosition(item.posX, item.posY, item.posZ);
-                falloutRain.setScale(radius);
-                falloutRain.noBiomeChange();
-                world.spawnEntity(falloutRain);
+                ChunkRadiationManager.proxy.incrementRad(world, pos, level);
+                //mlbv: replaced EntityFalloutRain with this to make U -> Sa326 transform harder.
+                //Credit: Leafia for suggesting this idea
+                ExplosionNukeGeneric.waste(world, pos.getX(), pos.getY(), pos.getZ(), radius);
             }
             item.setDead();
         }

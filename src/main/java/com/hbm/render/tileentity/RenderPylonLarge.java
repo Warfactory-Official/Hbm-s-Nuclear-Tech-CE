@@ -12,12 +12,6 @@ import net.minecraft.item.Item;
 
 @AutoRegister(tileentity = TileEntityPylonLarge.class)
 public class RenderPylonLarge extends RenderPylonBase implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityPylonBase te) {
-    return true;
-  }
-
   @Override
   public void render(TileEntityPylonBase tile, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
     if(!(tile instanceof TileEntityPylonLarge pyl)) return;

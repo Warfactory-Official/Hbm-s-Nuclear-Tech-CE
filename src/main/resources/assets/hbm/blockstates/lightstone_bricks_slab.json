@@ -1,0 +1,6 @@
+{
+    "variants": {
+        "half=bottom,variant=default": { "model": "hbm:half_slab_lightstone_bricks" },
+        "half=top,variant=default": { "model": "hbm:upper_slab_lightstone_bricks" }
+    }
+}

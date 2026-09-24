@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.storage;
 
+import com.hbm.items.block.ItemBlockStorageCrate;
 import com.hbm.api.tile.ILootContainerModifiable;
 import com.hbm.api.tile.IWorldRenameable;
 import com.hbm.lib.HBMSoundHandler;
@@ -20,6 +21,7 @@ import net.minecraft.world.storage.loot.LootTable;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -107,6 +109,17 @@ public abstract class TileEntityCrateBase extends TileEntityLockableBase impleme
             @Override
             public int getSlotLimit(int slot) {
                 return slotlimit;
+            }
+
+            @Override
+            public boolean isItemValid(int slot, @NotNull ItemStack stack) {
+                return isItemValidForSlot(slot, stack);
+            }
+
+            @Override
+            public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
+                if (!isItemValid(slot, stack)) return stack;
+                return super.insertItem(slot, stack, simulate);
             }
         };
     }
@@ -196,7 +209,7 @@ public abstract class TileEntityCrateBase extends TileEntityLockableBase impleme
     }
 
     public boolean isItemValidForSlot(int i, ItemStack stack) {
-        return true;
+        return !ItemBlockStorageCrate.containsCrate(stack);
     }
 
     @Override

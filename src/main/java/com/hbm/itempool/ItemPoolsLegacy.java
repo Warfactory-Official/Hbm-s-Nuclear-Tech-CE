@@ -10,6 +10,11 @@ import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBatteryPack;
 import com.hbm.items.machine.ItemBreedingRod;
 import com.hbm.items.machine.ItemZirnoxRod;
+import com.hbm.items.weapon.grenade.ItemGrenadeExtra.EnumGrenadeExtra;
+import com.hbm.items.weapon.grenade.ItemGrenadeFilling.EnumGrenadeFilling;
+import com.hbm.items.weapon.grenade.ItemGrenadeFuze.EnumGrenadeFuze;
+import com.hbm.items.weapon.grenade.ItemGrenadeShell.EnumGrenadeShell;
+import com.hbm.items.weapon.grenade.ItemGrenadeUniversal;
 import com.hbm.items.weapon.sedna.factory.GunFactory;
 import net.minecraft.init.Items;
 
@@ -61,7 +66,8 @@ public class ItemPoolsLegacy {
                     weighted(ModItems.canister_full, Fluids.BIOFUEL.getID(), 1, 2, 3),
                     weighted(ModItems.gas_mask_m65, 60, 1, 1, 2),
                     weighted(ModItems.gas_mask_filter, 0, 1, 1, 3),
-                    weighted(ModItems.blueprint_folder, 0, 1, 1, 1)
+                    weighted(ModItems.blueprint_folder, 0, 1, 1, 1),
+                    weighted(ModItems.coin_token, 0, 1, 1, 2),
             };
         }};
 
@@ -107,9 +113,9 @@ public class ItemPoolsLegacy {
                     weighted(ModItems.ammo_standard, GunFactory.EnumAmmo.ROCKET_HE.ordinal(), 1, 4, 5),
                     weighted(ModItems.ammo_standard, GunFactory.EnumAmmo.G26_FLARE_SUPPLY.ordinal(), 1, 1, 5),
                     weighted(ModItems.ammo_standard, GunFactory.EnumAmmo.G26_FLARE_WEAPON.ordinal(), 1, 1, 3),
-                    weighted(ModItems.grenade_nuclear, 0, 1, 1, 2),
-                    weighted(ModItems.grenade_smart, 0, 1, 3, 3),
-                    weighted(ModItems.grenade_mirv, 0, 1, 1, 2),
+                    weighted(ItemGrenadeUniversal.make(EnumGrenadeShell.NUKE, EnumGrenadeFilling.NUCLEAR, EnumGrenadeFuze.S7), 1, 1, 2),
+                    weighted(ItemGrenadeUniversal.make(EnumGrenadeShell.FRAG, EnumGrenadeFilling.CLUSTER, EnumGrenadeFuze.S7), 1, 3, 3),
+                    weighted(ModItems.grenade_extra, EnumGrenadeExtra.TRIPLEX.ordinal(), 1, 1, 1),
                     weighted(ModItems.stealth_boy, 0, 1, 1, 2),
                     weighted(ModItems.battery_pack, ItemBatteryPack.EnumBatteryPack.BATTERY_LITHIUM.ordinal(), 1, 1, 1),
                     weighted(ModItems.syringe_awesome, 0, 1, 1, 1),
@@ -202,7 +208,7 @@ public class ItemPoolsLegacy {
                     weighted(ModItems.stealth_boy, 0, 1, 1, 7),
                     weighted(ModItems.gas_mask_m65, 0, 1, 1, 5),
                     weighted(ModItems.gas_mask_filter, 0, 1, 1, 5),
-                    weighted(ModItems.grenade_nuclear, 0, 1, 2, 2),
+                    weighted(ItemGrenadeUniversal.make(EnumGrenadeShell.NUKE, EnumGrenadeFilling.NUCLEAR, EnumGrenadeFuze.S7), 1, 2, 2),
                     weighted(ModItems.bomb_caller, 0, 1, 1, 1),
                     weighted(ModItems.bomb_caller, 1, 1, 1, 1),
                     weighted(ModItems.bomb_caller, 2, 1, 1, 2)
@@ -213,15 +219,14 @@ public class ItemPoolsLegacy {
         new ItemPool(POOL_SPACESHIP) {{
             this.pool = new WeightedRandomChestContentFrom1710[] {
                     weighted(ModItems.battery_pack, ItemBatteryPack.EnumBatteryPack.BATTERY_LEAD.ordinal(), 1, 1, 2),
-                    weighted(ModItems.ingot_advanced_alloy, 0, 2, 16, 5),
-                    weighted(ModItems.wire_fine, Mats.MAT_ALLOY.id, 8, 32, 5),
-                    weighted(ModItems.coil_advanced_alloy, 0, 2, 16, 5),
+                    weighted(ModItems.coil_copper, 0, 2, 16, 5),
+                    weighted(ModItems.wire_fine, Mats.MAT_MINGRADE.id, 8, 32, 5),
                     weighted(ModItems.cell, Fluids.DEUTERIUM.getID(), 1, 8, 5),
                     weighted(ModItems.cell, Fluids.TRITIUM.getID(), 1, 8, 5),
                     weighted(ModItems.cell, Fluids.AMAT.getID(), 1, 1, 1),
                     weighted(ModItems.powder_neodymium, 0, 1, 1, 1),
                     weighted(ModItems.powder_niobium, 0, 1, 1, 1),
-                    weighted(ModItems.wire_dense, Mats.MAT_ALLOY.id, 2, 4, 5),
+                    weighted(ModItems.wire_dense, Mats.MAT_MINGRADE.id, 2, 4, 5),
                     weighted(ModItems.wire_dense, Mats.MAT_GOLD.id, 1, 3, 5),
                     weighted(ModBlocks.pwr_fuelrod, 0, 1, 2, 5),
                     weighted(ModBlocks.block_tungsten, 0, 3, 8, 5),

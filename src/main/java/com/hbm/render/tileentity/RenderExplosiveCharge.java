@@ -131,13 +131,12 @@ public class RenderExplosiveCharge extends TileEntitySpecialRenderer<TileEntityC
       @Override
       public void renderNonInv() {
         GlStateManager.rotate(180F, 1.0F, 0.0F, 0.0F);
-        GlStateManager.translate(3.0F, 0.0F, 0.0F);
-        GlStateManager.scale(4.0F, 4.0F, 4.0F);
+        GlStateManager.scale(2.0F, 2.0F, 2.0F);
       }
 
       @Override
       public void renderGround() {
-        GlStateManager.scale(5.0F, 5.0F, 5.0F);
+        GlStateManager.scale(2.0F, 2.0F, 2.0F);
       }
 
       @Override

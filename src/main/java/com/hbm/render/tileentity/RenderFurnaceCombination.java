@@ -96,8 +96,8 @@ public class RenderFurnaceCombination extends TileEntitySpecialRenderer<TileEnti
     public ItemRenderBase getRenderer(Item item) {
         return new ItemRenderBase( ) {
             public void renderInventory() {
-                GL11.glTranslated(0, -1.5, 0);
-                GL11.glScaled(3.25, 3.25, 3.25);
+                GlStateManager.translate(0, -1.5, 0);
+                GlStateManager.scale(3.25, 3.25, 3.25);
             }
             public void renderCommon() {
                 bindTexture(ResourceManager.combination_oven_tex);

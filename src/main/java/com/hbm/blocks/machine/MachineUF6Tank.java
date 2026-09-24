@@ -9,7 +9,6 @@ import com.hbm.tileentity.machine.TileEntityMachineUF6Tank;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
@@ -32,15 +31,28 @@ public class MachineUF6Tank extends BlockContainer implements IMultiBlock {
 	
 	public MachineUF6Tank(Material materialIn, String s) {
 		super(materialIn);
-		this.setTranslationKey(s);
-		this.setRegistryName(s);
+		setTranslationKey(s);
+		setRegistryName(s);
 		
 		ModBlocks.ALL_BLOCKS.add(this);
+	}
+
+	@Override
+	public boolean hasComparatorInputOverride(IBlockState state) {
+		return true;
+	}
+	@Override
+	public int getComparatorInputOverride(IBlockState blockState, World worldIn, BlockPos pos) {
+		TileEntity te = worldIn.getTileEntity(pos);
+		if (te instanceof TileEntityMachineUF6Tank teTank) {
+			return teTank.tank.getRedstoneComparatorPower();
+		}
+		return 0;
 	}
 	
 	@Override
 	public EnumBlockRenderType getRenderType(IBlockState state) {
-		return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
+        return EnumBlockRenderType.MODEL;
 	}
 
 	@Override
@@ -80,8 +92,6 @@ public class MachineUF6Tank extends BlockContainer implements IMultiBlock {
 	
 	@Override
 	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-		world.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
-
 		if (MultiblockHandler.checkSpace(world, pos, MultiblockHandler.uf6Dimension)) {
 			MultiblockHandler.fillUp(world, pos, MultiblockHandler.uf6Dimension, ModBlocks.dummy_block_uf6);
 
@@ -94,7 +104,7 @@ public class MachineUF6Tank extends BlockContainer implements IMultiBlock {
 	public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
 		TileEntity tileentity = worldIn.getTileEntity(pos);
 		if (tileentity instanceof TileEntityMachineUF6Tank) {
-			InventoryHelper.dropInventoryItems(worldIn, pos, (TileEntityMachineUF6Tank) tileentity);
+			InventoryHelper.dropInventoryItems(worldIn, pos, tileentity);
 			worldIn.updateComparatorOutputLevel(pos, this);
 		}
 		super.breakBlock(worldIn, pos, state);
@@ -116,17 +126,17 @@ public class MachineUF6Tank extends BlockContainer implements IMultiBlock {
 	
 	@Override
 	public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, EnumHand hand) {
-		return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
+		return getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
 	}
 
 	@Override
 	protected BlockStateContainer createBlockState() {
-		return new BlockStateContainer(this, new IProperty[] { FACING });
+		return new BlockStateContainer(this, FACING);
 	}
 
 	@Override
 	public int getMetaFromState(IBlockState state) {
-		return ((EnumFacing) state.getValue(FACING)).getIndex();
+		return state.getValue(FACING).getIndex();
 	}
 
 	@Override
@@ -137,17 +147,17 @@ public class MachineUF6Tank extends BlockContainer implements IMultiBlock {
 			enumfacing = EnumFacing.NORTH;
 		}
 
-		return this.getDefaultState().withProperty(FACING, enumfacing);
+		return getDefaultState().withProperty(FACING, enumfacing);
 	}
 
 	@Override
 	public IBlockState withRotation(IBlockState state, Rotation rot) {
-		return state.withProperty(FACING, rot.rotate((EnumFacing) state.getValue(FACING)));
+		return state.withProperty(FACING, rot.rotate(state.getValue(FACING)));
 	}
 
 	@Override
 	public IBlockState withMirror(IBlockState state, Mirror mirrorIn) {
-		return state.withRotation(mirrorIn.toRotation((EnumFacing) state.getValue(FACING)));
+		return state.withRotation(mirrorIn.toRotation(state.getValue(FACING)));
 	}
 
 }

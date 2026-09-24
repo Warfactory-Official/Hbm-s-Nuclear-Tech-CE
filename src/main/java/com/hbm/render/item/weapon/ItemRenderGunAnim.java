@@ -54,10 +54,10 @@ public class ItemRenderGunAnim extends TileEntityItemStackRenderer {
 				//GL11.glRotated(-90, 0, 1, 0);
 				//GL11.glRotated(20, 0, 0, 1);
 				//GlStateManager.translate(-0.05, -0.0, 0.1);
-				GL11.glScaled(0.25D, 0.25D, 0.25D);
-				GL11.glRotated(180, 1, 0, 0);
-				GL11.glRotated(90, 0, 1, 0);
-				GL11.glRotated(20, 0, 0, 1);
+				GlStateManager.scale(0.25D, 0.25D, 0.25D);
+				GlStateManager.rotate(180, 1, 0, 0);
+				GlStateManager.rotate(90, 0, 1, 0);
+				GlStateManager.rotate(20, 0, 0, 1);
 				GlStateManager.translate(0, -1, -0.5);
 				
 				if(item.getItem() == ModItems.gun_b92 && GunB92.getRotationFromAnim(item, Minecraft.getMinecraft().getRenderPartialTicks()) > 0) {
@@ -81,9 +81,9 @@ public class ItemRenderGunAnim extends TileEntityItemStackRenderer {
 				if(item.getItem() == ModItems.gun_b92)
 					Minecraft.getMinecraft().renderEngine.bindTexture(new ResourceLocation(Tags.MODID +":textures/models/weapons/ModelB92SM.png"));
 				
-				GL11.glScaled(0.25, 0.25, 0.25);
-				GL11.glRotated(180, 1, 0, 0);
-				GL11.glRotated(90, 0, 1, 0);
+				GlStateManager.scale(0.25, 0.25, 0.25);
+				GlStateManager.rotate(180, 1, 0, 0);
+				GlStateManager.rotate(90, 0, 1, 0);
 				GlStateManager.translate(0, -0.5, 0);
 
 

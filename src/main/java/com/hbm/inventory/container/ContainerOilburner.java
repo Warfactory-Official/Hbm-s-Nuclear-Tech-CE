@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.tileentity.machine.TileEntityHeaterOilburner;
 import com.hbm.util.InventoryUtil;
@@ -12,6 +13,11 @@ import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerOilburner extends Container {
     private final TileEntityHeaterOilburner heater;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(3)
+                                                                              .rule(0, 2, s -> !(s.getItem() instanceof IItemFluidIdentifier))
+                                                                              .rule(2, 3, s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                              .build();
 
     public ContainerOilburner(InventoryPlayer player, TileEntityHeaterOilburner heater) {
         this.heater = heater;
@@ -43,8 +49,6 @@ public class ContainerOilburner extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer playerIn, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 3,
-                s -> !(s.getItem() instanceof IItemFluidIdentifier), 2,
-                s -> s.getItem() instanceof IItemFluidIdentifier, 3);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, playerIn);
     }
 }

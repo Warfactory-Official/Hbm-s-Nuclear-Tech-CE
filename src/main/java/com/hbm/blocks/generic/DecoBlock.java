@@ -16,12 +16,8 @@ import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumBlockRenderType;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.Rotation;
+import net.minecraft.util.*;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
@@ -76,8 +72,21 @@ public class DecoBlock extends BlockContainer implements ICustomBlockHighlight, 
 
     @Override
     public @NotNull EnumBlockRenderType getRenderType(@NotNull IBlockState state) {
-        if (this == ModBlocks.steel_beam || this == ModBlocks.steel_scaffold) return EnumBlockRenderType.MODEL;
-        return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
+        return EnumBlockRenderType.MODEL;
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public @NotNull BlockRenderLayer getRenderLayer() {
+        if (this != ModBlocks.steel_beam) return BlockRenderLayer.CUTOUT;
+        return super.getRenderLayer();
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public boolean canRenderInLayer(IBlockState state, BlockRenderLayer layer) {
+        if (this != ModBlocks.steel_beam) return layer == BlockRenderLayer.CUTOUT;
+        return super.canRenderInLayer(state, layer);
     }
 
     @Override
@@ -112,8 +121,8 @@ public class DecoBlock extends BlockContainer implements ICustomBlockHighlight, 
     }
 
     @Override
-    public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-        worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing()));
+    public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
+        return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing());
     }
 
     @Override

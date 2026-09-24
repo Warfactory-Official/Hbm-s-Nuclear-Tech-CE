@@ -26,6 +26,8 @@ import com.hbm.items.special.ItemBedrockOreBase;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.render.chunk.SectionGeometry;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
@@ -40,6 +42,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.Container;
@@ -64,7 +67,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 @AutoRegister
-public class TileEntityMachineExcavator extends TileEntityMachineBase implements IEnergyReceiverMK2, IFluidStandardReceiver, ITickable, IControlReceiver, IGUIProvider, IUpgradeInfoProvider, IFluidCopiable {
+public class TileEntityMachineExcavator extends TileEntityMachineBase implements IEnergyReceiverMK2, IFluidStandardReceiver, ITickable, IControlReceiver, IGUIProvider, IUpgradeInfoProvider, IFluidCopiable, IConnectionAnchors {
 
     public static final long maxPower = 10_000_000;
     private final long baseConsumption = 10_000L;
@@ -90,13 +93,13 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
     private boolean hasNullifier = false;
     private int ticksWorked = 0;
     private int targetDepth = 0; //0 is the first block below null position
+    private int prevTargetDepth = 0;
     private boolean bedrockDrilling = false;
     private int minX = 0, minY = 0, minZ = 0, maxX = 0, maxY = 0, maxZ = 0;
-    private AxisAlignedBB bb = null;
 
     public TileEntityMachineExcavator() {
         super(14, true, true);
-        this.tank = new FluidTankNTM(Fluids.NONE, 16_000);
+        this.tank = new FluidTankNTM(Fluids.NONE, 16_000).withOwner(this);
     }
 
     // 1.7 = isOre(int x ,int y, int z, Block b)
@@ -181,12 +184,18 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 
             this.prevDrillExtension = this.drillExtension;
 
+            if (prevTargetDepth != targetDepth) {
+                prevTargetDepth = targetDepth;
+                SectionGeometry.renderBoundsChanged(this);
+            }
+
             if (this.drillExtension != this.targetDepth) {
                 float diff = Math.abs(this.drillExtension - this.targetDepth);
                 float speed = Math.max(0.15F, diff / 10F);
 
                 if (diff <= speed) {
                     this.drillExtension = this.targetDepth;
+                    SectionGeometry.renderBoundsChanged(this);
                 } else {
                     float sig = Math.signum(this.drillExtension - this.targetDepth);
                     this.drillExtension -= sig * speed;
@@ -216,7 +225,7 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
         }
     }
 
-    protected DirPos[] getConPos() {
+    public DirPos[] getConPos() {
         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
 
@@ -620,7 +629,7 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 
             ItemStack stack = ore.resource.copy();
             if (stack.getItem() == ModItems.bedrock_ore_base) {
-                ItemBedrockOreBase.setOreAmount(stack, pos.getX(), pos.getZ());
+                ItemBedrockOreBase.setOreAmount(stack, pos.getX(), pos.getZ(), 1D + this.getInstalledDrill().fortune * 0.25D);
             }
 
             List<ItemStack> stacksToSupply = Collections.singletonList(stack);
@@ -653,7 +662,7 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if (data.hasKey("drill")) this.enableDrill = !this.enableDrill;
         if (data.hasKey("walling")) this.enableWalling = !this.enableWalling;
         if (data.hasKey("veinminer")) this.enableVeinMiner = !this.enableVeinMiner;
@@ -740,10 +749,8 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
 
     @Override
     public @NotNull AxisAlignedBB getRenderBoundingBox() {
-        if (bb == null) {
-            bb = new AxisAlignedBB(pos.add(-3, 0, -3), pos.add(4, 5, 4));
-        }
-        return bb;
+        return new AxisAlignedBB(pos.getX() - 3, pos.getY() - 3 - Math.max(targetDepth, drillExtension), pos.getZ() - 3,
+                pos.getX() + 4, pos.getY() + 5, pos.getZ() + 4);
     }
 
     @Override

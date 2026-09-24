@@ -133,10 +133,8 @@ public class NTMAnvil extends BlockFalling implements IGUIProvider {
 	}
 	
 	@Override
-	public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack){
-		super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
-		EnumFacing e = placer.getHorizontalFacing().getOpposite();
-		worldIn.setBlockState(pos, state.withProperty(FACING, e));
+	public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer){
+		return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
 	}
 	
 	@Override

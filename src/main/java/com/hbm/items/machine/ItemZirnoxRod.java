@@ -41,10 +41,7 @@ public class ItemZirnoxRod extends ItemEnumMulti<ItemZirnoxRod.EnumZirnoxType> {
 
     public static int getLifeTime(ItemStack stack) {
 
-        if (!stack.hasTagCompound()) {
-            stack.setTagCompound(new NBTTagCompound());
-            return 0;
-        }
+        if (!stack.hasTagCompound()) return 0;
 
         return stack.getTagCompound().getInteger("life");
     }

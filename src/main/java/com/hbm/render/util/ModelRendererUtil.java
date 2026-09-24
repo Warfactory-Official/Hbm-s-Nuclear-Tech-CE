@@ -9,7 +9,7 @@ import com.hbm.physics.Collider;
 import com.hbm.physics.ConvexMeshCollider;
 import com.hbm.physics.GJK;
 import com.hbm.physics.RigidBody;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.render.util.Triangle.TexVertex;
 import com.hbm.util.BobMathUtil;
 import net.minecraft.client.Minecraft;
@@ -183,8 +183,8 @@ public class ModelRendererUtil {
 			for(ModelRenderer renderer : render.childModels) {
 				generateList(world, ent, scale, list, renderer, tex);
 			}
-		GL11.glScaled(scale, scale, scale);
-		GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, ClientProxy.AUX_GL_BUFFER);
+		GlStateManager.scale(scale, scale, scale);
+		GlStateManager.getFloat(GL11.GL_MODELVIEW_MATRIX, ClientProxy.AUX_GL_BUFFER);
 		Matrix4f mat = new Matrix4f();
 		mat.load(ClientProxy.AUX_GL_BUFFER);
 		ClientProxy.AUX_GL_BUFFER.rewind();
@@ -532,28 +532,28 @@ public class ModelRendererUtil {
 				colliders[i++] = dat.collider;
 			}
 			body.addColliders(colliders);
-			body.impulseVelocityDirect(new Vec3(plane[0]*scale, plane[1]*scale, plane[2]*scale), body.globalCentroid.add(0, 0, 0));
+			body.impulseVelocityDirect(new Vec3NT(plane[0]*scale, plane[1]*scale, plane[2]*scale), body.globalCentroid.add(0, 0, 0));
 			
 			//Create rendering display lists
-			int bodyDL = GL11.glGenLists(1);
-			int capDL = GL11.glGenLists(1);
+			int bodyDL = GlStateManager.glGenLists(1);
+			int capDL = GlStateManager.glGenLists(1);
 			
-			GL11.glNewList(bodyDL, GL11.GL_COMPILE);
+			GlStateManager.glNewList(bodyDL, GL11.GL_COMPILE);
 			buf.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_NORMAL);
 			for(CutModelData dat : l){
 				dat.data.tessellate(buf, true);
 			}
 			tes.draw();
-			GL11.glEndList();
+			GlStateManager.glEndList();
 			
-			GL11.glNewList(capDL, GL11.GL_COMPILE);
+			GlStateManager.glNewList(capDL, GL11.GL_COMPILE);
 			buf.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_NORMAL);
 			for(CutModelData dat : l){
 				if(dat.cap != null)
 					dat.cap.tessellate(buf, dat.flip, true);
 			}
 			tes.draw();
-			GL11.glEndList();
+			GlStateManager.glEndList();
 			
 			particles.add(new ParticleSlicedMob(ent.world, body, bodyDL, capDL, tex, capTex, capBloom));
 		}
@@ -585,8 +585,8 @@ public class ModelRendererUtil {
 		int[] lists = new int[boxes.size()];
 		int i = 0;
 		for(Pair<Matrix4f, ModelRenderer> p : boxes){
-			int list = GL11.glGenLists(1);
-			GL11.glNewList(list, GL11.GL_COMPILE);
+			int list = GlStateManager.glGenLists(1);
+			GlStateManager.glNewList(list, GL11.GL_COMPILE);
 			Tessellator tes = Tessellator.getInstance();
 			BufferBuilder buf = tes.getBuffer();
 			buf.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_NORMAL);
@@ -596,7 +596,7 @@ public class ModelRendererUtil {
 				dat.tessellate(buf, true);
 			}
 			tes.draw();
-			GL11.glEndList();
+			GlStateManager.glEndList();
 			lists[i] = list;
 			i++;
 		}

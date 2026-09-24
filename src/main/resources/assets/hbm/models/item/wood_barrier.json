@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "hbm:block/wood_barrier"
+    "layer0": "hbm:blocks/wood_barrier"
   }
 }

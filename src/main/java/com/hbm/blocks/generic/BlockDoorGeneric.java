@@ -1,7 +1,8 @@
 package com.hbm.blocks.generic;
 
-import com.hbm.api.block.IToolable.ToolType;
+import com.hbm.api.block.IToolable;
 import com.hbm.blocks.BlockDummyable;
+import com.hbm.handler.MultiblockHandlerXR;
 import com.hbm.handler.radiation.RadiationSystemNT;
 import com.hbm.interfaces.IBomb;
 import com.hbm.interfaces.IDoor;
@@ -38,7 +39,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 @Optional.InterfaceList({@Optional.Interface(iface = "micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock", modid = "galacticraftcore")})
-public class BlockDoorGeneric extends BlockDummyable implements IRadResistantBlock, IPartialSealableBlock, IBomb {
+public class BlockDoorGeneric extends BlockDummyable implements IRadResistantBlock, IPartialSealableBlock, IBomb, IToolable {
 
 	public DoorDecl type;
 	public final boolean isRadResistant;
@@ -83,6 +84,30 @@ public class BlockDoorGeneric extends BlockDummyable implements IRadResistantBlo
 	}
 
 	@Override
+	public boolean checkRequirement(World world, int x, int y, int z, ForgeDirection dir, int o) {
+		if (!super.checkRequirement(world, x, y, z, dir, o)) {
+			return false;
+		}
+
+		if(type.getExtraDimensions() != null) for(int[] dims : type.getExtraDimensions()) {
+			if (!MultiblockHandlerXR.checkSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, dims, x, y, z, dir)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	@Override
+	public void fillSpace(World world, int x, int y, int z, ForgeDirection dir, int o) {
+		MultiblockHandlerXR.fillSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, getDimensions(), this, dir);
+
+		if(type.getExtraDimensions() != null) for(int[] dims : type.getExtraDimensions()) {
+			MultiblockHandlerXR.fillSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, dims, this, dir);
+		}
+	}
+
+	@Override
 	public boolean isFullCube(IBlockState state) {
 		return false;
 	}
@@ -115,7 +140,7 @@ public class BlockDoorGeneric extends BlockDummyable implements IRadResistantBlo
 
         if (!player.isSneaking()) {
             if (door.canAccess(player)) {
-				return door.tryToggle(player);
+				return door.tryToggle();
 			}
 		}
 		return false;
@@ -229,6 +254,8 @@ public class BlockDoorGeneric extends BlockDummyable implements IRadResistantBlo
 		if(hardness > 50){
 			tooltip.add("§6" + I18nUtil.resolveKey("trait.blastres", hardness));
 		}
+		if (type.hasSkins()) // Leafia: oh my god im so stupid i could just do this
+			tooltip.add(I18nUtil.resolveKey("desc.doors_skin"));
 	}
 
     //Months later I found this joke again
@@ -241,10 +268,24 @@ public class BlockDoorGeneric extends BlockDummyable implements IRadResistantBlo
         if(!(te instanceof TileEntityDoorGeneric door)) return BombReturnCode.ERROR_INCOMPATIBLE;
         DoorDecl decl = door.getDoorType();
         if(!decl.remoteControllable()) return BombReturnCode.ERROR_INCOMPATIBLE;
-        if(door.tryToggle(null)) {
+        if(door.tryToggle()) {
             return BombReturnCode.TRIGGERED;
         }
 
         return BombReturnCode.ERROR_INCOMPATIBLE;
     }
+
+	@Override
+	public boolean onScrew(World world,EntityPlayer player,int x,int y,int z,EnumFacing side,float fX,float fY,float fZ,EnumHand hand,ToolType tool) {
+		if (tool != ToolType.SCREWDRIVER || !player.isSneaking()) return false;
+
+		BlockPos pos1 = findCore(world,new BlockPos(x,y,z));
+		if (pos1 == null) return false;
+		TileEntityDoorGeneric door = (TileEntityDoorGeneric) world.getTileEntity(pos1);
+
+		if (door == null || !door.getDoorType().hasSkins()) return false;
+		if (world.isRemote) return true;
+		door.cycleSkinIndex();
+		return true;
+	}
 }

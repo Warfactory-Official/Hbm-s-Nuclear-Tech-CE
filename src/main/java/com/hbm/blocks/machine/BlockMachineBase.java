@@ -7,12 +7,10 @@ import com.hbm.world.gen.nbt.INBTBlockTransformable;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -62,17 +60,16 @@ public class BlockMachineBase extends BlockContainer implements INBTBlockTransfo
 	}
 	
 	@Override
-	public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
+	public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
 		if(!rotatable())
-			return;
-		worldIn.setBlockState(pos, state.withProperty(BlockHorizontal.FACING, placer.getHorizontalFacing().getOpposite()));
-		super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
+			return super.getStateForPlacement(worldIn, pos, facing, hitX, hitY, hitZ, meta, placer);
+		return this.getDefaultState().withProperty(BlockHorizontal.FACING, placer.getHorizontalFacing().getOpposite());
 	}
 	
 	@Override
 	protected BlockStateContainer createBlockState() {
 		if(rotatable()){
-			return new BlockStateContainer(this, new IProperty[]{BlockHorizontal.FACING});
+			return new BlockStateContainer(this, BlockHorizontal.FACING);
 		}
 		return super.createBlockState();
 	}
@@ -81,7 +78,7 @@ public class BlockMachineBase extends BlockContainer implements INBTBlockTransfo
 	public int getMetaFromState(IBlockState state) {
 		if(!rotatable())
 			return 0;
-		return ((EnumFacing)state.getValue(BlockHorizontal.FACING)).getIndex();
+		return state.getValue(BlockHorizontal.FACING).getIndex();
 	}
 	
 	@Override

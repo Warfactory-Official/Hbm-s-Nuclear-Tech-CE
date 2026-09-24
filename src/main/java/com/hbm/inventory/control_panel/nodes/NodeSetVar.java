@@ -1,12 +1,13 @@
 package com.hbm.inventory.control_panel.nodes;
 
 import com.hbm.inventory.control_panel.*;
-import com.hbm.inventory.control_panel.DataValue.DataType;
+import com.hbm.inventory.control_panel.types.DataValue;
+import com.hbm.inventory.control_panel.types.DataValue.DataType;
 import com.hbm.inventory.control_panel.modular.StockNodesRegister;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.List;
 import java.util.Map;
 
 public class NodeSetVar extends NodeOutput {
@@ -52,7 +53,6 @@ public class NodeSetVar extends NodeOutput {
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound tag, NodeSystem sys){
 		tag.setString("nodeType", "setVar");
-		tag.setInteger("controlIdx", sys.parent.panel.controls.indexOf(sys.parent));
 		tag.setBoolean("global", global);
 		tag.setString("varName", varName);
 		return super.writeToNBT(tag, sys);
@@ -63,6 +63,7 @@ public class NodeSetVar extends NodeOutput {
 		global = tag.getBoolean("global");
 		varName = tag.getString("varName");
 		super.readFromNBT(tag, sys);
+		refreshVariableReference();
 	}
 
 	public void setVarSelector(){
@@ -79,24 +80,35 @@ public class NodeSetVar extends NodeOutput {
 	}
 	
 	@Override
-	public boolean doOutput(IControllable from, Map<String, NodeSystem> sendNodeMap, List<BlockPos> positions){
+	public boolean doOutput(IControllable from, Map<String, NodeSystem> sendNodeMap, Map<String,BlockPos> positions){
 		if(varName.isEmpty())
-			return false;
+			return true;
 		if(global){
 			ctrl.panel.globalVars.put(varName, inputs.get(0).evaluate());
 		} else {
 			ctrl.vars.put(varName, inputs.get(0).evaluate());
 		}
-		return false;
+		return true;
 	}
 
 	public NodeSetVar setData(String varName, boolean isGlobal) {
 		this.varName = varName;
 		this.global = isGlobal;
-		DataValue val = global ? ctrl.getGlobalVar(varName) : ctrl.getVar(varName);
+		refreshVariableReference();
+		return this;
+	}
+
+	private void refreshVariableReference() {
+		setVarSelector();
+		if(varName.isEmpty()) {
+			return;
+		}
+		DataValue val = global ? ctrl.panel.globalVars.get(varName) : ctrl.vars.get(varName);
+		if(val == null) {
+			return;
+		}
 		this.inputs.get(0).type = val.getType();
 		this.inputs.get(0).setDefault(val);
-		return this;
 	}
 
 

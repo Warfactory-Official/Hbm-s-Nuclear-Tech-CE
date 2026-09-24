@@ -1,54 +1,61 @@
 package com.hbm.items.machine;
 
 import com.hbm.items.ISatChip;
-import com.hbm.items.ItemBakedBase;
+import com.hbm.items.ItemEnumMulti;
 import com.hbm.items.ModItems;
+import com.hbm.util.EnumUtil;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class ItemSatellite extends ItemBakedBase implements ISatChip {
+public class ItemSatellite extends ItemEnumMulti<ItemSatellite.EnumSatType> implements ISatChip {
 
 	public ItemSatellite(String s) {
-		super(s);
+		super(s, EnumSatType.VALUES, true, true);
 	}
-	
-	@Override
-	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
-		super.addInformation(stack, worldIn, list, flagIn);
-		list.add(I18nUtil.resolveKey("desc.satellitefr", getFreq(stack)));
 
-		if(this == ModItems.sat_foeq)
-			list.add(I18nUtil.resolveKey("satchip.foeq"));
+	public enum EnumSatType {
+		SPY("satchip.mapper"),
+		SCANNER("satchip.scanner"),
+		RADAR("satchip.radar"),
+		MINER_ASTRO("satchip.miner"),
+		MINER_LUNAR("satchip.lunar_miner"),
+		PRECISION_LASER("satchip.precision_laser"),
+		DEATH_RAY("satchip.laser"),
+		XENIUM_RESONATOR("satchip.resonator"),
+		RELAY("satchip.foeq"),
+		DETECTOR("satchip.detector"),
+		RAY_SCAN("satchip.ray_scanner"),
+		SCIENCE("satchip.science"),
+		SCIENCE_ASSEMBLER("satchip.science_assembler"),
+		SCIENCE_SENSOR("satchip.science_sensor");
 
-		if (this == ModItems.sat_gerald) {
-			String[] lines = I18nUtil.resolveKeyArray("satchip.gerald.desc");
-			list.addAll(Arrays.asList(lines));
+		public final String descKey;
+
+		EnumSatType(String descKey) {
+			this.descKey = descKey;
 		}
 
-		if(this == ModItems.sat_laser)
-			list.add(I18nUtil.resolveKey("satchip.laser"));
+		public static final EnumSatType[] VALUES = values();
+	}
 
-		if(this == ModItems.sat_mapper)
-			list.add(I18nUtil.resolveKey("satchip.mapper"));
+	public static ItemStack make(EnumSatType type) {
+		return new ItemStack(ModItems.satellite, 1, type.ordinal());
+	}
 
-		if(this == ModItems.sat_miner)
-			list.add(I18nUtil.resolveKey("satchip.miner"));
+	public static EnumSatType getType(ItemStack stack) {
+		return EnumUtil.grabEnumSafely(EnumSatType.VALUES, stack.getItemDamage());
+	}
 
-		if(this == ModItems.sat_lunar_miner)
-			list.add(I18nUtil.resolveKey("satchip.lunar_miner"));
-
-		if(this == ModItems.sat_radar)
-			list.add(I18nUtil.resolveKey("satchip.radar"));
-
-		if(this == ModItems.sat_resonator)
-			list.add(I18nUtil.resolveKey("satchip.resonator"));
-
-		if(this == ModItems.sat_scanner)
-			list.add(I18nUtil.resolveKey("satchip.scanner"));
+	@Override
+	public void addInformation(ItemStack stack, World world, List<String> list, ITooltipFlag flag) {
+		super.addInformation(stack, world, list, flag);
+		list.add(TextFormatting.AQUA + I18nUtil.resolveKey("satchip.frequency") + ": " + getFreq(stack));
+		list.addAll(Arrays.asList(I18nUtil.resolveKeyArray(getType(stack).descKey)));
 	}
 }

@@ -1,10 +1,9 @@
 package com.hbm.particle;
 
 import com.hbm.Tags;
-import com.hbm.render.loader.HFRWavefrontObject;
 import com.hbm.main.MainRegistry;
+import com.hbm.main.ResourceManager;
 import com.hbm.particle.helper.SkeletonCreator;
-import com.hbm.render.loader.IModelCustom;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -27,7 +26,6 @@ public class ParticleSkeleton extends Particle {
     public static final ResourceLocation texture_ext = new ResourceLocation(Tags.MODID + ":textures/particle/skoilet.png");
     public static final ResourceLocation texture_blood = new ResourceLocation(Tags.MODID + ":textures/particle/skeleton_blood.png");
     public static final ResourceLocation texture_blood_ext = new ResourceLocation(Tags.MODID + ":textures/particle/skoilet_blood.png");
-    public static final IModelCustom skeleton = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/effect/skeleton.obj")).asVBO();
     protected SkeletonCreator.EnumSkeletonType type;
 
     public ResourceLocation useTexture;
@@ -161,19 +159,19 @@ public class ParticleSkeleton extends Particle {
         switch (type) {
             case SKULL:
                 this.textureManager.bindTexture(useTexture);
-                skeleton.renderPart("Skull");
+                ResourceManager.skeleton.renderPart("Skull");
                 break;
             case TORSO:
                 this.textureManager.bindTexture(useTexture);
-                skeleton.renderPart("Torso");
+                ResourceManager.skeleton.renderPart("Torso");
                 break;
             case LIMB:
                 this.textureManager.bindTexture(useTexture);
-                skeleton.renderPart("Limb");
+                ResourceManager.skeleton.renderPart("Limb");
                 break;
             case SKULL_VILLAGER:
                 this.textureManager.bindTexture(useTextureExt);
-                skeleton.renderPart("SkullVillager");
+                ResourceManager.skeleton.renderPart("SkullVillager");
                 break;
         }
 

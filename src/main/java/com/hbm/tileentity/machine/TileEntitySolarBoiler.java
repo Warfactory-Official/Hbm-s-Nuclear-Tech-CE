@@ -34,8 +34,8 @@ public class TileEntitySolarBoiler extends TileEntityLoadedBase implements IBufP
     public TileEntitySolarBoiler() {
         super();
         tanks = new FluidTankNTM[2];
-        tanks[0] = new FluidTankNTM(Fluids.WATER, 16000);
-        tanks[1] = new FluidTankNTM(Fluids.STEAM, 1600000);
+        tanks[0] = new FluidTankNTM(Fluids.WATER, 16000).withOwner(this);
+        tanks[1] = new FluidTankNTM(Fluids.STEAM, 1600000).withOwner(this);
     }
 
     @Override
@@ -96,6 +96,15 @@ public class TileEntitySolarBoiler extends TileEntityLoadedBase implements IBufP
         tanks[0].writeToNBT(nbt, "tank0");
         tanks[1].writeToNBT(nbt, "tank1");
         return nbt;
+    }
+
+    @Override
+    public void serializeInitial(ByteBuf buf) {
+        super.serialize(buf);
+        buf.writeInt(this.heat);
+        buf.writeInt(this.heatInput);
+        this.tanks[0].serialize(buf);
+        this.tanks[1].serialize(buf);
     }
 
     @Override

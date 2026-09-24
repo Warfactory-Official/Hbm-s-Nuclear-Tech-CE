@@ -26,7 +26,7 @@ public class SoyuzLauncherPronter {
 		GlStateManager.pushMatrix();
 			tex.bindTexture(ResourceManager.soyuz_launcher_tower_tex);
 			GlStateManager.translate(0, 5.5, 5.5);
-			GL11.glRotated(rot, 1, 0, 0);
+			GlStateManager.rotate((float) (rot), 1, 0, 0);
 			GlStateManager.translate(0, -5.5, -5.5);
 			ResourceManager.soyuz_launcher_tower.renderAll();
 		GlStateManager.popMatrix();
@@ -37,7 +37,7 @@ public class SoyuzLauncherPronter {
 		GlStateManager.pushMatrix();
 			tex.bindTexture(ResourceManager.soyuz_launcher_support_tex);
 			GlStateManager.translate(0, 5.5, -6.5);
-			GL11.glRotated(rot, -1, 0, 0);
+			GlStateManager.rotate((float) (rot), -1, 0, 0);
 			GlStateManager.translate(0, -5.5, 6.5);
 			ResourceManager.soyuz_launcher_support.renderAll();
 		GlStateManager.popMatrix();

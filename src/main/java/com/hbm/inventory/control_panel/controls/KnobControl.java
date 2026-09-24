@@ -1,5 +1,9 @@
 package com.hbm.inventory.control_panel.controls;
 
+import com.hbm.inventory.control_panel.controls.configs.SubElementBaseConfig;
+import com.hbm.inventory.control_panel.controls.configs.SubElementKnobControl;
+import com.hbm.inventory.control_panel.types.DataValue;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
 import com.hbm.render.loader.WaveFrontObjectVAO;
 import com.hbm.inventory.control_panel.*;
 import com.hbm.inventory.control_panel.nodes.*;
@@ -22,10 +26,16 @@ public class KnobControl extends Control {
 
     private int positions = 2;
 
-    public KnobControl(String name, ControlPanel panel) {
-        super(name, panel);
+    public KnobControl(String name,String registryName,ControlPanel panel) {
+        super(name,registryName, panel);
         vars.put("value", new DataValueFloat(0));
         configMap.put("positions", new DataValueFloat(positions));
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public SubElementBaseConfig getConfigSubElement(GuiControlEdit gui,Map<String,DataValue> configs) {
+        return new SubElementKnobControl(gui,configs);
     }
 
     @Override
@@ -39,9 +49,7 @@ public class KnobControl extends Control {
     }
 
     @Override
-    public void applyConfigs(Map<String, DataValue> configs) {
-        super.applyConfigs(configs);
-
+    protected void onConfigMapChanged() {
         for (Map.Entry<String, DataValue> e : configMap.entrySet()) {
             switch (e.getKey()) {
                 case "positions": {
@@ -118,7 +126,7 @@ public class KnobControl extends Control {
     public void populateDefaultNodes(List<ControlEvent> receiveEvents) {
         NodeSystem ctrl_press = new NodeSystem(this);
         {
-            Map<String, DataValue> vars = new HashMap<>(receiveEvents.get(0).vars);
+            Map<String,DataValue> vars = new HashMap<>(receiveEvents.get(0).vars);
             vars.put("from index", new DataValueFloat(0));
             NodeInput node0 = new NodeInput(170, 100, "Event Data").setVars(vars);
             ctrl_press.addNode(node0);
@@ -147,8 +155,7 @@ public class KnobControl extends Control {
 
     @Override
     public Control newControl(ControlPanel panel) {
-        return new KnobControl(name, panel);
-
+        return new KnobControl(name,registryName,panel);
     }
 
 }

@@ -41,7 +41,7 @@ public class FT_Combustible extends FluidTrait {
 		return this.fuelGrade;
 	}
 	
-	public static enum FuelGrade {
+	public enum FuelGrade {
 		LOW("trait.combustable.low"),			//heating and industrial oil				< star engine, iGen
 		MEDIUM("trait.combustable.medium"),	//petroil									< diesel generator
 		HIGH("trait.combustable.high"),		//diesel, gasoline							< HP engine
@@ -50,9 +50,9 @@ public class FT_Combustible extends FluidTrait {
 
         public static final FuelGrade[] VALUES = values();
 		
-		private String grade;
+		private final String grade;
 		
-		private FuelGrade(String grade) {
+		FuelGrade(String grade) {
 			this.grade = grade;
 		}
 		

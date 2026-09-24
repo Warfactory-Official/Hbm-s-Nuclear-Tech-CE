@@ -3,6 +3,7 @@ package com.hbm.core;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.*;
+import org.spongepowered.asm.transformers.MixinClassWriter;
 
 import static com.hbm.core.HbmCorePlugin.coreLogger;
 import static com.hbm.core.HbmCorePlugin.fail;
@@ -38,7 +39,7 @@ final class GlStateManagerTransformer {
             patchRotate(classNode);
             patchBlendFunc(classNode);
 
-            ClassWriter writer = new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+            ClassWriter writer = new MixinClassWriter(classReader, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
             classNode.accept(writer);
             return writer.toByteArray();
         } catch (Throwable t) {

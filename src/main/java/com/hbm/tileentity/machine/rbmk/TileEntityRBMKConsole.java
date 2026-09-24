@@ -4,6 +4,7 @@ import com.hbm.handler.CompatHandler;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.gui.GUIRBMKConsole;
+import com.hbm.items.machine.ItemRBMKRod;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.tileentity.machine.rbmk.RBMKColumn.ColumnType;
@@ -17,7 +18,9 @@ import li.cil.oc.api.machine.Context;
 import li.cil.oc.api.network.SimpleComponent;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
@@ -37,6 +40,7 @@ import java.util.*;
 @AutoRegister
 public class TileEntityRBMKConsole extends TileEntityMachineBase implements IControlReceiver, IGUIProvider, ITickable, SimpleComponent, CompatHandler.OCComponent {
 
+    private AxisAlignedBB bb;
     public static final int fluxDisplayBuffer = 60;
     public int[] fluxBuffer = new int[fluxDisplayBuffer];
     // one-dimensional for simpler (de)serialization
@@ -48,7 +52,7 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
     private byte rotation;
 
     public TileEntityRBMKConsole() {
-        super(0);
+        super(0, false, false);
         for (int i = 0; i < screens.length; i++) {
             screens[i] = new RBMKScreen();
         }
@@ -227,7 +231,7 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if (data.hasKey("level")) {
             Set<String> keys = data.getKeySet();
             for (String key : keys) {
@@ -301,8 +305,9 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
     }
 
     @Override
-    public AxisAlignedBB getRenderBoundingBox() {
-        return new AxisAlignedBB(pos.getX() - 2, pos.getY(), pos.getZ() - 2, pos.getX() + 3, pos.getY() + 4, pos.getZ() + 3);
+    public @NotNull AxisAlignedBB getRenderBoundingBox() {
+        if (bb == null) bb = new AxisAlignedBB(pos.getX() - 2, pos.getY(), pos.getZ() - 2, pos.getX() + 3, pos.getY() + 4, pos.getZ() + 3);
+        return bb;
     }
 
     @Override
@@ -477,12 +482,26 @@ public class TileEntityRBMKConsole extends TileEntityMachineBase implements ICon
                 data_table.put("requiredFlux", irradiationChannel.duration);
             }
             if(te instanceof TileEntityRBMKCooler coolingChannel){
-                data_table.put("degreesCooledPerTick", coolingChannel.lastCooled);
-                data_table.put("cryogel", coolingChannel.tank.getFluidAmount());
+                data_table.put("coolant", coolingChannel.getAllTanks()[0].getFill());
+                data_table.put("coolantMax", coolingChannel.getAllTanks()[0].getMaxFill());
+                data_table.put("hotcoolant", coolingChannel.getAllTanks()[1].getFill());
+                data_table.put("hotcoolantMax", coolingChannel.getAllTanks()[1].getMaxFill());
             }
             if (te instanceof TileEntityRBMKHeater heaterChannel) {
                 data_table.put("coolant", heaterChannel.feed.getFill());
                 data_table.put("hotcoolant", heaterChannel.steam.getFill());
+            }
+
+            if (te instanceof TileEntityRBMKStorage storageChannel) {
+                for (int k = 0; k < 12; k++) {
+                    ItemStack loadedItem = storageChannel.inventory.getStackInSlot(k);
+                    if (loadedItem.isEmpty() || !(loadedItem.getItem() instanceof ItemRBMKRod)) continue;
+                    data_table.put("slot" + k + "coreSkinTemp", ItemRBMKRod.getHullHeat(loadedItem));
+                    data_table.put("slot" + k + "coreTemp", ItemRBMKRod.getCoreHeat(loadedItem));
+                    data_table.put("slot" + k + "enrichment", ItemRBMKRod.getEnrichment(loadedItem));
+                    data_table.put("slot" + k + "xenon", ItemRBMKRod.getPoisonLevel(loadedItem));
+                    data_table.put("slot" + k + "rodName", loadedItem.getItem().getTranslationKey());
+                }
             }
 
             return new Object[]{data_table};

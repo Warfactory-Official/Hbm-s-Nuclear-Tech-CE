@@ -32,6 +32,11 @@ public class ImpactWorldHandler {
 			return;
 		}
 
+		TomSaveData data = TomSaveData.forWorld(world);
+
+		if (data.dust <= 0 && data.fire <= 0)
+			return;
+
         ChunkProviderServer chunkProvider = serv.getChunkProvider();
 		List<Chunk> loadedChunks = chunkProvider.getLoadedChunks().stream().collect(Collectors.toList());
 		int listSize = loadedChunks.size();
@@ -51,7 +56,6 @@ public class ImpactWorldHandler {
 						int Z = coord.getZStart() + z;
 						int Y = world.getHeight(new BlockPos(X, 0, Z)).getY() - world.rand.nextInt(Math.max(1, world.getHeight(new BlockPos(X, 0, Z)).getY()));
 
-						TomSaveData data = TomSaveData.forWorld(world);
 						BlockPos pos = new BlockPos(X, Y, Z);
 
 						if (data.dust > 0) {
@@ -88,14 +92,14 @@ public class ImpactWorldHandler {
 	public static void burn(World world, BlockPos pos) {
 
 		Block b = world.getBlockState(pos).getBlock();
-		if(b.isFlammable(world, pos, EnumFacing.UP) && world.getBlockState(pos.up()) == Blocks.AIR && world.getLightFor(EnumSkyBlock.SKY, pos.up()) >= 7) {
+		if(b.isFlammable(world, pos, EnumFacing.UP) && world.isAirBlock(pos.up()) && world.getLightFor(EnumSkyBlock.SKY, pos.up()) >= 7) {
 			if(b instanceof BlockLeaves || b instanceof BlockBush) {
 				world.setBlockToAir(pos);
 			}
 			world.setBlockState(pos.up(), Blocks.FIRE.getDefaultState());
-			
+
 		} else if((b == Blocks.GRASS || b == Blocks.MYCELIUM || b == ModBlocks.waste_earth || b == ModBlocks.frozen_grass || b == ModBlocks.waste_mycelium) &&
-				!world.provider.canDoLightning(new Chunk(world, pos.getX(), pos.getZ())) && world.getLightFor(EnumSkyBlock.SKY, pos.up()) >= 7) {
+				!world.isRainingAt(pos) && world.getLightFor(EnumSkyBlock.SKY, pos.up()) >= 7) {
 			world.setBlockState(pos, ModBlocks.burning_earth.getDefaultState());
 			
 		} else if(b == ModBlocks.frozen_dirt && world.getLightFor(EnumSkyBlock.SKY, pos.up()) >= 7) {

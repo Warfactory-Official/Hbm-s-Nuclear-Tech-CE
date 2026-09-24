@@ -90,7 +90,7 @@ public class MachineStirling extends BlockDummyable implements ILookOverlay, ITo
             TileEntityStirling stirling = (TileEntityStirling) world.getTileEntity(new BlockPos(pos[0], pos[1], pos[2]));
             int meta = stirling.getGeatMeta();
 
-            if (!stirling.hasCog && player.getHeldItem(EnumHand.MAIN_HAND) != null && player.getHeldItem(EnumHand.MAIN_HAND).getItem() == ModItems.gear_large && player.getHeldItem(EnumHand.MAIN_HAND).getItemDamage() == meta) {
+            if (!stirling.hasCog && !player.getHeldItem(EnumHand.MAIN_HAND).isEmpty() && player.getHeldItem(EnumHand.MAIN_HAND).getItem() == ModItems.gear_large && player.getHeldItem(EnumHand.MAIN_HAND).getItemDamage() == meta) {
                 player.getHeldItem(EnumHand.MAIN_HAND).shrink(1);
                 stirling.hasCog = true;
                 stirling.markDirty();

@@ -4,7 +4,7 @@ import com.hbm.main.ResourceManager;
 import com.hbm.particle.ParticleBatchRenderer;
 import com.hbm.physics.RigidBody;
 import com.hbm.render.NTMRenderHelper;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.util.BobMathUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
@@ -27,7 +27,7 @@ public class ParticleMobGib extends Particle {
 	public int displayList;
 	
 	public ParticleMobGib(World worldIn, RigidBody body, ResourceLocation texture, int dl) {
-		super(worldIn, body.globalCentroid.xCoord, body.globalCentroid.yCoord, body.globalCentroid.zCoord);
+		super(worldIn, body.globalCentroid.x, body.globalCentroid.y, body.globalCentroid.z);
 		this.body = body;
 		this.texture = texture;
 		this.blood = ResourceManager.blood_decals[rand.nextInt(ResourceManager.blood_decals.length)];
@@ -38,9 +38,9 @@ public class ParticleMobGib extends Particle {
 	@Override
 	public void onUpdate() {
 		body.minecraftTimestep();
-		this.posX = body.globalCentroid.xCoord;
-		this.posY = body.globalCentroid.yCoord;
-		this.posZ = body.globalCentroid.zCoord;
+		this.posX = body.globalCentroid.x;
+		this.posY = body.globalCentroid.y;
+		this.posZ = body.globalCentroid.z;
 		if(rand.nextFloat() < 0.4){
 			float randScale = 0.5F;
 			float randPosX = (rand.nextFloat()-0.5F)*randScale;
@@ -58,7 +58,7 @@ public class ParticleMobGib extends Particle {
 		this.particleAge ++;
 		if(particleAge >= particleMaxAge){
 			setExpired();
-			GL11.glDeleteLists(displayList, 1);
+			GlStateManager.glDeleteLists(displayList, 1);
 		}
 	}
 	
@@ -87,17 +87,17 @@ public class ParticleMobGib extends Particle {
 		Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
 		NTMRenderHelper.resetParticleInterpPos(entityIn, partialTicks);
 		NTMRenderHelper.resetColor();
-		body.doGlTransform(new Vec3(interpPosX, interpPosY, interpPosZ), partialTicks);
+		body.doGlTransform(new Vec3NT(interpPosX, interpPosY, interpPosZ), partialTicks);
 		GlStateManager.color(0.9F, 0.6F, 0.6F, 1F);
-		GL11.glCallList(displayList);
+		GlStateManager.callList(displayList);
 		GlStateManager.enableBlend();
 		GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA);
 		GlStateManager.enablePolygonOffset();
 		GlStateManager.doPolygonOffset(-1, -1);
 		Minecraft.getMinecraft().getTextureManager().bindTexture(blood);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+		GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 		GlStateManager.color(0.5F, 0, 0, 0.8F);
-		GL11.glCallList(displayList);
+		GlStateManager.callList(displayList);
 		GlStateManager.color(1, 1, 1, 1);
 		GlStateManager.disablePolygonOffset();
 		GlStateManager.disableBlend();

@@ -2,6 +2,8 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.fluidmk2.FluidNode;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.capability.NTMFluidHandlerWrapper;
 import com.hbm.handler.CompatHandler;
@@ -11,16 +13,12 @@ import com.hbm.inventory.container.ContainerBarrel;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.inventory.fluid.trait.FT_Corrosive;
 import com.hbm.inventory.gui.GUIBarrel;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
-import com.hbm.tileentity.IFluidCopiable;
-import com.hbm.tileentity.IGUIProvider;
-import com.hbm.tileentity.IPersistentNBT;
-import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.tileentity.*;
 import com.hbm.uninos.UniNodespace;
 import io.netty.buffer.ByteBuf;
 import li.cil.oc.api.machine.Arguments;
@@ -28,6 +26,7 @@ import li.cil.oc.api.machine.Callback;
 import li.cil.oc.api.machine.Context;
 import li.cil.oc.api.network.SimpleComponent;
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
@@ -38,6 +37,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
@@ -56,17 +56,16 @@ import java.util.HashSet;
 
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 @AutoRegister
-public class TileEntityBarrel extends TileEntityMachineBase implements
-        ITickable, IPersistentNBT, IFluidCopiable,
-        IFluidStandardTransceiverMK2, SimpleComponent,
-        CompatHandler.OCComponent, IFFtoNTMF, IGUIProvider {
+public class TileEntityBarrel extends TileEntityMachineBase implements ITickable, IPersistentNBT, IFluidCopiable, IFluidStandardTransceiverMK2, SimpleComponent, CompatHandler.OCComponent, IFFtoNTMF, IGUIProvider, IRORValueProvider, IRORInteractive, IConnectionAnchors {
 
     public static final short modes = 4;
     private static final int[] slots_top = new int[]{2};
     private static final int[] slots_bottom = new int[]{3, 5};
     private static final int[] slots_side = new int[]{4};
     private static boolean converted = false;
+    private AxisAlignedBB bb;
     protected FluidNode node;
+    public byte lastRedstone = 0;
     protected FluidType lastType;
     public FluidTank tank;
     public FluidTankNTM tankNew;
@@ -75,20 +74,20 @@ public class TileEntityBarrel extends TileEntityMachineBase implements
     public short mode = 0;
     private int age = 0;
     // Th3_Sl1ze: Ugh. Maybe there's a smarter way to convert fluids from forge tank to NTM tank but I don't know any other client-seamless methods.
-    private Fluid oldFluid =Fluids.NONE.getFF();;
+    private Fluid oldFluid = Fluids.NONE.getFF();
     private boolean shouldDrop = true;
 
     public TileEntityBarrel() {
-        super(6);
+        super(6, true, false);
         tank = new FluidTank(-1);
-        tankNew = new FluidTankNTM(Fluids.NONE, 0);
+        tankNew = new FluidTankNTM(Fluids.NONE, 0).withOwner(this);
         converted = true;
     }
 
     public TileEntityBarrel(int cap) {
-        super(6);
+        super(6, true, false);
         tank = new FluidTank(cap);
-        tankNew = new FluidTankNTM(Fluids.NONE, cap);
+        tankNew = new FluidTankNTM(Fluids.NONE, cap).withOwner(this);
     }
 
     @Override
@@ -103,83 +102,98 @@ public class TileEntityBarrel extends TileEntityMachineBase implements
     public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY) {
             if (facing == EnumFacing.UP) {
-                return CapabilityFluidHandler.
-                        FLUID_HANDLER_CAPABILITY.
-                        cast(new NTMFluidHandlerWrapper(this) {
-                                 @Override
-                                 public int fill(FluidStack resource, boolean doFill) {
-                                     if (mode == 0 || mode == 1)
-                                         return super.fill(resource, doFill);
-                                     return 0;
-                                 }
+                return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(new NTMFluidHandlerWrapper(this) {
+                    @Override
+                    public int fill(FluidStack resource, boolean doFill) {
+                        if (mode == 0 || mode == 1) return super.fill(resource, doFill);
+                        return 0;
+                    }
 
-                                 @Override
-                                 public FluidStack drain(FluidStack resource, boolean doDrain) {
-                                     return null;
-                                 }
+                    @Override
+                    public FluidStack drain(FluidStack resource, boolean doDrain) {
+                        return null;
+                    }
 
-                                 @Override
-                                 public FluidStack drain(int maxDrain, boolean doDrain) {
-                                     return null;
-                                 }
-                             }
-                        );
+                    @Override
+                    public FluidStack drain(int maxDrain, boolean doDrain) {
+                        return null;
+                    }
+
+                    @Override
+                    protected boolean canFillExternally() {
+                        return mode == 0 || mode == 1;
+                    }
+
+                    @Override
+                    protected boolean canDrainExternally() {
+                        return false; // the up face never drains, see drain() above
+                    }
+                });
 
             } else if (facing == EnumFacing.DOWN) {
 
-                return CapabilityFluidHandler.
-                        FLUID_HANDLER_CAPABILITY.
-                        cast(new NTMFluidHandlerWrapper(this) {
-                                 @Override
-                                 public int fill(FluidStack resource, boolean doFill) {
-                                     return 0;
-                                 }
+                return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(new NTMFluidHandlerWrapper(this) {
+                    @Override
+                    public int fill(FluidStack resource, boolean doFill) {
+                        return 0;
+                    }
 
-                                 @Override
-                                 public FluidStack drain(FluidStack resource, boolean doDrain) {
+                    @Override
+                    public FluidStack drain(FluidStack resource, boolean doDrain) {
 
-                                     if (mode == 2 || mode == 1)
-                                         return super.drain(resource, doDrain);
-                                     return null;
-                                 }
+                        if (mode == 2 || mode == 1) return super.drain(resource, doDrain);
+                        return null;
+                    }
 
-                                 @Override
-                                 public FluidStack drain(int maxDrain, boolean doDrain) {
-                                     if (mode == 2 || mode == 1)
-                                         return super.drain(maxDrain, doDrain);
-                                     return null;
-                                 }
-                             }
-                        );
+                    @Override
+                    public FluidStack drain(int maxDrain, boolean doDrain) {
+                        if (mode == 2 || mode == 1) return super.drain(maxDrain, doDrain);
+                        return null;
+                    }
+
+                    @Override
+                    protected boolean canFillExternally() {
+                        return false; // the down face never fills, see fill() above
+                    }
+
+                    @Override
+                    protected boolean canDrainExternally() {
+                        return mode == 2 || mode == 1;
+                    }
+                });
 
             } else {
 
-                return CapabilityFluidHandler.
-                        FLUID_HANDLER_CAPABILITY.
-                        cast(new NTMFluidHandlerWrapper(this) {
-                                 @Override
-                                 public int fill(FluidStack resource, boolean doFill) {
-                                     if (mode == 0 || mode == 1)
-                                         return super.fill(resource, doFill);
-                                     return 0;
-                                 }
+                return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(new NTMFluidHandlerWrapper(this) {
+                    @Override
+                    public int fill(FluidStack resource, boolean doFill) {
+                        if (mode == 0 || mode == 1) return super.fill(resource, doFill);
+                        return 0;
+                    }
 
-                                 @Override
-                                 public FluidStack drain(FluidStack resource, boolean doDrain) {
+                    @Override
+                    public FluidStack drain(FluidStack resource, boolean doDrain) {
 
-                                     if (mode == 2 || mode == 1)
-                                         return super.drain(resource, doDrain);
-                                     return null;
-                                 }
+                        if (mode == 2 || mode == 1) return super.drain(resource, doDrain);
+                        return null;
+                    }
 
-                                 @Override
-                                 public FluidStack drain(int maxDrain, boolean doDrain) {
-                                     if (mode == 2 || mode == 1)
-                                         return super.drain(maxDrain, doDrain);
-                                     return null;
-                                 }
-                             }
-                        );
+                    @Override
+                    public FluidStack drain(int maxDrain, boolean doDrain) {
+                        if (mode == 2 || mode == 1) return super.drain(maxDrain, doDrain);
+                        return null;
+                    }
+
+                    @Override
+                    protected boolean canFillExternally() {
+                        return mode == 0 || mode == 1;
+                    }
+
+                    @Override
+                    protected boolean canDrainExternally() {
+                        return mode == 2 || mode == 1;
+                    }
+                });
 
             }
 
@@ -191,6 +205,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements
 
     @Override
     public long getDemand(FluidType type, int pressure) {
+        if (this.tilted) return 0;
         if (this.mode == 2 || this.mode == 3) return 0;
 
         if (tankNew.getPressure() != pressure) return 0;
@@ -221,43 +236,51 @@ public class TileEntityBarrel extends TileEntityMachineBase implements
             tankNew.loadTank(2, 3, inventory);
             tankNew.unloadTank(4, 5, inventory);
 
+            // Redstone Comparator Check
+            byte comp = tankNew.getRedstoneComparatorPower();
+            if(comp != this.lastRedstone) {
+                this.markDirty();
+                for(DirPos pos : getConPos()) this.updateRedstoneComparatorConnection(pos);
+            }
+            this.lastRedstone = comp;
+
             // In buffer mode, acts like a pipe block, providing fluid to its own node
             // otherwise, it is a regular providing/receiving machine, blocking further propagation
-            if(mode == 1) {
-                if(this.node == null || this.node.expired || tankNew.getTankType() != lastType) {
+            if (mode == 1) {
+                if (this.node == null || this.node.expired || tankNew.getTankType() != lastType) {
 
                     this.node = (FluidNode) UniNodespace.getNode(world, pos, tankNew.getTankType().getNetworkProvider());
 
-                    if(this.node == null || this.node.expired || tankNew.getTankType() != lastType) {
+                    if (this.node == null || this.node.expired || tankNew.getTankType() != lastType) {
                         this.node = this.createNode(tankNew.getTankType());
                         UniNodespace.createNode(world, this.node);
                         lastType = tankNew.getTankType();
                     }
                 }
 
-                if(node != null && node.hasValidNet()) {
+                if (node != null && node.hasValidNet()) {
                     node.net.addProvider(this);
                     node.net.addReceiver(this);
                 }
             } else {
-                if(this.node != null) {
+                if (this.node != null) {
                     UniNodespace.destroyNode(world, pos, tankNew.getTankType().getNetworkProvider());
                     this.node = null;
                 }
 
-                for(DirPos pos : getConPos()) {
+                if (!this.tilted) for (DirPos pos : getConPos()) {
                     FluidNode dirNode = (FluidNode) UniNodespace.getNode(world, pos.getPos(), tankNew.getTankType().getNetworkProvider());
 
-                    if(mode == 2) {
+                    if (mode == 2) {
                         tryProvide(tankNew, world, pos.getPos(), pos.getDir());
                     } else {
-                        if(dirNode != null && dirNode.hasValidNet()) dirNode.net.removeProvider(this);
+                        if (dirNode != null && dirNode.hasValidNet()) dirNode.net.removeProvider(this);
                     }
 
-                    if(mode == 0) {
-                        if(dirNode != null && dirNode.hasValidNet()) dirNode.net.addReceiver(this);
+                    if (mode == 0) {
+                        if (dirNode != null && dirNode.hasValidNet()) dirNode.net.addReceiver(this);
                     } else {
-                        if(dirNode != null && dirNode.hasValidNet()) dirNode.net.removeReceiver(this);
+                        if (dirNode != null && dirNode.hasValidNet()) dirNode.net.removeReceiver(this);
                     }
                 }
             }
@@ -275,7 +298,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements
 
         HashSet<BlockPos> posSet = new HashSet<>();
         posSet.add(pos);
-        for(DirPos pos : conPos) {
+        for (DirPos pos : conPos) {
             ForgeDirection dir = pos.getDir();
             posSet.add(new BlockPos(pos.getPos().getX() - dir.offsetX, pos.getPos().getY() - dir.offsetY, pos.getPos().getZ() - dir.offsetZ));
         }
@@ -292,20 +315,17 @@ public class TileEntityBarrel extends TileEntityMachineBase implements
 
     @Override
     public void deserialize(ByteBuf buf) {
+        FluidType prevType = tankNew.getTankType();
         super.deserialize(buf);
         mode = buf.readShort();
         tankNew.deserialize(buf);
+        if (prevType != tankNew.getTankType()) {
+            Minecraft.getMinecraft().addScheduledTask(() -> world.markBlockRangeForRenderUpdate(pos, pos));
+        }
     }
 
-    protected DirPos[] getConPos() {
-        return new DirPos[]{
-                new DirPos(pos.getX() + 1, pos.getY(), pos.getZ(), Library.POS_X),
-                new DirPos(pos.getX() - 1, pos.getY(), pos.getZ(), Library.NEG_X),
-                new DirPos(pos.getX(), pos.getY() + 1, pos.getZ(), Library.POS_Y),
-                new DirPos(pos.getX(), pos.getY() - 1, pos.getZ(), Library.NEG_Y),
-                new DirPos(pos.getX(), pos.getY(), pos.getZ() + 1, Library.POS_Z),
-                new DirPos(pos.getX(), pos.getY(), pos.getZ() - 1, Library.NEG_Z)
-        };
+    public DirPos[] getConPos() {
+        return new DirPos[]{new DirPos(pos.getX() + 1, pos.getY(), pos.getZ(), Library.POS_X), new DirPos(pos.getX() - 1, pos.getY(), pos.getZ(), Library.NEG_X), new DirPos(pos.getX(), pos.getY() + 1, pos.getZ(), Library.POS_Y), new DirPos(pos.getX(), pos.getY() - 1, pos.getZ(), Library.NEG_Y), new DirPos(pos.getX(), pos.getY(), pos.getZ() + 1, Library.POS_Z), new DirPos(pos.getX(), pos.getY(), pos.getZ() - 1, Library.NEG_Z)};
     }
 
     public void checkFluidInteraction() {
@@ -323,29 +343,6 @@ public class TileEntityBarrel extends TileEntityMachineBase implements
             shouldDrop = false;
             world.destroyBlock(pos, false);
             world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS, 1.0F, 1.0F);
-        }
-
-        //for when you fill corrosive liquid into an iron tank
-        if ((b == ModBlocks.barrel_iron && tankNew.getTankType().isCorrosive()) ||
-                (b == ModBlocks.barrel_steel && tankNew.getTankType().hasTrait(FT_Corrosive.class) && tankNew.getTankType().getTrait(FT_Corrosive.class).getRating() > 50)) {
-
-            world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS, 1.0F, 1.0F);
-            ItemStackHandler copy = new ItemStackHandler(this.inventory.getSlots());
-            for (int i = 0; i < this.inventory.getSlots(); i++) {
-                copy.setStackInSlot(i, this.inventory.getStackInSlot(i).copy());
-            }
-
-            this.inventory = new ItemStackHandler(6);
-            shouldDrop = false;
-            world.setBlockState(pos, ModBlocks.barrel_corroded.getDefaultState());
-
-            TileEntityBarrel barrel = (TileEntityBarrel) world.getTileEntity(pos);
-
-            if (barrel != null) {
-                barrel.tankNew.setTankType(tankNew.getTankType());
-                barrel.tankNew.setFill(Math.min(barrel.tankNew.getMaxFill(), tankNew.getFill()));
-                barrel.inventory = copy;
-            }
         }
 
         if (b == ModBlocks.barrel_corroded) {
@@ -388,8 +385,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements
         converted = compound.getBoolean("converted");
         tankNew.readFromNBT(compound, "tank");
         if (!converted && tankNew.getTankType() == Fluids.NONE) {
-            if (tank == null || tank.getCapacity() <= 0)
-                tank = new FluidTank(compound.getInteger("cap"));
+            if (tank == null || tank.getCapacity() <= 0) tank = new FluidTank(compound.getInteger("cap"));
             tank.readFromNBT(compound);
             if (tank.getFluid() != null) {
                 oldFluid = tank.getFluid().getFluid();
@@ -474,6 +470,40 @@ public class TileEntityBarrel extends TileEntityMachineBase implements
     }
 
     @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "type", PREFIX_VALUE + "fill", PREFIX_VALUE + "fillpercent", PREFIX_FUNCTION + "setmode" + NAME_SEPARATOR + "mode (0-3)", PREFIX_FUNCTION + "setmode" + NAME_SEPARATOR + "mode" + PARAM_SEPARATOR + "fallback (0-3)",};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "type").equals(name)) return tankNew.getTankType().getName();
+        if ((PREFIX_VALUE + "fill").equals(name)) return "" + tankNew.getFill();
+        if ((PREFIX_VALUE + "fillpercent").equals(name)) return "" + (tankNew.getFill() * 100 / tankNew.getMaxFill());
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "setmode").equals(name) && params.length > 0) {
+            int mode = IRORInteractive.parseInt(params[0], 0, 3);
+
+            if (mode != this.mode) {
+                this.mode = (short) mode;
+                this.markChanged();
+                return null;
+            } else if (params.length > 1) {
+                int altmode = IRORInteractive.parseInt(params[1], 0, 3);
+                this.mode = (short) altmode;
+                this.markChanged();
+                return null;
+            }
+            return null;
+        }
+
+        return null;
+    }
+
+    @Override
     @Optional.Method(modid = "opencomputers")
     public String getComponentName() {
         return "ntm_fluid_tank";
@@ -506,12 +536,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements
     @Override
     @Optional.Method(modid = "opencomputers")
     public String[] methods() {
-        return new String[]{
-                "getFluidStored",
-                "getMaxStored",
-                "getTypeStored",
-                "getInfo"
-        };
+        return new String[]{"getFluidStored", "getMaxStored", "getTypeStored", "getInfo"};
     }
 
     @Override
@@ -535,6 +560,12 @@ public class TileEntityBarrel extends TileEntityMachineBase implements
     @SideOnly(Side.CLIENT)
     public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
         return new GUIBarrel(player.inventory, this);
+    }
+
+    @Override
+    public AxisAlignedBB getRenderBoundingBox() {
+        if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+        return bb;
     }
 
 }

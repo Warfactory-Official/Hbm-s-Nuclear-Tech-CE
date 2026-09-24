@@ -1,5 +1,7 @@
 package com.hbm.tileentity.network;
 
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.network.FluidCounterValve;
 import com.hbm.handler.CompatHandler;
@@ -22,19 +24,22 @@ import net.minecraftforge.fml.common.Optional;
 
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 @AutoRegister
-public class TileEntityFluidCounterValve extends TileEntityPipeBaseNT implements ITickable, SimpleComponent, CompatHandler.OCComponent {
+public class TileEntityFluidCounterValve extends TileEntityPipeBaseNT implements ITickable, IRORValueProvider, IRORInteractive, SimpleComponent, CompatHandler.OCComponent {
     private long counter;
 
     @Override
     public void update() {
         super.update();
 
-        if(!world.isRemote) {
-            if(node != null && node.net != null && getType() != Fluids.NONE) {
-                counter += node.net.fluidTracker;
-            }
-
+        if (!world.isRemote) {
+            updateCounter();
             networkPackNT(25);
+        }
+    }
+
+    private void updateCounter() {
+        if (node != null && node.net != null && getType() != Fluids.NONE) {
+            counter += node.net.fluidTracker;
         }
     }
 
@@ -46,7 +51,7 @@ public class TileEntityFluidCounterValve extends TileEntityPipeBaseNT implements
     public void updateState() {
         this.blockMetadata = -1; // delete cache
 
-        if(this.getBlockMetadata() == 0 && this.node != null) {
+        if (this.getBlockMetadata() == 0 && this.node != null) {
             UniNodespace.destroyNode(world, node);
             this.node = null;
         }
@@ -89,6 +94,30 @@ public class TileEntityFluidCounterValve extends TileEntityPipeBaseNT implements
         return counter;
     }
 
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "value").equals(name)) return String.valueOf(counter);
+        if ((PREFIX_VALUE + "state").equals(name)) return String.valueOf(getBlockMetadata() == 1 ? 1 : 0);
+        return null;
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "value", PREFIX_VALUE + "state", PREFIX_FUNCTION + "reset", PREFIX_FUNCTION + "setState" + NAME_SEPARATOR + "state",};
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if (name.equals(PREFIX_FUNCTION + "reset")) {
+            updateCounter();
+            counter = 0;
+            markDirty();
+        } else if (name.equals(PREFIX_FUNCTION + "setState") && params.length > 0) {
+            setState(IRORInteractive.parseInt(params[0], 0, 1));
+        }
+        return null;
+    }
+
     @Optional.Method(modid = "opencomputers")
     public String getComponentName() {
         return "ntm_fluid_counter_valve";
@@ -97,37 +126,38 @@ public class TileEntityFluidCounterValve extends TileEntityPipeBaseNT implements
     @Callback(direct = true)
     @Optional.Method(modid = "opencomputers")
     public Object[] getFluid(Context context, Arguments args) {
-        return new Object[] {getType().getName()};
+        return new Object[]{getType().getName()};
     }
 
     @Callback(direct = true)
     @Optional.Method(modid = "opencomputers")
     public Object[] getCounter(Context context, Arguments args) {
-        return new Object[] {counter};
+        return new Object[]{counter};
     }
 
     @Callback(direct = true)
     @Optional.Method(modid = "opencomputers")
     public Object[] resetCounter(Context context, Arguments args) {
+        updateCounter();
         counter = 0;
         markDirty();
-        return new Object[] {};
+        return new Object[]{};
     }
 
     @Callback(direct = true)
     @Optional.Method(modid = "opencomputers")
     public Object[] getState(Context context, Arguments args) {
-        return new Object[] {getBlockMetadata() == 1 ? 1 : 0};
+        return new Object[]{getBlockMetadata() == 1 ? 1 : 0};
     }
 
     @Callback(direct = true)
     @Optional.Method(modid = "opencomputers")
     public Object[] setState(Context context, Arguments args) {
         final int state = args.checkInteger(0);
-        if(state != 0 && state != 1) {
+        if (state != 0 && state != 1) {
             throw new IllegalArgumentException();
         }
         setState(state);
-        return new Object[] {};
+        return new Object[]{};
     }
 }

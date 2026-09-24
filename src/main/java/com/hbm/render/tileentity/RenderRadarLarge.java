@@ -12,11 +12,6 @@ import net.minecraft.item.Item;
 public class RenderRadarLarge extends TileEntitySpecialRenderer<TileEntityMachineRadarLarge>
     implements IItemRendererProvider {
   @Override
-  public boolean isGlobalRenderer(TileEntityMachineRadarLarge te) {
-    return true;
-  }
-
-  @Override
   public void render(
       TileEntityMachineRadarLarge radar,
       double x,

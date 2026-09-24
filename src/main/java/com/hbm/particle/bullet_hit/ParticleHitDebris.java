@@ -2,20 +2,20 @@ package com.hbm.particle.bullet_hit;
 
 import com.hbm.particle.ParticleLayerBase;
 import com.hbm.particle.ParticleRenderLayer;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.DestFactor;
 import net.minecraft.client.renderer.GlStateManager.SourceFactor;
 import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -106,10 +106,13 @@ public class ParticleHitDebris extends ParticleLayerBase {
             }
         }
 
-        buffer.pos((double)f5 + avec3d[0].x, (double)f6 + avec3d[0].y, (double)f7 + avec3d[0].z).tex((double)u+size, (double)v+size).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j, k).endVertex();
-        buffer.pos((double)f5 + avec3d[1].x, (double)f6 + avec3d[1].y, (double)f7 + avec3d[1].z).tex((double)u+size, (double)v).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j, k).endVertex();
-        buffer.pos((double)f5 + avec3d[2].x, (double)f6 + avec3d[2].y, (double)f7 + avec3d[2].z).tex((double)u, (double)v).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j, k).endVertex();
-        buffer.pos((double)f5 + avec3d[3].x, (double)f6 + avec3d[3].y, (double)f7 + avec3d[3].z).tex((double)u, (double)v+size).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j, k).endVertex();
+        NTMBufferBuilder fastBuffer = (NTMBufferBuilder) buffer;
+        int packedColor = NTMBufferBuilder.packColor(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha);
+        int packedLightmap = NTMBufferBuilder.packLightmap(j, k);
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked(f5 + (float) avec3d[0].x, f6 + (float) avec3d[0].y, f7 + (float) avec3d[0].z, u + size, v + size, packedColor, packedLightmap);
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked(f5 + (float) avec3d[1].x, f6 + (float) avec3d[1].y, f7 + (float) avec3d[1].z, u + size, v, packedColor, packedLightmap);
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked(f5 + (float) avec3d[2].x, f6 + (float) avec3d[2].y, f7 + (float) avec3d[2].z, u, v, packedColor, packedLightmap);
+        fastBuffer.appendParticlePositionTexColorLmapUnchecked(f5 + (float) avec3d[3].x, f6 + (float) avec3d[3].y, f7 + (float) avec3d[3].z, u, v + size, packedColor, packedLightmap);
 	}
 
 	@Override
@@ -150,12 +153,12 @@ public class ParticleHitDebris extends ParticleLayerBase {
 			GlStateManager.enableTexture2D();
 			GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
 			
-			Tessellator.getInstance().getBuffer().begin(GL11.GL_QUADS, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
+			NTMImmediate.INSTANCE.beginParticlePositionTexColorLmap(GL11.GL_QUADS, particles.size() * 4);
 		}
 		
 		@Override
 		public void postRender() {
-			Tessellator.getInstance().draw();
+			NTMImmediate.INSTANCE.draw();
 		       
 	        GlStateManager.disableBlend();
 	        GlStateManager.depthMask(true);

@@ -8,6 +8,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModItems;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.block.Block;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
@@ -139,9 +140,8 @@ public class ItemBlowtorch extends Item implements IFillableItem {
                 player.inventoryContainer.detectAndSendChanges();
 
                 NBTTagCompound dPart = new NBTTagCompound();
-                dPart.setString("type", "tau");
                 dPart.setByte("count", (byte) 10);
-                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(dPart, pos.getX() + hitX, pos.getY() + hitY, pos.getZ() + hitZ), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 50));
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Tau, dPart, pos.getX() + hitX, pos.getY() + hitY, pos.getZ() + hitZ), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 50));
                 player.setHeldItem(hand, stack);
             }
         }

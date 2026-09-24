@@ -39,7 +39,7 @@ public class BlockEnumMeta<E extends Enum<E>> extends BlockMeta {
         return Arrays.stream(blockEnum)
                 .map(Enum::name)
                 .map(name -> registryName + "." + name.toLowerCase(Locale.US))
-                .map(BlockBakeFrame::new)
+                .map(BlockBakeFrame::cubeAll)
                 .toArray(BlockBakeFrame[]::new);
     }
 

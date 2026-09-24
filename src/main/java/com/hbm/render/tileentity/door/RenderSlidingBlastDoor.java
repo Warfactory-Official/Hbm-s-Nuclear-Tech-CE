@@ -1,0 +1,73 @@
+package com.hbm.render.tileentity.door;
+
+import net.minecraft.client.renderer.GlStateManager;
+import com.hbm.interfaces.IDoor;
+import com.hbm.main.ResourceManager;
+import com.hbm.tileentity.DoorDecl;
+import com.hbm.tileentity.TileEntityDoorGeneric;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.math.MathHelper;
+import org.lwjgl.opengl.GL11;
+
+import java.nio.DoubleBuffer;
+/// Didn't update sliding blast doors because they dont have keypads in 1.7.10
+/// Th3_Sl1ze: I don't give a fuck
+public class RenderSlidingBlastDoor implements IRenderDoors {
+
+    public static final RenderSlidingBlastDoor INSTANCE = new RenderSlidingBlastDoor();
+
+    @Override
+    public void render(TileEntityDoorGeneric door, DoubleBuffer buf) {
+
+        Minecraft.getMinecraft().getTextureManager().bindTexture(DoorDecl.DefaultSkins.pheo_blast_door_tex);
+
+        double maxOpen = 2.125;
+        double open = 0;
+        double lock = 0;
+        if(door.state == IDoor.DoorState.OPEN) {
+            open = maxOpen;
+            lock = 90;
+        }
+
+        if(door.currentAnimation != null) {
+            open = IRenderDoors.getRelevantTransformation("DOOR", door.currentAnimation)[1] * maxOpen;
+            lock = IRenderDoors.getRelevantTransformation("LOCK", door.currentAnimation)[0] * 90;
+        }
+
+        GlStateManager.disableCull();
+        ResourceManager.pheo_blast_door.renderPart("Frame");
+
+        GL11.glEnable(GL11.GL_CLIP_PLANE0);
+        buf.put(new double[] { 0.0, 0.0, 1, 2.5 }); buf.rewind();
+        GL11.glClipPlane(GL11.GL_CLIP_PLANE0, buf);
+
+        GL11.glEnable(GL11.GL_CLIP_PLANE1);
+        buf.put(new double[] { 0.0, 0.0, -1, 2.5 }); buf.rewind();
+        GL11.glClipPlane(GL11.GL_CLIP_PLANE1, buf);
+
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(0, 0, MathHelper.clamp(open, 0, maxOpen));
+        ResourceManager.pheo_blast_door.renderPart("LeftDoor");
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(0, 1.8125, 0);
+        GlStateManager.rotate((float) (90 + lock), 1, 0, 0);
+        GlStateManager.translate(0, -1.8125, 0);
+        ResourceManager.pheo_blast_door.renderPart("RightLock");
+        GlStateManager.popMatrix();
+        GlStateManager.popMatrix();
+
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(0, 0, -MathHelper.clamp(open, 0, maxOpen));
+        ResourceManager.pheo_blast_door.renderPart("RightDoor");
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(0, 1.8125, 0);
+        GlStateManager.rotate((float) (90 + lock), 1, 0, 0);
+        GlStateManager.translate(0, -1.8125, 0);
+        ResourceManager.pheo_blast_door.renderPart("LeftLock");
+        GlStateManager.popMatrix();
+        GlStateManager.popMatrix();
+
+        GL11.glDisable(GL11.GL_CLIP_PLANE0);
+        GL11.glDisable(GL11.GL_CLIP_PLANE1);
+    }
+}

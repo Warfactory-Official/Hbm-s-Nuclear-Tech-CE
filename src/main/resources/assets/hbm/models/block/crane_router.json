@@ -1,12 +1,12 @@
 {
-	"parent": "block/cube",
-	"textures": {
-		"down": "hbm:blocks/crane_router_cyan",
-		"up": "hbm:blocks/crane_router_orange",
-		"north": "hbm:blocks/crane_router_red",
-		"south": "hbm:blocks/crane_router_blue",
-		"west": "hbm:blocks/crane_router_green",
-		"east": "hbm:blocks/crane_router_yellow",
-		"particle": "hbm:blocks/crane_in"
-	}
+  "parent": "block/cube",
+  "textures": {
+    "down": "hbm:blocks/crane_router_red",
+    "up": "hbm:blocks/crane_router_orange",
+    "north": "hbm:blocks/crane_router_yellow",
+    "south": "hbm:blocks/crane_router_green",
+    "west": "hbm:blocks/crane_router_blue",
+    "east": "hbm:blocks/crane_router_cyan",
+    "particle": "hbm:blocks/crane_in"
+  }
 }

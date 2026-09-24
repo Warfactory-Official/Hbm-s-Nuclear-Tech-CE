@@ -6,6 +6,7 @@ import com.hbm.handler.threading.PacketThreading;
 import com.hbm.items.ISatChip;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.saveddata.satellites.Satellite;
 import com.hbm.saveddata.satellites.SatelliteSavedData;
 import com.hbm.saveddata.satellites.SatelliteScanner;
@@ -97,6 +98,7 @@ public class ItemModLens extends ItemArmorMod implements ISatChip {
                         if(addIf(ModBlocks.ore_australium, b, 1000, aX, seg, aZ, I18nUtil.resolveKey("tile.ore_australium.name"), 0xffff00, player)) hits++;
                         if(addIf(Blocks.END_PORTAL_FRAME, b, 1, aX, seg, aZ, I18nUtil.resolveKey("neutrino.end_portal.name"), 0x40b080, player)) hits++;
                         if(addIf(ModBlocks.volcano_core, b, 1, aX, seg, aZ, I18nUtil.resolveKey("tile.volcano_core.name"), 0xff4000, player)) hits++;
+                        if(addIf(ModBlocks.volcano_rad_core, b, 1, aX, seg, aZ, I18nUtil.resolveKey("tile.volcano_rad_core.name"), 0x40ff00, player)) hits++;
                         if(addIf(ModBlocks.pink_log, b, 1, aX, seg, aZ, I18nUtil.resolveKey("tile.pink_log.name"), 0xff00ff, player)) hits++;
                         if(addIf(ModBlocks.crate_ammo, b, 1, aX, seg, aZ, null, 0x800000, player)) hits++;
                         if(addIf(ModBlocks.crate_can, b, 1, aX, seg, aZ, null, 0x800000, player)) hits++;
@@ -113,12 +115,11 @@ public class ItemModLens extends ItemArmorMod implements ISatChip {
 
         if(target == b && player.getRNG().nextInt(chance) == 0) {
             NBTTagCompound data = new NBTTagCompound();
-            data.setString("type", "marker");
             data.setInteger("color", color);
             data.setInteger("expires", 15_000);
             data.setDouble("dist", 300D);
             if(label != null) data.setString("label", label);
-            PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(data, x, y, z), player);
+            PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Marker, data, x, y, z), player);
             return true;
         }
 

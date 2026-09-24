@@ -5,6 +5,7 @@ import com.hbm.handler.threading.PacketThreading;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.AdvancementManager;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.util.I18nUtil;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityLivingBase;
@@ -56,9 +57,9 @@ public class ItemModKnife extends ItemArmorMod {
 				entity.world.playSound(null, entity.posX, entity.posY, entity.posZ, HBMSoundHandler.slicer, SoundCategory.PLAYERS, 1.0F, 1.0F);
 				
 				NBTTagCompound nbt = new NBTTagCompound();
-				nbt.setString("type", "bloodvomit");
+                nbt.setString("mode", "blood");
 				nbt.setInteger("entity", entity.getEntityId());
-				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(nbt, 0, 0, 0),  new TargetPoint(entity.dimension, entity.posX, entity.posY, entity.posZ, 25));
+				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Vomit, nbt, 0, 0, 0),  new TargetPoint(entity.dimension, entity.posX, entity.posY, entity.posZ, 25));
 				
 				IAttributeInstance attributeinstance = entity.getAttributeMap().getAttributeInstance(SharedMonsterAttributes.MAX_HEALTH);
 				
@@ -72,7 +73,6 @@ public class ItemModKnife extends ItemArmorMod {
 				
 				if(entity instanceof EntityPlayerMP) {
 					NBTTagCompound data = new NBTTagCompound();
-					data.setString("type", "properJolt");
 					
 					if(entity.getMaxHealth() > 2F) {
 						data.setInteger("time", 10000 + entity.getRNG().nextInt(10000));
@@ -83,7 +83,7 @@ public class ItemModKnife extends ItemArmorMod {
 						
 						AdvancementManager.grantAchievement((EntityPlayer)entity, AdvancementManager.achSomeWounds);
 					}
-					PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(data, 0, 0, 0), (EntityPlayerMP)entity);
+					PacketThreading.createSendToThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.ProperJolt, data, 0, 0, 0), (EntityPlayerMP)entity);
 				}
 			}
 		}

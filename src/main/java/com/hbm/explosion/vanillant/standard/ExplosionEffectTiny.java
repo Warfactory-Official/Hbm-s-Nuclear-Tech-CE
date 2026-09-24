@@ -5,6 +5,7 @@ import com.hbm.explosion.vanillant.interfaces.IExplosionSFX;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.world.World;
@@ -19,10 +20,8 @@ public class ExplosionEffectTiny implements IExplosionSFX {
         world.playSound(null, x, y, z, HBMSoundHandler.explosion_tiny, SoundCategory.BLOCKS, 15.0F, 1.0F);
 
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "vanillaExt");
-        data.setString("mode", "largeexplode");
         data.setFloat("size", 1.5F);
         data.setByte("count", (byte)1);
-        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x, y, z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), x, y, z, 100));
+        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.VanillaExt_LargeExplode, data, x, y, z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), x, y, z, 100));
     }
 }

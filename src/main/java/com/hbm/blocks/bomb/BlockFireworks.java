@@ -46,7 +46,7 @@ public class BlockFireworks extends BlockContainer {
 
 		TileEntityFireworks te = (TileEntityFireworks)world.getTileEntity(pos);
 
-		if(player.getHeldItem(hand) != null && !player.getHeldItem(hand).isEmpty()) {
+		if(!player.getHeldItem(hand).isEmpty()) {
 
 			if(player.getHeldItem(hand).getItem() == Items.GUNPOWDER) {
 				te.charges += player.getHeldItem(hand).getCount() * 3;

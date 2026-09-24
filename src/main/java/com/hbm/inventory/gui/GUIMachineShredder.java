@@ -11,7 +11,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GUIMachineShredder extends GuiInfoContainer {
 
-	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/gui_shredder.png");
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/processing/gui_shredder.png");
 	private TileEntityMachineShredder shredder;
 
 	public GUIMachineShredder(InventoryPlayer invPlayer, TileEntityMachineShredder teMachineShredder) {
@@ -45,6 +45,9 @@ public class GUIMachineShredder extends GuiInfoContainer {
 	
 	@Override
 	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
+		String name = this.shredder.hasCustomName() ? this.shredder.getName() : I18n.format(this.shredder.getDefaultName());
+
+		this.fontRenderer.drawString(name, 106 - this.fontRenderer.getStringWidth(name) / 2, 6, 4210752);
 		this.fontRenderer.drawString(I18n.format("container.inventory"), 8, this.ySize - 96 + 2, 4210752);
 	}
 

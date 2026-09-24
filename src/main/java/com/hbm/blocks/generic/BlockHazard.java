@@ -6,6 +6,7 @@ import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.hazard.HazardSystem;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.potion.HbmPotion;
 import com.hbm.util.ContaminationUtil;
 import net.minecraft.block.SoundType;
@@ -18,8 +19,6 @@ import net.minecraft.init.Items;
 import net.minecraft.init.MobEffects;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundCategory;
@@ -29,8 +28,10 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Random;
 
+@ParametersAreNonnullByDefault
 public class BlockHazard extends BlockBase {
 
     private float radIn = 0.0F;
@@ -115,12 +116,7 @@ public class BlockHazard extends BlockBase {
                     world.spawnParticle(EnumParticleTypes.TOWN_AURA, ix, iy, iz, 0.0, 0.0, 0.0);
                 }
                 if (this.extEffect == ExtDisplayEffect.SCHRAB) {
-                    NBTTagCompound data = new NBTTagCompound();
-                    data.setString("type", "schrabfog");
-                    data.setDouble("posX", ix);
-                    data.setDouble("posY", iy);
-                    data.setDouble("posZ", iz);
-                    MainRegistry.proxy.effectNT(data);
+                    MainRegistry.proxy.effectNT(HbmEffectNT.SchrabFog, ix, iy, iz);
                 }
                 if (this.extEffect == ExtDisplayEffect.FLAMES) {
                     world.spawnParticle(EnumParticleTypes.FLAME, ix, iy, iz, 0.0, 0.0, 0.0);

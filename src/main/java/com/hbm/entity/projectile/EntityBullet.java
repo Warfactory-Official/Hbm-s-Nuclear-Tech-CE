@@ -4,7 +4,6 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.bomb.BlockDetonatable;
 import com.hbm.blocks.generic.RedBarrel;
 import com.hbm.config.CompatibilityConfig;
-import com.hbm.entity.grenade.EntityGrenadeTau;
 import com.hbm.entity.mob.EntityCreeperNuclear;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.interfaces.AutoRegister;
@@ -213,7 +212,7 @@ public class EntityBullet extends Entity implements IProjectile {
 	}
 
 	// why the living shit did i make isTau a string? who knows, who cares.
-	public EntityBullet(World world, EntityLivingBase shooter, float velocity, int dmgMin, int dmgMax, boolean instakill, String isTau, EntityGrenadeTau grenade) {
+	public EntityBullet(World world, EntityLivingBase shooter, float velocity, int dmgMin, int dmgMax, boolean instakill, String isTau, Entity grenade) {
 		this(world);
 		this.shootingEntity = shooter;
 	

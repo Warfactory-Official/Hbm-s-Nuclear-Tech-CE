@@ -1,6 +1,6 @@
 package com.hbm.entity.projectile;
 
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
@@ -26,20 +26,20 @@ public class EntityBeamBase extends Entity {
 		this.ignoreFrustumCheck = true;
 		this.getDataManager().set(PLAYER_NAME, player.getDisplayName().getUnformattedText());
 
-		Vec3 vec = new Vec3(player.getLookVec());
-		vec.rotateAroundY(-90F);
+		Vec3NT vec = new Vec3NT(player.getLookVec());
+		vec.rotateYawSelf(-90F);
 		float l = 0.075F;
-		vec.xCoord *= l;
-		vec.yCoord *= l;
-		vec.zCoord *= l;
+		vec.setX(vec.x * (l));
+		vec.setY(vec.y * (l));
+		vec.setZ(vec.z * (l));
 
-		Vec3 vec0 = new Vec3(player.getLookVec());
+		Vec3NT vec0 = new Vec3NT(player.getLookVec());
 		float d = 0.1F;
-		vec0.xCoord *= d;
-		vec0.yCoord *= d;
-		vec0.zCoord *= d;
+		vec0.setX(vec0.x * (d));
+		vec0.setY(vec0.y * (d));
+		vec0.setZ(vec0.z * (d));
 
-		this.setPosition(player.posX + vec.xCoord + vec0.xCoord, player.posY + player.getEyeHeight() + vec0.yCoord, player.posZ + vec.zCoord + vec0.zCoord);
+		this.setPosition(player.posX + vec.x + vec0.x, player.posY + player.getEyeHeight() + vec0.y, player.posZ + vec.z + vec0.z);
 	}
 	
 	@Override

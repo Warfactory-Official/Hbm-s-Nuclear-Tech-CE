@@ -25,14 +25,14 @@ public class ItemRenderWeaponVortex extends TEISRBase {
 		case FIRST_PERSON_RIGHT_HAND:
 			double[] recoil = HbmAnimations.getRelevantTransformation("VORTEX_RECOIL", type == TransformType.FIRST_PERSON_LEFT_HAND ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND);
 			//Scaled up by 10 from the regular scale amount so the item bobbing affects the gun less.
-			GL11.glScaled(0.5, 0.4, 0.5);
+			GlStateManager.scale(0.5, 0.4, 0.5);
 			if(type == TransformType.FIRST_PERSON_RIGHT_HAND){
-				GL11.glRotated(178, 0, 1, 0);
-				GL11.glRotated(27+recoil[1], 0, 0, 1);
+				GlStateManager.rotate(178, 0, 1, 0);
+				GlStateManager.rotate((float) (27+recoil[1]), 0, 0, 1);
 				GlStateManager.translate(14, -16, 3);
 			} else {
-				GL11.glRotated(27+recoil[1], 0, 0, 1);
-				GL11.glRotated(2, 0, 1, 0);
+				GlStateManager.rotate((float) (27+recoil[1]), 0, 0, 1);
+				GlStateManager.rotate(2, 0, 1, 0);
 				GlStateManager.translate(13, -16, -4);
 			}
 			
@@ -45,14 +45,14 @@ public class ItemRenderWeaponVortex extends TEISRBase {
 		case GROUND:
 			GlStateManager.translate(0, -0.65, -0.3);
 			//This scale makes it a little bit shorter and longer, I think it looks better like that personally.
-			GL11.glScaled(0.08, 0.05, 0.06);
-			GL11.glRotated(90, 0, 1, 0);
+			GlStateManager.scale(0.08, 0.05, 0.06);
+			GlStateManager.rotate(90, 0, 1, 0);
 			break;
 		case GUI:
 			GlStateManager.translate(0, -0.25, 0);
-			GL11.glScaled(0.02, 0.02, 0.02);
-			GL11.glRotated(180, 0, 1, 0);
-			GL11.glRotated(45, 0, 0, 1);
+			GlStateManager.scale(0.02, 0.02, 0.02);
+			GlStateManager.rotate(180, 0, 1, 0);
+			GlStateManager.rotate(45, 0, 0, 1);
 			break;
 		case NONE:
 			break;

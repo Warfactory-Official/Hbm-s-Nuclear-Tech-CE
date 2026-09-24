@@ -36,7 +36,7 @@ public class BlockGraphiteNeutronDetector extends BlockGraphiteDrilledTE {
             } else {
                 front = isOut ? "block_graphite_detector_out" : "block_graphite_detector";
             }
-            this.blockFrames[meta] = new BlockBakeFrame(front, "block_graphite", front);
+            this.blockFrames[meta] = BlockBakeFrame.cubeBottomTop(front, "block_graphite", front);
         }
     }
 

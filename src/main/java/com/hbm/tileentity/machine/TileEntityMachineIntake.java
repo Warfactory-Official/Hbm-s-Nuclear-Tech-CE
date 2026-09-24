@@ -13,6 +13,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
@@ -29,7 +30,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import javax.annotation.Nullable;
 
 @AutoRegister
-public class TileEntityMachineIntake extends TileEntityLoadedBase implements ITickable, IEnergyReceiverMK2, IFluidStandardSenderMK2 {
+public class TileEntityMachineIntake extends TileEntityLoadedBase implements ITickable, IEnergyReceiverMK2, IFluidStandardSenderMK2, IConnectionAnchors {
 
     public FluidTankNTM compair;
     public long power;
@@ -39,7 +40,7 @@ public class TileEntityMachineIntake extends TileEntityLoadedBase implements ITi
     private AudioWrapper audio;
 
     public TileEntityMachineIntake() {
-        this.compair = new FluidTankNTM(Fluids.AIR, 1_000);
+        this.compair = new FluidTankNTM(Fluids.AIR, 1_000).withOwner(this);
     }
 
     @Override

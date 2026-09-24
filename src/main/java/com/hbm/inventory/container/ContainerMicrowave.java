@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.lib.Library;
@@ -17,6 +18,11 @@ import java.util.function.Predicate;
 public class ContainerMicrowave extends Container {
 
     private TileEntityMicrowave microwave;
+
+	private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(3)
+                                                                              .rule(0, 2, Predicate.not(Library::isBattery))
+                                                                              .genericMachineRange(2)
+                                                                              .build();
 
 	public ContainerMicrowave(InventoryPlayer invPlayer, TileEntityMicrowave tedf) {
 
@@ -43,8 +49,7 @@ public class ContainerMicrowave extends Container {
 	@Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 3,
-                Predicate.not(Library::isBattery), 2);
+		return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
 	@Override

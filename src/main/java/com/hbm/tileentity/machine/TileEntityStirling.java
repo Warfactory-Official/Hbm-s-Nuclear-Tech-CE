@@ -13,6 +13,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IConfigurableMachine;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import io.netty.buffer.ByteBuf;
@@ -31,7 +32,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 
 @AutoRegister
-public class TileEntityStirling extends TileEntityLoadedBase implements IEnergyProviderMK2, IConfigurableMachine, ITickable {
+public class TileEntityStirling extends TileEntityLoadedBase implements IEnergyProviderMK2, IConfigurableMachine, ITickable, IConnectionAnchors {
 
     /* CONFIGURABLE CONSTANTS */
     public static double diffusion = 0.1D;
@@ -139,7 +140,7 @@ public class TileEntityStirling extends TileEntityLoadedBase implements IEnergyP
         return this.getBlockType() == ModBlocks.machine_stirling_creative;
     }
 
-    protected DirPos[] getConPos() {
+    public DirPos[] getConPos() {
         return new DirPos[]{
                 new DirPos(this.pos.east(2), Library.POS_X),
                 new DirPos(this.pos.west(2), Library.NEG_X),

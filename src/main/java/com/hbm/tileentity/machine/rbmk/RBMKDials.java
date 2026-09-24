@@ -7,6 +7,9 @@ import net.minecraft.world.World;
 
 public class RBMKDials {
 
+    private static volatile int clientColumnHeightRuleValue = (int) RBMKKeys.KEY_COLUMN_HEIGHT.defValue;
+    private static volatile int clientColumnHeightDimension = Integer.MIN_VALUE;
+
     public static void createDials(World world) {
         GameRules rules = world.getGameRules();
 
@@ -26,6 +29,16 @@ public class RBMKDials {
     static double getPassiveCooling(World world) {
         return Math.max(shittyWorkaroundParseDouble(world.getGameRules().getString(RBMKKeys.KEY_PASSIVE_COOLING.keyString),
                 (double) RBMKKeys.KEY_PASSIVE_COOLING.defValue), 0.0D);
+    }
+
+    /**
+     * Returns the amount of heat per tick removed from components passively, when surrounded by other components
+     * @param world
+     * @return >0
+     */
+    public static double getPassiveCoolingInner(World world) {
+        return MathHelper.clamp(shittyWorkaroundParseDouble(world.getGameRules().getString(RBMKKeys.KEY_PASSIVE_COOLING_INNER.keyString),
+                (double) RBMKKeys.KEY_PASSIVE_COOLING_INNER.defValue), 0.0, 1.0D);
     }
 
     /**
@@ -62,14 +75,41 @@ public class RBMKDials {
     }
 
     /**
-     * Simple integer that decides how tall the structure is.
+     * Returns the raw {@code dialColumnHeight} gamerule value.
+     * This is the total number of vertically stacked RBMK blocks, including the core block itself.
+     * Synchronization and persistence code should use this accessor when they need the literal gamerule payload.
      *
      * @param world
-     * @return [0;250]
+     * @return [2;16]
+     */
+    public static int getColumnHeightRuleValue(World world) {
+        if (world != null && world.isRemote && world.provider != null && clientColumnHeightDimension == world.provider.getDimension()) {
+            return clientColumnHeightRuleValue;
+        }
+        return MathHelper.clamp(shittyWorkaroundParseInt(world.getGameRules().getString(RBMKKeys.KEY_COLUMN_HEIGHT.keyString),
+                (int) RBMKKeys.KEY_COLUMN_HEIGHT.defValue), 2, 16);
+    }
+
+    public static void updateClientColumnHeightRuleValue(World world, int value) {
+        if (world == null || world.provider == null) return;
+        clientColumnHeightDimension = world.provider.getDimension();
+        clientColumnHeightRuleValue = MathHelper.clamp(value, 2, 16);
+    }
+
+    public static void resetClientColumnHeightRuleValue() {
+        clientColumnHeightDimension = Integer.MIN_VALUE;
+        clientColumnHeightRuleValue = (int) RBMKKeys.KEY_COLUMN_HEIGHT.defValue;
+    }
+
+    /**
+     * Returns the vertical offset from the RBMK core block to the topmost dummy/extra block.
+     * This is one less than the stored {@code dialColumnHeight} gamerule because that gamerule counts the core block too.
+     *
+     * @param world
+     * @return [1;15]
      */
     public static int getColumnHeight(World world) {
-        return MathHelper.clamp(shittyWorkaroundParseInt(world.getGameRules().getString(RBMKKeys.KEY_COLUMN_HEIGHT.keyString),
-                (int) RBMKKeys.KEY_COLUMN_HEIGHT.defValue), 2, 16) - 1;
+        return getColumnHeightRuleValue(world) - 1;
     }
 
     /**
@@ -227,7 +267,7 @@ public class RBMKDials {
      * @param world
      * @return
      */
-    static boolean getMeltdownsDisabled(World world) {
+    public static boolean getMeltdownsDisabled(World world) {
         return world.getGameRules().getBoolean(RBMKKeys.KEY_DISABLE_MELTDOWNS.keyString);
     }
 
@@ -264,6 +304,16 @@ public class RBMKDials {
     }
 
     /**
+     * How many °C are generated per one flux that hits an absorber.
+     * @param world
+     * @return
+     */
+    public static double getAbsorberHeatConversion(World world) {
+        return MathHelper.clamp(shittyWorkaroundParseDouble(world.getGameRules().getString(RBMKKeys.KEY_ABSORBER_HEAT_CONVERSION.keyString),
+                (double) RBMKKeys.KEY_ABSORBER_HEAT_CONVERSION.defValue), 0.0D, 1.0D);
+    }
+
+    /**
      * The percentage of neutron to reflect when a stream hits a reflector column.
      *
      * @param world
@@ -296,10 +346,12 @@ public class RBMKDials {
 
     public enum RBMKKeys {
         KEY_SAVE_DIALS("dialSaveDials", true),
-        KEY_PASSIVE_COOLING("dialPassiveCooling", 1.0),
+        KEY_PASSIVE_COOLING("dialPassiveCooling", 2.5),
+        KEY_PASSIVE_COOLING_INNER("dialPassiveCoolingInner", 0.1),
         KEY_COLUMN_HEAT_FLOW("dialColumnHeatFlow", 0.2),
         KEY_FUEL_DIFFUSION_MOD("dialDiffusionMod", 1.0),
         KEY_HEAT_PROVISION("dialHeatProvision", 0.2),
+        // Stored as total stacked block count including the core; getColumnHeight(world) returns this value minus one.
         KEY_COLUMN_HEIGHT("dialColumnHeight", 4),
         KEY_PERMANENT_SCRAP("dialEnablePermaScrap", true),
         KEY_BOILER_HEAT_CONSUMPTION("dialBoilerHeatConsumption", 0.1),
@@ -319,7 +371,8 @@ public class RBMKDials {
         KEY_ABSORBER_EFFICIENCY("dialAbsorberEfficiency", 1.0),
         KEY_REFLECTOR_EFFICIENCY("dialReflectorEfficiency", 1.0),
         KEY_DISABLE_DEPLETION("dialDisableDepletion", false),
-        KEY_DISABLE_XENON("dialDisableXenon", false);
+        KEY_DISABLE_XENON("dialDisableXenon", false),
+        KEY_ABSORBER_HEAT_CONVERSION("dialAbsorberHeatConversion", 0.05);
 
         public static final RBMKKeys[] VALUES = values();
 

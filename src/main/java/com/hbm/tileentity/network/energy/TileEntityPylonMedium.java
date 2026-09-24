@@ -38,12 +38,12 @@ public class TileEntityPylonMedium extends TileEntityPylonBase {
 
 	@Override
 	public boolean canConnect(ForgeDirection dir) {
-		return this.hasTransformer() ? ForgeDirection.getOrientation(this.getBlockMetadata() - 10).getOpposite() == dir : false;
+		return this.hasTransformer() && ForgeDirection.getOrientation(this.getBlockMetadata() - 10).getOpposite() == dir;
 	}
 
 	@Override
 	public Nodespace.PowerNode createNode() {
-		TileEntity tile = (TileEntity) this;
+		TileEntity tile = this;
 		Nodespace.PowerNode node = new Nodespace.PowerNode(new BlockPos(tile.getPos().getX(), tile.getPos().getY(), tile.getPos().getZ())).setConnections(new DirPos(pos.getX(), pos.getY(), pos.getZ(), ForgeDirection.UNKNOWN));
 		for(int[] pos : this.connected) node.addConnection(new DirPos(pos[0], pos[1], pos[2], ForgeDirection.UNKNOWN));
 		if(this.hasTransformer()) {

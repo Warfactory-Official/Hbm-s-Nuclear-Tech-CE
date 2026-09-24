@@ -223,7 +223,7 @@ public abstract class FoundryCastingBase extends BlockContainer implements ICruc
             Mold mold = ((ItemMold) moldStack.getItem()).getMold(moldStack);
             text.add("§e" + mold.getTitle());
             if (cast.type != null && cast.amount > 0) {
-                text.add("&[" + cast.type.moltenColor + "&]" + I18nUtil.resolveKey(cast.type.getTranslationKey()) + ": " + cast.amount + " / " + cast.getCapacity());
+                text.add("&[" + cast.type.moltenColor + "&]" + cast.type.getLocalizedName() + ": " + cast.amount + " / " + cast.getCapacity());
             }
 //            else if (cast.getCapacity() > 0) {
 //                text.add("§7" + I18nUtil.resolveKey("foundry.empty") + ": 0 / " + cast.getCapacity());

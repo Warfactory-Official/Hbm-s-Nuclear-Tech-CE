@@ -2,19 +2,21 @@ package com.hbm.tileentity.machine;
 
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
-import com.hbm.config.GeneralConfig;
+import com.hbm.config.ClientConfig;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IConfigurableMachine;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
@@ -27,8 +29,8 @@ public class TileEntityTowerLarge extends TileEntityCondenser {
 	
 	public TileEntityTowerLarge() {
 		tanks = new FluidTankNTM[2];
-		tanks[0] = new FluidTankNTM(Fluids.SPENTSTEAM, inputTankSizeTL);
-		tanks[1] = new FluidTankNTM(Fluids.WATER, outputTankSizeTL);
+		tanks[0] = new FluidTankNTM(Fluids.SPENTSTEAM, inputTankSizeTL).withOwner(this);
+		tanks[1] = new FluidTankNTM(Fluids.WATER, outputTankSizeTL).withOwner(this);
 	}
 
 	@Override
@@ -54,19 +56,15 @@ public class TileEntityTowerLarge extends TileEntityCondenser {
 		
 		if(world.isRemote) {
 
-			if(GeneralConfig.enableSteamParticles && (this.waterTimer > 0 && this.world.getTotalWorldTime() % 4 == 0)) {
+			if(ClientConfig.COOLING_TOWER_PARTICLES.get() && (this.waterTimer > 0 && this.world.getTotalWorldTime() % 4 == 0)) {
 				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "tower");
 				data.setFloat("lift", 0.5F);
 				data.setFloat("base", 1F);
 				data.setFloat("max", 10F);
 				data.setInteger("life", 750 + world.rand.nextInt(250));
-	
-				data.setDouble("posX", pos.getX() + 0.5 + world.rand.nextDouble() * 3 - 1.5);
-				data.setDouble("posZ", pos.getZ() + 0.5 + world.rand.nextDouble() * 3 - 1.5);
-				data.setDouble("posY", pos.getY() + 1);
 				
-				MainRegistry.proxy.effectNT(data);
+				MainRegistry.proxy.effectNT(HbmEffectNT.Tower,
+                        pos.getX() + 0.5 + world.rand.nextDouble() * 3 - 1.5, pos.getY() + 1, pos.getZ() + 0.5 + world.rand.nextDouble() * 3 - 1.5, data);
 			}
 		}
 	}
@@ -98,7 +96,7 @@ public class TileEntityTowerLarge extends TileEntityCondenser {
 	AxisAlignedBB bb = null;
 	
 	@Override
-	public AxisAlignedBB getRenderBoundingBox() {
+	public @NotNull AxisAlignedBB getRenderBoundingBox() {
 		
 		if(bb == null) {
 			bb = new AxisAlignedBB(

@@ -3,20 +3,24 @@ package com.hbm.blocks;
 import com.google.common.collect.ImmutableMap;
 import com.hbm.handler.MultiblockHandlerXR;
 import com.hbm.interfaces.ICopiable;
+import com.hbm.items.ClaimedModelLocationRegistry;
 import com.hbm.items.IDynamicModels;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
+import com.hbm.main.client.NTMClientRegistry;
+import com.hbm.main.client.StaticTesrBakedModels;
 import com.hbm.tileentity.IPersistentNBT;
 import com.hbm.world.gen.nbt.INBTBlockTransformable;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyInteger;
+import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.RenderGlobal;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.model.ModelRotation;
@@ -24,18 +28,18 @@ import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving.SpawnPlacementType;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.*;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
@@ -47,10 +51,9 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.opengl.GL11;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public abstract class BlockDummyable extends BlockContainer implements ICustomBlockHighlight, ICopiable, INBTBlockTransformable, IDynamicModels {
 
@@ -67,6 +70,7 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
     //meta offset from dummy to extra rotation
     public static final int extra = 6;
     private static final long NO_CORE = Long.MIN_VALUE;
+    private static final AxisAlignedBB DETAIL_AABB = new AxisAlignedBB(0.0F, 0.0F, 0.0F, 1.0F, 0.999F, 1.0F);
     public static boolean safeRem = false;
     public List<AxisAlignedBB> bounding = new ArrayList<>();
 
@@ -89,9 +93,17 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
         ModBlocks.ALL_BLOCKS.add(this);
     }
 
+    @Override
+    public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
+        return BlockFaceShape.UNDEFINED;
+    }
 
     protected int getMaxCoreSearchSteps() {
         return 512;
+    }
+
+    protected boolean isSameMultiblock(Block other) {
+        return other == this;
     }
 
     private long findCoreSerialized(IBlockAccess world, BlockPos pos, BlockPos.MutableBlockPos scratch) {
@@ -102,7 +114,7 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
         for (int steps = 0, max = getMaxCoreSearchSteps(); steps < max; steps++) {
             scratch.setPos(x, y, z);
             IBlockState state = world.getBlockState(scratch);
-            if (state.getBlock() != this) return NO_CORE;
+            if (!isSameMultiblock(state.getBlock())) return NO_CORE;
             int meta = state.getValue(META);
             if (meta >= 12) return Library.blockPosToLong(x, y, z);
             if (meta >= extra) meta -= extra;
@@ -150,33 +162,47 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
     @Override
     public void neighborChanged(@NotNull IBlockState state, World world, @NotNull BlockPos pos, @NotNull Block blockIn, @NotNull BlockPos fromPos) {
         if (world.isRemote || safeRem) return;
-
-        int metadata = state.getValue(META);
-
-        //if it's an extra, remove the extra-ness
-        if (metadata >= extra) metadata -= extra;
-
-        ForgeDirection dir = ForgeDirection.getOrientation(metadata).getOpposite();
-        BlockPos other = pos.add(dir.offsetX, dir.offsetY, dir.offsetZ);
-        if (world.getBlockState(other).getBlock() != this) {
-            world.setBlockToAir(pos);
-        }
+        cascadeOrphans(world, pos, state);
     }
 
     @Override
     public void updateTick(@NotNull World world, @NotNull BlockPos pos, @NotNull IBlockState state, @NotNull Random rand) {
         super.updateTick(world, pos, state, rand);
         if (world.isRemote) return;
+        cascadeOrphans(world, pos, state);
+    }
 
-        int metadata = state.getValue(META);
-
-        //if it's an extra, remove the extra-ness
-        if (metadata >= extra) metadata -= extra;
-
-        ForgeDirection dir = ForgeDirection.getOrientation(metadata).getOpposite();
+    private boolean isOrphan(IBlockAccess world, BlockPos pos, IBlockState state) {
+        int meta = state.getValue(META);
+        if (meta >= 12) return false; // core, not a dummy
+        if (meta >= extra) meta -= extra;
+        ForgeDirection dir = ForgeDirection.getOrientation(meta).getOpposite();
         BlockPos other = pos.add(dir.offsetX, dir.offsetY, dir.offsetZ);
-        if (world.getBlockState(other).getBlock() != this) {
-            world.setBlockToAir(pos);
+        return !isSameMultiblock(world.getBlockState(other).getBlock());
+    }
+
+    // Iterative orphan cascade. Suppresses re-entry via safeRem so setBlockToAir's
+    // neighbor notifications don't recurse into neighborChanged; we manually queue
+    // the freshly-orphaned neighbors instead. Without this, destroying a long dummy
+    // chain blows the JVM stack (each recursion level burns ~8 frames). idk why it isn't crashing in 1.7
+    private void cascadeOrphans(World world, BlockPos start, IBlockState startState) {
+        if (!isSameMultiblock(startState.getBlock()) || !isOrphan(world, start, startState)) return;
+        safeRem = true;
+        try {
+            ArrayDeque<BlockPos> queue = new ArrayDeque<>();
+            queue.add(start);
+            while (!queue.isEmpty()) {
+                BlockPos p = queue.poll();
+                IBlockState s = world.getBlockState(p);
+                if (!isSameMultiblock(s.getBlock())) continue;
+                if (!isOrphan(world, p, s)) continue;
+                world.setBlockToAir(p);
+                for (ForgeDirection d : ForgeDirection.VALID_DIRECTIONS) {
+                    queue.add(p.add(d.offsetX, d.offsetY, d.offsetZ));
+                }
+            }
+        } finally {
+            safeRem = false;
         }
     }
 
@@ -248,7 +274,7 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
     protected boolean standardOpenBehavior(World world, int x, int y, int z, EntityPlayer player, int id) {
 		
 		if(world.isRemote) {
-			return true;
+			return !player.isSneaking();
 		} else if(!player.isSneaking()) {
 			int[] pos = this.findCore(world, x, y, z);
 
@@ -258,7 +284,7 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 			player.openGui(MainRegistry.instance, id, world, pos[0], pos[1], pos[2]);
 			return true;
 		} else {
-			return true;
+			return false;
 		}
 	}
 
@@ -275,8 +301,11 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 		return dir;
 	}
 
-	protected EnumFacing getDirModified(EnumFacing dir) {
-		return dir;
+	protected final EnumFacing getDirModified(EnumFacing dir) {
+        if (dir == null) return null;
+        ForgeDirection modified = getDirModified(ForgeDirection.getOrientation(dir));
+        EnumFacing facing = modified.toEnumFacing();
+		return facing != null ? facing : dir;
 	}
 
     public boolean checkRequirement(World world, int x, int y, int z, ForgeDirection dir, int o) {
@@ -444,7 +473,11 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 		return this.getDefaultState().withProperty(META, meta);
 	}
 	
+	/**
+	 * @returns an int array with six fields, describing the amount of dummy blocks in each direction around the core. order is UP, DOWN, FORWARD, BACKWARD, LEFT, RIGHT
+	 */
 	public abstract int[] getDimensions();
+
 	public abstract int getOffset();
 	
 	public int getHeightOffset() {
@@ -487,11 +520,22 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
     }
 
 	@Override
+	public boolean causesSuffocation(IBlockState state) {
+		return false;
+	}
+
+	/// crappers spawning on large machines pmo
+	@Override
+	public boolean canCreatureSpawn(IBlockState state,IBlockAccess world,BlockPos pos,SpawnPlacementType type) {
+		return false;
+	}
+
+	@Override
 	public @NotNull AxisAlignedBB getBoundingBox(@NotNull IBlockState state, @NotNull IBlockAccess source, @NotNull BlockPos pos) {
 		if (!this.useDetailedHitbox()) {
 			return FULL_BLOCK_AABB;
 		} else {
-			return new AxisAlignedBB(0.0F, 0.0F, 0.0F, 1.0F, 0.999F, 1.0F);
+			return DETAIL_AABB;
 		}
 	}
 
@@ -564,16 +608,18 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 			);
 			ModelResourceLocation worldLocation = new ModelResourceLocation(getRegistryName(), "normal");
 			event.getModelRegistry().putObject(worldLocation, blockBaked);
-			IModel itemBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
-			ImmutableMap<String, String> itemTextures = ImmutableMap.of("layer0", "hbm:blocks/" + getRegistryName().getPath());
-			IModel itemRetextured = itemBaseModel.retexture(itemTextures);
-			IBakedModel itemBaked = itemRetextured.bake(
-					ModelRotation.X0_Y0,
-					DefaultVertexFormats.ITEM,
-					ModelLoader.defaultTextureGetter()
-			);
-			ModelResourceLocation inventoryLocation = new ModelResourceLocation(getRegistryName(), "inventory");
-			event.getModelRegistry().putObject(inventoryLocation, itemBaked);
+            if (!ClaimedModelLocationRegistry.hasSyntheticTeisrBinding(Item.getItemFromBlock(this))) {
+				IModel itemBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
+				ImmutableMap<String, String> itemTextures = ImmutableMap.of("layer0", "hbm:blocks/" + getRegistryName().getPath());
+				IModel itemRetextured = itemBaseModel.retexture(itemTextures);
+				IBakedModel itemBaked = itemRetextured.bake(
+						ModelRotation.X0_Y0,
+						DefaultVertexFormats.ITEM,
+						ModelLoader.defaultTextureGetter()
+				);
+				ModelResourceLocation inventoryLocation = new ModelResourceLocation(getRegistryName(), "inventory");
+				event.getModelRegistry().putObject(inventoryLocation, itemBaked);
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -584,12 +630,41 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerModel() {
-		ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0, new ModelResourceLocation(this.getRegistryName(), "inventory"));
+		Item item = Item.getItemFromBlock(this);
+		ModelResourceLocation syntheticLocation = NTMClientRegistry.getSyntheticTeisrModelLocation(item);
+		ModelLoader.setCustomModelResourceLocation(item, 0, syntheticLocation != null ? syntheticLocation : new ModelResourceLocation(this.getRegistryName(), "inventory"));
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerSprite(TextureMap map) {
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public EnumBlockRenderType getRenderType(IBlockState state) {
+		if (StaticTesrBakedModels.isManagedBlock(this)) {
+			return EnumBlockRenderType.MODEL;
+		}
+		return super.getRenderType(state);
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public BlockRenderLayer getRenderLayer() {
+		if (StaticTesrBakedModels.isManagedBlock(this)) {
+			return BlockRenderLayer.CUTOUT;
+		}
+		return super.getRenderLayer();
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public boolean canRenderInLayer(IBlockState state, BlockRenderLayer layer) {
+		if (StaticTesrBakedModels.isManagedBlock(this)) {
+			return layer == BlockRenderLayer.CUTOUT;
+		}
+		return super.canRenderInLayer(state, layer);
 	}
 
 	@Override
@@ -603,4 +678,268 @@ public abstract class BlockDummyable extends BlockContainer implements ICustomBl
 		};
 	}
 
+    public int[][] getAllDimensions() {
+        return new int[][] { getDimensions() };
+    }
+
+    public double[][] getAABBExtras() {
+        return new double[0][0];
+    }
+
+    @SideOnly(Side.CLIENT)
+    public void drawPlacementHighlight(EntityPlayer player, float interp) {
+        RayTraceResult mop = player.rayTrace(5.0D, interp);
+
+        if(mop != null && mop.typeOfHit == RayTraceResult.Type.BLOCK) {
+            double dX = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) interp;
+            double dY = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) interp;
+            double dZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) interp;
+
+            int i = MathHelper.floor(player.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
+            int o = -getOffset();
+            int pY = mop.getBlockPos().getY() + getHeightOffset();
+
+            // Orientation
+            ForgeDirection facing = ForgeDirection.NORTH;
+            if(i == 0) facing = ForgeDirection.getOrientation(2);
+            if(i == 1) facing = ForgeDirection.getOrientation(5);
+            if(i == 2) facing = ForgeDirection.getOrientation(3);
+            if(i == 3) facing = ForgeDirection.getOrientation(4);
+
+            ForgeDirection sideHit = ForgeDirection.getOrientation(mop.sideHit.getIndex());
+            facing = getDirModified(facing);
+
+            double originX = mop.getBlockPos().getX() + facing.offsetX * o + sideHit.offsetX;
+            double originY = pY + sideHit.offsetY;
+            double originZ = mop.getBlockPos().getZ() + facing.offsetZ * o + sideHit.offsetZ;
+
+            boolean canPlace = checkRequirement(player.world, mop.getBlockPos().getX() + sideHit.offsetX, pY + sideHit.offsetY, mop.getBlockPos().getZ() + sideHit.offsetZ, facing, o);
+            Tessellator tess = Tessellator.getInstance();
+            BufferBuilder buffer = tess.getBuffer();
+
+            GlStateManager.pushMatrix();
+            GlStateManager.disableLighting();
+            GlStateManager.disableTexture2D();
+            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
+            GlStateManager.glLineWidth(2.0F);
+            GlStateManager.depthMask(false);
+
+            buffer.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
+
+            double timer = (System.currentTimeMillis() % (1000D * Math.PI)) / 250D;
+            double sine = Math.sin(timer);
+            int color = (int) (255 * (sine * 0.25 + 0.75));
+
+            int r = canPlace ? 0 : color;
+            int g = canPlace ? color : 0;
+            int b = 0;
+            int a = 255;
+
+            List<BlockPos> blocks = new ArrayList<>();
+            Set<BlockPos> set = new HashSet<>();
+
+            for(int[] dims : getAllDimensions()) {
+                // Some of the multiblocks have offsets for the placements, so
+                // this allows for the ones that dont need it to have a bunch of
+                // 0s at the end.
+                int offFwd = dims.length > 6 ? dims[6] : 0;
+                int offUp = dims.length > 7 ? dims[7] : 0;
+                int offLat = dims.length > 8 ? dims[8] : 0;
+                int worldOffX;
+                int worldOffY;
+                int worldOffZ;
+
+                worldOffY = offUp;
+                worldOffX = facing.offsetX * offFwd + facing.getRotation(ForgeDirection.UP).offsetX * offLat;
+                worldOffZ = facing.offsetZ * offFwd + facing.getRotation(ForgeDirection.UP).offsetZ * offLat;
+
+                int[] rot = MultiblockHandlerXR.rotate(dims, facing.toEnumFacing());
+                for(int bx = -rot[4] + worldOffX; bx <= rot[5] + worldOffX; bx++) {
+                    for(int by = -rot[1] + worldOffY; by <= rot[0] + worldOffY; by++) {
+                        for(int bz = -rot[2] + worldOffZ; bz <= rot[3] + worldOffZ; bz++) {
+                            BlockPos bp = new BlockPos(MathHelper.floor(originX) + bx, MathHelper.floor(originY) + by, MathHelper.floor(originZ) + bz);
+                            blocks.add(bp);
+                            set.add(bp);
+                        }
+                    }
+                }
+            }
+            // This looks for the blocks nearby and draws lines between the
+            // vertexes to make different shaped boxes.
+            // Most of this was taken from Mellow (Thanks mellow) -Wolf
+            for(BlockPos pos : blocks) {
+                boolean px = set.contains(pos.add(1, 0, 0));
+                boolean nx = set.contains(pos.add(-1, 0, 0));
+                boolean ppy = set.contains(pos.add(0, 1, 0));
+                boolean ny = set.contains(pos.add(0, -1, 0));
+                boolean ppz = set.contains(pos.add(0, 0, 1));
+                boolean nz = set.contains(pos.add(0, 0, -1));
+
+                double minX = pos.getX() - dX;
+                double maxX = pos.getX() + 1 - dX;
+                double minY = pos.getY() - dY;
+                double maxY = pos.getY() + 1 - dY;
+                double minZ = pos.getZ() - dZ;
+                double maxZ = pos.getZ() + 1 - dZ;
+
+                if(!ppy) {
+                    if(!nx) {
+                        buffer.pos(minX, maxY, minZ).color(r, g, b, a).endVertex();
+                        buffer.pos(minX, maxY, maxZ).color(r, g, b, a).endVertex();
+                    }
+                    if(!ppz) {
+                        buffer.pos(minX, maxY, maxZ).color(r, g, b, a).endVertex();
+                        buffer.pos(maxX, maxY, maxZ).color(r, g, b, a).endVertex();
+                    }
+                    if(!px) {
+                        buffer.pos(maxX, maxY, maxZ).color(r, g, b, a).endVertex();
+                        buffer.pos(maxX, maxY, minZ).color(r, g, b, a).endVertex();
+                    }
+                    if(!nz) {
+                        buffer.pos(maxX, maxY, minZ).color(r, g, b, a).endVertex();
+                        buffer.pos(minX, maxY, minZ).color(r, g, b, a).endVertex();
+                    }
+                }
+                if(!ny) {
+                    if(!nx) {
+                        buffer.pos(minX, minY, minZ).color(r, g, b, a).endVertex();
+                        buffer.pos(minX, minY, maxZ).color(r, g, b, a).endVertex();
+                    }
+                    if(!ppz) {
+                        buffer.pos(minX, minY, maxZ).color(r, g, b, a).endVertex();
+                        buffer.pos(maxX, minY, maxZ).color(r, g, b, a).endVertex();
+                    }
+                    if(!px) {
+                        buffer.pos(maxX, minY, maxZ).color(r, g, b, a).endVertex();
+                        buffer.pos(maxX, minY, minZ).color(r, g, b, a).endVertex();
+                    }
+                    if(!nz) {
+                        buffer.pos(maxX, minY, minZ).color(r, g, b, a).endVertex();
+                        buffer.pos(minX, minY, minZ).color(r, g, b, a).endVertex();
+                    }
+                }
+                if(!nz) {
+                    if(!nx) {
+                        buffer.pos(minX, minY, minZ).color(r, g, b, a).endVertex();
+                        buffer.pos(minX, maxY, minZ).color(r, g, b, a).endVertex();
+                    }
+                    if(!ppy) {
+                        buffer.pos(minX, maxY, minZ).color(r, g, b, a).endVertex();
+                        buffer.pos(maxX, maxY, minZ).color(r, g, b, a).endVertex();
+                    }
+                    if(!px) {
+                        buffer.pos(maxX, maxY, minZ).color(r, g, b, a).endVertex();
+                        buffer.pos(maxX, minY, minZ).color(r, g, b, a).endVertex();
+                    }
+                    if(!ny) {
+                        buffer.pos(maxX, minY, minZ).color(r, g, b, a).endVertex();
+                        buffer.pos(minX, minY, minZ).color(r, g, b, a).endVertex();
+                    }
+                }
+                if(!ppz) {
+                    if(!nx) {
+                        buffer.pos(minX, minY, maxZ).color(r, g, b, a).endVertex();
+                        buffer.pos(minX, maxY, maxZ).color(r, g, b, a).endVertex();
+                    }
+                    if(!ppy) {
+                        buffer.pos(minX, maxY, maxZ).color(r, g, b, a).endVertex();
+                        buffer.pos(maxX, maxY, maxZ).color(r, g, b, a).endVertex();
+                    }
+                    if(!px) {
+                        buffer.pos(maxX, maxY, maxZ).color(r, g, b, a).endVertex();
+                        buffer.pos(maxX, minY, maxZ).color(r, g, b, a).endVertex();
+                    }
+                    if(!ny) {
+                        buffer.pos(maxX, minY, maxZ).color(r, g, b, a).endVertex();
+                        buffer.pos(minX, minY, maxZ).color(r, g, b, a).endVertex();
+                    }
+                }
+                if(!nx) {
+                    if(!nz) {
+                        buffer.pos(minX, minY, minZ).color(r, g, b, a).endVertex();
+                        buffer.pos(minX, maxY, minZ).color(r, g, b, a).endVertex();
+                    }
+                    if(!ppy) {
+                        buffer.pos(minX, maxY, minZ).color(r, g, b, a).endVertex();
+                        buffer.pos(minX, maxY, maxZ).color(r, g, b, a).endVertex();
+                    }
+                    if(!ppz) {
+                        buffer.pos(minX, maxY, maxZ).color(r, g, b, a).endVertex();
+                        buffer.pos(minX, minY, maxZ).color(r, g, b, a).endVertex();
+                    }
+                    if(!ny) {
+                        buffer.pos(minX, minY, maxZ).color(r, g, b, a).endVertex();
+                        buffer.pos(minX, minY, minZ).color(r, g, b, a).endVertex();
+                    }
+                }
+                if(!px) {
+                    if(!nz) {
+                        buffer.pos(maxX, minY, minZ).color(r, g, b, a).endVertex();
+                        buffer.pos(maxX, maxY, minZ).color(r, g, b, a).endVertex();
+                    }
+                    if(!ppy) {
+                        buffer.pos(maxX, maxY, minZ).color(r, g, b, a).endVertex();
+                        buffer.pos(maxX, maxY, maxZ).color(r, g, b, a).endVertex();
+                    }
+                    if(!ppz) {
+                        buffer.pos(maxX, maxY, maxZ).color(r, g, b, a).endVertex();
+                        buffer.pos(maxX, minY, maxZ).color(r, g, b, a).endVertex();
+                    }
+                    if(!ny) {
+                        buffer.pos(maxX, minY, maxZ).color(r, g, b, a).endVertex();
+                        buffer.pos(maxX, minY, minZ).color(r, g, b, a).endVertex();
+                    }
+                }
+            }
+
+            b = color;
+            r = 0;
+            g = 0;
+
+            // boo-yeah
+            for(double[] extra : this.getAABBExtras()) {
+                ForgeDirection rot = facing.getRotation(ForgeDirection.UP);
+                double cX = MathHelper.floor(originX) - dX + 0.5;
+                double cY = MathHelper.floor(originY) - dY;
+                double cZ = MathHelper.floor(originZ) - dZ + 0.5;
+
+                double upr = extra[0];
+                double lwr = extra[1];
+                double fwd = extra[2];
+                double bwd = extra[3];
+                double lft = extra[4];
+                double rgt = extra[5];
+
+                double x0 = cX + fwd * facing.offsetX + lft * rot.offsetX;
+                double x1 = cX + bwd * facing.offsetX + rgt * rot.offsetX;
+                double y0 = cY + lwr;
+                double y1 = cY + upr;
+                double z0 = cZ + fwd * facing.offsetZ + lft * rot.offsetZ;
+                double z1 = cZ + bwd * facing.offsetZ + rgt * rot.offsetZ;
+
+                buffer.pos(x0, y0, z0).color(r, g, b, a).endVertex(); buffer.pos(x0, y0, z1).color(r, g, b, a).endVertex();
+                buffer.pos(x1, y0, z0).color(r, g, b, a).endVertex(); buffer.pos(x1, y0, z1).color(r, g, b, a).endVertex();
+                buffer.pos(x0, y0, z0).color(r, g, b, a).endVertex(); buffer.pos(x1, y0, z0).color(r, g, b, a).endVertex();
+                buffer.pos(x0, y0, z1).color(r, g, b, a).endVertex(); buffer.pos(x1, y0, z1).color(r, g, b, a).endVertex();
+
+                buffer.pos(x0, y1, z0).color(r, g, b, a).endVertex(); buffer.pos(x0, y1, z1).color(r, g, b, a).endVertex();
+                buffer.pos(x1, y1, z0).color(r, g, b, a).endVertex(); buffer.pos(x1, y1, z1).color(r, g, b, a).endVertex();
+                buffer.pos(x0, y1, z0).color(r, g, b, a).endVertex(); buffer.pos(x1, y1, z0).color(r, g, b, a).endVertex();
+                buffer.pos(x0, y1, z1).color(r, g, b, a).endVertex(); buffer.pos(x1, y1, z1).color(r, g, b, a).endVertex();
+
+                buffer.pos(x0, y0, z0).color(r, g, b, a).endVertex(); buffer.pos(x0, y1, z0).color(r, g, b, a).endVertex();
+                buffer.pos(x1, y0, z0).color(r, g, b, a).endVertex(); buffer.pos(x1, y1, z0).color(r, g, b, a).endVertex();
+                buffer.pos(x0, y0, z1).color(r, g, b, a).endVertex(); buffer.pos(x0, y1, z1).color(r, g, b, a).endVertex();
+                buffer.pos(x1, y0, z1).color(r, g, b, a).endVertex(); buffer.pos(x1, y1, z1).color(r, g, b, a).endVertex();
+            }
+
+            tess.draw();
+
+            GlStateManager.depthMask(true);
+            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, OpenGlHelper.lastBrightnessX, OpenGlHelper.lastBrightnessY);
+            GlStateManager.enableTexture2D();
+            GlStateManager.enableLighting();
+            GlStateManager.popMatrix();
+        }
+    }
 }

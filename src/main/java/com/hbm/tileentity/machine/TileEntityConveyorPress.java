@@ -9,6 +9,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.BufferUtil;
 import io.netty.buffer.ByteBuf;
@@ -24,7 +25,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import java.util.List;
 
 @AutoRegister
-public class TileEntityConveyorPress extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2 {
+public class TileEntityConveyorPress extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IConnectionAnchors {
 
     public int usage = 100;
     public long power = 0;
@@ -110,7 +111,7 @@ public class TileEntityConveyorPress extends TileEntityMachineBase implements IT
         for(DirPos pos : getConPos()) this.trySubscribe(world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
     }
 
-    protected DirPos[] getConPos() {
+    public DirPos[] getConPos() {
         int xCoord = pos.getX(), yCoord = pos.getY(), zCoord = pos.getZ();
         return new DirPos[] {
                 new DirPos(xCoord + 1, yCoord, zCoord, Library.POS_X),

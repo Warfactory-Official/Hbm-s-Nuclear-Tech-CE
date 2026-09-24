@@ -10,19 +10,18 @@ import com.hbm.inventory.gui.GUIForceField;
 import com.hbm.items.ModItems;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
-import com.hbm.packet.PacketDispatcher;
-import com.hbm.packet.toclient.TEFFPacket;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.render.chunk.SectionGeometry;
+import com.hbm.util.Vec3NT;
 import com.hbm.tileentity.IConfigurableMachine;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
@@ -30,7 +29,6 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.ItemStackHandler;
@@ -129,6 +127,37 @@ public class TileEntityForceField extends TileEntityLoadedBase implements ITicka
         return super.writeToNBT(nbt);
     }
 
+    // Render/GUI-critical fields ride the per-tick BufPacket channel. networkPackNT hash-dedups
+    // when nothing changes, so an idle field costs 0 per-tick bandwidth. serializeInitial defaults
+    // to this payload so chunk-load sync is covered with no extra override.
+    @Override
+    public void serialize(ByteBuf buf) {
+        super.serialize(buf);
+        buf.writeLong(power);
+        buf.writeInt(health);
+        buf.writeInt(maxHealth);
+        buf.writeInt(cooldown);
+        buf.writeInt(blink);
+        buf.writeFloat(radius);
+        buf.writeBoolean(isOn);
+        buf.writeInt(color);
+    }
+
+    @Override
+    public void deserialize(ByteBuf buf) {
+        super.deserialize(buf);
+        power = buf.readLong();
+        health = buf.readInt();
+        maxHealth = buf.readInt();
+        cooldown = buf.readInt();
+        blink = buf.readInt();
+        float prevRadius = radius;
+        radius = buf.readFloat();
+        isOn = buf.readBoolean();
+        color = buf.readInt();
+        if (prevRadius != radius) SectionGeometry.renderBoundsChanged(this);
+    }
+
     public int getHealthScaled(int i) {
         return (health * i) / Math.max(1, maxHealth);
     }
@@ -195,7 +224,7 @@ public class TileEntityForceField extends TileEntityLoadedBase implements ITicka
         }
 
         if (!world.isRemote) {
-            PacketDispatcher.wrapper.sendToAllTracking(new TEFFPacket(pos, radius, health, maxHealth, (int) power, isOn, color, cooldown), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 100));
+            networkPackNT(100);
         }
     }
 
@@ -257,26 +286,26 @@ public class TileEntityForceField extends TileEntityLoadedBase implements ITicka
 
                     //if the entity has crossed inwards
                     if (oLegacy.contains(entity) && !out) {
-                        Vec3 vec = Vec3.createVectorHelper(pos.getX() + 0.5 - entity.posX, pos.getY() + 0.5 - entity.posY, pos.getZ() + 0.5 - entity.posZ);
+                        Vec3NT vec = Vec3NT.createVectorHelper(pos.getX() + 0.5 - entity.posX, pos.getY() + 0.5 - entity.posY, pos.getZ() + 0.5 - entity.posZ);
                         vec = vec.normalize();
 
-                        double mx = -vec.xCoord * (rad + 1);
-                        double my = -vec.yCoord * (rad + 1);
-                        double mz = -vec.zCoord * (rad + 1);
+                        double mx = -vec.x * (rad + 1);
+                        double my = -vec.y * (rad + 1);
+                        double mz = -vec.z * (rad + 1);
 
                         entity.setLocationAndAngles(pos.getX() + 0.5 + mx, pos.getY() + 0.5 + my, pos.getZ() + 0.5 + mz, 0, 0);
 
                         double mo = Math.sqrt(Math.pow(entity.motionX, 2) + Math.pow(entity.motionY, 2) + Math.pow(entity.motionZ, 2));
 
-                        entity.motionX = vec.xCoord * -mo;
-                        entity.motionY = vec.yCoord * -mo;
-                        entity.motionZ = vec.zCoord * -mo;
+                        entity.motionX = vec.x * -mo;
+                        entity.motionY = vec.y * -mo;
+                        entity.motionZ = vec.z * -mo;
 
                         entity.posX -= entity.motionX;
                         entity.posY -= entity.motionY;
                         entity.posZ -= entity.motionZ;
 
-                        world.playSound(null, entity.posX, entity.posY, entity.posZ, HBMSoundHandler.sparkShoot, SoundCategory.BLOCKS, 2.5F, 1.0F);
+                        if (!this.muffled) world.playSound(null, entity.posX, entity.posY, entity.posZ, HBMSoundHandler.sparkShoot, SoundCategory.BLOCKS, 2.5F, 1.0F);
                         outside.add(entity);
 
                         if (!world.isRemote) {
@@ -287,26 +316,26 @@ public class TileEntityForceField extends TileEntityLoadedBase implements ITicka
 
                         //if the entity has crossed outwards
                         if (iLegacy.contains(entity) && out) {
-                            Vec3 vec = Vec3.createVectorHelper(pos.getX() + 0.5 - entity.posX, pos.getY() + 0.5 - entity.posY, pos.getZ() + 0.5 - entity.posZ);
+                            Vec3NT vec = Vec3NT.createVectorHelper(pos.getX() + 0.5 - entity.posX, pos.getY() + 0.5 - entity.posY, pos.getZ() + 0.5 - entity.posZ);
                             vec = vec.normalize();
 
-                            double mx = -vec.xCoord * (rad - 1);
-                            double my = -vec.yCoord * (rad - 1);
-                            double mz = -vec.zCoord * (rad - 1);
+                            double mx = -vec.x * (rad - 1);
+                            double my = -vec.y * (rad - 1);
+                            double mz = -vec.z * (rad - 1);
 
                             entity.setLocationAndAngles(pos.getX() + 0.5 + mx, pos.getY() + 0.5 + my, pos.getZ() + 0.5 + mz, 0, 0);
 
                             double mo = Math.sqrt(Math.pow(entity.motionX, 2) + Math.pow(entity.motionY, 2) + Math.pow(entity.motionZ, 2));
 
-                            entity.motionX = vec.xCoord * mo;
-                            entity.motionY = vec.yCoord * mo;
-                            entity.motionZ = vec.zCoord * mo;
+                            entity.motionX = vec.x * mo;
+                            entity.motionY = vec.y * mo;
+                            entity.motionZ = vec.z * mo;
 
                             entity.posX -= entity.motionX;
                             entity.posY -= entity.motionY;
                             entity.posZ -= entity.motionZ;
 
-                            world.playSound(null, entity.posX, entity.posY, entity.posZ, HBMSoundHandler.sparkShoot, SoundCategory.BLOCKS, 2.5F, 1.0F);
+                            if (!this.muffled) world.playSound(null, entity.posX, entity.posY, entity.posZ, HBMSoundHandler.sparkShoot, SoundCategory.BLOCKS, 2.5F, 1.0F);
                             inside.add(entity);
 
                             if (!world.isRemote) {
@@ -328,8 +357,8 @@ public class TileEntityForceField extends TileEntityLoadedBase implements ITicka
 
     private double getMotionWithFallback(Entity e) {
 
-        Vec3 v1 = Vec3.createVectorHelper(e.motionX, e.motionY, e.motionZ);
-        Vec3 v2 = Vec3.createVectorHelper(e.posX - e.prevPosY, e.posY - e.prevPosY, e.posZ - e.prevPosZ);
+        Vec3NT v1 = Vec3NT.createVectorHelper(e.motionX, e.motionY, e.motionZ);
+        Vec3NT v2 = Vec3NT.createVectorHelper(e.posX - e.prevPosY, e.posY - e.prevPosY, e.posZ - e.prevPosZ);
 
         double s1 = v1.length();
         double s2 = v2.length();
@@ -360,7 +389,8 @@ public class TileEntityForceField extends TileEntityLoadedBase implements ITicka
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
+        double r = radius;
+        return new AxisAlignedBB(pos.getX() - r, pos.getY() - r, pos.getZ() - r, pos.getX() + 1 + r, pos.getY() + 1 + r, pos.getZ() + 1 + r);
     }
 
     @Override

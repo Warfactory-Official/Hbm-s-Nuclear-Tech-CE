@@ -18,6 +18,7 @@ import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.modules.machine.ModuleMachinePUREX;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -28,6 +29,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -43,9 +45,10 @@ import net.minecraftforge.items.ItemStackHandler;
 
 import java.util.HashMap;
 import java.util.List;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 
 @AutoRegister
-public class TileEntityMachinePUREX extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, IControlReceiver, IGUIProvider {
+public class TileEntityMachinePUREX extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, IControlReceiver, IGUIProvider, IConnectionAnchors, IRORValueProvider {
 
     public FluidTankNTM[] inputTanks;
     public FluidTankNTM[] outputTanks;
@@ -82,9 +85,9 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase implements ITi
         this.inputTanks = new FluidTankNTM[3];
         this.outputTanks = new FluidTankNTM[1];
         for(int i = 0; i < 3; i++) {
-            this.inputTanks[i] = new FluidTankNTM(Fluids.NONE, 24_000);
+            this.inputTanks[i] = new FluidTankNTM(Fluids.NONE, 24_000).withOwner(this);
         }
-        this.outputTanks[0] = new FluidTankNTM(Fluids.NONE, 24_000);
+        this.outputTanks[0] = new FluidTankNTM(Fluids.NONE, 24_000).withOwner(this);
 
         this.purexModule = new ModuleMachinePUREX(0, this, inventory)
                 .itemInput(4).itemOutput(7)
@@ -257,12 +260,12 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase implements ITi
     @Override public boolean hasPermission(EntityPlayer player) { return this.isUseableByPlayer(player); }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if(data.hasKey("index") && data.hasKey("selection")) {
             int index = data.getInteger("index");
             String selection = data.getString("selection");
             if(index == 0) {
-                this.purexModule.recipe = selection;
+                this.purexModule.setRecipe(selection, false);
                 this.markChanged();
             }
         }
@@ -312,5 +315,22 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase implements ITi
         upgrades.put(UpgradeType.POWER, 3);
         upgrades.put(UpgradeType.OVERDRIVE, 3);
         return upgrades;
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[] {
+                PREFIX_VALUE + "progress",
+                PREFIX_VALUE + "recipe",
+                PREFIX_VALUE + "active"
+        };
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if((PREFIX_VALUE + "progress").equals(name)) return "" + (int) Math.round(this.purexModule.progress * 100);
+        if((PREFIX_VALUE + "recipe").equals(name)) return this.purexModule.getRecipeName();
+        if((PREFIX_VALUE + "active").equals(name)) return "" + (this.didProcess ? 1 : 0);
+        return null;
     }
 }

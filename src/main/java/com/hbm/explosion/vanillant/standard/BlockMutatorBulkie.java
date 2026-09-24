@@ -3,7 +3,7 @@ package com.hbm.explosion.vanillant.standard;
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.interfaces.IBlockMutator;
 import com.hbm.inventory.RecipesCommon.MetaBlock;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -42,7 +42,7 @@ public class BlockMutatorBulkie implements IBlockMutator {
 
 		if (!state.getBlock().isNormalCube(state, explosion.world, pos)) return;
 
-		Vec3 vec =  Vec3.createVectorHelper(pos.getX() + 0.5 - explosion.posX, pos.getY() + 0.5 - explosion.posY, pos.getZ() + 0.5 - explosion.posZ);
+		Vec3NT vec =  Vec3NT.createVectorHelper(pos.getX() + 0.5 - explosion.posX, pos.getY() + 0.5 - explosion.posY, pos.getZ() + 0.5 - explosion.posZ);
 
 		if (vec.length() >= explosion.size - 0.5) {
 			explosion.world.setBlockState(pos, metaBlock.block.getStateFromMeta(metaBlock.meta), 3);

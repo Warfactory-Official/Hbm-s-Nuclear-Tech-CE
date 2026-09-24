@@ -8,10 +8,14 @@ import com.hbm.blocks.machine.BlockContainerBakeable;
 import com.hbm.config.StructureConfig;
 import com.hbm.handler.WeightedRandomChestContentFrom1710;
 import com.hbm.interfaces.AutoRegister;
+import com.hbm.interfaces.IBomb;
+import com.hbm.interfaces.ICopiable;
 import com.hbm.itempool.ItemPool;
+import com.hbm.items.tool.ItemLock;
 import com.hbm.main.MainRegistry;
 import com.hbm.render.block.BlockBakeFrame;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.tileentity.machine.TileEntityLockableBase;
 import com.hbm.util.BufferUtil;
 import com.hbm.util.DelayedTick;
 import com.hbm.util.I18nUtil;
@@ -25,6 +29,7 @@ import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -52,12 +57,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-public class BlockWandLoot extends BlockContainerBakeable implements ILookOverlay, IToolable, ITooltipProvider {
+public class BlockWandLoot extends BlockContainerBakeable implements ILookOverlay, IToolable, ITooltipProvider, IBomb {
 
     public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
 
     public BlockWandLoot(String s) {
-        super(Material.IRON, s, new BlockBakeFrame("wand_loot_top", "wand_loot"));
+        super(Material.IRON, s, BlockBakeFrame.column("wand_loot_top", "wand_loot"));
         this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
     }
 
@@ -101,6 +106,11 @@ public class BlockWandLoot extends BlockContainerBakeable implements ILookOverla
             text.add("Maximum items: " + loot.maxItems);
         }
 
+        if (loot.lockCode != 0) {
+            text.add("Container will be locked");
+            text.add("Lockpicking chance:" + loot.lockMod);
+        }
+
         ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getTranslationKey() + ".name"), 0xffff00, 0x404000, text);
     }
 
@@ -135,6 +145,12 @@ public class BlockWandLoot extends BlockContainerBakeable implements ILookOverla
 
                 return true;
             }
+        }
+
+        ItemStack held = player.getHeldItem(hand);
+        if (held != null && held.getItem() instanceof ItemLock) {
+            loot.lockMod = (float) ((ItemLock) held.getItem()).lockMod;
+            loot.lockCode = ItemLock.getPins(held);
         }
 
         return false;
@@ -201,11 +217,22 @@ public class BlockWandLoot extends BlockContainerBakeable implements ILookOverla
     }
 
     @Override
+    public BombReturnCode explode(World world, BlockPos pos, Entity detonator) {
+        TileEntity te = world.getTileEntity(pos);
+
+        if (!(te instanceof BlockWandLoot.TileEntityWandLoot)) return null;
+
+        ((BlockWandLoot.TileEntityWandLoot) te).triggerReplace = true;
+
+        return BombReturnCode.TRIGGERED;
+    }
+
+    @Override
     public TileEntity createNewTileEntity(World world, int meta) {
         return new TileEntityWandLoot();
     }
     @AutoRegister
-    public static class TileEntityWandLoot extends TileEntityLoadedBase implements INBTTileEntityTransformable, ITickable {
+    public static class TileEntityWandLoot extends TileEntityLoadedBase implements INBTTileEntityTransformable, ICopiable, ITickable {
 
         private boolean triggerReplace;
 
@@ -217,6 +244,10 @@ public class BlockWandLoot extends BlockContainerBakeable implements ILookOverla
         private int maxItems = 1;
 
         private float placedRotation;
+
+        private float lockMod = 0;
+        private int lockCode = 0;
+        private boolean cheesable = true;
 
         private static final GameProfile FAKE_PROFILE = new GameProfile(UUID.fromString("839eb18c-50bc-400c-8291-9383f09763e7"), "[NTM]");
         private static FakePlayer fakePlayer;
@@ -249,6 +280,13 @@ public class BlockWandLoot extends BlockContainerBakeable implements ILookOverla
 
                 te = replaceBlock.createTileEntity(world, replaceBlock.getStateFromMeta(replaceMeta));
                 world.setTileEntity(pos, te);
+            }
+
+            if (te instanceof TileEntityLockableBase && lockCode != 0) {
+                ((TileEntityLockableBase) te).setPins(lockCode);
+                ((TileEntityLockableBase) te).setMod(lockMod);
+                ((TileEntityLockableBase) te).cheesable = lockMod != 0;
+                ((TileEntityLockableBase) te).lock();
             }
             // Th3_Sl1ze: sometimes it does still output null in cases of vanilla chests, though it works seamlessly with crates for example
             // do I know why? nope..
@@ -297,6 +335,37 @@ public class BlockWandLoot extends BlockContainerBakeable implements ILookOverla
         }
 
         @Override
+        public NBTTagCompound getSettings(World world, int x, int y, int z) {
+            NBTTagCompound nbt = new NBTTagCompound();
+            Block block = replaceBlock != null ? replaceBlock : ModBlocks.deco_loot;
+
+            nbt.setInteger("replaceBlock", Block.getIdFromBlock(block));
+            nbt.setInteger("replaceMeta", replaceMeta);
+            nbt.setInteger("minItems", minItems);
+            nbt.setInteger("maxItems", maxItems);
+            nbt.setString("poolName", poolName);
+
+            nbt.setInteger("lockCode", lockCode);
+            nbt.setFloat("lockMod", lockMod);
+            nbt.setBoolean("cheesable", cheesable);
+
+            return nbt;
+        }
+
+        @Override
+        public void pasteSettings(NBTTagCompound nbt, int index, World world, EntityPlayer player, int x, int y, int z) {
+            replaceBlock = Block.getBlockById(nbt.getInteger("replaceBlock"));
+            replaceMeta = nbt.getInteger("replaceMeta");
+            minItems = nbt.getInteger("minItems");
+            maxItems = nbt.getInteger("maxItems");
+            poolName = nbt.getString("poolName");
+
+            lockCode = nbt.getInteger("lockCode");
+            lockMod = nbt.getFloat("lockMod");
+            cheesable = nbt.getBoolean("cheesable");
+        }
+
+        @Override
         public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
             Block writeBlock = replaceBlock == null ? ModBlocks.deco_loot : replaceBlock;
             nbt.setString("block", writeBlock.getRegistryName().toString());
@@ -305,6 +374,10 @@ public class BlockWandLoot extends BlockContainerBakeable implements ILookOverla
             nbt.setInteger("max", maxItems);
             nbt.setString("pool", poolName);
             nbt.setFloat("rot", placedRotation);
+
+            nbt.setInteger("lockCode", lockCode);
+            nbt.setFloat("lockMod", lockMod);
+            nbt.setBoolean("cheesable", cheesable);
 
             nbt.setBoolean("trigger", triggerReplace);
             return super.writeToNBT(nbt);
@@ -322,6 +395,10 @@ public class BlockWandLoot extends BlockContainerBakeable implements ILookOverla
 
             if (replaceBlock == null) replaceBlock = ModBlocks.deco_loot;
 
+            lockCode = nbt.getInteger("lockCode");
+            lockMod = nbt.getFloat("lockMod");
+            cheesable = nbt.getBoolean("cheesable");
+
             triggerReplace = nbt.getBoolean("trigger");
         }
 
@@ -332,6 +409,10 @@ public class BlockWandLoot extends BlockContainerBakeable implements ILookOverla
             buf.writeInt(minItems);
             buf.writeInt(maxItems);
             BufferUtil.writeString(buf, poolName);
+
+            buf.writeInt(lockCode);
+            buf.writeFloat(lockMod);
+            buf.writeBoolean(cheesable);
         }
 
         @Override
@@ -341,6 +422,10 @@ public class BlockWandLoot extends BlockContainerBakeable implements ILookOverla
             minItems = buf.readInt();
             maxItems = buf.readInt();
             poolName = BufferUtil.readString(buf);
+
+            lockCode = buf.readInt();
+            lockMod = buf.readFloat();
+            cheesable = buf.readBoolean();
         }
 
     }

@@ -45,7 +45,7 @@ public class NBTItemControlPacket extends PrecompiledPacket {
                     NBTTagCompound nbt = buffer.readCompoundTag();
 
                     if (nbt != null) {
-                        ItemStack held = p.getHeldItem(p.getActiveHand());
+                        ItemStack held = p.getHeldItemMainhand();
 
                         if (!held.isEmpty() && held.getItem() instanceof IItemControlReceiver) {
                             ((IItemControlReceiver) held.getItem()).receiveControl(held, nbt);

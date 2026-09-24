@@ -12,7 +12,8 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.util.Vec3dUtil;
@@ -23,7 +24,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
@@ -40,8 +40,9 @@ import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
-public class TileEntityRailgun extends TileEntityLoadedBase implements ITickable, IEnergyReceiverMK2, IGUIProvider {
+public class TileEntityRailgun extends TileEntityLoadedBase implements ITickable, IEnergyReceiverMK2, IGUIProvider, IConnectionAnchors {
 
+	private AxisAlignedBB bb;
 	public ItemStackHandler inventory;
 	public ICapabilityProvider specialProvider;
 	
@@ -184,7 +185,7 @@ public class TileEntityRailgun extends TileEntityLoadedBase implements ITickable
 				double fY = pos.getY() + 1 + vec.y;
 				double fZ = pos.getZ() + 0.5 + vec.z;
 
-				MainRegistry.proxy.spawnSFX(world, fX, fY, fZ, 0, vec.normalize());
+				MainRegistry.proxy.spawnSpark(world, fX, fY, fZ, vec.normalize());
 			});
 		}
 	}
@@ -195,7 +196,7 @@ public class TileEntityRailgun extends TileEntityLoadedBase implements ITickable
 		}
 	}
 
-	private DirPos[] getConPos() {
+	public DirPos[] getConPos() {
 		return new DirPos[] {
 				new DirPos(pos.getX(), pos.getY() - 1, pos.getZ(), Library.NEG_Y),
 				new DirPos(pos.getX() + 1, pos.getY(), pos.getZ(), Library.POS_X),
@@ -224,7 +225,7 @@ public class TileEntityRailgun extends TileEntityLoadedBase implements ITickable
     		if(vec.length() < 1 || vec.length() > 9000)
     			return false;
     		
-    		double yawUpper = vec.x * unit.x/* + vec.zCoord * unit.zCoord*/; //second side falls away since unit.z is always 0
+    		double yawUpper = vec.x * unit.x/* + vec.z * unit.z*/; //second side falls away since unit.z is always 0
     		double yawLower = vec.length()/* * unit.length()*/; //second side falls away since unit always has length 1
     		float yaw = (float) Math.acos(yawUpper / yawLower);
     		float pitch = (float) (Math.asin((vec.length() * 9.81) / (300 * 300)) / 2D);
@@ -273,18 +274,18 @@ public class TileEntityRailgun extends TileEntityLoadedBase implements ITickable
 	
 	public void fire() {
 		
-		Vec3 vec = Vec3.createVectorHelper(6, 0, 0);
-		vec.rotateAroundZ((float) (pitch * Math.PI / 180D));
-		vec.rotateAroundY((float) (yaw * Math.PI / 180D));
+		Vec3NT vec = Vec3NT.createVectorHelper(6, 0, 0);
+		vec.rotateRollSelf((float) (pitch * Math.PI / 180D));
+		vec.rotateYawSelf((float) (yaw * Math.PI / 180D));
 
-		double fX = pos.getX() + 0.5 + vec.xCoord;
-		double fY = pos.getY() + 1 + vec.yCoord;
-		double fZ = pos.getZ() + 0.5 + vec.zCoord;
+		double fX = pos.getX() + 0.5 + vec.x;
+		double fY = pos.getY() + 1 + vec.y;
+		double fZ = pos.getZ() + 0.5 + vec.z;
 		
 		vec = vec.normalize();
-		double motionX = vec.xCoord * 15D;
-		double motionY = vec.yCoord * 15D;
-		double motionZ = vec.zCoord * 15D;
+		double motionX = vec.x * 15D;
+		double motionY = vec.y * 15D;
+		double motionZ = vec.z * 15D;
 		
 		EntityRailgunBlast fart = new EntityRailgunBlast(world);
 		fart.posX = fX;
@@ -300,7 +301,8 @@ public class TileEntityRailgun extends TileEntityLoadedBase implements ITickable
 	
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		if (bb == null) bb = new AxisAlignedBB(pos.getX() - 6, pos.getY() - 3, pos.getZ() - 6, pos.getX() + 7, pos.getY() + 6, pos.getZ() + 7);
+		return bb;
 	}
 	
 	@Override

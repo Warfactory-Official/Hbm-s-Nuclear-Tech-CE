@@ -1,6 +1,6 @@
 package com.hbm.entity.mob.ai;
 
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.EntityAIBase;
@@ -148,15 +148,15 @@ public class EntityAIMaskmanCasualApproach extends EntityAIBase {
 
 		EntityLivingBase target = this.attacker.getAttackTarget();
 
-		Vec3 vec = Vec3.createVectorHelper(this.attacker.posX - target.posX, this.attacker.posY - target.posY, this.attacker.posZ - target.posZ);
+		Vec3NT vec = Vec3NT.createVectorHelper(this.attacker.posX - target.posX, this.attacker.posY - target.posY, this.attacker.posZ - target.posZ);
 
 		double range = Math.min(vec.length(), 20) - 10;
 
 		vec = vec.normalize();
 
-    	double x = this.attacker.posX + vec.xCoord * range + this.attacker.getRNG().nextGaussian() * 2;
-    	double y = this.attacker.posY + vec.yCoord - 5 + this.attacker.getRNG().nextInt(11);
-    	double z = this.attacker.posZ + vec.zCoord * range + this.attacker.getRNG().nextGaussian() * 2;
+    	double x = this.attacker.posX + vec.x * range + this.attacker.getRNG().nextGaussian() * 2;
+    	double y = this.attacker.posY + vec.y - 5 + this.attacker.getRNG().nextInt(11);
+    	double z = this.attacker.posZ + vec.z * range + this.attacker.getRNG().nextGaussian() * 2;
 
     	return new double[] {x, y, z};
 	}

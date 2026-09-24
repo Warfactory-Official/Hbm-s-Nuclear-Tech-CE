@@ -1,11 +1,13 @@
 package com.hbm.explosion;
 
+import com.hbm.util.CompatDynamicTrees;
 import com.hbm.config.CompatibilityConfig;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.entity.projectile.EntityRubble;
 import com.hbm.entity.projectile.EntityShrapnel;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ParticleUtil;
 import net.minecraft.block.Block;
@@ -31,27 +33,21 @@ public class ExplosionLarge {
     public static void spawnParticlesRadial(World world, double x, double y, double z, int count) {
 
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "smoke");
-        data.setString("mode", "radial");
         data.setInteger("count", count);
-        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x, y, z), new TargetPoint(world.provider.getDimension(), x, y, z, 250));
+        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Smoke_Radial, data, x, y, z), new TargetPoint(world.provider.getDimension(), x, y, z, 250));
     }
 
     public static void spawnFoam(World world, double x, double y, double z, int count) {
 
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "smoke");
-        data.setString("mode", "foamSplash");
         data.setInteger("count", count);
-        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x, y, z), new TargetPoint(world.provider.getDimension(), x, y, z, 250));
+        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Smoke_FoamSplash, data, x, y, z), new TargetPoint(world.provider.getDimension(), x, y, z, 250));
     }
 
     public static void spawnParticles(World world, double x, double y, double z, int count) {
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "smoke");
-        data.setString("mode", "cloud");
         data.setInteger("count", count);
-        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x, y, z), new TargetPoint(world.provider.getDimension(), x, y, z, 250));
+        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Smoke_Cloud, data, x, y, z), new TargetPoint(world.provider.getDimension(), x, y, z, 250));
     }
 
     public static void spawnBurst(World world, double x, double y, double z, int count, double strength) {
@@ -69,11 +65,9 @@ public class ExplosionLarge {
     public static void spawnShock(World world, double x, double y, double z, int count, double strength) {
 
         NBTTagCompound data = new NBTTagCompound();
-        data.setString("type", "smoke");
-        data.setString("mode", "shock");
         data.setInteger("count", count);
         data.setDouble("strength", strength);
-        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x, y + 0.5, z), new TargetPoint(world.provider.getDimension(), x, y, z, 250));
+        PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Smoke_Shock, data, x, y + 0.5, z), new TargetPoint(world.provider.getDimension(), x, y, z, 250));
     }
 
     public static void spawnRubble(World world, double x, double y, double z, int count) {
@@ -141,6 +135,9 @@ public class ExplosionLarge {
                         if (block.getExplosionResistance(null) > 70)
                             continue;
 
+                        if (CompatDynamicTrees.destroyTreeAt(world, pos))
+                            break;
+
                         EntityRubble rubble = new EntityRubble(world);
                         rubble.posX = x0 + 0.5F;
                         rubble.posY = y0 + 0.5F;
@@ -148,7 +145,7 @@ public class ExplosionLarge {
                         rubble.setMetaBasedOnBlock(block, block.getMetaFromState(blockstate));
 
                         Vec3d vec4 = new Vec3d(posX - rubble.posX, posY - rubble.posY, posZ - rubble.posZ);
-                        vec4.normalize();
+                        vec4 = vec4.normalize();
 
                         rubble.motionX = vec4.x * vel;
                         rubble.motionY = vec4.y * vel;
@@ -253,7 +250,7 @@ public class ExplosionLarge {
 
     public static void explodeFire(World world, Entity detonator, double x, double y, double z, float strength, boolean cloud, boolean rubble, boolean shrapnel) {
         if (CompatibilityConfig.isWarDim(world)) {
-            world.spawnEntity(EntityNukeExplosionMK5.statFacNoRadFire(world, (int) strength, x, y, z).setDetonator(detonator));
+            world.spawnEntity(EntityNukeExplosionMK5.statFacNoRad(world, (int) strength, x, y, z).setDetonator(detonator));
 
             ContaminationUtil.radiate(world, x, y, z, strength, 0, 0, strength * 20F, strength * 5F);
         }

@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "rot=0":  { "model": "hbm:snowglobe" },
+    "rot=1":  { "model": "hbm:snowglobe" },
+    "rot=2":  { "model": "hbm:snowglobe" },
+    "rot=3":  { "model": "hbm:snowglobe" },
+    "rot=4":  { "model": "hbm:snowglobe" },
+    "rot=5":  { "model": "hbm:snowglobe" },
+    "rot=6":  { "model": "hbm:snowglobe" },
+    "rot=7":  { "model": "hbm:snowglobe" },
+    "rot=8":  { "model": "hbm:snowglobe" },
+    "rot=9":  { "model": "hbm:snowglobe" },
+    "rot=10": { "model": "hbm:snowglobe" },
+    "rot=11": { "model": "hbm:snowglobe" },
+    "rot=12": { "model": "hbm:snowglobe" },
+    "rot=13": { "model": "hbm:snowglobe" },
+    "rot=14": { "model": "hbm:snowglobe" },
+    "rot=15": { "model": "hbm:snowglobe" }
+  }
+}

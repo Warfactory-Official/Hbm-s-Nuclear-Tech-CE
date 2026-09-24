@@ -12,17 +12,10 @@ import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
-import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL11;
 
 @AutoRegister
 public class RenderRadGen extends TileEntitySpecialRenderer<TileEntityMachineRadGen> implements IItemRendererProvider {
-
-    @Override
-    public boolean isGlobalRenderer(@NotNull TileEntityMachineRadGen te) {
-        return true;
-    }
-
     @Override
     public void render(TileEntityMachineRadGen te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
         GlStateManager.pushMatrix();

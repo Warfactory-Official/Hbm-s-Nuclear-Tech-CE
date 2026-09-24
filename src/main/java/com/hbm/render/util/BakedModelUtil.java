@@ -150,8 +150,8 @@ public class BakedModelUtil {
 				}
 			}
 			//Render into display list
-			geo[0] = GL11.glGenLists(1);
-			GL11.glNewList(geo[0], GL11.GL_COMPILE);
+			geo[0] = GlStateManager.glGenLists(1);
+			GlStateManager.glNewList(geo[0], GL11.GL_COMPILE);
 			Tessellator tes = Tessellator.getInstance();
 			BufferBuilder buf = tes.getBuffer();
 			buf.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_NORMAL);
@@ -179,19 +179,19 @@ public class BakedModelUtil {
 				//System.out.println();
 			}
 			tes.draw();
-			GL11.glEndList();
+			GlStateManager.glEndList();
 			if(type == DecalType.FLOW){
 				Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
-				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+				GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+				GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 				int texId = Minecraft.getMinecraft().getTextureManager().getTexture(texture).getGlTextureId();
-				int width = geo[5] = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH);
-				int height = geo[6] = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT);
+				int width = geo[5] = GlStateManager.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH);
+				int height = geo[6] = GlStateManager.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT);
 				
 				int fbo = geo[1] = GLCompat.genFramebuffers();
 				int fbo2 = geo[3] = GLCompat.genFramebuffers();
-				int gravmap = geo[2] = GL11.glGenTextures();
-				int gravmap2 = geo[4] = GL11.glGenTextures();
+				int gravmap = geo[2] = GlStateManager.generateTexture();
+				int gravmap2 = geo[4] = GlStateManager.generateTexture();
 				
 				int depth = GLCompat.genRenderbuffers();
 				GLCompat.bindRenderbuffer(GLCompat.GL_RENDERBUFFER, depth);
@@ -199,21 +199,21 @@ public class BakedModelUtil {
 				
 				GLCompat.bindFramebuffer(GLCompat.GL_FRAMEBUFFER, fbo);
 				GlStateManager.bindTexture(gravmap);
-				GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, width, height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (IntBuffer)null);
-				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+				GlStateManager.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, width, height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (IntBuffer)null);
+				GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+				GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+				GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+				GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
 				GLCompat.framebufferTexture2D(GLCompat.GL_FRAMEBUFFER, GLCompat.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, gravmap, 0);
 				GLCompat.framebufferRenderbuffer(GLCompat.GL_FRAMEBUFFER, GLCompat.GL_DEPTH_ATTACHMENT, GLCompat.GL_RENDERBUFFER, depth);
 				
 				GLCompat.bindFramebuffer(GLCompat.GL_FRAMEBUFFER, fbo2);
 				GlStateManager.bindTexture(gravmap2);
-				GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, width, height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (IntBuffer)null);
-				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+				GlStateManager.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, width, height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (IntBuffer)null);
+				GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+				GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+				GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+				GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
 				GLCompat.framebufferTexture2D(GLCompat.GL_FRAMEBUFFER, GLCompat.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, gravmap2, 0);
 				GLCompat.framebufferRenderbuffer(GLCompat.GL_FRAMEBUFFER, GLCompat.GL_DEPTH_ATTACHMENT, GLCompat.GL_RENDERBUFFER, depth);
 				
@@ -240,7 +240,7 @@ public class BakedModelUtil {
 			        float u = (texIdx%rows)*size;
 			        float v = (texIdx/4)*size;
 			        GlStateManager.translate(u, v, 0);
-			        GL11.glScaled(size, size, 1);
+			        GlStateManager.scale(size, size, 1);
 					GlStateManager.matrixMode(GL11.GL_MODELVIEW);
 		        }
 		        
@@ -273,14 +273,14 @@ public class BakedModelUtil {
 				GlStateManager.clearDepth(1);
 				GlStateManager.clearColor(0.5F, 0.5F, 0F, 1F);
 				GlStateManager.clear(GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_COLOR_BUFFER_BIT);
-				GL11.glCallList(geo[0]);
+				GlStateManager.callList(geo[0]);
 				//RenderHelper.renderFullscreenTriangle(true);
 				
 				GLCompat.bindFramebuffer(GLCompat.GL_FRAMEBUFFER, fbo);
 				GlStateManager.clearDepth(1);
 				GlStateManager.clearColor(0.5F, 0.5F, 0F, 1F);
 				GlStateManager.clear(GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_COLOR_BUFFER_BIT);
-				GL11.glCallList(geo[0]);
+				GlStateManager.callList(geo[0]);
 				//RenderHelper.renderFullscreenTriangle(true);
 				HbmShaderManager2.releaseShader();
 				GlStateManager.popMatrix();

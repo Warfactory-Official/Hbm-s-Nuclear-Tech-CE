@@ -1,6 +1,6 @@
 package com.hbm.physics;
 
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -26,7 +26,7 @@ public class PhysicsTestParticle extends Particle {
 		//boxes[1] = new AxisAlignedBB(-size*0.5, -size*4-size, -size*0.5, size*0.5, size*0.5-size, size*0.5);
 		//boxes[0] = new AxisAlignedBB(0, 0, 0, 0.0625F*2, 0.0625F*16, 0.0625F*2);
 		//body.addColliders(new AABBCollider(boxes[0], 4));
-		//body.impulseVelocity(new Vec3(0, 0, 0.01), body.globalCentroid);
+		//body.impulseVelocity(new Vec3NT(0, 0, 0.01), body.globalCentroid);
 		//body.friction = 0.3F;
 		particleMaxAge = 200;
 	}
@@ -65,7 +65,7 @@ public class PhysicsTestParticle extends Particle {
 		RenderGlobal.drawSelectionBoundingBox(body.boundingBox.offset(-interpPosX, -interpPosY, -interpPosZ), 0, 1, 0, 1);
 		GlStateManager.enableTexture2D();
         GlStateManager.popMatrix();
-        body.renderDebugInfo(new Vec3(interpPosX, interpPosY, interpPosZ), partialTicks);
+        body.renderDebugInfo(new Vec3NT(interpPosX, interpPosY, interpPosZ), partialTicks);
 		GlStateManager.popMatrix();
 	}
 	

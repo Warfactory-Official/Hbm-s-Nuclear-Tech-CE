@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.Tags;
 import com.hbm.blocks.ICustomBlockItem;
 import com.hbm.blocks.IPersistentInfoProvider;
 import com.hbm.blocks.ITooltipProvider;
@@ -8,20 +9,33 @@ import com.hbm.blocks.generic.BaseBarrel;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.items.IDynamicModels;
 import com.hbm.items.block.ItemBlockBase;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.lib.InventoryHelper;
+import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
+import com.hbm.render.loader.HFRWavefrontObject;
+import com.hbm.render.model.BarrelBakedModel;
 import com.hbm.tileentity.IPersistentNBT;
 import com.hbm.tileentity.machine.TileEntityBarrel;
 import com.hbm.util.I18nUtil;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.BlockFaceShape;
+import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.statemap.StateMapperBase;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -29,6 +43,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.Style;
@@ -37,27 +52,125 @@ import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
 
 
-public class BlockFluidBarrel extends BlockContainer implements ITooltipProvider, IPersistentInfoProvider, ICustomBlockItem {
+public class BlockFluidBarrel extends BlockContainer implements ITooltipProvider, IPersistentInfoProvider, ICustomBlockItem, IDynamicModels {
+
+    public static final PropertyBool CONN_POS_X = PropertyBool.create("conn_pos_x");
+    public static final PropertyBool CONN_NEG_X = PropertyBool.create("conn_neg_x");
+    public static final PropertyBool CONN_POS_Z = PropertyBool.create("conn_pos_z");
+    public static final PropertyBool CONN_NEG_Z = PropertyBool.create("conn_neg_z");
+
     public static boolean keepInventory;
     private int capacity;
+    private final ResourceLocation textureLocation;
 
     public BlockFluidBarrel(Material materialIn, int cap, String s) {
         super(materialIn);
         this.setTranslationKey(s);
         this.setRegistryName(s);
         capacity = cap;
+        this.textureLocation = new ResourceLocation(Tags.MODID, "blocks/" + s);
+        this.setDefaultState(this.blockState.getBaseState()
+                .withProperty(CONN_POS_X, false)
+                .withProperty(CONN_NEG_X, false)
+                .withProperty(CONN_POS_Z, false)
+                .withProperty(CONN_NEG_Z, false));
 
         ModBlocks.ALL_BLOCKS.add(this);
+        IDynamicModels.INSTANCES.add(this);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void registerSprite(TextureMap map) {
+        map.registerSprite(textureLocation);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void bakeModel(ModelBakeEvent event) {
+        HFRWavefrontObject wavefront = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/blocks/barrel.obj"));
+        TextureAtlasSprite sprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(textureLocation.toString());
+        event.getModelRegistry().putObject(new ModelResourceLocation(getRegistryName(), "normal"), BarrelBakedModel.forBlock(wavefront, sprite));
+        event.getModelRegistry().putObject(new ModelResourceLocation(getRegistryName(), "inventory"), BarrelBakedModel.forItem(wavefront, sprite));
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public StateMapperBase getStateMapper(ResourceLocation loc) {
+        return new StateMapperBase() {
+            @Override
+            protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
+                return new ModelResourceLocation(loc, "normal");
+            }
+        };
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void registerModel() {
+        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0, new ModelResourceLocation(getRegistryName(), "inventory"));
+    }
+
+    @Override
+    public boolean hasComparatorInputOverride(IBlockState state) {
+        return true;
+    }
+    @Override
+    public int getComparatorInputOverride(IBlockState blockState, World worldIn, BlockPos pos) {
+        TileEntity te = worldIn.getTileEntity(pos);
+        if (te instanceof TileEntityBarrel teBarrel) {
+            return teBarrel.tankNew.getRedstoneComparatorPower();
+        }
+        return 0;
+    }
+
+    @Override
+    protected BlockStateContainer createBlockState() {
+        return new BlockStateContainer(this, CONN_POS_X, CONN_NEG_X, CONN_POS_Z, CONN_NEG_Z);
+    }
+
+    @Override
+    public IBlockState getStateFromMeta(int meta) {
+        return getDefaultState();
+    }
+
+    @Override
+    public int getMetaFromState(IBlockState state) {
+        return 0;
+    }
+
+    @Override
+    public IBlockState getActualState(IBlockState state, IBlockAccess world, BlockPos pos) {
+        TileEntity te = world.getTileEntity(pos);
+        FluidType type = (te instanceof TileEntityBarrel barrel) ? barrel.tankNew.getTankType() : Fluids.NONE;
+        if (type == Fluids.NONE) {
+            return state
+                    .withProperty(CONN_POS_X, false)
+                    .withProperty(CONN_NEG_X, false)
+                    .withProperty(CONN_POS_Z, false)
+                    .withProperty(CONN_NEG_Z, false);
+        }
+        int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+        return state
+                .withProperty(CONN_POS_X, Library.canConnectFluid(world, x + 1, y, z, Library.POS_X, type))
+                .withProperty(CONN_NEG_X, Library.canConnectFluid(world, x - 1, y, z, Library.NEG_X, type))
+                .withProperty(CONN_POS_Z, Library.canConnectFluid(world, x, y, z + 1, Library.POS_Z, type))
+                .withProperty(CONN_NEG_Z, Library.canConnectFluid(world, x, y, z - 1, Library.NEG_Z, type));
     }
 
     @Override
     public TileEntity createNewTileEntity(World worldIn, int meta) {
+        if (this == ModBlocks.barrel_corroded) return null;
         return new TileEntityBarrel(capacity);
     }
 
@@ -98,13 +211,6 @@ public class BlockFluidBarrel extends BlockContainer implements ITooltipProvider
             list.add(TextFormatting.RED + I18nUtil.resolveKey("desc.leaky"));
         }
 
-        if (this == ModBlocks.barrel_iron) {
-            list.add(TextFormatting.AQUA + I18nUtil.resolveKey("desc.capacity", "8,000"));
-            list.add(TextFormatting.GREEN + I18nUtil.resolveKey("desc.canhot"));
-            list.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.cannotcor1"));
-            list.add(TextFormatting.YELLOW + I18nUtil.resolveKey("desc.cannotam"));
-        }
-
         if (this == ModBlocks.barrel_steel) {
             list.add(TextFormatting.AQUA + I18nUtil.resolveKey("desc.capacity", "16,000"));
             list.add(TextFormatting.GREEN + I18nUtil.resolveKey("desc.canhot"));
@@ -130,6 +236,7 @@ public class BlockFluidBarrel extends BlockContainer implements ITooltipProvider
 
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+        if (this == ModBlocks.barrel_corroded) return false;
         if (world.isRemote) {
             return true;
 
@@ -163,6 +270,7 @@ public class BlockFluidBarrel extends BlockContainer implements ITooltipProvider
 
     @Override
     public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+        if (this == ModBlocks.barrel_corroded) return;
         if (!keepInventory)
             InventoryHelper.dropInventoryItems(worldIn, pos, worldIn.getTileEntity(pos));
         IPersistentNBT.breakBlock(worldIn, pos, state);
@@ -177,6 +285,14 @@ public class BlockFluidBarrel extends BlockContainer implements ITooltipProvider
     @Override
     public void onBlockHarvested(World world, BlockPos pos, IBlockState state, EntityPlayer player) {
         IPersistentNBT.onBlockHarvested(world, pos, player);
+    }
+
+    @Override
+    public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
+        super.neighborChanged(state, world, pos, blockIn, fromPos);
+        if (world.isRemote) {
+            world.markBlockRangeForRenderUpdate(pos, pos);
+        }
     }
 
     @Override

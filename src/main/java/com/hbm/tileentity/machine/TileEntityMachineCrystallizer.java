@@ -17,10 +17,9 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
-import com.hbm.tileentity.IFluidCopiable;
-import com.hbm.tileentity.IGUIProvider;
-import com.hbm.tileentity.IUpgradeInfoProvider;
-import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.main.MainRegistry;
+import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.*;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.I18nUtil;
 import com.hbm.util.SoundUtil;
@@ -31,7 +30,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
@@ -50,11 +48,12 @@ import java.util.HashMap;
 import java.util.List;
 
 @AutoRegister
-public class TileEntityMachineCrystallizer extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardReceiver, IGUIProvider, IFFtoNTMF, IClimbable, IUpgradeInfoProvider, IFluidCopiable {
+public class TileEntityMachineCrystallizer extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardReceiver, IGUIProvider, IFFtoNTMF, IClimbable, IUpgradeInfoProvider, IFluidCopiable, IConnectionAnchors {
 
     public static final long maxPower = 1000000;
     public static final int demand = 1000;
     private static boolean converted = false;
+    private AxisAlignedBB bb;
     public long power;
     public short progress;
     public short duration = 600;
@@ -63,6 +62,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
     public float prevAngle;
     public FluidTankNTM tankNew;
     public FluidTank tank;
+    private AudioWrapper audio;
     public UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
     private Fluid oldFluid = Fluids.NONE.getFF();
     private AxisAlignedBB ladderAABB = null;
@@ -79,11 +79,11 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
             @Override
             public void setStackInSlot(int slot, ItemStack stack) {
                 super.setStackInSlot(slot, stack);
-                if (stack != ItemStack.EMPTY && slot >= 5 && slot <= 6 && stack.getItem() instanceof ItemMachineUpgrade)
+                if (!stack.isEmpty() && slot >= 5 && slot <= 6 && stack.getItem() instanceof ItemMachineUpgrade)
                     SoundUtil.playUpgradePlugSound(world, pos);
             }
         };
-        tankNew = new FluidTankNTM(Fluids.PEROXIDE, 8000);
+        tankNew = new FluidTankNTM(Fluids.PEROXIDE, 8000).withOwner(this);
         tank = new FluidTank(16000);
 
         converted = true;
@@ -102,7 +102,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
         }
     }
 
-    protected DirPos[] getConPos() {
+    public DirPos[] getConPos() {
 
         return new DirPos[]{
                 new DirPos(pos.getX() + 2, pos.getY(), pos.getZ() + 1, Library.POS_X),
@@ -153,7 +153,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
                 }
             }
 
-            this.networkPackNT(25);
+            this.networkPackNT(250);
         } else {
 
             prevAngle = angle;
@@ -165,8 +165,34 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
                     angle -= 360;
                     prevAngle -= 360;
                 }
+
+                if(MainRegistry.proxy.me().getDistance(pos.getX(), pos.getY(), pos.getZ()) < 25) {
+                    if(audio == null) {
+                        audio = createAudioLoop();
+                        audio.startSound();
+                    } else if(!audio.isPlaying()) {
+                        audio = rebootAudio(audio);
+                    }
+                    audio.keepAlive();
+                    audio.updateVolume(this.getVolume(1F));
+                    audio.updatePitch(0.75F);
+                } else {
+                    if(audio != null) {
+                        audio.stopSound();
+                        audio = null;
+                    }
+                }
+            } else {
+                if(audio != null) {
+                    audio.stopSound();
+                    audio = null;
+                }
             }
         }
+    }
+
+    @Override public AudioWrapper createAudioLoop() {
+        return MainRegistry.proxy.getLoopedSound(HBMSoundHandler.chemicalPlant, SoundCategory.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), 1F, 15F, 0.75F, 15);
     }
 
     @Override
@@ -205,7 +231,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 
         tankNew.setFill(tankNew.getFill() - getRequiredAcid(result.acidAmount));
 
-        float freeChance = this.getFreeChance();
+        float freeChance = this.getFreeChance(result);
 
         if (freeChance == 0 || freeChance < world.rand.nextFloat())
             this.inventory.getStackInSlot(0).shrink(result.itemAmount);
@@ -243,17 +269,14 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
     }
 
     public int getRequiredAcid(int base) {
-        int efficiency = Math.min(upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.EFFECT), 3);
-        if (efficiency > 0) {
-            return base * (efficiency + 2);
-        }
+        // Fluid (acid) consumption is unaffected by the EFFECT upgrade — matches upstream 1.7.
         return base;
     }
 
-    public float getFreeChance() {
+    public float getFreeChance(CrystallizerRecipes.CrystallizerRecipe recipe) {
         int efficiency = Math.min(upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.EFFECT), 3);
         if (efficiency > 0) {
-            return Math.min(efficiency * 0.05F, 0.15F);
+            return Math.min(efficiency * recipe.productivity, 0.99F);
         }
         return 0;
     }
@@ -270,7 +293,8 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 
     public int getPowerRequired() {
         int speed = Math.min(upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.SPEED), 3);
-        return demand + Math.min(speed * 1000, 3000);
+        int effect = Math.min(upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.EFFECT), 3);
+        return demand + speed * demand + effect * demand * 2;
     }
 
     public float getCycleCount() {
@@ -295,7 +319,8 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
+        if (bb == null) bb = new AxisAlignedBB(pos.getX() - 1, pos.getY(), pos.getZ() - 1, pos.getX() + 2, pos.getY() + 6, pos.getZ() + 2);
+        return bb;
     }
 
     @Override
@@ -379,6 +404,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
     public void invalidate() {
         super.invalidate();
         unregisterClimbable();
+        if(audio != null) { audio.stopSound(); audio = null; }
     }
 
     @Override
@@ -391,6 +417,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase impleme
     public void onChunkUnload() {
         unregisterClimbable();
         super.onChunkUnload();
+        if(audio != null) { audio.stopSound(); audio = null; }
     }
 
     private AxisAlignedBB getLadderAABB() {

@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.tileentity.machine.storage.TileEntityMassStorage;
 import com.hbm.util.InventoryUtil;
@@ -14,6 +15,9 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerMassStorage extends Container {
 
 	private TileEntityMassStorage storage;
+	private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(3)
+			.rule(0, 1, _ -> true)
+			.build();
 
 	public ContainerMassStorage(InventoryPlayer invPlayer, TileEntityMassStorage tile) {
 		this.storage = tile;
@@ -34,8 +38,28 @@ public class ContainerMassStorage extends Container {
 	}
 
 	@Override
-	public ItemStack transferStackInSlot(EntityPlayer playerIn, int index) {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 3, _ -> true, 1, _ -> false, 3);
+	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+		Slot slot = this.inventorySlots.get(index);
+
+		// Refill instantly if needed, then do regular slot behavior
+		if(index == 2 && slot != null && !slot.getHasStack()) {
+			ItemStack extracted = storage.quickExtract();
+			if(!extracted.isEmpty()) {
+				slot.putStack(extracted);
+			}
+		}
+
+		if(index >= 3 && slot != null && slot.getHasStack()) {
+			ItemStack stack = slot.getStack();
+			if(storage.quickInsert(stack)) {
+				ItemStack result = stack.copy();
+				slot.putStack(ItemStack.EMPTY);
+				slot.onTake(player, stack);
+				return result;
+			}
+		}
+
+		return InventoryUtil.transferStack(this.inventorySlots, index, TRANSFER_STRATEGY, player);
 	}
 
 	@Override

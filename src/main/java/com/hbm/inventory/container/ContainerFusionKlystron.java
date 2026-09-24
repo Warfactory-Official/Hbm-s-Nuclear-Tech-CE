@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionKlystron;
 import com.hbm.util.InventoryUtil;
@@ -13,6 +14,10 @@ import org.jetbrains.annotations.NotNull;
 public class ContainerFusionKlystron extends Container {
 
     protected TileEntityFusionKlystron klystron;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(1)
+                                                                              .genericMachineRange(0)
+                                                                              .build();
 
     public ContainerFusionKlystron(InventoryPlayer invPlayer, TileEntityFusionKlystron tedf) {
         this.klystron = tedf;
@@ -32,7 +37,7 @@ public class ContainerFusionKlystron extends Container {
 
     @Override
     public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 1);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
     @Override

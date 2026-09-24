@@ -5,6 +5,7 @@ import com.hbm.api.energymk2.IEnergyConnectorMK2;
 import com.hbm.api.energymk2.Nodespace;
 import com.hbm.api.energymk2.Nodespace.PowerNode;
 import com.hbm.api.energymk2.PowerNetMK2;
+import com.hbm.blocks.network.energy.BlockCable;
 import com.hbm.config.GeneralConfig;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.lib.DirPos;
@@ -14,6 +15,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
@@ -27,6 +29,47 @@ public class TileEntityCableBaseNT extends TileEntityLoadedBase implements IEner
 
     private final EnumMap<EnumFacing, FENeighbor> feNeighbors = new EnumMap<>(EnumFacing.class);
     private int feNeighborScanCooldown = 0;
+
+    private byte cachedConnectionMask;
+    private boolean cachedConnectionMaskValid;
+
+    public byte getCachedConnectionMask(IBlockAccess access) {
+        if (access instanceof World && ((World) access).isRemote) {
+            return BlockCable.computeConnectionMask(access, pos);
+        }
+        if (!this.cachedConnectionMaskValid) {
+            this.cachedConnectionMask = BlockCable.computeConnectionMask(access, pos);
+            this.cachedConnectionMaskValid = true;
+        }
+        return this.cachedConnectionMask;
+    }
+
+    public void invalidateConnectionCache() {
+        this.cachedConnectionMaskValid = false;
+        markConnectionRenderUpdate();
+    }
+
+    private void markConnectionRenderUpdate() {
+        if (world != null && world.isRemote) {
+            world.markBlockRangeForRenderUpdate(pos, pos);
+        }
+    }
+
+	@Override
+	public void onLoad() {
+		super.onLoad();
+		if (world.isRemote) {
+			invalidateConnectionCache();
+			for (EnumFacing facing : EnumFacing.VALUES) {
+				BlockPos neighborPos = pos.offset(facing);
+				if (!world.isBlockLoaded(neighborPos)) continue;
+				TileEntity te = world.getTileEntity(neighborPos);
+				if (te instanceof TileEntityCableBaseNT cable) {
+					cable.invalidateConnectionCache();
+				}
+			}
+		}
+	}
 
 	@Override
 	public void update() {

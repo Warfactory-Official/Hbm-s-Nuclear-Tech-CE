@@ -31,7 +31,7 @@ public class BreederRecipeHandler implements IRecipeCategory<JeiRecipes.BreederR
 
     @Override
     public @NotNull String getTitle() {
-        return I18nUtil.resolveKey("tile.machine_breeder.name");
+        return I18nUtil.resolveKey("tile.machine_reactor_breeding.name");
     }
 
     @Override

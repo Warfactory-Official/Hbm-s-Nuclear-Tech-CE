@@ -60,11 +60,11 @@ public class RenderCatalyticReformer
 
     if (MainRegistry.polaroidID == 11) {
       /// rapidly spinning dicks ///
-      GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+      GlStateManager.enableRescaleNormal();
       GlStateManager.translate(-1.125, 1.375, 1);
       double s = 0.125D;
-      GL11.glScaled(s, s, s);
-      GL11.glRotated(System.currentTimeMillis() / 5D % 360D, 0, -1, 0);
+      GlStateManager.scale(s, s, s);
+      GlStateManager.rotate((float) (System.currentTimeMillis() / 5D % 360D), 0, -1, 0);
       GlStateManager.translate(0, 0.1, -0.5);
 
       this.bindTexture(extra);

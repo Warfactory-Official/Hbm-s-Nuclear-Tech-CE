@@ -1,12 +1,12 @@
 package com.hbm.util;
 
 import com.hbm.Tags;
+import com.hbm.render.loader.GroupObject;
 import com.hbm.render.loader.HFRWavefrontObject;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
 import com.hbm.packet.toserver.KeypadServerPacket;
 import com.hbm.packet.PacketDispatcher;
-import com.hbm.render.WavefrontObjDisplayList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GLAllocation;
@@ -32,10 +32,10 @@ public class KeypadClient extends Keypad {
 
 	public static final FloatBuffer AUX_GL_MATRIX = GLAllocation.createDirectFloatBuffer(16);
 
-	public static int fullModel;
-	public static int mainModel;
-	public static int displayModel;
-	public static int[] keyModels = new int[12];
+	public static HFRWavefrontObject fullModel;
+	public static GroupObject mainModel;
+	public static GroupObject displayModel;
+	public static GroupObject[] keyModels = new GroupObject[12];
 
 	public Matrix4f transform;
 	public AxisAlignedBB[] buttonBoxes = new AxisAlignedBB[12];
@@ -127,19 +127,16 @@ public class KeypadClient extends Keypad {
 	}
 	
 	public static void load(){
-		WavefrontObjDisplayList model = new WavefrontObjDisplayList(new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/keypad.obj")));
-		mainModel = model.getListForName("Keypad");
-		displayModel = model.getListForName("Display");
+		HFRWavefrontObject model = new HFRWavefrontObject(new ResourceLocation(Tags.MODID, "models/keypad.obj"));
+		mainModel = model.getGroup("Keypad");
+		displayModel = model.getGroup("Display");
 		for(int i = 0; i < 9; i++){
-			keyModels[i] = model.getListForName("K" + (i+1));
+			keyModels[i] = model.getGroup("K" + (i+1));
 		}
-		keyModels[9] = model.getListForName("KReset");
-		keyModels[10] = model.getListForName("K0");
-		keyModels[11] = model.getListForName("KReturn");
-		fullModel = GL11.glGenLists(1);
-		GL11.glNewList(fullModel, GL11.GL_COMPILE);
-		model.renderAll();
-		GL11.glEndList();
+		keyModels[9] = model.getGroup("KReset");
+		keyModels[10] = model.getGroup("K0");
+		keyModels[11] = model.getGroup("KReturn");
+		fullModel = model;
 	}
 
 	//Garbage render code, should have thought of a better system.
@@ -149,7 +146,7 @@ public class KeypadClient extends Keypad {
 		GlStateManager.enableRescaleNormal();
 		transform.store(AUX_GL_MATRIX);
 		AUX_GL_MATRIX.rewind();
-		GL11.glMultMatrix(AUX_GL_MATRIX);
+		GlStateManager.multMatrix(AUX_GL_MATRIX);
 		FontRenderer font = Minecraft.getMinecraft().fontRenderer;
 		String disp = "";
 		if(isActive()) {
@@ -160,8 +157,8 @@ public class KeypadClient extends Keypad {
 			} else if(failColorTicks  > 0){
 				Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.keypad_error_tex);
 			}
-			GL11.glCallList(mainModel);
-			GL11.glCallList(displayModel);
+			mainModel.render();
+			displayModel.render();
 			for(int i = 0; i < buttons.length; i ++){
 				GlStateManager.pushMatrix();
 				if(buttons[i].cooldown > 0){
@@ -170,12 +167,12 @@ public class KeypadClient extends Keypad {
 				} else {
 					Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.keypad_tex);
 				}
-				GL11.glCallList(keyModels[i]);
+				keyModels[i].render();
 				GlStateManager.popMatrix();
 			}
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		} else {
-			GL11.glCallList(fullModel);
+			fullModel.renderAll();
 		}
 		
 		
@@ -185,8 +182,8 @@ public class KeypadClient extends Keypad {
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(0.275, 0.67, -0.0625);
 		float s = 0.02F;
-		GL11.glScaled(s*0.5, -s*0.5, s);
-		GL11.glRotated(180, 0, 1, 0);
+		GlStateManager.scale(s*0.5, -s*0.5, s);
+		GlStateManager.rotate(180, 0, 1, 0);
 		for(int i = 0; i < 12; i ++){
 			switch(i){
 			case 9:
@@ -219,32 +216,32 @@ public class KeypadClient extends Keypad {
 		
 		if(code < 0){
 			GlStateManager.translate(0.3, 1-0.08, 0.03125);
-			GL11.glRotated(180, 0, 1, 0);
+			GlStateManager.rotate(180, 0, 1, 0);
 			GlStateManager.color(1, 0, 0);
 			if(isSettingCode){
-				GL11.glScaled(s*0.5F, -s*0.5, s);
+				GlStateManager.scale(s*0.5F, -s*0.5, s);
 				font.drawString("Enter New", 0, 0, 0xFFFFEE00);
 				GlStateManager.translate(0, 8, 0);
 				font.drawString("Code:", 0, 0, 0xFFFFEE00);
 			} else if(successColorTicks > 0){
-				GL11.glScaled(s*0.5F, -s*0.5, s);
+				GlStateManager.scale(s*0.5F, -s*0.5, s);
 				font.drawString("Access", 0, 0, 0xFF15FF00);
 				GlStateManager.translate(0, 8, 0);
 				font.drawString("Granted", 0, 0, 0xFF15FF00);
 			} else if(failColorTicks  > 0){
-				GL11.glScaled(s*0.5F, -s*0.5, s);
+				GlStateManager.scale(s*0.5F, -s*0.5, s);
 				font.drawString("Access", 0, 0, 0xFFFF0800);
 				GlStateManager.translate(0, 8, 0);
 				font.drawString("Denied", 0, 0, 0xFFFF0800);
 			} else {
 				GlStateManager.translate(0, -0.035, 0);
-				GL11.glScaled(s*0.5F, -s*0.5, s);
+				GlStateManager.scale(s*0.5F, -s*0.5, s);
 				font.drawString("Enter Code:", 0, 0, 0xFFFFFFFF);
 			}
 		} else {
 			GlStateManager.translate(0.3, 1-0.09, 0.03125);
-			GL11.glScaled(s*0.85, -s*0.9, s);
-			GL11.glRotated(180, 0, 1, 0);
+			GlStateManager.scale(s*0.85, -s*0.9, s);
+			GlStateManager.rotate(180, 0, 1, 0);
 			GlStateManager.color(1, 0, 0);
 			if(isSettingCode){
 				font.drawString("" + code, 0, 0, 0xFFFFEE00);

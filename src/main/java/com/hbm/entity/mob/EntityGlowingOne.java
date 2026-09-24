@@ -3,7 +3,7 @@ package com.hbm.entity.mob;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IRadiationImmune;
 import com.hbm.items.ModItems;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.MutableVec3d;
 import com.hbm.world.WorldUtil;
@@ -44,7 +44,7 @@ public class EntityGlowingOne extends EntityZombie implements IRadiationImmune {
 		
 		for(EntityZombie e : entities) {
 			
-			Vec3 vec = Vec3.createVectorHelper(e.posX - posX, (e.posY + e.getEyeHeight()) - posY, e.posZ - posZ);
+			Vec3NT vec = Vec3NT.createVectorHelper(e.posX - posX, (e.posY + e.getEyeHeight()) - posY, e.posZ - posZ);
 			double len = vec.length();
 			if(len < effectRadius){
 				e.heal((float)(0.02 * (effectRadius-len)));

@@ -7,7 +7,12 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -58,12 +63,14 @@ public class NBTControlPacket extends PrecompiledPacket {
                     int x = buffer.readInt();
                     int y = buffer.readInt();
                     int z = buffer.readInt();
-                    TileEntity te = p.world.getTileEntity(new BlockPos(x, y, z));
+                    BlockPos pos = new BlockPos(x, y, z);
+                    TileEntity te = p.world.getTileEntity(pos);
                     NBTTagCompound nbt = buffer.readCompoundTag();
                     if (nbt != null && te instanceof IControlReceiver tile) {
                         if (tile.hasPermission(p)) {
-                            tile.receiveControl(p, nbt);
-                            tile.receiveControl(nbt);
+                            PlayerInteractEvent.RightClickBlock event = ForgeHooks.onRightClickBlock(p, EnumHand.MAIN_HAND, pos, EnumFacing.UP,
+                                    new Vec3d(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D));
+                            if (!event.isCanceled()) tile.receiveControl(p, nbt);
                         }
                     }
                 } catch (IOException e) {

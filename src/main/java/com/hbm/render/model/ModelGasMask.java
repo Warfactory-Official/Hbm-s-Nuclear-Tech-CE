@@ -1,5 +1,6 @@
 package com.hbm.render.model;
 
+import com.hbm.render.util.RenderModelSyncUtil;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.GlStateManager;
@@ -74,6 +75,15 @@ public class ModelGasMask extends ModelBiped {
 
 	@Override
 	public void setRotationAngles(float f, float f1, float f2, float f3, float f4, float f5, Entity entity) {
+		ModelBiped source = RenderModelSyncUtil.getSourceModel(entity, this);
+
+		if(source != null) {
+			this.isSneak = source.isSneak;
+			this.isChild = source.isChild;
+			RenderModelSyncUtil.copyAngles(source.bipedHead, this.mask);
+			return;
+		}
+
 		super.setRotationAngles(f, f1, f2, f3, f4, f5, entity);
 
 		if (entity instanceof EntityArmorStand entityarmorstand) {
@@ -86,22 +96,30 @@ public class ModelGasMask extends ModelBiped {
 		} else {
 			this.isSneak = false;
 		}
-		this.mask.rotationPointX = this.bipedHead.rotationPointX;
-		this.mask.rotationPointY = this.bipedHead.rotationPointY;
-		this.mask.rotateAngleY = this.bipedHead.rotateAngleY;
-		this.mask.rotateAngleX = this.bipedHead.rotateAngleX;
 
-		if (this.isSneak) {
-            this.mask.rotationPointY = 3.73F;
-        }
+		RenderModelSyncUtil.copyAngles(this.bipedHead, this.mask);
 	}
 
 	@Override
 	public void render(Entity par1Entity, float par2, float par3, float par4, float par5, float par6, float par7) {
 		setRotationAngles(par2, par3, par4, par5, par6, par7, par1Entity);
+
 		GlStateManager.pushMatrix();
+
+		if(this.isChild) {
+			GlStateManager.scale(0.75F, 0.75F, 0.75F);
+			GlStateManager.translate(0.0F, 16.0F * par7, 0.0F);
+		} else if(par1Entity != null && par1Entity.isSneaking()) {
+			GlStateManager.translate(0.0F, 0.2F, 0.0F); //same offset ModelBiped#render applies
+		}
+
+		//scale about the head pivot so the pivot itself stays where the biped put it
+		GlStateManager.translate(this.mask.rotationPointX * par7, this.mask.rotationPointY * par7, this.mask.rotationPointZ * par7);
 		GlStateManager.scale(1.15F, 1.15F, 1.15F);
+		GlStateManager.translate(-this.mask.rotationPointX * par7, -this.mask.rotationPointY * par7, -this.mask.rotationPointZ * par7);
+
 		this.mask.render(par7);
+
 		GlStateManager.popMatrix();
 	}
 

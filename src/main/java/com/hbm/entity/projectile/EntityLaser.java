@@ -4,7 +4,7 @@ import com.hbm.config.CompatibilityConfig;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.lib.Library;
 import com.hbm.lib.ModDamageSource;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
@@ -39,18 +39,18 @@ public class EntityLaser extends Entity {
 		this.getDataManager().set(PLAYER_NAME, player.getName());
 		
 		Vec3d vec1 = player.getLookVec();
-		Vec3 vec = Vec3.createVectorHelper(vec1.x, vec1.y, vec1.z);
+		Vec3NT vec = Vec3NT.createVectorHelper(vec1.x, vec1.y, vec1.z);
 		if(hand == EnumHand.OFF_HAND){
-			vec.rotateAroundY(90F);
+			vec.rotateYawSelf(90F);
 		} else {
-			vec.rotateAroundY(-90F);
+			vec.rotateYawSelf(-90F);
 		}
 		float l = 0.25F;
-		vec.xCoord *= l;
-		vec.yCoord *= l;
-		vec.zCoord *= l;
+		vec.setX(vec.x * (l));
+		vec.setY(vec.y * (l));
+		vec.setZ(vec.z * (l));
 		
-		this.setPosition(player.posX + vec.xCoord, player.posY + player.getEyeHeight(), player.posZ + vec.zCoord);
+		this.setPosition(player.posX + vec.x, player.posY + player.getEyeHeight(), player.posZ + vec.z);
 		
 	}
 
@@ -74,7 +74,7 @@ public class EntityLaser extends Entity {
 			
 			RayTraceResult pos = Library.rayTrace(player, range, 1);
 			
-			//worldObj.createExplosion(this, pos.hitVec.xCoord, pos.hitVec.yCoord, pos.hitVec.zCoord, 1, false);
+			//worldObj.createExplosion(this, pos.hitVec.x, pos.hitVec.y, pos.hitVec.z, 1, false);
 			
 			world.spawnParticle(EnumParticleTypes.CLOUD, pos.hitVec.x, pos.hitVec.y, pos.hitVec.z, 0, 0, 0);
 			world.playSound(pos.hitVec.x, pos.hitVec.y, pos.hitVec.z, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 1, 1, true);

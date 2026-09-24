@@ -1,6 +1,6 @@
 package com.hbm.physics;
 
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 
 import javax.vecmath.Matrix3f;
 
@@ -8,9 +8,9 @@ public abstract class Collider {
 
 	public float mass;
 	public Matrix3f localInertiaTensor;
-	public Vec3 localCentroid;
+	public Vec3NT localCentroid;
 	
-	public abstract Vec3 support(Vec3 direction);
+	public abstract Vec3NT support(Vec3NT direction);
 	
 	public abstract Collider copy();
 	

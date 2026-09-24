@@ -7,6 +7,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import com.hbm.api.entity.IResistanceProvider;
 import com.hbm.items.ModItems;
+import com.hbm.entity.mob.EntityCreeperNuclear;
+import com.hbm.lib.ModDamageSource;
 import com.hbm.main.MainRegistry;
 import com.hbm.util.Tuple.Quartet;
 import net.minecraft.entity.Entity;
@@ -28,6 +30,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map.Entry;
 
 /**
@@ -118,12 +121,15 @@ public class DamageResistanceHandler {
     private static void initDefaults() {
 
         entityStats.put(EntityCreeper.class, new ResistanceStats().addCategory(CATEGORY_EXPLOSION, 2F, 0.25F));
+        entityStats.put(EntityCreeperNuclear.class, new ResistanceStats().addCategory(CATEGORY_EXPLOSION, 5F, 0.35F));
 
-        itemStats.put(ModItems.jackt, new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 5F, 0.5F));
-        itemStats.put(ModItems.jackt2, new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 5F, 0.5F));
+        itemStats.put(ModItems.jackt, new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 1F, 0.20F));
+        itemStats.put(ModItems.jackt2, new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 2F, 0.25F));
 
-        registerSet(ModItems.steel_helmet, ModItems.steel_plate, ModItems.steel_legs, ModItems.steel_boots, new ResistanceStats());
-        registerSet(ModItems.titanium_helmet, ModItems.titanium_plate, ModItems.titanium_legs, ModItems.titanium_boots, new ResistanceStats());
+        registerSet(ModItems.steel_helmet, ModItems.steel_plate, ModItems.steel_legs, ModItems.steel_boots,
+                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 2F, 0.1F));
+        registerSet(ModItems.titanium_helmet, ModItems.titanium_plate, ModItems.titanium_legs, ModItems.titanium_boots,
+                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 3F, 0.1F));
         registerSet(ModItems.alloy_helmet, ModItems.alloy_plate, ModItems.alloy_legs, ModItems.alloy_boots,
                 new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 2F, 0.1F));
         registerSet(ModItems.cobalt_helmet, ModItems.cobalt_plate, ModItems.cobalt_legs, ModItems.cobalt_boots,
@@ -154,8 +160,13 @@ public class DamageResistanceHandler {
                 new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 4F, 0.15F).addCategory(CATEGORY_FIRE, 0.5F, 0.35F).addCategory(CATEGORY_EXPLOSION, 7.5F, 0.25F).addExact(DamageSource.FALL.getDamageType(), 0F, 1F).setOther(0F, 0.15F));
         registerSet(ModItems.ajro_helmet, ModItems.ajro_plate, ModItems.ajro_legs, ModItems.ajro_boots,
                 new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 4F, 0.15F).addCategory(CATEGORY_FIRE, 0.5F, 0.35F).addCategory(CATEGORY_EXPLOSION, 7.5F, 0.25F).addExact(DamageSource.FALL.getDamageType(), 0F, 1F).setOther(0F, 0.15F));
-        registerSet(ModItems.rpa_helmet, ModItems.rpa_plate, ModItems.rpa_legs, ModItems.rpa_boots,
-                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 25F, 0.65F).addCategory(CATEGORY_FIRE, 10F, 0.9F).addCategory(CATEGORY_EXPLOSION, 15F, 0.25F).addCategory(CATEGORY_ENERGY, 25F, 0.75F).addExact(DamageSource.FALL.getDamageType(), 0F, 1F).addExact(DamageClass.LASER.name(), 10F, 0.75F).setOther(15F, 0.3F));
+        registerSet(ModItems.rpa_helmet, ModItems.rpa_plate, ModItems.rpa_legs, ModItems.rpa_boots, new ResistanceStats()
+                .addCategory(CATEGORY_PHYSICAL, 50F, 0.75F)
+                .addCategory(CATEGORY_FIRE, 25F, 0.9F)
+                .addCategory(CATEGORY_EXPLOSION, 15F, 0.25F)
+                .addCategory(CATEGORY_ENERGY, 30F, 0.8F)
+                .addExact(DamageSource.FALL.getDamageType(), 0F, 1F)
+                .setOther(15F, 0.45F));
         registerSet(ModItems.ncrpa_helmet, ModItems.ncrpa_plate, ModItems.ncrpa_legs, ModItems.ncrpa_boots, new ResistanceStats()
                 .addCategory(CATEGORY_PHYSICAL, 25F, 0.65F)
                 .addCategory(CATEGORY_FIRE, 10F, 0.9F)
@@ -181,9 +192,9 @@ public class DamageResistanceHandler {
                 .addExact(DamageSource.FALL.getDamageType(), 0F, 1F)
                 .setOther(2F, 0.25F));
         registerSet(ModItems.fau_helmet, ModItems.fau_plate, ModItems.fau_legs, ModItems.fau_boots,
-                new ResistanceStats().addCategory(CATEGORY_EXPLOSION, 50F, 0.95F).addCategory(CATEGORY_FIRE, 0F, 1F).addExact(DamageClass.LASER.name(), 25F, 0.95F).addExact(DamageSource.FALL.getDamageType(), 0F, 1F).setOther(100F, 0.99F));
+                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 100F, 0.99F).addCategory(CATEGORY_EXPLOSION, 50F, 0.95F).addCategory(CATEGORY_FIRE, 100F, 1F).addExact(DamageClass.LASER.name(), 25F, 0.95F).addExact(DamageSource.FALL.getDamageType(), 0F, 1F).setOther(100F, 0.99F));
         registerSet(ModItems.dns_helmet, ModItems.dns_plate, ModItems.dns_legs, ModItems.dns_boots,
-                new ResistanceStats().addCategory(CATEGORY_EXPLOSION, 100F, 0.99F).addCategory(CATEGORY_FIRE, 0F, 1F).setOther(1000F, 1F));
+                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 1000F, 1F).addCategory(CATEGORY_EXPLOSION, 100F, 0.99F).addCategory(CATEGORY_FIRE, 0F, 1F).setOther(1000F, 1F));
         registerSet(ModItems.taurun_helmet, ModItems.taurun_plate, ModItems.taurun_legs, ModItems.taurun_boots, new ResistanceStats()
                 .addCategory(CATEGORY_PHYSICAL, 2F, 0.15F)
                 .addCategory(CATEGORY_FIRE, 0F, 0.25F)
@@ -420,11 +431,15 @@ public class DamageResistanceHandler {
         if (source.isExplosion()) return CATEGORY_EXPLOSION;
         if (source.isFireDamage()) return CATEGORY_FIRE;
         if (source.isProjectile()) return CATEGORY_PHYSICAL;
-        if (source.getDamageType().equals(DamageClass.LASER.name())) return CATEGORY_ENERGY;
-        if (source.getDamageType().equals(DamageClass.MICROWAVE.name())) return CATEGORY_ENERGY;
-        if (source.getDamageType().equals(DamageClass.SUBATOMIC.name())) return CATEGORY_ENERGY;
-        if (source.getDamageType().equals(DamageClass.ELECTRIC.name())) return CATEGORY_ENERGY;
+        if (source.getDamageType().toLowerCase(Locale.US).equals(DamageClass.LASER.name().toLowerCase(Locale.US))) return CATEGORY_ENERGY;
+        if (source.getDamageType().toLowerCase(Locale.US).equals(DamageClass.PLASMA.name().toLowerCase(Locale.US))) return CATEGORY_ENERGY;
+        if (source.getDamageType().toLowerCase(Locale.US).equals(DamageClass.MICROWAVE.name().toLowerCase(Locale.US))) return CATEGORY_ENERGY;
+        if (source.getDamageType().toLowerCase(Locale.US).equals(DamageClass.SUBATOMIC.name().toLowerCase(Locale.US))) return CATEGORY_ENERGY;
+        if (source.getDamageType().toLowerCase(Locale.US).equals(DamageClass.ELECTRIC.name().toLowerCase(Locale.US))) return CATEGORY_ENERGY;
         if (source == DamageSource.CACTUS) return CATEGORY_PHYSICAL;
+        if (source == ModDamageSource.spikes) return CATEGORY_PHYSICAL;
+        if (source == ModDamageSource.electricity) return CATEGORY_ENERGY;
+        if (source == ModDamageSource.microwave) return CATEGORY_ENERGY;
         if (source instanceof EntityDamageSource) return CATEGORY_PHYSICAL;
         return source.getDamageType();
     }
@@ -499,7 +514,7 @@ public class DamageResistanceHandler {
     }
 
     public enum DamageClass {
-        PHYSICAL, FIRE, EXPLOSIVE, ELECTRIC, LASER, MICROWAVE, SUBATOMIC, OTHER
+        PHYSICAL, FIRE, EXPLOSIVE, ELECTRIC, PLASMA, LASER, MICROWAVE, SUBATOMIC, OTHER
     }
 
     public static class ResistanceStats {
@@ -536,7 +551,7 @@ public class DamageResistanceHandler {
         }
 
         Resistance getResistance(DamageSource source) {
-            Resistance exact = exactResistances.get(source.getDamageType());
+            Resistance exact = exactResistances.get(source.getDamageType().toLowerCase(Locale.US));
             if (exact != null) return exact;
             Resistance category = categoryResistances.get(typeToCategory(source));
             if (category != null) return category;
@@ -544,7 +559,7 @@ public class DamageResistanceHandler {
         }
 
         ResistanceStats addExact(String type, float threshold, float resistance) {
-            exactResistances.put(type, new Resistance(threshold, resistance));
+            exactResistances.put(type.toLowerCase(Locale.US), new Resistance(threshold, resistance));
             return this;
         }
 

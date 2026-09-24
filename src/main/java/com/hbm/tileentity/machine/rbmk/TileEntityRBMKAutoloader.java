@@ -9,6 +9,7 @@ import com.hbm.inventory.gui.GUIRBMKAutoloader;
 import com.hbm.items.machine.ItemRBMKRod;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -17,6 +18,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -78,8 +80,10 @@ public class TileEntityRBMKAutoloader extends TileEntityMachineBase implements I
                 if(below instanceof RBMKBase rbmkBase) {
                     BlockPos corePos = rbmkBase.findCore(world, down);
                     if(corePos != null && world.getTileEntity(corePos) instanceof TileEntityRBMKRod rod) {
-                        if(rod.inventory.getStackInSlot(0).isEmpty() || rod.inventory.getStackInSlot(0).getItem() instanceof ItemRBMKRod && ItemRBMKRod.getEnrichment(rod.inventory.getStackInSlot(0)) * 100 < cycle) {
-                            this.isRetracting = false;
+                        if(rod.coldEnoughForAutoloader()) {
+                            if (rod.inventory.getStackInSlot(0).isEmpty() || rod.inventory.getStackInSlot(0).getItem() instanceof ItemRBMKRod && ItemRBMKRod.getEnrichment(rod.inventory.getStackInSlot(0)) * 100 < cycle) {
+                                this.isRetracting = false;
+                            }
                         }
                     }
                 }
@@ -158,18 +162,14 @@ public class TileEntityRBMKAutoloader extends TileEntityMachineBase implements I
 
             if(this.renderPiston > 0.99) {
                 NBTTagCompound data = new NBTTagCompound();
-                data.setString("type", "tower");
                 data.setFloat("lift", 0F);
                 data.setFloat("base", 0.25F);
                 data.setFloat("max", 1.5F);
                 data.setInteger("life", 70 + world.rand.nextInt(30));
-                data.setDouble("posX", pos.getX() + 0.5 + world.rand.nextGaussian() * 0.125);
-                data.setDouble("posZ", pos.getZ() + 0.5 + world.rand.nextGaussian() * 0.125);
-                data.setDouble("posY", pos.getY() + 0.25);
                 data.setBoolean("noWind", true);
                 data.setFloat("alphaMod", 2F);
                 data.setFloat("strafe", 0.05F);
-                for(int i = 0; i < 3; i++) MainRegistry.proxy.effectNT(data);
+                for(int i = 0; i < 3; i++) MainRegistry.proxy.effectNT(HbmEffectNT.Tower, pos.getX() + 0.5 + world.rand.nextGaussian() * 0.125, pos.getY() + .25, pos.getZ() + 0.5 + world.rand.nextGaussian() * 0.125, data);
             }
         }
     }
@@ -280,7 +280,7 @@ public class TileEntityRBMKAutoloader extends TileEntityMachineBase implements I
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if(data.hasKey("minus") && this.cycle > 5) this.cycle -= 5;
         if(data.hasKey("plus") && this.cycle < 95) this.cycle += 5;
         this.cycle = MathHelper.clamp(cycle, 5, 95);

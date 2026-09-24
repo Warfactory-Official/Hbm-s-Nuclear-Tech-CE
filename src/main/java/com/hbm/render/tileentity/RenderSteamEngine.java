@@ -59,14 +59,14 @@ public class RenderSteamEngine extends TileEntitySpecialRenderer<TileEntityMachi
 
     GlStateManager.pushMatrix();
     GlStateManager.translate(2, 1.375, 0);
-    GL11.glRotated(rot, 0, 0, -1);
+    GlStateManager.rotate((float) (rot), 0, 0, -1);
     GlStateManager.translate(-2, -1.375, 0);
     ResourceManager.steam_engine.renderPart("Flywheel");
     GlStateManager.popMatrix();
 
     GlStateManager.pushMatrix();
     GlStateManager.translate(0, 1.375, -0.5);
-    GL11.glRotated(rot * 2D, 1, 0, 0);
+    GlStateManager.rotate((float) (rot * 2D), 1, 0, 0);
     GlStateManager.translate(0, -1.375, 0.5);
     ResourceManager.steam_engine.renderPart("Shaft");
     GlStateManager.popMatrix();
@@ -77,7 +77,7 @@ public class RenderSteamEngine extends TileEntitySpecialRenderer<TileEntityMachi
     double ang = Math.acos(cos / 1.875D);
     GlStateManager.translate(sin, cos, 0);
     GlStateManager.translate(2.25, 1.375, 0);
-    GL11.glRotated(ang * 180D / Math.PI - 90D, 0, 0, -1);
+    GlStateManager.rotate((float) (ang * 180D / Math.PI - 90D), 0, 0, -1);
     GlStateManager.translate(-2.25, -1.375, 0);
     ResourceManager.steam_engine.renderPart("Transmission");
     GlStateManager.popMatrix();

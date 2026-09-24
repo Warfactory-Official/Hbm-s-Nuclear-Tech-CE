@@ -8,6 +8,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 public class RBMKInlet extends BlockContainer {
 
@@ -20,12 +21,12 @@ public class RBMKInlet extends BlockContainer {
 	}
 
 	@Override
-	public TileEntity createNewTileEntity(World world, int meta) {
+	public TileEntity createNewTileEntity(@NotNull World world, int meta) {
 		return new TileEntityRBMKInlet();
 	}
 	
 	@Override
-	public EnumBlockRenderType getRenderType(IBlockState state){
+	public @NotNull EnumBlockRenderType getRenderType(@NotNull IBlockState state){
 		return EnumBlockRenderType.MODEL;
 	}
 }

@@ -1,12 +1,6 @@
 {
-	"parent": "block/cube",
-	"textures": {
-		"particle": "hbm:blocks/machine_diesel_front",
-		"north": "hbm:blocks/machine_diesel_front",
-		"south": "hbm:blocks/machine_diesel_front",
-		"east": "hbm:blocks/machine_diesel_side",
-		"west": "hbm:blocks/machine_diesel_side",
-		"up": "hbm:blocks/machine_diesel_top",
-		"down": "hbm:blocks/machine_diesel_bottom"
-	}
+  "parent": "block/cube_all",
+  "textures": {
+    "all": "hbm:blocks/block_steel"
+  }
 }

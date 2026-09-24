@@ -17,12 +17,6 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister
 public class RenderNukeFstbmb extends TileEntitySpecialRenderer<TileEntityNukeBalefire>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityNukeBalefire te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityNukeBalefire bf,

@@ -3,6 +3,7 @@ package com.hbm.tileentity;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.interfaces.ICopiable;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -17,7 +18,7 @@ public interface IControlReceiverFilter extends IControlReceiver, ICopiable {
     void nextMode(int i);
 
     @Override
-    default void receiveControl(NBTTagCompound data) {
+    default void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if (data.hasKey("slot")) {
             setFilterContents(data);
         }
@@ -33,6 +34,8 @@ public interface IControlReceiverFilter extends IControlReceiver, ICopiable {
         IItemHandler handler = tile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
         if (handler instanceof IItemHandlerModifiable modifiableHandler) {
             int slot = nbt.getInteger("slot");
+            if (slot < 0 || slot >= modifiableHandler.getSlots()) return;
+
             ItemStack stack = new ItemStack(nbt.getCompoundTag("stack"));
 
             modifiableHandler.setStackInSlot(slot, stack);

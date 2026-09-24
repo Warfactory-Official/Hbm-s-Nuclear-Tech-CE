@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.slot.SlotUpgrade;
@@ -22,6 +23,13 @@ public class ContainerMachineTurbofan extends Container {
 
     private final TileEntityMachineTurbofan turbofan;
     private int afterburner;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(5)
+                                                                              .rule(0, 2, ContainerMachineTurbofan::isNormal)
+                                                                              .rule(2, 3, s -> Library.isMachineUpgrade(s) || s.getItem() == ModItems.flame_pony)
+                                                                              .rule(3, 4, Library::isChargeableBattery)
+                                                                              .rule(4, 5, s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                              .build();
 
     public ContainerMachineTurbofan(InventoryPlayer invPlayer, TileEntityMachineTurbofan tedf) {
         afterburner = 0;
@@ -67,11 +75,7 @@ public class ContainerMachineTurbofan extends Container {
     @NotNull
     @Override
     public ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 5,
-                ContainerMachineTurbofan::isNormal, 2,
-                s -> Library.isMachineUpgrade(s) || s.getItem() == ModItems.flame_pony, 3,
-                Library::isChargeableBattery, 4,
-                s -> s.getItem() instanceof IItemFluidIdentifier, 5);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
     @Override

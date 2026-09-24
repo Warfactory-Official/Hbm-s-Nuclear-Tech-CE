@@ -16,12 +16,6 @@ import net.minecraft.item.Item;
 import org.lwjgl.opengl.GL11;
 @AutoRegister
 public class RenderSolarMirror extends TileEntitySpecialRenderer<TileEntitySolarMirror> implements IItemRendererProvider {
-
-	@Override
-	public boolean isGlobalRenderer(TileEntitySolarMirror te) {
-		return true;
-	}
-	
 	@Override
 	public void render(TileEntitySolarMirror te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
 		GlStateManager.pushMatrix();
@@ -47,8 +41,8 @@ public class RenderSolarMirror extends TileEntitySpecialRenderer<TileEntitySolar
         	double pitch = Math.toDegrees(-Math.asin((dy + 0.5) / dist)) + 90;
         	double yaw = Math.toDegrees(-Math.atan2(dz, dx)) + 180;
 
-        	GL11.glRotated(yaw, 0, 1, 0);
-        	GL11.glRotated(pitch, 0, 0, 1);
+        	GlStateManager.rotate((float) (yaw), 0, 1, 0);
+        	GlStateManager.rotate((float) (pitch), 0, 0, 1);
         }
 
         GlStateManager.translate(0, -1, 0);

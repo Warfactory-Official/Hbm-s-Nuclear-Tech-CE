@@ -235,7 +235,7 @@ public class GUIAnvil extends GuiContainer {
 			}
 			
 			double scale = 0.5D;
-			GL11.glScaled(scale, scale, scale);
+			GlStateManager.scale(scale, scale, scale);
 			int offset = 0;
 			for(String s : list) {
 				this.fontRenderer.drawString(s, 260, 50 + offset, 0xffffff);
@@ -243,7 +243,7 @@ public class GUIAnvil extends GuiContainer {
 			}
 			
 			this.lastSize = (int)(longest * scale);
-			GL11.glScaled(1D/scale, 1D/scale, 1D/scale);
+			GlStateManager.scale(1D/scale, 1D/scale, 1D/scale);
 			
 		} else {
 			this.lastSize = 0;

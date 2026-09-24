@@ -5,7 +5,7 @@ import com.hbm.inventory.RecipesCommon;
 import com.hbm.inventory.container.ContainerDroneRequester;
 import com.hbm.inventory.gui.GUIDroneRequester;
 import com.hbm.modules.ModulePatternMatcher;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.tileentity.IControlReceiverFilter;
 import com.hbm.tileentity.IGUIProvider;
 import io.netty.buffer.ByteBuf;
@@ -128,7 +128,7 @@ public class TileEntityDroneRequester extends TileEntityRequestNetworkContainer 
 
     @Override
     public boolean hasPermission(EntityPlayer player) {
-        return Vec3.createVectorHelper(pos.getX() - player.posX, pos.getY() - player.posY, pos.getZ() - player.posZ).length() < 20;
+        return Vec3NT.createVectorHelper(pos.getX() - player.posX, pos.getY() - player.posY, pos.getZ() - player.posZ).length() < 20;
     }
 
     @Override

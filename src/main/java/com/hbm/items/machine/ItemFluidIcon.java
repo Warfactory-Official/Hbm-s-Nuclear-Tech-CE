@@ -72,8 +72,7 @@ public class ItemFluidIcon extends ItemBakedBase {
 	public String getItemStackDisplayName(ItemStack stack) {
 		FluidType fluidType = Fluids.fromID(stack.getMetadata());
 		if (fluidType != null) {
-			String unlocalizedName = fluidType.getTranslationKey();
-			String localizedName = I18n.format(unlocalizedName).trim();
+			String localizedName = fluidType.getLocalizedName().trim();
 
 			if (!localizedName.isEmpty()) {
 				return localizedName;
@@ -84,6 +83,7 @@ public class ItemFluidIcon extends ItemBakedBase {
 	}
 
 	public static ItemStack addQuantity(ItemStack stack, int i) {
+		if(i <= 0) return stack;
 		if(!stack.hasTagCompound()) stack.setTagCompound(new NBTTagCompound());
 		stack.getTagCompound().setInteger("fill", i);
 		return stack;

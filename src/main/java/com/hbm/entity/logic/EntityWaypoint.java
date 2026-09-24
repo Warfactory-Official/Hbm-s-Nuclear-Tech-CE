@@ -4,7 +4,9 @@ import com.hbm.config.MobConfig;
 import com.hbm.entity.mob.glyphid.EntityGlyphid;
 import com.hbm.entity.mob.glyphid.EntityGlyphidNuclear;
 import com.hbm.entity.mob.glyphid.EntityGlyphidScout;
+import com.hbm.interfaces.AutoRegister;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
@@ -17,6 +19,7 @@ import java.util.List;
 
 import static com.hbm.entity.mob.glyphid.EntityGlyphid.*;
 
+@AutoRegister(name = "entity_waypoint", sendVelocityUpdates = false)
 public class EntityWaypoint extends Entity {
     public static final DataParameter<Byte> WAYPOINT_TYPE = EntityDataManager.createKey(EntityWaypoint.class, DataSerializers.BYTE);
 
@@ -108,16 +111,12 @@ public class EntityWaypoint extends Entity {
             double z = bb.minZ + (rand.nextDouble() - 0.5) * (bb.maxZ - bb.minZ);
 
             NBTTagCompound fx = new NBTTagCompound();
-            fx.setString("type", "tower");
             fx.setFloat("lift", 0.5F);
             fx.setFloat("base", 0.75F);
             fx.setFloat("max", 2F);
             fx.setInteger("life", 50 + world.rand.nextInt(10));
             fx.setInteger("color", getColor());
-            fx.setDouble("posX", x);
-            fx.setDouble("posY", y);
-            fx.setDouble("posZ", z);
-            MainRegistry.proxy.effectNT(fx);
+            MainRegistry.proxy.effectNT(HbmEffectNT.Tower, x, y, z, fx);
         }
 
     }

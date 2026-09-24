@@ -41,68 +41,6 @@ public class ModelArmorEnvsuit extends ModelArmorBase {
   }
 
   @Override
-  public void render(
-      Entity entity,
-      float limbSwing,
-      float limbSwingAmount,
-      float ageInTicks,
-      float netHeadYaw,
-      float headPitch,
-      float scaleFactor) {
-    super.setRotationAngles(
-        limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entity);
-    this.head.copyTo(this.lamps);
-
-    GlStateManager.pushMatrix();
-
-    switch (type) {
-      case 0 -> {
-        bindTexture(ResourceManager.envsuit_helmet);
-        GlStateManager.enableBlend();
-        OpenGlHelper.glBlendFunc(
-            GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
-        this.head.render(scaleFactor);
-        GlStateManager.disableBlend();
-
-        /// START GLOW ///
-        float lastX = OpenGlHelper.lastBrightnessX;
-        float lastY = OpenGlHelper.lastBrightnessY;
-        GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
-        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
-        GlStateManager.disableLighting();
-        GlStateManager.disableTexture2D();
-        GlStateManager.color(1F, 1F, 0.8F);
-        this.lamps.render(scaleFactor);
-        GlStateManager.color(1F, 1F, 1F);
-        GlStateManager.enableTexture2D();
-        GlStateManager.enableLighting();
-        GL11.glPopAttrib();
-        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lastX, lastY);
-        /// END GLOW ///
-      }
-      case 1 -> {
-        bindTexture(ResourceManager.envsuit_chest);
-        this.body.render(scaleFactor);
-        bindTexture(ResourceManager.envsuit_arm);
-        this.leftArm.render(scaleFactor);
-        this.rightArm.render(scaleFactor);
-      }
-      case 2 -> {
-        bindTexture(ResourceManager.envsuit_leg);
-        this.leftLeg.render(scaleFactor);
-        this.rightLeg.render(scaleFactor);
-      }
-      case 3 -> {
-        bindTexture(ResourceManager.envsuit_leg);
-        this.leftFoot.render(scaleFactor);
-        this.rightFoot.render(scaleFactor);
-      }
-    }
-
-    GlStateManager.popMatrix();
-  }
-
-  @Override
   public void renderArmor(Entity par1Entity, float par7) {
     switch (type) {
       case 0 -> {

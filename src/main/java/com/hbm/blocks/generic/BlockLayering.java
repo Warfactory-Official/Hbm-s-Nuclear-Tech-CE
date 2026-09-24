@@ -27,7 +27,7 @@ import java.util.Random;
 
 public class BlockLayering extends BlockBakeBase {
   public BlockLayering(Material material, String name, SoundType type, String texture) {
-    super(material, name, new BlockBakeFrame(BlockBakeFrame.BlockForm.LAYER, texture));
+    super(material, name, BlockBakeFrame.layer(texture));
     setSoundType(type);
     setHarvestLevel("pickaxe", 0);
     setCreativeTab(MainRegistry.blockTab);

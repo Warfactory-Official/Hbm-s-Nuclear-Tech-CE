@@ -1,6 +1,7 @@
 package com.hbm.items.tool;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import com.hbm.Tags;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.inventory.fluid.FluidType;
@@ -28,6 +29,7 @@ import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.model.IModel;
+import net.minecraftforge.client.model.ItemLayerModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.relauncher.Side;
@@ -59,7 +61,7 @@ public class ItemPipette extends ItemBakedBase implements IFillableItem {
             return;
         }
         NBTTagCompound tag = new NBTTagCompound();
-        tag.setShort("type", (short) Fluids.NONE.getID());
+        Fluids.writeType(tag, "type", Fluids.NONE); //stored by name, IDs shift when fluids are added/removed
         tag.setShort("fill", (short) 0);
         tag.setShort("capacity", getMaxFill());
         stack.setTagCompound(tag);
@@ -70,7 +72,7 @@ public class ItemPipette extends ItemBakedBase implements IFillableItem {
             return Fluids.NONE;
         }
         NBTTagCompound tag = getOrCreateTag(stack);
-        return Fluids.fromID(tag.getShort("type"));
+        return Fluids.readType(tag, "type"); //name-based, with legacy numeric-ID fallback
     }
 
     public short getCapacity(ItemStack stack) {
@@ -86,7 +88,7 @@ public class ItemPipette extends ItemBakedBase implements IFillableItem {
             return;
         }
         NBTTagCompound tag = getOrCreateTag(stack);
-        tag.setShort("type", (short) type.getID());
+        Fluids.writeType(tag, "type", type); //stored by name, IDs shift when fluids are added/removed
         tag.setShort("fill", fill);
     }
 
@@ -316,5 +318,32 @@ public class ItemPipette extends ItemBakedBase implements IFillableItem {
     @SideOnly(Side.CLIENT)
     private ModelResourceLocation getEmptyModelLocation() {
         return new ModelResourceLocation(new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath + "_empty"), "inventory");
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public boolean ownsModelLocation(ModelResourceLocation location) {
+        return super.ownsModelLocation(location)
+                || location.equals(getFilledModelLocation())
+                || location.equals(getEmptyModelLocation());
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IModel loadModel(ModelResourceLocation location) {
+        ResourceLocation baseTexture = new ResourceLocation(Tags.MODID, ROOT_PATH + baseTexturePath);
+        if (location.equals(getFilledModelLocation())) {
+            return new ItemLayerModel(ImmutableList.of(
+                    baseTexture,
+                    new ResourceLocation(Tags.MODID, ROOT_PATH + getOverlayTexturePath())
+            ));
+        }
+        if (location.equals(getEmptyModelLocation())) {
+            return new ItemLayerModel(ImmutableList.of(
+                    baseTexture,
+                    new ResourceLocation(Tags.MODID, ROOT_PATH + EMPTY_OVERLAY_PATH)
+            ));
+        }
+        return super.loadModel(location);
     }
 }

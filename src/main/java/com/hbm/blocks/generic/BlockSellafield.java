@@ -123,7 +123,7 @@ public class BlockSellafield extends BlockMeta implements IDynamicModels {
             int[] tint = colors[level];
 
             for (BlockBakeFrame texture : sellafieldTextures) {
-                ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, ROOT_PATH + texture.textureArray[0] + "-" + level);
+                ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, ROOT_PATH + texture.getPrimaryTexturePath() + "-" + level);
                 TextureAtlasSpriteMutatable mutatedTexture = new TextureAtlasSpriteMutatable(spriteLoc.toString(), new RGBMutatorInterpolatedComponentRemap(0x858384, 0x434343, tint[0], tint[1]));
                 map.setTextureEntry(mutatedTexture);
             }
@@ -136,9 +136,9 @@ public class BlockSellafield extends BlockMeta implements IDynamicModels {
         for (int level = 0; level < LEVELS; level++) {
             var models = new IBakedModel[4];
             for (int variant = 0; variant < 4; variant++) {
-                IModel baseModel = ModelLoaderRegistry.getModelOrMissing(new ResourceLocation(sellafieldTextures[0].getBaseModel()));
+                IModel baseModel = ModelLoaderRegistry.getModelOrMissing(sellafieldTextures[0].getBaseModelLocation());
                 ImmutableMap.Builder<String, String> textureMap = ImmutableMap.builder();
-                textureMap.put("all", new ResourceLocation(Tags.MODID, ROOT_PATH) + sellafieldTextures[variant].textureArray[0] + "-" + level);
+                textureMap.put("all", new ResourceLocation(Tags.MODID, ROOT_PATH) + sellafieldTextures[variant].getPrimaryTexturePath() + "-" + level);
 
                 IModel retexturedModel = baseModel.retexture(textureMap.build());
                 IBakedModel bakedModel = retexturedModel.bake(

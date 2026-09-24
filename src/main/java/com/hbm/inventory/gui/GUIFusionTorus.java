@@ -5,7 +5,7 @@ import com.hbm.inventory.container.ContainerFusionTorus;
 import com.hbm.inventory.recipes.FusionRecipe;
 import com.hbm.inventory.recipes.FusionRecipes;
 import com.hbm.items.machine.ItemBlueprints;
-import com.hbm.render.util.GaugeUtil;
+import com.hbm.inventory.gui.element.GUIElements;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionTorus;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.I18nUtil;
@@ -61,7 +61,7 @@ public class GUIFusionTorus extends GuiInfoContainer {
 
         if(guiLeft + 43 <= mouseX && guiLeft + 43 + 18 > mouseX && guiTop + 80 < mouseY && guiTop + 80 + 18 >= mouseY) {
             if(recipe != null) {
-                this.drawHoveringText(recipe.print(), mouseX, mouseY);
+                GUIElements.drawHoveringTextRecipe(recipe.print(), mouseX, mouseY, this.fontRenderer, itemRender, this.width, this.height);
             } else {
                 this.drawHoveringText(TextFormatting.YELLOW + I18nUtil.resolveKey("gui.recipe.setRecipe"), mouseX, mouseY);
             }
@@ -134,11 +134,11 @@ public class GUIFusionTorus extends GuiInfoContainer {
         double outputGauge = recipe == null ? 0 : Math.min(((double) torus.plasmaEnergy / (double) recipe.outputTemp), 1);
 
         // input energy
-        GaugeUtil.drawSmoothGauge(guiLeft + 52, guiTop + 124, this.zLevel, inputGauge, 5, 2, 1, 0xA00000);
+        GUIElements.drawSmoothGauge(guiLeft + 52, guiTop + 124, this.zLevel, inputGauge, 5, 2, 1, 0xA00000);
         // output genergy
-        GaugeUtil.drawSmoothGauge(guiLeft + 88, guiTop + 124, this.zLevel, outputGauge, 5, 2, 1, 0xA00000);
+        GUIElements.drawSmoothGauge(guiLeft + 88, guiTop + 124, this.zLevel, outputGauge, 5, 2, 1, 0xA00000);
         // fuel consumption
-        GaugeUtil.drawSmoothGauge(guiLeft + 124, guiTop + 124, this.zLevel, torus.fuelConsumption, 5, 2, 1, 0xA00000);
+        GUIElements.drawSmoothGauge(guiLeft + 124, guiTop + 124, this.zLevel, torus.fuelConsumption, 5, 2, 1, 0xA00000);
 
         // recipe selector
         this.renderItem(recipe != null ? recipe.getIcon() : TEMPLATE_FOLDER, 44, 81);

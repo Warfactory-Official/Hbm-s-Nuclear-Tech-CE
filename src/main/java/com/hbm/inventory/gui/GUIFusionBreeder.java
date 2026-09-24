@@ -2,7 +2,7 @@ package com.hbm.inventory.gui;
 
 import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerFusionBreeder;
-import com.hbm.render.util.GaugeUtil;
+import com.hbm.inventory.gui.element.GUIElements;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionBreeder;
 import com.hbm.util.BobMathUtil;
 import net.minecraft.client.Minecraft;
@@ -55,7 +55,7 @@ public class GUIFusionBreeder extends GuiInfoContainer {
         double gauge = 1D - Math.pow(Math.E, -breeder.neutronEnergy * 10 / breeder.capacity);
 
         // input flux
-        GaugeUtil.drawSmoothGauge(guiLeft + 88, guiTop + 32, this.zLevel, gauge, 5, 2, 1, 0xA00000);
+        GUIElements.drawSmoothGauge(guiLeft + 88, guiTop + 32, this.zLevel, gauge, 5, 2, 1, 0xA00000);
 
         breeder.tanks[0].renderTank(guiLeft + 26, guiTop + 70, this.zLevel, 16, 52);
         breeder.tanks[1].renderTank(guiLeft + 134, guiTop + 70, this.zLevel, 16, 52);

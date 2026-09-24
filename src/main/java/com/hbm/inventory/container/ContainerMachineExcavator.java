@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.items.machine.ItemDrillbit;
@@ -14,10 +15,20 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerMachineExcavator extends Container {
-	
+
 	TileEntityMachineExcavator excavator;
 
-	public ContainerMachineExcavator(InventoryPlayer invPlayer, TileEntityMachineExcavator tile) {
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(14)
+                                                                              .rule(0, 1, Library::isBattery)
+                                                                              .rule(1, 2,
+                                                                                      s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                              .rule(2, 4, Library::isMachineUpgrade)
+                                                                              .rule(4, 5,
+                                                                                      s -> s.getItem() instanceof ItemDrillbit)
+                                                                              .genericMachineRange(5)
+                                                                              .build();
+
+    public ContainerMachineExcavator(InventoryPlayer invPlayer, TileEntityMachineExcavator tile) {
 		this.excavator = tile;
 
 		//Battery: 0
@@ -34,8 +45,8 @@ public class ContainerMachineExcavator extends Container {
 				this.addSlotToContainer(SlotFiltered.takeOnly(tile.inventory, 5 + j + i * 3, 136 + j * 18, 5 + i * 18));
 			}
 		}
-		
-		//Inventory
+
+        //Inventory
 		for(int i = 0; i < 3; i++) {
 			for(int j = 0; j < 9; j++) {
 				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 41 + j * 18, 122 + i * 18));
@@ -50,11 +61,7 @@ public class ContainerMachineExcavator extends Container {
 	@Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 14,
-                Library::isBattery, 1,
-                s -> s.getItem() instanceof IItemFluidIdentifier, 2,
-                Library::isMachineUpgrade, 4,
-                s -> s.getItem() instanceof ItemDrillbit, 5);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
 	@Override

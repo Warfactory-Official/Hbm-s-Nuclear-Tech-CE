@@ -74,6 +74,7 @@ public class EntityTomBlast extends EntityExplosionChunkloading {
 
 	@Override
 	protected void readEntityFromNBT(NBTTagCompound nbt) {
+		markChunkLoaderRestoredFromNBT();
 		age = nbt.getInteger("age");
 		destructionRange = nbt.getInteger("destructionRange");
         speed = nbt.getInteger("speed");

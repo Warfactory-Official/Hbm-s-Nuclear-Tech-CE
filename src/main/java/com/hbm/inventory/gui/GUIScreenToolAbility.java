@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import net.minecraft.client.renderer.GlStateManager;
 import com.hbm.Tags;
 import com.hbm.handler.ability.*;
 import com.hbm.handler.threading.PacketThreading;
@@ -101,7 +102,7 @@ public class GUIScreenToolAbility extends GuiScreen {
     public void drawScreen(int mouseX, int mouseY, float f) {
         this.drawDefaultBackground();
 
-        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
 
         // Draw window background

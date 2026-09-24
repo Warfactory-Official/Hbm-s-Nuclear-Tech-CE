@@ -21,8 +21,6 @@ public class GUICraneBoxer extends GuiInfoContainer {
     private TileEntityCraneBoxer boxer;
 
     private String[] modeDesc = new String[] { 
-        "desc.conveyor.boxer.mode1",
-        "desc.conveyor.boxer.mode2",
         "desc.conveyor.boxer.mode4",
         "desc.conveyor.boxer.mode8",
         "desc.conveyor.boxer.mode16",

@@ -1,6 +1,0 @@
-{
-	"variants": {
-		"active=true": { "model": "hbm:geysir_water" },
-		"active=false": { "model": "hbm:geysir_water" }
-	}
-}

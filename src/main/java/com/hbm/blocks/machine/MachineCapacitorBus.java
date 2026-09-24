@@ -22,6 +22,7 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 import java.util.List;
+@Deprecated
 public class MachineCapacitorBus extends BlockBase implements IEnergyConnectorBlock, ITooltipProvider {
     public static final PropertyDirection FACING = BlockDirectional.FACING;
 
@@ -48,8 +49,8 @@ public class MachineCapacitorBus extends BlockBase implements IEnergyConnectorBl
     }
 
     @Override
-    public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-        worldIn.setBlockState(pos, state.withProperty(FACING, EnumFacing.getDirectionFromEntityLiving(pos, placer)));
+    public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
+        return this.getDefaultState().withProperty(FACING, EnumFacing.getDirectionFromEntityLiving(pos, placer));
     }
 
     @Override

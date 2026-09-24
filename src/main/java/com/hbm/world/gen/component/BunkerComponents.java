@@ -138,7 +138,7 @@ public class BunkerComponents {
 					ModBlocks.concrete_smooth_stairs.getStateFromMeta(getStairMeta(0)), false);
 			setBlockState(world, ModBlocks.concrete_slab.getStateFromMeta(1), 2, hpos, 3, box);
 			setBlockState(world, ModBlocks.concrete_smooth_stairs.getStateFromMeta(getStairMeta(2)), 2, hpos, 4, box);
-			//setBlockState(world, ModBlocks.trapdoor_steel.getStateFromMeta(getDecoModelMeta(8) >> 2), 2, hpos, 5, box); // TODO steel trapdoor
+			setBlockState(world, ModBlocks.trapdoor_steel.getStateFromMeta(getDecoModelMeta(8) >> 2), 2, hpos, 5, box);
 			setBlockState(world, ModBlocks.concrete_smooth_stairs.getStateFromMeta(getStairMeta(3)), 2, hpos, 6, box);
 			setBlockState(world, ModBlocks.concrete_slab.getStateFromMeta(1), 2, hpos, 7, box);
 			fillWithBlocks(world, box, 3, hpos, 4, 3, hpos, 6,
@@ -904,7 +904,7 @@ public class BunkerComponents {
 					setBlockState(world, ModBlocks.deco_steel.getStateFromMeta(0), 10, i, 5, box);
 				}
 				setBlockState(world, ModBlocks.deco_pipe_framed_rusted.getStateFromMeta(0), 10, 2, 1, box);
-				//setBlockState(world, ModBlocks.fluid_duct_gauge.getStateFromMeta(decoMetaW), 10, 2, 5, box);
+				setBlockState(world, ModBlocks.fluid_duct_gauge.getStateFromMeta(decoMetaW), 10, 2, 5, box);
 				setBlockState(world, ModBlocks.barrel_plastic.getStateFromMeta(0), 6, 1, 5, box);
 				//chests
 				generateInvContents(world, box, rand, Blocks.CHEST, decoMetaS, 7, 1, 5, ItemPool.getPool(ItemPoolsComponent.POOL_SOLID_FUEL), 5);
@@ -929,10 +929,10 @@ public class BunkerComponents {
 				setBlockState(world, ModBlocks.deco_computer.getStateFromMeta(getDecoModelMeta(2)), 10, 3, 2, box);
 				fillWithMetadataBlocks(world, box, 10, 2, 3, 10, 3, 3, ModBlocks.tape_recorder, decoMetaW);
 				fillWithMetadataBlocks(world, box, 9, 1, 2, 9, 1, 3, ModBlocks.steel_grate, 7);
-				fillWithBlocks(world, box, 9, 1, 5, 10, 1, 5, ModBlocks.barrel_iron);
-				setBlockState(world, ModBlocks.barrel_iron.getStateFromMeta(0), 10, 2, 5, box);
-				fillWithBlocks(world, box, 6, 1, 5, 6, 2, 5, ModBlocks.barrel_iron);
-				setBlockState(world, ModBlocks.barrel_iron.getStateFromMeta(0), 6, 1, 2, box);
+				fillWithBlocks(world, box, 9, 1, 5, 10, 1, 5, ModBlocks.barrel_corroded);
+				setBlockState(world, ModBlocks.barrel_corroded.getStateFromMeta(0), 10, 2, 5, box);
+				fillWithBlocks(world, box, 6, 1, 5, 6, 2, 5, ModBlocks.barrel_corroded);
+				setBlockState(world, ModBlocks.barrel_corroded.getStateFromMeta(0), 6, 1, 2, box);
 				break;
 			case 2:
 				for(int i = 7; i <= 9; i += 2) {
@@ -959,7 +959,7 @@ public class BunkerComponents {
 				setBlockState(world, ModBlocks.tape_recorder.getStateFromMeta(decoMetaN), 10, 3, 1, box);
 				fillWithMetadataBlocks(world, box, 6, 1, 1, 7, 1, 1, ModBlocks.deco_pipe_quad_rusted, getPillarMeta(4));
 				setBlockState(world, ModBlocks.deco_pipe_quad_rusted.getStateFromMeta(getPillarMeta(4)), 7, 3, 1, box);
-				// TODO proper gauges //setBlockState(world, ModBlocks.fluid_duct_gauge.getStateFromMeta(decoMetaN), 6, 3, 1, box);
+				setBlockState(world, ModBlocks.fluid_duct_gauge.getStateFromMeta(decoMetaN), 6, 3, 1, box);
 				//chest
 				generateInvContents(world, box, rand, Blocks.CHEST, decoMetaN, 6, 1, 2, ItemPool.getPool(ItemPoolsComponent.POOL_NUKE_FUEL), 8);
 				break;

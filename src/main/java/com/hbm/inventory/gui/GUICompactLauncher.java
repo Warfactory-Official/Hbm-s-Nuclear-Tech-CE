@@ -113,7 +113,7 @@ public class GUICompactLauncher extends GuiInfoContainer {
 
 			GlStateManager.rotate(90, 0, 1, 0);
 			GlStateManager.translate(missile.getHeight() / 2D * scale, 0, 0);
-			GL11.glScaled(scale, scale, scale);
+			GlStateManager.scale(scale, scale, scale);
 			
 			GlStateManager.scale(-1, -1, -1);
 			

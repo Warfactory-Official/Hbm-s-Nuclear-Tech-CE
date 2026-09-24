@@ -32,6 +32,7 @@ import static com.hbm.inventory.OreDictManager.DictFrame.fromOne;
 import static com.hbm.inventory.material.MaterialShapes.*;
 import static com.hbm.items.ModItems.*;
 
+//mlbv: all future changes to this class should stay additive
 //the more i optimize this, the more it starts looking like gregtech
 public class OreDictManager {
 
@@ -52,6 +53,7 @@ public class OreDictManager {
     public static final String KEY_LEAVES = "treeLeaves";
     public static final String KEY_SAPLING = "treeSapling";
     public static final String KEY_SAND = "sand";
+    public static final String KEY_STONE = "stone";
     public static final String KEY_COBBLESTONE = "cobblestone";
     public static final String KEY_GRAVEL = "gravel";
     public static final String KEY_BLACK = "dyeBlack";
@@ -154,11 +156,11 @@ public class OreDictManager {
      */
     public static final DictFrame CU = new DictFrame("Copper");
     public static final DictFrame MINGRADE = new DictFrame("Mingrade");
-    public static final DictFrame ALLOY = new DictFrame("AdvancedAlloy");
     /**
      * TUNGSTEN
      */
     public static final DictFrame W = new DictFrame("Tungsten");
+    public static final DictFrame WC = new DictFrame("TungstenCarbide");
     /**
      * ALUMINUM
      */
@@ -394,11 +396,11 @@ public class OreDictManager {
     public static final DictFrame ANY_HIGHEXPLOSIVE = new DictFrame("AnyHighexplosive");
     public static final DictFrame ANY_COKE = new DictFrame("AnyCoke", "Coke");
     public static final DictFrame ANY_CONCRETE = new DictFrame("Concrete");            //no any prefix means that any has to be appended with the any() or anys() getters, registering works with the any (i.e. no shape) setter
-    public static final DictGroup ANY_TAR = new DictGroup("Tar", KEY_OIL_TAR, KEY_COAL_TAR, KEY_CRACK_TAR);
+    public static final DictGroup ANY_TAR = new DictGroup("Tar", KEY_OIL_TAR, KEY_COAL_TAR, KEY_CRACK_TAR, KEY_WOOD_TAR);
     /**
      * Any special psot-RBMK gating material, namely bismuth and arsenic
      */
-    public static final DictFrame ANY_BISMOID = new DictFrame("AnyBismoid");
+    public static final DictGroup ANY_BISMOID = new DictGroup("AnyBismoid", BI, AS);
     public static final DictFrame ANY_ASH = new DictFrame("Ash");
     /**
      * Alternate, additional names for ore dict registration. Used mostly for DictGroups
@@ -459,8 +461,8 @@ public class OreDictManager {
         TI.ingot(ingot_titanium).crystal(crystal_titanium).dust(powder_titanium).plate(plate_titanium).block(block_titanium).ore(ore_titanium);
         CU.ingot(ingot_copper).crystal(crystal_copper).dust(powder_copper).plate(plate_copper).block(block_copper).ore(ore_copper, ore_gneiss_copper);
         MINGRADE.ingot(ingot_red_copper).dust(powder_red_copper).block(block_red_copper);
-        ALLOY.ingot(ingot_advanced_alloy).dust(powder_advanced_alloy).plate(plate_advanced_alloy).block(block_advanced_alloy);
         W.ingot(ingot_tungsten).dust(powder_tungsten).crystal(crystal_tungsten).block(block_tungsten).ore(ore_tungsten, ore_nether_tungsten).oreNether(ore_nether_tungsten);
+        WC.ingot(ingot_tungsten_carbide);
         AL.ingot(ingot_aluminium).dust(powder_aluminium).crystal(crystal_aluminium).plate(plate_aluminium).block(block_aluminium).ore(ore_aluminium);
         STEEL.ingot(ingot_steel).dustSmall(powder_steel_tiny).dust(powder_steel).plate(plate_steel).block(block_steel);
         TCALLOY.ingot(ingot_tcalloy).dust(powder_tcalloy).block(block_tcalloy);
@@ -525,7 +527,7 @@ public class OreDictManager {
         HEMATITE.ore(fromOne(stone_resource, EnumStoneType.HEMATITE));
         MALACHITE.ingot(DictFrame.fromOne(chunk_ore, EnumChunkType.MALACHITE)).ore(fromOne(stone_resource, EnumStoneType.MALACHITE));
         LIMESTONE.dust(powder_limestone).ore(fromOne(stone_resource, EnumStoneType.LIMESTONE));
-        BAUXITE.gem(fromOne(stone_resource, EnumStoneType.BAUXITE));
+        BAUXITE.ore(fromOne(stone_resource, EnumStoneType.BAUXITE));
         CRYOLITE.crystal(fromOne(chunk_ore, EnumChunkType.CRYOLITE));
         SLAG.block(block_slag);
 
@@ -588,7 +590,6 @@ public class OreDictManager {
         for(int i = 0; i < 16; i++) { ANY_CONCRETE.any(new ItemStack(ModBlocks.concrete_colored, 1, i)); }
         for(int i = 0; i < 8; i++) { ANY_CONCRETE.any(new ItemStack(ModBlocks.concrete_colored_ext, 1, i)); }
         ANY_COKE.gem(fromAll(coke, EnumCokeType.VALUES)).block(fromAll(block_coke, EnumCokeType.VALUES));
-        ANY_BISMOID.ingot(ingot_bismuth, ingot_arsenic).nugget(nugget_bismuth, nugget_arsenic).block(block_bismuth);
         ANY_ASH.any(fromOne(ModItems.powder_ash, EnumAshType.WOOD), fromOne(ModItems.powder_ash, EnumAshType.COAL), fromOne(ModItems.powder_ash, EnumAshType.MISC), fromOne(ModItems.powder_ash, EnumAshType.FLY), fromOne(ModItems.powder_ash, EnumAshType.SOOT));
 
 
@@ -606,6 +607,11 @@ public class OreDictManager {
         OreDictionary.registerOre(KEY_UNIVERSAL_TANK, new ItemStack(fluid_tank_full, 1, OreDictionary.WILDCARD_VALUE));
         OreDictionary.registerOre(KEY_HAZARD_TANK, new ItemStack(fluid_tank_lead_full, 1, OreDictionary.WILDCARD_VALUE));
         OreDictionary.registerOre(KEY_UNIVERSAL_BARREL, new ItemStack(fluid_barrel_full, 1, OreDictionary.WILDCARD_VALUE));
+        if (GeneralConfig.enableFluidContainersV2) {
+            OreDictionary.registerOre(KEY_UNIVERSAL_TANK, new ItemStack(fluid_tank_v2, 1, OreDictionary.WILDCARD_VALUE));
+            OreDictionary.registerOre(KEY_HAZARD_TANK, new ItemStack(fluid_tank_lead_v2, 1, OreDictionary.WILDCARD_VALUE));
+            OreDictionary.registerOre(KEY_UNIVERSAL_BARREL, new ItemStack(fluid_barrel_v2, 1, OreDictionary.WILDCARD_VALUE));
+        }
 
         /*
          * TOOLS
@@ -746,6 +752,7 @@ public class OreDictManager {
         OreDictionary.registerOre("blockGlassBlack", glass_ash);
 
 		OreDictionary.registerOre("container1000lubricant", bdcl);
+        OreDictionary.registerOre("container1000water", Items.WATER_BUCKET);
         OreDictionary.registerOre("itemSilicon", billet_silicon);
 
 		for(NTMMaterial mat : Mats.orderedList) {
@@ -775,6 +782,7 @@ public class OreDictManager {
         ANY_RESISTANTALLOY.addPrefix(INGOT, true).addPrefix(DUST, true).addPrefix(CASTPLATE, true).addPrefix(WELDEDPLATE, true).addPrefix(HEAVY_COMPONENT, true).addPrefix(BLOCK, true)
                 .addPrefix(LIGHTBARREL, true).addPrefix(HEAVYBARREL, true).addPrefix(LIGHTRECEIVER, true).addPrefix(HEAVYRECEIVER, true);
         ANY_BISMOIDBRONZE.addPrefix(INGOT, true).addPrefix(CASTPLATE, true).addPrefix(LIGHTBARREL, true).addPrefix(HEAVYBARREL, true).addPrefix(LIGHTRECEIVER, true).addPrefix(HEAVYRECEIVER, true);
+        ANY_BISMOID.addPrefix(NUGGET, true).addPrefix(INGOT, true).addPrefix(BLOCK, true);
         ANY_TAR.addPrefix(ANY, false);
     }
 
@@ -903,6 +911,11 @@ public class OreDictManager {
             return stacks;
         }
 
+        /**
+         * @deprecated Creates a separate HazardData per call, breaking alias sharing.
+         *             Internal callers should use {@link #buildSharedHazardData()} instead.
+         */
+        @Deprecated(forRemoval = true, since = "2.3.0.1")
         public static void registerHazards(List<HazardEntry> hazards, float hazMult, String dictKey) {
 
             if (!hazards.isEmpty() && hazMult > 0F) {
@@ -1190,17 +1203,24 @@ public class OreDictManager {
         // TODO: rethink this. currently, keys are only registered on-demand if the dict frame has a valid entry, even though we can maximize compatibility
         // by simply registereing all known shapes in the haz reg, whether it exists or not
         public DictFrame autoRegHazard(MaterialShapes shape) {
-            String tag = shape.name();
-            for(String mat : mats) {
-                registerHazards(hazards, hazMult, tag + mat);
+            HazardData sharedData = buildSharedHazardData();
+            if (sharedData != null) {
+                String tag = shape.name();
+                for (String mat : mats) {
+                    HazardSystem.register(tag + mat, sharedData);
+                }
             }
             return this;
         }
 
         public void registerStack(String tag, ItemStack stack) {
+            // All oredict aliases for the same shape share a single HazardData so that
+            // modifications through any alias key are visible through all of them.
+            HazardData sharedData = buildSharedHazardData();
+
             for (String mat : mats) {
                 OreDictionary.registerOre(tag + mat, stack);
-                registerHazards(hazards, hazMult, tag + mat);
+                if (sharedData != null) HazardSystem.register(tag + mat, sharedData);
             }
 
             /*
@@ -1210,8 +1230,26 @@ public class OreDictManager {
              * I'd imagine greg's OD system might not like things without prefixes.
              */
             if ("ingot".equals(tag)) {
-                registerStack("", stack);
+                for (String mat : mats) {
+                    OreDictionary.registerOre(mat, stack);
+                    if (sharedData != null) HazardSystem.register(mat, sharedData);
+                }
             }
+        }
+
+        /**
+         * <p>DO NOT AIM FOR UPSTREAM PARITY FOR THIS!! DO NOT REMOVE, MODIFY, OR REFACTOR</p>
+         * This supersedes {@link DictFrame#registerHazards(List, float, String)}
+         *
+         * @author movblock
+         */
+        private HazardData buildSharedHazardData() {
+            if (hazards.isEmpty() || hazMult <= 0F) return null;
+            HazardData data = new HazardData().setMutex(0b1);
+            for (HazardEntry hazard : hazards) {
+                data.addEntry(hazard.clone(hazMult));
+            }
+            return data;
         }
     }
 

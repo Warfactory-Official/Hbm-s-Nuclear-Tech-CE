@@ -1,0 +1,60 @@
+{
+	"parent": "block/block",
+	"textures": {
+		"outer": "hbm:blocks/foundry_tank_side",
+		"inner": "hbm:blocks/foundry_tank_inner",
+		"top": "hbm:blocks/foundry_tank_top",
+		"bottom": "hbm:blocks/foundry_tank_bottom",
+		"particle": "hbm:blocks/foundry_tank_side"
+	},
+	"elements": [
+		{
+			"from": [0, 0, 0],
+			"to": [16, 2, 16],
+			"faces": {
+				"up":   { "texture": "#bottom" },
+				"down": { "texture": "#bottom" }
+			}
+		},
+		{
+			"from": [0, 0, 0],
+			"to": [16, 16, 2],
+			"faces": {
+				"north": { "texture": "#outer" },
+				"south": { "texture": "#inner" },
+				"east":  { "texture": "#outer" },
+				"west":  { "texture": "#outer" },
+				"up":    { "texture": "#top" }
+			}
+		},
+		{
+			"from": [0, 0, 14],
+			"to": [16, 16, 16],
+			"faces": {
+				"south": { "texture": "#outer" },
+				"north": { "texture": "#inner" },
+				"east":  { "texture": "#outer" },
+				"west":  { "texture": "#outer" },
+				"up":    { "texture": "#top" }
+			}
+		},
+		{
+			"from": [0, 0, 2],
+			"to": [2, 16, 14],
+			"faces": {
+				"west":  { "texture": "#outer" },
+				"east":  { "texture": "#inner" },
+				"up":    { "texture": "#top" }
+			}
+		},
+		{
+			"from": [14, 0, 2],
+			"to": [16, 16, 14],
+			"faces": {
+				"east":  { "texture": "#outer" },
+				"west":  { "texture": "#inner" },
+				"up":    { "texture": "#top" }
+			}
+		}
+	]
+}

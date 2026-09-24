@@ -1,30 +1,35 @@
 package com.hbm.items.food;
 
+import com.hbm.Tags;
+import com.hbm.items.IClaimedModelLocation;
+import com.hbm.items.IDynamicModels;
 import com.hbm.items.ModItems;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.potion.HbmPotion;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.MobEffects;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraft.potion.PotionEffect;
+import org.jetbrains.annotations.NotNull;
 
-public class ItemAppleSchrabidium extends ItemFood {
+import static com.hbm.items.ItemEnumMulti.ROOT_PATH;
+
+public class ItemAppleSchrabidium extends ItemFoodBase implements IDynamicModels, IClaimedModelLocation {
 
     public ItemAppleSchrabidium(int amount, float saturation, boolean isWolfFood, String s) {
-        super(amount, saturation, isWolfFood);
+        super(amount, saturation, isWolfFood, s);
         this.setHasSubtypes(true);
         this.setAlwaysEdible();
-        this.setTranslationKey(s);
-        this.setRegistryName(s);
-        ModItems.ALL_ITEMS.add(this);
     }
 
     @Override
@@ -93,22 +98,30 @@ public class ItemAppleSchrabidium extends ItemFood {
     }
 
     @Override
-    public EnumRarity getRarity(ItemStack stack) {
-        switch (stack.getItemDamage()) {
-            case 0:  return EnumRarity.UNCOMMON;
-            case 1:  return EnumRarity.RARE;
-            case 2:  return EnumRarity.EPIC;
-            default: return EnumRarity.COMMON;
-        }
+    public @NotNull EnumRarity getRarity(ItemStack stack) {
+        return switch (stack.getItemDamage()) {
+            case 0 -> EnumRarity.UNCOMMON;
+            case 1 -> EnumRarity.RARE;
+            case 2 -> EnumRarity.EPIC;
+            default -> EnumRarity.COMMON;
+        };
     }
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
+    public void getSubItems(@NotNull CreativeTabs tab, @NotNull NonNullList<ItemStack> items) {
         if (!this.isInCreativeTab(tab)) return;
 
         items.add(new ItemStack(this, 1, 0));
         items.add(new ItemStack(this, 1, 1));
         items.add(new ItemStack(this, 1, 2));
+    }
+
+    @Override
+    public void registerModel() {
+        ModelResourceLocation location = new ModelResourceLocation(new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath), "inventory");
+        ModelLoader.setCustomModelResourceLocation(this, 0, location);
+        ModelLoader.setCustomModelResourceLocation(this, 1, location);
+        ModelLoader.setCustomModelResourceLocation(this, 2, location);
     }
 }

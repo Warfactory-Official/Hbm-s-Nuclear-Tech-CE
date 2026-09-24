@@ -7,12 +7,16 @@ import com.hbm.capability.HbmCapability.IHBMData;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.control_panel.*;
+import com.hbm.inventory.control_panel.types.DataValue;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
 import com.hbm.items.machine.ItemRBMKRod;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.render.chunk.SectionGeometry;
 import com.hbm.tileentity.TileEntityMachineBase;
 import io.netty.buffer.ByteBuf;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import li.cil.oc.api.machine.Arguments;
@@ -23,7 +27,6 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -38,6 +41,7 @@ import org.jetbrains.annotations.NotNull;
 @AutoRegister
 public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements ITickable, SimpleComponent, IControllable {
 
+    private AxisAlignedBB bb;
     public int centerX;
     public int centerY;
     public int centerZ;
@@ -103,6 +107,9 @@ public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements
 
         lastTiltFront = tiltFront;
         lastTiltLeft = tiltLeft;
+        lastPosFront = posFront;
+        lastPosLeft = posLeft;
+        lastProgress = progress;
         if(goesDown) {
 
             if(progress > 0) {
@@ -208,6 +215,10 @@ public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements
         posLeft = MathHelper.clamp(posLeft, -spanR, spanL);
 
         if(!world.isRemote) {
+            TileEntityRBMKBase base = this.getBaseAtPos();
+            if(base != null) {
+                base.craneIndicator = 10;
+            }
 
             if(!inventory.getStackInSlot(0).isEmpty() && inventory.getStackInSlot(0).getItem() instanceof ItemRBMKRod) {
                 this.loadedHeat = ItemRBMKRod.getHullHeat(inventory.getStackInSlot(0));
@@ -285,7 +296,7 @@ public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements
         }
     }
 
-    public IRBMKLoadable getColumnAtPos() {
+    public TileEntityRBMKBase getBaseAtPos() {
 
         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
         ForgeDirection left = dir.getRotation(ForgeDirection.DOWN);
@@ -300,13 +311,18 @@ public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements
 
             int[] pos = ((BlockDummyable)b).findCore(world, x, y, z);
             if(pos != null) {
-                TileEntityRBMKBase column = (TileEntityRBMKBase)world.getTileEntity(new BlockPos(pos[0], pos[1], pos[2]));
-                if(column instanceof IRBMKLoadable) {
-                    return (IRBMKLoadable) column;
-                }
+                return (TileEntityRBMKBase) world.getTileEntity(new BlockPos(pos[0], pos[1], pos[2]));
             }
         }
 
+        return null;
+    }
+
+    public IRBMKLoadable getColumnAtPos() {
+        TileEntityRBMKBase base = getBaseAtPos();
+        if(base instanceof IRBMKLoadable loadable) {
+            return loadable;
+        }
         return null;
     }
 
@@ -335,10 +351,7 @@ public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements
     @Override
     public void deserialize(ByteBuf buf) {
 
-        lastPosFront = posFront;
-        lastPosLeft = posLeft;
-        lastProgress = progress;
-
+        AxisAlignedBB prevBB = this.bb;
         this.setUpCrane = buf.readBoolean();
         if (this.setUpCrane) {
             this.craneRotationOffset = buf.readInt();
@@ -356,6 +369,8 @@ public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements
             this.loadedHeat = buf.readDouble();
             this.loadedEnrichment = buf.readDouble();
         }
+        this.bb = null;
+        if (prevBB == null || !getRenderBoundingBox().equals(prevBB)) SectionGeometry.renderBoundsChanged(this);
     }
 
     public void setTarget(int x, int y, int z) {
@@ -377,6 +392,7 @@ public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements
 
         this.height = 7;
         this.setUpCrane = true;
+        this.bb = null;
 
         this.markDirty();
     }
@@ -392,6 +408,7 @@ public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements
 
     public void cycleCraneRotation() {
         this.craneRotationOffset = (this.craneRotationOffset + 90) % 360;
+        this.bb = null;
     }
 
     @Override
@@ -409,6 +426,8 @@ public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements
         this.height = nbt.getInteger("height");
         this.posFront = nbt.getDouble("posFront");
         this.posLeft = nbt.getDouble("posLeft");
+
+        this.bb = null;
 
         if(nbt.hasKey("inventory"))
             inventory.deserializeNBT(nbt.getCompoundTag("inventory"));
@@ -437,7 +456,17 @@ public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
+        if (bb == null) {
+            if (!setUpCrane) {
+                bb = new AxisAlignedBB(pos.getX() - 1, pos.getY(), pos.getZ() - 1, pos.getX() + 2, pos.getY() + 2, pos.getZ() + 2);
+            } else {
+                int maxSpan = Math.max(Math.max(spanF, spanB), Math.max(spanL, spanR));
+                bb = new AxisAlignedBB(
+                        Math.min(pos.getX() - 1, centerX - maxSpan), pos.getY(), Math.min(pos.getZ() - 1, centerZ - maxSpan),
+                        Math.max(pos.getX() + 2, centerX + maxSpan + 1), centerY + height + 1, Math.max(pos.getZ() + 2, centerZ + maxSpan + 1));
+            }
+        }
+        return bb;
     }
 
     @Override
@@ -594,6 +623,21 @@ public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements
         return new Object[] {"No crane found"};
     }
 
+    @Callback(direct = true, doc = "getRodInfo(); returns a table with the loaded rod's skin/core temperature, enrichment, xenon poison and name")
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getRodInfo(Context context, Arguments args) {
+        ItemStack stack = inventory.getStackInSlot(0);
+        if(stack.isEmpty() || !(stack.getItem() instanceof ItemRBMKRod)) return new Object[] {false, "No rod loaded"};
+
+        LinkedHashMap<String, Object> map = new LinkedHashMap<>();
+        map.put("coreSkinTemp", ItemRBMKRod.getHullHeat(stack));
+        map.put("coreTemp", ItemRBMKRod.getCoreHeat(stack));
+        map.put("enrichment", ItemRBMKRod.getEnrichment(stack));
+        map.put("xenon", ItemRBMKRod.getPoisonLevel(stack));
+        map.put("rodName", stack.getItem().getTranslationKey());
+        return new Object[] {map};
+    }
+
     @Callback(direct = true, doc = "getDepletion(); returns enrichment of loaded rod")
     @Optional.Method(modid = "opencomputers")
     public Object[] getDepletion(Context context, Arguments args) {
@@ -629,7 +673,7 @@ public class TileEntityRBMKCraneConsole extends TileEntityMachineBase implements
 
     // control panel
     @Override
-    public Map<String, DataValue> getQueryData() {
+    public Map<String,DataValue> getQueryData() {
         Map<String, DataValue> data = new HashMap<>();
         if (setUpCrane) {
             data.put("posX", new DataValueFloat((float) -posLeft));

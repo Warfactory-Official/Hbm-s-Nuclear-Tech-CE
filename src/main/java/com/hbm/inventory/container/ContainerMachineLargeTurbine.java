@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.machine.IItemFluidIdentifier;
@@ -17,7 +18,18 @@ public class ContainerMachineLargeTurbine extends Container {
 
 	private TileEntityMachineLargeTurbine turbine;
 
-	public ContainerMachineLargeTurbine(InventoryPlayer invPlayer, TileEntityMachineLargeTurbine tedf) {
+    private final TransferStrategy transferStrategy = TransferStrategy.builder(7)
+                                                                      .rule(0, 2,
+                                                                              s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                      .rule(2, 4,
+                                                                              s -> Library.isStackDrainableForTank(s,
+                                                                                      turbine.tanksNew[0]))
+                                                                      .rule(4, 5, Library::isChargeableBattery)
+                                                                      .rule(5, 7, s -> Library.isStackFillableForTank(s,
+                                                                              turbine.tanksNew[1]))
+                                                                      .build();
+
+    public ContainerMachineLargeTurbine(InventoryPlayer invPlayer, TileEntityMachineLargeTurbine tedf) {
 
 		turbine = tedf;
 
@@ -50,11 +62,7 @@ public class ContainerMachineLargeTurbine extends Container {
 	@Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 7,
-                s -> s.getItem() instanceof IItemFluidIdentifier, 2,
-                s -> Library.isStackDrainableForTank(s, turbine.tanksNew[0]), 4,
-                Library::isChargeableBattery, 5,
-                s -> Library.isStackFillableForTank(s, turbine.tanksNew[1]), 7);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.transferStrategy, player);
     }
 
 	@Override

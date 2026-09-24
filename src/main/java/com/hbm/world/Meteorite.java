@@ -3,7 +3,7 @@ package com.hbm.world;
 import com.hbm.blocks.BlockEnums;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.bomb.BlockTaint;
-import com.hbm.config.GeneralConfig;
+import com.hbm.config.WorldConfig;
 import com.hbm.explosion.ExplosionLarge;
 import com.hbm.interfaces.Spaghetti;
 import com.hbm.inventory.OreDictManager;
@@ -46,7 +46,7 @@ public class Meteorite {
             }
         }
 		
-		if(GeneralConfig.enableSpecialMeteors && allowSpecials)
+		if(WorldConfig.enableSpecialMeteors && allowSpecials)
 			switch (rand.nextInt(300)) {
 				case 0 -> {
 					//Meteor-only tiny meteorite

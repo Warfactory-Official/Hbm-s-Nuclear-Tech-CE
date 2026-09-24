@@ -12,6 +12,7 @@ import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemFluidIcon;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 
@@ -29,10 +30,10 @@ public class LiquefactionRecipes extends SerializableRecipe {
     public void registerDefaults() {
 
         //oil processing
-        recipes.put(COAL.gem(),											new FluidStack(100, Fluids.COALOIL));
-        recipes.put(COAL.dust(),										new FluidStack(100, Fluids.COALOIL));
-        recipes.put(LIGNITE.gem(),										new FluidStack(50, Fluids.COALOIL));
-        recipes.put(LIGNITE.dust(),										new FluidStack(50, Fluids.COALOIL));
+        recipes.put(COAL.gem(),											new FluidStack(250, Fluids.COALOIL));
+        recipes.put(COAL.dust(),										new FluidStack(250, Fluids.COALOIL));
+        recipes.put(LIGNITE.gem(),										new FluidStack(150, Fluids.COALOIL));
+        recipes.put(LIGNITE.dust(),										new FluidStack(150, Fluids.COALOIL));
         recipes.put(KEY_OIL_TAR,										new FluidStack(75, Fluids.BITUMEN));
         recipes.put(KEY_CRACK_TAR,										new FluidStack(100, Fluids.BITUMEN));
         recipes.put(KEY_COAL_TAR,										new FluidStack(50, Fluids.BITUMEN));
@@ -40,6 +41,7 @@ public class LiquefactionRecipes extends SerializableRecipe {
         recipes.put(NA.dust(),											new FluidStack(100, Fluids.SODIUM));
         recipes.put(PB.ingot(),											new FluidStack(100, Fluids.LEAD));
         recipes.put(PB.dust(),											new FluidStack(100, Fluids.LEAD));
+        recipes.put(PB.block(),											new FluidStack(900, Fluids.LEAD));
         //general utility recipes because why not
         recipes.put(new RecipesCommon.ComparableStack(Blocks.NETHERRACK),			new FluidStack(250, Fluids.LAVA));
         recipes.put(new RecipesCommon.ComparableStack(Blocks.COBBLESTONE),		new FluidStack(250, Fluids.LAVA));
@@ -50,11 +52,11 @@ public class LiquefactionRecipes extends SerializableRecipe {
         recipes.put(new RecipesCommon.ComparableStack(Blocks.ICE),				new FluidStack(1000, Fluids.WATER));
         recipes.put(new RecipesCommon.ComparableStack(Blocks.PACKED_ICE),			new FluidStack(1000, Fluids.WATER));
         recipes.put(new RecipesCommon.ComparableStack(Items.ENDER_PEARL),			new FluidStack(100, Fluids.ENDERJUICE));
-        recipes.put(new RecipesCommon.ComparableStack(ModItems.pellet_charged),	new FluidStack(4000, Fluids.HELIUM4));
         recipes.put(new RecipesCommon.ComparableStack(ModBlocks.ore_oil_sand),	new FluidStack(100, Fluids.BITUMEN));
 
         recipes.put(new RecipesCommon.ComparableStack(Items.SUGAR),				new FluidStack(100, Fluids.ETHANOL));
-        recipes.put(new RecipesCommon.ComparableStack(ModBlocks.plant_flower, 1, 3),	new FluidStack(150, Fluids.ETHANOL));
+        recipes.put(new RecipesCommon.ComparableStack(Items.MELON),				new FluidStack(100, Fluids.ETHANOL));
+        recipes.put(new RecipesCommon.ComparableStack(ModBlocks.plant_flower, 1, 3),	new FluidStack(100, Fluids.ETHANOL));
         recipes.put(new RecipesCommon.ComparableStack(ModBlocks.plant_flower, 1, 4),	new FluidStack(50, Fluids.ETHANOL));
         recipes.put(new RecipesCommon.ComparableStack(ModItems.biomass),			new FluidStack(125, Fluids.BIOGAS));
         recipes.put(new RecipesCommon.ComparableStack(ModItems.glyphid_gland_empty),	new FluidStack(2000, Fluids.BIOGAS));
@@ -86,6 +88,12 @@ public class LiquefactionRecipes extends SerializableRecipe {
 
             if(recipes.containsKey(key))
                 return recipes.get(key);
+        }
+
+        if(stack.getItem() instanceof ItemFood) {
+            ItemFood food = (ItemFood) stack.getItem();
+            float saturation = food.getHealAmount(stack) * food.getSaturationModifier(stack) * 20;
+            return new FluidStack((int) saturation, Fluids.SALIENT);
         }
 
         return null;

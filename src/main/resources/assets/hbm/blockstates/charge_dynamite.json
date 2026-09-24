@@ -1,5 +1,10 @@
 {
 	"variants": {
-		"normal": { "model": "hbm:charge_dynamite" }
+		"facing=down":  { "model": "hbm:charge_dynamite" },
+		"facing=up":    { "model": "hbm:charge_dynamite" },
+		"facing=north": { "model": "hbm:charge_dynamite" },
+		"facing=south": { "model": "hbm:charge_dynamite" },
+		"facing=west":  { "model": "hbm:charge_dynamite" },
+		"facing=east":  { "model": "hbm:charge_dynamite" }
 	}
 }

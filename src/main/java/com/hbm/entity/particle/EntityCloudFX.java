@@ -1,8 +1,6 @@
 package com.hbm.entity.particle;
 
 import com.hbm.items.ModItems;
-import com.hbm.packet.PacketDispatcher;
-import com.hbm.packet.toserver.ModFXCollidePacket;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
@@ -67,11 +65,6 @@ public class EntityCloudFX extends Particle {
 		this.prevPosY = this.posY;
 		this.prevPosZ = this.posZ;
 
-		if (this.rand.nextInt(50) == 0 && this.world.isRemote) {
-			BlockPos p = new BlockPos((int) this.posX, (int) this.posY, (int) this.posZ);
-			PacketDispatcher.wrapper.sendToServer(new ModFXCollidePacket(ModFXCollidePacket.Action.EXPLOSION_C, p, 2));
-		}
-
 		this.particleAge++;
 		if (this.particleAge >= this.particleMaxAge) {
 			this.setExpired();
@@ -97,12 +90,7 @@ public class EntityCloudFX extends Particle {
 		IBlockState state = this.world.getBlockState(curPos);
 
 		if (state.isNormalCube()) {
-			boolean expire = this.rand.nextInt(5) != 0;
-			if (expire) {
-				BlockPos prevPos = new BlockPos((int) this.prevPosX, (int) this.prevPosY, (int) this.prevPosZ);
-				if (this.world.isRemote) {
-					PacketDispatcher.wrapper.sendToServer(new ModFXCollidePacket(ModFXCollidePacket.Action.PLACE_RESIDUE, prevPos));
-				}
+			if (this.rand.nextInt(5) != 0) {
 				this.setExpired();
 			} else {
 				this.posX = this.prevPosX;

@@ -35,7 +35,7 @@ public class RenderSawblade extends Render<EntitySawblade> {
 
 
         if(orientation < 6) {
-            GL11.glRotated(System.currentTimeMillis() % (360 * 5) / 3D, 0.0D, 0.0D, -1.0D);
+            GlStateManager.rotate((float) (System.currentTimeMillis() % (360 * 5) / 3D), (float) (0.0D), (float) (0.0D), (float) (-1.0D));
         }
 
         GlStateManager.translate(0, -1.375, 0);

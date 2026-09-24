@@ -1,21 +1,22 @@
 package com.hbm.tileentity.network;
 
+import com.hbm.blocks.network.BlockCraneBase;
 import com.hbm.interfaces.ICopiable;
 import com.hbm.tileentity.IControlReceiverFilter;
 import com.hbm.tileentity.TileEntityMachineBase;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
@@ -51,13 +52,8 @@ public abstract class TileEntityCraneBase extends TileEntityMachineBase implemen
 
     public EnumFacing getInputSide() {
         IBlockState state = world.getBlockState(pos);
-        EnumFacing currentFacing = state.getValue(BlockHorizontal.FACING);
-        return switch (currentFacing) {
-            case NORTH -> EnumFacing.NORTH;
-            case EAST -> EnumFacing.EAST;
-            case WEST -> EnumFacing.WEST;
-            default -> EnumFacing.SOUTH;
-        };
+        EnumFacing currentFacing = state.getValue(BlockCraneBase.FACING);
+        return currentFacing != null ? currentFacing : EnumFacing.NORTH;
     }
 
     public EnumFacing getOutputSide() {
@@ -65,15 +61,7 @@ public abstract class TileEntityCraneBase extends TileEntityMachineBase implemen
         if (override != null) {
             return override;
         }
-        IBlockState state = world.getBlockState(pos);
-        EnumFacing currentFacing = state.getValue(BlockHorizontal.FACING);
-
-        return switch (currentFacing) {
-            case NORTH -> EnumFacing.SOUTH;
-            case EAST -> EnumFacing.WEST;
-            case WEST -> EnumFacing.EAST;
-            default -> EnumFacing.NORTH;
-        };
+        return getInputSide().getOpposite();
     }
 
     public EnumFacing getOutputOverride() {
@@ -95,43 +83,57 @@ public abstract class TileEntityCraneBase extends TileEntityMachineBase implemen
     public void setInput(EnumFacing direction) {
         outputOverride = getOutputSide(); // save the current output, if it isn't saved yet
 
-        EnumFacing  oldSide = getInputSide();
-        if(oldSide == direction) direction = direction.getOpposite();
+        EnumFacing oldSide = getInputSide();
+        if (oldSide == direction) direction = direction.getOpposite();
 
         boolean needSwapOutput = direction == getOutputSide();
-        world.setBlockState(pos, getBlockType().getDefaultState().withProperty(BlockHorizontal.FACING, direction), needSwapOutput ? 4 : 3);
 
-        if(needSwapOutput)
+        IBlockState oldState = world.getBlockState(pos);
+        if (oldState.getPropertyKeys().contains(BlockCraneBase.FACING)) {
+            BlockCraneBase.updateBlockState(needSwapOutput, direction, world, pos);
+        }
+
+        if (needSwapOutput)
             setOutputOverride(oldSide);
+    }
+
+    @Override
+    public void serializeInitial(ByteBuf buf) {
+        super.serializeInitial(buf);
+        NBTTagCompound nbt = new NBTTagCompound();
+        this.writeToNBT(nbt);
+        ByteBufUtils.writeTag(buf, nbt);
+    }
+
+    @Override
+    public void deserializeInitial(ByteBuf buf) {
+        super.deserializeInitial(buf);
+        NBTTagCompound nbt = ByteBufUtils.readTag(buf);
+        if (nbt != null) this.readFromNBT(nbt);
     }
 
     protected void onBlockChanged() {
         if(!hasWorld()) return;
+        IBlockState state = world.getBlockState(pos);
         world.markBlockRangeForRenderUpdate(pos, pos);
-        world.notifyBlockUpdate(pos, getBlockType().getDefaultState(), getBlockType().getDefaultState(), 3);
+        world.notifyBlockUpdate(pos, state, state, 3);
         markDirty();
-    }
-
-    @Override
-    public SPacketUpdateTileEntity getUpdatePacket() {
-        NBTTagCompound nbt = new NBTTagCompound();
-        writeToNBT(nbt);
-        return new SPacketUpdateTileEntity(pos, 0, nbt);
-    }
-
-    @Override
-    public void onDataPacket(@NotNull NetworkManager net, SPacketUpdateTileEntity pkt) {
-        readFromNBT(pkt.getNbtCompound());
     }
 
     @Override
     public void readFromNBT(NBTTagCompound nbt) {
         super.readFromNBT(nbt);
-        if(nbt.hasKey("CraneOutputOverride", Constants.NBT.TAG_BYTE)) {
-            outputOverride = EnumFacing.VALUES[nbt.getByte("CraneOutputOverride")];
-        } else {
+        if (nbt.hasKey("CraneOutputOverride", Constants.NBT.TAG_BYTE)) {
+            byte idx = nbt.getByte("CraneOutputOverride");
+            if (idx >= 0 && idx < EnumFacing.VALUES.length) {
+                outputOverride = EnumFacing.VALUES[idx];
+            } else {
                 outputOverride = null;
+            }
+        } else {
+            outputOverride = null;
         }
+        cachedOutputOverride = outputOverride;
     }
 
     @Override

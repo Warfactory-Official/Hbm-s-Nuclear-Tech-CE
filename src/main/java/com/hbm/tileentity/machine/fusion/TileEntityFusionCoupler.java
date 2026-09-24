@@ -63,7 +63,7 @@ public class TileEntityFusionCoupler extends TileEntityLoadedBase implements ITi
     @Override public boolean receivesFusionPower() { return true; }
 
     @Override
-    public void receiveFusionPower(long fusionPower, double neutronPower) {
+    public void receiveFusionPower(long fusionPower, double neutronPower, float r, float g, float b) {
 
         // more copy pasted crap code ! ! !
         if(klystronNode != null && klystronNode.net != null) {
@@ -86,7 +86,7 @@ public class TileEntityFusionCoupler extends TileEntityLoadedBase implements ITi
 
         if(!world.isRemote) {
             if(this.klystronNode != null) UniNodespace.destroyNode(world, klystronNode);
-            if(this.plasmaNode != null) UniNodespace.destroyNode(world, klystronNode);
+            if(this.plasmaNode != null) UniNodespace.destroyNode(world, plasmaNode);
         }
     }
 

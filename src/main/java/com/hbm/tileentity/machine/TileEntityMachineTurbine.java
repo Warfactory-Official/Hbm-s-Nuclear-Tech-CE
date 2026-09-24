@@ -5,6 +5,7 @@ import com.hbm.api.fluid.IFluidStandardTransceiver;
 import com.hbm.capability.NTMEnergyCapabilityWrapper;
 import com.hbm.capability.NTMFluidHandlerWrapper;
 import com.hbm.forgefluid.FFUtils;
+import com.hbm.handler.CompatHandler;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IFFtoNTMF;
 import com.hbm.inventory.container.ContainerMachineTurbine;
@@ -19,6 +20,10 @@ import com.hbm.lib.Library;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import io.netty.buffer.ByteBuf;
+import li.cil.oc.api.machine.Arguments;
+import li.cil.oc.api.machine.Callback;
+import li.cil.oc.api.machine.Context;
+import li.cil.oc.api.network.SimpleComponent;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -35,6 +40,7 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.ItemStackHandler;
@@ -43,7 +49,8 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 
 @AutoRegister
-public class TileEntityMachineTurbine extends TileEntityLoadedBase implements ITickable, IEnergyProviderMK2, IFluidStandardTransceiver, IGUIProvider, IFFtoNTMF {
+@Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
+public class TileEntityMachineTurbine extends TileEntityLoadedBase implements ITickable, IEnergyProviderMK2, IFluidStandardTransceiver, IGUIProvider, IFFtoNTMF, SimpleComponent, CompatHandler.OCComponent {
 
 	public ItemStackHandler inventory;
 
@@ -89,8 +96,8 @@ public class TileEntityMachineTurbine extends TileEntityLoadedBase implements IT
 			}
 		};
 		tanksNew = new FluidTankNTM[2];
-		tanksNew[0] = new FluidTankNTM(Fluids.STEAM, 64000, 0);
-		tanksNew[1] = new FluidTankNTM(Fluids.SPENTSTEAM, 128000, 1);
+		tanksNew[0] = new FluidTankNTM(Fluids.STEAM, 64000, 0).withOwner(this);
+		tanksNew[1] = new FluidTankNTM(Fluids.SPENTSTEAM, 128000, 1).withOwner(this);
 
 		tanks = new FluidTank[2];
 		tankTypes = new Fluid[2];
@@ -321,4 +328,66 @@ public class TileEntityMachineTurbine extends TileEntityLoadedBase implements IT
 		}
 		return super.getCapability(capability, facing);
 	}
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public String getComponentName() {
+        return "ntm_turbine";
+    }
+
+    @Callback(direct = true, doc = "function():table -- Gets current tanks state. The format is the following: <input tank amount>, <input tank capacity>, <output tank amount>, <output tank capacity>")
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getFluid(Context context, Arguments args) {
+        return new Object[] {tanksNew[0].getFill(), tanksNew[0].getMaxFill(), tanksNew[1].getFill(), tanksNew[1].getMaxFill()};
+    }
+
+    @Callback(direct = true, doc = "function():number -- Gets the current input tank fluid type. 0 stands for steam, 1 for dense steam, 2 for super dense steam and 3 for ultra dense steam.")
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getType(Context context, Arguments args) {
+        return CompatHandler.steamTypeToInt(tanksNew[0].getTankType());
+    }
+
+    @Callback(direct = true, limit = 4, doc = "function(type:number) -- Sets the input tank fluid type. Refer getType() for the accepted values information.")
+    @Optional.Method(modid = "opencomputers")
+    public Object[] setType(Context context, Arguments args) {
+        tanksNew[0].setTankType(CompatHandler.intToSteamType(args.checkInteger(0)));
+        return new Object[] {true};
+    }
+
+    @Callback(direct = true, doc = "function():number -- Gets the power buffer of the turbine.")
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getPower(Context context, Arguments args) {
+        return new Object[] {power};
+    }
+
+    @Callback(direct = true, doc = "function():table -- Gets information about this turbine. The format is the following: <input tank amount>, <input tank capacity>, <output tank amount>, <output tank capacity>, <input tank fluid type>, <power>")
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getInfo(Context context, Arguments args) {
+        return new Object[] {tanksNew[0].getFill(), tanksNew[0].getMaxFill(), tanksNew[1].getFill(), tanksNew[1].getMaxFill(), CompatHandler.steamTypeToInt(tanksNew[0].getTankType())[0], power};
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public String[] methods() {
+        return new String[] {
+            "getFluid",
+            "getType",
+            "setType",
+            "getPower",
+            "getInfo"
+        };
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public Object[] invoke(String method, Context context, Arguments args) throws Exception {
+        switch (method) {
+            case "getFluid": return getFluid(context, args);
+            case "getType": return getType(context, args);
+            case "setType": return setType(context, args);
+            case "getPower": return getPower(context, args);
+            case "getInfo": return getInfo(context, args);
+        }
+        throw new NoSuchMethodException();
+    }
 }

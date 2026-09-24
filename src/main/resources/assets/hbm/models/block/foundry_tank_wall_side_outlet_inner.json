@@ -1,0 +1,8 @@
+{
+    "parent": "hbm:block/foundry_tank_wall",
+    "textures": {
+        "outer": "hbm:blocks/foundry_tank_side_outlet",
+        "inner": "hbm:blocks/foundry_tank_inner",
+        "top": "hbm:blocks/foundry_tank_top"
+    }
+}

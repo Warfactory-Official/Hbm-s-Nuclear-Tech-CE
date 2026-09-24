@@ -27,7 +27,7 @@ import java.util.Locale;
 /**
  * Copy of ItemEnumMulti because we don't have multi-inheritance in Java.
  */
-public class ItemEnumMultiFood<E extends Enum<E> & ItemEnumMultiFood.FoodSpec> extends ItemFood implements IDynamicModels {
+public class ItemEnumMultiFood<E extends Enum<E> & ItemEnumMultiFood.FoodSpec> extends ItemFood implements IDynamicModels, IClaimedModelLocation {
 
     public static final String ROOT_PATH = "items/";
     protected final E[] theEnum;
@@ -47,6 +47,7 @@ public class ItemEnumMultiFood<E extends Enum<E> & ItemEnumMultiFood.FoodSpec> e
                               .map(name -> getPrefix() + getSeparator() + name.toLowerCase(Locale.US)).toArray(String[]::new);
         ModItems.ALL_ITEMS.add(this);
         IDynamicModels.INSTANCES.add(this);
+        ClaimedModelLocationRegistry.register(this);
     }
 
     public ItemEnumMultiFood(String registryName, E[] theEnum, boolean multiName, String texture) {
@@ -60,6 +61,7 @@ public class ItemEnumMultiFood<E extends Enum<E> & ItemEnumMultiFood.FoodSpec> e
         this.textures = new String[]{texture};
         ModItems.ALL_ITEMS.add(this);
         IDynamicModels.INSTANCES.add(this);
+        ClaimedModelLocationRegistry.register(this);
     }
 
     protected String getSeparator() {
@@ -170,6 +172,19 @@ public class ItemEnumMultiFood<E extends Enum<E> & ItemEnumMultiFood.FoodSpec> e
     public ItemEnumMultiFood<E> setCreativeTab(CreativeTabs tab) {
         // noinspection unchecked
         return (ItemEnumMultiFood<E>) super.setCreativeTab(tab);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public boolean ownsModelLocation(ModelResourceLocation location) {
+        for (int i = 0; i < theEnum.length; i++) {
+            String texName = multiTexture ? textures[i] : textures[0];
+            ResourceLocation spriteLoc = new ResourceLocation(Tags.MODID, ROOT_PATH + texName);
+            if (IClaimedModelLocation.isInventoryLocation(location, spriteLoc)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public interface FoodSpec {

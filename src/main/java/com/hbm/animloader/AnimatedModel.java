@@ -98,13 +98,13 @@ public class AnimatedModel {
 			} else {
 				auxGLMatrix.put(transform);
 				auxGLMatrix.rewind();
-				GL11.glMultMatrix(auxGLMatrix);
+				GlStateManager.multMatrix(auxGLMatrix);
 			}
 		}
 		if(c != null)
 			hidden |= c.onRender(controller.activeAnim.prevFrame, firstIndex, callList, diffN, name);
 		if(hasGeometry && !hidden) {
-			GL11.glCallList(callList);
+			GlStateManager.callList(callList);
 		}
 		if(c != null)
 			c.postRender(controller.activeAnim.prevFrame, firstIndex, callList, diffN, name);
@@ -123,13 +123,13 @@ public class AnimatedModel {
 		if(hasTransform) {
 			auxGLMatrix.put(transform);
 			auxGLMatrix.rewind();
-			GL11.glMultMatrix(auxGLMatrix);
+			GlStateManager.multMatrix(auxGLMatrix);
 		}
 		boolean hidden = false;
 		if(c != null)
 			hidden = c.onRender(-1, -1, callList, -1, name);
 		if(hasGeometry && !hidden) {
-			GL11.glCallList(callList);
+			GlStateManager.callList(callList);
 		}
 		if(c != null)
 			c.postRender(-1, -1, callList, -1, name);

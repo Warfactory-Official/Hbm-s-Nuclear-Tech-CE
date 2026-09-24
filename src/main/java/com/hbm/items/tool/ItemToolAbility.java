@@ -9,22 +9,27 @@ import com.hbm.api.item.IDepthRockTool;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.BlockBedrockOre;
 import com.hbm.blocks.generic.BlockBedrockOreTE;
+import com.hbm.config.ClientConfig;
 import com.hbm.handler.HbmKeybinds;
 import com.hbm.handler.ability.*;
+import com.hbm.interfaces.IItemHUD;
 import com.hbm.inventory.gui.GUIScreenToolAbility;
-import com.hbm.items.IDynamicModels;
-import com.hbm.items.IItemControlReceiver;
-import com.hbm.items.IKeybindReceiver;
-import com.hbm.items.ModItems;
+import com.hbm.items.*;
 import com.hbm.lib.internal.MethodHandleHelper;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.PlayerInformPacketLegacy;
 import com.hbm.tileentity.IGUIProvider;
+import com.hbm.util.Tuple;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.model.ModelRotation;
@@ -45,7 +50,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemTool;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.network.play.server.SPacketBlockChange;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
@@ -54,6 +58,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
@@ -61,6 +66,7 @@ import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.IShearable;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
@@ -68,7 +74,7 @@ import java.util.*;
 
 import static com.hbm.items.ItemEnumMulti.ROOT_PATH;
 
-public class ItemToolAbility extends ItemTool implements IDepthRockTool, IGUIProvider, IItemControlReceiver, IKeybindReceiver, IDynamicModels {
+public class ItemToolAbility extends ItemTool implements IDepthRockTool, IGUIProvider, IItemControlReceiver, IKeybindReceiver, IItemHUD, IDynamicModels, IClaimedModelLocation {
 
 	protected boolean isShears = false;
 
@@ -134,6 +140,7 @@ public class ItemToolAbility extends ItemTool implements IDepthRockTool, IGUIPro
 		this.texturePath = s;
 		INSTANCES.add(this);
 		ModItems.ALL_ITEMS.add(this);
+        ClaimedModelLocationRegistry.register(this);
 	}
 
 	@Override
@@ -165,6 +172,12 @@ public class ItemToolAbility extends ItemTool implements IDepthRockTool, IGUIPro
 	@Override
 	public void registerSprite(TextureMap map) {
 		map.registerSprite(new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath));
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public boolean ownsModelLocation(ModelResourceLocation location) {
+		return IClaimedModelLocation.isInventoryLocation(location, new ResourceLocation(Tags.MODID, ROOT_PATH + texturePath));
 	}
 
 	public ItemToolAbility addAbility(IBaseAbility ability, int level) {
@@ -207,9 +220,15 @@ public class ItemToolAbility extends ItemTool implements IDepthRockTool, IGUIPro
 	// Should be safe, considering the AoE ability does a similar trick already.
 	// If not, wrap this in a ThreadLocal or something...
 	public static int dropX, dropY, dropZ;
-	
+
+	// Set while we re-enter vanilla's tryHarvestBlock from our own ability path, so the
+	// reentrant onBlockStartBreak call falls through to vanilla instead of looping.
+	private static final ThreadLocal<Boolean> bypassStartBreak = ThreadLocal.withInitial(() -> Boolean.FALSE);
+
 	@Override
 	public boolean onBlockStartBreak(ItemStack stack, BlockPos pos, EntityPlayer player) {
+		if (bypassStartBreak.get()) return false;
+
 		World world = player.world;
     	IBlockState state = world.getBlockState(pos);
     	Block block = state.getBlock();
@@ -236,13 +255,15 @@ public class ItemToolAbility extends ItemTool implements IDepthRockTool, IGUIPro
 
 			preset.harvestAbility.preHarvestAll(preset.harvestAbilityLevel, world, player);
 
-			boolean skipRef = preset.areaAbility.onDig(preset.areaAbilityLevel, world, pos, player, this);
+			try {
+				boolean skipRef = preset.areaAbility.onDig(preset.areaAbilityLevel, world, pos, player, this);
 
-			if(!skipRef) {
-				breakExtraBlock(world, pos.getX(), pos.getY(), pos.getZ(), player, pos.getX(), pos.getY(), pos.getZ());
+				if(!skipRef) {
+					breakExtraBlock(world, pos.getX(), pos.getY(), pos.getZ(), player, pos.getX(), pos.getY(), pos.getZ());
+				}
+			} finally {
+				preset.harvestAbility.postHarvestAll(preset.harvestAbilityLevel, world, player);
 			}
-
-			preset.harvestAbility.postHarvestAll(preset.harvestAbilityLevel, world, player);
 
 			return true;
 		}
@@ -359,10 +380,6 @@ public class ItemToolAbility extends ItemTool implements IDepthRockTool, IGUIPro
 		)
 			return;
 
-		int exp = ForgeHooks.onBlockBreakEvent(world, player.interactionManager.getGameType(), player, pos);
-		if (exp == -1)
-			return;
-
 		Configuration config = getConfiguration(stack);
 		ToolPreset preset = config.getActivePreset();
 
@@ -397,65 +414,20 @@ public class ItemToolAbility extends ItemTool implements IDepthRockTool, IGUIPro
 
 	private static final MethodHandle blockCaptureDrops = MethodHandleHelper.findVirtual(Block.class, "captureDrops", MethodType.methodType(NonNullList.class, boolean.class));
 
-	public static void standardDigPost(World world, int x, int y, int z, EntityPlayerMP player) {
-
-		BlockPos pos = new BlockPos(x, y, z);
-		IBlockState state = world.getBlockState(pos);
-		Block block = state.getBlock();
-		int l = block.getMetaFromState(state);
-
-		world.playEvent(player, 2001, pos, Block.getStateId(state));
-
-		boolean removedByPlayer = false;
-
-		if (player.capabilities.isCreativeMode) {
-			removedByPlayer = removeBlock(world, x, y, z, false, player);
-			player.connection.sendPacket(new SPacketBlockChange(world, pos));
-		} else {
-			ItemStack itemstack = player.getHeldItemMainhand();
-			boolean canHarvest = ForgeHooks.canHarvestBlock(block, player, world, pos);
-
-			removedByPlayer = removeBlock(world, x, y, z, canHarvest, player);
-
-			if (!itemstack.isEmpty()) {
-				itemstack.onBlockDestroyed(world, state, pos, player);
-
-				if (itemstack.getCount() == 0) {
-					player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
-				}
-			}
-
-			if (removedByPlayer && canHarvest) {
-				try {
-                    //noinspection unchecked
-					NonNullList<ItemStack> ignored = (NonNullList<ItemStack>) blockCaptureDrops.invokeExact(block, true);
-					block.harvestBlock(world, player, pos, state, world.getTileEntity(pos), itemstack);
-					//noinspection unchecked
-					List<ItemStack> drops = (NonNullList<ItemStack>) blockCaptureDrops.invokeExact(block, false);
-					for (ItemStack stack : drops) {
-						Block.spawnAsEntity(world, new BlockPos(dropX, dropY, dropZ), stack);
-					}
-				} catch (Throwable e) {
-                    MainRegistry.logger.error("Failed to capture drops for block {}", block, e);
-                    throw new RuntimeException(e);
-                }
-            }
-		}
-	}
-
-	public static boolean removeBlock(World world, int x, int y, int z, boolean canHarvest, EntityPlayerMP player) {
-		BlockPos pos = new BlockPos(x, y, z);
-		IBlockState state = world.getBlockState(pos);
-		Block block = state.getBlock();
-
-		block.onBlockHarvested(world, pos, state, player);
-		boolean flag = block.removedByPlayer(state, world, pos, player, canHarvest);
-
-		if (flag) {
-			block.onPlayerDestroy(world, pos, state);
-		}
-
-		return flag;
+	@SuppressWarnings("unchecked")
+	public static NonNullList<ItemStack> harvestAndCapture(World world, BlockPos pos, EntityPlayerMP player) {
+		Block block = world.getBlockState(pos).getBlock();
+		try {
+            bypassStartBreak.set(Boolean.TRUE);
+            NonNullList<ItemStack> ignored = (NonNullList<ItemStack>) blockCaptureDrops.invokeExact(block, true);
+            player.interactionManager.tryHarvestBlock(pos);
+            return (NonNullList<ItemStack>) blockCaptureDrops.invokeExact(block, false);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        } finally {
+            bypassStartBreak.set(Boolean.FALSE);
+            try { NonNullList<ItemStack> reset = (NonNullList<ItemStack>) blockCaptureDrops.invokeExact(block, false); } catch (Throwable ignored) {}
+        }
 	}
 
 	public static class Configuration {
@@ -618,5 +590,48 @@ public class ItemToolAbility extends ItemTool implements IDepthRockTool, IGUIPro
 	@Override
 	public void handleKeybindClient(EntityPlayer player, ItemStack stack, HbmKeybinds.EnumKeybind keybind, boolean state) {
 		if(state) player.openGui(MainRegistry.instance, 0, player.world, 0, 0, 0);
+	}
+
+	private static final Map<IBaseAbility, Tuple.Pair<Integer, Integer>> abilityGui = new HashMap<>();
+
+	static {
+		abilityGui.put(IToolAreaAbility.RECURSION, new Tuple.Pair<Integer,Integer>(0, 138));
+		abilityGui.put(IToolAreaAbility.HAMMER, new Tuple.Pair<Integer,Integer>(16, 138));
+		abilityGui.put(IToolAreaAbility.HAMMER_FLAT, new Tuple.Pair<Integer,Integer>(32, 138));
+		abilityGui.put(IToolAreaAbility.EXPLOSION, new Tuple.Pair<Integer,Integer>(48, 138));
+	}
+
+	@Override
+	public void renderHUD(RenderGameOverlayEvent.Pre event, RenderGameOverlayEvent.ElementType type, EntityPlayer player, ItemStack stack, EnumHand hand) {
+		if(type != RenderGameOverlayEvent.ElementType.CROSSHAIRS) return;
+
+		Configuration config = getConfiguration(stack);
+		ToolPreset preset = config.getActivePreset();
+		Tuple.Pair<Integer, Integer> uv = abilityGui.get(preset.areaAbility);
+
+		if(uv == null) return;
+
+		GuiIngame gui = Minecraft.getMinecraft().ingameGUI;
+		int size = 16;
+		int ox = ClientConfig.TOOL_HUD_INDICATOR_X.get();
+		int oy = ClientConfig.TOOL_HUD_INDICATOR_Y.get();
+
+		GlStateManager.pushMatrix();
+		Minecraft.getMinecraft().renderEngine.bindTexture(GUIScreenToolAbility.texture);
+		GlStateManager.enableBlend();
+		GlStateManager.disableLighting();
+		GlStateManager.disableDepth();
+		GlStateManager.depthMask(false);
+		GlStateManager.color(1F, 1F, 1F, 1F);
+
+		OpenGlHelper.glBlendFunc(GL11.GL_ONE_MINUS_DST_COLOR, GL11.GL_ONE_MINUS_SRC_COLOR, 1, 0);
+		gui.drawTexturedModalRect(event.getResolution().getScaledWidth() / 2 - size - 8 + ox, event.getResolution().getScaledHeight() / 2 + 8 + oy, uv.key, uv.value, size, size);
+		OpenGlHelper.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
+		GlStateManager.disableBlend();
+		GlStateManager.enableDepth();
+		GlStateManager.depthMask(true);
+		GlStateManager.color(1F, 1F, 1F, 1F);
+		GlStateManager.popMatrix();
+		Minecraft.getMinecraft().renderEngine.bindTexture(Gui.ICONS);
 	}
 }

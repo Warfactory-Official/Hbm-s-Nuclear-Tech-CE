@@ -174,29 +174,21 @@ public abstract class JEIUniversalHandler implements IRecipeCategory<JeiRecipes.
 
     @Override
     public void setRecipe(@NotNull IRecipeLayout recipeLayout, @NotNull JeiUniversalRecipe recipeWrapper, @NotNull IIngredients ingredients) {
-        IGuiItemStackGroup stacks = recipeLayout.getItemStacks();
         List<List<ItemStack>> inputList = ingredients.getInputs(VanillaTypes.ITEM);
         List<List<ItemStack>> outputList = ingredients.getOutputs(VanillaTypes.ITEM);
 
+        int[][] inPos = getInputCoords(inputList.size());
         for (int i = 0; i < inputList.size(); i++) {
-            int[] pos = getInputCoords(inputList.size())[i];
-            stacks.init(i, true, pos[0], pos[1]);
+            EmiCompat.initSlot(recipeLayout, i, true, inPos[i][0], inPos[i][1], inputList.get(i));
         }
 
+        int[][] outPos = getOutputCoords(outputList.size());
         for (int i = 0; i < outputList.size(); i++) {
-            int[] pos = getOutputCoords(outputList.size())[i];
-            stacks.init(inputList.size() + i, false, pos[0], pos[1]);
+            EmiCompat.initSlot(recipeLayout, inputList.size() + i, false, outPos[i][0], outPos[i][1], outputList.get(i));
         }
-
-        stacks.set(ingredients);
 
         if (recipeWrapper.getMachines() != null && recipeWrapper.getMachines().length > 0) {
-            int slotIndex = inputList.size() + outputList.size();
-            int x = 74;
-            int y = 31;
-
-            stacks.init(slotIndex, false, x, y);
-            stacks.set(slotIndex, Arrays.asList(recipeWrapper.getMachines()));
+            EmiCompat.initDisplaySlot(recipeLayout, inputList.size() + outputList.size(), false, 74, 31, Arrays.asList(recipeWrapper.getMachines()));
         }
     }
     public static int[][] getInputCoords(int count) {

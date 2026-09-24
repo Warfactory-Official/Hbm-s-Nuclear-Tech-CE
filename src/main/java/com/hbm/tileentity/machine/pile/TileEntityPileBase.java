@@ -6,7 +6,7 @@ import com.hbm.util.MutableVec3d;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
-
+@Deprecated
 public abstract class TileEntityPileBase extends TileEntity implements ITickable {
 
 	@Override

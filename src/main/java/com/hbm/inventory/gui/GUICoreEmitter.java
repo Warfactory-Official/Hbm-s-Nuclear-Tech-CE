@@ -68,7 +68,7 @@ public class GUICoreEmitter extends GuiInfoContainer {
     	if(guiLeft + 124 <= x && guiLeft + 124 + 18 > x && guiTop + 56 < y && guiTop + 56 + 18 >= y) {
     		
     		if(saveButtonCoolDown == 0 && NumberUtils.isCreatable(field.getText())) {
-    			int j = MathHelper.clamp(Integer.parseInt(field.getText()), 1, 100);
+    			int j = MathHelper.clamp((int)  Float.parseFloat(field.getText()), 1, 100);
     			field.setText(j + "");
 				playClickSound();
 	    		PacketDispatcher.wrapper.sendToServer(new AuxButtonPacket(emitter.getPos(), j, 0));

@@ -9,7 +9,8 @@ import com.hbm.items.weapon.sedna.factory.XFactoryAccelerator;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.util.Vec3NT;
 import com.hbm.tileentity.IGUIProvider;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
@@ -138,15 +139,14 @@ public class TileEntityTurretTauon extends TileEntityTurretBaseNT implements IGU
 				this.shot = true;
 				networkPackNT(250);
 				this.shot = false;
-				Vec3 pos = new Vec3(this.getTurretPos());
-				Vec3 vec = Vec3.createVectorHelper(this.getBarrelLength(), 0, 0);
-				vec.rotateAroundZ((float) -this.rotationPitch);
-				vec.rotateAroundY((float) -(this.rotationYaw + Math.PI * 0.5));
+				Vec3NT pos = new Vec3NT(this.getTurretPos());
+				Vec3NT vec = Vec3NT.createVectorHelper(this.getBarrelLength(), 0, 0);
+				vec.rotateRollSelf((float) -this.rotationPitch);
+				vec.rotateYawSelf((float) -(this.rotationYaw + Math.PI * 0.5));
 				
 				NBTTagCompound dPart = new NBTTagCompound();
-				dPart.setString("type", "tau");
 				dPart.setByte("count", (byte)5);
-				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(dPart, pos.xCoord + vec.xCoord, pos.yCoord + vec.yCoord, pos.zCoord + vec.zCoord), new TargetPoint(world.provider.getDimension(), this.pos.getX(), this.pos.getY(), this.pos.getZ(), 50));
+				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Tau, dPart, pos.x + vec.x, pos.y + vec.y, pos.z + vec.z), new TargetPoint(world.provider.getDimension(), this.pos.getX(), this.pos.getY(), this.pos.getZ(), 50));
 			}
 		}
 	}

@@ -30,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Collections;
 import java.util.List;
 
 @AutoRegister
@@ -90,16 +91,17 @@ public class TileEntityMachineSiren extends TileEntity implements ITickable, ICo
 	@Override
 	public void update() {
 		if(!world.isRemote) {
-			int id = getCurrentType().getId();
+			TrackType currentType = getCurrentType();
+			int id = currentType.getId();
 
-			if(getCurrentType().getTrackTitle().equals(TrackType.NULL.getTrackTitle())) {
+			if(currentType == TrackType.NULL) {
 				PacketDispatcher.wrapper.sendToDimension(new TESirenPacket(pos.getX(), pos.getY(), pos.getZ(), id, false), world.provider.getDimension());
 				return;
 			}
 
 			boolean active = ctrlActive || world.isBlockPowered(pos);
 
-			if(getCurrentType().getType().name().equals(SoundType.LOOP.name())) {
+			if(currentType.getType() == SoundType.LOOP) {
 
 				PacketDispatcher.wrapper.sendToDimension(new TESirenPacket(pos.getX(), pos.getY(), pos.getZ(), id, active), world.provider.getDimension());
 			} else {
@@ -144,7 +146,7 @@ public class TileEntityMachineSiren extends TileEntity implements ITickable, ICo
 
 	@Override
 	public List<String> getInEvents(){
-		return List.of("siren_set_state");
+		return Collections.singletonList("siren_set_state");
 	}
 
 	@Override

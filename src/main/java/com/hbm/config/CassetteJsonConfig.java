@@ -6,10 +6,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.stream.JsonWriter;
 import com.hbm.items.machine.ItemCassette;
+import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 import java.util.Locale;
 
@@ -55,8 +55,7 @@ public class CassetteJsonConfig {
 
                 if (!obj.has("sound")) continue;
                 ResourceLocation soundLocation = new ResourceLocation(obj.get("sound").getAsString());
-                SoundEvent sound = SoundEvent.REGISTRY.getObject(soundLocation);
-                if (sound == null) sound = tryRegisterSound(soundLocation);
+                SoundEvent sound = HBMSoundHandler.getOrCreate(soundLocation);
 
                 if (!obj.has("type")) continue;
                 ItemCassette.SoundType type = switch (obj.get("type").getAsString().toLowerCase(Locale.ROOT)) {
@@ -90,14 +89,4 @@ public class CassetteJsonConfig {
         }
     }
 
-    public static SoundEvent tryRegisterSound(ResourceLocation location) {
-        try {
-            SoundEvent e = new SoundEvent(location);
-            e.setRegistryName(location.getPath());
-            ForgeRegistries.SOUND_EVENTS.register(e);
-            return e;
-        } catch (Exception e) {
-            throw new RuntimeException("Could not find nor register siren sound at location " + location, e);
-        }
-    }
 }

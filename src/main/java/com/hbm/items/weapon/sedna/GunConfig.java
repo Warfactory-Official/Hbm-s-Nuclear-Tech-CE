@@ -4,8 +4,8 @@ import com.hbm.items.weapon.sedna.factory.GunStateDecider;
 import com.hbm.items.weapon.sedna.factory.Lego;
 import com.hbm.items.weapon.sedna.hud.IHUDComponent;
 import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
+import com.hbm.render.anim.sedna.AnimationEnums;
 import com.hbm.render.anim.sedna.BusAnimationSedna;
-import com.hbm.render.anim.sedna.HbmAnimationsSedna;
 import com.hbm.render.misc.RenderScreenOverlay;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -85,7 +85,7 @@ public class GunConfig {
     /** The engine for the state machine that determines the gun's overall behavior */
     protected BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> decider_DNA;
     /** Lambda that returns the relevant animation for the given params */
-    protected BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> animations_DNA;
+    protected BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> animations_DNA;
     protected IHUDComponent[] hudComponents_DNA;
 
     /* GETTERS */
@@ -116,7 +116,7 @@ public class GunConfig {
 
     public BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> getDecider(ItemStack stack) {			return XWeaponModManager.eval(this.decider_DNA, stack, CON_DECIDER, this, this.index); }
 
-    public BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> getAnims(ItemStack stack) {	return XWeaponModManager.eval(this.animations_DNA, stack, FUN_ANIMNATIONS, this, this.index); }
+    public BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> getAnims(ItemStack stack) {	return XWeaponModManager.eval(this.animations_DNA, stack, FUN_ANIMNATIONS, this, this.index); }
     public IHUDComponent[] getHUDComponents(ItemStack stack) {							return XWeaponModManager.eval(this.hudComponents_DNA, stack, O_HUDCOMPONENTS, this, this.index); }
 
     /* SETTERS */
@@ -153,7 +153,7 @@ public class GunConfig {
     public GunConfig decider(BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> lambda) { this.decider_DNA = lambda;	return this; }
 
     //client
-    public GunConfig anim(BiFunction<ItemStack, HbmAnimationsSedna.GunAnimation, BusAnimationSedna> lambda) {	this.animations_DNA = lambda;			return this; }
+    public GunConfig anim(BiFunction<ItemStack, AnimationEnums.GunAnimation, BusAnimationSedna> lambda) {	this.animations_DNA = lambda;			return this; }
     public GunConfig hud(IHUDComponent... components) {								this.hudComponents_DNA = components;	return this; }
 
     /** Standard package for keybind handling and decider using LEGO prefabs: Primary fire on LMB,

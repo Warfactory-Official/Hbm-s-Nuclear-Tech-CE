@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.machine.IItemFluidIdentifier;
@@ -17,6 +18,15 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerMachineVacuumDistill extends Container {
 
     private TileEntityMachineVacuumDistill distill;
+
+    private final TransferStrategy transferStrategy = TransferStrategy.builder(10)
+                                                                      .rule(0, 1, Library::isBattery)
+                                                                      .rule(1, 3, s -> Library.isStackFillableForTank(s, distill.tanks[1]))
+                                                                      .rule(3, 5, s -> Library.isStackFillableForTank(s, distill.tanks[2]))
+                                                                      .rule(5, 7, s -> Library.isStackFillableForTank(s, distill.tanks[3]))
+                                                                      .rule(7, 9, s -> Library.isStackFillableForTank(s, distill.tanks[4]))
+                                                                      .rule(9, 10, s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                      .build();
 
     public ContainerMachineVacuumDistill(InventoryPlayer invPlayer, TileEntityMachineVacuumDistill tedf) {
 
@@ -65,13 +75,7 @@ public class ContainerMachineVacuumDistill extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 10,
-                Library::isBattery, 1,
-                s -> Library.isStackFillableForTank(s, distill.tanks[1]), 3,
-                s -> Library.isStackFillableForTank(s, distill.tanks[2]), 5,
-                s -> Library.isStackFillableForTank(s, distill.tanks[3]), 7,
-                s -> Library.isStackFillableForTank(s, distill.tanks[4]), 9,
-                s -> s.getItem() instanceof IItemFluidIdentifier, 10);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.transferStrategy, player);
     }
 
     @Override

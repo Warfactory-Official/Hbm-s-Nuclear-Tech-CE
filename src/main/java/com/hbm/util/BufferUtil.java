@@ -143,6 +143,12 @@ public class BufferUtil {
             CompressedStreamTools.writeCompressed(compound, out);
             int afterDataIndex = buf.writerIndex();
             int length = afterDataIndex - beforeDataIndex;
+            if (length >= 0xFFFF) {
+                MainRegistry.logger.error("NBTTagCompound too large for buffer: {} bytes (max {})", length, 0xFFFE);
+                buf.writerIndex(lengthWriterIndex);
+                buf.writeShort(-1);
+                return;
+            }
             buf.setShort(lengthWriterIndex, (short) length);
         } catch (IOException e) {
             MainRegistry.logger.error("Failed to write NBTTagCompound to buffer", e);
@@ -154,8 +160,8 @@ public class BufferUtil {
      * Reads a NBTTagCompound from a buffer.
      */
     public static NBTTagCompound readNBT(ByteBuf buf) {
-        final short nbtLength = buf.readShort();
-        if (nbtLength <= 0) return new NBTTagCompound();
+        final int nbtLength = buf.readUnsignedShort();
+        if (nbtLength == 0 || nbtLength == 0xFFFF) return new NBTTagCompound();
         if (buf.readableBytes() < nbtLength) {
             MainRegistry.logger.error("Invalid NBT length: {} (readable={})", nbtLength, buf.readableBytes());
             return new NBTTagCompound();

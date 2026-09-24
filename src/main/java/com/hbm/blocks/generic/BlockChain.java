@@ -60,22 +60,13 @@ public class BlockChain extends Block {
             return new AxisAlignedBB(3 * f, minY, 3 * f, 5 * f, 1, 5 * f);
         }
 
-        if (meta == 2) {
-            return new AxisAlignedBB(3 * f, minY, 1.0F - f, 5 * f, 1.0F, 1.0F);
-        }
-
-        if (meta == 3) {
-            return new AxisAlignedBB(3 * f, minY, 0.0F, 5 * f, 1.0F, f);
-        }
-
-        if (meta == 4) {
-            return new AxisAlignedBB(1.0F - f, minY, 3 * f, 1.0F, 1.0F, 5 * f);
-        }
-
-        if (meta == 5) {
-            return new AxisAlignedBB(0.0F, minY, 3 * f, f, 1.0F, 5 * f);
-        }
-        return new AxisAlignedBB(3 * f, minY, 3 * f, 5 * f, 1, 5 * f);
+        return switch (meta) {
+            case 2 -> new AxisAlignedBB(3 * f, minY, 1.0F - f, 5 * f, 1.0F, 1.0F);
+            case 3 -> new AxisAlignedBB(3 * f, minY, 0.0F, 5 * f, 1.0F, f);
+            case 4 -> new AxisAlignedBB(1.0F - f, minY, 3 * f, 1.0F, 1.0F, 5 * f);
+            case 5 -> new AxisAlignedBB(0.0F, minY, 3 * f, f, 1.0F, 5 * f);
+            default -> new AxisAlignedBB(3 * f, minY, 3 * f, 5 * f, 1, 5 * f);
+        };
     }
 
     @Override

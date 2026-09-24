@@ -65,7 +65,7 @@ public class BlockNTMTrapdoor extends BlockTrapDoor implements IDynamicModels {
     }
 
     public BlockNTMTrapdoor(Material material, String name) {
-        this(material, name, new BlockBakeFrame(BlockBakeFrame.BlockForm.ALL, name));
+        this(material, name, BlockBakeFrame.cubeAll(name));
     }
 
     @Override
@@ -147,9 +147,7 @@ public class BlockNTMTrapdoor extends BlockTrapDoor implements IDynamicModels {
         }
         IBlockState toggledState = state.cycleProperty(OPEN);
         world.setBlockState(pos, toggledState, 2);
-        world.playEvent(null, 1003, pos, 0);
-        boolean nowOpen = toggledState.getValue(OPEN);
-        SoundEvent sound = (nowOpen ? SoundEvents.BLOCK_WOODEN_TRAPDOOR_OPEN : SoundEvents.BLOCK_WOODEN_TRAPDOOR_CLOSE);
+        SoundEvent sound = toggledState.getValue(OPEN) ? SoundEvents.BLOCK_WOODEN_TRAPDOOR_OPEN : SoundEvents.BLOCK_WOODEN_TRAPDOOR_CLOSE;
         world.playSound(null, pos, sound, SoundCategory.BLOCKS, 1.0F, world.rand.nextFloat() * 0.1F + 0.9F);
         return true;
     }
@@ -162,7 +160,7 @@ public class BlockNTMTrapdoor extends BlockTrapDoor implements IDynamicModels {
             return;
         }
         try {
-            String texture = blockFrame.getSpriteLoc(0).toString();
+            String texture = blockFrame.getTextureLocation(0).toString();
 
             IModel bottomModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft:block/trapdoor_bottom"));
             IModel topModel = ModelLoaderRegistry.getModel(new ResourceLocation("minecraft:block/trapdoor_top"));

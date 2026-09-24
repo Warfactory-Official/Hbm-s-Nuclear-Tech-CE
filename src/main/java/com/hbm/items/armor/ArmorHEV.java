@@ -5,13 +5,11 @@ import com.hbm.main.ResourceManager;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.model.ModelArmorHEV;
 import com.hbm.render.tileentity.IItemRendererProvider;
-import com.hbm.render.util.ViewModelPositonDebugger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
@@ -27,9 +25,6 @@ public class ArmorHEV extends ArmorFSBPowered implements IItemRendererProvider {
 
   @SideOnly(Side.CLIENT)
   ModelArmorHEV[] models;
-
-  @SideOnly(Side.CLIENT)
-  protected ViewModelPositonDebugger offsets;
 
   public ArmorHEV(
       ArmorMaterial material,
@@ -103,7 +98,7 @@ public class ArmorHEV extends ArmorFSBPowered implements IItemRendererProvider {
 
     double scale = 2D;
 
-    GL11.glScaled(scale, scale, scale);
+    GlStateManager.scale(scale, scale, scale);
 
     int hX = (int) (8 / scale);
     int hY = (int) ((res.getScaledHeight() - 18 - 2) / scale);
@@ -156,11 +151,11 @@ public class ArmorHEV extends ArmorFSBPowered implements IItemRendererProvider {
 
     Minecraft.getMinecraft().fontRenderer.drawString(rad, rX, rY, radColor);
 
-    GL11.glScaled(1 / scale, 1 / scale, 1 / scale);
+    GlStateManager.scale(1 / scale, 1 / scale, 1 / scale);
 
     scale = 1D;
 
-    GL11.glScaled(scale, scale, scale);
+    GlStateManager.scale(scale, scale, scale);
 
     if (radiation > 0) {
 
@@ -202,39 +197,6 @@ public class ArmorHEV extends ArmorFSBPowered implements IItemRendererProvider {
       }
 
       public void renderCommon() {
-        if (offsets == null)
-          offsets =
-              new ViewModelPositonDebugger()
-                  .get(ItemCameraTransforms.TransformType.GUI)
-                  .setScale(1.0F)
-                  .setPosition(-1.2, 0.0, 1.0)
-                  .setRotation(255, -36, -143)
-                  .getHelper()
-                  .get(ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND)
-                  .setPosition(-1.00, -31.30, -4.95)
-                  .setRotation(-23, -139, 85)
-                  .getHelper()
-                  .get(ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND)
-                  .setPosition(-0.5, 3, -2.75)
-                  .setRotation(610, -115, -100)
-                  .getHelper()
-                  .get(ItemCameraTransforms.TransformType.THIRD_PERSON_RIGHT_HAND)
-                  .setScale(0.7F)
-                  .setPosition(-0.25, -3.6, -1.25)
-                  .setRotation(5, -90, 340)
-                  .getHelper()
-                  .get(ItemCameraTransforms.TransformType.THIRD_PERSON_LEFT_HAND)
-                  .setPosition(-8, -5.50, -1.00)
-                  .setRotation(0, 330, 180)
-                  .getHelper()
-                  .get(ItemCameraTransforms.TransformType.GROUND)
-                  .setScale(1F)
-                  .setPosition(0, 1, 0)
-                  .setRotation(0, 0, 180)
-                  .getHelper();
-
-        offsets.apply(type);
-
         renderStandard(
             ResourceManager.armor_hev,
             armorType,

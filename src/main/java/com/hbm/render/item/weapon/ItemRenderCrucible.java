@@ -222,7 +222,7 @@ public class ItemRenderCrucible extends TEISRBase {
                             Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.crucible_blade_bloom);
                             if (GeneralConfig.bloom) {
                                 HbmShaderManager2.bloomData.bindFramebuffer(true);
-                                GL11.glCallList(model);
+                                GlStateManager.callList(model);
                                 Minecraft.getMinecraft().getFramebuffer().bindFramebuffer(true);
                             }
                             GlStateManager.disableBlend();
@@ -230,7 +230,7 @@ public class ItemRenderCrucible extends TEISRBase {
                             if (GeneralConfig.heatDistortion && diffN > 0.6) {
                                 GlStateManager.scale(1.15, 1.15, 1.05);
                                 GlStateManager.depthMask(false);
-                                HbmShaderManager2.distort(0.5F, () -> GL11.glCallList(model));
+                                HbmShaderManager2.distort(0.5F, () -> GlStateManager.callList(model));
                                 GlStateManager.depthMask(true);
                             }
                             GL11.glDisable(GL11.GL_CLIP_PLANE0);

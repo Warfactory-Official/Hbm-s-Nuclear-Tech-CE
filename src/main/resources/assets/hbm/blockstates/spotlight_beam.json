@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "normal": { "model": "hbm:spotlight_beam" }
+  }
+}

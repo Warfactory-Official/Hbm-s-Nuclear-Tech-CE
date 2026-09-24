@@ -22,10 +22,10 @@ public class DiamondPronter {
 		GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
 
 		NTMRenderHelper.startDrawingTexturedQuads();
-		NTMRenderHelper.addVertexWithUV(0.0, 0.5, -0.5, p * 144, p * 45);
-		NTMRenderHelper.addVertexWithUV(0.0, 0.5, 0.5, p * 5, p * 45);
-		NTMRenderHelper.addVertexWithUV(0.0, -0.5, 0.5, p * 5, p * 184);
-		NTMRenderHelper.addVertexWithUV(0.0, -0.5, -0.5, p * 144, p * 184);
+		NTMRenderHelper.addVertexWithUV(0.0F, 0.5F, -0.5F, p * 144, p * 45);
+		NTMRenderHelper.addVertexWithUV(0.0F, 0.5F, 0.5F, p * 5, p * 45);
+		NTMRenderHelper.addVertexWithUV(0.0F, -0.5F, 0.5F, p * 5, p * 184);
+		NTMRenderHelper.addVertexWithUV(0.0F, -0.5F, -0.5F, p * 144, p * 184);
 		NTMRenderHelper.draw();
 		
 		float width = 10F * s;
@@ -42,10 +42,10 @@ public class DiamondPronter {
 			if(poison == 0) x = 125;
 
 			NTMRenderHelper.startDrawingTexturedQuads();
-			NTMRenderHelper.addVertexWithUV(0.01, height + oY, -width + oZ, (x + 20) * p, y * p);
-			NTMRenderHelper.addVertexWithUV(0.01, height + oY, width + oZ, x * p, y * p);
-			NTMRenderHelper.addVertexWithUV(0.01, -height + oY, width + oZ, x * p, (y + 28) * p);
-			NTMRenderHelper.addVertexWithUV(0.01, -height + oY, -width + oZ, (x + 20) * p, (y + 28) * p);
+			NTMRenderHelper.addVertexWithUV(0.01F, height + oY, -width + oZ, (x + 20) * p, y * p);
+			NTMRenderHelper.addVertexWithUV(0.01F, height + oY, width + oZ, x * p, y * p);
+			NTMRenderHelper.addVertexWithUV(0.01F, -height + oY, width + oZ, x * p, (y + 28) * p);
+			NTMRenderHelper.addVertexWithUV(0.01F, -height + oY, -width + oZ, (x + 20) * p, (y + 28) * p);
 			NTMRenderHelper.draw();
 		}
 		
@@ -60,10 +60,10 @@ public class DiamondPronter {
 			if(flammability == 0) x = 125;
 
 			NTMRenderHelper.startDrawingTexturedQuads();
-			NTMRenderHelper.addVertexWithUV(0.01, height + oY, -width + oZ, (x + 20) * p, y * p);
-			NTMRenderHelper.addVertexWithUV(0.01, height + oY, width + oZ, x * p, y * p);
-			NTMRenderHelper.addVertexWithUV(0.01, -height + oY, width + oZ, x * p, (y + 28) * p);
-			NTMRenderHelper.addVertexWithUV(0.01, -height + oY, -width + oZ, (x + 20) * p, (y + 28) * p);
+			NTMRenderHelper.addVertexWithUV(0.01F, height + oY, -width + oZ, (x + 20) * p, y * p);
+			NTMRenderHelper.addVertexWithUV(0.01F, height + oY, width + oZ, x * p, y * p);
+			NTMRenderHelper.addVertexWithUV(0.01F, -height + oY, width + oZ, x * p, (y + 28) * p);
+			NTMRenderHelper.addVertexWithUV(0.01F, -height + oY, -width + oZ, (x + 20) * p, (y + 28) * p);
 			NTMRenderHelper.draw();
 		}
 		
@@ -78,10 +78,10 @@ public class DiamondPronter {
 			if(reactivity == 0) x = 125;
 
 			NTMRenderHelper.startDrawingTexturedQuads();
-			NTMRenderHelper.addVertexWithUV(0.01, height + oY, -width + oZ, (x + 20) * p, y * p);
-			NTMRenderHelper.addVertexWithUV(0.01, height + oY, width + oZ, x * p, y * p);
-			NTMRenderHelper.addVertexWithUV(0.01, -height + oY, width + oZ, x * p, (y + 28) * p);
-			NTMRenderHelper.addVertexWithUV(0.01, -height + oY, -width + oZ, (x + 20) * p, (y + 28) * p);
+			NTMRenderHelper.addVertexWithUV(0.01F, height + oY, -width + oZ, (x + 20) * p, y * p);
+			NTMRenderHelper.addVertexWithUV(0.01F, height + oY, width + oZ, x * p, y * p);
+			NTMRenderHelper.addVertexWithUV(0.01F, -height + oY, width + oZ, x * p, (y + 28) * p);
+			NTMRenderHelper.addVertexWithUV(0.01F, -height + oY, -width + oZ, (x + 20) * p, (y + 28) * p);
 			NTMRenderHelper.draw();
 		}
 		
@@ -97,10 +97,10 @@ public class DiamondPronter {
 			int y = symbol.y;
 
 			NTMRenderHelper.startDrawingTexturedQuads();
-			NTMRenderHelper.addVertexWithUV(0.01, symSize + oY, -symSize + oZ, (x + 59) * p, y * p);
-			NTMRenderHelper.addVertexWithUV(0.01, symSize + oY, symSize + oZ, x * p, y * p);
-			NTMRenderHelper.addVertexWithUV(0.01, -symSize + oY, symSize + oZ, x * p, (y + 59) * p);
-			NTMRenderHelper.addVertexWithUV(0.01, -symSize + oY, -symSize + oZ, (x + 59) * p, (y + 59) * p);
+			NTMRenderHelper.addVertexWithUV(0.01F, symSize + oY, -symSize + oZ, (x + 59) * p, y * p);
+			NTMRenderHelper.addVertexWithUV(0.01F, symSize + oY, symSize + oZ, x * p, y * p);
+			NTMRenderHelper.addVertexWithUV(0.01F, -symSize + oY, symSize + oZ, x * p, (y + 59) * p);
+			NTMRenderHelper.addVertexWithUV(0.01F, -symSize + oY, -symSize + oZ, (x + 59) * p, (y + 59) * p);
 			NTMRenderHelper.draw();
 		}
 

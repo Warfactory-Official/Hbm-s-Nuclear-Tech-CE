@@ -10,7 +10,6 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.gui.GUIDroneCrate;
 import com.hbm.lib.HBMSoundHandler;
-import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -19,6 +18,7 @@ import com.hbm.util.ParticleUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -27,6 +27,7 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -47,8 +48,8 @@ public class TileEntityDroneCrate extends TileEntityMachineBase implements IGUIP
     public boolean itemType = true;
 
     public TileEntityDroneCrate() {
-        super(19);
-        this.tank = new FluidTankNTM(Fluids.NONE, 64_000);
+        super(19, false, false);
+        this.tank = new FluidTankNTM(Fluids.NONE, 64_000).withOwner(this);
     }
 
     @Override
@@ -74,7 +75,7 @@ public class TileEntityDroneCrate extends TileEntityMachineBase implements IGUIP
 
                 List<EntityDeliveryDrone> drones = world.getEntitiesWithinAABB(EntityDeliveryDrone.class, new AxisAlignedBB(pos.getX(), pos.getY() + 1, pos.getZ(), pos.getX() + 1, pos.getY() + 2, pos.getZ() + 1));
                 for(EntityDeliveryDrone drone : drones) {
-                    if(Vec3.createVectorHelper(drone.motionX, drone.motionY, drone.motionZ).length() < 0.05) {
+                    if(new Vec3d(drone.motionX, drone.motionY, drone.motionZ).length() < 0.05) {
                         drone.setTarget(nextX + 0.5, nextY, nextZ + 0.5);
 
                         if(sendingMode && itemType) loadItems(drone);
@@ -226,16 +227,6 @@ public class TileEntityDroneCrate extends TileEntityMachineBase implements IGUIP
     }
 
     @Override
-    public boolean isItemValidForSlot(int i, ItemStack itemStack) {
-        return true;
-    }
-
-    @Override
-    public boolean canExtractItem(int i, ItemStack itemStack, int j) {
-        return true;
-    }
-
-    @Override
     public BlockPos getPoint() {
         return pos.up();
     }
@@ -294,7 +285,7 @@ public class TileEntityDroneCrate extends TileEntityMachineBase implements IGUIP
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
 
         if(data.hasKey("mode")) {
             this.sendingMode = !this.sendingMode;

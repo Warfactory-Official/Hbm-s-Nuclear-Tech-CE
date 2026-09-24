@@ -18,14 +18,19 @@ public class PlantEnums {
         MUSTARD_WILLOW_0(true),
         MUSTARD_WILLOW_1(true),
         NIGHTSHADE,
-        TOBACCO,
-        ;
+        TOBACCO;
 
         public static final EnumFlowerPlantType[] VALUES = values();
 
         public final boolean needsOil;
-        EnumFlowerPlantType(boolean needsOil){ this.needsOil = needsOil;}
-        EnumFlowerPlantType(){ this.needsOil = false;}
+
+        EnumFlowerPlantType(boolean needsOil) {
+            this.needsOil = needsOil;
+        }
+
+        EnumFlowerPlantType() {
+            this.needsOil = false;
+        }
     }
 
     public enum EnumTallPlantType {
@@ -36,12 +41,18 @@ public class PlantEnums {
         MUSTARD_WILLOW_3_LOWER,
         MUSTARD_WILLOW_3_UPPER,
         MUSTARD_WILLOW_4_LOWER,
-        MUSTARD_WILLOW_4_UPPER,
-        ;
+        MUSTARD_WILLOW_4_UPPER;
+
         public static final EnumTallPlantType[] VALUES = values();
         public final boolean needsOil;
-        EnumTallPlantType(boolean needsOil){ this.needsOil = needsOil;}
-        EnumTallPlantType(){ this.needsOil = true;}
+
+        EnumTallPlantType(boolean needsOil) {
+            this.needsOil = needsOil;
+        }
+
+        EnumTallPlantType() {
+            this.needsOil = true;
+        }
     }
 
 }

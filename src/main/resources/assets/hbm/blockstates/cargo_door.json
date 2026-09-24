@@ -1,0 +1,55 @@
+{
+    "variants": {
+        "meta=0": {
+            "model": "hbm:cargo_door"
+        },
+        "meta=1": {
+            "model": "hbm:cargo_door"
+        },
+        "meta=2": {
+            "model": "hbm:cargo_door"
+        },
+        "meta=3": {
+            "model": "hbm:cargo_door"
+        },
+        "meta=4": {
+            "model": "hbm:cargo_door"
+        },
+        "meta=5": {
+            "model": "hbm:cargo_door"
+        },
+        "meta=6": {
+            "model": "hbm:cargo_door"
+        },
+        "meta=7": {
+            "model": "hbm:cargo_door"
+        },
+        "meta=8": {
+            "model": "hbm:cargo_door"
+        },
+        "meta=9": {
+            "model": "hbm:cargo_door"
+        },
+        "meta=10": {
+            "model": "hbm:cargo_door"
+        },
+        "meta=11": {
+            "model": "hbm:cargo_door"
+        },
+        "meta=12": {
+            "model": "hbm:cargo_door"
+        },
+        "meta=13": {
+            "model": "hbm:cargo_door"
+        },
+        "meta=14": {
+            "model": "hbm:cargo_door"
+        },
+        "meta=15": {
+            "model": "hbm:cargo_door"
+        },
+        "normal": {
+            "model": "hbm:cargo_door"
+        }
+    }
+}

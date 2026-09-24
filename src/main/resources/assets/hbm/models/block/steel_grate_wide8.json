@@ -1,0 +1,22 @@
+{
+    "ambientocclusion": false,
+    "parent": "block/block",
+    "textures": {
+        "particle": "hbm:blocks/grate_wide_top",
+        "end": "hbm:blocks/grate_wide_top",
+        "side": "hbm:blocks/grate_side"
+    },
+    "elements": [
+        {   "from": [ 0, 16, 0 ],
+            "to": [ 16, 18, 16 ],
+            "faces": {
+                "down":  { "texture": "#end", "cullface": "up" },
+                "up":    { "texture": "#end" },
+                "north": { "texture": "#side" },
+                "south": { "texture": "#side" },
+                "west":  { "texture": "#side" },
+                "east":  { "texture": "#side" }
+            }
+        }
+    ]
+}

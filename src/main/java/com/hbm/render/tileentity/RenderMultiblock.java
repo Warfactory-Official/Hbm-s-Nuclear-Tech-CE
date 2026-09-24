@@ -16,12 +16,6 @@ public class RenderMultiblock extends TileEntitySpecialRenderer<TileEntityMultib
 
 	public static TextureAtlasSprite structLauncher;
 	public static TextureAtlasSprite structScaffold;
-	
-	@Override
-	public boolean isGlobalRenderer(TileEntityMultiblock te) {
-		return true;
-	}
-	
 	@Override
 	public void render(TileEntityMultiblock te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
 		GlStateManager.pushMatrix();

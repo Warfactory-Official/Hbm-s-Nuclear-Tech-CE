@@ -23,8 +23,10 @@ import com.hbm.util.BobMathUtil;
 import com.hbm.util.I18nUtil;
 import com.hbm.util.SoundUtil;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.block.material.Material;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
@@ -42,10 +44,11 @@ import net.minecraftforge.items.ItemStackHandler;
 
 import java.util.HashMap;
 import java.util.List;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 
 @AutoRegister
 public class TileEntityMachineChemicalFactory extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, 
-        IControlReceiver, IGUIProvider, TileEntityProxyDyn.IProxyDelegateProvider {
+        IControlReceiver, IGUIProvider, TileEntityProxyDyn.IProxyDelegateProvider, IConnectionAnchors, IRORValueProvider {
 
     public FluidTankNTM[] allTanks;
     public FluidTankNTM[] inputTanks;
@@ -89,12 +92,12 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase impl
         this.inputTanks = new FluidTankNTM[12];
         this.outputTanks = new FluidTankNTM[12];
         for(int i = 0; i < 12; i++) {
-            this.inputTanks[i] = new FluidTankNTM(Fluids.NONE, 24_000);
-            this.outputTanks[i] = new FluidTankNTM(Fluids.NONE, 24_000);
+            this.inputTanks[i] = new FluidTankNTM(Fluids.NONE, 24_000).withOwner(this);
+            this.outputTanks[i] = new FluidTankNTM(Fluids.NONE, 24_000).withOwner(this);
         }
 
-        this.water = new FluidTankNTM(Fluids.WATER, 4_000);
-        this.lps = new FluidTankNTM(Fluids.SPENTSTEAM, 4_000);
+        this.water = new FluidTankNTM(Fluids.WATER, 4_000).withOwner(this);
+        this.lps = new FluidTankNTM(Fluids.SPENTSTEAM, 4_000).withOwner(this);
 
         this.allTanks = new FluidTankNTM[this.inputTanks.length + this.outputTanks.length + 2];
         System.arraycopy(this.inputTanks, 0, this.allTanks, 0, inputTanks.length);
@@ -208,6 +211,7 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase impl
             for(FluidTankNTM in : inputTanks) if(in.getTankType() != Fluids.NONE) for(FluidTankNTM out : outputTanks) { // up to 144 iterations, but most of them are NOP anyway
                 if(out.getTankType() == Fluids.NONE) continue;
                 if(out.getTankType() != in.getTankType()) continue;
+                if(out.getPressure() != in.getPressure()) continue;
                 int toMove = BobMathUtil.min(in.getMaxFill() - in.getFill(), out.getFill(), 50);
                 if(toMove > 0) {
                     in.setFill(in.getFill() + toMove);
@@ -226,7 +230,7 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase impl
             if(didSomething) this.anim++;
 
             if(world.getTotalWorldTime() % 20 == 0) {
-                frame = world.getBlockState(pos.up(3)).getBlock() != Blocks.AIR;
+                frame = world.getBlockState(pos.up(3)).getMaterial() != Material.AIR;
             }
 
             if(didSomething && MainRegistry.proxy.me().getDistance(pos.getX() , pos.getY(), pos.getZ()) < 50) {
@@ -422,12 +426,12 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase impl
     @Override public boolean hasPermission(EntityPlayer player) { return this.isUseableByPlayer(player); }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if(data.hasKey("index") && data.hasKey("selection")) {
             int index = data.getInteger("index");
             String selection = data.getString("selection");
             if(index >= 0 && index < 4) {
-                this.chemplantModule[index].recipe = selection;
+                this.chemplantModule[index].setRecipe(selection, false);
                 this.markChanged();
             }
         }
@@ -517,5 +521,26 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase impl
         @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[] {TileEntityMachineChemicalFactory.this.lps}; }
 
         @Override public FluidTankNTM[] getAllTanks() { return TileEntityMachineChemicalFactory.this.getAllTanks(); }
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[] {
+                PREFIX_VALUE + "progress1", PREFIX_VALUE + "progress2", PREFIX_VALUE + "progress3", PREFIX_VALUE + "progress4",
+                PREFIX_VALUE + "recipe1", PREFIX_VALUE + "recipe2", PREFIX_VALUE + "recipe3", PREFIX_VALUE + "recipe4",
+                PREFIX_VALUE + "anyactive",
+                PREFIX_VALUE + "active1", PREFIX_VALUE + "active2", PREFIX_VALUE + "active3", PREFIX_VALUE + "active4"
+        };
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if((PREFIX_VALUE + "anyactive").equals(name)) return "" + ((this.didProcess[0] || this.didProcess[1] || this.didProcess[2] || this.didProcess[3]) ? 1 : 0);
+        for(int i = 0; i < 4; i++) {
+            if((PREFIX_VALUE + "progress" + (i + 1)).equals(name)) return "" + (int) Math.round(this.chemplantModule[i].progress * 100);
+            if((PREFIX_VALUE + "recipe" + (i + 1)).equals(name)) return this.chemplantModule[i].getRecipeName();
+            if((PREFIX_VALUE + "active" + (i + 1)).equals(name)) return "" + (this.didProcess[i] ? 1 : 0);
+        }
+        return null;
     }
 }

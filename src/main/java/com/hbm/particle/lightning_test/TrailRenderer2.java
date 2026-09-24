@@ -133,18 +133,18 @@ public class TrailRenderer2 {
 		GLCompat.bindBuffer(GLCompat.GL_ELEMENT_ARRAY_BUFFER, element_buf);
 		aux_buf.rewind();
 		GLCompat.bufferData(GLCompat.GL_ELEMENT_ARRAY_BUFFER, aux_buf, GLCompat.GL_DYNAMIC_DRAW);
-		GL11.glVertexPointer(3, GL11.GL_FLOAT, BYTES_PER_VERTEX, 0);
-		GL11.glTexCoordPointer(2, GL11.GL_SHORT, BYTES_PER_VERTEX, 12);
-		GL11.glColorPointer(4, GL11.GL_UNSIGNED_BYTE, BYTES_PER_VERTEX, 16);
-		GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
-		GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-		GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
+		GlStateManager.glVertexPointer(3, GL11.GL_FLOAT, BYTES_PER_VERTEX, 0);
+		GlStateManager.glTexCoordPointer(2, GL11.GL_SHORT, BYTES_PER_VERTEX, 12);
+		GlStateManager.glColorPointer(4, GL11.GL_UNSIGNED_BYTE, BYTES_PER_VERTEX, 16);
+		GlStateManager.glEnableClientState(GL11.GL_VERTEX_ARRAY);
+		GlStateManager.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+		GlStateManager.glEnableClientState(GL11.GL_COLOR_ARRAY);
 	}
 	
 	public static void unbindVao(){
-		GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
-		GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-		GL11.glDisableClientState(GL11.GL_COLOR_ARRAY);
+		GlStateManager.glDisableClientState(GL11.GL_VERTEX_ARRAY);
+		GlStateManager.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+		GlStateManager.glDisableClientState(GL11.GL_COLOR_ARRAY);
 		GLCompat.bindVertexArray(0);
 		GLCompat.bindBuffer(GLCompat.GL_ARRAY_BUFFER, 0);
 		GLCompat.bindBuffer(GLCompat.GL_ELEMENT_ARRAY_BUFFER, 0);

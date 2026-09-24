@@ -20,12 +20,6 @@ public class RenderExcavator extends TileEntitySpecialRenderer<TileEntityMachine
       new ResourceLocation("minecraft:textures/blocks/cobblestone.png");
   public static final ResourceLocation gravel =
       new ResourceLocation("minecraft:textures/blocks/gravel.png");
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityMachineExcavator te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityMachineExcavator drill,
@@ -100,59 +94,59 @@ public class RenderExcavator extends TileEntitySpecialRenderer<TileEntityMachine
 
     if (drill.chuteTimer > 0) {
       bindTexture(cobble);
-      double widthX = 0.125;
-      double widthZ = 0.125;
-      double speed = 250D;
-      double dropU = -System.currentTimeMillis() % speed / speed;
-      double dropL = dropU + 4;
+      float widthX = 0.125F;
+      float widthZ = 0.125F;
+      float speed = 250F;
+      float dropU = -System.currentTimeMillis() % speed / speed;
+      float dropL = dropU + 4F;
       NTMRenderHelper.startDrawingTexturedQuads();
-      NTMRenderHelper.addVertexWithUV(widthX, 3, 2.5 + widthZ, 0, dropU);
-      NTMRenderHelper.addVertexWithUV(-widthX, 3, 2.5 + widthZ, 1, dropU);
-      NTMRenderHelper.addVertexWithUV(-widthX, 2, 2.5 + widthZ, 1, dropL);
-      NTMRenderHelper.addVertexWithUV(widthX, 2, 2.5 + widthZ, 0, dropL);
+      NTMRenderHelper.addVertexWithUV(widthX, 3, 2.5F + widthZ, 0, dropU);
+      NTMRenderHelper.addVertexWithUV(-widthX, 3, 2.5F + widthZ, 1, dropU);
+      NTMRenderHelper.addVertexWithUV(-widthX, 2, 2.5F + widthZ, 1, dropL);
+      NTMRenderHelper.addVertexWithUV(widthX, 2, 2.5F + widthZ, 0, dropL);
 
-      NTMRenderHelper.addVertexWithUV(-widthX, 3, 2.5 - widthZ, 1, dropU);
-      NTMRenderHelper.addVertexWithUV(widthX, 3, 2.5 - widthZ, 0, dropU);
-      NTMRenderHelper.addVertexWithUV(widthX, 2, 2.5 - widthZ, 0, dropL);
-      NTMRenderHelper.addVertexWithUV(-widthX, 2, 2.5 - widthZ, 1, dropL);
+      NTMRenderHelper.addVertexWithUV(-widthX, 3, 2.5F - widthZ, 1, dropU);
+      NTMRenderHelper.addVertexWithUV(widthX, 3, 2.5F - widthZ, 0, dropU);
+      NTMRenderHelper.addVertexWithUV(widthX, 2, 2.5F - widthZ, 0, dropL);
+      NTMRenderHelper.addVertexWithUV(-widthX, 2, 2.5F - widthZ, 1, dropL);
 
-      NTMRenderHelper.addVertexWithUV(-widthX, 3, 2.5 + widthZ, 0, dropU);
-      NTMRenderHelper.addVertexWithUV(-widthX, 3, 2.5 - widthZ, 1, dropU);
-      NTMRenderHelper.addVertexWithUV(-widthX, 2, 2.5 - widthZ, 1, dropL);
-      NTMRenderHelper.addVertexWithUV(-widthX, 2, 2.5 + widthZ, 0, dropL);
+      NTMRenderHelper.addVertexWithUV(-widthX, 3, 2.5F + widthZ, 0, dropU);
+      NTMRenderHelper.addVertexWithUV(-widthX, 3, 2.5F - widthZ, 1, dropU);
+      NTMRenderHelper.addVertexWithUV(-widthX, 2, 2.5F - widthZ, 1, dropL);
+      NTMRenderHelper.addVertexWithUV(-widthX, 2, 2.5F + widthZ, 0, dropL);
 
-      NTMRenderHelper.addVertexWithUV(widthX, 3, 2.5 - widthZ, 1, dropU);
-      NTMRenderHelper.addVertexWithUV(widthX, 3, 2.5 + widthZ, 0, dropU);
-      NTMRenderHelper.addVertexWithUV(widthX, 2, 2.5 + widthZ, 0, dropL);
-      NTMRenderHelper.addVertexWithUV(widthX, 2, 2.5 - widthZ, 1, dropL);
+      NTMRenderHelper.addVertexWithUV(widthX, 3, 2.5F - widthZ, 1, dropU);
+      NTMRenderHelper.addVertexWithUV(widthX, 3, 2.5F + widthZ, 0, dropU);
+      NTMRenderHelper.addVertexWithUV(widthX, 2, 2.5F + widthZ, 0, dropL);
+      NTMRenderHelper.addVertexWithUV(widthX, 2, 2.5F - widthZ, 1, dropL);
       NTMRenderHelper.draw();
 
       boolean smoosh = drill.enableCrusher;
-      widthX = smoosh ? 0.5 : 0.25;
-      widthZ = 0.0625;
-      double uU = smoosh ? 4 : 2;
-      double uL = 0.5;
+      widthX = smoosh ? 0.5F : 0.25F;
+      widthZ = 0.0625F;
+      float uU = smoosh ? 4F : 2F;
+      float uL = 0.5F;
       bindTexture(smoosh ? gravel : cobble);
       NTMRenderHelper.startDrawingTexturedQuads();
-      NTMRenderHelper.addVertexWithUV(widthX, 2, 2.5 + widthZ, 0, dropU);
-      NTMRenderHelper.addVertexWithUV(-widthX, 2, 2.5 + widthZ, uU, dropU);
-      NTMRenderHelper.addVertexWithUV(-widthX, 1, 2.5 + widthZ, uU, dropL);
-      NTMRenderHelper.addVertexWithUV(widthX, 1, 2.5 + widthZ, 0, dropL);
+      NTMRenderHelper.addVertexWithUV(widthX, 2, 2.5F + widthZ, 0, dropU);
+      NTMRenderHelper.addVertexWithUV(-widthX, 2, 2.5F + widthZ, uU, dropU);
+      NTMRenderHelper.addVertexWithUV(-widthX, 1, 2.5F + widthZ, uU, dropL);
+      NTMRenderHelper.addVertexWithUV(widthX, 1, 2.5F + widthZ, 0, dropL);
 
-      NTMRenderHelper.addVertexWithUV(-widthX, 2, 2.5 - widthZ, uU, dropU);
-      NTMRenderHelper.addVertexWithUV(widthX, 2, 2.5 - widthZ, 0, dropU);
-      NTMRenderHelper.addVertexWithUV(widthX, 1, 2.5 - widthZ, 0, dropL);
-      NTMRenderHelper.addVertexWithUV(-widthX, 1, 2.5 - widthZ, uU, dropL);
+      NTMRenderHelper.addVertexWithUV(-widthX, 2, 2.5F - widthZ, uU, dropU);
+      NTMRenderHelper.addVertexWithUV(widthX, 2, 2.5F - widthZ, 0, dropU);
+      NTMRenderHelper.addVertexWithUV(widthX, 1, 2.5F - widthZ, 0, dropL);
+      NTMRenderHelper.addVertexWithUV(-widthX, 1, 2.5F - widthZ, uU, dropL);
 
-      NTMRenderHelper.addVertexWithUV(-widthX, 2, 2.5 + widthZ, 0, dropU);
-      NTMRenderHelper.addVertexWithUV(-widthX, 2, 2.5 - widthZ, uL, dropU);
-      NTMRenderHelper.addVertexWithUV(-widthX, 1, 2.5 - widthZ, uL, dropL);
-      NTMRenderHelper.addVertexWithUV(-widthX, 1, 2.5 + widthZ, 0, dropL);
+      NTMRenderHelper.addVertexWithUV(-widthX, 2, 2.5F + widthZ, 0, dropU);
+      NTMRenderHelper.addVertexWithUV(-widthX, 2, 2.5F - widthZ, uL, dropU);
+      NTMRenderHelper.addVertexWithUV(-widthX, 1, 2.5F - widthZ, uL, dropL);
+      NTMRenderHelper.addVertexWithUV(-widthX, 1, 2.5F + widthZ, 0, dropL);
 
-      NTMRenderHelper.addVertexWithUV(widthX, 2, 2.5 - widthZ, uL, dropU);
-      NTMRenderHelper.addVertexWithUV(widthX, 2, 2.5 + widthZ, 0, dropU);
-      NTMRenderHelper.addVertexWithUV(widthX, 1, 2.5 + widthZ, 0, dropL);
-      NTMRenderHelper.addVertexWithUV(widthX, 1, 2.5 - widthZ, uL, dropL);
+      NTMRenderHelper.addVertexWithUV(widthX, 2, 2.5F - widthZ, uL, dropU);
+      NTMRenderHelper.addVertexWithUV(widthX, 2, 2.5F + widthZ, 0, dropU);
+      NTMRenderHelper.addVertexWithUV(widthX, 1, 2.5F + widthZ, 0, dropL);
+      NTMRenderHelper.addVertexWithUV(widthX, 1, 2.5F - widthZ, uL, dropL);
       NTMRenderHelper.draw();
     }
 

@@ -18,6 +18,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
@@ -32,11 +33,12 @@ import org.jetbrains.annotations.Nullable;
 public class TileEntityMachineRTG extends TileEntityLoadedBase implements ITickable, IEnergyProviderMK2, IGUIProvider {
 
 	public ItemStackHandler inventory;
-	
+
 	public int heat;
 	public final int heatMax = 6000;
 	public long power;
 	public final long maxPower = 1000000;
+	private AxisAlignedBB bb;
 	
 	//private static final int[] slots_top = new int[] { 0 };
 	//private static final int[] slots_bottom = new int[] { 0 };
@@ -237,5 +239,10 @@ public class TileEntityMachineRTG extends TileEntityLoadedBase implements ITicka
 		return new GUIMachineRTG(player.inventory, this);
 	}
 
+	@Override
+	public AxisAlignedBB getRenderBoundingBox() {
+		if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+		return bb;
+	}
 
 }

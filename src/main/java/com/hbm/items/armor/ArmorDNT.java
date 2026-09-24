@@ -10,16 +10,15 @@ import com.hbm.items.gear.ArmorFSB;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.ResourceManager;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.item.ItemRenderBase;
 import com.hbm.render.model.ModelArmorDNT;
 import com.hbm.render.tileentity.IItemRendererProvider;
-import com.hbm.render.util.ViewModelPositonDebugger;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.I18nUtil;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -47,9 +46,6 @@ public class ArmorDNT extends ArmorFSBPowered implements IItemRendererProvider {
     @SideOnly(Side.CLIENT)
     ModelArmorDNT[] models;
 
-    @SideOnly(Side.CLIENT)
-    protected ViewModelPositonDebugger offsets;
-
 	public ArmorDNT(ArmorMaterial material, int layer, EntityEquipmentSlot slot, String texture, long maxPower, long chargeRate, long consumption, long drain, String s) {
 		super(material, layer, slot, texture, maxPower, chargeRate, consumption, drain, s);
 	}
@@ -70,7 +66,7 @@ public class ArmorDNT extends ArmorFSBPowered implements IItemRendererProvider {
 	private static final UUID speed = UUID.fromString("6ab858ba-d712-485c-bae9-e5e765fc555a");
 
 	@Override
-	public void onArmorTick(World world, EntityPlayer player, ItemStack stack) {
+	public void onArmorTick(@NotNull World world, @NotNull EntityPlayer player, @NotNull ItemStack stack) {
 
 		super.onArmorTick(world, player, stack);
 		
@@ -92,9 +88,8 @@ public class ArmorDNT extends ArmorFSBPowered implements IItemRendererProvider {
             // JET //
             if(hasFSBArmor(player) && (props.isJetpackActive() || (!player.onGround && !player.isSneaking() && props.getEnableBackpack()))) {
                 NBTTagCompound data = new NBTTagCompound();
-                data.setString("type", "jetpack_dns");
                 data.setInteger("player", player.getEntityId());
-                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, player.posX, player.posY, player.posZ), new NetworkRegistry.TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 100));
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Jetpack_DNS, data, player.posX, player.posY, player.posZ), new NetworkRegistry.TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 100));
             }
         }
 
@@ -164,7 +159,7 @@ public class ArmorDNT extends ArmorFSBPowered implements IItemRendererProvider {
 	}
 	
 	@Override
-	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
+	public void addInformation(@NotNull ItemStack stack, World worldIn, @NotNull List<String> list, @NotNull ITooltipFlag flagIn) {
         list.add("Charge: " + BobMathUtil.getShortNumber(getCharge(stack)) + " / " + BobMathUtil.getShortNumber(this.getMaxCharge(stack)));
 
         list.add(ChatFormatting.GOLD + I18nUtil.resolveKey("armor.fullSetBonus"));
@@ -191,9 +186,9 @@ public class ArmorDNT extends ArmorFSBPowered implements IItemRendererProvider {
     @Override
     @SideOnly(Side.CLIENT)
     public ItemRenderBase getRenderer(Item item) {
-        return new ItemRenderBase( ) {
+        return new ItemRenderBase() {
             public void renderInventory() {
-                if(armorType == EntityEquipmentSlot.MAINHAND) {
+                if(armorType == EntityEquipmentSlot.HEAD) {
                     GlStateManager.translate(0, -1, 0);
                 }
 
@@ -204,29 +199,6 @@ public class ArmorDNT extends ArmorFSBPowered implements IItemRendererProvider {
             }
 
             public void renderCommon() {
-                if (offsets == null)
-                    offsets = new ViewModelPositonDebugger()
-                            .get(ItemCameraTransforms.TransformType.GUI)
-                            .setScale(1.0F).setPosition(-1.2, 0.0, 1.0).setRotation(255, -36, -143)
-                            .getHelper()
-                            .get(ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND)
-                            .setPosition(-1.00, -31.30, -4.95).setRotation(-23, -139, 85)
-                            .getHelper()
-                            .get(ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND)
-                            .setPosition(-0.5, 3, -2.75).setRotation(610, -115, -100)
-                            .getHelper()
-                            .get(ItemCameraTransforms.TransformType.THIRD_PERSON_RIGHT_HAND)
-                            .setScale(0.7F).setPosition(-0.25, -3.6, -1.25).setRotation(5, -90, 340)
-                            .getHelper()
-                            .get(ItemCameraTransforms.TransformType.THIRD_PERSON_LEFT_HAND)
-                            .setPosition(-8, -5.50, -1.00).setRotation(0, 330, 180)
-                            .getHelper()
-                            .get(ItemCameraTransforms.TransformType.GROUND)
-                            .setScale(1F).setPosition(0, 1, 0).setRotation(0, 0, 180)
-                            .getHelper();
-
-                offsets.apply(type);
-
                 renderStandard(ResourceManager.armor_dnt, armorType, ResourceManager.dnt_helmet, ResourceManager.dnt_chest, ResourceManager.dnt_arm, ResourceManager.dnt_leg, "Head", "Body", "LeftArm", "RightArm", "LeftLeg", "RightLeg", "LeftBoot", "RightBoot");
             }};
     }

@@ -20,19 +20,14 @@ public class FlameCreator implements IParticleCreator {
 
   public static void composeEffect(World world, double x, double y, double z, int meta) {
     NBTTagCompound data = new NBTTagCompound();
-    data.setString("type", "flamethrower");
     data.setInteger("meta", meta);
-    IParticleCreator.sendPacket(world, x, y, z, 50, data);
+    IParticleCreator.sendPacket(world, HbmEffectNT.Flamethrower, x, y, z, 50, data);
   }
 
   public static void composeEffectClient(World world, double x, double y, double z, int meta) {
     NBTTagCompound data = new NBTTagCompound();
-    data.setString("type", "flamethrower");
     data.setInteger("meta", meta);
-    data.setDouble("posX", x);
-    data.setDouble("posY", y);
-    data.setDouble("posZ", z);
-    MainRegistry.proxy.effectNT(data);
+    MainRegistry.proxy.effectNT(HbmEffectNT.Flamethrower, x, y, z, data);
   }
 
   @Override

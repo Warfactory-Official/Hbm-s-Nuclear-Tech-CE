@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.machine.ItemRTGPellet;
 import com.hbm.tileentity.machine.TileEntityDiFurnaceRTG;
@@ -15,7 +16,14 @@ public class ContainerDiFurnaceRTG extends Container {
 	private TileEntityDiFurnaceRTG bFurnace;
 	// private int progress;
 
-	public ContainerDiFurnaceRTG(InventoryPlayer playerInv, TileEntityDiFurnaceRTG teIn) {
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(9)
+                                                                              .rule(0, 3,
+                                                                                      s -> !(s.getItem() instanceof ItemRTGPellet))
+                                                                              .rule(3, 9,
+                                                                                      s -> s.getItem() instanceof ItemRTGPellet)
+                                                                              .build();
+
+    public ContainerDiFurnaceRTG(InventoryPlayer playerInv, TileEntityDiFurnaceRTG teIn) {
 		bFurnace = teIn;
 		// Input
 		this.addSlotToContainer(new SlotItemHandler(teIn.inventory, 0, 80, 18));
@@ -23,12 +31,12 @@ public class ContainerDiFurnaceRTG extends Container {
 		// Output
 		this.addSlotToContainer(SlotFiltered.takeOnly(teIn.inventory, 2, 134, 36));
 		// RTG pellets
-		this.addSlotToContainer(new SlotItemHandler(teIn.inventory, 3, 22, 18));
-		this.addSlotToContainer(new SlotItemHandler(teIn.inventory, 4, 40, 18));
-		this.addSlotToContainer(new SlotItemHandler(teIn.inventory, 5, 22, 36));
-		this.addSlotToContainer(new SlotItemHandler(teIn.inventory, 6, 40, 36));
-		this.addSlotToContainer(new SlotItemHandler(teIn.inventory, 7, 22, 54));
-		this.addSlotToContainer(new SlotItemHandler(teIn.inventory, 8, 40, 54));
+		this.addSlotToContainer(SlotFiltered.withWhitelist(teIn.inventory, 3, 22, 18, s -> s.getItem() instanceof ItemRTGPellet));
+		this.addSlotToContainer(SlotFiltered.withWhitelist(teIn.inventory, 4, 40, 18, s -> s.getItem() instanceof ItemRTGPellet));
+		this.addSlotToContainer(SlotFiltered.withWhitelist(teIn.inventory, 5, 22, 36, s -> s.getItem() instanceof ItemRTGPellet));
+		this.addSlotToContainer(SlotFiltered.withWhitelist(teIn.inventory, 6, 40, 36, s -> s.getItem() instanceof ItemRTGPellet));
+		this.addSlotToContainer(SlotFiltered.withWhitelist(teIn.inventory, 7, 22, 54, s -> s.getItem() instanceof ItemRTGPellet));
+		this.addSlotToContainer(SlotFiltered.withWhitelist(teIn.inventory, 8, 40, 54, s -> s.getItem() instanceof ItemRTGPellet));
 
 		for(int i = 0; i < 3; i++) {
 			for(int j = 0; j < 9; j++) {
@@ -48,8 +56,6 @@ public class ContainerDiFurnaceRTG extends Container {
 
 	@Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 9,
-                s -> !(s.getItem() instanceof ItemRTGPellet), 3,
-                s -> s.getItem() instanceof ItemRTGPellet, 9);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 }

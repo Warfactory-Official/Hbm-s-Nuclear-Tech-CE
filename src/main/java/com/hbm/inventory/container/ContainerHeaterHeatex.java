@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.tileentity.machine.TileEntityHeaterHeatex;
 import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
@@ -13,7 +14,11 @@ public class ContainerHeaterHeatex extends Container {
 
 	private TileEntityHeaterHeatex heater;
 
-	public ContainerHeaterHeatex(InventoryPlayer invPlayer, TileEntityHeaterHeatex tedf) {
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(1)
+                                                                              .genericMachineRange(0)
+                                                                              .build();
+
+    public ContainerHeaterHeatex(InventoryPlayer invPlayer, TileEntityHeaterHeatex tedf) {
 		heater = tedf;
 
 		this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 80, 72));
@@ -31,7 +36,7 @@ public class ContainerHeaterHeatex extends Container {
 
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 1);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
 	}
 
 	@Override

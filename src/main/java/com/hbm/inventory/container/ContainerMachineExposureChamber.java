@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.slot.SlotUpgrade;
@@ -16,6 +17,17 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerMachineExposureChamber extends Container {
 
     private final TileEntityMachineExposureChamber chamber;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(7)
+                                                                              .rule(0, 4,
+                                                                                      ContainerMachineExposureChamber::isNormal)
+                                                                              .rule(4, 5, Library::isBattery)
+                                                                              .rule(5, 7, Library::isMachineUpgrade)
+                                                                              .ruleDispatchMode(
+                                                                                      TransferStrategy.RuleDispatchMode.FALLTHROUGH_ON_FAILURE)
+                                                                              .playerFallbackMode(
+                                                                                      TransferStrategy.PlayerFallbackMode.REBALANCE_SECTIONS)
+                                                                              .build();
 
     public ContainerMachineExposureChamber(InventoryPlayer invPlayer, TileEntityMachineExposureChamber te) {
         this.chamber = te;
@@ -45,10 +57,7 @@ public class ContainerMachineExposureChamber extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 7,
-                ContainerMachineExposureChamber::isNormal, 4,
-                Library::isBattery, 5,
-                Library::isMachineUpgrade, 7);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
     @Override

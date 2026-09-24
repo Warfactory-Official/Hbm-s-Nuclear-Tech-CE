@@ -1,6 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.interfaces.IContainerOpenEventListener;
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.tileentity.machine.storage.TileEntityFileCabinet;
 import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
@@ -13,6 +14,10 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerFileCabinet extends Container implements IContainerOpenEventListener {
 
     protected TileEntityFileCabinet cabinet;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(8)
+                                                                              .genericMachineRange(0)
+                                                                              .build();
 
     public ContainerFileCabinet(InventoryPlayer invPlayer, TileEntityFileCabinet tile) {
         this.cabinet = tile;
@@ -36,7 +41,7 @@ public class ContainerFileCabinet extends Container implements IContainerOpenEve
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 8);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
     @Override

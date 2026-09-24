@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import static com.hbm.render.NTMRenderHelper.bindTexture;
 
 @AutoRegister(item = "jetpack_glider")
-public class ItemRenderJetpackGlider extends ItemRenderBase {
+public class ItemRenderJetpackGlider extends ItemRenderBaseLegacy {
   @Override
   public void renderInventory() {
     GlStateManager.translate(-5, -6, 0);

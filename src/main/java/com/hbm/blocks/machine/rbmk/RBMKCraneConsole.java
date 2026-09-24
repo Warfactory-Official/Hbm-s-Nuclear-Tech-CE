@@ -12,8 +12,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,42 +25,18 @@ public class RBMKCraneConsole extends BlockDummyable implements IToolable {
 	}
 
 	@Override
-	public TileEntity createNewTileEntity(World worldIn, int meta) {
+	public TileEntity createNewTileEntity(@NotNull World worldIn, int meta) {
 		if(meta >= offset)
 			return new TileEntityRBMKCraneConsole();
 		return null;
 	}
 
 	@Override
-	public EnumBlockRenderType getRenderType(IBlockState state) {
+	public @NotNull EnumBlockRenderType getRenderType(@NotNull IBlockState state) {
 		return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
 	}
 
-	@Override
-	public boolean isOpaqueCube(@NotNull IBlockState state) {
-		return false;
-	}
-	
-	@Override
-	public boolean isBlockNormalCube(@NotNull IBlockState state) {
-		return false;
-	}
-	
-	@Override
-	public boolean isNormalCube(@NotNull IBlockState state) {
-		return false;
-	}
-	
-	@Override
-	public boolean isNormalCube(@NotNull IBlockState state, @NotNull IBlockAccess world, @NotNull BlockPos pos) {
-		return false;
-	}
-	@Override
-	public boolean shouldSideBeRendered(@NotNull IBlockState blockState, @NotNull IBlockAccess blockAccess, @NotNull BlockPos pos, @NotNull EnumFacing side) {
-		return false;
-	}
-
-	@Override
+    @Override
 	public int[] getDimensions() {
 		return new int[] {1, 0, 0, 0, 1, 1};
 	}

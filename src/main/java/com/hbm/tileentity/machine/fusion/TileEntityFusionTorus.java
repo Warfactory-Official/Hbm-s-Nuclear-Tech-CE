@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine.fusion;
 
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
+import com.hbm.handler.CompatHandler;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerFusionTorus;
@@ -14,19 +16,25 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.modules.machine.ModuleMachineFusion;
+import com.hbm.saveddata.satellites.SatelliteRayScan;
+import com.hbm.saveddata.satellites.SatelliteRayScan.RayEvent;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.tileentity.machine.albion.TileEntityCooledBase;
-import com.hbm.uninos.GenNode;
 import com.hbm.uninos.INetworkProvider;
 import com.hbm.uninos.UniNodespace;
 import com.hbm.uninos.networkproviders.KlystronNetwork;
 import com.hbm.uninos.networkproviders.PlasmaNetwork;
 import com.hbm.util.BobMathUtil;
 import io.netty.buffer.ByteBuf;
+import li.cil.oc.api.machine.Arguments;
+import li.cil.oc.api.machine.Callback;
+import li.cil.oc.api.machine.Context;
+import li.cil.oc.api.network.SimpleComponent;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -38,6 +46,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
@@ -45,7 +54,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Map;
 
 @AutoRegister
-public class TileEntityFusionTorus extends TileEntityCooledBase implements ITickable, IGUIProvider, IControlReceiver {
+@Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
+public class TileEntityFusionTorus extends TileEntityCooledBase implements ITickable, IGUIProvider, IControlReceiver, IRORValueProvider, SimpleComponent, CompatHandler.OCComponent {
 
     public boolean didProcess = false;
 
@@ -78,10 +88,10 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements ITick
 
         this.tanks = new FluidTankNTM[4];
 
-        this.tanks[0] = new FluidTankNTM(Fluids.NONE, 4_000);
-        this.tanks[1] = new FluidTankNTM(Fluids.NONE, 4_000);
-        this.tanks[2] = new FluidTankNTM(Fluids.NONE, 4_000);
-        this.tanks[3] = new FluidTankNTM(Fluids.NONE, 4_000);
+        this.tanks[0] = new FluidTankNTM(Fluids.NONE, 4_000).withOwner(this);
+        this.tanks[1] = new FluidTankNTM(Fluids.NONE, 4_000).withOwner(this);
+        this.tanks[2] = new FluidTankNTM(Fluids.NONE, 4_000).withOwner(this);
+        this.tanks[3] = new FluidTankNTM(Fluids.NONE, 4_000).withOwner(this);
 
         this.fusionModule = new ModuleMachineFusion(0, this, inventory)
                 .fluidInput(tanks[0], tanks[1], tanks[2])
@@ -98,6 +108,7 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements ITick
     public void update() {
 
         if(!world.isRemote) {
+            this.checkTilt(TiltType.CONFIG, true);
 
             for(int i = 0; i < 4; i++) {
                 if(klystronNodes[i] == null || klystronNodes[i].expired) klystronNodes[i] = createKlystronNode(KlystronNetwork.THE_PROVIDER, ForgeDirection.getOrientation(i + 2));
@@ -173,16 +184,23 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements ITick
             this.plasmaEnergy = 0;
             this.fuelConsumption = 0;
             this.fusionModule.preUpdate(factor, collectors * 0.5D);
-            this.fusionModule.update(1D, 1D, this.isCool() && ignition, inventory.getStackInSlot(1));
+            this.fusionModule.update(1D, 1D, !this.tilted && this.isCool() && ignition, inventory.getStackInSlot(1));
             this.didProcess = this.fusionModule.didProcess;
             if(this.fusionModule.markDirty) this.markDirty();
             if(didProcess && recipe != null) {
                 this.plasmaEnergy = (long) Math.ceil(recipe.outputTemp * factor);
                 this.fuelConsumption = factor;
+
+                if (world.getTotalWorldTime() % 20 == 15) {
+                    SatelliteRayScan.reportEvent(world, pos.getX(), pos.getY(), pos.getZ(), RayEvent.INFO_PARTICLE, 200);
+                }
             }
 
             double outputIntensity = getOuputIntensity(receiverCount);
             double outputFlux = recipe != null ? recipe.neutronFlux * factor : 0D;
+            float r = recipe != null ? recipe.r : 0F;
+            float g = recipe != null ? recipe.g : 0F;
+            float b = recipe != null ? recipe.b : 0F;
 
             if(this.plasmaEnergy > 0) for(int i = 0; i < 4; i++) {
 
@@ -191,7 +209,7 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements ITick
                     for(Map.Entry<TileEntity, Long> o : plasmaNodes[i].net.receiverEntries.entrySet()) {
                         if(o.getKey() instanceof IFusionPowerReceiver receiver) {
                             long powerReceived = (long) Math.ceil(this.plasmaEnergy * outputIntensity);
-                            receiver.receiveFusionPower(powerReceived, outputFlux);
+                            receiver.receiveFusionPower(powerReceived, outputFlux, r, g, b);
                         }
                     }
                 }
@@ -464,14 +482,141 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements ITick
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if(data.hasKey("index") && data.hasKey("selection")) {
             int index = data.getInteger("index");
             String selection = data.getString("selection");
             if(index == 0) {
-                this.fusionModule.recipe = selection;
+                this.fusionModule.setRecipe(selection, false);
                 this.markChanged();
             }
         }
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[] {
+                PREFIX_VALUE + "plasma",
+                PREFIX_VALUE + "consumption"
+        };
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "plasma").equals(name))      return "" + this.plasmaEnergy;
+        if ((PREFIX_VALUE + "consumption").equals(name)) return "" + (int) (this.fuelConsumption * 100);
+        return null;
+    }
+
+    @Override public int getFloorCount() { return 6 * 6; }
+    @Override public BlockPos getFloorPosFromIndex(int index) {
+        return new BlockPos(
+                pos.getX() - 5 + (index / 6) * 2,
+                pos.getY() - 1,
+                pos.getZ() - 5 + (index % 6) * 2
+        );
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public String getComponentName() {
+        return "ntm_fusion_torus";
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getEnergyInfo(Context context, Arguments args) {
+        return new Object[] {getPower(), getMaxPower()};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getFluid(Context context, Arguments args) {
+        return new Object[] {
+            tanks[0].getFill(), tanks[0].getMaxFill(), tanks[0].getTankType().getTranslationKey(),
+            tanks[1].getFill(), tanks[1].getMaxFill(), tanks[1].getTankType().getTranslationKey(),
+            tanks[2].getFill(), tanks[2].getMaxFill(), tanks[2].getTankType().getTranslationKey(),
+            tanks[3].getFill(), tanks[3].getMaxFill(), tanks[3].getTankType().getTranslationKey(),
+        };
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getCoolant(Context context, Arguments args) {
+        return new Object[] {
+            coolantTanks[0].getFill(), coolantTanks[0].getMaxFill(),
+            coolantTanks[1].getFill(), coolantTanks[1].getMaxFill(),
+        };
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getKlystronEnergy(Context context, Arguments args) {
+        return new Object[] {klystronEnergy};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getPlasmaEnergy(Context context, Arguments args) {
+        return new Object[] {plasmaEnergy};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getFuelConsumption(Context context, Arguments args) {
+        return new Object[] {fuelConsumption};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getRecipeProgress(Context context, Arguments args) {
+        return new Object[] {fusionModule.progress, fusionModule.bonus};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getInfo(Context context, Arguments args) {
+        return new Object[] {
+            getPower(), getMaxPower(),
+            tanks[0].getFill(), tanks[0].getMaxFill(), tanks[0].getTankType().getTranslationKey(),
+            tanks[1].getFill(), tanks[1].getMaxFill(), tanks[1].getTankType().getTranslationKey(),
+            tanks[2].getFill(), tanks[2].getMaxFill(), tanks[2].getTankType().getTranslationKey(),
+            tanks[3].getFill(), tanks[3].getMaxFill(), tanks[3].getTankType().getTranslationKey(),
+            coolantTanks[0].getFill(), coolantTanks[0].getMaxFill(),
+            coolantTanks[1].getFill(), coolantTanks[1].getMaxFill(),
+            klystronEnergy, plasmaEnergy, fuelConsumption,
+            fusionModule.progress, fusionModule.bonus
+        };
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public String[] methods() {
+        return new String[] {
+            "getEnergyInfo",
+            "getFluid",
+            "getCoolant",
+            "getKlystronEnergy",
+            "getPlasmaEnergy",
+            "getFuelConsumption",
+            "getRecipeProgress",
+            "getInfo"
+        };
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public Object[] invoke(String method, Context context, Arguments args) throws Exception {
+        switch (method) {
+            case "getEnergyInfo": return getEnergyInfo(context, args);
+            case "getFluid": return getFluid(context, args);
+            case "getCoolant": return getCoolant(context, args);
+            case "getKlystronEnergy": return getKlystronEnergy(context, args);
+            case "getPlasmaEnergy": return getPlasmaEnergy(context, args);
+            case "getFuelConsumption": return getFuelConsumption(context, args);
+            case "getRecipeProgress": return getRecipeProgress(context, args);
+            case "getInfo": return getInfo(context, args);
+        }
+        throw new NoSuchMethodException();
     }
 }

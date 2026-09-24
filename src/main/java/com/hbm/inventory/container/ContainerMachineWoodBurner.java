@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.machine.IItemFluidIdentifier;
@@ -15,9 +16,16 @@ import net.minecraft.tileentity.TileEntityFurnace;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class ContainerMachineWoodBurner extends Container {
-	
+
 	protected TileEntityMachineWoodBurner burner;
-	
+
+	private final TransferStrategy transferStrategy = TransferStrategy.builder(6)
+                                                                      .rule(0, 2, TileEntityFurnace::isItemFuel)
+                                                                      .rule(2, 3, s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                      .rule(3, 5, s -> Library.isStackDrainableForTank(s, burner.tank))
+                                                                      .rule(5, 6, Library::isChargeableBattery)
+                                                                      .build();
+
 	public ContainerMachineWoodBurner(InventoryPlayer Playerinv, TileEntityMachineWoodBurner burner) {
 		this.burner = burner;
 		//this.burner.openInventory();
@@ -33,7 +41,7 @@ public class ContainerMachineWoodBurner extends Container {
 		this.addSlotToContainer(SlotFiltered.takeOnly(burner.inventory, 4, 98, 36));
 		//Battery
 		this.addSlotToContainer(new SlotBattery(burner.inventory, 5, 143, 54));
-		
+
 		for(int i = 0; i < 3; i++) {
 			for(int j = 0; j < 9; j++) {
 				this.addSlotToContainer(new Slot(Playerinv, j + i * 9 + 9, 8 + j * 18, 104 + i * 18));
@@ -47,11 +55,7 @@ public class ContainerMachineWoodBurner extends Container {
 
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 6,
-                TileEntityFurnace::isItemFuel, 2,
-                s -> s.getItem() instanceof IItemFluidIdentifier, 3,
-                s -> Library.isStackDrainableForTank(s, burner.tank), 5,
-                Library::isChargeableBattery, 6);
+		return InventoryUtil.transferStack(this.inventorySlots, index, this.transferStrategy, player);
 	}
 
 	@Override

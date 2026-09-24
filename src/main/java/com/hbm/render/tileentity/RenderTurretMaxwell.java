@@ -15,12 +15,6 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister(tileentity = TileEntityTurretMaxwell.class)
 public class RenderTurretMaxwell extends RenderTurretBase<TileEntityTurretMaxwell>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityTurretMaxwell te) {
-    return te.beam > 0;
-  }
-
   @Override
   public void render(
       TileEntityTurretMaxwell turret,
@@ -52,12 +46,12 @@ public class RenderTurretMaxwell extends RenderTurretBase<TileEntityTurretMaxwel
             turret.lastRotationPitch
                 + (turret.rotationPitch - turret.lastRotationPitch) * partialTicks);
 
-    GL11.glRotated(yaw, 0, 1, 0);
+    GlStateManager.rotate((float) (yaw), 0, 1, 0);
     bindTexture(ResourceManager.turret_carriage_ciws_tex);
     ResourceManager.turret_howard.renderPart("Carriage");
 
     GlStateManager.translate(0, 1.5, 0);
-    GL11.glRotated(pitch, 0, 0, 1);
+    GlStateManager.rotate((float) (pitch), 0, 0, 1);
     GlStateManager.translate(0, -1.5, 0);
     bindTexture(ResourceManager.turret_maxwell_tex);
     ResourceManager.turret_maxwell.renderPart("Microwave");

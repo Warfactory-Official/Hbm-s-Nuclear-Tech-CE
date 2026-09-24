@@ -1,8 +1,9 @@
 {
-	"parent": "block/orientable",
-	"textures": {
-		"top": "hbm:blocks/machine_boiler_base",
-		"front": "hbm:blocks/machine_boiler_front",
-		"side": "hbm:blocks/machine_boiler_side"
-	}
+    "parent": "block/orientable",
+    "textures": {
+        "top": "hbm:blocks/machine_boiler_base",
+        "bottom": "hbm:blocks/machine_boiler_base",
+        "front": "hbm:blocks/machine_boiler_front",
+        "side": "hbm:blocks/machine_boiler_side"
+    }
 }

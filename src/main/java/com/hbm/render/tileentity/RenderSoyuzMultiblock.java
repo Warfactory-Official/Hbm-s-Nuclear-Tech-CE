@@ -15,12 +15,6 @@ public class RenderSoyuzMultiblock extends TileEntitySpecialRenderer<TileEntityS
 	
 
 	public static TextureAtlasSprite[] blockIcons = new TextureAtlasSprite[]{null, null, null};
-	
-	@Override
-	public boolean isGlobalRenderer(TileEntitySoyuzStruct te) {
-		return true;
-	}
-	
 	@Override
 	public void render(TileEntitySoyuzStruct te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
 		GlStateManager.pushMatrix();

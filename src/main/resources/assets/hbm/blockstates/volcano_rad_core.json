@@ -1,0 +1,5 @@
+{
+	"variants": {
+		"normal": { "model": "hbm:volcano_rad_core" }
+	}
+}

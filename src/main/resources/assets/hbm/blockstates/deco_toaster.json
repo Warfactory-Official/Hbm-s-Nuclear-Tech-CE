@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "meta=0": { "model": "hbm:deco_toaster" },
+    "meta=1": { "model": "hbm:deco_toaster" },
+    "meta=2": { "model": "hbm:deco_toaster" },
+    "meta=3": { "model": "hbm:deco_toaster" },
+    "meta=4": { "model": "hbm:deco_toaster" },
+    "meta=5": { "model": "hbm:deco_toaster" },
+    "meta=6": { "model": "hbm:deco_toaster" },
+    "meta=7": { "model": "hbm:deco_toaster" },
+    "meta=8": { "model": "hbm:deco_toaster" },
+    "meta=9": { "model": "hbm:deco_toaster" },
+    "meta=10": { "model": "hbm:deco_toaster" },
+    "meta=11": { "model": "hbm:deco_toaster" },
+    "meta=12": { "model": "hbm:deco_toaster" },
+    "meta=13": { "model": "hbm:deco_toaster" },
+    "meta=14": { "model": "hbm:deco_toaster" },
+    "meta=15": { "model": "hbm:deco_toaster" }
+  }
+}

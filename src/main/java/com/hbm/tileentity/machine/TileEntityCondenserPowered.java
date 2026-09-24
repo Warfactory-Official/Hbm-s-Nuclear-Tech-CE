@@ -9,6 +9,7 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IConfigurableMachine;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
@@ -28,7 +29,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import org.jetbrains.annotations.Nullable;
 
 @AutoRegister
-public class TileEntityCondenserPowered extends TileEntityCondenser implements IEnergyReceiverMK2 {
+public class TileEntityCondenserPowered extends TileEntityCondenser implements IEnergyReceiverMK2, IConnectionAnchors {
 	
 	public long power;
 	public float spin;
@@ -42,8 +43,8 @@ public class TileEntityCondenserPowered extends TileEntityCondenser implements I
 
 	public TileEntityCondenserPowered() {
 		tanks = new FluidTankNTM[2];
-		tanks[0] = new FluidTankNTM(Fluids.SPENTSTEAM, inputTankSizeP);
-		tanks[1] = new FluidTankNTM(Fluids.WATER, outputTankSizeP);
+		tanks[0] = new FluidTankNTM(Fluids.SPENTSTEAM, inputTankSizeP).withOwner(this);
+		tanks[1] = new FluidTankNTM(Fluids.WATER, outputTankSizeP).withOwner(this);
 	}
 	
 	@Override

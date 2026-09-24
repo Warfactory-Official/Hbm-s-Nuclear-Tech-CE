@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.text.TextFormatting;
 
 import com.hbm.inventory.container.ContainerMachinePrecAss;
+import com.hbm.inventory.gui.element.GUIElements;
 import com.hbm.inventory.recipes.PrecAssRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.machine.ItemBlueprints;
@@ -46,7 +47,7 @@ public class GUIMachinePrecAss extends GuiInfoContainer {
         if(guiLeft + 7 <= mouseX && guiLeft + 7 + 18 > mouseX && guiTop + 125 < mouseY && guiTop + 125 + 18 >= mouseY) {
             if(this.assembler.assemblerModule.recipe != null && PrecAssRecipes.INSTANCE.recipeNameMap.containsKey(this.assembler.assemblerModule.recipe)) {
                 GenericRecipe recipe = PrecAssRecipes.INSTANCE.recipeNameMap.get(this.assembler.assemblerModule.recipe);
-                this.drawHoveringText(recipe.print(), mouseX, mouseY);
+                GUIElements.drawHoveringTextRecipe(recipe.print(), mouseX, mouseY, this.fontRenderer, itemRender, this.width, this.height);
             } else {
                 this.drawHoveringText(TextFormatting.YELLOW + I18nUtil.resolveKey("gui.recipe.setRecipe"), mouseX, mouseY);
             }

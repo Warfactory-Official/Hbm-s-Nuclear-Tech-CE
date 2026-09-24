@@ -108,7 +108,7 @@ public class ParticleBatchRenderer {
 		GlStateManager.disableBlend();
 		GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
 	}
-	
+
 	public static void renderLast(RenderWorldLastEvent event) {
 		renderParticles(Minecraft.getMinecraft().getRenderViewEntity(), event.getPartialTicks());
 	}

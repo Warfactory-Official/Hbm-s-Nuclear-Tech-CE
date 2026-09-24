@@ -29,6 +29,7 @@ public abstract class ModuleMachineBase {
     // return signals
     public boolean didProcess = false;
     public boolean markDirty = false;
+    public boolean restrictedMode = false;
 
     public ModuleMachineBase(int index, IEnergyHandlerMK2 battery, ItemStackHandler inventory) {
         this.index = index;
@@ -91,15 +92,7 @@ public abstract class ModuleMachineBase {
 
         if(recipe.outputItem != null) {
             for(int i = 0; i < Math.min(recipe.outputItem.length, outputSlots.length); i++) {
-                ItemStack stack = inventory.getStackInSlot(outputSlots[i]);
-                if(stack.isEmpty()) continue; // always continue if output slot is free
-                GenericRecipes.IOutput output = recipe.outputItem[i];
-                if(output.possibleMultiOutput()) return false; // output slot needs to be empty to decide on multi outputs
-                ItemStack single = output.getSingle();
-                if(single == null || single.isEmpty()) return false; // shouldn't be possible but better safe than sorry
-                if(stack.getItem() != single.getItem()) return false;
-                if(stack.getItemDamage() != single.getItemDamage()) return false;
-                if(stack.getCount() + single.getCount() > stack.getMaxStackSize()) return false;
+                if(findOutputSlot(recipe, i) < 0) return false;
             }
         }
 
@@ -112,7 +105,35 @@ public abstract class ModuleMachineBase {
         return true;
     }
 
+    protected int findOutputSlot(GenericRecipe recipe, int outputIndex) {
+        return findOutputSlot(recipe, outputIndex, null);
+    }
+
+    protected int findOutputSlot(GenericRecipe recipe, int outputIndex, ItemStack resolved) {
+        GenericRecipes.IOutput output = recipe.outputItem[outputIndex];
+        boolean isLast = outputIndex == recipe.outputItem.length - 1;
+        int toSlot = isLast ? outputSlots.length - 1 : outputIndex;
+
+        ItemStack single = output.possibleMultiOutput() ? resolved : output.getSingle();
+
+        int firstEmpty = -1;
+        for(int s = outputIndex; s <= toSlot; s++) {
+            ItemStack stack = inventory.getStackInSlot(outputSlots[s]);
+            if(stack.isEmpty()) {
+                if(firstEmpty < 0) firstEmpty = s;
+                continue;
+            }
+            if(single == null || single.isEmpty()) continue; // can't verify a match without knowing the result yet
+            if(stack.getItem() != single.getItem()) continue;
+            if(stack.getItemDamage() != single.getItemDamage()) continue;
+            if(stack.getCount() + single.getCount() > stack.getMaxStackSize()) continue;
+            return s; // stack onto the existing matching output before touching a fresh slot
+        }
+        return firstEmpty;
+    }
+
     public void process(GenericRecipe recipe, double speed, double power) {
+        if(this.restrictedMode) speed *= 0.25; // RoR controlled machines have a speed penalty
 
         this.battery.setPower(this.battery.getPower() - (power == 1 ? recipe.power : (long) (recipe.power * power)));
         double step = Math.min(speed / recipe.duration, 1D); // can't do more than one recipe per tick, might look into that later
@@ -158,7 +179,9 @@ public abstract class ModuleMachineBase {
         if(recipe.outputItem != null) {
             for(int i = 0; i < Math.min(recipe.outputItem.length, outputSlots.length); i++) {
                 ItemStack collapse = recipe.outputItem[i].collapse();
-                int idx = outputSlots[i];
+                int slot = findOutputSlot(recipe, i, collapse);
+                if(slot < 0) continue; // shouldn't happen, canFitOutput() already gated this - stay safe rather than throw
+                int idx = outputSlots[slot];
                 ItemStack out = inventory.getStackInSlot(idx);
                 if(out.isEmpty()) {
                     inventory.setStackInSlot(idx, collapse == null ? ItemStack.EMPTY : collapse);
@@ -180,8 +203,17 @@ public abstract class ModuleMachineBase {
         this.markDirty = true;
     }
 
+    public String getRecipeName() {
+        return this.recipe;
+    }
+
     public GenericRecipe getRecipe() {
         return (GenericRecipe) getRecipeSet().recipeNameMap.get(this.recipe);
+    }
+
+    public void setRecipe(String name, boolean ror) {
+        this.recipe = name;
+        this.restrictedMode = ror;
     }
 
     public abstract GenericRecipes getRecipeSet();
@@ -248,21 +280,25 @@ public abstract class ModuleMachineBase {
 
     public void serialize(ByteBuf buf) {
         buf.writeDouble(progress);
+        buf.writeBoolean(restrictedMode);
         ByteBufUtils.writeUTF8String(buf, recipe);
     }
 
     public void deserialize(ByteBuf buf) {
         this.progress = buf.readDouble();
+        this.restrictedMode = buf.readBoolean();
         this.recipe = ByteBufUtils.readUTF8String(buf);
     }
 
     public void readFromNBT(NBTTagCompound nbt) {
         this.progress = nbt.getDouble("progress" + index);
         this.recipe = nbt.getString("recipe" + index);
+        this.restrictedMode = nbt.getBoolean("restrictedMode" + index);
     }
 
     public void writeToNBT(NBTTagCompound nbt) {
         nbt.setDouble("progress" + index, progress);
         nbt.setString("recipe" + index, recipe);
+        nbt.setBoolean("restrictedMode" + index, restrictedMode);
     }
 }

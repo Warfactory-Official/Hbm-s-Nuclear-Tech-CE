@@ -11,6 +11,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.trait.*;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IRepairable;
 import com.hbm.tileentity.IRepairable.EnumExtinguishType;
 import com.hbm.util.CompatExternal;
@@ -99,7 +100,7 @@ public class EntityChemical extends EntityThrowableNT{
                 List<Entity> affected = world.getEntitiesWithinAABB(
                         Entity.class,
                         this.getEntityBoundingBox().grow(intensity * 2.5),
-                        e -> e != this.thrower
+                        e -> e != this.thrower && !(e instanceof EntityPlayer player && (player.isSpectator() || player.isCreative()))
                 );
                 for(Entity e : affected) {
                     this.affect(e, intensity);
@@ -116,18 +117,13 @@ public class EntityChemical extends EntityThrowableNT{
                 Color color = new Color(type.getColor());
 
                 NBTTagCompound data = new NBTTagCompound();
-                data.setString("type", "vanillaExt");
-                data.setString("mode", "colordust");
-                data.setDouble("posX", posX);
-                data.setDouble("posY", posY);
-                data.setDouble("posZ", posZ);
                 data.setDouble("mX", motionX + world.rand.nextGaussian() * 0.05);
                 data.setDouble("mY", motionY - 0.2 + world.rand.nextGaussian() * 0.05);
                 data.setDouble("mZ", motionZ + world.rand.nextGaussian() * 0.05);
                 data.setFloat("r", color.getRed() / 255F);
                 data.setFloat("g", color.getGreen() / 255F);
                 data.setFloat("b", color.getBlue() / 255F);
-                MainRegistry.proxy.effectNT(data);
+                MainRegistry.proxy.effectNT(HbmEffectNT.VanillaExt_ColorDust, posX, posY, posZ, data);
             }
 
             if(style == ChemicalStyle.BURNING) {
@@ -135,13 +131,9 @@ public class EntityChemical extends EntityThrowableNT{
                 double motion = Math.min(new Vec3d(motionX, motionY, motionZ).length(), 0.1);
 
                 for(double d = 0; d < motion; d += 0.0625) {
-                    NBTTagCompound nbt = new NBTTagCompound();
-                    nbt.setString("type", "vanillaExt");
-                    nbt.setString("mode", "flame");
-                    nbt.setDouble("posX", (this.lastTickPosX - this.posX) * d + this.posX);
-                    nbt.setDouble("posY", (this.lastTickPosY - this.posY) * d + this.posY);
-                    nbt.setDouble("posZ", (this.lastTickPosZ - this.posZ) * d + this.posZ);
-                    MainRegistry.proxy.effectNT(nbt);
+                    MainRegistry.proxy.effectNT(HbmEffectNT.VanillaExt_Flame, (this.lastTickPosX - this.posX) * d + this.posX,
+                            (this.lastTickPosY - this.posY) * d + this.posY,
+                            (this.lastTickPosZ - this.posZ) * d + this.posZ);
                 }
             }
         }
@@ -149,6 +141,9 @@ public class EntityChemical extends EntityThrowableNT{
     }
 
     protected void affect(Entity e, double intensity) {
+        if (e instanceof EntityPlayer player && (player.isSpectator() || player.isCreative())) {
+            return;
+        }
 
         ChemicalStyle style = getStyle();
         FluidType type = getType();

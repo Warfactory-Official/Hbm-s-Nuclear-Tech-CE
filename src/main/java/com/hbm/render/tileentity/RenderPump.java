@@ -59,7 +59,7 @@ public class RenderPump extends TileEntitySpecialRenderer<TileEntityMachinePumpB
 
     GlStateManager.pushMatrix();
     GlStateManager.translate(0, 2.25, 0);
-    GL11.glRotated(rot - 90, 0, 0, 1);
+    GlStateManager.rotate((float) (rot - 90), 0, 0, 1);
     GlStateManager.translate(0, -2.25, 0);
     ResourceManager.pump.renderPart("Rotor");
     GlStateManager.popMatrix();
@@ -72,7 +72,7 @@ public class RenderPump extends TileEntitySpecialRenderer<TileEntityMachinePumpB
     GlStateManager.pushMatrix();
     GlStateManager.translate(0, 1 - cath + sin, 0);
     GlStateManager.translate(0, 4.75, 0);
-    GL11.glRotated(ang * 180D / Math.PI - 90D, 0, 0, -1);
+    GlStateManager.rotate((float) (ang * 180D / Math.PI - 90D), 0, 0, -1);
     GlStateManager.translate(0, -4.75, 0);
     ResourceManager.pump.renderPart("Arms");
     GlStateManager.popMatrix();

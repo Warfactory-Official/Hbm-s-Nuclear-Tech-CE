@@ -2,7 +2,13 @@ package com.hbm.itempool;
 
 import com.hbm.handler.WeightedRandomChestContentFrom1710;
 import com.hbm.inventory.material.Mats;
+import com.hbm.items.ItemEnums;
 import com.hbm.items.ModItems;
+import com.hbm.items.weapon.grenade.ItemGrenadeExtra.EnumGrenadeExtra;
+import com.hbm.items.weapon.grenade.ItemGrenadeFilling.EnumGrenadeFilling;
+import com.hbm.items.weapon.grenade.ItemGrenadeFuze.EnumGrenadeFuze;
+import com.hbm.items.weapon.grenade.ItemGrenadeShell.EnumGrenadeShell;
+import com.hbm.items.weapon.grenade.ItemGrenadeUniversal;
 import com.hbm.items.weapon.sedna.factory.GunFactory;
 import net.minecraft.init.Items;
 
@@ -20,6 +26,8 @@ public class ItemPoolsPile {
     public static final String POOL_PILE_MAKESHIFT_WIRE = "POOL_PILE_MAKESHIFT_WIRE";
     public static final String POOL_PILE_NUKE_STORAGE = "POOL_PILE_NUKE_STORAGE";
     public static final String POOL_PILE_OF_GARBAGE = "POOL_PILE_OF_GARBAGE";
+    public static final String POOL_PILE_MECHANICAL = "POOL_PILE_MECHANICAL";
+    public static final String POOL_PILE_GEAR = "POOL_PILE_GEAR";
 
     public static void init() {
 
@@ -41,7 +49,8 @@ public class ItemPoolsPile {
                     //Weapons
                     weighted(ModItems.gun_maresleg, 0, 1, 1, 5),
                     weighted(ModItems.gun_light_revolver, 0, 1, 1, 1),
-                    weighted(ModItems.grenade_if_generic, 0, 1, 2, 5),
+                    weighted(ItemGrenadeUniversal.make(EnumGrenadeShell.FRAG, EnumGrenadeFilling.HE, EnumGrenadeFuze.S3, EnumGrenadeExtra.FRAG_SLEEVE), 1, 2, 5),
+                    weighted(ItemGrenadeUniversal.make(EnumGrenadeShell.STICK, EnumGrenadeFilling.DEMO, EnumGrenadeFuze.IMPACT), 1, 2, 3),
                     weighted(ModItems.ammo_standard, GunFactory.EnumAmmo.G12.ordinal(), 4, 4, 10),
                     weighted(ModItems.ammo_standard, GunFactory.EnumAmmo.M357_SP.ordinal(), 6, 12, 10),
                     weighted(ModItems.ammo_standard, GunFactory.EnumAmmo.G40_HE.ordinal(), 1, 1, 2),
@@ -132,6 +141,34 @@ public class ItemPoolsPile {
                     weighted(ModItems.pipe_lead, 0, 0, 1, 5),
                     weighted(ModItems.motor, 0, 0, 1, 5),
                     weighted(ModItems.canned_conserve, 2, 0, 1, 5),
+            };
+        }};
+
+        new ItemPool(POOL_PILE_MECHANICAL) {{
+            this.pool = new WeightedRandomChestContentFrom1710[] {
+                weighted(ModItems.defuser, 0, 1, 1, 30),
+                weighted(ModItems.screwdriver, 0, 1, 1, 30),
+                weighted(ModItems.wire_fine, Mats.MAT_COPPER.id, 8, 12, 120),
+                weighted(ModItems.plate_steel, 0, 3, 8, 40),
+                weighted(ModItems.plate_copper, 0, 2, 5, 40),
+                weighted(ModItems.coil_copper, 0, 2, 5, 40),
+                weighted(ModItems.coil_tungsten, 0, 2, 5, 40)
+            };
+        }};
+
+        new ItemPool(POOL_PILE_GEAR) {{
+            this.pool = new WeightedRandomChestContentFrom1710[] {
+                weighted(ModItems.defuser, 0, 1, 1, 40),
+                weighted(ModItems.screwdriver, 0, 1, 1, 30),
+                weighted(ModItems.canteen_vodka, 0, 1, 1, 40),
+                weighted(ModItems.casing, ItemEnums.EnumCasingType.SMALL_STEEL.ordinal(), 1, 4, 30),
+                weighted(ModItems.casing, ItemEnums.EnumCasingType.SMALL.ordinal(), 3, 8, 40),
+                weighted(ModItems.casing, ItemEnums.EnumCasingType.BUCKSHOT.ordinal(), 3, 8, 40),
+                weighted(ModItems.canned_conserve, 0, 2, 5, 40),
+                weighted(ModItems.taurun_helmet, 0, 1, 1, 20),
+                weighted(ModItems.taurun_plate, 0, 1, 1, 20),
+                weighted(ModItems.taurun_legs, 0, 1, 1, 20),
+                weighted(ModItems.taurun_boots, 0, 1, 1, 20)
             };
         }};
     }

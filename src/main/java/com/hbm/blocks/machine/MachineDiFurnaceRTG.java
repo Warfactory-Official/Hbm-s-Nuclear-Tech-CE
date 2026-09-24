@@ -28,6 +28,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.Random;
 
+@Deprecated
 public class MachineDiFurnaceRTG extends BlockContainer {
 
 	public static final PropertyDirection FACING = BlockHorizontal.FACING;
@@ -159,11 +160,6 @@ public class MachineDiFurnaceRTG extends BlockContainer {
 	   return state.withRotation(mirrorIn.toRotation((EnumFacing)state.getValue(FACING)));
 	}
 	
-	@Override
-	public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-		worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
-	}
-
 	public static void updateBlockState(boolean isProcessing, World world, BlockPos pos) {
 		IBlockState cur = world.getBlockState(pos);
 		TileEntity entity = world.getTileEntity(pos);

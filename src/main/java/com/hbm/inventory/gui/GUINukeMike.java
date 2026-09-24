@@ -1,10 +1,10 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.Tags;
-import com.hbm.config.BombConfig;
 import com.hbm.inventory.container.ContainerNukeMike;
 import com.hbm.items.ModItems;
 import com.hbm.tileentity.bomb.TileEntityNukeMike;
+import com.hbm.util.I18nUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -14,8 +14,8 @@ import net.minecraft.client.renderer.GlStateManager;
 
 public class GUINukeMike extends GuiInfoContainer {
 	
-	private static ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/ivyMikeSchematic.png");
-	private TileEntityNukeMike testNuke;
+	private static final ResourceLocation texture = new ResourceLocation(Tags.MODID + ":textures/gui/weapon/ivyMikeSchematic.png");
+	private final TileEntityNukeMike testNuke;
 	
 	public GUINukeMike(InventoryPlayer invPlayer, TileEntityNukeMike tedf) {
 		super(new ContainerNukeMike(invPlayer, tedf));
@@ -36,13 +36,8 @@ public class GUINukeMike extends GuiInfoContainer {
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		super.drawScreen(mouseX, mouseY, partialTicks);
-		String[] info = null;
-		if(testNuke.isReady() && !testNuke.isFilled())
-			info = new String[] { "Nuke Radius: "+ BombConfig.manRadius +"m"};
-		else if(testNuke.isReady() && testNuke.isFilled())
-			info = new String[] { "Nuke Radius: "+ BombConfig.mikeRadius + "m"};
-		if(info != null)
-			this.drawCustomInfoStat(mouseX, mouseY, guiLeft + 4, guiTop + 13, 168, 60, mouseX, mouseY, info);
+		String[] descText = I18nUtil.resolveKeyArray("desc.gui.nukeMike.desc");
+		this.drawCustomInfoStat(mouseX, mouseY, guiLeft - 16, guiTop + 16, 16, 16, guiLeft - 8, guiTop + 16 + 16, descText);
 		super.renderHoveredToolTip(mouseX, mouseY);
 	}
 	
@@ -63,17 +58,17 @@ public class GUINukeMike extends GuiInfoContainer {
 			drawTexturedModalRect(guiLeft + 5, guiTop + 35, 177, 19, 16, 16);
 		}
 		
-		if(testNuke.inventory.getStackInSlot(5) != null && testNuke.inventory.getStackInSlot(5).getItem() == ModItems.mike_core)
+		if(!testNuke.inventory.getStackInSlot(5).isEmpty() && testNuke.inventory.getStackInSlot(5).getItem() == ModItems.mike_core)
 			drawTexturedModalRect(guiLeft + 75, guiTop + 25, 176, 49, 80, 36);
 		
-		if(testNuke.inventory.getStackInSlot(6) != null && testNuke.inventory.getStackInSlot(6).getItem() == ModItems.mike_deut)
+		if(!testNuke.inventory.getStackInSlot(6).isEmpty() && testNuke.inventory.getStackInSlot(6).getItem() == ModItems.mike_deut)
 			drawTexturedModalRect(guiLeft + 79, guiTop + 30, 180, 88, 58, 26);
 		
-		if(testNuke.inventory.getStackInSlot(7) != null && testNuke.inventory.getStackInSlot(7).getItem() == ModItems.mike_cooling_unit)
+		if(!testNuke.inventory.getStackInSlot(7).isEmpty() && testNuke.inventory.getStackInSlot(7).getItem() == ModItems.mike_cooling_unit)
 			drawTexturedModalRect(guiLeft + 140, guiTop + 30, 240, 88, 12, 26);
 		
 		for(int i = 0; i < 4; i++) {
-			if(testNuke.inventory.getStackInSlot(i) != null && testNuke.inventory.getStackInSlot(i).getItem() == ModItems.explosive_lenses)
+			if(!testNuke.inventory.getStackInSlot(i).isEmpty() && testNuke.inventory.getStackInSlot(i).getItem() == ModItems.explosive_lenses)
 				switch(i) {
 				case 0: drawTexturedModalRect(guiLeft + 24, guiTop + 20 , 209, 1, 23, 23); break;
 				case 2: drawTexturedModalRect(guiLeft + 47, guiTop + 20 , 232, 1, 23, 23); break;
@@ -81,6 +76,8 @@ public class GUINukeMike extends GuiInfoContainer {
 				case 3: drawTexturedModalRect(guiLeft + 47, guiTop + 43 , 232, 24, 23, 23); break;
 				}
 		}
+
+		this.drawInfoPanel(guiLeft - 16, guiTop + 16, 16, 16, 2);
 	}
 
 }

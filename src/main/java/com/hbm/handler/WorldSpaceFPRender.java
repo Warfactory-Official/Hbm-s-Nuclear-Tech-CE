@@ -48,7 +48,7 @@ public class WorldSpaceFPRender {
 		GlStateManager.pushMatrix();
 			
 		GlStateManager.translate(-0.3, 0, -2.25);
-		GL11.glRotated(90, 0, 1, 0);
+		GlStateManager.rotate(90, 0, 1, 0);
 		
 		//Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.skin);
 		//ResourceManager.lightning_fp.controller.setAnim(wrapper);

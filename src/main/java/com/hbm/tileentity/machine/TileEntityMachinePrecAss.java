@@ -24,6 +24,7 @@ import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.modules.machine.ModuleMachinePrecAss;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -34,6 +35,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -50,7 +52,7 @@ import org.jetbrains.annotations.NotNull;
 
 // horribly copy-pasted crap device
 @AutoRegister
-public class TileEntityMachinePrecAss extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, IControlReceiver, IGUIProvider {
+public class TileEntityMachinePrecAss extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, IControlReceiver, IGUIProvider, IConnectionAnchors {
 
     public FluidTankNTM inputTank;
     public FluidTankNTM outputTank;
@@ -82,8 +84,8 @@ public class TileEntityMachinePrecAss extends TileEntityMachineBase implements I
 
     public TileEntityMachinePrecAss() {
         super(22, true, true);
-        this.inputTank = new FluidTankNTM(Fluids.NONE, 4_000);
-        this.outputTank = new FluidTankNTM(Fluids.NONE, 4_000);
+        this.inputTank = new FluidTankNTM(Fluids.NONE, 4_000).withOwner(this);
+        this.outputTank = new FluidTankNTM(Fluids.NONE, 4_000).withOwner(this);
 
         this.assemblerModule = new ModuleMachinePrecAss(0, this, inventory)
                 .itemInput(4).itemOutput(13)
@@ -351,12 +353,12 @@ public class TileEntityMachinePrecAss extends TileEntityMachineBase implements I
     @Override public boolean hasPermission(EntityPlayer player) { return this.isUseableByPlayer(player); }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if(data.hasKey("index") && data.hasKey("selection")) {
             int index = data.getInteger("index");
             String selection = data.getString("selection");
             if(index == 0) {
-                this.assemblerModule.recipe = selection;
+                this.assemblerModule.setRecipe(selection, false);
                 this.markChanged();
             }
         }

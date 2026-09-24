@@ -257,10 +257,8 @@ public class SiloComponent extends Component {
         setBlockState(world, ModBlocks.concrete_slab.getStateFromMeta(1), 37, 26, 19, box);
 
         //Large Silo Hatch
-        // TODO
-        // 25.11.25 no guys, don't ask me to port that right now. I barely keep myself awake
-        //placeCore(world, box, ModBlocks.silo_hatch_large, ForgeDirection.SOUTH, 19, 26, 14);
-        //fillSpace(world, box, 19, 26, 14, new int[] { 0, 0, 3, 3, 3, 3 }, ModBlocks.silo_hatch_large, ForgeDirection.SOUTH);
+        placeCore(world, box, ModBlocks.silo_hatch_large, EnumFacing.SOUTH, 19, 26, 14);
+        fillSpace(world, box, 19, 26, 14, new int[] { 0, 0, 3, 3, 3, 3 }, ModBlocks.silo_hatch_large, EnumFacing.SOUTH);
         setBlockState(world, ModBlocks.radio_torch_receiver.getStateFromMeta(1), 16, 25, 17, box);
         setRTTYFreq(world, box, 16, 25, 17, freqHatch);
 
@@ -1124,8 +1122,7 @@ public class SiloComponent extends Component {
         setBlockState(world, ModBlocks.deco_pipe_quad_rusted.getStateFromMeta(pillarNS), 9, 11, 15, box);
         setBlockState(world, ModBlocks.deco_steel.getStateFromMeta(0), 9, 11, 16, box);
         fillWithMetadataBlocks(world, box, 9, 11, 17, 9, 11, 19, ModBlocks.deco_pipe_quad_rusted, pillarNS);
-        // TODO
-        //setBlockState(world, ModBlocks.fluid_duct_gauge.getStateFromMeta(0), 9, 11, 20, box);
+        setBlockState(world, ModBlocks.fluid_duct_gauge.getStateFromMeta(0), 9, 11, 20, box);
         fillWithMetadataBlocks(world, box, 9, 11, 21, 9, 11, 22, ModBlocks.deco_pipe_quad_rusted, pillarNS);
         setBlockState(world, ModBlocks.deco_steel.getStateFromMeta(0), 9, 11, 23, box);
         fillWithBlocks(world, box, 9, 9, 23, 9, 10, 23, ModBlocks.deco_pipe_framed_rusted);
@@ -1221,8 +1218,7 @@ public class SiloComponent extends Component {
         randomlyFillWithBlocks(world, box, rand, 0.15F, 27, 7, 14, 31, 7, 14, Blocks.WEB);
 
         //Flooded Room
-        // TODO
-        //randomlyFillWithBlocks(world, box, rand, 0.15F, 28, 2, 11, 31, 2, 15, ModBlocks.reeds);
+        randomlyFillWithBlocks(world, box, rand, 0.15F, 28, 2, 11, 31, 2, 15, ModBlocks.reeds);
         fillWithMetadataBlocks(world, box, 28, 3, 12, 28, 3, 15, ModBlocks.deco_pipe_framed_green_rusted, pillarNS);
         setBlockState(world, ModBlocks.deco_steel.getStateFromMeta(0), 28, 3, 11, box);
         setBlockState(world, ModBlocks.deco_pipe_rim_green_rusted.getStateFromMeta(0), 28, 2, 11, box);

@@ -3,14 +3,14 @@ package com.hbm.explosion;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.BlockMeta;
 import com.hbm.config.CompatibilityConfig;
-import com.hbm.entity.grenade.EntityGrenadeTau;
-import com.hbm.entity.grenade.EntityGrenadeZOMG;
+import com.hbm.entity.particle.EntityModFXShadow;
 import com.hbm.entity.projectile.*;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.potion.HbmPotion;
 import com.hbm.util.ArmorRegistry;
 import com.hbm.util.ArmorRegistry.HazardClass;
@@ -192,10 +192,10 @@ public class ExplosionChaos {
 		int i2 = MathHelper.floor(y + wat + 1.0D);
 		int l = MathHelper.floor(z - wat - 1.0D);
 		int j2 = MathHelper.floor(z + wat + 1.0D);
-		List<Entity> list = world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(i, k, l, j, i2, j2));
+		List<Entity> list = world.getEntitiesInAABBexcluding(null, new AxisAlignedBB(i, k, l, j, i2, j2), e -> !(e instanceof EntityPlayer p && (p.isSpectator() || p.isCreative())));
 
 		for(int i1 = 0; i1 < list.size(); ++i1) {
-			Entity entity = (Entity) list.get(i1);
+			Entity entity = list.get(i1);
 			double d4 = entity.getDistance(x, y, z) / bombStartStrength;
 
 			if(d4 <= 1.0D) {
@@ -278,21 +278,30 @@ public class ExplosionChaos {
 
 	public static void spawnChlorine(World world, double x, double y, double z, int count, double speed, int type) {
         if(!CompatibilityConfig.isWarDim(world)) return;
+        EntityModFXShadow.Type shadowType = switch (type) {
+            case 0 -> EntityModFXShadow.Type.CHLORINE;
+            case 1 -> EntityModFXShadow.Type.CLOUD;
+            case 2 -> EntityModFXShadow.Type.PINK_CLOUD;
+            default -> EntityModFXShadow.Type.ORANGE;
+        };
+        HbmEffectNT particleType = switch (type) {
+            case 0 -> HbmEffectNT.FX_Chlorine;
+            case 1 -> HbmEffectNT.FX_Cloud;
+            case 2 -> HbmEffectNT.FX_PinkCloud;
+            default -> HbmEffectNT.FX_Orange;
+        };
         for(int i = 0; i < count; i++) {
+            double mx = rand.nextGaussian() * speed;
+            double my = rand.nextGaussian() * speed;
+            double mz = rand.nextGaussian() * speed;
+
             NBTTagCompound data = new NBTTagCompound();
-            data.setDouble("moX", rand.nextGaussian() * speed);
-            data.setDouble("moY", rand.nextGaussian() * speed);
-            data.setDouble("moZ", rand.nextGaussian() * speed);
-            
-            String particleType = switch (type) {
-                case 0 -> "chlorinefx";
-                case 1 -> "cloudfx";
-                case 2 -> "pinkcloudfx";
-                default -> "orangefx";
-            };
-            
-            data.setString("type", particleType);
-            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x, y, z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), x, y, z, 128));
+            data.setDouble("moX", mx);
+            data.setDouble("moY", my);
+            data.setDouble("moZ", mz);
+            PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(particleType, data, x, y, z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), x, y, z, 128));
+
+            EntityModFXShadow.spawn(world, shadowType, x, y, z, mx, my, mz);
         }
     }
 	
@@ -317,10 +326,10 @@ public class ExplosionChaos {
 		int i2 = MathHelper.floor(y + wat + 1.0D);
 		int l = MathHelper.floor(z - wat - 1.0D);
 		int j2 = MathHelper.floor(z + wat + 1.0D);
-		List<Entity> list = world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(i, k, l, j, i2, j2));
+		List<Entity> list = world.getEntitiesInAABBexcluding(null, new AxisAlignedBB(i, k, l, j, i2, j2), e -> !(e instanceof EntityPlayer p && (p.isSpectator() || p.isCreative())));
 
 		for(int i1 = 0; i1 < list.size(); ++i1) {
-			Entity entity = (Entity) list.get(i1);
+			Entity entity = list.get(i1);
 			double d4 = entity.getDistance(x, y, z) / bombStartStrength;
 
 			if(d4 <= 1.0D) {
@@ -373,10 +382,10 @@ public class ExplosionChaos {
 		int i2 = MathHelper.floor(y + wat + 1.0D);
 		int l = MathHelper.floor(z - wat - 1.0D);
 		int j2 = MathHelper.floor(z + wat + 1.0D);
-		List<Entity> list = world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(i, k, l, j, i2, j2));
+		List<EntityLivingBase> list = world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(i, k, l, j, i2, j2), e -> !(e instanceof EntityPlayer p && (p.isSpectator() || p.isCreative())));
 
 		for(int i1 = 0; i1 < list.size(); ++i1) {
-			Entity entity = (Entity) list.get(i1);
+			EntityLivingBase entity = list.get(i1);
 			double d4 = entity.getDistance(x, y, z) / bombStartStrength;
 
 			if(d4 <= 1.0D) {
@@ -385,18 +394,14 @@ public class ExplosionChaos {
 				d7 = entity.posZ - z;
 				double d9 = MathHelper.sqrt(d5 * d5 + d6 * d6 + d7 * d7);
 				if(d9 < wat) {
-					if(!(entity instanceof EntityLivingBase))
-						continue;
-					
-					EntityLivingBase entityLiving = (EntityLivingBase) entity;
-					if(ArmorRegistry.hasAllProtection(entityLiving, EntityEquipmentSlot.HEAD, HazardClass.NERVE_AGENT)) {
-						ArmorUtil.damageGasMaskFilter(entityLiving, 1);
+                    if(ArmorRegistry.hasAllProtection(entity, EntityEquipmentSlot.HEAD, HazardClass.NERVE_AGENT)) {
+						ArmorUtil.damageGasMaskFilter(entity, 1);
 					} else {
-						entityLiving.addPotionEffect(new PotionEffect(MobEffects.BLINDNESS, 5 * 20, 0));
-						entityLiving.addPotionEffect(new PotionEffect(MobEffects.POISON, 20 * 20, 2));
-						entityLiving.addPotionEffect(new PotionEffect(MobEffects.WITHER, 1 * 20, 1));
-						entityLiving.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 30 * 20, 1));
-						entityLiving.addPotionEffect(new PotionEffect(MobEffects.MINING_FATIGUE, 30 * 20, 2));
+						entity.addPotionEffect(new PotionEffect(MobEffects.BLINDNESS, 5 * 20, 0));
+						entity.addPotionEffect(new PotionEffect(MobEffects.POISON, 20 * 20, 2));
+						entity.addPotionEffect(new PotionEffect(MobEffects.WITHER, 1 * 20, 1));
+						entity.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 30 * 20, 1));
+						entity.addPotionEffect(new PotionEffect(MobEffects.MINING_FATIGUE, 30 * 20, 2));
 					}
 				}
 			}
@@ -602,30 +607,14 @@ public class ExplosionChaos {
 	public static void pDestruction(World world, int x, int y, int z) {
 		BlockPos pos = new BlockPos(x, y, z);
 		IBlockState state = world.getBlockState(pos);
-		EntityFallingBlock entityfallingblock = new EntityFallingBlock(world, (double) ((float) x + 0.5F), (double) ((float) y + 0.5F), (double) ((float) z + 0.5F), state);
+		EntityFallingBlock entityfallingblock = new EntityFallingBlock(world, (float) x + 0.5F,
+                (float) y + 0.5F,
+                (float) z + 0.5F, state);
 		world.spawnEntity(entityfallingblock);
 	}
 
-	public static void plasma(World world, int x, int y, int z, int radius) {
-        if(!CompatibilityConfig.isWarDim(world)) return;
-        int radiusSqHalf = (radius * radius) / 2;
-        
-        forEachBlockInSphere(world, null, x, y, z, radius, pos -> {
-            if(world.rand.nextInt(radiusSqHalf / 2) > 0) { 
-                IBlockState state = world.getBlockState(pos);
-                Block block = state.getBlock();
-                if(block.getExplosionResistance(null) > 0.1F) return;
-                if(block != Blocks.BEDROCK && block != ModBlocks.statue_elb
-                        && block != ModBlocks.statue_elb_g
-                        && block != ModBlocks.statue_elb_w
-                        && block != ModBlocks.statue_elb_f)
-                    world.setBlockState(pos, ModBlocks.plasma.getDefaultState());
-            }
-        });
-    }
-
 	// Drillgon200: This method name irks me.
-	public static void tauMeSinPi(World world, double x, double y, double z, int count, Entity shooter, EntityGrenadeTau tau) {
+	public static void tauMeSinPi(World world, double x, double y, double z, int count, Entity shooter, Entity tau) {
 
 		double d1 = 0;
 		double d2 = 0;
@@ -670,7 +659,14 @@ public class ExplosionChaos {
 	}
 
 	// Drillgon200: You know what? I'm changing this one.
-	public static void zomg(World world, double x, double y, double z, int count, Entity shooter, EntityGrenadeZOMG zomg) {
+	public static void zomg(World world, double x, double y, double z, int count, Entity shooter, Entity zomg) {
+
+		double anchorX = zomg != null ? zomg.posX : x;
+		double anchorY = zomg != null ? zomg.posY : y;
+		double anchorZ = zomg != null ? zomg.posZ : z;
+		float anchorYaw = zomg != null ? zomg.rotationYaw : 0.0F;
+		float anchorPitch = zomg != null ? zomg.rotationPitch : 0.0F;
+		EntityLivingBase livingShooter = shooter instanceof EntityLivingBase ? (EntityLivingBase) shooter : null;
 
 		double d1 = 0;
 		double d2 = 0;
@@ -694,7 +690,7 @@ public class ExplosionChaos {
 				d3 *= -1;
 			}
 
-			EntityRainbow entityZomg = new EntityRainbow(world, (EntityPlayer) shooter, 1F, 10000, 100000, zomg);
+			EntityRainbow entityZomg = new EntityRainbow(world, livingShooter, 1F, 10000, 100000, anchorX, anchorY, anchorZ, anchorYaw, anchorPitch);
 
 			entityZomg.motionX = d1;// * 5;
 			entityZomg.motionY = d2;// * 5;
@@ -702,7 +698,7 @@ public class ExplosionChaos {
 			entityZomg.shootingEntity = shooter;
 
 			world.spawnEntity(entityZomg);
-			world.playSound(null, zomg.posX, zomg.posY, zomg.posZ, HBMSoundHandler.zomgShoot, SoundCategory.AMBIENT, 10.0F, 0.8F + (rand.nextFloat() * 0.4F));
+			world.playSound(null, anchorX, anchorY, anchorZ, HBMSoundHandler.zomgShoot, SoundCategory.AMBIENT, 10.0F, 0.8F + (rand.nextFloat() * 0.4F));
 		}
 	}
 
@@ -711,14 +707,17 @@ public class ExplosionChaos {
 			return;
 		}
 		for(int i = 0; i < count; i++) {
+			double mx = rand.nextGaussian() * speed;
+			double my = rand.nextGaussian() * speed * 7.5D;
+			double mz = rand.nextGaussian() * speed;
 
 			NBTTagCompound data = new NBTTagCompound();
-			data.setDouble("moX", rand.nextGaussian() * speed);
-			data.setDouble("moY", rand.nextGaussian() * speed * 7.5D);
-			data.setDouble("moZ", rand.nextGaussian() * speed);
+			data.setDouble("moX", mx);
+			data.setDouble("moY", my);
+			data.setDouble("moZ", mz);
+			PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.FX_Orange, data, x, y, z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), x, y, z, 50));
 
-			data.setString("type", "orangefx");
-			PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, x, y, z), new NetworkRegistry.TargetPoint(world.provider.getDimension(), x, y, z, 50));
+			EntityModFXShadow.spawn(world, EntityModFXShadow.Type.ORANGE, x, y, z, mx, my, mz);
 		}
 	}
 
@@ -762,7 +761,7 @@ public class ExplosionChaos {
 		List<Entity> list = world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(i, k, l, j, i2, j2));
 
 		for(int i1 = 0; i1 < list.size(); ++i1) {
-			Entity entity = (Entity) list.get(i1);
+			Entity entity = list.get(i1);
 			double d4 = entity.getDistance(x, y, z) / radius;
 
 			if(d4 <= 1.0D) {
@@ -772,14 +771,14 @@ public class ExplosionChaos {
 				if(entity instanceof EntityLiving && !(entity instanceof EntitySheep)) {
 					rand = random.nextInt(2);
 					if(rand == 0) {
-						((EntityLiving) entity).setCustomNameTag("Dinnerbone");
+						entity.setCustomNameTag("Dinnerbone");
 					} else {
-						((EntityLiving) entity).setCustomNameTag("Grumm");
+						entity.setCustomNameTag("Grumm");
 					}
 				}
 
 				if(entity instanceof EntitySheep) {
-					((EntityLiving) entity).setCustomNameTag("jeb_");
+					entity.setCustomNameTag("jeb_");
 				}
 
 				double d9 = MathHelper.sqrt(d5 * d5 + d6 * d6 + d7 * d7);

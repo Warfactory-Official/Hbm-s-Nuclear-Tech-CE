@@ -59,12 +59,15 @@ public class ItemWrench extends ItemSword {
         if (te instanceof TileEntityPipelineBase second) {
             NBTTagCompound tag = stack.getTagCompound();
 
-            if (tag == null) {
-                tag = new NBTTagCompound();
+            if (tag == null || !tag.hasKey("x")) {
+                if (tag == null) {
+                    tag = new NBTTagCompound();
+                    stack.setTagCompound(tag);
+                }
+
                 tag.setInteger("x", pos.getX());
                 tag.setInteger("y", pos.getY());
                 tag.setInteger("z", pos.getZ());
-                stack.setTagCompound(tag);
 
                 if (!world.isRemote) {
                     player.sendMessage(new TextComponentString("Pipe start"));
@@ -94,11 +97,13 @@ public class ItemWrench extends ItemSword {
                             player.sendMessage(new TextComponentString("Pipe error - Pipe anchor fluid types do not match"));
                             break;
                     }
-                    stack.setTagCompound(null);
                 } else {
                     player.sendMessage(new TextComponentString("Pipe error"));
-                    stack.setTagCompound(null);
                 }
+
+                tag.removeTag("x");
+                tag.removeTag("y");
+                tag.removeTag("z");
             }
 
             player.swingArm(hand);
@@ -129,7 +134,7 @@ public class ItemWrench extends ItemSword {
     public void addInformation(ItemStack stack, @Nullable World worldIn, @NotNull List<String> tooltip, @NotNull ITooltipFlag flagIn) {
         NBTTagCompound tag = stack.getTagCompound();
 
-        if (tag != null) {
+        if (tag != null && tag.hasKey("x")) {
             tooltip.add("Pipe start x: " + tag.getInteger("x"));
             tooltip.add("Pipe start y: " + tag.getInteger("y"));
             tooltip.add("Pipe start z: " + tag.getInteger("z"));
@@ -140,7 +145,7 @@ public class ItemWrench extends ItemSword {
 
     @Override
     public void onUpdate(@NotNull ItemStack stack, World world, @NotNull Entity entity, int slot, boolean inHand) {
-        if (world.isRemote && stack.getTagCompound() != null) {
+        if (world.isRemote && stack.hasTagCompound() && (stack.getTagCompound() != null && stack.getTagCompound().hasKey("x"))) {
             NBTTagCompound tag = stack.getTagCompound();
             Vec3d vec = new Vec3d(
                     entity.posX - tag.getInteger("x"),

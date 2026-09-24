@@ -5,7 +5,9 @@ import com.hbm.api.block.IBlowable;
 import com.hbm.api.block.IToolable;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.interfaces.AutoRegister;
+import com.hbm.items.ClaimedModelLocationRegistry;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.main.client.NTMClientRegistry;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.PlayerInformPacketLegacy;
 import com.hbm.tileentity.TileEntityLoadedBase;
@@ -45,8 +47,8 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 public class MachineFan extends BlockContainerBakeable implements IToolable, ITooltipProvider {
@@ -59,39 +61,38 @@ public class MachineFan extends BlockContainerBakeable implements IToolable, ITo
     }
 
     @Override
-    public TileEntity createNewTileEntity(World world, int meta) {
+    public TileEntity createNewTileEntity(@NotNull World world, int meta) {
         return new TileEntityFan();
     }
 
     @Override
-    public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase player, ItemStack stack) {
-        EnumFacing facing = EnumFacing.getDirectionFromEntityLiving(pos, player);
-        world.setBlockState(pos, state.withProperty(FACING, facing), 2);
+    public @NotNull IBlockState getStateForPlacement(@NotNull World world, @NotNull BlockPos pos, @NotNull EnumFacing facing, float hitX, float hitY, float hitZ, int meta, @NotNull EntityLivingBase player) {
+        return this.getDefaultState().withProperty(FACING, EnumFacing.getDirectionFromEntityLiving(pos, player));
     }
 
     @Override
-    public EnumBlockRenderType getRenderType(IBlockState state){
+    public @NotNull EnumBlockRenderType getRenderType(IBlockState state){
         return EnumBlockRenderType.INVISIBLE;
     }
 
     @Override
-    public boolean isOpaqueCube(IBlockState state) {
+    public boolean isOpaqueCube(@NotNull IBlockState state) {
         return false;
     }
 
     @Override
-    public boolean isFullCube(IBlockState state) {
+    public boolean isFullCube(@NotNull IBlockState state) {
         return false;
     }
 
     @Override
-    public boolean isSideSolid(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side) {
+    public boolean isSideSolid(IBlockState state, @NotNull IBlockAccess world, @NotNull BlockPos pos, EnumFacing side) {
         EnumFacing facing = state.getValue(FACING);
         return facing.getAxis() != side.getAxis();
     }
 
     @Override
-    public IBlockState getStateFromMeta(int meta) {
+    public @NotNull IBlockState getStateFromMeta(int meta) {
         return this.getDefaultState().withProperty(FACING, EnumFacing.byIndex(meta & 7));
     }
 
@@ -101,7 +102,7 @@ public class MachineFan extends BlockContainerBakeable implements IToolable, ITo
     }
 
     @Override
-    protected BlockStateContainer createBlockState() {
+    protected @NotNull BlockStateContainer createBlockState() {
         return new BlockStateContainer(this, FACING);
     }
     @AutoRegister
@@ -110,13 +111,29 @@ public class MachineFan extends BlockContainerBakeable implements IToolable, ITo
         public float spin;
         public float prevSpin;
         public boolean falloff = true;
+        public boolean suck = false;
+        public boolean isIndirectlyPowered;
+
+        @Override
+        public void onLoad() {
+            super.onLoad();
+            if (!world.isRemote) isIndirectlyPowered = world.isBlockPowered(pos);
+        }
 
         @Override
         public void update() {
             this.prevSpin = this.spin;
 
-            if (world.isBlockPowered(pos)) {
-                EnumFacing dir = world.getBlockState(pos).getValue(MachineFan.FACING);
+            if (!world.isRemote && world.getTotalWorldTime() % 20 == 0) {
+                boolean powered = world.isBlockPowered(pos);
+                if (isIndirectlyPowered != powered) {
+                    isIndirectlyPowered = powered;
+                    markDirty();
+                }
+            }
+
+            if (isIndirectlyPowered) {
+                EnumFacing dir = EnumFacing.byIndex(getBlockMetadata());
 
                 int range = 10;
                 int effRange = 0;
@@ -160,6 +177,7 @@ public class MachineFan extends BlockContainerBakeable implements IToolable, ITo
                         double dist = e.getDistance(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
                         coeff *= 1.5 * (1 - dist / range / 2);
                     }
+                    if (suck) coeff *= -1;
 
                     e.motionX += dir.getXOffset() * coeff;
                     e.motionY += dir.getYOffset() * coeff;
@@ -167,7 +185,7 @@ public class MachineFan extends BlockContainerBakeable implements IToolable, ITo
                 }
 
                 if (world.isRemote && world.rand.nextInt(30) == 0) {
-                    double speed = 0.2;
+                    double speed = suck ? -0.2 : 0.2;
                     world.spawnParticle(EnumParticleTypes.CLOUD,
                             pos.getX() + 0.5 + dir.getXOffset() * 0.5,
                             pos.getY() + 0.5 + dir.getYOffset() * 0.5,
@@ -200,24 +218,49 @@ public class MachineFan extends BlockContainerBakeable implements IToolable, ITo
         public void readFromNBT(NBTTagCompound nbt) {
             super.readFromNBT(nbt);
             this.falloff = nbt.getBoolean("falloff");
+            this.suck = nbt.getBoolean("suck");
+            this.isIndirectlyPowered = nbt.getBoolean("powered");
         }
 
         @Override
         public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
             super.writeToNBT(nbt);
             nbt.setBoolean("falloff", falloff);
+            nbt.setBoolean("suck", suck);
+            nbt.setBoolean("powered", isIndirectlyPowered);
             return nbt;
         }
 
         @Override
         public void serialize(ByteBuf buf) {
             buf.writeBoolean(falloff);
+            buf.writeBoolean(suck);
+            buf.writeBoolean(isIndirectlyPowered);
         }
 
         @Override
         public void deserialize(ByteBuf buf) {
             falloff = buf.readBoolean();
+            suck = buf.readBoolean();
+            isIndirectlyPowered = buf.readBoolean();
         }
+    }
+
+    @Override
+    public void neighborChanged(@NotNull IBlockState state, World world, @NotNull BlockPos pos, @NotNull Block blockIn, @NotNull BlockPos fromPos) {
+        if (world.isRemote) return;
+        if (!(world.getTileEntity(pos) instanceof TileEntityFan fan)) return;
+
+        boolean powered = world.isBlockPowered(pos);
+        if (fan.isIndirectlyPowered != powered) {
+            fan.isIndirectlyPowered = powered;
+            fan.markDirty();
+        }
+    }
+
+    @Override
+    public boolean canConnectRedstone(@NotNull IBlockState state, @NotNull IBlockAccess world, @NotNull BlockPos pos, EnumFacing side) {
+        return true;
     }
 
     @Override
@@ -256,11 +299,36 @@ public class MachineFan extends BlockContainerBakeable implements IToolable, ITo
             return true;
         }
 
+        if (tool == ToolType.DEFUSER) {
+            TileEntity te = world.getTileEntity(pos);
+
+            if (te instanceof TileEntityFan tile) {
+                tile.suck = !tile.suck;
+                tile.markDirty();
+
+                if (!world.isRemote) {
+                    PacketDispatcher.wrapper.sendTo(
+                            new PlayerInformPacketLegacy(
+                                    ChatBuilder.start("")
+                                            .nextTranslation(this.getTranslationKey() + (tile.suck ? ".suckOn" : ".suckOff"))
+                                            .color(TextFormatting.GOLD)
+                                            .flush(),
+                                    10),
+                            (EntityPlayerMP) player
+                    );
+
+                    world.playSound(null, pos, SoundEvents.BLOCK_LEVER_CLICK, SoundCategory.BLOCKS, 0.5F, 0.5F);
+                }
+            }
+
+            return true;
+        }
+
         return false;
     }
 
     @Override
-    public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
+    public void addInformation(@NotNull ItemStack stack, World worldIn, @NotNull List<String> list, @NotNull ITooltipFlag flagIn) {
         this.addStandardInfo(list);
     }
 
@@ -278,16 +346,18 @@ public class MachineFan extends BlockContainerBakeable implements IToolable, ITo
             );
             ModelResourceLocation worldLocation = new ModelResourceLocation(getRegistryName(), "normal");
             event.getModelRegistry().putObject(worldLocation, blockBaked);
-            IModel itemBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
-            ImmutableMap<String, String> itemTextures = ImmutableMap.of("layer0", "hbm:blocks/" + getRegistryName().getPath());
-            IModel itemRetextured = itemBaseModel.retexture(itemTextures);
-            IBakedModel itemBaked = itemRetextured.bake(
-                    ModelRotation.X0_Y0,
-                    DefaultVertexFormats.ITEM,
-                    ModelLoader.defaultTextureGetter()
-            );
-            ModelResourceLocation inventoryLocation = new ModelResourceLocation(getRegistryName(), "inventory");
-            event.getModelRegistry().putObject(inventoryLocation, itemBaked);
+            if (!ClaimedModelLocationRegistry.hasSyntheticTeisrBinding(Item.getItemFromBlock(this))) {
+                IModel itemBaseModel = ModelLoaderRegistry.getModel(new ResourceLocation("item/generated"));
+                ImmutableMap<String, String> itemTextures = ImmutableMap.of("layer0", "hbm:blocks/" + getRegistryName().getPath());
+                IModel itemRetextured = itemBaseModel.retexture(itemTextures);
+                IBakedModel itemBaked = itemRetextured.bake(
+                        ModelRotation.X0_Y0,
+                        DefaultVertexFormats.ITEM,
+                        ModelLoader.defaultTextureGetter()
+                );
+                ModelResourceLocation inventoryLocation = new ModelResourceLocation(getRegistryName(), "inventory");
+                event.getModelRegistry().putObject(inventoryLocation, itemBaked);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -298,7 +368,9 @@ public class MachineFan extends BlockContainerBakeable implements IToolable, ITo
     @Override
     @SideOnly(Side.CLIENT)
     public void registerModel() {
-        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0, new ModelResourceLocation(this.getRegistryName(), "inventory"));
+        Item item = Item.getItemFromBlock(this);
+        ModelResourceLocation syntheticLocation = NTMClientRegistry.getSyntheticTeisrModelLocation(item);
+        ModelLoader.setCustomModelResourceLocation(item, 0, syntheticLocation != null ? syntheticLocation : new ModelResourceLocation(this.getRegistryName(), "inventory"));
     }
 
     @Override
@@ -311,7 +383,7 @@ public class MachineFan extends BlockContainerBakeable implements IToolable, ITo
     public StateMapperBase getStateMapper(ResourceLocation loc) {
         return new StateMapperBase() {
             @Override
-            protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
+            protected @NotNull ModelResourceLocation getModelResourceLocation(@NotNull IBlockState state) {
                 return new ModelResourceLocation(loc, "normal");
             }
         };

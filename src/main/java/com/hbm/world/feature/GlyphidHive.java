@@ -117,6 +117,11 @@ public class GlyphidHive extends AbstractPhasedStructure {
     }
 
     @Override
+    public boolean checkSpawningConditions(@NotNull World world, long origin) {
+        return locationIsValidSpawn(world, origin);
+    }
+
+    @Override
     protected void buildStructure(@NotNull LegacyBuilder builder, @NotNull Random rand) {
         var baseState = ModBlocks.glyphid_base.getDefaultState().withProperty(BlockGlyphid.TYPE, this.infected ? Type.INFESTED : Type.BASE);
         var spawnerState = ModBlocks.glyphid_spawner.getDefaultState()

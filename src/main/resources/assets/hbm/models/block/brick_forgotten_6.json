@@ -1,0 +1,8 @@
+{
+    "parent": "block/cube_bottom_top",
+    "textures": {
+        "top": "hbm:blocks/nr_stone",
+        "bottom": "hbm:blocks/nr_stone",
+        "side": "hbm:blocks/nr_stone"
+    }
+}

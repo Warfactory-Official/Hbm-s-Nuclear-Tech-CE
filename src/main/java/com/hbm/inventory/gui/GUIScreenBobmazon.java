@@ -14,6 +14,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
@@ -300,11 +301,24 @@ public class GUIScreenBobmazon extends GuiScreen {
 		}
 
 		public boolean fullfills(EntityPlayerMP player) {
-			Advancement adv = getAchievement();
+			if (this == NONE) {
+				return true;
+			}
+			Advancement adv = resolveServer(player.getServer());
 			if (adv == null) {
 				return true;
 			}
 			return player.getAdvancements().getProgress(adv).isDone();
+		}
+
+		private Advancement resolveServer(MinecraftServer server) {
+			if (server == null) {
+				return achievement;
+			}
+			if (advId == null && advName != null) {
+				advId = new ResourceLocation(Tags.MODID, advName);
+			}
+			return server.getAdvancementManager().getAdvancement(advId);
 		}
 
 		public Advancement getAchievement() {

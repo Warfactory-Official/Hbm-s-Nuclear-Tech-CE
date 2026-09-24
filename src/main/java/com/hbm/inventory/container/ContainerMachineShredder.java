@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.machine.ItemBlades;
@@ -19,11 +20,19 @@ public class ContainerMachineShredder extends Container {
 
 	private final TileEntityMachineShredder shredder;
 	private int progress;
-	
-	public ContainerMachineShredder(InventoryPlayer invPlayer, TileEntityMachineShredder teMachineShredder) {
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(30)
+                                                                              .rule(0, 27,
+                                                                                      ContainerMachineShredder::isNormal)
+                                                                              .rule(27, 29,
+                                                                                      s -> s.getItem() instanceof ItemBlades)
+                                                                              .genericMachineRange(29)
+                                                                              .build();
+
+    public ContainerMachineShredder(InventoryPlayer invPlayer, TileEntityMachineShredder teMachineShredder) {
 
 		shredder = teMachineShredder;
-		
+
 		this.addSlotToContainer(new SlotItemHandler(shredder.inventory, 0, 44, 18));
 		this.addSlotToContainer(new SlotItemHandler(shredder.inventory, 1, 62, 18));
 		this.addSlotToContainer(new SlotItemHandler(shredder.inventory, 2, 80, 18));
@@ -54,22 +63,22 @@ public class ContainerMachineShredder extends Container {
 		this.addSlotToContainer(new SlotItemHandler(shredder.inventory, 27, 44, 108));
 		this.addSlotToContainer(new SlotItemHandler(shredder.inventory, 28, 80, 108));
 		this.addSlotToContainer(new SlotBattery(shredder.inventory, 29, 8, 108));
-		
-		for(int i = 0; i < 3; i++)
+
+        for(int i = 0; i < 3; i++)
 		{
 			for(int j = 0; j < 9; j++)
 			{
 				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18 + 67));
 			}
 		}
-		
-		for(int i = 0; i < 9; i++)
+
+        for(int i = 0; i < 9; i++)
 		{
 			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 142 + 67));
 		}
 	}
-	
-	@Override
+
+    @Override
 	public void addListener(@NotNull IContainerListener listener) {
 		super.addListener(listener);
 		listener.sendWindowProperty(this, 1, shredder.progress);
@@ -82,17 +91,15 @@ public class ContainerMachineShredder extends Container {
 	@Override
     public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index)
     {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 30,
-                ContainerMachineShredder::isNormal, 27,
-                s -> s.getItem() instanceof ItemBlades, 29);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
 	@Override
 	public boolean canInteractWith(@NotNull EntityPlayer player) {
 		return shredder.isUseableByPlayer(player);
 	}
-	
-	@Override
+
+    @Override
 	public void detectAndSendChanges() {
 		super.detectAndSendChanges();
 
@@ -104,8 +111,8 @@ public class ContainerMachineShredder extends Container {
 
 		this.progress = this.shredder.progress;
 	}
-	
-	@Override
+
+    @Override
 	public void updateProgressBar(int i, int j) {
 		if(i == 1)
 		{

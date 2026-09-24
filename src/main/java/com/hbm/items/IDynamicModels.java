@@ -63,9 +63,10 @@ public interface IDynamicModels {
             IItemColor colorHandler = model.getItemColorHandler();
             Object self = model.getSelf();
 
-            if (colorHandler == null || !(self instanceof Item item)) continue;
+            if (colorHandler == null) continue;
 
-            evt.getItemColors().registerItemColorHandler(colorHandler, item);
+            if (self instanceof Item item) evt.getItemColors().registerItemColorHandler(colorHandler, item);
+            else if (self instanceof Block block) evt.getItemColors().registerItemColorHandler(colorHandler, block);
         }
     }
 

@@ -5,6 +5,7 @@ import com.hbm.items.ItemEnumMulti;
 import com.hbm.main.MainRegistry;
 import com.hbm.util.BobMathUtil;
 import com.hbm.util.EnumUtil;
+import com.hbm.util.I18nUtil;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
@@ -60,5 +61,9 @@ public class ItemBatterySC extends ItemEnumMulti<ItemBatterySC.EnumBatterySC> im
     public void addInformation(ItemStack stack, World world, List<String> list, ITooltipFlag flagIn) {
         EnumBatterySC pack = EnumUtil.grabEnumSafely(EnumBatterySC.VALUES, stack.getItemDamage());
         if(pack.power > 0) list.add(TextFormatting.YELLOW + "Discharge rate: " + BobMathUtil.getShortNumber(pack.power) + "HE/t");
+
+        for(String line : I18nUtil.resolveKeyArray(this.getTranslationKey() + ".desc")) {
+            list.add(TextFormatting.RED + line);
+        }
     }
 }

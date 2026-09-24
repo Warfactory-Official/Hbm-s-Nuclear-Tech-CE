@@ -9,6 +9,7 @@ import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -25,13 +26,13 @@ public class BlockStorageCrateRadResistant extends BlockStorageCrate implements 
 	}
 
 	@Override
-	public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+	public void breakBlock(World worldIn, @NotNull BlockPos pos, @NotNull IBlockState state) {
 		RadiationSystemNT.markSectionForRebuild(worldIn, pos);
 		super.breakBlock(worldIn, pos, state);
 	}
 
 	@Override
-	public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
+	public void addInformation(@NotNull ItemStack stack, World player, @NotNull List<String> tooltip, @NotNull ITooltipFlag advanced) {
 		super.addInformation(stack, player, tooltip, advanced);
 		tooltip.add("§2[" + I18nUtil.resolveKey("trait.radshield") + "]");
 		float hardness = this.getExplosionResistance(null);

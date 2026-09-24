@@ -1,11 +1,11 @@
 package com.hbm.handler;
 
+import net.minecraft.client.renderer.GlStateManager;
 import com.hbm.config.GeneralConfig;
 import com.hbm.handler.HbmShaderManager2.Shader.Uniform;
 import com.hbm.main.ClientProxy;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
-import com.hbm.particle_instanced.InstancedParticleRenderer;
 import com.hbm.render.GLCompat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
@@ -17,7 +17,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.io.IOUtils;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL14;
 import org.lwjgl.util.vector.Matrix4f;
@@ -39,13 +39,13 @@ public class HbmShaderManager2 {
 	
 	public static final Uniform MODELVIEW_PROJECTION_MATRIX = shader -> {
 		//No idea if all these rewind calls are necessary. I'll have to check that later.
-		GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, AUX_GL_BUFFER);
+		GlStateManager.getFloat(GL11.GL_MODELVIEW_MATRIX, AUX_GL_BUFFER);
 		AUX_GL_BUFFER.rewind();
 		Matrix4f mvMatrix = new Matrix4f();
 		mvMatrix.load(AUX_GL_BUFFER);
 		AUX_GL_BUFFER.rewind();
 		
-		GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, AUX_GL_BUFFER);
+		GlStateManager.getFloat(GL11.GL_PROJECTION_MATRIX, AUX_GL_BUFFER);
 		AUX_GL_BUFFER.rewind();
 		Matrix4f pMatrix = new Matrix4f();
 		pMatrix.load(AUX_GL_BUFFER);
@@ -58,21 +58,20 @@ public class HbmShaderManager2 {
 	};
 	
 	public static final Uniform MODELVIEW_MATRIX = shader -> {
-		GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, AUX_GL_BUFFER);
+		GlStateManager.getFloat(GL11.GL_MODELVIEW_MATRIX, AUX_GL_BUFFER);
 		AUX_GL_BUFFER.rewind();
 		shader.uniformMatrix4("modelview", false, AUX_GL_BUFFER);
 	};
 	
 	public static final Uniform PROJECTION_MATRIX = shader -> {
-		GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, AUX_GL_BUFFER);
+		GlStateManager.getFloat(GL11.GL_PROJECTION_MATRIX, AUX_GL_BUFFER);
 		AUX_GL_BUFFER.rewind();
 		shader.uniformMatrix4("projection", false, AUX_GL_BUFFER);
 	};
 	
 	public static final Uniform INV_PLAYER_ROT_MATRIX = shader -> {
 		Entity entityIn = Minecraft.getMinecraft().getRenderViewEntity();
-		//Stupid hack to get partial ticks.
-		float partialTicks = InstancedParticleRenderer.partialTicks;
+		float partialTicks = Minecraft.getMinecraft().isGamePaused() ? Minecraft.getMinecraft().renderPartialTicksPaused : Minecraft.getMinecraft().getRenderPartialTicks();
 		float yaw = entityIn.prevRotationYaw + (entityIn.rotationYaw - entityIn.prevRotationYaw)*partialTicks;
 		float pitch = entityIn.prevRotationPitch + (entityIn.rotationPitch - entityIn.prevRotationPitch)*partialTicks;
 		Matrix4f mat = new Matrix4f();
@@ -106,9 +105,9 @@ public class HbmShaderManager2 {
 	
     public static void createInvMVP(){
 		GlStateManager.pushMatrix();
-    	GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, ClientProxy.AUX_GL_BUFFER);
+    	GlStateManager.getFloat(GL11.GL_MODELVIEW_MATRIX, ClientProxy.AUX_GL_BUFFER);
     	GlStateManager.popMatrix();
-		GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, ClientProxy.AUX_GL_BUFFER2);
+		GlStateManager.getFloat(GL11.GL_PROJECTION_MATRIX, ClientProxy.AUX_GL_BUFFER2);
 		Matrix4f view = new Matrix4f();
 		Matrix4f proj = new Matrix4f();
 		view.load(ClientProxy.AUX_GL_BUFFER);
@@ -128,18 +127,18 @@ public class HbmShaderManager2 {
     	if(!GeneralConfig.depthEffects)
     		return;
     	if(height != Minecraft.getMinecraft().displayHeight || width != Minecraft.getMinecraft().displayWidth || depthFrameBuffer == -1){
-    		GL11.glDeleteTextures(depthTexture);
+    		GlStateManager.deleteTexture(depthTexture);
     		GLCompat.deleteFramebuffers(depthFrameBuffer);
     		
     		depthFrameBuffer = GLCompat.genFramebuffers();
     		GLCompat.bindFramebuffer(OpenGlHelper.GL_FRAMEBUFFER, depthFrameBuffer);
-    		depthTexture = GL11.glGenTextures();
+    		depthTexture = GlStateManager.generateTexture();
     		GlStateManager.bindTexture(depthTexture);
 			GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL14.GL_DEPTH_COMPONENT24, Minecraft.getMinecraft().displayWidth, Minecraft.getMinecraft().displayHeight, 0, GL11.GL_DEPTH_COMPONENT, GL11.GL_FLOAT, (FloatBuffer)null);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+			GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+			GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+			GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+			GlStateManager.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
 			GLCompat.framebufferTexture2D(OpenGlHelper.GL_FRAMEBUFFER, OpenGlHelper.GL_DEPTH_ATTACHMENT, GL11.GL_TEXTURE_2D, depthTexture, 0);
 			int bruh = OpenGlHelper.glCheckFramebufferStatus(OpenGlHelper.GL_FRAMEBUFFER);
 			if(bruh != OpenGlHelper.GL_FRAMEBUFFER_COMPLETE){
@@ -263,7 +262,7 @@ public class HbmShaderManager2 {
 		}
 		distortionBuffer = new Framebuffer(width, height, true);
 		distortionBuffer.bindFramebufferTexture();
-		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GLCompat.GL_RGBA16F, width, height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_SHORT, (IntBuffer)null);
+		GlStateManager.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GLCompat.GL_RGBA16F, width, height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_SHORT, (IntBuffer)null);
 		distortionBuffer.bindFramebuffer(false);
 		GLCompat.bindRenderbuffer(GLCompat.GL_RENDERBUFFER, Minecraft.getMinecraft().getFramebuffer().depthBuffer);
 		OpenGlHelper.glFramebufferRenderbuffer(OpenGlHelper.GL_FRAMEBUFFER, OpenGlHelper.GL_DEPTH_ATTACHMENT, OpenGlHelper.GL_RENDERBUFFER, Minecraft.getMinecraft().getFramebuffer().depthBuffer);
@@ -281,7 +280,7 @@ public class HbmShaderManager2 {
 			bloomData.deleteFramebuffer();
 		bloomData = new Framebuffer(width, height, true);
 		bloomData.bindFramebufferTexture();
-		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GLCompat.GL_RGBA16F, width, height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_SHORT, (IntBuffer)null);
+		GlStateManager.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GLCompat.GL_RGBA16F, width, height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_SHORT, (IntBuffer)null);
 		bloomData.bindFramebuffer(false);
 		GLCompat.bindRenderbuffer(GLCompat.GL_RENDERBUFFER, Minecraft.getMinecraft().getFramebuffer().depthBuffer);
 		GLCompat.framebufferRenderbuffer(GLCompat.GL_FRAMEBUFFER, GLCompat.GL_DEPTH_ATTACHMENT, GLCompat.GL_RENDERBUFFER, Minecraft.getMinecraft().getFramebuffer().depthBuffer);
@@ -296,9 +295,9 @@ public class HbmShaderManager2 {
 			bloomBuffers[i*2] = new Framebuffer((int)bloomW, (int)bloomH, false);
 			bloomBuffers[i*2+1] = new Framebuffer((int)bloomW, (int)bloomH, false);
 			bloomBuffers[i*2].bindFramebufferTexture();
-			GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GLCompat.GL_RGBA16F, (int)bloomW, (int)bloomH, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_SHORT, (IntBuffer)null);
+			GlStateManager.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GLCompat.GL_RGBA16F, (int)bloomW, (int)bloomH, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_SHORT, (IntBuffer)null);
 			bloomBuffers[i*2+1].bindFramebufferTexture();
-			GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GLCompat.GL_RGBA16F, (int)bloomW, (int)bloomH, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_SHORT, (IntBuffer)null);
+			GlStateManager.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GLCompat.GL_RGBA16F, (int)bloomW, (int)bloomH, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_SHORT, (IntBuffer)null);
 			bloomBuffers[i*2].setFramebufferFilter(GL11.GL_LINEAR);
 			bloomBuffers[i*2+1].setFramebufferFilter(GL11.GL_LINEAR);
 			bloomBuffers[i*2].setFramebufferColor(0, 0, 0, 0);
@@ -389,7 +388,19 @@ public class HbmShaderManager2 {
     }
     
 	public static Shader loadShader(ResourceLocation file, Consumer<Integer> attribBinder) {
-		if(!GeneralConfig.useShaders2){
+		return loadShader(file, attribBinder, false);
+	}
+
+	public static Shader loadShader(ResourceLocation file, Consumer<Integer> attribBinder, boolean allowWithoutShaders2) {
+		return loadShader(file, attribBinder, allowWithoutShaders2, false);
+	}
+
+	public static Shader loadShader(ResourceLocation file, Consumer<Integer> attribBinder, boolean allowWithoutShaders2, boolean failOnError) {
+		if(!allowWithoutShaders2 && !GeneralConfig.useShaders2 || !GLCompat.error.isEmpty()){
+			if(failOnError) {
+				String reason = !GLCompat.error.isEmpty() ? "advanced rendering is not supported: " + GLCompat.error : "shader effects are disabled";
+				throw new IllegalStateException("Failed to load shader " + file + " because " + reason);
+			}
 			return new Shader(0);
 		}
 		int vertexShader = 0;
@@ -430,6 +441,9 @@ public class HbmShaderManager2 {
 		} catch(Exception x) {
 			GLCompat.deleteShader(vertexShader);
 			GLCompat.deleteShader(fragmentShader);
+			if(failOnError) {
+				throw new RuntimeException("Failed to load shader: " + file, x);
+			}
 			x.printStackTrace();
 		}
 		return new Shader(0);

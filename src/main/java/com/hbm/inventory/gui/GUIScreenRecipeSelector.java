@@ -3,6 +3,7 @@ package com.hbm.inventory.gui;
 import com.hbm.Tags;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.IControlReceiver;
+import com.hbm.inventory.gui.element.GUIElements;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.packet.toserver.NBTControlPacket;
@@ -19,6 +20,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import net.minecraft.client.renderer.GlStateManager;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -133,7 +135,7 @@ public class GUIScreenRecipeSelector extends GuiScreen {
 
                 if(guiLeft + ix <= mouseX && guiLeft + ix + 18 > mouseX && guiTop + iy < mouseY && guiTop + iy + 18 >= mouseY) {
                     GenericRecipe recipe = recipes.get(i);
-                    this.drawHoveringText(recipe.print(), mouseX, mouseY); // Th3_Sl1ze: I don't think pos should be fixed rly
+                    GUIElements.drawHoveringTextRecipe(recipe.print(), mouseX, mouseY, this.fontRenderer, itemRender, this.width, this.height);
                 }
             }
         }
@@ -141,7 +143,7 @@ public class GUIScreenRecipeSelector extends GuiScreen {
         if(guiLeft + 151 <= mouseX && guiLeft + 151 + 18 > mouseX && guiTop + 71 < mouseY && guiTop + 71 + 18 >= mouseY) {
             if(this.selection != null && this.recipeSet.recipeNameMap.containsKey(selection)) {
                 GenericRecipe recipe = (GenericRecipe) this.recipeSet.recipeNameMap.get(selection);
-                this.drawHoveringText(recipe.print(), mouseX, mouseY);
+                GUIElements.drawHoveringTextRecipe(recipe.print(), mouseX, mouseY, this.fontRenderer, itemRender, this.width, this.height);
             }
         }
 
@@ -172,7 +174,7 @@ public class GUIScreenRecipeSelector extends GuiScreen {
     }
 
     private void drawGuiContainerBackgroundLayer(float f, int mouseX, int mouseY) {
-        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 
@@ -225,17 +227,17 @@ public class GUIScreenRecipeSelector extends GuiScreen {
 
     public void renderItem(ItemStack stack, int x, int y) {
 
-        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         RenderHelper.enableGUIStandardItemLighting();
         OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240, 240);
-        GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+        GlStateManager.enableRescaleNormal();
 
         itemRender.zLevel = 100.0F;
         itemRender.renderItemAndEffectIntoGUI(stack, guiLeft + x, guiTop + y);
         itemRender.zLevel = 0.0F;
 
-        GL11.glEnable(GL11.GL_ALPHA_TEST);
-        GL11.glDisable(GL11.GL_LIGHTING);
+        GlStateManager.enableAlpha();
+        GlStateManager.disableLighting();
     }
 
     @Override

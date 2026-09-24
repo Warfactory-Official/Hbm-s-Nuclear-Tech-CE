@@ -4,6 +4,7 @@ import com.hbm.blocks.BlockEnums;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.MaterialShapes;
+import com.hbm.inventory.material.Mats;
 import com.hbm.items.ItemEnums;
 import com.hbm.items.ItemEnums.EnumDepletedRTGMaterial;
 import com.hbm.items.ModItems;
@@ -49,6 +50,9 @@ public class MineralRecipes {
         add1To9Pair(ModBlocks.block_cadmium, ModItems.ingot_cadmium);
         add1To9Pair(ModBlocks.block_tcalloy, ModItems.ingot_tcalloy);
         add1To9Pair(ModBlocks.block_cdalloy, ModItems.ingot_cdalloy);
+        add1To9Pair(ModBlocks.block_saturnite, ModItems.ingot_saturnite);
+
+        add1To9Pair(new ItemStack(ModBlocks.block_slag), new ItemStack(ModItems.ingot_raw, 9, Mats.MAT_SLAG.id));
 
         for(int i = 0; i < ItemEnums.EnumCokeType.values().length; i++) {
             add1To9PairSameMeta(Item.getItemFromBlock(ModBlocks.block_coke), ModItems.coke, i);
@@ -167,8 +171,8 @@ public class MineralRecipes {
         CraftingManager.addShapelessAuto(new ItemStack(ModItems.billet_neptunium_fuel, 3), ModItems.billet_u238, ModItems.billet_u238, ModItems.billet_neptunium );
         CraftingManager.addRecipeAutoOreShapeless(new ItemStack(ModItems.billet_neptunium_fuel, 1), "nuggetNeptunium237", "nuggetNeptunium237", "nuggetUranium238", "nuggetUranium238", "nuggetUranium238", "nuggetUranium238" );
         CraftingManager.addRecipeAutoOreShapeless(new ItemStack(ModItems.billet_neptunium_fuel, 1), "tinyNp237", "tinyNp237", "tinyU238", "tinyU238", "tinyU238", "tinyU238" );
-        CraftingManager.addShapelessAuto(new ItemStack(ModItems.billet_mox_fuel, 3), ModItems.billet_uranium_fuel, ModItems.billet_uranium_fuel, ModItems.billet_pu_mix );
-        CraftingManager.addRecipeAutoOreShapeless(new ItemStack(ModItems.billet_mox_fuel, 1), ModItems.nugget_pu_mix, ModItems.nugget_pu_mix, ModItems.nugget_uranium_fuel, ModItems.nugget_uranium_fuel, ModItems.nugget_uranium_fuel, ModItems.nugget_uranium_fuel );
+        CraftingManager.addRecipeAutoOreShapeless(new ItemStack(ModItems.billet_mox_fuel, 3), ModItems.billet_uranium_fuel, ModItems.billet_uranium_fuel, PU239.billet() );
+        CraftingManager.addRecipeAutoOreShapeless(new ItemStack(ModItems.billet_mox_fuel, 1), PU239.nugget(), PU239.nugget(), ModItems.nugget_uranium_fuel, ModItems.nugget_uranium_fuel, ModItems.nugget_uranium_fuel, ModItems.nugget_uranium_fuel );
         CraftingManager.addShapelessAuto(new ItemStack(ModItems.billet_schrabidium_fuel, 3), ModItems.billet_schrabidium, ModItems.billet_neptunium, ModItems.billet_beryllium );
         CraftingManager.addRecipeAutoOreShapeless(new ItemStack(ModItems.billet_schrabidium_fuel, 1), ModItems.nugget_schrabidium, ModItems.nugget_schrabidium, "nuggetNeptunium237", "nuggetNeptunium237", ModItems.nugget_beryllium, ModItems.nugget_beryllium );
         CraftingManager.addRecipeAutoOreShapeless(new ItemStack(ModItems.billet_schrabidium_fuel, 1), ModItems.nugget_schrabidium, ModItems.nugget_schrabidium, "tinyNp237", "tinyNp237", ModItems.nugget_beryllium, ModItems.nugget_beryllium );
@@ -194,9 +198,6 @@ public class MineralRecipes {
         CraftingManager.addShapelessAuto(new ItemStack(ModItems.billet_uranium, 2), ModItems.billet_uranium_fuel, ModItems.billet_u238 );
         CraftingManager.addRecipeAutoOreShapeless(new ItemStack(ModItems.billet_uranium, 2), ModItems.billet_u238, "nuggetUranium238", "nuggetUranium238", "nuggetUranium238", "nuggetUranium238", "nuggetUranium238", "nuggetUranium235" );
         CraftingManager.addRecipeAutoOreShapeless(new ItemStack(ModItems.billet_uranium, 2), ModItems.billet_u238, "tinyU238", "tinyU238", "tinyU238", "tinyU238", "tinyU238", "tinyU235" );
-
-        CraftingManager.addShapelessAuto(new ItemStack(ModItems.billet_balefire_gold, 1), ModItems.billet_au198, new ItemStack(ModItems.cell, 1, Fluids.AMAT.getID()), ModItems.pellet_charged );
-        CraftingManager.addShapelessAuto(new ItemStack(ModItems.billet_flashlead, 2), ModItems.billet_balefire_gold, ModItems.billet_pb209, new ItemStack(ModItems.cell, 1, Fluids.AMAT.getID()) );
 
         CraftingManager.addRecipeAutoOreShapeless(new ItemStack(ModItems.pellet_rtg), ModItems.billet_pu238, ModItems.billet_pu238, ModItems.billet_pu238, IRON.plate() );
         CraftingManager.addRecipeAutoOreShapeless(new ItemStack(ModItems.pellet_rtg_radium), ModItems.billet_ra226, ModItems.billet_ra226, ModItems.billet_ra226, IRON.plate() );
@@ -243,7 +244,6 @@ public class MineralRecipes {
         CraftingManager.addRecipeAuto(new ItemStack(Item.getItemFromBlock(ModBlocks.block_schrabidium), 1), "###", "###", "###", '#', ModItems.ingot_schrabidium );
         CraftingManager.addRecipeAuto(new ItemStack(ModBlocks.block_schrabidium_cluster, 1), "#S#", "SXS", "#S#", '#', ModItems.ingot_schrabidium, 'S', ModItems.ingot_starmetal, 'X', ModItems.ingot_schrabidate );
         CraftingManager.addRecipeAuto(new ItemStack(Item.getItemFromBlock(ModBlocks.block_euphemium), 1), "###", "###", "###", '#', ModItems.ingot_euphemium );
-        CraftingManager.addRecipeAuto(new ItemStack(Item.getItemFromBlock(ModBlocks.block_advanced_alloy), 1), "###", "###", "###", '#', ModItems.ingot_advanced_alloy );
         CraftingManager.addRecipeAuto(new ItemStack(Item.getItemFromBlock(ModBlocks.block_magnetized_tungsten), 1), "###", "###", "###", '#', ModItems.ingot_magnetized_tungsten );
         CraftingManager.addRecipeAuto(new ItemStack(Item.getItemFromBlock(ModBlocks.block_combine_steel), 1), "###", "###", "###", '#', ModItems.ingot_combine_steel );
         CraftingManager.addRecipeAuto(new ItemStack(Item.getItemFromBlock(ModBlocks.block_australium), 1), "###", "###", "###", '#', ModItems.ingot_australium );
@@ -293,7 +293,6 @@ public class MineralRecipes {
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.ingot_beryllium, 9), "#", '#', Item.getItemFromBlock(ModBlocks.block_beryllium) );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.ingot_schrabidium, 9), "#", '#', Item.getItemFromBlock(ModBlocks.block_schrabidium) );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.ingot_euphemium, 9), "#", '#', Item.getItemFromBlock(ModBlocks.block_euphemium) );
-        CraftingManager.addRecipeAuto(new ItemStack(ModItems.ingot_advanced_alloy, 9), "#", '#', Item.getItemFromBlock(ModBlocks.block_advanced_alloy) );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.ingot_magnetized_tungsten, 9), "#", '#', Item.getItemFromBlock(ModBlocks.block_magnetized_tungsten) );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.ingot_combine_steel, 9), "#", '#', Item.getItemFromBlock(ModBlocks.block_combine_steel) );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.ingot_australium, 9), "#", '#', Item.getItemFromBlock(ModBlocks.block_australium) );
@@ -396,6 +395,7 @@ public class MineralRecipes {
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.egg_balefire_shard, 9), "#", '#', ModItems.egg_balefire );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.nitra, 1), "##", "##", '#', ModItems.nitra_small );
         CraftingManager.addRecipeAuto(new ItemStack(ModItems.nitra_small, 4), "#", '#', ModItems.nitra );
+        CraftingManager.addRecipeAuto(new ItemStack(ModItems.ammo_container, 1, 1), "##", "##", '#', ModItems.nitra );
         CraftingManager.addRecipeAuto(new ItemStack(ModBlocks.glass_polarized, 4), "##", "##", '#', DictFrame.fromOne(ModItems.part_generic, ItemEnums.EnumPartType.GLASS_POLARIZED) );
         add1To9Pair(ModItems.powder_paleogenite, ModItems.powder_paleogenite_tiny);
         add1To9Pair(ModItems.ingot_osmiridium, ModItems.nugget_osmiridium);
@@ -428,6 +428,11 @@ public class MineralRecipes {
     public static void add1To9Pair(Block one, Item nine) {
         add1To9(new ItemStack(one), new ItemStack(nine, 9));
         add9To1(new ItemStack(nine), new ItemStack(one));
+    }
+
+    public static void add1To9Pair(ItemStack one, ItemStack nine) {
+        add1To9(one, nine);
+        add9To1(nine, one);
     }
 
     public static void add1To9PairSameMeta(Item one, Item nine, int meta) {

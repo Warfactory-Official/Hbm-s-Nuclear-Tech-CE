@@ -12,8 +12,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
-import com.hbm.packet.PacketDispatcher;
-import com.hbm.packet.toclient.LoopedSoundPacket;
+import com.hbm.render.chunk.SectionGeometry;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -60,6 +59,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements ITickable, I
 	public boolean isOn;
 	public boolean missingValidSilex = true	;
 	public int distance;
+	private int prevDistance;
 	public List<EntityLivingBase> entities = new ArrayList<>();
 	private int audioDuration = 0;
 	private AudioWrapper audio;
@@ -205,12 +205,16 @@ public class TileEntityFEL extends TileEntityMachineBase implements ITickable, I
 								break;
 						}
 					}
-					PacketDispatcher.wrapper.sendToAll(new LoopedSoundPacket(pos.getX(), pos.getY(), pos.getZ()));
 				}
 			}
 
 			networkPackNT(250);
 		} else {
+
+			if(prevDistance != distance) {
+				prevDistance = distance;
+				world.markBlockRangeForRenderUpdate(pos, pos);
+			}
 
 			if(power > powerReq * Math.pow(2, mode.ordinal()) && isOn && !(mode == EnumWavelengths.NULL) && distance - 3 > 0) {
 				audioDuration += 2;
@@ -263,7 +267,9 @@ public class TileEntityFEL extends TileEntityMachineBase implements ITickable, I
 		this.mode = EnumWavelengths.valueOf(BufferUtil.readString(buf));
 		this.isOn = buf.readBoolean();
 		this.missingValidSilex = buf.readBoolean();
+		int prevDistance = distance;
 		this.distance = buf.readInt();
+		if (distance != prevDistance) SectionGeometry.renderBoundsChanged(this);
 	}
 
 	@Override
@@ -308,7 +314,8 @@ public class TileEntityFEL extends TileEntityMachineBase implements ITickable, I
 	
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return INFINITE_EXTENT_AABB;
+		int d = distance + 4;
+		return new AxisAlignedBB(pos.getX() - d, pos.getY(), pos.getZ() - d, pos.getX() + 1 + d, pos.getY() + 3, pos.getZ() + 1 + d);
 	}
 	
 	@Override

@@ -1,5 +1,6 @@
 package com.hbm.render;
 
+import net.minecraft.client.renderer.GlStateManager;
 import com.hbm.main.MainRegistry;
 import com.hbm.render.util.AppleVAO;
 import net.minecraft.client.Minecraft;
@@ -12,52 +13,52 @@ import java.nio.IntBuffer;
 
 public class GLCompat {
 
-    public static String error = "";
+    public static final String error;
 
-    public static int GL_ARRAY_BUFFER;
-    public static int GL_ELEMENT_ARRAY_BUFFER;
-    public static int GL_DYNAMIC_DRAW;
-    public static int GL_STATIC_DRAW;
+    public static final int GL_ARRAY_BUFFER;
+    public static final int GL_ELEMENT_ARRAY_BUFFER;
+    public static final int GL_DYNAMIC_DRAW;
+    public static final int GL_STATIC_DRAW;
 
-    public static int GL_TEXTURE0;
+    public static final int GL_TEXTURE0;
 
-    public static int GL_RENDERBUFFER;
-    public static int GL_FRAMEBUFFER;
-    public static int GL_READ_FRAMEBUFFER;
-    public static int GL_DRAW_FRAMEBUFFER;
-    public static int GL_RGBA16F;
-    public static int GL_DEPTH_ATTACHMENT;
-    public static int GL_COLOR_ATTACHMENT0;
-    public static int GL_DEPTH_COMPONENT24;
+    public static final int GL_RENDERBUFFER;
+    public static final int GL_FRAMEBUFFER;
+    public static final int GL_READ_FRAMEBUFFER;
+    public static final int GL_DRAW_FRAMEBUFFER;
+    public static final int GL_RGBA16F;
+    public static final int GL_DEPTH_ATTACHMENT;
+    public static final int GL_COLOR_ATTACHMENT0;
+    public static final int GL_DEPTH_COMPONENT24;
 
-    public static int GL_VERTEX_SHADER;
-    public static int GL_FRAGMENT_SHADER;
-    public static int GL_COMPILE_STATUS;
-    public static int GL_LINK_STATUS;
-    public static int GL_INFO_LOG_LENGTH;
-    public static int GL_CURRENT_PROGRAM;
+    public static final int GL_VERTEX_SHADER;
+    public static final int GL_FRAGMENT_SHADER;
+    public static final int GL_COMPILE_STATUS;
+    public static final int GL_LINK_STATUS;
+    public static final int GL_INFO_LOG_LENGTH;
+    public static final int GL_CURRENT_PROGRAM;
 
-    public static int GL_FUNC_ADD;
-    public static int GL_MAX;
+    public static final int GL_FUNC_ADD;
+    public static final int GL_MAX;
 
-    public static int GL_SAMPLES_PASSED;
-    public static int GL_QUERY_RESULT_AVAILABLE;
-    public static int GL_QUERY_RESULT;
+    public static final int GL_SAMPLES_PASSED;
+    public static final int GL_QUERY_RESULT_AVAILABLE;
+    public static final int GL_QUERY_RESULT;
 
-    public static VAOType vaoType;
-    public static FBOType fboType;
-    public static InstancingType instancingType;
-    public static boolean arbInstancedArrays;
-    public static boolean arbImaging;
-    public static boolean arbVbo;
-    public static boolean arbShaderObject;
-    public static boolean arbVertexProgram;
-    public static boolean arbVertexShader;
-    public static boolean arbFragmentShader;
-    public static boolean arbMultitexture;
-    public static boolean arbOcclusionQuery;
-    @Deprecated
-    public static boolean aplLwjglWorkaround;
+    public static final VAOType vaoType;
+    public static final boolean vaoTracksElementBuffer;
+    public static final FBOType fboType;
+    public static final InstancingType instancingType;
+    public static final boolean arbInstancedArrays;
+    public static final boolean arbImaging;
+    public static final boolean arbVbo;
+    public static final boolean arbShaderObject;
+    public static final boolean arbVertexProgram;
+    public static final boolean arbVertexShader;
+    public static final boolean arbFragmentShader;
+    public static final boolean arbMultitexture;
+    public static final boolean arbOcclusionQuery;
+
 
     public static int genVertexArrays() {
         return switch (vaoType) {
@@ -97,23 +98,44 @@ public class GLCompat {
 
     public static int genBuffers() {
         if (arbVbo)
-            return ARBVertexBufferObject.glGenBuffersARB();
+            return ARBBufferObject.glGenBuffersARB();
         else
             return GL15.glGenBuffers();
     }
 
     public static void bindBuffer(int target, int buf) {
         if (arbVbo)
-            ARBVertexBufferObject.glBindBufferARB(target, buf);
+            ARBBufferObject.glBindBufferARB(target, buf);
         else
             GL15.glBindBuffer(target, buf);
     }
 
     public static void bufferData(int target, ByteBuffer data, int usage) {
         if (arbVbo)
-            ARBVertexBufferObject.glBufferDataARB(target, data, usage);
+            ARBBufferObject.glBufferDataARB(target, data, usage);
         else
             GL15.glBufferData(target, data, usage);
+    }
+
+    public static void bufferData(int target, FloatBuffer data, int usage) {
+        if (arbVbo)
+            ARBBufferObject.glBufferDataARB(target, data, usage);
+        else
+            GL15.glBufferData(target, data, usage);
+    }
+
+    public static void bufferData(int target, IntBuffer data, int usage) {
+        if (arbVbo)
+            ARBBufferObject.glBufferDataARB(target, data, usage);
+        else
+            GL15.glBufferData(target, data, usage);
+    }
+
+    public static void deleteBuffers(int buffer) {
+        if (arbVbo)
+            ARBBufferObject.glDeleteBuffersARB(buffer);
+        else
+            GL15.glDeleteBuffers(buffer);
     }
 
     public static void vertexAttribPointer(int index, int size, int type, boolean normalized, int stride, long offset) {
@@ -201,15 +223,11 @@ public class GLCompat {
     }
 
     public static int genRenderbuffers() {
-        switch (fboType) {
-            case NORMAL:
-                return GL30.glGenRenderbuffers();
-            case ARB:
-                return ARBFramebufferObject.glGenRenderbuffers();
-            case EXT:
-                return EXTFramebufferObject.glGenRenderbuffersEXT();
-        }
-        return 0;
+        return switch (fboType) {
+            case NORMAL -> GL30.glGenRenderbuffers();
+            case ARB -> ARBFramebufferObject.glGenRenderbuffers();
+            case EXT -> EXTFramebufferObject.glGenRenderbuffersEXT();
+        };
     }
 
     public static void renderbufferStorage(int target, int internalformat, int width, int height) {
@@ -255,15 +273,11 @@ public class GLCompat {
     }
 
     public static int genFramebuffers() {
-        switch (fboType) {
-            case NORMAL:
-                return GL30.glGenFramebuffers();
-            case ARB:
-                return ARBFramebufferObject.glGenFramebuffers();
-            case EXT:
-                return EXTFramebufferObject.glGenFramebuffersEXT();
-        }
-        return 0;
+        return switch (fboType) {
+            case NORMAL -> GL30.glGenFramebuffers();
+            case ARB -> ARBFramebufferObject.glGenFramebuffers();
+            case EXT -> EXTFramebufferObject.glGenFramebuffersEXT();
+        };
     }
 
     public static void blitFramebuffer(int srcX0, int srcY0, int srcX1, int srcY1, int dstX0, int dstY0, int dstX1, int dstY1, int mask, int filter) {
@@ -291,7 +305,7 @@ public class GLCompat {
         if (arbImaging)
             ARBImaging.glBlendEquation(mode);
         else
-            GL14.glBlendEquation(mode);
+            GlStateManager.glBlendEquation(mode);
     }
 
     public static void drawArraysInstanced(int mode, int first, int count, int primcount) {
@@ -492,108 +506,68 @@ public class GLCompat {
     }
 
 
-    public static String init() {
-        ContextCapabilities cap = GLContext.getCapabilities();
+    private static boolean needsArbExt(boolean coreVersion, boolean extAvailable, StringBuilder err, String label) {
+        if (coreVersion) return false;
+        if (extAvailable) return true;
+        if (err.isEmpty()) err.append(label).append(" not supported");
+        return false;
+    }
 
-        if (cap.OpenGL30)
-            vaoType = VAOType.NORMAL;
+    // Caps probe runs in <clinit> so the branch-selector fields can be declared final.
+    // JIT treats them as compile-time constants and folds the dispatch switches in the
+    // wrapper methods above into a single static call per site.
+    static {
+        ContextCapabilities cap = GLContext.getCapabilities();
+        StringBuilder err = new StringBuilder();
+
+        // Prefer ARB over APPLE: APPLE_vertex_array_object's enumerated state vector covers
+        // only legacy client-array pointers and does not include GL_ELEMENT_ARRAY_BUFFER_BINDING,
+        // so EBO state is not restored when an APPLE VAO is rebound.
+        if (cap.OpenGL30) vaoType = VAOType.NORMAL;
+        else if (cap.GL_ARB_vertex_array_object) vaoType = VAOType.ARB;
         else if (Minecraft.IS_RUNNING_ON_MAC) {
-            vaoType = VAOType.APPLE;
             if (Sys.getVersion().startsWith("3.")) {
                 MainRegistry.logger.info("Apple + LWJGL 3.X.X environment detected, using workaround");
+                if (!AppleVAO.init()) throw new UnsupportedOperationException("VAO not supported");
                 vaoType = VAOType.APPLE_COMPAT;
-                if (!AppleVAO.init()) throw new UnsupportedOperationException("VAO not supported");           }
-        } else if (cap.GL_ARB_vertex_array_object)
-            vaoType = VAOType.ARB;
-        else
-            throw new UnsupportedOperationException("Your system does not support Vertex Array Objects");
+            } else {
+                vaoType = VAOType.APPLE;
+            }
+        } else throw new UnsupportedOperationException("Your system does not support Vertex Array Objects");
+        vaoTracksElementBuffer = vaoType == VAOType.NORMAL || vaoType == VAOType.ARB;
 
-        if (cap.OpenGL15)
-            arbVbo = false;
-        else if (cap.GL_ARB_vertex_buffer_object)
-            arbVbo = true;
-        else
-            return "VBO not supported";
+        arbVbo = needsArbExt(cap.OpenGL15, cap.GL_ARB_vertex_buffer_object, err, "VBO");
+        arbInstancedArrays = needsArbExt(cap.OpenGL33, cap.GL_ARB_instanced_arrays, err, "Instanced arrays");
+        arbShaderObject = needsArbExt(cap.OpenGL20, cap.GL_ARB_shader_objects, err, "Shaders");
+        arbVertexProgram = needsArbExt(cap.OpenGL20, cap.GL_ARB_vertex_program, err, "Vertex program");
+        arbVertexShader = needsArbExt(cap.OpenGL20, cap.GL_ARB_vertex_shader, err, "Vertex shader");
+        arbFragmentShader = needsArbExt(cap.OpenGL20, cap.GL_ARB_fragment_shader, err, "Fragment shader");
+        arbMultitexture = needsArbExt(cap.OpenGL13, cap.GL_ARB_multitexture, err, "Multitexturing");
+        arbImaging = needsArbExt(cap.OpenGL14, cap.GL_ARB_imaging, err, "Imaging");
+        arbOcclusionQuery = needsArbExt(cap.OpenGL15, cap.GL_ARB_occlusion_query, err, "Occlusion queries");
 
-        if (cap.OpenGL31)
+        if (cap.OpenGL31) instancingType = InstancingType.NORMAL;
+        else if (cap.GL_ARB_draw_instanced) instancingType = InstancingType.ARB;
+        else if (cap.GL_EXT_draw_instanced) instancingType = InstancingType.EXT;
+        else {
             instancingType = InstancingType.NORMAL;
-        else if (cap.GL_ARB_draw_instanced)
-            instancingType = InstancingType.ARB;
-        else if (cap.GL_EXT_draw_instanced)
-            instancingType = InstancingType.EXT;
-        else
-            return "Instancing not supported";
+            if (err.isEmpty()) err.append("Instancing not supported");
+        }
 
-        if (cap.OpenGL33)
-            arbInstancedArrays = false;
-        else if (cap.GL_ARB_instanced_arrays)
-            arbInstancedArrays = true;
-        else
-            return "Instanced arrays not supported";
-
-        if (cap.OpenGL20)
-            arbShaderObject = false;
-        else if (cap.GL_ARB_shader_objects)
-            arbShaderObject = true;
-        else
-            return "Shaders not supported";
-
-        if (cap.OpenGL20)
-            arbVertexProgram = false;
-        else if (cap.GL_ARB_vertex_program)
-            arbVertexProgram = true;
-        else
-            return "Vertex program not supported";
-
-        if (cap.OpenGL20)
-            arbVertexShader = false;
-        else if (cap.GL_ARB_vertex_shader)
-            arbVertexShader = true;
-        else
-            return "Vertex shader not supported";
-
-        if (cap.OpenGL20)
-            arbFragmentShader = false;
-        else if (cap.GL_ARB_fragment_shader)
-            arbFragmentShader = true;
-        else
-            return "Fragment shader not supported";
-
-        if (cap.OpenGL30)
+        if (cap.OpenGL30) fboType = FBOType.NORMAL;
+        else if (cap.GL_ARB_framebuffer_object) fboType = FBOType.ARB;
+        else if (cap.GL_EXT_framebuffer_object && cap.GL_EXT_framebuffer_blit) fboType = FBOType.EXT;
+        else {
             fboType = FBOType.NORMAL;
-        else if (cap.GL_ARB_framebuffer_object)
-            fboType = FBOType.ARB;
-        else if (cap.GL_EXT_framebuffer_object && cap.GL_EXT_framebuffer_blit)
-            fboType = FBOType.EXT;
-        else
-            return "Framebuffer objects not supported";
+            if (err.isEmpty()) err.append("Framebuffer objects not supported");
+        }
 
-        if (cap.OpenGL13)
-            arbMultitexture = false;
-        else if (cap.GL_ARB_multitexture)
-            arbMultitexture = true;
-        else
-            return "Multitexturing not supported";
-
-        if (cap.OpenGL14)
-            arbImaging = false;
-        else if (cap.GL_ARB_imaging)
-            arbImaging = true;
-        else
-            return "Imaging not supported";
-
-        if (cap.OpenGL15)
-            arbOcclusionQuery = false;
-        else if (cap.GL_ARB_occlusion_query)
-            arbOcclusionQuery = true;
-        else
-            return "Occlusion queries not supported";
-
+        // NOTE: branches on arbVertexProgram (not arbVbo) — preserved from original.
         if (arbVertexProgram) {
             GL_ARRAY_BUFFER = ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB;
             GL_ELEMENT_ARRAY_BUFFER = ARBVertexBufferObject.GL_ELEMENT_ARRAY_BUFFER_ARB;
-            GL_DYNAMIC_DRAW = ARBVertexBufferObject.GL_DYNAMIC_DRAW_ARB;
-            GL_STATIC_DRAW = ARBVertexBufferObject.GL_STATIC_DRAW_ARB;
+            GL_DYNAMIC_DRAW = ARBBufferObject.GL_DYNAMIC_DRAW_ARB;
+            GL_STATIC_DRAW = ARBBufferObject.GL_STATIC_DRAW_ARB;
         } else {
             GL_ARRAY_BUFFER = GL15.GL_ARRAY_BUFFER;
             GL_ELEMENT_ARRAY_BUFFER = GL15.GL_ELEMENT_ARRAY_BUFFER;
@@ -601,20 +575,9 @@ public class GLCompat {
             GL_STATIC_DRAW = GL15.GL_STATIC_DRAW;
         }
 
-        if (arbMultitexture) {
-            GL_TEXTURE0 = ARBMultitexture.GL_TEXTURE0_ARB;
-        } else {
-            GL_TEXTURE0 = GL13.GL_TEXTURE0;
-        }
+        GL_TEXTURE0 = arbMultitexture ? ARBMultitexture.GL_TEXTURE0_ARB : GL13.GL_TEXTURE0;
 
-        if (fboType == FBOType.NORMAL) {
-            GL_RENDERBUFFER = GL30.GL_RENDERBUFFER;
-            GL_FRAMEBUFFER = GL30.GL_FRAMEBUFFER;
-            GL_READ_FRAMEBUFFER = GL30.GL_READ_FRAMEBUFFER;
-            GL_DRAW_FRAMEBUFFER = GL30.GL_DRAW_FRAMEBUFFER;
-            GL_DEPTH_ATTACHMENT = GL30.GL_DEPTH_ATTACHMENT;
-            GL_COLOR_ATTACHMENT0 = GL30.GL_COLOR_ATTACHMENT0;
-        } else if (fboType == FBOType.ARB) {
+        if (fboType == FBOType.ARB) {
             GL_RENDERBUFFER = ARBFramebufferObject.GL_RENDERBUFFER;
             GL_FRAMEBUFFER = ARBFramebufferObject.GL_FRAMEBUFFER;
             GL_READ_FRAMEBUFFER = ARBFramebufferObject.GL_READ_FRAMEBUFFER;
@@ -628,50 +591,44 @@ public class GLCompat {
             GL_DRAW_FRAMEBUFFER = EXTFramebufferBlit.GL_DRAW_FRAMEBUFFER_EXT;
             GL_DEPTH_ATTACHMENT = EXTFramebufferObject.GL_DEPTH_ATTACHMENT_EXT;
             GL_COLOR_ATTACHMENT0 = EXTFramebufferObject.GL_COLOR_ATTACHMENT0_EXT;
+        } else { // NORMAL
+            GL_RENDERBUFFER = GL30.GL_RENDERBUFFER;
+            GL_FRAMEBUFFER = GL30.GL_FRAMEBUFFER;
+            GL_READ_FRAMEBUFFER = GL30.GL_READ_FRAMEBUFFER;
+            GL_DRAW_FRAMEBUFFER = GL30.GL_DRAW_FRAMEBUFFER;
+            GL_DEPTH_ATTACHMENT = GL30.GL_DEPTH_ATTACHMENT;
+            GL_COLOR_ATTACHMENT0 = GL30.GL_COLOR_ATTACHMENT0;
         }
 
-        if (cap.OpenGL30)
-            GL_RGBA16F = GL30.GL_RGBA16F;
-        else if (cap.GL_APPLE_float_pixels)
-            GL_RGBA16F = APPLEFloatPixels.GL_RGBA_FLOAT16_APPLE;
-        else if (cap.GL_ARB_texture_float)
-            GL_RGBA16F = ARBTextureFloat.GL_RGBA16F_ARB;
-        else if (cap.GL_ATI_texture_float)
-            GL_RGBA16F = ATITextureFloat.GL_RGBA_FLOAT16_ATI;
-        else
-            return "Floating point texture format not supported";
+        if (cap.OpenGL30) GL_RGBA16F = GL30.GL_RGBA16F;
+        else if (cap.GL_APPLE_float_pixels) GL_RGBA16F = APPLEFloatPixels.GL_RGBA_FLOAT16_APPLE;
+        else if (cap.GL_ARB_texture_float) GL_RGBA16F = ARBTextureFloat.GL_RGBA16F_ARB;
+        else if (cap.GL_ATI_texture_float) GL_RGBA16F = ATITextureFloat.GL_RGBA_FLOAT16_ATI;
+        else {
+            GL_RGBA16F = 0;
+            if (err.isEmpty()) err.append("Floating point texture format not supported");
+        }
 
-        if (cap.OpenGL14)
-            GL_DEPTH_COMPONENT24 = GL14.GL_DEPTH_COMPONENT24;
-        else if (cap.GL_ARB_depth_texture)
-            GL_DEPTH_COMPONENT24 = ARBDepthTexture.GL_DEPTH_COMPONENT24_ARB;
-        else
-            return "24 bit depth not supported";
+        if (cap.OpenGL14) GL_DEPTH_COMPONENT24 = GL14.GL_DEPTH_COMPONENT24;
+        else if (cap.GL_ARB_depth_texture) GL_DEPTH_COMPONENT24 = ARBDepthTexture.GL_DEPTH_COMPONENT24_ARB;
+        else {
+            GL_DEPTH_COMPONENT24 = 0;
+            if (err.isEmpty()) err.append("24 bit depth not supported");
+        }
 
         if (arbShaderObject) {
             GL_COMPILE_STATUS = ARBShaderObjects.GL_OBJECT_COMPILE_STATUS_ARB;
             GL_LINK_STATUS = ARBShaderObjects.GL_OBJECT_LINK_STATUS_ARB;
             GL_INFO_LOG_LENGTH = ARBShaderObjects.GL_OBJECT_INFO_LOG_LENGTH_ARB;
-            //Apparently the ARB thing doesn't have this, let's just hope it works
-            GL_CURRENT_PROGRAM = GL20.GL_CURRENT_PROGRAM;
         } else {
             GL_COMPILE_STATUS = GL20.GL_COMPILE_STATUS;
             GL_LINK_STATUS = GL20.GL_LINK_STATUS;
             GL_INFO_LOG_LENGTH = GL20.GL_INFO_LOG_LENGTH;
-            GL_CURRENT_PROGRAM = GL20.GL_CURRENT_PROGRAM;
         }
+        GL_CURRENT_PROGRAM = GL20.GL_CURRENT_PROGRAM;
 
-        if (arbVertexShader) {
-            GL_VERTEX_SHADER = ARBVertexShader.GL_VERTEX_SHADER_ARB;
-        } else {
-            GL_VERTEX_SHADER = GL20.GL_VERTEX_SHADER;
-        }
-
-        if (arbFragmentShader) {
-            GL_FRAGMENT_SHADER = ARBFragmentShader.GL_FRAGMENT_SHADER_ARB;
-        } else {
-            GL_FRAGMENT_SHADER = GL20.GL_FRAGMENT_SHADER;
-        }
+        GL_VERTEX_SHADER = arbVertexShader ? ARBVertexShader.GL_VERTEX_SHADER_ARB : GL20.GL_VERTEX_SHADER;
+        GL_FRAGMENT_SHADER = arbFragmentShader ? ARBFragmentShader.GL_FRAGMENT_SHADER_ARB : GL20.GL_FRAGMENT_SHADER;
 
         if (arbImaging) {
             GL_FUNC_ADD = ARBImaging.GL_FUNC_ADD;
@@ -690,29 +647,29 @@ public class GLCompat {
             GL_QUERY_RESULT_AVAILABLE = GL15.GL_QUERY_RESULT_AVAILABLE;
             GL_QUERY_RESULT = GL15.GL_QUERY_RESULT;
         }
-        return "";
 
+        error = err.toString();
     }
 
 
 
-    public static enum VAOType {
+    public enum VAOType {
         NORMAL,
         ARB,
         APPLE,
         APPLE_COMPAT
     }
 
-    public static enum FBOType {
+    public enum FBOType {
         NORMAL,
         ARB,
-        EXT;
+        EXT
     }
 
-    public static enum InstancingType {
+    public enum InstancingType {
         NORMAL,
         ARB,
-        EXT;
+        EXT
     }
 
 }

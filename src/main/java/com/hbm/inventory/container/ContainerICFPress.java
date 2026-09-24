@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.IItemFluidIdentifier;
@@ -15,6 +16,17 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerICFPress extends Container {
 
     private final TileEntityICFPress press;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(8)
+                                                                              .rule(0, 2,
+                                                                                      s -> s.getItem() == ModItems.icf_pellet_empty)
+                                                                              .rule(2, 4,
+                                                                                      s -> s.getItem() == ModItems.particle_muon)
+                                                                              .rule(4, 6,
+                                                                                      s -> !(s.getItem() instanceof IItemFluidIdentifier))
+                                                                              .rule(6, 8,
+                                                                                      s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                              .build();
 
     public ContainerICFPress(InventoryPlayer invPlayer, TileEntityICFPress tedf) {
 
@@ -48,11 +60,7 @@ public class ContainerICFPress extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 8,
-                s -> s.getItem() == ModItems.icf_pellet_empty, 2,
-                s -> s.getItem() == ModItems.particle_muon, 4,
-                s -> !(s.getItem() instanceof IItemFluidIdentifier), 6,
-                s -> s.getItem() instanceof IItemFluidIdentifier, 8);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.hbm.render.util;
 
-import com.hbm.render.amlfrom1710.Vec3;
+import net.minecraft.client.renderer.GlStateManager;
+import com.hbm.util.Vec3NT;
 import com.hbm.wiaj.WorldInAJar;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -23,7 +24,6 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11;
-import net.minecraft.client.renderer.GlStateManager;
 import org.lwjgl.opengl.GL14;
 
 import java.util.*;
@@ -81,8 +81,7 @@ public class RenderOverhead {
 			GlStateManager.enableBlend();
 			//src alpha, one minus src alpha
 			GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-			Tessellator tessellator = Tessellator.getInstance();
-			BufferBuilder buf = tessellator.getBuffer();
+			NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionQuads(1);
 			byte heightOffset = 0;
 
 			if(name.equals("deadmau5")) {
@@ -90,14 +89,15 @@ public class RenderOverhead {
 			}
 
 			GlStateManager.disableTexture2D();
-			buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION);
 			int center = fontrenderer.getStringWidth(name) / 2;
 			GlStateManager.color(0.0F, 0.0F, 0.0F, 0.25F);
-			buf.pos(-center - 1, -1 + heightOffset, 0.0D).endVertex();
-			buf.pos(-center - 1, 8 + heightOffset, 0.0D).endVertex();
-			buf.pos(center + 1, 8 + heightOffset, 0.0D).endVertex();
-			buf.pos(center + 1, -1 + heightOffset, 0.0D).endVertex();
-			tessellator.draw();
+			buf.appendPositionQuadUnchecked(
+					-center - 1, -1 + heightOffset, 0.0F,
+					-center - 1, 8 + heightOffset, 0.0F,
+					center + 1, 8 + heightOffset, 0.0F,
+					center + 1, -1 + heightOffset, 0.0F
+			);
+			NTMImmediate.INSTANCE.draw();
 			GlStateManager.enableTexture2D();
 			fontrenderer.drawString(name, -fontrenderer.getStringWidth(name) / 2, heightOffset, 553648127);
 			GlStateManager.enableDepth();
@@ -130,8 +130,7 @@ public class RenderOverhead {
 			GlStateManager.enableBlend();
 			//src alpha, one minus src alpha
 			GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-			Tessellator tessellator = Tessellator.getInstance();
-			BufferBuilder buf = tessellator.getBuffer();
+			NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionQuads(1);
 			byte heightOffset = 0;
 
 			if(name.equals("deadmau5")) {
@@ -139,14 +138,15 @@ public class RenderOverhead {
 			}
 
 			GlStateManager.disableTexture2D();
-			buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION);
 			int center = fontrenderer.getStringWidth(name) / 2;
 			GlStateManager.color(0.0F, 0.0F, 0.0F, 0.25F);
-			buf.pos(-center - 1, -1 + heightOffset, 0.0D).endVertex();
-			buf.pos(-center - 1, 8 + heightOffset, 0.0D).endVertex();
-			buf.pos(center + 1, 8 + heightOffset, 0.0D).endVertex();
-			buf.pos(center + 1, -1 + heightOffset, 0.0D).endVertex();
-			tessellator.draw();
+			buf.appendPositionQuadUnchecked(
+					-center - 1, -1 + heightOffset, 0.0F,
+					-center - 1, 8 + heightOffset, 0.0F,
+					center + 1, 8 + heightOffset, 0.0F,
+					center + 1, -1 + heightOffset, 0.0F
+			);
+			NTMImmediate.INSTANCE.draw();
 			GlStateManager.enableTexture2D();
 			fontrenderer.drawString(name, -fontrenderer.getStringWidth(name) / 2, heightOffset, shadowColor);
 			GlStateManager.enableDepth();
@@ -289,7 +289,7 @@ public class RenderOverhead {
 		double z =  player.prevPosZ + (player.posZ - player.prevPosZ) * partialTicks;
 
 		GlStateManager.pushMatrix();
-		GL11.glDisable(GL11.GL_COLOR_MATERIAL);
+		GlStateManager.disableColorMaterial();
 		GlStateManager.disableTexture2D();
 		GlStateManager.disableLighting();
 		GL11.glEnable(GL11.GL_POINT_SMOOTH);
@@ -357,7 +357,7 @@ public class RenderOverhead {
 				double aX = pX + (maxX - minX) / 2D;
 				double aY = pY + (maxY - minY) / 2D;
 				double aZ = pZ + (maxZ - minZ) / 2D;
-				Vec3 vec = Vec3.createVectorHelper(x - aX, y - aY, z - aZ);
+				Vec3NT vec = Vec3NT.createVectorHelper(x - aX, y - aY, z - aZ);
 				if(vec.length() > marker.maxDist) {
 					it.remove();
 				}
@@ -368,7 +368,7 @@ public class RenderOverhead {
 
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 
-		GL11.glEnable(GL11.GL_COLOR_MATERIAL);
+		GlStateManager.enableColorMaterial();
 		GlStateManager.enableTexture2D();
 		GL11.glDisable(GL11.GL_POINT_SMOOTH);
 		GlStateManager.disableBlend();
@@ -393,25 +393,25 @@ public class RenderOverhead {
 			double aX = pX + (maxX - minX) / 2D;
 			double aY = pY + (maxY - minY) / 2D;
 			double aZ = pZ + (maxZ - minZ) / 2D;
-			Vec3 vec = Vec3.createVectorHelper(aX - x, aY - y, aZ - z);
-			double len = vec.xCoord * vec.xCoord + vec.yCoord * vec.yCoord + vec.zCoord * vec.zCoord;
+			Vec3NT vec = Vec3NT.createVectorHelper(aX - x, aY - y, aZ - z);
+			double len = vec.x * vec.x + vec.y * vec.y + vec.z * vec.z;
 			double sqrt = Math.sqrt(len);
 			double mult = Math.min(sqrt, 16D);
-			vec.xCoord *= mult / sqrt;
-			vec.yCoord *= mult / sqrt;
-			vec.zCoord *= mult / sqrt;
+			vec.setX(vec.x * (mult / sqrt));
+			vec.setY(vec.y * (mult / sqrt));
+			vec.setZ(vec.z * (mult / sqrt));
 			Vec3d look = player.getLookVec();
-			Vec3 diff = vec.normalize();
+			Vec3NT diff = vec.normalize();
 			String label = marker.label;
 			if(label == null) {
 				label = "";
 			}
 
-			if(Math.abs(look.x - diff.xCoord) + Math.abs(look.y - diff.yCoord) + Math.abs(look.z - diff.zCoord) < 0.15) {
+			if(Math.abs(look.x - diff.x) + Math.abs(look.y - diff.y) + Math.abs(look.z - diff.z) < 0.15) {
 				label += (!label.isEmpty() ? " " : "") + ((int) sqrt) + "m";
 			}
 
-			if(!label.isEmpty()) drawTag(1F, len, label, vec.xCoord, vec.yCoord, vec.zCoord, 100, true, marker.color, marker.color);
+			if(!label.isEmpty()) drawTag(1F, len, label, vec.x, vec.y, vec.z, 100, true, marker.color, marker.color);
 		}
 		GlStateManager.popMatrix();
 	}
@@ -495,9 +495,7 @@ public class RenderOverhead {
 		GL14.glBlendColor(r * a, g * a, b * a, a);
 		GlStateManager.tryBlendFuncSeparate(GL11.GL_CONSTANT_COLOR, GL11.GL_ONE_MINUS_CONSTANT_ALPHA, GL11.GL_CONSTANT_ALPHA, GL11.GL_ONE_MINUS_CONSTANT_ALPHA);
 		mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-		Tessellator tessellator = Tessellator.getInstance();
-		BufferBuilder buffer = tessellator.getBuffer();
-		buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+		BufferBuilder buffer = NTMImmediate.INSTANCE.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
 		buffer.setTranslation(offsetX - pX, offsetY - pY, offsetZ - pZ);
 		BlockRendererDispatcher dispatcher = mc.getBlockRendererDispatcher();
 
@@ -513,7 +511,7 @@ public class RenderOverhead {
 		}
 
 		buffer.setTranslation(0, 0, 0);
-		tessellator.draw();
+		NTMImmediate.INSTANCE.draw();
 		GL14.glBlendColor(0F, 0F, 0F, 1F);
 		GlStateManager.disableBlend();
 		GlStateManager.color(1F, 1F, 1F, 1F);

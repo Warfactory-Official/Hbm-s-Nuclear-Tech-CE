@@ -33,8 +33,8 @@ public class RenderSpear extends Render<EntitySpear> {
 		GlStateManager.enableLighting();
 		GlStateManager.enableCull();
 		
-		GL11.glRotated(180, 1, 0, 0);
-		GL11.glScaled(2, 2, 2);
+		GlStateManager.rotate(180, 1, 0, 0);
+		GlStateManager.scale(2, 2, 2);
 		
 		EntitySpear spear = (EntitySpear) entity;
 		

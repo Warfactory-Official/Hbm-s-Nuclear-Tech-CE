@@ -121,9 +121,14 @@ public class BlockSiloHatch extends BlockContainer implements IBomb, IMultiBlock
 	}
 	
 	@Override
+	public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
+		return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
+	}
+
+	@Override
 	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
 		TileEntitySiloHatch te = (TileEntitySiloHatch) world.getTileEntity(pos);
-		BlockPos center = pos.offset(placer.getHorizontalFacing(), 3);
+		BlockPos center = pos.offset(state.getValue(FACING).getOpposite(), 3);
 		for(int i = -3; i <= 3; i ++){
 			for(int j = -3; j <= 3; j ++){
 				//Cut out the corners
@@ -139,7 +144,6 @@ public class BlockSiloHatch extends BlockContainer implements IBomb, IMultiBlock
 				}
 			}
 		}
-		world.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
 	}
 	
 	@Override

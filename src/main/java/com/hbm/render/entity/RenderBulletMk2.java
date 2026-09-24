@@ -514,9 +514,9 @@ public class RenderBulletMk2 extends Render<EntityBulletBase> {
 	
 	private void renderAPDS() {
 		
-		GL11.glScaled(2, 2, 2);
-		GL11.glRotated(90, 0, 0, 1);
-		GL11.glRotated(90, 0, 1, 0);
+		GlStateManager.scale(2, 2, 2);
+		GlStateManager.rotate(90, 0, 0, 1);
+		GlStateManager.rotate(90, 0, 1, 0);
 		
 		GlStateManager.shadeModel(GL11.GL_SMOOTH);
 		bindTexture(ResourceManager.flechette_tex);

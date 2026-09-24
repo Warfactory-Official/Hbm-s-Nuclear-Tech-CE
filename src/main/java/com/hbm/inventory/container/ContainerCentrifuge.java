@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.slot.SlotUpgrade;
@@ -12,32 +13,42 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
+import org.jetbrains.annotations.NotNull;
 
 public class ContainerCentrifuge extends Container {
 
-	private TileEntityMachineCentrifuge centrifuge;
-	
-	public ContainerCentrifuge(InventoryPlayer invPlayer, TileEntityMachineCentrifuge te) {
-		
+	private final TileEntityMachineCentrifuge centrifuge;
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(8)
+                                                                              .rule(0, 1, ContainerCentrifuge::isNormal)
+                                                                              .rule(1, 2, Library::isBattery)
+                                                                              .rule(2, 6, ContainerCentrifuge::isNormal)
+                                                                              .rule(6, 8, Library::isMachineUpgrade)
+                                                                              .build();
+
+    public ContainerCentrifuge(InventoryPlayer invPlayer, TileEntityMachineCentrifuge te) {
+
 		centrifuge = te;
-		
-		this.addSlotToContainer(new SlotItemHandler(te.inventory, 0, 36, 50));
-		this.addSlotToContainer(new SlotBattery(te.inventory, 1, 9, 50));
-		this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 2, 63, 50));
-		this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 3, 83, 50));
-		this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 4, 103, 50));
-		this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 5, 123, 50));
-		this.addSlotToContainer(new SlotUpgrade(te.inventory, 6, 149, 22));
-		this.addSlotToContainer(new SlotUpgrade(te.inventory, 7, 149, 40));
-		
-		for(int i = 0; i < 3; i++) {
+
+		this.addSlotToContainer(new SlotItemHandler(te.inventory, 0, 44, 57));
+		// Battery
+		this.addSlotToContainer(new SlotBattery(te.inventory, 1, 8, 57));
+		// Outputs
+		this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 2, 70, 57));
+		this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 3, 90, 57));
+		this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 4, 110, 57));
+		this.addSlotToContainer(SlotFiltered.takeOnly(te.inventory, 5, 130, 57));
+		// Upgrades
+		this.addSlotToContainer(new SlotUpgrade(te.inventory, 6, 156, 31));
+		this.addSlotToContainer(new SlotUpgrade(te.inventory, 7, 156, 49));
+
+        for(int i = 0; i < 3; i++) {
 			for(int j = 0; j < 9; j++) {
-				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 8 + j * 18, 104 + i * 18));
+				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 11 + j * 18, 107 + i * 18));
 			}
 		}
-		
-		for(int i = 0; i < 9; i++) {
-			this.addSlotToContainer(new Slot(invPlayer, i, 8 + i * 18, 162));
+
+        for(int i = 0; i < 9; i++) {
+			this.addSlotToContainer(new Slot(invPlayer, i, 11 + i * 18, 165));
 		}
 	}
 
@@ -46,16 +57,12 @@ public class ContainerCentrifuge extends Container {
     }
 
 	@Override
-    public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 8,
-                ContainerCentrifuge::isNormal, 1,
-                Library::isBattery, 2,
-                ContainerCentrifuge::isNormal, 6,
-                Library::isMachineUpgrade, 8);
+    public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
+        return InventoryUtil.transferStack(this.inventorySlots, index, TRANSFER_STRATEGY, player);
     }
 
 	@Override
-	public boolean canInteractWith(EntityPlayer player) {
+	public boolean canInteractWith(@NotNull EntityPlayer player) {
 		return centrifuge.isUseableByPlayer(player);
 	}
 }

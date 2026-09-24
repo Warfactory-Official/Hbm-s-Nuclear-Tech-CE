@@ -37,10 +37,23 @@ public class MachinePuF6Tank extends BlockContainer implements IMultiBlock {
 		
 		ModBlocks.ALL_BLOCKS.add(this);
 	}
+
+	@Override
+	public boolean hasComparatorInputOverride(IBlockState state) {
+		return true;
+	}
+	@Override
+	public int getComparatorInputOverride(IBlockState blockState, World worldIn, BlockPos pos) {
+		TileEntity te = worldIn.getTileEntity(pos);
+		if (te instanceof TileEntityMachinePuF6Tank teTank) {
+			return teTank.tank.getRedstoneComparatorPower();
+		}
+		return 0;
+	}
 	
 	@Override
 	public EnumBlockRenderType getRenderType(IBlockState state) {
-		return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
+        return EnumBlockRenderType.MODEL;
 	}
 
 	@Override
@@ -80,8 +93,6 @@ public class MachinePuF6Tank extends BlockContainer implements IMultiBlock {
 	
 	@Override
 	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-		world.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()), 2);
-
 		if (MultiblockHandler.checkSpace(world, pos, MultiblockHandler.uf6Dimension)) {
 			MultiblockHandler.fillUp(world, pos, MultiblockHandler.uf6Dimension, ModBlocks.dummy_block_puf6);
 

@@ -1,10 +1,12 @@
 package com.hbm.items.armor;
 
+import com.hbm.capability.HbmCapability;
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.items.ModItems;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextFormatting;
@@ -15,12 +17,12 @@ import java.util.List;
 public class ItemModLodestone extends ItemArmorMod {
 
 	int range;
-	
+
 	public ItemModLodestone(int range, String s) {
 		super(ArmorModHandler.extra, true, true, true, true, s);
 		this.range = range;
 	}
-	
+
 	@Override
 	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn){
 		list.add(TextFormatting.DARK_GRAY + "Attracts nearby items");
@@ -30,15 +32,18 @@ public class ItemModLodestone extends ItemArmorMod {
 		list.add("");
 		super.addInformation(stack, worldIn, list, flagIn);
 	}
-	
+
 	@Override
 	public void addDesc(List<String> list, ItemStack stack, ItemStack armor) {
 		list.add(TextFormatting.DARK_GRAY + "  " + stack.getDisplayName() + " (Magnetic range: " + range + ")");
 	}
-	
+
 	@Override
 	public void modUpdate(EntityLivingBase entity, ItemStack armor) {
-		
+
+		// No magnet if keybind toggled
+		if(entity instanceof EntityPlayer && !HbmCapability.getData((EntityPlayer) entity).isMagnetActive()) return;
+
 		List<EntityItem> items = entity.world.getEntitiesWithinAABB(EntityItem.class, entity.getEntityBoundingBox().grow(range, range, range));
 		
 		for(EntityItem item : items) {

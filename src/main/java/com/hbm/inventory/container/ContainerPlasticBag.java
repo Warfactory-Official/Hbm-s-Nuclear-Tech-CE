@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.items.tool.ItemPlasticBag;
-import com.hbm.lib.Library;
 import com.hbm.util.InventoryUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -14,6 +14,10 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerPlasticBag extends Container {
 
     private ItemPlasticBag.InventoryPlasticBag bag;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(1)
+                                                                              .genericMachineRange(0)
+                                                                              .build();
 
     public ContainerPlasticBag(InventoryPlayer invPlayer, ItemPlasticBag.InventoryPlasticBag bag) {
         this.bag = bag;
@@ -33,7 +37,7 @@ public class ContainerPlasticBag extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 1, true, player);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
     @Override

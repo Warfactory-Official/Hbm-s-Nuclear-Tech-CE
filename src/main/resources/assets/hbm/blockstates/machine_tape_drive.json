@@ -1,0 +1,9 @@
+{
+    "variants": {
+        "facing=north": { "model": "hbm:machine_tape_drive" },
+        "facing=south": { "model": "hbm:machine_tape_drive" },
+        "facing=west":  { "model": "hbm:machine_tape_drive" },
+        "facing=east":  { "model": "hbm:machine_tape_drive" },
+        "normal":       { "model": "hbm:machine_tape_drive" }
+    }
+}

@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.ModItems;
@@ -19,7 +20,17 @@ public class ContainerCombustionEngine extends Container {
 
   private final TileEntityMachineCombustionEngine engine;
 
-  public ContainerCombustionEngine(
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(5)
+                                                                              .rule(0, 2,
+                                                                                      ContainerCombustionEngine::isNormal)
+                                                                              .rule(2, 3,
+                                                                                      s -> s.getItem() == ModItems.piston_set)
+                                                                              .rule(3, 4, Library::isChargeableBattery)
+                                                                              .rule(4, 5,
+                                                                                      s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                              .build();
+
+    public ContainerCombustionEngine(
       InventoryPlayer invPlayer, TileEntityMachineCombustionEngine tile) {
     this.engine = tile;
 
@@ -46,11 +57,7 @@ public class ContainerCombustionEngine extends Container {
 
   @Override
   public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-    return InventoryUtil.transferStack(this.inventorySlots, index, 5,
-            ContainerCombustionEngine::isNormal, 2,
-            s -> s.getItem() == ModItems.piston_set, 3,
-            Library::isChargeableBattery, 4,
-            s -> s.getItem() instanceof IItemFluidIdentifier, 5);
+      return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
   }
 
   @Override

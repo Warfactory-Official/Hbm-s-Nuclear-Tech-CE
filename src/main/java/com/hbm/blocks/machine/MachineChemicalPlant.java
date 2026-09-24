@@ -1,9 +1,11 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.blocks.BlockDummyable;
+import com.hbm.integration.ae2.NTMCraftingMachineFactory;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityProxyCombo;
 import com.hbm.tileentity.machine.TileEntityMachineChemicalPlant;
+import com.hbm.util.Compat;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -12,6 +14,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.Loader;
 
 public class MachineChemicalPlant extends BlockDummyable {
 
@@ -21,8 +24,8 @@ public class MachineChemicalPlant extends BlockDummyable {
 
     @Override
     public TileEntity createNewTileEntity(World world, int meta) {
-        if(meta >= 12) return new TileEntityMachineChemicalPlant();
-        if(meta >= 6) return new TileEntityProxyCombo().inventory().power().fluid();
+        if(meta >= 12) return Loader.isModLoaded(Compat.ModIds.AE2) ? NTMCraftingMachineFactory.createAE2TileEntity("com.hbm.integration.ae2.tileentity.TileEntityMachineChemicalPlantAE2") : new TileEntityMachineChemicalPlant();
+        if(meta >= 6) return Loader.isModLoaded(Compat.ModIds.AE2) ? NTMCraftingMachineFactory.createAE2Proxy(true, true, true) : new TileEntityProxyCombo().inventory().power().fluid();
         return null;
     }
 

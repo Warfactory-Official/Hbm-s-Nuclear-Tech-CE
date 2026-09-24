@@ -1,5 +1,6 @@
 package com.hbm.qmaw.components;
 
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.init.SoundEvents;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -61,17 +62,17 @@ public class QComponentLink extends ManualElement {
 
         if(this.icon != null) {
 
-            GL11.glPushMatrix();
-            GL11.glEnable(GL11.GL_DEPTH_TEST);
+            GlStateManager.pushMatrix();
+            GlStateManager.enableDepth();
             Minecraft mc = Minecraft.getMinecraft();
-            GL11.glRotated(180, 1, 0, 0);
+            GlStateManager.rotate(180, 1, 0, 0);
             RenderHelper.enableStandardItemLighting();
-            GL11.glRotated(-180, 1, 0, 0);
+            GlStateManager.rotate(-180, 1, 0, 0);
             itemRender.renderItemAndEffectIntoGUI( this.icon, x, y - 1);
             itemRender.renderItemOverlayIntoGUI(this.font, this.icon, x, y - 1, null);
             RenderHelper.disableStandardItemLighting();
-            GL11.glDisable(GL11.GL_DEPTH_TEST);
-            GL11.glPopMatrix();
+            GlStateManager.disableDepth();
+            GlStateManager.popMatrix();
 
             x += 18;
             y += (16 - font.FONT_HEIGHT) / 2;

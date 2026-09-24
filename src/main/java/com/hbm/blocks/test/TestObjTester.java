@@ -60,33 +60,6 @@ public class TestObjTester extends BlockContainer implements IBomb {
     		ex.doExplosionA();
     		ex.doExplosionB(false);*/
     	} else {
-    		/*Minecraft.getMinecraft().getTextureManager().deleteTexture(ResourceManager.gluon_beam_tex);
-    		ResourceManager.gluon_beam = HbmShaderManager2.loadShader(new ResourceLocation(RefStrings.MODID, "shaders/gluon_beam"))
-    				.withUniforms(shader -> {
-    					GL13.glActiveTexture(GL13.GL_TEXTURE3);
-    					Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.noise_1);
-    					GL20.glUniform1i(GL20.glGetUniformLocation(shader, "noise_1"), 3);
-    					GL13.glActiveTexture(GL13.GL_TEXTURE4);
-    					Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.noise_2);
-    					GL20.glUniform1i(GL20.glGetUniformLocation(shader, "noise_1"), 4);
-    					GL13.glActiveTexture(GL13.GL_TEXTURE0);
-    					
-    					float time = (System.currentTimeMillis()%10000000)/1000F;
-    					GL20.glUniform1f(GL20.glGetUniformLocation(shader, "time"), time);
-    				});
-    		ResourceManager.gluon_spiral = HbmShaderManager2.loadShader(new ResourceLocation(RefStrings.MODID, "shaders/gluon_spiral"))
-    				.withUniforms(shader -> {
-    					GL13.glActiveTexture(GL13.GL_TEXTURE3);
-    					Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.noise_1);
-    					GL20.glUniform1i(GL20.glGetUniformLocation(shader, "noise_1"), 3);
-    					GL13.glActiveTexture(GL13.GL_TEXTURE4);
-    					Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.noise_2);
-    					GL20.glUniform1i(GL20.glGetUniformLocation(shader, "noise_1"), 4);
-    					GL13.glActiveTexture(GL13.GL_TEXTURE0);
-    					
-    					float time = (System.currentTimeMillis()%10000000)/1000F;
-    					GL20.glUniform1f(GL20.glGetUniformLocation(shader, "time"), time);
-    				});*/
     		//Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleBFGRing(world, pos.getX() + 0.5, pos.getY() + 25, pos.getZ() + 0.5));
     		try {
     			//Minecraft.getMinecraft().effectRenderer.addEffect(new PhysicsTestParticle(world, pos.getX()+2.5, pos.getY() + 3, pos.getZ() + 3));

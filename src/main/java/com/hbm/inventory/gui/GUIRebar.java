@@ -41,7 +41,7 @@ public class GUIRebar extends GuiInfoContainer {
                 list.add(new ItemStack(conk.getKey(), 1, conk.getValue()));
             }
 
-            ItemStack selected = list.isEmpty() ? new ItemStack(ModBlocks.concrete_rebar) : list.get(0);
+            ItemStack selected = list.isEmpty() ? new ItemStack(ModBlocks.concrete_rebar) : list.getFirst();
 
             if (list.size() > 1) {
                 int cycle = (int) ((System.currentTimeMillis() % (1000L * list.size())) / 1000L);

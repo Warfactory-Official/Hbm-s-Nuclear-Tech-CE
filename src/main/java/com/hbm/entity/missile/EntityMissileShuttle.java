@@ -13,6 +13,7 @@ import com.hbm.packet.toclient.AuxParticlePacketNT;
 import com.hbm.interfaces.AutoRegister;
 
 import com.hbm.lib.HBMSoundHandler;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.util.SoundCategory;
 
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
@@ -40,9 +41,8 @@ public class EntityMissileShuttle extends EntityMissileBaseNT {
 		explosion.atttributes.add(ExAttrib.NOPARTICLE);
 		explosion.explode();
 		NBTTagCompound data = new NBTTagCompound();
-		data.setString("type", "rbmkmush");
 		data.setFloat("scale", 10);
-		PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, this.posX + 0.5, this.posY + 1, this.posZ + 0.5), new TargetPoint(world.provider.getDimension(), this.posX + 0.5, this.posY + 1, this.posZ + 0.5, 250));
+		PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.RBMKMush, data, this.posX + 0.5, this.posY + 1, this.posZ + 0.5), new TargetPoint(world.provider.getDimension(), this.posX + 0.5, this.posY + 1, this.posZ + 0.5, 250));
         // mlbv: bob did a manual call but why? it should be handled by the packet automatically. comment out for now.
 //		MainRegistry.proxy.effectNT(data);
 		this.world.playSound(null, this.posX, this.posY, this.posZ, HBMSoundHandler.robinExplosion, SoundCategory.HOSTILE, 4.0F, (1.0F + (this.world.rand.nextFloat() - this.world.rand.nextFloat()) * 0.2F) * 0.7F);

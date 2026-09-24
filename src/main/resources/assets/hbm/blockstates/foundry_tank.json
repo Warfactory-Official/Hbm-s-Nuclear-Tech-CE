@@ -1,0 +1,388 @@
+{
+    "multipart": [
+        {
+            "when": {
+                "north": "false",
+                "down": "false",
+                "out_north": "false",
+                "up": "false"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_side_inner"
+            }
+        },
+        {
+            "when": {
+                "north": "false",
+                "down": "false",
+                "out_north": "false",
+                "up": "true"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_side_bottom"
+            }
+        },
+        {
+            "when": {
+                "north": "false",
+                "down": "false",
+                "out_north": "true",
+                "up": "false"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_side_outlet_inner"
+            }
+        },
+        {
+            "when": {
+                "north": "false",
+                "down": "false",
+                "out_north": "true",
+                "up": "true"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_side_outlet_bottom"
+            }
+        },
+        {
+            "when": {
+                "north": "false",
+                "down": "true",
+                "out_north": "false",
+                "up": "false"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_upper_inner"
+            }
+        },
+        {
+            "when": {
+                "north": "false",
+                "down": "true",
+                "out_north": "false",
+                "up": "true"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_upper_bottom"
+            }
+        },
+        {
+            "when": {
+                "north": "false",
+                "down": "true",
+                "out_north": "true",
+                "up": "false"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_upper_outlet_inner"
+            }
+        },
+        {
+            "when": {
+                "north": "false",
+                "down": "true",
+                "out_north": "true",
+                "up": "true"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_upper_outlet_bottom"
+            }
+        },
+        {
+            "when": {
+                "east": "false",
+                "down": "false",
+                "out_east": "false",
+                "up": "false"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_side_inner",
+                "y": 90
+            }
+        },
+        {
+            "when": {
+                "east": "false",
+                "down": "false",
+                "out_east": "false",
+                "up": "true"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_side_bottom",
+                "y": 90
+            }
+        },
+        {
+            "when": {
+                "east": "false",
+                "down": "false",
+                "out_east": "true",
+                "up": "false"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_side_outlet_inner",
+                "y": 90
+            }
+        },
+        {
+            "when": {
+                "east": "false",
+                "down": "false",
+                "out_east": "true",
+                "up": "true"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_side_outlet_bottom",
+                "y": 90
+            }
+        },
+        {
+            "when": {
+                "east": "false",
+                "down": "true",
+                "out_east": "false",
+                "up": "false"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_upper_inner",
+                "y": 90
+            }
+        },
+        {
+            "when": {
+                "east": "false",
+                "down": "true",
+                "out_east": "false",
+                "up": "true"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_upper_bottom",
+                "y": 90
+            }
+        },
+        {
+            "when": {
+                "east": "false",
+                "down": "true",
+                "out_east": "true",
+                "up": "false"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_upper_outlet_inner",
+                "y": 90
+            }
+        },
+        {
+            "when": {
+                "east": "false",
+                "down": "true",
+                "out_east": "true",
+                "up": "true"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_upper_outlet_bottom",
+                "y": 90
+            }
+        },
+        {
+            "when": {
+                "south": "false",
+                "down": "false",
+                "out_south": "false",
+                "up": "false"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_side_inner",
+                "y": 180
+            }
+        },
+        {
+            "when": {
+                "south": "false",
+                "down": "false",
+                "out_south": "false",
+                "up": "true"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_side_bottom",
+                "y": 180
+            }
+        },
+        {
+            "when": {
+                "south": "false",
+                "down": "false",
+                "out_south": "true",
+                "up": "false"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_side_outlet_inner",
+                "y": 180
+            }
+        },
+        {
+            "when": {
+                "south": "false",
+                "down": "false",
+                "out_south": "true",
+                "up": "true"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_side_outlet_bottom",
+                "y": 180
+            }
+        },
+        {
+            "when": {
+                "south": "false",
+                "down": "true",
+                "out_south": "false",
+                "up": "false"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_upper_inner",
+                "y": 180
+            }
+        },
+        {
+            "when": {
+                "south": "false",
+                "down": "true",
+                "out_south": "false",
+                "up": "true"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_upper_bottom",
+                "y": 180
+            }
+        },
+        {
+            "when": {
+                "south": "false",
+                "down": "true",
+                "out_south": "true",
+                "up": "false"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_upper_outlet_inner",
+                "y": 180
+            }
+        },
+        {
+            "when": {
+                "south": "false",
+                "down": "true",
+                "out_south": "true",
+                "up": "true"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_upper_outlet_bottom",
+                "y": 180
+            }
+        },
+        {
+            "when": {
+                "west": "false",
+                "down": "false",
+                "out_west": "false",
+                "up": "false"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_side_inner",
+                "y": 270
+            }
+        },
+        {
+            "when": {
+                "west": "false",
+                "down": "false",
+                "out_west": "false",
+                "up": "true"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_side_bottom",
+                "y": 270
+            }
+        },
+        {
+            "when": {
+                "west": "false",
+                "down": "false",
+                "out_west": "true",
+                "up": "false"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_side_outlet_inner",
+                "y": 270
+            }
+        },
+        {
+            "when": {
+                "west": "false",
+                "down": "false",
+                "out_west": "true",
+                "up": "true"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_side_outlet_bottom",
+                "y": 270
+            }
+        },
+        {
+            "when": {
+                "west": "false",
+                "down": "true",
+                "out_west": "false",
+                "up": "false"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_upper_inner",
+                "y": 270
+            }
+        },
+        {
+            "when": {
+                "west": "false",
+                "down": "true",
+                "out_west": "false",
+                "up": "true"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_upper_bottom",
+                "y": 270
+            }
+        },
+        {
+            "when": {
+                "west": "false",
+                "down": "true",
+                "out_west": "true",
+                "up": "false"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_upper_outlet_inner",
+                "y": 270
+            }
+        },
+        {
+            "when": {
+                "west": "false",
+                "down": "true",
+                "out_west": "true",
+                "up": "true"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_wall_upper_outlet_bottom",
+                "y": 270
+            }
+        },
+        {
+            "when": {
+                "down": "false"
+            },
+            "apply": {
+                "model": "hbm:foundry_tank_floor"
+            }
+        }
+    ]
+}

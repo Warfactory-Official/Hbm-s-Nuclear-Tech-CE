@@ -7,7 +7,7 @@ import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.factory.Orchestras;
 import com.hbm.particle.SpentCasing;
 import com.hbm.particle.helper.CasingCreator;
-import com.hbm.render.anim.sedna.HbmAnimationsSedna;
+import com.hbm.render.anim.sedna.AnimationEnums;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 
@@ -34,11 +34,11 @@ public class WeaponModGreasegun extends WeaponModBase {
 	public static BiConsumer<ItemStack, LambdaContext> ORCHESTRA_GREASEGUN = (stack, ctx) -> {
 		EntityPlayer entity = ctx.getPlayer();
 		if(entity.world.isRemote) return;
-		HbmAnimationsSedna.GunAnimation type = ItemGunBaseNT.getLastAnim(stack, ctx.configIndex);
+		AnimationEnums.GunAnimation type = ItemGunBaseNT.getLastAnim(stack, ctx.configIndex);
 		int timer = ItemGunBaseNT.getAnimTimer(stack, ctx.configIndex);
 		boolean aiming = ItemGunBaseNT.getIsAiming(stack);
 
-		if(type == HbmAnimationsSedna.GunAnimation.CYCLE) {
+		if(type == AnimationEnums.GunAnimation.CYCLE) {
 			if(timer == 1) {
 				SpentCasing casing = ctx.config.getReceivers(stack)[0].getMagazine(stack).getCasing(stack, ctx.inventory);
 				if(casing != null) CasingCreator.composeEffect(entity.world, entity, 0.55, aiming ? 0 : -0.125, aiming ? 0 : -0.25D, 0, 0.18, -0.12, 0.01, -7.5F + (float)entity.getRNG().nextGaussian() * 5F, 12F + (float)entity.getRNG().nextGaussian() * 5F, casing.getName());

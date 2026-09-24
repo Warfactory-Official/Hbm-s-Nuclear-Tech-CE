@@ -1,5 +1,10 @@
 {
 	"variants": {
-		"normal": { "model": "hbm:charge_miner" }
+		"facing=down":  { "model": "hbm:charge_miner" },
+		"facing=up":    { "model": "hbm:charge_miner" },
+		"facing=north": { "model": "hbm:charge_miner" },
+		"facing=south": { "model": "hbm:charge_miner" },
+		"facing=west":  { "model": "hbm:charge_miner" },
+		"facing=east":  { "model": "hbm:charge_miner" }
 	}
 }

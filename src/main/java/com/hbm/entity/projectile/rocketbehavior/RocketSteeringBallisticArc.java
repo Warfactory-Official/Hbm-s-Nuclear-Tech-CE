@@ -1,7 +1,7 @@
 package com.hbm.entity.projectile.rocketbehavior;
 
 import com.hbm.entity.projectile.EntityArtilleryRocket;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.util.math.Vec3d;
 
 public class RocketSteeringBallisticArc implements IRocketSteeringBehavior {
@@ -74,13 +74,13 @@ public class RocketSteeringBallisticArc implements IRocketSteeringBehavior {
       System.out.println("Turn Pitch: " + turnPitch);
     }
 
-    Vec3 velocity = Vec3.createVectorHelper(speed, 0, 0);
-    velocity.rotateAroundZ((float) -Math.toRadians(rocketPitch + turnPitch));
-    velocity.rotateAroundY((float) Math.toRadians(rocketYaw + turnYaw + 90));
+    Vec3NT velocity = Vec3NT.createVectorHelper(speed, 0, 0);
+    velocity.rotateRollSelf((float) -Math.toRadians(rocketPitch + turnPitch));
+    velocity.rotateYawSelf((float) Math.toRadians(rocketYaw + turnYaw + 90));
 
-    rocket.motionX = velocity.xCoord;
-    rocket.motionY = velocity.yCoord;
-    rocket.motionZ = velocity.zCoord;
+    rocket.motionX = velocity.x;
+    rocket.motionY = velocity.y;
+    rocket.motionZ = velocity.z;
 
     rocket.rotationPitch += (float) turnPitch;
   }

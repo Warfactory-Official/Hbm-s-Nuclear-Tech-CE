@@ -102,8 +102,6 @@ public class ItemRenderChargeThrower extends ItemRenderWeaponBase {
                 ResourceManager.charge_thrower.renderPart("Mortar");
                 ResourceManager.charge_thrower.renderPart("Oomph");
             }
-            //Minecraft.getMinecraft().renderEngine.bindTexture(ResourceManager.charge_thrower_rocket_tex);
-            //ResourceManager.charge_thrower.renderPart("Rocket");
         }
 
         GlStateManager.shadeModel(GL11.GL_FLAT);

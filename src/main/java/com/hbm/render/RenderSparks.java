@@ -45,17 +45,17 @@ public class RenderSparks {
             z = prevZ + dir.z;
 
             GlStateManager.glLineWidth(5F);
-            GL11.glBegin(3);
+            GlStateManager.glBegin(3);
             GlStateManager.color(r1, g1, b1, 1.0F);
             GL11.glVertex3d(prevX, prevY, prevZ);
             GL11.glVertex3d(x, y, z);
-            GL11.glEnd();
+            GlStateManager.glEnd();
             GlStateManager.glLineWidth(2F);
-            GL11.glBegin(3);
+            GlStateManager.glBegin(3);
             GlStateManager.color(r2, g2, b2, 1.0F);
             GL11.glVertex3d(prevX, prevY, prevZ);
             GL11.glVertex3d(x, y, z);
-            GL11.glEnd();
+            GlStateManager.glEnd();
 
 
         }

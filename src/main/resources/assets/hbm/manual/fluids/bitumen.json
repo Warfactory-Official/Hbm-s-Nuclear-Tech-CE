@@ -1,0 +1,23 @@
+{
+	"name": "Bitumen",
+	"icon": [
+		"hbm:fluid_icon",
+		1,
+		13
+	],
+	"trigger": [
+		[
+			"hbm:fluid_icon",
+			1,
+			13
+		]
+	],
+	"title": {
+		"en_us": "Bitumen",
+		"ru_ru": "Битум"
+	},
+	"content": {
+		"en_us": "Bitumen can be primarily obtained through the [[fractioning|Fractioning Tower]] of [[heavy oil|Heavy Oil]]. It is primarily used for the production of asphalt, or the reproduction of [[crude oil|Crude Oil]] through [[cracking|Catalytic Cracking Tower]].<br><br>{{Template:Oil1}}",
+		"ru_ru": "Битум в основном получают из [[тяжёлой нефти|Heavy Oil]] путём [[ректификации|Fractioning Tower]]. В основном он используется для производства асфальта или для воссоздания [[сырой нефти|Crude Oil]] с помощью [[крекинга|Catalytic Cracking Tower]].<br><br>{{Template:Oil1}}"
+	}
+}

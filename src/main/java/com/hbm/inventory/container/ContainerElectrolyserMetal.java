@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.recipes.ElectrolyserMetalRecipes;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
@@ -18,7 +19,17 @@ import java.util.function.Predicate;
 public class ContainerElectrolyserMetal extends Container {
 
     private TileEntityElectrolyser electrolyser;
-    Predicate<ItemStack> INPUT_FILTER = itemStack -> ElectrolyserMetalRecipes.recipes.keySet().stream().anyMatch(aStack -> aStack.getStack().getItem().equals(itemStack.getItem()));
+    private static final Predicate<ItemStack> INPUT_FILTER = itemStack ->
+            ElectrolyserMetalRecipes.recipes.keySet().stream().anyMatch(aStack -> aStack.getStack().getItem().equals(itemStack.getItem()));
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(10)
+                                                                              .rule(0, 1, Library::isBattery)
+                                                                              .rule(1, 3, Library::isMachineUpgrade)
+                                                                              .rule(3, 4, INPUT_FILTER)
+                                                                              .ruleDispatchMode(
+                                                                                      TransferStrategy.RuleDispatchMode.FALLTHROUGH_ON_FAILURE)
+                                                                              .playerFallbackMode(
+                                                                                      TransferStrategy.PlayerFallbackMode.REBALANCE_SECTIONS)
+                                                                              .build();
 
     public ContainerElectrolyserMetal(InventoryPlayer invPlayer, TileEntityElectrolyser tedf) {
         electrolyser = tedf;
@@ -29,8 +40,7 @@ public class ContainerElectrolyserMetal extends Container {
         this.addSlotToContainer(new SlotUpgrade(tedf.inventory, 1, 186, 140));
         this.addSlotToContainer(new SlotUpgrade(tedf.inventory, 2, 186, 158));
         //Input
-        this.addSlotToContainer(SlotFiltered.withWhitelist(tedf.inventory, 14, 10, 22, INPUT_FILTER)
-        );
+        this.addSlotToContainer(SlotFiltered.withWhitelist(tedf.inventory, 14, 10, 22, INPUT_FILTER));
         //Outputs
         this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 15, 136, 18));
         this.addSlotToContainer(SlotFiltered.takeOnly(tedf.inventory, 16, 154, 18));
@@ -52,12 +62,7 @@ public class ContainerElectrolyserMetal extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 21,
-                Library::isBattery, 1,
-                Library::isMachineUpgrade, 3,
-                INPUT_FILTER, 14
-
-               );
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
     @Override

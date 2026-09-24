@@ -13,12 +13,6 @@ import org.lwjgl.opengl.GL11;
 @AutoRegister
 public class RenderBigTurbine extends TileEntitySpecialRenderer<TileEntityMachineLargeTurbine>
     implements IItemRendererProvider {
-
-  @Override
-  public boolean isGlobalRenderer(TileEntityMachineLargeTurbine te) {
-    return true;
-  }
-
   @Override
   public void render(
       TileEntityMachineLargeTurbine turbine,

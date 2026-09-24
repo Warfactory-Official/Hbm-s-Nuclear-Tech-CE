@@ -3,6 +3,7 @@ package com.hbm.tileentity.machine;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import com.hbm.api.fluid.IFluidStandardTransceiver;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.capability.NTMFluidHandlerWrapper;
@@ -41,7 +42,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 
 @AutoRegister
-public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITickable, IFluidStandardTransceiver, IBufPacketReceiver, IConfigurableMachine, IFluidCopiable, IPersistentNBT {
+public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITickable, IFluidStandardTransceiver, IBufPacketReceiver, IConfigurableMachine, IFluidCopiable, IPersistentNBT, IConnectionAnchors, IRORValueProvider {
 
     public Fluid[] types = new Fluid[2];
     public FluidTankNTM[] tanks;
@@ -62,8 +63,8 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITicka
         super();
         tanks = new FluidTankNTM[2];
         tanksSync = new FluidTankNTM[2];
-        this.tanks[0] = new FluidTankNTM(Fluids.WATER, 16_000);
-        this.tanks[1] = new FluidTankNTM(Fluids.STEAM, 16_000 * 100);
+        this.tanks[0] = new FluidTankNTM(Fluids.WATER, 16_000).withOwner(this);
+        this.tanks[1] = new FluidTankNTM(Fluids.STEAM, 16_000 * 100).withOwner(this);
 
         types[0] = FluidRegistry.WATER;
         types[1] = Fluids.STEAM.getFF();
@@ -127,7 +128,7 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITicka
         }
     }
 
-    protected DirPos[] getConPos() {
+    public DirPos[] getConPos() {
         ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset).getRotation(ForgeDirection.UP);
         return new DirPos[] {
                 new DirPos(pos.getX() + dir.offsetX * 2, pos.getY(), pos.getZ() + dir.offsetZ * 2, dir),
@@ -195,6 +196,18 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITicka
     }
 
     @Override
+    public void serializeInitial(ByteBuf buf) {
+        buf.writeBoolean(hasExploded);
+        if(!this.hasExploded) {
+            buf.writeInt(this.heat);
+            this.tanks[0].serialize(buf);
+            this.tanks[1].serialize(buf);
+            buf.writeBoolean(this.muffled);
+            buf.writeBoolean(this.isOn);
+        }
+    }
+
+    @Override
     public void serialize(ByteBuf buf) {
         buf.writeBoolean(hasExploded);
         if(!this.hasExploded) {
@@ -238,18 +251,19 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITicka
             if(trait.getEfficiency(FT_Heatable.HeatingType.BOILER) > 0) {
 
                 FT_Heatable.HeatingStep entry = trait.getFirstStep();
+                int heatReq = (int) Math.max(entry.heatReq / trait.getEfficiency(FT_Heatable.HeatingType.BOILER), 1);
                 int inputOps = this.tanks[0].getFill() / entry.amountReq;
                 int outputOps = (this.tanks[1].getMaxFill() - this.tanks[1].getFill()) / entry.amountProduced;
-                int heatOps = this.heat / entry.heatReq;
+                int heatOps = this.heat / heatReq;
 
                 int ops = Math.min(inputOps, Math.min(outputOps, heatOps));
 
                 this.tanks[0].setFill(this.tanks[0].getFill() - entry.amountReq * ops);
                 this.tanks[1].setFill(this.tanks[1].getFill() + entry.amountProduced * ops);
-                this.heat -= entry.heatReq * ops;
+                this.heat -= heatReq * ops;
 
                 if(ops > 0 && world.rand.nextInt(400) == 0) {
-                    world.playSound(null, pos.getX() + 0.5, pos.getY() + 2, pos.getZ() + 0.5, new SoundEvent(new ResourceLocation("hbm:block.boilerGroan")), SoundCategory.BLOCKS, 0.5F, 1.0F);
+                    world.playSound(null, pos.getX() + 0.5, pos.getY() + 2, pos.getZ() + 0.5, HBMSoundHandler.boilerGroanSounds[world.rand.nextInt(3)], SoundCategory.BLOCKS, 0.5F, 1.0F);
                 }
 
                 if(ops > 0) {
@@ -376,5 +390,25 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements ITicka
             );
         }
         return super.getCapability(capability, facing);
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{
+                PREFIX_VALUE + "input",
+                PREFIX_VALUE + "output"
+        };
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if(hasExploded) {
+            if((PREFIX_VALUE + "input").equals(name)) return "0";
+            if((PREFIX_VALUE + "output").equals(name)) return "0";
+            return null;
+        }
+        if((PREFIX_VALUE + "input").equals(name)) return "" + tanks[0].getFill();
+        if((PREFIX_VALUE + "output").equals(name)) return "" + tanks[1].getFill();
+        return null;
     }
 }

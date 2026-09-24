@@ -7,14 +7,14 @@ import com.hbm.inventory.material.Mats.MaterialStack;
 import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -50,15 +50,18 @@ public abstract class TileEntityFoundryBase extends TileEntityLoadedBase impleme
 	}
 	
 	@Override
-	public SPacketUpdateTileEntity getUpdatePacket(){
+	public void serializeInitial(ByteBuf buf) {
+		super.serializeInitial(buf);
 		NBTTagCompound nbt = new NBTTagCompound();
 		this.writeToNBT(nbt);
-		return new SPacketUpdateTileEntity(this.getPos(), 0, nbt);
+		ByteBufUtils.writeTag(buf, nbt);
 	}
 
 	@Override
-	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-		this.readFromNBT(pkt.getNbtCompound());
+	public void deserializeInitial(ByteBuf buf) {
+		super.deserializeInitial(buf);
+		NBTTagCompound nbt = ByteBufUtils.readTag(buf);
+		if (nbt != null) this.readFromNBT(nbt);
 	}
 
 	@Override

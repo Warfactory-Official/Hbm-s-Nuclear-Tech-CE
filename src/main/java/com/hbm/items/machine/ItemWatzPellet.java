@@ -2,6 +2,7 @@ package com.hbm.items.machine;
 
 import com.google.common.collect.ImmutableMap;
 import com.hbm.Tags;
+import com.hbm.items.IClaimedModelLocation;
 import com.hbm.items.IDynamicModels;
 import com.hbm.items.ItemEnumMulti;
 import com.hbm.items.ModItems;
@@ -192,6 +193,21 @@ public class ItemWatzPellet extends ItemEnumMulti<ItemWatzPellet.EnumWatzType> i
     public void onCreated(ItemStack stack, World world, EntityPlayer player) {
         if (this != ModItems.watz_pellet) return;
         setNBTDefaults(stack); //minimize the window where NBT screwups can happen
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public boolean ownsModelLocation(ModelResourceLocation location) {
+        for (int i = 0; i < EnumWatzType.VALUES.length; i++) {
+            ResourceLocation resourceLocation = new ResourceLocation(
+                    Tags.MODID,
+                    "items/watz_pellet" + (isDepleted ? "_depleted-" + i : "-" + i)
+            );
+            if (IClaimedModelLocation.isInventoryLocation(location, resourceLocation)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static enum EnumWatzType {

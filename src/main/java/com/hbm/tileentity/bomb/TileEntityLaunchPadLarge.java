@@ -5,10 +5,10 @@ import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.weapon.ItemMissileStandard;
 import com.hbm.items.weapon.ItemMissileStandard.MissileFormFactor;
 import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.sound.AudioWrapper;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
@@ -204,32 +204,20 @@ public class TileEntityLaunchPadLarge extends TileEntityLaunchPadBase {
 			
 			if(this.erected && (this.formFactor == MissileFormFactor.HUGE.ordinal() || this.formFactor == MissileFormFactor.ATLAS.ordinal()) && this.tanks[1].getFill() > 0) {
 				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "tower");
 				data.setFloat("lift", 0F);
 				data.setFloat("base", 0.5F);
 				data.setFloat("max", 2F);
 				data.setInteger("life", 70 + world.rand.nextInt(30));
-				data.setDouble("posX", pos.getX() + 0.5 + world.rand.nextGaussian() * 0.5);
-				data.setDouble("posZ", pos.getZ() + 0.5 + world.rand.nextGaussian() * 0.5);
-				data.setDouble("posY", pos.getY() + 2);
 				data.setBoolean("noWind", true);
 				data.setFloat("alphaMod", 2F);
 				data.setFloat("strafe", 0.05F);
-				for(int i = 0; i < 3; i++) MainRegistry.proxy.effectNT(data);
+				for(int i = 0; i < 3; i++) MainRegistry.proxy.effectNT(HbmEffectNT.Tower, pos.getX() + 0.5 + world.rand.nextGaussian() * 0.5, pos.getY() + 2, pos.getZ() + 0.5 + world.rand.nextGaussian() * 0.5, data);
 			}
 			
 			List<EntityMissileBaseNT> entities = world.getEntitiesWithinAABB(EntityMissileBaseNT.class, new AxisAlignedBB(pos.getX() - 0.5, pos.getY(), pos.getZ() - 0.5, pos.getX() + 1.5, pos.getY() + 10, pos.getZ() + 1.5));
 			
 			if(!entities.isEmpty()) {
-				for(int i = 0; i < 15; i++) {
-
-					ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - 10);
-					if(world.rand.nextBoolean()) dir = dir.getOpposite();
-					float moX = (float) (world.rand.nextGaussian() * 0.15F + 0.75) * dir.offsetX;
-					float moZ = (float) (world.rand.nextGaussian() * 0.15F + 0.75) * dir.offsetZ;
-					
-					MainRegistry.proxy.spawnParticle(pos.getX() + 0.5, pos.getY() + 0.25, pos.getZ() + 0.5, "launchsmoke", new float[] {moX, 0, moZ});
-				}
+				for(int i = 0; i < 15; i++) MainRegistry.proxy.effectNT(HbmEffectNT.LaunchSmoke, pos.getX() + .5, pos.getY() + .25, pos.getZ() + .5);
 			}
 		}
 		

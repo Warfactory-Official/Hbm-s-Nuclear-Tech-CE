@@ -29,18 +29,14 @@ public class ModelArmorNCRPA extends ModelArmorBase {
     }
 
     @Override
-    public void render(Entity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor) {
+    public void renderArmor(Entity par1Entity, float par7) {
+        switch (type) {
+            case 3 -> {
+                float s = par7 * 1.05F;
+                this.head.copyTo(this.eyes);
 
-        super.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entity);
-        this.head.copyTo(this.eyes);
-
-        GlStateManager.pushMatrix();
-        GlStateManager.shadeModel(GL11.GL_SMOOTH);
-
-        switch(type) {
-            case 0 -> {
                 bindTexture(ResourceManager.ncrpa_helmet);
-                this.head.render(scaleFactor);
+                head.render(s);
 
                 // START GLOW //
                 float lastX = OpenGlHelper.lastBrightnessX;
@@ -48,42 +44,11 @@ public class ModelArmorNCRPA extends ModelArmorBase {
                 RenderUtil.pushAttrib(GL11.GL_LIGHTING_BIT);
                 OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
                 GlStateManager.disableLighting();
-                this.eyes.render(scaleFactor);
+                this.eyes.render(s);
                 GlStateManager.enableLighting();
                 RenderUtil.popAttrib();
                 OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lastX, lastY);
                 // END GLOW //
-            }
-            case 1 -> {
-                bindTexture(ResourceManager.ncrpa_arm);
-                this.leftArm.render(scaleFactor);
-                this.rightArm.render(scaleFactor);
-
-                bindTexture(ResourceManager.ncrpa_chest);
-                this.body.render(scaleFactor);
-            }
-            case 2 -> {
-                bindTexture(ResourceManager.ncrpa_leg);
-                this.leftLeg.render(scaleFactor);
-                this.rightLeg.render(scaleFactor);
-            }
-            case 3 -> {
-                bindTexture(ResourceManager.ncrpa_leg);
-                this.leftFoot.render(scaleFactor);
-                this.rightFoot.render(scaleFactor);
-            }
-        }
-
-        GL11.glShadeModel(GL11.GL_FLAT);
-        GlStateManager.popMatrix();
-    }
-
-    @Override
-    public void renderArmor(Entity par1Entity, float par7) {
-        switch (type) {
-            case 3 -> {
-                bindTexture(ResourceManager.ncrpa_helmet);
-                head.render(par7 * 1.05F);
             }
             case 2 -> {
                 bindTexture(ResourceManager.ncrpa_chest);

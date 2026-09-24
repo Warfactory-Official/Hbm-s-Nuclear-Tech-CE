@@ -2,6 +2,7 @@ package com.hbm.inventory.gui;
 
 import com.hbm.Tags;
 import com.hbm.inventory.container.ContainerMachinePUREX;
+import com.hbm.inventory.gui.element.GUIElements;
 import com.hbm.inventory.recipes.PUREXRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.machine.ItemBlueprints;
@@ -44,7 +45,7 @@ public class GUIMachinePUREX extends GuiInfoContainer {
         if (guiLeft + 7 <= mouseX && guiLeft + 7 + 18 > mouseX && guiTop + 125 < mouseY && guiTop + 125 + 18 >= mouseY) {
             if (this.purex.purexModule.recipe != null && PUREXRecipes.INSTANCE.recipeNameMap.containsKey(this.purex.purexModule.recipe)) {
                 GenericRecipe recipe = PUREXRecipes.INSTANCE.recipeNameMap.get(this.purex.purexModule.recipe);
-                this.drawHoveringText(recipe.print(), mouseX, mouseY);
+                GUIElements.drawHoveringTextRecipe(recipe.print(), mouseX, mouseY, this.fontRenderer, itemRender, this.width, this.height);
             } else {
                 this.drawHoveringText(TextFormatting.YELLOW + I18nUtil.resolveKey("gui.recipe.setRecipe"), mouseX, mouseY);
             }

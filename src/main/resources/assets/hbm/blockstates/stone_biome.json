@@ -1,0 +1,16 @@
+{
+    "variants": {
+        "covered=true,meta=0": {
+            "model": "hbm:stone_biome_desert_covered"
+        },
+        "covered=false,meta=0": {
+            "model": "hbm:stone_biome_desert"
+        },
+        "covered=true,meta=1": {
+            "model": "hbm:stone_biome_woodland_covered"
+        },
+        "covered=false,meta=1": {
+            "model": "hbm:stone_biome_woodland"
+        }
+    }
+}

@@ -6,7 +6,7 @@ import com.hbm.interfaces.AutoRegister;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
-
+@Deprecated
 @AutoRegister
 public class TileEntityPileNeutronDetector extends TileEntity implements IPileNeutronReceiver, ITickable {
 

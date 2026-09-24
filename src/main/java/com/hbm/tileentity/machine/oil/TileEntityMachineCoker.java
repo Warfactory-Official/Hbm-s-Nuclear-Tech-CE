@@ -2,6 +2,7 @@ package com.hbm.tileentity.machine.oil;
 
 import com.hbm.api.fluid.IFluidStandardTransceiver;
 import com.hbm.api.tile.IHeatSource;
+import com.hbm.handler.CompatHandler;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.inventory.container.ContainerMachineCoker;
@@ -13,11 +14,17 @@ import com.hbm.inventory.recipes.CokerRecipes;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
+import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IFluidCopiable;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.Tuple;
 import io.netty.buffer.ByteBuf;
+import li.cil.oc.api.machine.Arguments;
+import li.cil.oc.api.machine.Callback;
+import li.cil.oc.api.machine.Context;
+import li.cil.oc.api.network.SimpleComponent;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -28,12 +35,14 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
 @AutoRegister
-public class TileEntityMachineCoker extends TileEntityMachineBase implements IFluidStandardTransceiver, IGUIProvider, IFluidCopiable, ITickable {
+@Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
+public class TileEntityMachineCoker extends TileEntityMachineBase implements IFluidStandardTransceiver, IGUIProvider, IFluidCopiable, ITickable, IConnectionAnchors, SimpleComponent, CompatHandler.OCComponent {
 
     public boolean wasOn;
     public int progress;
@@ -48,8 +57,8 @@ public class TileEntityMachineCoker extends TileEntityMachineBase implements IFl
     public TileEntityMachineCoker() {
         super(2, true, false);
         tanks = new FluidTankNTM[2];
-        tanks[0] = new FluidTankNTM(Fluids.HEAVYOIL, 16_000);
-        tanks[1] = new FluidTankNTM(Fluids.OIL_COKER, 8_000);
+        tanks[0] = new FluidTankNTM(Fluids.HEAVYOIL, 16_000).withOwner(this);
+        tanks[1] = new FluidTankNTM(Fluids.OIL_COKER, 8_000).withOwner(this);
     }
 
     @Override
@@ -120,16 +129,12 @@ public class TileEntityMachineCoker extends TileEntityMachineBase implements IFl
 
                 if(world.getTotalWorldTime() % 2 == 0) {
                     NBTTagCompound fx = new NBTTagCompound();
-                    fx.setString("type", "tower");
                     fx.setFloat("lift", 10F);
                     fx.setFloat("base", 0.75F);
                     fx.setFloat("max", 3F);
                     fx.setInteger("life", 200 + world.rand.nextInt(50));
                     fx.setInteger("color",0x404040);
-                    fx.setDouble("posX", pos.getX() + 0.5);
-                    fx.setDouble("posY", pos.getY() + 22);
-                    fx.setDouble("posZ", pos.getZ() + 0.5);
-                    MainRegistry.proxy.effectNT(fx);
+                    MainRegistry.proxy.effectNT(HbmEffectNT.Tower, pos.getX() + .5, pos.getY() + 22, pos.getZ() + .5, fx);
                 }
             }
         }
@@ -302,5 +307,58 @@ public class TileEntityMachineCoker extends TileEntityMachineBase implements IFl
     public boolean isUseableByPlayer(EntityPlayer player) {
         if (this.world.getTileEntity(this.pos) != this) return false;
         return player.getDistanceSq(this.pos.getX() + 0.5D, this.pos.getY() + 0.5D, this.pos.getZ() + 0.5D) <= 1024.0D;
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public String getComponentName() {
+        return "ntm_coker";
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getTypeStored(Context context, Arguments args) {
+        return new Object[] {tanks[0].getTankType().getName(), tanks[1].getTankType().getName()};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getFluidStored(Context context, Arguments args) {
+        return new Object[] {tanks[0].getFill(), tanks[1].getFill()};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getHeat(Context context, Arguments args) {
+        return new Object[] {this.heat};
+    }
+
+    @Callback(direct = true)
+    @Optional.Method(modid = "opencomputers")
+    public Object[] getInfo(Context context, Arguments args) {
+        return new Object[] {tanks[0].getTankType().getName(), tanks[1].getTankType().getName(), tanks[0].getFill(), tanks[1].getFill(), this.heat};
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public String[] methods() {
+        return new String[] {
+            "getTypeStored",
+            "getFluidStored",
+            "getHeat",
+            "getInfo"
+        };
+    }
+
+    @Override
+    @Optional.Method(modid = "opencomputers")
+    public Object[] invoke(String method, Context context, Arguments args) throws Exception {
+        switch (method) {
+            case "getTypeStored": return getTypeStored(context, args);
+            case "getFluidStored": return getFluidStored(context, args);
+            case "getHeat": return getHeat(context, args);
+            case "getInfo": return getInfo(context, args);
+        }
+        throw new NoSuchMethodException();
     }
 }

@@ -1,0 +1,25 @@
+# Blender MTL File: 'None'
+# Material Count: 8
+
+newmtl m_2859d42d-ed01-2d23-5ea5-3552f93da2ff
+map_Kd hbm:blocks/foundry_slagtap_bottom
+
+newmtl m_65bd94e0-ac22-75a6-4f49-2bef5911490d
+map_Kd hbm:blocks/foundry_outlet_filter
+
+newmtl m_7c51e38f-70df-5f4e-2e66-71ad51cef12b
+map_Kd hbm:blocks/foundry_slagtap_top
+
+newmtl m_9cfe4fa3-bdb9-c63b-d714-204ce81ae698
+map_Kd hbm:blocks/foundry_outlet_lock
+
+newmtl m_a7ef23a5-b34d-59b3-slagtap-fbdc243f960a
+map_Kd hbm:blocks/foundry_slagtap_side
+
+newmtl m_a865d7a3-41a6-aeb3-d516-a02cd5027f09
+map_Kd hbm:blocks/foundry_slagtap_front
+
+newmtl m_da13862a-3484-9606-1145-757914eff028
+map_Kd hbm:blocks/foundry_slagtap_inner
+
+newmtl none

@@ -38,7 +38,7 @@ public class CompressorRecipes extends SerializableRecipe {
         for(Entry<Pair<FluidType, Integer>, CompressorRecipe> entry : CompressorRecipes.recipes.entrySet()) {
             ItemStack input = ItemFluidIcon.make(entry.getKey().getKey(), entry.getValue().inputAmount, entry.getKey().getValue());
             ItemStack output = ItemFluidIcon.make(entry.getValue().output);
-            if(input.getItemDamage() == output.getItemDamage()) continue;
+            if(input.getItemDamage() == output.getItemDamage() && ItemFluidIcon.getPressure(input) == ItemFluidIcon.getPressure(output)) continue;
             recipes.put(input, output);
         }
 

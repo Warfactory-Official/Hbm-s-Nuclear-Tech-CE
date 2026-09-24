@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.hbm.Tags;
 import com.hbm.api.block.IToolable;
+import com.hbm.blocks.ITooltipProvider;
 import com.hbm.blocks.ModSoundTypes;
 import com.hbm.blocks.generic.BlockBakeBase;
 import com.hbm.interfaces.AutoRegister;
@@ -11,25 +12,29 @@ import com.hbm.interfaces.ICopiable;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.main.MainRegistry;
 import com.hbm.render.block.BlockBakeFrame;
+import com.hbm.render.block.SimpleStateMapper;
 import com.hbm.render.model.BakedModelTransforms;
 import com.hbm.tileentity.network.TileEntityPneumoTube;
 import com.hbm.util.Compat;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.properties.PropertyBool;
+import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.*;
+import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
@@ -41,20 +46,26 @@ import net.minecraftforge.common.property.ExtendedBlockState;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.common.Optional;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.util.vector.Vector3f;
+import team.chisel.ctm.api.IFacade;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 // there were some fucking mumbo jumbo conversions with forgedirection <-> enumfacing, don't mind me
-public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable {
+@Optional.Interface(iface = "team.chisel.ctm.api.IFacade", modid = Compat.ModIds.CTM)
+public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable, ITooltipProvider, IFacade {
 
     public static final IUnlistedProperty<IBlockState> DISGUISED_STATE = new SimpleUnlistedProperty<>("disguised_state", IBlockState.class);
+    public static final PropertyBool DEFUSED = PropertyBool.create("defused");
     public static final IUnlistedProperty<EnumFacing> INSERTION_DIR = new SimpleUnlistedProperty<>("insertion_dir", EnumFacing.class);
     public static final IUnlistedProperty<EnumFacing> EJECTION_DIR = new SimpleUnlistedProperty<>("ejection_dir", EnumFacing.class);
 
@@ -68,15 +79,21 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
     private static TextureAtlasSprite overlayOutSprite;
 
     public PneumoTubePaintableBlock(String name) {
-        super(Material.IRON, name, new BlockBakeFrame("pneumatic_tube_paintable"));
-        this.setDefaultState(this.blockState.getBaseState());
+        super(Material.IRON, name, BlockBakeFrame.cubeAll("pneumatic_tube_paintable"));
+        this.setDefaultState(this.blockState.getBaseState().withProperty(DEFUSED, false));
         this.setSoundType(ModSoundTypes.pipe);
         this.useNeighborBrightness = true;
     }
 
     @Override
     protected BlockStateContainer createBlockState() {
-        return new ExtendedBlockState(this, new IProperty[0], new IUnlistedProperty[]{DISGUISED_STATE, INSERTION_DIR, EJECTION_DIR});
+        return new ExtendedBlockState(this, new IProperty[]{DEFUSED}, new IUnlistedProperty[]{DISGUISED_STATE, INSERTION_DIR, EJECTION_DIR});
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public StateMapperBase getStateMapper(ResourceLocation loc) {
+        return new SimpleStateMapper(loc);
     }
 
     @Override
@@ -91,12 +108,12 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
 
     @Override
     public IBlockState getStateFromMeta(int meta) {
-        return this.getDefaultState();
+        return this.getDefaultState().withProperty(DEFUSED, meta != 0);
     }
 
     @Override
     public int getMetaFromState(IBlockState state) {
-        return 0;
+        return state.getValue(DEFUSED) ? 1 : 0;
     }
 
     @Override
@@ -133,6 +150,16 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
     @Override
     @SideOnly(Side.CLIENT)
     public boolean canRenderInLayer(IBlockState state, BlockRenderLayer layer) {
+        return true;
+    }
+
+    @Override
+    public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
+        return BlockFaceShape.SOLID;
+    }
+
+    @Override
+    public boolean isSideSolid(IBlockState base_state, IBlockAccess world, BlockPos pos, EnumFacing side) {
         return true;
     }
 
@@ -224,6 +251,12 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
             world.markChunkDirty(pos, tube);
             world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
             return true;
+        } else if (tool == ToolType.DEFUSER) {
+            if (!world.isRemote) {
+                IBlockState state = world.getBlockState(pos);
+                world.setBlockState(pos, state.cycleProperty(DEFUSED), 3);
+            }
+            return true;
         }
 
         return false;
@@ -235,11 +268,24 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
         TileEntity tile = world.getTileEntity(pos);
         if(tile instanceof TileEntityPneumoTubePaintable tube) {
             IBlockState disguiseState = tube.block != null ? tube.block.getStateFromMeta(tube.meta) : null;
+            if(disguiseState != null && tube.block != this) {
+                disguiseState = tube.block.getExtendedState(disguiseState, world, pos);
+            }
             EnumFacing insertion = tube.insertionDir != null ? tube.insertionDir.toEnumFacing() : null;
             EnumFacing ejection = tube.ejectionDir != null ? tube.ejectionDir.toEnumFacing() : null;
             return ext.withProperty(DISGUISED_STATE, disguiseState).withProperty(INSERTION_DIR, insertion).withProperty(EJECTION_DIR, ejection);
         }
         return ext.withProperty(DISGUISED_STATE, null).withProperty(INSERTION_DIR, null).withProperty(EJECTION_DIR, null);
+    }
+
+    // CTM IFacade: report the painted block so connected-texture neighbours resolve the disguise instead of the tube.
+    @Override
+    public IBlockState getFacade(IBlockAccess world, BlockPos pos, EnumFacing side) {
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof TileEntityPneumoTubePaintable tube && tube.block != null) {
+            return tube.block.getStateFromMeta(tube.meta);
+        }
+        return world.getBlockState(pos);
     }
 
     @Override
@@ -268,6 +314,12 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
         event.getModelRegistry().putObject(inventory, model);
         event.getModelRegistry().putObject(normal, model);
     }
+
+    @Override
+    public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+        this.addStandardInfo(tooltip);
+    }
+
     @AutoRegister
     public static class TileEntityPneumoTubePaintable extends TileEntityPneumoTube implements ICopiable {
 
@@ -313,30 +365,21 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
             return nbt;
         }
 
+        // insertionDir/ejectionDir ride TileEntityPneumoTube's own serializeInitial; we only add paint.
         @Override
-        public SPacketUpdateTileEntity getUpdatePacket() {
-            NBTTagCompound nbt = new NBTTagCompound();
-            this.writeToNBT(nbt);
-            nbt.setInteger("insertionDir", this.insertionDir != ForgeDirection.UNKNOWN ? this.insertionDir.ordinal() : -1);
-            nbt.setInteger("ejectionDir", this.ejectionDir != ForgeDirection.UNKNOWN ? this.ejectionDir.ordinal() : -1);
-            return new SPacketUpdateTileEntity(this.pos, 0, nbt);
+        public void serializeInitial(ByteBuf buf) {
+            super.serializeInitial(buf);
+            ResourceLocation key = block != null ? ForgeRegistries.BLOCKS.getKey(block) : null;
+            ByteBufUtils.writeUTF8String(buf, key != null ? key.toString() : "");
+            buf.writeInt(meta);
         }
 
         @Override
-        public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-            NBTTagCompound nbt = pkt.getNbtCompound();
-            this.readFromNBT(nbt);
-            int insertion = nbt.getInteger("insertionDir");
-            int ejection = nbt.getInteger("ejectionDir");
-            this.insertionDir = insertion >= 0 ? ForgeDirection.getOrientation(insertion) : ForgeDirection.UNKNOWN;
-            this.ejectionDir = ejection >= 0 ? ForgeDirection.getOrientation(ejection) : ForgeDirection.UNKNOWN;
-        }
-
-        @Override
-        public NBTTagCompound getUpdateTag() {
-            NBTTagCompound nbt = super.getUpdateTag();
-            this.writeToNBT(nbt);
-            return nbt;
+        public void deserializeInitial(ByteBuf buf) {
+            super.deserializeInitial(buf);
+            String id = ByteBufUtils.readUTF8String(buf);
+            this.block = id.isEmpty() ? null : ForgeRegistries.BLOCKS.getValue(new ResourceLocation(id));
+            this.meta = buf.readInt();
         }
 
         @Override
@@ -381,6 +424,8 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
         private final ImmutableMap<EnumFacing, BakedQuad> overlayGeneral;
         private final ImmutableMap<EnumFacing, BakedQuad> overlayInsertion;
         private final ImmutableMap<EnumFacing, BakedQuad> overlayEjection;
+        private final ImmutableList<BakedQuad> inventoryBaseGeneral;
+        private final ImmutableMap<EnumFacing, BakedQuad> inventoryOverlayGeneral;
 
         public PneumoTubePaintableModel(TextureAtlasSprite base, TextureAtlasSprite overlay, TextureAtlasSprite overlayIn, TextureAtlasSprite overlayOut) {
             this.particle = base;
@@ -389,6 +434,8 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
             this.overlayGeneral = buildOverlayMap(overlay, -1);
             this.overlayInsertion = buildOverlayMap(overlayIn, -1);
             this.overlayEjection = buildOverlayMap(overlayOut, -1);
+            this.inventoryBaseGeneral = flatten(buildFaceMap(base, -1, false, ModelRotation.X0_Y90));
+            this.inventoryOverlayGeneral = buildOverlayMap(overlay, -1, ModelRotation.X0_Y90);
         }
 
         @Override
@@ -396,13 +443,14 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
             if (state == null) {
                 if (side != null) return ImmutableList.of();
                 ImmutableList.Builder<BakedQuad> b = ImmutableList.builder();
-                for (EnumFacing f : EnumFacing.VALUES) b.addAll(baseFaces.get(f));
-                for (EnumFacing f : EnumFacing.VALUES) b.add(overlayGeneral.get(f));
+                b.addAll(inventoryBaseGeneral);
+                for (EnumFacing f : EnumFacing.VALUES) b.add(inventoryOverlayGeneral.get(f));
                 return b.build();
             }
             if (side == null) return ImmutableList.of();
             BlockRenderLayer layer = MinecraftForgeClient.getRenderLayer();
             boolean tubeLayer = (layer == null || layer == BlockRenderLayer.CUTOUT_MIPPED);
+            boolean defused = state.getValue(DEFUSED);
             IBlockState disguiseState = null;
             EnumFacing insertion = null;
             EnumFacing ejection = null;
@@ -415,13 +463,14 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
             List<BakedQuad> base = ImmutableList.of();
             if (disguiseState != null) {
                 if (layer == null || disguiseState.getBlock().canRenderInLayer(disguiseState, layer)) {
-                    IBakedModel disguiseModel = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(disguiseState);
+                    IBlockState lookup = disguiseState instanceof IExtendedBlockState ? ((IExtendedBlockState) disguiseState).getClean() : disguiseState;
+                    IBakedModel disguiseModel = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(lookup);
                     base = disguiseModel.getQuads(disguiseState, side, rand);
                 }
             } else if (tubeLayer) {
                 base = baseFaces.get(side);
             }
-            if (!tubeLayer) return base;
+            if (!tubeLayer || defused) return base;
             BakedQuad overlayQuad = selectOverlay(side, insertion, ejection);
             if (base.isEmpty()) return ImmutableList.of(overlayQuad);
             ArrayList<BakedQuad> out = new ArrayList<>(base.size() + 1);
@@ -461,7 +510,7 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
 
         @Override
         public ItemCameraTransforms getItemCameraTransforms() {
-            return BakedModelTransforms.standardBlock();
+            return BakedModelTransforms.isbrh();
         }
 
         @Override
@@ -470,9 +519,14 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
         }
 
         private static ImmutableMap<EnumFacing, ImmutableList<BakedQuad>> buildFaceMap(TextureAtlasSprite sprite, int tintIndex, boolean offset) {
+            return buildFaceMap(sprite, tintIndex, offset, ModelRotation.X0_Y0);
+        }
+
+        private static ImmutableMap<EnumFacing, ImmutableList<BakedQuad>> buildFaceMap(TextureAtlasSprite sprite, int tintIndex,
+                                                                                       boolean offset, ModelRotation rotation) {
             ImmutableMap.Builder<EnumFacing, ImmutableList<BakedQuad>> builder = ImmutableMap.builder();
             for (EnumFacing face : EnumFacing.VALUES) {
-                builder.put(face, ImmutableList.of(createQuad(face, sprite, tintIndex, offset)));
+                builder.put(face, ImmutableList.of(createQuad(face, sprite, tintIndex, offset, rotation)));
             }
             return builder.build();
         }
@@ -486,14 +540,20 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
         }
 
         private static ImmutableMap<EnumFacing, BakedQuad> buildOverlayMap(TextureAtlasSprite sprite, int tintIndex) {
+            return buildOverlayMap(sprite, tintIndex, ModelRotation.X0_Y0);
+        }
+
+        private static ImmutableMap<EnumFacing, BakedQuad> buildOverlayMap(TextureAtlasSprite sprite, int tintIndex,
+                                                                           ModelRotation rotation) {
             ImmutableMap.Builder<EnumFacing, BakedQuad> builder = ImmutableMap.builder();
             for (EnumFacing face : EnumFacing.VALUES) {
-                builder.put(face, createQuad(face, sprite, tintIndex, true));
+                builder.put(face, createQuad(face, sprite, tintIndex, true, rotation));
             }
             return builder.build();
         }
 
-        private static BakedQuad createQuad(EnumFacing face, TextureAtlasSprite sprite, int tintIndex, boolean offset) {
+        private static BakedQuad createQuad(EnumFacing face, TextureAtlasSprite sprite, int tintIndex, boolean offset,
+                                            ModelRotation rotation) {
             float eps = 0.001F;
             Vector3f from = new Vector3f(0F, 0F, 0F);
             Vector3f to = new Vector3f(16F, 16F, 16F);
@@ -511,7 +571,7 @@ public class PneumoTubePaintableBlock extends BlockBakeBase implements IToolable
 
             BlockFaceUV uv = new BlockFaceUV(new float[]{0F, 0F, 16F, 16F}, 0);
             BlockPartFace partFace = new BlockPartFace(null, tintIndex, "", uv);
-            return FACE_BAKERY.makeBakedQuad(from, to, partFace, sprite, face, ModelRotation.X0_Y0, null, false, true);
+            return FACE_BAKERY.makeBakedQuad(from, to, partFace, sprite, face, rotation, null, false, true);
         }
     }
 }

@@ -1,12 +1,12 @@
 package com.hbm.inventory.control_panel.nodes;
 
-import com.hbm.inventory.control_panel.DataValue.DataType;
+import com.hbm.inventory.control_panel.types.DataValue.DataType;
 import com.hbm.inventory.control_panel.*;
 import com.hbm.inventory.control_panel.modular.StockNodesRegister;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.List;
 import java.util.Map;
 
 public class NodeCancelEvent extends NodeOutput {
@@ -18,7 +18,7 @@ public class NodeCancelEvent extends NodeOutput {
 	}
 
 	@Override
-	public boolean doOutput(IControllable from, Map<String, NodeSystem> sendNodeMap, List<BlockPos> positions){
+	public boolean doOutput(IControllable from, Map<String, NodeSystem> sendNodeMap, Map<String,BlockPos> positions){
 		return !inputs.get(0).evaluate().getBoolean();
 	}
 

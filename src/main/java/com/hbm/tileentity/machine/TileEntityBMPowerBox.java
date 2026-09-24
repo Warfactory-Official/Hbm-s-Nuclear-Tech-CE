@@ -8,6 +8,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -18,7 +19,8 @@ import java.util.List;
 public class TileEntityBMPowerBox extends TileEntity implements IControllable {
 	
 	public long ticksPlaced;
-	
+	private AxisAlignedBB bb;
+
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound compound){
 		compound.setLong("ticksPlaced", ticksPlaced);
@@ -75,5 +77,11 @@ public class TileEntityBMPowerBox extends TileEntity implements IControllable {
 	public void invalidate(){
 		super.invalidate();
 		ControlEventSystem.get(world).removeControllable(this);
+	}
+
+	@Override
+	public AxisAlignedBB getRenderBoundingBox() {
+		if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+		return bb;
 	}
 }

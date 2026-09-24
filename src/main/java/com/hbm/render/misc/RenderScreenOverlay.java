@@ -1,7 +1,11 @@
 package com.hbm.render.misc;
 
+import net.minecraft.client.renderer.GlStateManager;
 import com.hbm.Tags;
 import com.hbm.capability.HbmCapability;
+import com.hbm.config.ClientConfig;
+import com.hbm.config.GeneralConfig;
+import com.hbm.config.MobConfig;
 import com.hbm.config.RadiationConfig;
 import com.hbm.interfaces.Spaghetti;
 import com.hbm.items.weapon.sedna.impl.ItemGunStinger;
@@ -27,6 +31,7 @@ import org.lwjgl.opengl.GL11;
 public class RenderScreenOverlay {
 
 	private static final ResourceLocation misc = new ResourceLocation(Tags.MODID + ":textures/misc/overlay_misc.png");
+	private static final ResourceLocation dg = new ResourceLocation(Tags.MODID + ":textures/misc/overlay_digamma.png");
 	private static final RenderItem itemRenderer = Minecraft.getMinecraft().getRenderItem();
 	
 	private static long lastRadSurvey;
@@ -49,7 +54,7 @@ public class RenderScreenOverlay {
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         GlStateManager.disableAlpha();
         
-        float radiation = 0;
+        float radiation;
         
         radiation = lastRadResult - prevRadResult;
         
@@ -63,12 +68,9 @@ public class RenderScreenOverlay {
 		int maxRad = 1000;
 		
 		int bar = getScaled(in, maxRad, 74);
-		
-		//if(radiation >= 1 && radiation <= 999)
-		//	bar -= (1 + Minecraft.getMinecraft().theWorld.rand.nextInt(3));
-		
-		int posX = RadiationConfig.geigerX;
-		int posY = resolution.getScaledHeight() - 18 - RadiationConfig.geigerY;
+
+		int posX = 16 + ClientConfig.GEIGER_OFFSET_HORIZONTAL.get();
+		int posY = resolution.getScaledHeight() - 20 - ClientConfig.GEIGER_OFFSET_VERTICAL.get();
 
 		Minecraft.getMinecraft().renderEngine.bindTexture(misc);
         gui.drawTexturedModalRect(posX, posY, 0, 0, 94, 18);
@@ -88,7 +90,7 @@ public class RenderScreenOverlay {
 		if(radiation > 1000) {
 			Minecraft.getMinecraft().fontRenderer.drawString(">1000 RAD/s", posX, posY - 8, 0xFF0000);
 		} else if(radiation >= 1) {
-			Minecraft.getMinecraft().fontRenderer.drawString(((int)Math.round(radiation)) + " RAD/s", posX, posY - 8, 0xFFFF00);
+			Minecraft.getMinecraft().fontRenderer.drawString(Math.round(radiation) + " RAD/s", posX, posY - 8, 0xFFFF00);
 		} else if(radiation > 0) {
 			Minecraft.getMinecraft().fontRenderer.drawString("<1 RAD/s", posX, posY - 8, 0x00FF00);
 		}
@@ -111,7 +113,7 @@ public class RenderScreenOverlay {
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         GlStateManager.disableAlpha();
         
-        float digamma = 0;
+        float digamma;
         
         digamma = lastDigResult - prevDigResult;
         
@@ -126,13 +128,10 @@ public class RenderScreenOverlay {
 		
 		int bar = getScaled(in, maxDig, 74);
 		
-		//if(radiation >= 1 && radiation <= 999)
-		//	bar -= (1 + Minecraft.getMinecraft().theWorld.rand.nextInt(3));
-		
 		int posX = RadiationConfig.digammaX;
 		int posY = resolution.getScaledHeight() - 18 - RadiationConfig.digammaY;
 
-		Minecraft.getMinecraft().renderEngine.bindTexture(misc);
+		Minecraft.getMinecraft().renderEngine.bindTexture(dg);
         gui.drawTexturedModalRect(posX, posY, 0, 218, 94, 18);
         gui.drawTexturedModalRect(posX + 1, posY + 1, 1, 237, bar, 16);
         
@@ -283,9 +282,6 @@ public class RenderScreenOverlay {
 
 		int dashes = props.getDashCount();
 
-		//int count = props.getDashCount();
-		//int x3count = count / 3;
-
 		int rows = dashes / 3;
 		int finalColumns = dashes % 3;
 
@@ -418,8 +414,6 @@ public class RenderScreenOverlay {
 	public static void renderScope(ScaledResolution res, ResourceLocation tex) {
 
 		GlStateManager.enableBlend();
-		//GlStateManager.disableDepth();
-		//GlStateManager.depthMask(false);
 		GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		GlStateManager.disableAlpha();
@@ -457,6 +451,50 @@ public class RenderScreenOverlay {
 		GlStateManager.enableAlpha();
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 	}
+
+	public static void renderBadges(ScaledResolution res, Gui gui) {
+
+		GlStateManager.pushMatrix();
+
+		Minecraft.getMinecraft().entityRenderer.setupOverlayRendering();
+
+		GlStateManager.enableBlend();
+		GlStateManager.disableLighting();
+		GlStateManager.disableCull();
+		GlStateManager.disableDepth();
+		GlStateManager.depthMask(false);
+		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+
+		OpenGlHelper.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
+
+		GlStateManager.disableAlpha();
+
+		Minecraft.getMinecraft().renderEngine.bindTexture(misc);
+
+		int offsetX = 2;
+		int offsetY = 2;
+		int width = 26;
+
+		boolean true528 = GeneralConfig.true528();
+		boolean trueExp = GeneralConfig.trueExp();
+		boolean trueRam = MobConfig.trueRam();
+		boolean true328 = true528 && trueExp && trueRam;
+
+		if(true528) { gui.drawTexturedModalRect(offsetX, offsetY, 0, 218, 24, 8); offsetX += width; }
+		if(trueExp) { gui.drawTexturedModalRect(offsetX, offsetY, 0, 226, 24, 8); offsetX += width; }
+		if(trueRam) { gui.drawTexturedModalRect(offsetX, offsetY, 0, 234, 24, 8); offsetX += width; }
+		if(true328) { gui.drawTexturedModalRect(offsetX, offsetY, 0, 242, 24, 8); offsetX += width; }
+
+		Minecraft.getMinecraft().renderEngine.bindTexture(Gui.ICONS);
+		OpenGlHelper.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
+		GlStateManager.enableAlpha();
+		GlStateManager.disableBlend();
+		GlStateManager.enableCull();
+		GlStateManager.enableDepth();
+		GlStateManager.depthMask(true);
+		GlStateManager.color(1F, 1F, 1F, 1F);
+		GlStateManager.popMatrix();
+	}
 	
 	public enum Crosshair {
 		NONE(0, 0, 0),
@@ -481,11 +519,11 @@ public class RenderScreenOverlay {
 		L_MODERN(32, 154, 32),
 		L_BOX_OUTLINE(64, 154, 32);
 		
-		public int x;
-		public int y;
-		public int size;
+		public final int x;
+		public final int y;
+		public final int size;
 		
-		private Crosshair(int x, int y, int size) {
+		Crosshair(int x, int y, int size) {
 			this.x = x;
 			this.y = y;
 			this.size = size;

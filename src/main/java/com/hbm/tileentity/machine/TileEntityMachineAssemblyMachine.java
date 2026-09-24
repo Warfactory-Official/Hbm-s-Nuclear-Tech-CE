@@ -2,6 +2,8 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IControlReceiver;
@@ -20,6 +22,7 @@ import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
 import com.hbm.modules.machine.ModuleMachineAssembler;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -27,9 +30,10 @@ import com.hbm.util.BobMathUtil;
 import com.hbm.util.I18nUtil;
 import com.hbm.util.SoundUtil;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.block.material.Material;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -42,12 +46,13 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.ItemStackHandler;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 @AutoRegister
-public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, IControlReceiver, IGUIProvider {
+public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, IControlReceiver, IGUIProvider, IConnectionAnchors, IRORValueProvider, IRORInteractive {
 
     public FluidTankNTM inputTank;
     public FluidTankNTM outputTank;
@@ -81,15 +86,15 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
             }
 
             @Override
-            public void setStackInSlot(int slot, ItemStack stack) {
+            public void setStackInSlot(int slot, @NotNull ItemStack stack) {
                 super.setStackInSlot(slot, stack);
                 if (Library.isMachineUpgrade(stack) && slot >= 2 && slot <= 3)
                     SoundUtil.playUpgradePlugSound(world, pos);
             }
         };
 
-        this.inputTank = new FluidTankNTM(Fluids.NONE, 4_000);
-        this.outputTank = new FluidTankNTM(Fluids.NONE, 4_000);
+        this.inputTank = new FluidTankNTM(Fluids.NONE, 4_000).withOwner(this);
+        this.outputTank = new FluidTankNTM(Fluids.NONE, 4_000).withOwner(this);
 
         for(int i = 0; i < this.arms.length; i++) this.arms[i] = new AssemblerArm();
 
@@ -149,7 +154,7 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
         } else {
 
             if(world.getTotalWorldTime() % 20 == 0) {
-                frame = world.getBlockState(pos.up(3)).getBlock() != Blocks.AIR;
+                frame = world.getBlockState(pos.up(3)).getMaterial() != Material.AIR;
             }
 
             if(this.didProcess && MainRegistry.proxy.me().getDistance(pos.getX() , pos.getY(), pos.getZ()) < 50) {
@@ -286,7 +291,7 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+    public @NotNull NBTTagCompound writeToNBT(NBTTagCompound nbt) {
         this.inputTank.writeToNBT(nbt, "i");
         this.outputTank.writeToNBT(nbt, "o");
         nbt.setLong("power", power);
@@ -300,8 +305,7 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
         if(slot == 0) return true; // battery
         if(slot == 1 && stack.getItem() == ModItems.blueprints) return true;
         if(slot >= 2 && slot <= 3 && stack.getItem() instanceof ItemMachineUpgrade) return true; // upgrades
-        if(this.assemblerModule.isItemValid(slot, stack)) return true; // recipe input crap
-        return false;
+        return this.assemblerModule.isItemValid(slot, stack); // recipe input crap
     }
 
     @Override
@@ -328,12 +332,12 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
     @Override public boolean hasPermission(EntityPlayer player) { return this.isUseableByPlayer(player); }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if(data.hasKey("index") && data.hasKey("selection")) {
             int index = data.getInteger("index");
             String selection = data.getString("selection");
             if(index == 0) {
-                this.assemblerModule.recipe = selection;
+                this.assemblerModule.setRecipe(selection, false);
                 this.markChanged();
             }
         }
@@ -342,7 +346,7 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
     AxisAlignedBB bb = null;
 
     @Override
-    public AxisAlignedBB getRenderBoundingBox() {
+    public @NotNull AxisAlignedBB getRenderBoundingBox() {
         if(bb == null) bb = new AxisAlignedBB(pos.getX() - 1, pos.getY(), pos.getZ() - 1, pos.getX() + 2, pos.getY() + 3, pos.getZ() + 2);
         return bb;
     }
@@ -382,6 +386,34 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
         return upgrades;
     }
 
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{
+                PREFIX_VALUE + "progress",
+                PREFIX_VALUE + "recipe",
+                PREFIX_VALUE + "active",
+                PREFIX_FUNCTION + "setrecipe" + NAME_SEPARATOR + "name"
+        };
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if((PREFIX_VALUE + "progress").equals(name)) return "" + (int) Math.round(this.assemblerModule.progress * 100);
+        if((PREFIX_VALUE + "recipe").equals(name)) return this.assemblerModule.getRecipeName();
+        if((PREFIX_VALUE + "active").equals(name)) return "" + (this.didProcess ? 1 : 0);
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if((PREFIX_FUNCTION + "setrecipe").equals(name) && params.length == 1) {
+            this.assemblerModule.setRecipe(params[0], true);
+            this.markDirty();
+            return null;
+        }
+        return null;
+    }
+
     public static class AssemblerArm {
 
         public double[] angles = new double[4];
@@ -393,7 +425,7 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
         ArmActionState state = ArmActionState.ASSUME_POSITION;
         int actionDelay = 0;
 
-        public static enum ArmActionState {
+        public enum ArmActionState {
             ASSUME_POSITION,
             EXTEND_STRIKER,
             RETRACT_STRIKER
@@ -404,9 +436,7 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
         }
 
         private void updateInterp() {
-            for(int i = 0; i < angles.length; i++) {
-                prevAngles[i] = angles[i];
-            }
+            System.arraycopy(angles, 0, prevAngles, 0, angles.length);
         }
 
         private void returnToNullPos() {

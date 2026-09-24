@@ -35,7 +35,7 @@ public class ItemAmmoEnums {
 
     public enum AmmoMisc implements IAmmoItemEnum {
         //LUNA_SNIPER("ammo_lunar", Gun50BMGFactory.getLunaticSabotRound(), AmmoItemTrait.PRO_HEAVY_DAMAGE, AmmoItemTrait.PRO_ACCURATE2, AmmoItemTrait.NEU_HEAVY_METAL),
-        DGK("ammo_dkg");
+        DGK("ammo_dgk");
 
         public static final AmmoMisc[] VALUES = values();
 

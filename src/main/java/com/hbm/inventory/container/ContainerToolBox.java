@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotNonRetarded;
 import com.hbm.items.tool.ItemToolBox;
 import com.hbm.items.tool.ItemToolBox.InventoryToolBox;
@@ -13,9 +14,13 @@ import net.minecraft.item.ItemStack;
 
 public class ContainerToolBox extends Container {
     private final InventoryToolBox box;
+    private final TransferStrategy transferStrategy;
 
     public ContainerToolBox(InventoryPlayer invPlayer, InventoryToolBox box) {
         this.box = box;
+        this.transferStrategy = TransferStrategy.builder(() -> this.box.getSlots())
+                                                .genericMachineRange(0)
+                                                .build();
         this.box.openInventory();
 
         for(int i = 0; i < 3; i++) {
@@ -37,7 +42,7 @@ public class ContainerToolBox extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, box.getSlots());
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.transferStrategy, player);
     }
 
     @Override

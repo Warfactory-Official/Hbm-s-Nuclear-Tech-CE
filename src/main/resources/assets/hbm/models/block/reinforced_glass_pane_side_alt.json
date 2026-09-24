@@ -1,0 +1,7 @@
+{
+  "parent": "block/glass_pane_side_alt",
+  "textures": {
+    "pane": "hbm:blocks/reinforced_glass_pane",
+    "edge": "hbm:blocks/reinforced_glass_pane_edge"
+  }
+}

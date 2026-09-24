@@ -47,7 +47,11 @@ public class EntityMappings {
                 }
             }
 
-            spawns.add(new Biome.SpawnListEntry(entityClass, weightedProb, min, max));
+            try {
+                spawns.add(new Biome.SpawnListEntry(entityClass, weightedProb, min, max));
+            } catch (UnsupportedOperationException _) {
+                // some modded biomes expose an immutable spawn list to suppress spawns
+            }
         }
     }
 }

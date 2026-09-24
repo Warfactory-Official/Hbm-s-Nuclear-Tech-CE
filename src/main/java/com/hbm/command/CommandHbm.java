@@ -2,7 +2,6 @@ package com.hbm.command;
 
 import com.google.common.collect.Lists;
 import com.hbm.Tags;
-import com.hbm.blocks.ModBlocks;
 import com.hbm.handler.HbmShaderManager2;
 import com.hbm.main.ResourceManager;
 import com.hbm.main.client.NTMClientRegistry;
@@ -10,6 +9,7 @@ import com.hbm.render.GLCompat;
 import com.hbm.saveddata.TomSaveData;
 import com.hbm.world.*;
 import com.hbm.world.dungeon.LibraryDungeon;
+import com.hbm.world.feature.LanternBehemoth;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.shader.Framebuffer;
@@ -59,7 +59,7 @@ public class CommandHbm extends CommandBase {
 			if ("subcommands".equals(args[0])) {
 				return Lists.newArrayList("gen", "tom").stream().filter(s -> s.startsWith(args[1])).collect(Collectors.toList());
 			} else if ("gen".equals(args[0])) {
-				return Lists.newArrayList("antenna", "relay", "dud", "silo", "factory", "barrel", "vertibird", "vertibird_crashed", "satellite", "spaceship", "sellafield", "radio", "bunker", "desert_atom", "library", "geysir_water", "geysir_vapor", "geysir_chlorine").stream().filter(s -> s.startsWith(args[1])).collect(Collectors.toList());
+				return Lists.newArrayList("antenna", "relay", "dud", "silo", "factory", "barrel", "vertibird", "vertibird_crashed", "satellite", "spaceship", "sellafield", "radio", "bunker", "desert_atom", "library", "geysir_chlorine").stream().filter(s -> s.startsWith(args[1])).collect(Collectors.toList());
 			} else if ("tom".equals(args[0])) {
 				return Lists.newArrayList("reset").stream().filter(s -> s.startsWith(args[1])).collect(Collectors.toList());
 			}
@@ -94,43 +94,7 @@ public class CommandHbm extends CommandBase {
 				if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
 					Minecraft.getMinecraft().addScheduledTask(() -> {
 						ResourceManager.loadAnimatedModels();
-						ResourceManager.lit_particles = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/lit_particles"), shader -> {
-							GLCompat.bindAttribLocation(shader, 0, "pos");
-							GLCompat.bindAttribLocation(shader, 1, "offsetPos");
-							GLCompat.bindAttribLocation(shader, 2, "scale");
-							GLCompat.bindAttribLocation(shader, 3, "texData");
-							GLCompat.bindAttribLocation(shader, 4, "color");
-							GLCompat.bindAttribLocation(shader, 5, "lightmap");
-						}).withUniforms(HbmShaderManager2.MODELVIEW_MATRIX, HbmShaderManager2.PROJECTION_MATRIX, HbmShaderManager2.INV_PLAYER_ROT_MATRIX, HbmShaderManager2.LIGHTMAP);
-
-						ResourceManager.gluon_beam = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/gluon_beam"))
-								.withUniforms(shader -> {
-									GLCompat.activeTexture(GLCompat.GL_TEXTURE0 + 3);
-									Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.noise_1);
-									shader.uniform1i("noise_1", 3);
-									GLCompat.activeTexture(GLCompat.GL_TEXTURE0 + 4);
-									Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.noise_2);
-									shader.uniform1i("noise_1", 4);
-									GLCompat.activeTexture(GLCompat.GL_TEXTURE0);
-
-									float time = (System.currentTimeMillis() % 10000000) / 1000F;
-									shader.uniform1f("time", time);
-								});
-
-						ResourceManager.gluon_spiral = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/gluon_spiral"))
-								.withUniforms(shader -> {
-									//Well, I accidentally uniformed the same noise sampler twice. That explains why the second noise didn't work.
-									GLCompat.activeTexture(GLCompat.GL_TEXTURE0+3);
-									Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.noise_1);
-									shader.uniform1i("noise_1", 3);
-									GLCompat.activeTexture(GLCompat.GL_TEXTURE0+4);
-									Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceManager.noise_2);
-									shader.uniform1i("noise_1", 4);
-									GLCompat.activeTexture(GLCompat.GL_TEXTURE0);
-
-									float time = (System.currentTimeMillis() % 10000000) / 1000F;
-									shader.uniform1f("time", time);
-								});
+						ResourceManager.lit_particles = ResourceManager.loadLitParticlesShader();
 
 						//Drillgon200: Did I need a shader for this? No, not really, but it's somewhat easier to create a sin wave pattern programmatically than to do it in paint.net.
 						ResourceManager.tau_ray = HbmShaderManager2.loadShader(new ResourceLocation(Tags.MODID, "shaders/tau_ray"));
@@ -282,7 +246,7 @@ public class CommandHbm extends CommandBase {
 				builder.append("Info for command: gen\n\n");
 				builder.append("Generates a structure at the block under your current position. Generation can be forced.\n\n");
 				builder.append("Available structures:\n\n");
-				builder.append("antenna      relay\ndud           silo\nfactory      barrel\nvertibird     vertibird_crashed\nsatellite      spaceship\nsellafield     radio\nbunker       desert_atom\nlibrary      geysir_water\ngeysir_vapor      geysir_chlorine");
+				builder.append("antenna      relay\ndud           silo\nfactory      barrel\nvertibird     vertibird_crashed\nsatellite      spaceship\nsellafield     radio\nbunker       desert_atom\nlibrary      geysir_chlorine");
 				sender.sendMessage(new TextComponentTranslation(builder.toString()));
 			} else if ("tom".equals(args[1])) {
 				StringBuilder builder = new StringBuilder();
@@ -312,8 +276,9 @@ public class CommandHbm extends CommandBase {
 
             switch (args[1]) {
                 case "antenna" -> Antenna.INSTANCE.generate(world, rand, genPos, force);
-                case "relay" -> Relay.INSTANCE.generate(world, rand, genPos, force);
-                case "dud" -> new Dud().generate(world, rand, genPos);
+                case "dud" -> Dud.INSTANCE.generate(world, rand, genPos, force);
+                case "meteorite" -> MeteoriteStructure.INSTANCE.generate(world, rand, genPos, force);
+                case "lantern" -> LanternBehemoth.INSTANCE.generate(world, rand, genPos, force);
                 case "barrel" -> Barrel.INSTANCE.generate(world, rand, genPos, force);
                 case "satellite" -> Satellite.INSTANCE.generate(world, rand, genPos, force);
                 case "spaceship" -> Spaceship.INSTANCE.generate(world, rand, genPos, force);
@@ -328,22 +293,6 @@ public class CommandHbm extends CommandBase {
                 case "bunker" -> Bunker.INSTANCE.generate(world, rand, genPos, force);
                 case "desert_atom" -> DesertAtom001.INSTANCE.generate(world, rand, genPos, force);
                 case "library" -> LibraryDungeon.INSTANCE.generate(world, rand, genPos, force);
-                case "geysir_water" -> {
-                    if (force) {
-                        GeyserLarge.INSTANCE.generate(world, rand, genPos);
-                    } else {
-                        if (world.getBlockState(genPos.down()).getBlock() == Blocks.SAND)
-                            GeyserLarge.INSTANCE.generate(world, rand, genPos);
-                    }
-                }
-                case "geysir_vapor" -> {
-                    if (force) {
-                        world.setBlockState(genPos.down(), ModBlocks.geysir_vapor.getDefaultState());
-                    } else {
-                        if (world.getBlockState(genPos.down()).getBlock() == Blocks.STONE)
-                            world.setBlockState(genPos.down(), ModBlocks.geysir_vapor.getDefaultState());
-                    }
-                }
                 case "geysir_chlorine" -> {
                     if (force) {
                         Geyser.INSTANCE.generate(world, rand, genPos);

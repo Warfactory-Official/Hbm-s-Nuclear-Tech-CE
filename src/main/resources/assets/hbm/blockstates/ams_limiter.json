@@ -1,8 +1,0 @@
-{
-	"variants": {
-		"facing=north": { "model": "hbm:ams_limiter" },
-     	   	"facing=south": { "model": "hbm:ams_limiter", "y": 180 },
-      	  	"facing=west":  { "model": "hbm:ams_limiter", "y": 270 },
-      		"facing=east":  { "model": "hbm:ams_limiter", "y": 90 }
-	}
-}

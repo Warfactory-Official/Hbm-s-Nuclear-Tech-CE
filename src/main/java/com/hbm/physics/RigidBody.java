@@ -3,7 +3,7 @@ package com.hbm.physics;
 import com.hbm.main.ClientProxy;
 import com.hbm.physics.GJK.GJKInfo;
 import com.hbm.physics.GJK.Result;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.util.BobMathUtil;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -24,27 +24,27 @@ import java.util.List;
 
 public class RigidBody {
 
-	public static final Vec3[] cardinals = new Vec3[]{
-			new Vec3(1, 0, 0), new Vec3(0, 1, 0), new Vec3(0, 0, 1),
-			new Vec3(-1, 0, 0), new Vec3(0, -1, 0), new Vec3(0, 0, -1)};
+	public static final Vec3NT[] cardinals = new Vec3NT[]{
+			new Vec3NT(1, 0, 0), new Vec3NT(0, 1, 0), new Vec3NT(0, 0, 1),
+			new Vec3NT(-1, 0, 0), new Vec3NT(0, -1, 0), new Vec3NT(0, 0, -1)};
 	
 	public static final RigidBody DUMMY = new RigidBody(null){
 		public void solveContacts(float dt) {};
 		
-		public void impulse(Vec3 force, Vec3 position) {};
+		public void impulse(Vec3NT force, Vec3NT position) {};
 		public void updateOrientation() {};
 		public void updateGlobalCentroidFromPosition() {};
 		public void updatePositionFromGlobalCentroid() {};
 		public void doTimeStep(float dt) {};
 		public void addColliders(Collider... collide) {};
 		
-		public Vec3 globalToLocalPos(Vec3 pos) {return pos;};
-		public Vec3 localToGlobalPos(Vec3 pos) {return pos;};
-		public Vec3 globalToLocalVec(Vec3 vec) {return vec;};
-		public Vec3 localToGlobalVec(Vec3 vec) {return vec;};
+		public Vec3NT globalToLocalPos(Vec3NT pos) {return pos;};
+		public Vec3NT localToGlobalPos(Vec3NT pos) {return pos;};
+		public Vec3NT globalToLocalVec(Vec3NT vec) {return vec;};
+		public Vec3NT localToGlobalVec(Vec3NT vec) {return vec;};
 		
-		public void addLinearVelocity(Vec3 v) {};
-		public void addAngularVelocity(Vec3 v) {};
+		public void addLinearVelocity(Vec3NT v) {};
+		public void addAngularVelocity(Vec3NT v) {};
 		
 		public void addContact(Contact c) {};
 	};
@@ -54,8 +54,8 @@ public class RigidBody {
 		DUMMY.localInertiaTensor = new Matrix3f();
 		DUMMY.inv_localInertiaTensor = new Matrix3f();
 		DUMMY.inv_globalInertiaTensor = new Matrix3f();
-		DUMMY.localCentroid = new Vec3(0, 0, 0);
-		DUMMY.globalCentroid = new Vec3(0, 0, 0);
+		DUMMY.localCentroid = new Vec3NT(0, 0, 0);
+		DUMMY.globalCentroid = new Vec3NT(0, 0, 0);
 	}
 	
 	public World world;
@@ -64,18 +64,18 @@ public class RigidBody {
 	public List<Collider> colliders = new ArrayList<>();
 	public List<AxisAlignedBB> colliderBoundingBoxes = new ArrayList<>();
 	
-	public Vec3 position = new Vec3(0, 0, 0);
-	public Vec3 globalCentroid;
+	public Vec3NT position = new Vec3NT(0, 0, 0);
+	public Vec3NT globalCentroid;
 	public Matrix3f rotation = new Matrix3f();
 	public Matrix3f inv_rotation;
 	
-	public Vec3 prevPosition = new Vec3(0, 0, 0);
+	public Vec3NT prevPosition = new Vec3NT(0, 0, 0);
 	public Quat4f prevRotation = new Quat4f();
 	
-	public Vec3 linearVelocity = new Vec3(0, 0, 0);
-	public Vec3 angularVelocity = new Vec3(0, 0, 0);
-	public Vec3 force = new Vec3(0, 0, 0);
-	public Vec3 torque = new Vec3(0, 0, 0);
+	public Vec3NT linearVelocity = new Vec3NT(0, 0, 0);
+	public Vec3NT angularVelocity = new Vec3NT(0, 0, 0);
+	public Vec3NT force = new Vec3NT(0, 0, 0);
+	public Vec3NT torque = new Vec3NT(0, 0, 0);
 	
 	public float mass;
 	public float inv_mass;
@@ -85,7 +85,7 @@ public class RigidBody {
 	public float friction = 0.5F;
 	public float restitution = 0;
 	
-	public Vec3 localCentroid;
+	public Vec3NT localCentroid;
 	
 	public ContactManifold contacts = new ContactManifold();
 	
@@ -96,7 +96,7 @@ public class RigidBody {
 	
 	public RigidBody(World w, double x, double y, double z) {
 		this(w);
-		this.position = new Vec3(x, y, z);
+		this.position = new Vec3NT(x, y, z);
 	}
 	
 	public void minecraftTimestep(){
@@ -149,17 +149,17 @@ public class RigidBody {
 		//Integrate position
 		globalCentroid = globalCentroid.add(linearVelocity.mult(dt));
 		if(angularVelocity.lengthSquared() > 0){
-			Vec3 axis = angularVelocity.normalize();
+			Vec3NT axis = angularVelocity.normalize();
 			double angle = angularVelocity.length()*dt;
 			Matrix3f turn = new Matrix3f();
-			turn.set(new AxisAngle4f((float)axis.xCoord, (float)axis.yCoord, (float)axis.zCoord, (float)angle));
+			turn.set(new AxisAngle4f((float)axis.x, (float)axis.y, (float)axis.z, (float)angle));
 			turn.mul(rotation);
 			rotation = turn;
 			updateOrientation();
 		}
 		updatePositionFromGlobalCentroid();
 		updateAABBs();
-		addLinearVelocity(new Vec3(0, -9.81*dt, 0));
+		addLinearVelocity(new Vec3NT(0, -9.81*dt, 0));
 	}
 	
 	public void setPrevData(){
@@ -188,15 +188,15 @@ public class RigidBody {
 			Contact c = contacts.contacts[i];
 			RigidBody bodyA = c.bodyA;
 			RigidBody bodyB = c.bodyB;
-			Vec3 contactNormal = c.normal;
+			Vec3NT contactNormal = c.normal;
 			if(bodyA == RigidBody.DUMMY || bodyA != this){
 				bodyA = c.bodyB;
 				bodyB = c.bodyA;
 				contactNormal = contactNormal.negate();
 			}
-			Vec3 rA = c.localA.subtract(c.a.localCentroid);
-			Vec3 rB = c.localB.subtract(c.b.localCentroid);
-			Vec3[] jacobian = new Vec3[]{contactNormal.negate(), rA.crossProduct(contactNormal).negate(), contactNormal, rB.crossProduct(contactNormal)};
+			Vec3NT rA = c.localA.subtract(c.a.localCentroid);
+			Vec3NT rB = c.localB.subtract(c.b.localCentroid);
+			Vec3NT[] jacobian = new Vec3NT[]{contactNormal.negate(), rA.crossProduct(contactNormal).negate(), contactNormal, rB.crossProduct(contactNormal)};
 			double inv_effectiveMass = 
 				  bodyA.inv_mass
 				+ jacobian[1].dotProduct(jacobian[1].matTransform(bodyA.inv_globalInertiaTensor))
@@ -225,36 +225,36 @@ public class RigidBody {
 		
 	}*/
 	
-	public Vec3 localToGlobalPos(Vec3 pos){
+	public Vec3NT localToGlobalPos(Vec3NT pos){
 		return pos.matTransform(rotation).add(position);
 	}
-	public Vec3 globalToLocalPos(Vec3 pos){
+	public Vec3NT globalToLocalPos(Vec3NT pos){
 		return pos.subtract(position).matTransform(inv_rotation);
 	}
-	public Vec3 localToGlobalVec(Vec3 vec){
+	public Vec3NT localToGlobalVec(Vec3NT vec){
 		return vec.matTransform(rotation);
 	}
-	public Vec3 globalToLocalVec(Vec3 vec){
+	public Vec3NT globalToLocalVec(Vec3NT vec){
 		return vec.matTransform(inv_rotation);
 	}
 	
-	public void addLinearVelocity(Vec3 v){
+	public void addLinearVelocity(Vec3NT v){
 		linearVelocity = linearVelocity.add(v);
 	}
-	public void addAngularVelocity(Vec3 v){
+	public void addAngularVelocity(Vec3NT v){
 		angularVelocity = angularVelocity.add(v);
 	}
-	public void impulse(Vec3 force, Vec3 position){
+	public void impulse(Vec3NT force, Vec3NT position){
 		this.force = this.force.add(force);
 		this.torque = this.torque.add(position.subtract(globalCentroid).crossProduct(force));
 	}
 	
-	public void impulseVelocity(Vec3 force, Vec3 position){
+	public void impulseVelocity(Vec3NT force, Vec3NT position){
 		linearVelocity = linearVelocity.add(force.mult(inv_mass));
 		angularVelocity = angularVelocity.add(position.subtract(globalCentroid).crossProduct(force).matTransform(inv_globalInertiaTensor));
 	}
 	
-	public void impulseVelocityDirect(Vec3 force, Vec3 position){
+	public void impulseVelocityDirect(Vec3NT force, Vec3NT position){
 		linearVelocity = linearVelocity.add(force);
 		angularVelocity = angularVelocity.add(position.subtract(globalCentroid).crossProduct(force));
 	}
@@ -298,12 +298,12 @@ public class RigidBody {
 		tMaxX = tMaxY = tMaxZ = -Double.MAX_VALUE;
 		tMinX = tMinY = tMinZ = Double.MAX_VALUE;
 		for(Collider c : colliders){
-			double maxX = GJK.localSupport(this, c, cardinals[0]).xCoord;
-			double maxY = GJK.localSupport(this, c, cardinals[1]).yCoord;
-			double maxZ = GJK.localSupport(this, c, cardinals[2]).zCoord;
-			double minX = GJK.localSupport(this, c, cardinals[3]).xCoord;
-			double minY = GJK.localSupport(this, c, cardinals[4]).yCoord;
-			double minZ = GJK.localSupport(this, c, cardinals[5]).zCoord;
+			double maxX = GJK.localSupport(this, c, cardinals[0]).x;
+			double maxY = GJK.localSupport(this, c, cardinals[1]).y;
+			double maxZ = GJK.localSupport(this, c, cardinals[2]).z;
+			double minX = GJK.localSupport(this, c, cardinals[3]).x;
+			double minY = GJK.localSupport(this, c, cardinals[4]).y;
+			double minZ = GJK.localSupport(this, c, cardinals[5]).z;
 			colliderBoundingBoxes.add(new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ));
 			tMaxX = Math.max(tMaxX, maxX);
 			tMaxY = Math.max(tMaxY, maxY);
@@ -319,7 +319,7 @@ public class RigidBody {
 		for(Collider c : collide){
 			colliders.add(c);
 		}
-		localCentroid = new Vec3(0, 0, 0);
+		localCentroid = new Vec3NT(0, 0, 0);
 		mass = 0;
 		for(Collider c : colliders){
 			mass += c.mass;
@@ -331,7 +331,7 @@ public class RigidBody {
 		localInertiaTensor = new Matrix3f();
 		for(Collider c : colliders){
 			//https://en.wikipedia.org/wiki/Parallel_axis_theorem
-			Vec3 colliderToLocal = localCentroid.subtract(c.localCentroid);
+			Vec3NT colliderToLocal = localCentroid.subtract(c.localCentroid);
 			double lenSquared = colliderToLocal.dotProduct(colliderToLocal);
 			Matrix3f outerProduct = colliderToLocal.outerProduct(colliderToLocal);
 			
@@ -356,7 +356,7 @@ public class RigidBody {
 	}
 	
 	@SideOnly(Side.CLIENT)
-	public void doGlTransform(Vec3 playerPos, float partialTicks){
+	public void doGlTransform(Vec3NT playerPos, float partialTicks){
 		FloatBuffer buf = ClientProxy.AUX_GL_BUFFER;
 		Quat4f quat = new Quat4f();
 		setFromMat(quat, rotation);
@@ -378,14 +378,14 @@ public class RigidBody {
 		buf.put(10, rotation.m22);
 		buf.put(11, 0);
 		
-		Vec3 pos = this.prevPosition.add(this.position.subtract(this.prevPosition).mult(partialTicks)).subtract(playerPos);
+		Vec3NT pos = this.prevPosition.add(this.position.subtract(this.prevPosition).mult(partialTicks)).subtract(playerPos);
 		
-		buf.put(12, (float)pos.xCoord);
-		buf.put(13, (float)pos.yCoord);
-		buf.put(14, (float)pos.zCoord);
+		buf.put(12, (float)pos.x);
+		buf.put(13, (float)pos.y);
+		buf.put(14, (float)pos.z);
 		buf.put(15, 1);
 		
-		GL11.glMultMatrix(buf);
+		GlStateManager.multMatrix(buf);
 		
 		buf.rewind();
 	}
@@ -434,27 +434,27 @@ public class RigidBody {
 		}
 	}
 	
-	public void renderDebugInfo(Vec3 offset, float partialTicks){
+	public void renderDebugInfo(Vec3NT offset, float partialTicks){
 		GlStateManager.pushMatrix();
 		BufferBuilder buf = Tessellator.getInstance().getBuffer();
 		GlStateManager.disableDepth();
 		for(Contact c : contacts.contacts){
 			if(c != null){
 				buf.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
-				Vec3 normal = c.normal.mult(0.5F);
-				Vec3 globalA = c.globalA.subtract(offset);
-				Vec3 globalB = c.globalB.subtract(offset);
-				buf.pos(globalA.xCoord, globalA.yCoord, globalA.zCoord).color(1, 0, 0, 1).endVertex();
-				buf.pos(globalA.xCoord-normal.xCoord, globalA.yCoord-normal.yCoord, globalA.zCoord-normal.zCoord).color(1, 0, 0, 1).endVertex();
+				Vec3NT normal = c.normal.mult(0.5F);
+				Vec3NT globalA = c.globalA.subtract(offset);
+				Vec3NT globalB = c.globalB.subtract(offset);
+				buf.pos(globalA.x, globalA.y, globalA.z).color(1, 0, 0, 1).endVertex();
+				buf.pos(globalA.x-normal.x, globalA.y-normal.y, globalA.z-normal.z).color(1, 0, 0, 1).endVertex();
 				
-				buf.pos(globalB.xCoord, globalB.yCoord, globalB.zCoord).color(1, 0, 0, 1).endVertex();
-				buf.pos(globalB.xCoord+normal.xCoord, globalB.yCoord+normal.yCoord, globalB.zCoord+normal.zCoord).color(1, 0, 0, 1).endVertex();
+				buf.pos(globalB.x, globalB.y, globalB.z).color(1, 0, 0, 1).endVertex();
+				buf.pos(globalB.x+normal.x, globalB.y+normal.y, globalB.z+normal.z).color(1, 0, 0, 1).endVertex();
 				Tessellator.getInstance().draw();
 				
 				GL11.glPointSize(16);
 				buf.begin(GL11.GL_POINTS, DefaultVertexFormats.POSITION_COLOR);
-				buf.pos(globalA.xCoord, globalA.yCoord, globalA.zCoord).color(1, 0, 0, 1).endVertex();
-				buf.pos(globalB.xCoord, globalB.yCoord, globalB.zCoord).color(1, 0, 0, 1).endVertex();
+				buf.pos(globalA.x, globalA.y, globalA.z).color(1, 0, 0, 1).endVertex();
+				buf.pos(globalB.x, globalB.y, globalB.z).color(1, 0, 0, 1).endVertex();
 				Tessellator.getInstance().draw();
 			}
 		}

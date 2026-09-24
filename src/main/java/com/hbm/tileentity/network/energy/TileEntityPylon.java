@@ -1,6 +1,7 @@
 package com.hbm.tileentity.network.energy;
 
 import com.hbm.api.energymk2.Nodespace;
+import com.hbm.blocks.BlockDummyable;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
@@ -13,13 +14,22 @@ import net.minecraft.util.math.Vec3d;
 public class TileEntityPylon extends TileEntityPylonBase {
 
 	@Override
+	public void update() {
+		if(!world.isRemote && this.getBlockMetadata() == 0) {
+			world.setBlockState(pos, world.getBlockState(pos).withProperty(BlockDummyable.META, 12), 3);
+			this.updateContainingBlockInfo();
+		}
+		super.update();
+	}
+
+	@Override
 	public ConnectionType getConnectionType() {
 		return ConnectionType.SINGLE;
 	}
 
 	@Override
 	public Vec3d[] getMountPos() {
-		return new Vec3d[]{new Vec3d(0.5D, 5.4D, 0.5D)};
+		return new Vec3d[]{new Vec3d(0.5D, 5.5D, 0.5D)};
 	}
 
 	@Override

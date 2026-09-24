@@ -26,9 +26,9 @@ public abstract class TileEntityMachinePolluting extends TileEntityMachineBase i
 
     public TileEntityMachinePolluting(int scount, int buffer, boolean enableFluidWrapper, boolean enableEnergyWrapper){
         super(scount, enableFluidWrapper, enableEnergyWrapper);
-        smoke = new FluidTankNTM(Fluids.SMOKE, buffer);
-        smoke_leaded = new FluidTankNTM(Fluids.SMOKE_LEADED, buffer);
-        smoke_poison = new FluidTankNTM(Fluids.SMOKE_POISON, buffer);
+        smoke = new FluidTankNTM(Fluids.SMOKE, buffer).withOwner(this);
+        smoke_leaded = new FluidTankNTM(Fluids.SMOKE_LEADED, buffer).withOwner(this);
+        smoke_poison = new FluidTankNTM(Fluids.SMOKE_POISON, buffer).withOwner(this);
     }
 
     @Deprecated

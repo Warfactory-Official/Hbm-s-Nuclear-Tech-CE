@@ -36,7 +36,7 @@ public class RenderMovingPackage extends Render<EntityMovingPackage> {
         }
 
         double scale = 1.25;
-        GL11.glScaled(scale, scale, scale);
+        GlStateManager.scale(scale, scale, scale);
         IBakedModel model = Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(dummy, entity.world, null);
         model = ForgeHooksClient.handleCameraTransforms(model, ItemCameraTransforms.TransformType.FIXED, false);
         Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);

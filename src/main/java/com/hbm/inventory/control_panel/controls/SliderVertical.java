@@ -1,5 +1,7 @@
 package com.hbm.inventory.control_panel.controls;
 
+import com.hbm.inventory.control_panel.types.DataValue;
+import com.hbm.inventory.control_panel.types.DataValueFloat;
 import com.hbm.render.loader.WaveFrontObjectVAO;
 import com.hbm.inventory.control_panel.*;
 import com.hbm.inventory.control_panel.nodes.*;
@@ -20,8 +22,8 @@ import java.util.Map;
 
 public class SliderVertical extends Control {
 
-    public SliderVertical(String name, ControlPanel panel) {
-        super(name, panel);
+    public SliderVertical(String name,String registryName,ControlPanel panel) {
+        super(name,registryName, panel);
         vars.put("value", new DataValueFloat(0));
     }
 
@@ -99,7 +101,7 @@ public class SliderVertical extends Control {
     public void populateDefaultNodes(List<ControlEvent> receiveEvents) {
         NodeSystem ctrl_press = new NodeSystem(this);
         {
-            Map<String, DataValue> vars = new HashMap<>(receiveEvents.get(0).vars);
+            Map<String,DataValue> vars = new HashMap<>(receiveEvents.get(0).vars);
             vars.put("from index", new DataValueFloat(0));
             NodeInput node0 = new NodeInput(170, 100, "Event Data").setVars(vars);
             ctrl_press.addNode(node0);
@@ -128,7 +130,7 @@ public class SliderVertical extends Control {
 
     @Override
     public Control newControl(ControlPanel panel) {
-        return new SliderVertical(name, panel);
+        return new SliderVertical(name,registryName,panel);
     }
 
 }

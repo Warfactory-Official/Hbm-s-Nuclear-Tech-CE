@@ -62,7 +62,7 @@ public class RenderSolidifier extends TileEntitySpecialRenderer<TileEntityMachin
       double height = (double) liq.tank.getFill() / (double) liq.tank.getMaxFill();
       GlStateManager.pushMatrix();
       GlStateManager.translate(0, 1.25, 0);
-      GL11.glScaled(1, height, 1);
+      GlStateManager.scale(1, height, 1);
       GlStateManager.translate(0, -1.25, 0);
       ResourceManager.solidifier.renderPart("Fluid");
       GlStateManager.popMatrix();

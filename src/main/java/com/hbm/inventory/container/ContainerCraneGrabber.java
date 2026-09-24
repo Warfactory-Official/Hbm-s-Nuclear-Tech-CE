@@ -55,6 +55,8 @@ public class ContainerCraneGrabber extends ContainerBase {
                 } else if(isUpgradeEjector(result)) {
                     if(!this.mergeItemStack(stack, 10, 11, false))
                         return ItemStack.EMPTY;
+                } else {
+                    return ItemStack.EMPTY;
                 }
 
                 return ItemStack.EMPTY;

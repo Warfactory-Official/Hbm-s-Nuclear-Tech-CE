@@ -2,7 +2,7 @@ package com.hbm.items.tool;
 
 import com.hbm.items.ModItems;
 import com.hbm.main.MainRegistry;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -129,7 +129,7 @@ public class ItemColtanCompass extends Item {
 				lastZ = stack.getTagCompound().getInteger("colZ");
 				lease = System.currentTimeMillis() + 1000;
 				
-				Vec3 vec = Vec3.createVectorHelper(entity.posX - lastX, 0, entity.posZ - lastZ);
+				Vec3NT vec = Vec3NT.createVectorHelper(entity.posX - lastX, 0, entity.posZ - lastZ);
 				MainRegistry.proxy.displayTooltip(((int) vec.length()) + "m");
 			}
 			

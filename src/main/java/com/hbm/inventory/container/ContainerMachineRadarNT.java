@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineRadarNT;
@@ -16,6 +17,12 @@ import java.util.function.Predicate;
 public class ContainerMachineRadarNT extends Container {
 
     private TileEntityMachineRadarNT radar;
+
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(10)
+                                                                              .rule(0, 9,
+                                                                                      Predicate.not(Library::isBattery))
+                                                                              .genericMachineRange(9)
+                                                                              .build();
 
     public ContainerMachineRadarNT(InventoryPlayer invPlayer, TileEntityMachineRadarNT tedf) {
         this.radar = tedf;
@@ -38,8 +45,7 @@ public class ContainerMachineRadarNT extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 10,
-                Predicate.not(Library::isBattery), 9);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
     @Override

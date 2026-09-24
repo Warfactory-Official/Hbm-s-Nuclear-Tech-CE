@@ -21,12 +21,9 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -51,13 +48,10 @@ public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
 
     public TileEntityMachineFrackingTower() {
         super();
-        tanksOld[2] = new FluidTank(64000);
-        tankTypes[2] = Fluids.FRACKSOL.getFF();
-
         tanks = new FluidTankNTM[3];
-        tanks[0] = new FluidTankNTM(Fluids.OIL, 64_000);
-        tanks[1] = new FluidTankNTM(Fluids.GAS, 64_000);
-        tanks[2] = new FluidTankNTM(Fluids.FRACKSOL, 64_000);
+        tanks[0] = new FluidTankNTM(Fluids.OIL, 64_000).withOwner(this);
+        tanks[1] = new FluidTankNTM(Fluids.GAS, 64_000).withOwner(this);
+        tanks[2] = new FluidTankNTM(Fluids.FRACKSOL, 64_000).withOwner(this);
     }
 
     @Override
@@ -114,7 +108,6 @@ public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
     public void onSuck(BlockPos pos) {
         IBlockState state = world.getBlockState(pos);
         Block b = state.getBlock();
-        int meta = b.getMetaFromState(state);
 
         int oil = 0;
         int gas = 0;
@@ -153,11 +146,6 @@ public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
     @Override
     public FluidTankNTM[] getReceivingTanks() {
         return new FluidTankNTM[]{tanks[2]};
-    }
-
-    @Override
-    public FluidTankNTM[] getAllTanks() {
-        return tanks;
     }
 
     @Override
@@ -227,11 +215,6 @@ public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
     }
 
     @Override
-    public AxisAlignedBB getRenderBoundingBox() {
-        return TileEntity.INFINITE_EXTENT_AABB;
-    }
-
-    @Override
     @SideOnly(Side.CLIENT)
     public double getMaxRenderDistanceSquared() {
         return 65536.0D;
@@ -243,6 +226,7 @@ public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
         return player.getDistanceSq(this.pos.getX() + 0.5D, this.pos.getY() + 0.5D, this.pos.getZ() + 0.5D) <= 1024.0D;
     }
 
+    @Override
     public void provideInfo(ItemMachineUpgrade.UpgradeType type, int level, List<String> info, boolean extendedInfo) {
         info.add(IUpgradeInfoProvider.getStandardLabel(ModBlocks.machine_fracking_tower));
         if (type == ItemMachineUpgrade.UpgradeType.SPEED) {

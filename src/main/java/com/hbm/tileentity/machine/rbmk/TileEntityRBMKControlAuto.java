@@ -5,7 +5,7 @@ import com.hbm.interfaces.IControlReceiver;
 import com.hbm.interfaces.ICopiable;
 import com.hbm.inventory.container.ContainerRBMKControlAuto;
 import com.hbm.inventory.gui.GUIRBMKControlAuto;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.machine.rbmk.RBMKColumn.ColumnType;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKControlManual.RBMKColor;
@@ -13,6 +13,7 @@ import com.hbm.util.EnumUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.MathHelper;
@@ -37,7 +38,7 @@ public class TileEntityRBMKControlAuto extends TileEntityRBMKControl implements 
 
 	@Override
 	public boolean hasPermission(EntityPlayer player) {
-		return Vec3.createVectorHelper(pos.getX() - player.posX, pos.getY() - player.posY, pos.getZ() - player.posZ).length() < 20;
+		return Vec3NT.createVectorHelper(pos.getX() - player.posX, pos.getY() - player.posY, pos.getZ() - player.posZ).length() < 20;
 	}
 	
 	@Override
@@ -134,7 +135,7 @@ public class TileEntityRBMKControlAuto extends TileEntityRBMKControl implements 
 	}
 
 	@Override
-	public void receiveControl(NBTTagCompound data) {
+	public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
 		
 		if(data.hasKey("function")) {
 			int c = Math.abs(data.getInteger("function")) % RBMKColor.VALUES.length;
@@ -188,7 +189,7 @@ public class TileEntityRBMKControlAuto extends TileEntityRBMKControl implements 
 	@Override
 	public void pasteSettings(NBTTagCompound nbt, int index, World world, EntityPlayer player, int x, int y, int z) {
 		if(nbt.hasKey("levelLower")) levelLower = nbt.getDouble("levelLower");
-		if(nbt.hasKey("levelUpper")) levelLower = nbt.getDouble("levelUpper");
+		if(nbt.hasKey("levelUpper")) levelUpper = nbt.getDouble("levelUpper");
 		if(nbt.hasKey("heatLower")) heatLower = nbt.getDouble("heatLower");
 		if(nbt.hasKey("heatUpper")) heatUpper = nbt.getDouble("heatUpper");
 		if(nbt.hasKey("function")) function = EnumUtil.grabEnumSafely(RBMKFunction.values(), nbt.getInteger("function"));

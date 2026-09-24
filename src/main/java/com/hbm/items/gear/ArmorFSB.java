@@ -1,6 +1,8 @@
 package com.hbm.items.gear;
 
 import com.hbm.config.PotionConfig;
+import com.hbm.handler.ArmorUtil;
+import com.hbm.handler.HazmatRegistry;
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.interfaces.NotableComments;
 import com.hbm.items.ModItems;
@@ -8,6 +10,8 @@ import com.hbm.items.armor.IArmorDisableModel;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.render.NTMRenderHelper;
 import com.hbm.render.loader.IModelCustom;
+import com.hbm.render.tileentity.IItemRendererProvider;
+import com.hbm.render.tileentity.ItemRendererProviderRegistry;
 import com.hbm.util.*;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
@@ -43,6 +47,7 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
@@ -69,7 +74,8 @@ public class ArmorFSB extends ItemArmor implements IArmorDisableModel {
     public SoundEvent step;
     public SoundEvent jump;
     public SoundEvent fall;
-    private String texture = "";
+    public double radResist = 0;
+    private final String texture;
     private ResourceLocation overlay = null;
 
 
@@ -80,6 +86,9 @@ public class ArmorFSB extends ItemArmor implements IArmorDisableModel {
         this.texture = texture;
 
         ModItems.ALL_ITEMS.add(this);
+        if (this instanceof IItemRendererProvider provider) {
+            ItemRendererProviderRegistry.registerItemProvider(provider);
+        }
     }
 
     public static boolean hasFSBArmor(EntityPlayer entity) {
@@ -269,7 +278,7 @@ public class ArmorFSB extends ItemArmor implements IArmorDisableModel {
     }
 
     @Override
-    public void onArmorTick(World world, EntityPlayer entity, ItemStack stack) {
+    public void onArmorTick(@NotNull World world, @NotNull EntityPlayer entity, @NotNull ItemStack stack) {
 
         if (this.armorType != EntityEquipmentSlot.CHEST) return;
         if (!hasFSBArmor(entity) || !this.geigerSound) return;
@@ -372,9 +381,24 @@ public class ArmorFSB extends ItemArmor implements IArmorDisableModel {
         return this;
     }
 
-
     public ArmorFSB setOverlay(String path) {
         this.overlay = new ResourceLocation(path);
+        return this;
+    }
+
+    public ArmorFSB setHazardClass(ArmorRegistry.HazardClass... classes) {
+        ArmorUtil.external.add(new Tuple.Pair<>(this, classes));
+        return this;
+    }
+
+    public ArmorFSB setRadResist(double fullSet) {
+        this.radResist = fullSet;
+        if(fullSet > 0) {
+            double mult = armorType == EntityEquipmentSlot.HEAD ? HazmatRegistry.helmet :
+                    armorType == EntityEquipmentSlot.CHEST ? HazmatRegistry.chest :
+                            armorType == EntityEquipmentSlot.LEGS ? HazmatRegistry.legs : HazmatRegistry.boots;
+            HazmatRegistry.external.add(new Tuple.Pair<>(this, fullSet * mult));
+        }
         return this;
     }
 
@@ -392,23 +416,24 @@ public class ArmorFSB extends ItemArmor implements IArmorDisableModel {
         this.step = original.step;
         this.jump = original.jump;
         this.fall = original.fall;
+        this.setRadResist(original.radResist);
         //overlay doesn't need to be copied because it's helmet exclusive
         return this;
     }
 
     @Override
-    public String getArmorTexture(ItemStack stack, Entity entity, EntityEquipmentSlot slot, String type) {
+    public String getArmorTexture(@NotNull ItemStack stack, @NotNull Entity entity, @NotNull EntityEquipmentSlot slot, @NotNull String type) {
         return texture;
     }
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
+    public void addInformation(@NotNull ItemStack stack, World worldIn, @NotNull List<String> list, @NotNull ITooltipFlag flagIn) {
 
-        List toAdd = new ArrayList();
+        List<String> toAdd = new ArrayList<>();
 
         if (!effects.isEmpty()) {
-            List potionList = new ArrayList();
+            List<String> potionList = new ArrayList<>();
             for (PotionEffect effect : effects) {
                 potionList.add(I18n.format(effect.getEffectName()));
             }
@@ -432,7 +457,7 @@ public class ArmorFSB extends ItemArmor implements IArmorDisableModel {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void renderHelmetOverlay(ItemStack stack, EntityPlayer player, ScaledResolution resolution, float partialTicks) {
+    public void renderHelmetOverlay(@NotNull ItemStack stack, @NotNull EntityPlayer player, @NotNull ScaledResolution resolution, float partialTicks) {
         if (overlay == null)
             return;
         GlStateManager.disableDepth();
@@ -442,10 +467,10 @@ public class ArmorFSB extends ItemArmor implements IArmorDisableModel {
         GlStateManager.disableAlpha();
         Minecraft.getMinecraft().getTextureManager().bindTexture(overlay);
         NTMRenderHelper.startDrawingTexturedQuads();
-        NTMRenderHelper.addVertexWithUV(0.0D, resolution.getScaledHeight(), -90.0D, 0.0D, 1.0D);
-        NTMRenderHelper.addVertexWithUV(resolution.getScaledWidth(), resolution.getScaledHeight(), -90.0D, 1.0D, 1.0D);
-        NTMRenderHelper.addVertexWithUV(resolution.getScaledWidth(), 0.0D, -90.0D, 1.0D, 0.0D);
-        NTMRenderHelper.addVertexWithUV(0.0D, 0.0D, -90.0D, 0.0D, 0.0D);
+        NTMRenderHelper.addVertexWithUV(0F, resolution.getScaledHeight(), -90F, 0F, 1F);
+        NTMRenderHelper.addVertexWithUV(resolution.getScaledWidth(), resolution.getScaledHeight(), -90F, 1F, 1F);
+        NTMRenderHelper.addVertexWithUV(resolution.getScaledWidth(), 0F, -90F, 1F, 0F);
+        NTMRenderHelper.addVertexWithUV(0F, 0F, -90F, 0F, 0F);
         NTMRenderHelper.draw();
         GlStateManager.depthMask(true);
         GlStateManager.enableDepth();

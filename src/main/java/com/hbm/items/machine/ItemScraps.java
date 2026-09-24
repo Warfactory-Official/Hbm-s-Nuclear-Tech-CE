@@ -5,6 +5,7 @@ import com.hbm.Tags;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
+import com.hbm.items.IClaimedModelLocation;
 import com.hbm.items.ModItems;
 import com.hbm.items.special.ItemAutogen;
 import com.hbm.util.I18nUtil;
@@ -93,7 +94,6 @@ public class ItemScraps extends ItemAutogen {
     @SideOnly(Side.CLIENT)
     public void registerModels() {
         List<ResourceLocation> variants = new ArrayList<>();
-        ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(new ResourceLocation(Tags.MODID, "items/scraps-stone"), "inventory"));
         for (NTMMaterial mat : Mats.orderedList) {
             if (mat.smeltable == NTMMaterial.SmeltingBehavior.SMELTABLE
                     || mat.smeltable == NTMMaterial.SmeltingBehavior.ADDITIVE) {
@@ -130,14 +130,18 @@ public class ItemScraps extends ItemAutogen {
     @SideOnly(Side.CLIENT)
     public String getItemStackDisplayName(ItemStack stack) {
 
-        if(stack.hasTagCompound() && stack.getTagCompound().getBoolean("liquid")) {
-            Mats.MaterialStack contents = getMats(stack);
-            if(contents != null) {
+        Mats.MaterialStack contents = getMats(stack);
+        if(contents != null) {
+            String matName = contents.material.getTranslationKey();
+
+            if(stack.hasTagCompound() && stack.getTagCompound().getBoolean("liquid")) {
                 return I18nUtil.resolveKey(contents.material.getTranslationKey());
+            } else {
+                return ("" + I18n.format(this.getUnlocalizedNameInefficiently(stack) + ".name", I18n.format(matName))).trim();
             }
         }
 
-        return ("" + I18n.format(this.getUnlocalizedNameInefficiently(stack) + ".name")).trim();
+        return "Foundry Scraps";
     }
 
     @Override
@@ -146,11 +150,10 @@ public class ItemScraps extends ItemAutogen {
 
         if(contents != null) {
 
+            list.add(Mats.formatAmount(contents.amount, Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)));
+
             if(stack.hasTagCompound() && stack.getTagCompound().getBoolean("liquid")) {
-                list.add(Mats.formatAmount(contents.amount, Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)));
                 if(contents.material.smeltable == contents.material.smeltable.ADDITIVE) list.add(TextFormatting.DARK_RED + "Additive, not castable!");
-            } else {
-                list.add(I18nUtil.resolveKey(contents.material.getTranslationKey()) + ", " + Mats.formatAmount(contents.amount, Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)));
             }
         }
     }
@@ -183,5 +186,13 @@ public class ItemScraps extends ItemAutogen {
         scrap.getTagCompound().setInteger("amount", stack.amount);
         if(liquid) scrap.getTagCompound().setBoolean("liquid", true);
         return scrap;
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public boolean ownsModelLocation(ModelResourceLocation location) {
+        return super.ownsModelLocation(location)
+                || IClaimedModelLocation.isInventoryLocation(location, new ResourceLocation(Tags.MODID, "items/scraps_liquid"))
+                || IClaimedModelLocation.isInventoryLocation(location, new ResourceLocation(Tags.MODID, "items/scraps_additive"));
     }
 }

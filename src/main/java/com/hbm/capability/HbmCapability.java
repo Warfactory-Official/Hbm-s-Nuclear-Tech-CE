@@ -3,7 +3,6 @@ package com.hbm.capability;
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.items.armor.ItemModShield;
-import com.hbm.main.MainRegistry;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -15,7 +14,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.Capability.IStorage;
 import net.minecraftforge.common.capabilities.CapabilityInject;
@@ -42,6 +40,7 @@ public class HbmCapability {
 		void setKeyPressed(EnumKeybind key, boolean pressed);
 		boolean getEnableBackpack();
 		boolean getEnableHUD();
+		boolean getEnableMagnet();
         boolean hasReceivedBook();
 		float getShield();
 		float getMaxShield();
@@ -53,6 +52,7 @@ public class HbmCapability {
         int getReputation();
 		void setEnableBackpack(boolean b);
 		void setEnableHUD(boolean b);
+		void setEnableMagnet(boolean b);
         void setReceivedBook(boolean b);
 		void setShield(float f);
 		void setMaxShield(float f);
@@ -75,14 +75,17 @@ public class HbmCapability {
         default boolean isJetpackActive() {
 			return getEnableBackpack() && getKeyPressed(EnumKeybind.JETPACK);
 		}
+		default boolean isMagnetActive() {
+			return getEnableMagnet();
+		}
 		default void serialize(ByteBuf buf) {
 			buf.writeBoolean(this.hasReceivedBook());//mlbv: i don't think we really need to sync this but anyway..
 			buf.writeFloat(this.getShield());
 			buf.writeFloat(this.getMaxShield());
 			buf.writeBoolean(this.getEnableBackpack());
 			buf.writeBoolean(this.getEnableHUD());
+			buf.writeBoolean(this.getEnableMagnet());
 			buf.writeInt(this.getReputation());
-//			buf.writeBoolean(this.enableMagnet);
 		}
 		default void deserialize(ByteBuf buf) {
 			if(buf.readableBytes() > 0) {
@@ -91,8 +94,8 @@ public class HbmCapability {
 				this.setMaxShield(buf.readFloat());
 				this.setEnableBackpack(buf.readBoolean());
 				this.setEnableHUD(buf.readBoolean());
+				this.setEnableMagnet(buf.readBoolean());
 				this.setReputation(buf.readInt());
-//				this.enableMagnet = buf.readBoolean();
 			}
 		}
 	}
@@ -105,6 +108,7 @@ public class HbmCapability {
 		
 		public boolean enableBackpack = true;
 		public boolean enableHUD = true;
+		public boolean enableMagnet = true;
         public boolean hasReceivedBook = false;
 
 		public int dashCooldown = 0;
@@ -134,19 +138,12 @@ public class HbmCapability {
 				
 				if(key == EnumKeybind.TOGGLE_JETPACK) {
 					this.enableBackpack = !this.enableBackpack;
-					
-					if(this.enableBackpack)
-						MainRegistry.proxy.displayTooltip(TextFormatting.GREEN + "Jetpack ON");
-					else
-						MainRegistry.proxy.displayTooltip(TextFormatting.RED + "Jetpack OFF");
 				}
 				if(key == EnumKeybind.TOGGLE_HEAD) {
 					this.enableHUD = !this.enableHUD;
-					
-					if(this.enableHUD)
-						MainRegistry.proxy.displayTooltip(TextFormatting.GREEN + "HUD ON");
-					else
-						MainRegistry.proxy.displayTooltip(TextFormatting.RED + "HUD OFF");
+				}
+				if(key == EnumKeybind.TOGGLE_MAGNET) {
+					this.enableMagnet = !this.enableMagnet;
 				}
 			}
 			keysPressed[key.ordinal()] = pressed;
@@ -162,6 +159,11 @@ public class HbmCapability {
 			return enableHUD;
 		}
 
+		@Override
+		public boolean getEnableMagnet(){
+			return enableMagnet;
+		}
+
         @Override
         public boolean hasReceivedBook() {
             return hasReceivedBook;
@@ -175,6 +177,11 @@ public class HbmCapability {
 		@Override
 		public void setEnableHUD(boolean b){
 			enableHUD = b;
+		}
+
+		@Override
+		public void setEnableMagnet(boolean b){
+			enableMagnet = b;
 		}
 
         @Override
@@ -276,6 +283,7 @@ public class HbmCapability {
             tag.setFloat("maxShield", instance.getMaxShield());
 			tag.setBoolean("enableBackpack", instance.getEnableBackpack());
 			tag.setBoolean("enableHUD", instance.getEnableHUD());
+			tag.setBoolean("enableMagnet", instance.getEnableMagnet());
             tag.setInteger("reputation", instance.getReputation());
 			return tag;
 		}
@@ -291,6 +299,7 @@ public class HbmCapability {
                 instance.setMaxShield(tag.getFloat("maxShield"));
 				instance.setEnableBackpack(tag.getBoolean("enableBackpack"));
 				instance.setEnableHUD(tag.getBoolean("enableHUD"));
+				instance.setEnableMagnet(!tag.hasKey("enableMagnet") || tag.getBoolean("enableMagnet"));
                 instance.setReputation(tag.getInteger("reputation"));
 			}
 		}
@@ -320,6 +329,11 @@ public class HbmCapability {
 				return false;
 			}
 
+			@Override
+			public boolean getEnableMagnet(){
+				return false;
+			}
+
             @Override
             public boolean hasReceivedBook() {
                 return true;
@@ -331,6 +345,10 @@ public class HbmCapability {
 
 			@Override
 			public void setEnableHUD(boolean b){
+			}
+
+			@Override
+			public void setEnableMagnet(boolean b){
 			}
 
             @Override

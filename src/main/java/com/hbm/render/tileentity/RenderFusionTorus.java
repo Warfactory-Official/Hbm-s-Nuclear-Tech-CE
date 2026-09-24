@@ -28,6 +28,13 @@ public class RenderFusionTorus extends TileEntitySpecialRenderer<TileEntityFusio
         GlStateManager.translate(x + 0.5F, y, z + 0.5F);
         GlStateManager.enableLighting();
         GlStateManager.enableCull();
+
+        if (torus.tilted) {
+            GlStateManager.translate(0, -1, 0);
+            GlStateManager.rotate(10, 0, 0, 1);
+            GlStateManager.rotate(5, 0, 1, 0);
+        }
+
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
         bindTexture(ResourceManager.fusion_torus_tex);
         ResourceManager.fusion_torus.renderPart("Torus");

@@ -73,7 +73,7 @@ public class ArmorLiquidator extends ArmorFSB implements IGasMask {
 	
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void renderHelmetOverlay(ItemStack stack, EntityPlayer player, ScaledResolution resolution, float partialTicks) {
+	public void renderHelmetOverlay(@NotNull ItemStack stack, @NotNull EntityPlayer player, @NotNull ScaledResolution resolution, float partialTicks) {
 		GlStateManager.disableDepth();
 		GlStateManager.depthMask(false);
 		GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA);
@@ -95,7 +95,7 @@ public class ArmorLiquidator extends ArmorFSB implements IGasMask {
 	}
 	
 	@Override
-	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn){
+	public void addInformation(@NotNull ItemStack stack, World worldIn, @NotNull List<String> list, @NotNull ITooltipFlag flagIn){
 		super.addInformation(stack, worldIn, list, flagIn);
 		if (this == ModItems.liquidator_helmet)
 			ArmorUtil.addGasMaskTooltip(stack, worldIn, list, flagIn);
@@ -133,7 +133,7 @@ public class ArmorLiquidator extends ArmorFSB implements IGasMask {
 				ItemStack stack = player.getHeldItem(hand);
 				ItemStack filter = this.getFilter(stack);
 				
-				if(filter != null) {
+				if(!filter.isEmpty()) {
 					ArmorUtil.removeFilter(stack);
 					
 					if(!player.inventory.addItemStackToInventory(filter)) {

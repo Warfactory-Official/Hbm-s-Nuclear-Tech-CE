@@ -137,12 +137,6 @@ public class BlockOreMeta extends BlockMeta implements IDynamicModels, ICustomBl
         ForgeRegistries.ITEMS.register(itemBlock);
     }
 
-    @Override
-    public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-        int meta = stack.getMetadata();
-        world.setBlockState(pos, this.getStateFromMeta(meta), 3);
-    }
-
     @SideOnly(Side.CLIENT)
     public void bakeModel(ModelBakeEvent event) {
         try {

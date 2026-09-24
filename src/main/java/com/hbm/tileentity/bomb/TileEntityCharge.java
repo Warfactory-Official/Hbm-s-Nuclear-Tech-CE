@@ -10,6 +10,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.SoundCategory;
 
 import java.util.UUID;
@@ -20,6 +21,7 @@ public class TileEntityCharge extends TileEntityLoadedBase implements ITickable 
     public boolean started;
     public int timer;
     public UUID placerID;
+    private AxisAlignedBB bb;
 
     @Override
     public void update() {
@@ -94,5 +96,11 @@ public class TileEntityCharge extends TileEntityLoadedBase implements ITickable 
             mins = "0" + mins;
 
         return mins;
+    }
+
+    @Override
+    public AxisAlignedBB getRenderBoundingBox() {
+        if (bb == null) bb = new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+        return bb;
     }
 }

@@ -3,6 +3,7 @@ package com.hbm.core;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.*;
+import org.spongepowered.asm.transformers.MixinClassWriter;
 
 import static com.hbm.core.HbmCorePlugin.coreLogger;
 import static com.hbm.core.HbmCorePlugin.fail;
@@ -28,7 +29,7 @@ final class InventoryPlayerTransformer {
                 }
             }
 
-            ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+            ClassWriter writer = new MixinClassWriter(ClassWriter.COMPUTE_MAXS);
             classNode.accept(writer);
             return writer.toByteArray();
         } catch (Throwable t) {

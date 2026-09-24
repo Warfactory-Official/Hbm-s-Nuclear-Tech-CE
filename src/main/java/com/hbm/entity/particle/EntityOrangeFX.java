@@ -1,8 +1,6 @@
 package com.hbm.entity.particle;
 
 import com.hbm.items.ModItems;
-import com.hbm.packet.PacketDispatcher;
-import com.hbm.packet.toserver.ModFXCollidePacket;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
@@ -65,11 +63,6 @@ public class EntityOrangeFX extends Particle {
 		this.prevPosY = this.posY;
 		this.prevPosZ = this.posZ;
 
-		if (this.rand.nextInt(50) == 0 && this.world.isRemote) {
-			BlockPos p = new BlockPos((int) this.posX, (int) this.posY, (int) this.posZ);
-			PacketDispatcher.wrapper.sendToServer(new ModFXCollidePacket(ModFXCollidePacket.Action.EXPLOSION_POISON, p, 2));
-		}
-
 		this.particleAge++;
 		if (this.particleAge >= this.particleMaxAge) {
 			this.setExpired();
@@ -84,7 +77,6 @@ public class EntityOrangeFX extends Particle {
 
 		double subdivisions = 4;
 		BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-		BlockPos.MutableBlockPos attackPos = new BlockPos.MutableBlockPos();
 		for(int i = 0; i < subdivisions; i++) {
 			this.posX += this.motionX/subdivisions;
 			this.posY += this.motionY/subdivisions;
@@ -92,9 +84,6 @@ public class EntityOrangeFX extends Particle {
 			pos.setPos((int) posX, (int) posY, (int) posZ);
 			if(world.getBlockState(pos).getMaterial() != Material.AIR) {
 				this.setExpired();
-				if (this.world.isRemote) {
-					PacketDispatcher.wrapper.sendToServer(new ModFXCollidePacket(ModFXCollidePacket.Action.SOLINIUM_AREA, pos.toImmutable()));
-				}
 			}
 		}
 

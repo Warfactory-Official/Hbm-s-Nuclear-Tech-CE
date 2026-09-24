@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotBattery;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.inventory.slot.SlotUpgrade;
@@ -17,6 +18,16 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerCrystallizer extends Container {
 
 	private TileEntityMachineCrystallizer crystallizer;
+    private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(8)
+                                                                              .rule(0, 1,
+                                                                                      ContainerCrystallizer::isNormal)
+                                                                              .rule(1, 2, Library::isBattery)
+                                                                              .rule(2, 5,
+                                                                                      ContainerCrystallizer::isNormal)
+                                                                              .rule(5, 7, Library::isMachineUpgrade)
+                                                                              .rule(7, 8,
+                                                                                      s -> s.getItem() instanceof IItemFluidIdentifier)
+                                                                              .build();
 
 	public ContainerCrystallizer(InventoryPlayer invPlayer, TileEntityMachineCrystallizer te) {
 		crystallizer = te;
@@ -50,12 +61,7 @@ public class ContainerCrystallizer extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer playerIn, int index) {
-        return InventoryUtil.transferStack(this.inventorySlots, index, 8,
-                ContainerCrystallizer::isNormal, 1,
-                Library::isBattery, 2,
-                ContainerCrystallizer::isNormal, 5,
-                Library::isMachineUpgrade, 7,
-                s -> s.getItem() instanceof IItemFluidIdentifier, 8);
+        return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, playerIn);
     }
 
     @Override

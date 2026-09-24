@@ -1,10 +1,11 @@
 package com.hbm.packet.toclient;
 
 import com.hbm.inventory.control_panel.ControlPanel;
-import com.hbm.inventory.control_panel.DataValue;
+import com.hbm.inventory.control_panel.types.DataValue;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.threading.PrecompiledPacket;
 import com.hbm.tileentity.machine.TileEntityControlPanel;
+import com.hbm.util.BufferUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
@@ -50,7 +51,7 @@ public class ControlPanelUpdatePacket extends PrecompiledPacket {
         PacketBuffer wrapper = new PacketBuffer(buf);
         if (updates == null) {
             buf.writeInt(-1);
-            wrapper.writeCompoundTag(fullNbt);
+            BufferUtil.writeNBT(buf, fullNbt);
         } else {
             buf.writeInt(updates.size());
             for (VarUpdate u : updates) {
@@ -71,7 +72,7 @@ public class ControlPanelUpdatePacket extends PrecompiledPacket {
                 }
                 i++;
             }
-            wrapper.writeCompoundTag(tag);
+            BufferUtil.writeNBT(buf, tag);
         }
     }
 
@@ -112,7 +113,7 @@ public class ControlPanelUpdatePacket extends PrecompiledPacket {
 
             if (size == -1) {
                 try {
-                    NBTTagCompound tag = buffer.readCompoundTag();
+                    NBTTagCompound tag = BufferUtil.readNBT(buffer);
                     control.readFromNBT(tag);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -127,7 +128,7 @@ public class ControlPanelUpdatePacket extends PrecompiledPacket {
                 }
 
                 try {
-                    NBTTagCompound dataTag = buffer.readCompoundTag();
+                    NBTTagCompound dataTag = BufferUtil.readNBT(buffer);
                     if (dataTag != null) {
                         for (int i = 0; i < size; i++) {
                             if (dataTag.hasKey(String.valueOf(i))) {

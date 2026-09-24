@@ -16,6 +16,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.fluids.FluidTank;
@@ -24,6 +27,10 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
 
 @Spaghetti("Not spaghetti in itself, but for the love of god please use this base class for all machines")
 public abstract class TileEntityMachineBase extends TileEntityLoadedBase implements IWorldRenameable {
@@ -34,6 +41,23 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
      */
     public ItemStackHandler inventory;
     private IItemHandlerModifiable checkedInventory;
+    // Capability wrappers handed out by getCapability(), cached instead of allocated fresh every call:
+    // external capability consumers that key a cache off the handler object's identity (AE2's storage
+    // buses do exactly this, see PartFluidStorageBus/PartStorageBus#createHandlerHash) would otherwise see a
+    // "new" handler on every single query and tear down/rebuild their own cache in response, every time.
+    // Both wrappers bake in the accessorPos they were built with, and accessorPos is NOT a function of
+    // this.pos: TileEntityProxyCombo pushes its OWN position before delegating (see
+    // CapabilityContextProvider), which is the whole point of the mechanism - it is how a multiblock tells
+    // its ports apart. So accessorPos is part of the cache key, or the first port to query poisons the entry
+    // for every other port of the same multiblock. The item wrapper additionally depends on facing.
+    // NOTE: this assumes getAccessibleSlotsFromSide(side, accessorPos) is stable for a given (facing,
+    // accessorPos) pair over the TE's lifetime (every current override derives its answer only from the two
+    // arguments and the machine's placement). If a subclass is ever changed to key accessible slots off other
+    // *mutable* per-instance state (a runtime I/O config toggle, etc.), that subclass must invalidate
+    // itemWrapperCache when that state changes, or external capability holders (AE2 buses, hoppers, ...) will
+    // keep using stale slot data until the chunk unloads and the TE is recreated.
+    private final Map<BlockPos, NTMFluidHandlerWrapper> fluidWrapperCache = new HashMap<>();
+    private final EnumMap<EnumFacing, Map<BlockPos, IItemHandlerModifiable>> itemWrapperCache = new EnumMap<>(EnumFacing.class);
     private boolean enablefluidWrapper = false;
     private boolean enableEnergyWrapper = false;
     private String customName;
@@ -94,6 +118,11 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
     public abstract String getDefaultName();
 
     @Override
+    public ITextComponent getDisplayName() {
+        return this.hasCustomName() ? new TextComponentString(this.getName()) : new TextComponentTranslation(this.getName());
+    }
+
+    @Override
     public boolean hasCustomName() {
         return this.customName != null && !this.customName.isEmpty();
     }
@@ -136,11 +165,13 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
     @Override
     public void serialize(ByteBuf buf) {
         buf.writeBoolean(muffled);
+        buf.writeBoolean(tilted);
     }
 
     @Override
     public void deserialize(ByteBuf buf) {
         this.muffled = buf.readBoolean();
+        this.tilted = buf.readBoolean();
     }
 
     public void handleButtonPacket(int value, int meta) {
@@ -154,8 +185,11 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
 
     @Override
     public void readFromNBT(NBTTagCompound compound) {
-        if (compound.hasKey("inventory"))
+        if (compound.hasKey("inventory")) {
+            int expected = inventory.getSlots();
             inventory.deserializeNBT(compound.getCompoundTag("inventory"));
+            if (inventory.getSlots() < expected) resizeInventory(expected);
+        }
         super.readFromNBT(compound);
     }
 
@@ -234,21 +268,29 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
     public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
         // Contract: facing == null -> internal
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY && enablefluidWrapper) {
-            BlockPos accessorPos = facing == null ? null : CapabilityContextProvider.getAccessor(this.pos);
-            return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(new NTMFluidHandlerWrapper(this, accessorPos));
+            if (facing == null) {
+                return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(new NTMFluidHandlerWrapper(this, null));
+            }
+            BlockPos accessorPos = CapabilityContextProvider.getAccessor(this.pos).toImmutable();
+            return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(
+                    fluidWrapperCache.computeIfAbsent(accessorPos, acc -> new NTMFluidHandlerWrapper(this, acc)));
         } else if (capability == CapabilityEnergy.ENERGY && enableEnergyWrapper) {
             BlockPos accessorPos = facing == null ? null : CapabilityContextProvider.getAccessor(this.pos);
             return CapabilityEnergy.ENERGY.cast(new NTMEnergyCapabilityWrapper(this, accessorPos));
         } else if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY && inventory != null) {
             if (facing == null)
                 return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(inventory);
-            final BlockPos accessorPos = CapabilityContextProvider.getAccessor(this.pos);
+            final BlockPos accessorPos = CapabilityContextProvider.getAccessor(this.pos).toImmutable();
+            Map<BlockPos, IItemHandlerModifiable> perAccessor = itemWrapperCache.computeIfAbsent(facing, f -> new HashMap<>());
+            IItemHandlerModifiable cached = perAccessor.get(accessorPos);
+            if (cached != null) return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(cached);
+
             final EnumFacing side = facing;
             int[] accessibleSlots = getAccessibleSlotsFromSide(side, accessorPos);
-            return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(new ItemStackHandlerWrapper(inventory, accessibleSlots) {
+            IItemHandlerModifiable wrapper = new ItemStackHandlerWrapper(inventory, accessibleSlots) {
                 @Override
                 public boolean isItemValid(int slot, ItemStack stack) {
-                    return isItemValidForSlot(slot, stack);
+                    return super.isItemValid(slot, stack) && canInsertItem(slot, stack, side, accessorPos);
                 }
 
                 @Override
@@ -266,7 +308,9 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
                     }
                     return stack;
                 }
-            });
+            };
+            perAccessor.put(accessorPos, wrapper);
+            return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(wrapper);
         }
         return super.getCapability(capability, facing);
     }
@@ -284,24 +328,13 @@ public abstract class TileEntityMachineBase extends TileEntityLoadedBase impleme
         return super.hasCapability(capability, facing);
     }
 
-    protected void updateRedstoneConnection(DirPos pos) {
+    protected void updateRedstoneComparatorConnection(DirPos pos) {
         BlockPos blockPos = pos.getPos();
-        IBlockState state1 = world.getBlockState(blockPos);
-        Block block1 = state1.getBlock();
-
-        block1.onNeighborChange(world, blockPos, this.getPos());
-
-        block1.neighborChanged(state1, world, blockPos, this.getBlockType(), this.getPos());
-
-        if (state1.isNormalCube()) {
-            BlockPos offsetPos = blockPos.offset(pos.getDir().toEnumFacing());
-            Block block2 = world.getBlockState(offsetPos).getBlock();
-
-            if (block2.getWeakChanges(world, offsetPos)) {
-                block2.onNeighborChange(world, offsetPos, this.getPos());
-                block2.neighborChanged(world.getBlockState(offsetPos), world, offsetPos, this.getBlockType(), this.getPos());
-            }
-        }
+        IBlockState state = world.getBlockState(blockPos);
+        Block block = state.getBlock();
+        world.updateComparatorOutputLevel(blockPos, block);
+        world.notifyNeighborsOfStateChange(blockPos, block, false);
+        block.neighborChanged(state, world, blockPos, this.getBlockType(), this.getPos());
     }
 
     public void setDestroyedByCreativePlayer() {

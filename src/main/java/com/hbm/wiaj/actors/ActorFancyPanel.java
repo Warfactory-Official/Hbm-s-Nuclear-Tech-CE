@@ -240,7 +240,7 @@ public class ActorFancyPanel implements ISpecialActor {
 		}
 
 		
-		GL11.glDisable(GL12.GL_RESCALE_NORMAL);
+		GlStateManager.disableRescaleNormal();
 		RenderHelper.disableStandardItemLighting();
 		GlStateManager.disableLighting();
 		GlStateManager.disableDepth();
@@ -303,7 +303,7 @@ public class ActorFancyPanel implements ISpecialActor {
 		GlStateManager.enableLighting();
 		GlStateManager.enableDepth();
 		RenderHelper.enableStandardItemLighting();
-		GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+		GlStateManager.enableRescaleNormal();
 	}
 	
 	private void drawArrow(int posX, int posY, int sourceX, int sourceY, int sizeX, int sizeY) {

@@ -34,8 +34,9 @@ import net.minecraftforge.items.ItemStackHandler;
 @AutoRegister
 public class TileEntityMachineMissileAssembly extends TileEntity implements ITickable, IGUIProvider {
 
+	private AxisAlignedBB bb;
 	public ItemStackHandler inventory;
-	
+
 	public MissileStruct load;
 
 	//private static final int[] access = new int[] { 0 };
@@ -215,7 +216,8 @@ public class TileEntityMachineMissileAssembly extends TileEntity implements ITic
 	
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		if (bb == null) bb = new AxisAlignedBB(pos.getX() - 6, pos.getY(), pos.getZ() - 6, pos.getX() + 7, pos.getY() + 3, pos.getZ() + 7);
+		return bb;
 	}
 	
 	@Override

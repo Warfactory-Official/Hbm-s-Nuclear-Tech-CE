@@ -5,72 +5,72 @@ import com.hbm.items.weapon.ItemCustomMissile;
 import com.hbm.render.misc.MissileMultipart;
 import com.hbm.render.misc.MissilePronter;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
+
 @AutoRegister(item = "missile_custom")
 public class ItemRenderMissile extends TEISRBase {
 
-	@Override
-	public void renderByItem(ItemStack item) {
-		MissileMultipart missile = MissileMultipart.loadFromStruct(ItemCustomMissile.getStruct(item));
-		if(missile == null)
-			return;
-		GlStateManager.pushMatrix();
-		//GlStateManager.translate(0.5, 0.5, 0.5);
-		switch(type) {
-		case THIRD_PERSON_LEFT_HAND:
-		case THIRD_PERSON_RIGHT_HAND:
-		case FIRST_PERSON_LEFT_HAND:
-		case FIRST_PERSON_RIGHT_HAND:
-		case GROUND:
-		case FIXED:
-		case HEAD:
-			
-			double s = 0.2;
-			GL11.glScaled(s, s, s);
-			GlStateManager.translate(2, 0, 0);
-			
-			MissilePronter.prontMissile(missile, Minecraft.getMinecraft().renderEngine);
-			
-			break;
-			
-		case GUI:
-			
-			double height = missile.getHeight();
-			
-			if(height == 0D)
-				height = 4D;
-			
-			double size = 20;
-			double scale = size / height;
-			
-			GlStateManager.translate(height / 2 * scale, 0, 0);
-			GlStateManager.translate(-9.2, 0.2, 0);
-			//System.out.println(scale/14.285714285714285);
-			GL11.glRotated(45, 0, 0, 1);
-			GL11.glRotated(45, 1, 0, 0);
-			
-			//Drillgon200: This number is what I got when I found a decent scale number (0.14) for one part, then divided scale by it.
-			//It seems to work pretty well
-			GL11.glScaled(scale/14.285714285714285, scale/14.285714285714285, scale/14.285714285714285);
-			//GL11.glRotated(135, 0, 0, 1);
-			//GL11.glRotated(215, 1, 0, 0);
-			
-			
-			//GL11.glScaled(-scale, -scale, -scale);
-			
-			/*if(part.type.name().equals(PartType.FINS.name())) {
-				GlStateManager.translate(0, 0, 0);
-				//GL11.glRotated(-45, 1, 0, 0);
-			}*/
+    // 1.7-exact frames need identity binding (see ItemRenderFrames17); the old per-context height offsets
+    // were compensating for the pre-e6fceb4a9 non-identity TEISR binding.
+    @Override
+    public ModelBinding createModelBinding(Item item) {
+        return ModelBinding.inventory(item, ItemCameraTransforms.DEFAULT);
+    }
 
-			GlStateManager.rotate(System.currentTimeMillis() / 25 % 360, 0, -1, 0);
-			MissilePronter.prontMissile(missile, Minecraft.getMinecraft().renderEngine);
-			
-			break;
-		default: break;
-		}
-		
-		GlStateManager.popMatrix();
-	}
+    @Override
+    public boolean useIdentityTransform(Item item) {
+        return true;
+    }
+
+    @Override
+    public void renderByItem(ItemStack item) {
+        MissileMultipart missile = MissileMultipart.loadFromStruct(ItemCustomMissile.getStruct(item));
+        if (missile == null)
+            return;
+        GlStateManager.pushMatrix();
+        // ItemRenderFrames17 base frame for the context + verbatim 1.7 ItemRenderMissile body. 1.7 shared one
+        // body for EQUIPPED/EQUIPPED_FIRST_PERSON/ENTITY (scale(0.2)·translate(2,0,0)); INVENTORY is separate.
+        switch (type) {
+            case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND ->
+                    GlStateManager.multMatrix(type == TransformType.FIRST_PERSON_LEFT_HAND ? ItemRenderFrames17.FIRST_PERSON_LEFT : ItemRenderFrames17.FIRST_PERSON);
+            case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND ->
+                    GlStateManager.multMatrix(type == TransformType.THIRD_PERSON_LEFT_HAND ? ItemRenderFrames17.THIRD_PERSON_LEFT : ItemRenderFrames17.THIRD_PERSON);
+            case HEAD -> GlStateManager.multMatrix(ItemRenderFrames17.HEAD);
+            case GROUND -> GlStateManager.multMatrix(ItemRenderFrames17.GROUND);
+            case FIXED -> GlStateManager.multMatrix(ItemRenderFrames17.FIXED);
+            case GUI -> GlStateManager.multMatrix(ItemRenderFrames17.GUI);
+            default -> {
+                GlStateManager.popMatrix();
+                return;
+            }
+        }
+
+        if (type == TransformType.GUI) {
+            // 1.7 INVENTORY
+            double height = missile.getHeight();
+            if (height == 0D)
+                height = 4D;
+            double size = 20;
+            double scale = size / height;
+            GlStateManager.translate(height / 2 * scale, 0, 0);
+            GlStateManager.rotate(135, 0, 0, 1);
+            GlStateManager.rotate(215, 1, 0, 0);
+            GlStateManager.translate(7, 14, 0);
+            GlStateManager.scale(-scale, -scale, -scale);
+            GlStateManager.rotate(System.currentTimeMillis() / 25 % 360, 0, -1, 0);
+        } else {
+            // 1.7 EQUIPPED / EQUIPPED_FIRST_PERSON / ENTITY (shared body)
+            double s = 0.2;
+            GlStateManager.scale(s, s, s);
+            GlStateManager.translate(2, 0, 0);
+        }
+        MissilePronter.prontMissile(missile, Minecraft.getMinecraft().renderEngine);
+
+        GlStateManager.popMatrix();
+    }
 }

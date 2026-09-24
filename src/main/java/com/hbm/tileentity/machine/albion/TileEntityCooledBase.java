@@ -5,6 +5,7 @@ import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
+import com.hbm.tileentity.IConnectionAnchors;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.BobMathUtil;
 import io.netty.buffer.ByteBuf;
@@ -13,7 +14,7 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class TileEntityCooledBase extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiverMK2 {
+public abstract class TileEntityCooledBase extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IConnectionAnchors {
 
     public FluidTankNTM[] coolantTanks;
 
@@ -29,15 +30,15 @@ public abstract class TileEntityCooledBase extends TileEntityMachineBase impleme
     public TileEntityCooledBase(int slotCount, int slotLimit) {
         super(slotCount, slotLimit, true, true);
         coolantTanks = new FluidTankNTM[2];
-        coolantTanks[0] = new FluidTankNTM(Fluids.PERFLUOROMETHYL_COLD, 4_000);
-        coolantTanks[1] = new FluidTankNTM(Fluids.PERFLUOROMETHYL, 4_000);
+        coolantTanks[0] = new FluidTankNTM(Fluids.PERFLUOROMETHYL_COLD, 4_000).withOwner(this);
+        coolantTanks[1] = new FluidTankNTM(Fluids.PERFLUOROMETHYL, 4_000).withOwner(this);
     }
 
     public TileEntityCooledBase(int slotCount) {
         super(slotCount, true, true);
         coolantTanks = new FluidTankNTM[2];
-        coolantTanks[0] = new FluidTankNTM(Fluids.PERFLUOROMETHYL_COLD, 4_000);
-        coolantTanks[1] = new FluidTankNTM(Fluids.PERFLUOROMETHYL, 4_000);
+        coolantTanks[0] = new FluidTankNTM(Fluids.PERFLUOROMETHYL_COLD, 4_000).withOwner(this);
+        coolantTanks[1] = new FluidTankNTM(Fluids.PERFLUOROMETHYL, 4_000).withOwner(this);
     }
 
     @Override

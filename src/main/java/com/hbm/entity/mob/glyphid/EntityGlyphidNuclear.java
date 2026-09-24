@@ -11,6 +11,7 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 import com.hbm.main.ResourceManager;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.nbt.NBTTagCompound;
@@ -163,12 +164,11 @@ public class EntityGlyphidNuclear extends EntityGlyphid {
                 world.playSound(null, getPosition(), HBMSoundHandler.mukeExplosion, SoundCategory.HOSTILE, 15.0F, 1.0F);
 
                 NBTTagCompound data = new NBTTagCompound();
-                data.setString("type", "muke");
                 // if the FX type is "muke", apply random BF effect
                 if(MainRegistry.polaroidID == 11 || rand.nextInt(100) == 0) {
                     data.setBoolean("balefire", true);
                 }
-                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, posX, posY + 0.5, posZ), new NetworkRegistry.TargetPoint(dimension, posX, posY, posZ, 250));
+                PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Muke, data, posX, posY + 0.5, posZ), new NetworkRegistry.TargetPoint(dimension, posX, posY, posZ, 250));
             }
 
             this.setDead();

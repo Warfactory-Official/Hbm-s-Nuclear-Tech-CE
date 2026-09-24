@@ -1,8 +1,0 @@
-{
-	"variants": {
-		"facing=north": { "model": "hbm:radiorec" },
-		"facing=south": { "model": "hbm:radiorec", "y": 180 },
-		"facing=west": { "model": "hbm:radiorec", "y": 270 },
-		"facing=east": { "model": "hbm:radiorec", "y": 90 }
-	}
-}

@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.items.ModItems;
 import com.hbm.tileentity.bomb.TileEntityNukeBalefire;
 import com.hbm.util.InventoryUtil;
@@ -13,6 +14,11 @@ import net.minecraftforge.items.SlotItemHandler;
 public class ContainerNukeBalefire extends Container {
 
 	private TileEntityNukeBalefire balefireBomb;
+
+	private static final TransferStrategy TRANSFER_STRATEGY = TransferStrategy.builder(2)
+                                                                              .rule(0, 1, s -> s.getItem() == ModItems.egg_balefire)
+                                                                              .rule(1, 2, s -> s.getItem() == ModItems.battery_spark || s.getItem() == ModItems.battery_trixite)
+                                                                              .build();
 
 	public ContainerNukeBalefire(InventoryPlayer invPlayer, TileEntityNukeBalefire tedf) {
 
@@ -38,9 +44,7 @@ public class ContainerNukeBalefire extends Container {
 	@Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-		return InventoryUtil.transferStack(this.inventorySlots, index, 2,
-                s -> s.getItem() == ModItems.egg_balefire, 1,
-                s -> s.getItem() == ModItems.battery_spark || s.getItem() == ModItems.battery_trixite, 2);
+		return InventoryUtil.transferStack(this.inventorySlots, index, this.TRANSFER_STRATEGY, player);
     }
 
 	@Override

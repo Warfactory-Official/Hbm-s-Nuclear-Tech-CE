@@ -8,8 +8,11 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.PropertyBool;
+import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
@@ -25,6 +28,8 @@ import java.util.Random;
 
 public class BlockFissure extends BlockContainer {
 
+    public static final PropertyBool CRATER = PropertyBool.create("crater");
+
     public BlockFissure(Material material, String s) {
         super(material);
         this.setTranslationKey(s);
@@ -32,13 +37,31 @@ public class BlockFissure extends BlockContainer {
         this.setBlockUnbreakable();
         this.setResistance(1_000_000);
         this.setTickRandomly(true);
+        this.setDefaultState(this.blockState.getBaseState().withProperty(CRATER, false));
         ModBlocks.ALL_BLOCKS.add(this);
     }
 
     @Override
     public void updateTick(World world, BlockPos pos, @NotNull IBlockState state, @NotNull Random rand) {
-        if(world.getBlockState(pos.up()).getBlock().isReplaceable(world, pos.up())) 
-            world.setBlockState(pos.up(), ModBlocks.volcanic_lava_block.getDefaultState());
+        if(world.getBlockState(pos.up()).getBlock().isReplaceable(world, pos.up())) {
+            Block lava = state.getValue(CRATER) ? ModBlocks.rad_lava_block : ModBlocks.volcanic_lava_block;
+            world.setBlockState(pos.up(), lava.getDefaultState());
+        }
+    }
+
+    @Override
+    protected BlockStateContainer createBlockState() {
+        return new BlockStateContainer(this, CRATER);
+    }
+
+    @Override
+    public int getMetaFromState(IBlockState state) {
+        return state.getValue(CRATER) ? 1 : 0;
+    }
+
+    @Override
+    public IBlockState getStateFromMeta(int meta) {
+        return this.getDefaultState().withProperty(CRATER, meta != 0);
     }
 
     @Override

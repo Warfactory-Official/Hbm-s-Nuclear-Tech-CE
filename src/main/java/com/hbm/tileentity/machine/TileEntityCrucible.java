@@ -5,18 +5,22 @@ import com.google.gson.stream.JsonWriter;
 import com.hbm.api.block.ICrucibleAcceptor;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.blocks.BlockDummyable;
+import com.hbm.config.ServerConfig;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
+import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerCrucible;
 import com.hbm.inventory.gui.GUICrucible;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
+import com.hbm.inventory.recipes.CrucibleRecipe;
 import com.hbm.inventory.recipes.CrucibleRecipes;
-import com.hbm.items.ModItems;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.main.MainRegistry;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.IConfigurableMachine;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IMetalCopiable;
@@ -29,6 +33,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -38,9 +43,8 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -51,10 +55,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @AutoRegister
-public class TileEntityCrucible extends TileEntityMachineBase implements IGUIProvider, ICrucibleAcceptor, IConfigurableMachine, ITickable, IMetalCopiable {
+public class TileEntityCrucible extends TileEntityMachineBase implements IGUIProvider, ICrucibleAcceptor, IConfigurableMachine, ITickable, IMetalCopiable, IControlReceiver {
 
     public int heat;
     public int progress;
+
+    public String recipe = "null";
 
     public volatile List<Mats.MaterialStack> recipeStack = new ArrayList<>();
     public volatile List<Mats.MaterialStack> wasteStack = new ArrayList<>();
@@ -121,6 +127,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
                                 if(stack.getCount() == 1) {
                                     inventory.setStackInSlot(i, stack.copy());
                                     item.setDead();
+                                    item.setPickupDelay(60);
                                     break;
                                 } else {
                                     inventory.setStackInSlot(i, stack.copy());
@@ -174,7 +181,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
                     data.setFloat("off", 0.625F);
                     data.setFloat("base", 0.625F);
                     data.setFloat("len", Math.max(1F, pos.getY() - (float) (Math.ceil(impact.y) - 0.875)));
-                    PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, sx, pos.getY(), sz), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 50));
+                    PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Foundry, data, sx, pos.getY(), sz), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 50));
                 }
 
                 PollutionHandler.incrementPollution(world, pos, PollutionHandler.PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND / 20F);
@@ -186,7 +193,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
                 ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
                 List<Mats.MaterialStack> toCast = new ArrayList<>();
 
-                CrucibleRecipes.CrucibleRecipe recipe = this.getLoadedRecipe();
+                CrucibleRecipe recipe = this.getLoadedRecipe();
                 //if no recipe is loaded, everything from the recipe stack will be drainable
                 if(recipe == null) {
                     toCast.addAll(this.recipeStack);
@@ -209,13 +216,12 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
 
                 if(didPour != null) {
                     NBTTagCompound data = new NBTTagCompound();
-                    data.setString("type", "foundry");
                     data.setInteger("color", didPour.material.moltenColor);
                     data.setByte("dir", (byte) dir.ordinal());
                     data.setFloat("off", 0.625F);
                     data.setFloat("base", 0.625F);
                     data.setFloat("len", Math.max(1F, pos.getY() - (float) (Math.ceil(impact.y) - 0.875)));
-                    PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, sx, pos.getY(), sz), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 50));
+                    PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Foundry, data, sx, pos.getY(), sz), new NetworkRegistry.TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 50));
                 }
 
                 PollutionHandler.incrementPollution(world, pos, PollutionHandler.PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND / 20F);
@@ -227,6 +233,20 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
 
             /* sync */
             this.networkPackNT(25);
+        } else {
+
+            if(!this.recipeStack.isEmpty() || !this.wasteStack.isEmpty()) {
+
+                if(world.getTotalWorldTime() % 10 == 0) {
+                    NBTTagCompound fx = new NBTTagCompound();
+                    fx.setFloat("lift", 10F);
+                    fx.setFloat("base", 0.75F);
+                    fx.setFloat("max", 3.5F);
+                    fx.setInteger("life", 100 + world.rand.nextInt(20));
+                    fx.setInteger("color",0x202020);
+                    MainRegistry.proxy.effectNT(HbmEffectNT.Tower, pos.getX() + .5, pos.getY() + 1, pos.getZ() + .5, fx);
+                }
+            }
         }
     }
 
@@ -235,6 +255,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
         super.serialize(buf);
         buf.writeInt(progress);
         buf.writeInt(heat);
+
+        ByteBufUtils.writeUTF8String(buf, recipe);
 
         buf.writeShort(recipeStack.size());
         for(Mats.MaterialStack sta : recipeStack) {
@@ -261,6 +283,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
         progress = buf.readInt();
         heat = buf.readInt();
 
+        recipe = ByteBufUtils.readUTF8String(buf);
+
         int rLen = buf.readShort() & 0xFFFF;
         List<Mats.MaterialStack> newRecipe = new ArrayList<>(rLen);
         for (int i = 0; i < rLen; i++) {
@@ -283,6 +307,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
     public void readFromNBT(NBTTagCompound nbt) {
         super.readFromNBT(nbt);
 
+        this.recipe = nbt.getString("recipe");
+
         int[] rec = nbt.getIntArray("rec");
         for(int i = 0; i < rec.length / 2; i++) {
             recipeStack.add(new Mats.MaterialStack(Mats.matById.get(rec[i * 2]), rec[i * 2 + 1]));
@@ -300,6 +326,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
     @NotNull
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+
+        nbt.setString("recipe", this.recipe);
 
         int[] rec = new int[recipeStack.size() * 2];
         int[] was = new int[wasteStack.size() * 2];
@@ -358,12 +386,12 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
             this.progress = 0;
 
             List<Mats.MaterialStack> materials = Mats.getSmeltingMaterialsFromItem(inventory.getStackInSlot(slot));
-            CrucibleRecipes.CrucibleRecipe recipe = getLoadedRecipe();
+            CrucibleRecipe recipe = getLoadedRecipe();
 
             for(Mats.MaterialStack material : materials) {
-                boolean mainStack = recipe != null && (getQuantaFromType(recipe.input, material.material) > 0 || getQuantaFromType(recipe.output, material.material) > 0);
+                boolean recipeMaterial = recipe != null && (getQuantaFromType(recipe.input, material.material) > 0 || getQuantaFromType(recipe.output, material.material) > 0);
 
-                if(mainStack) {
+                if((recipe == null && !ServerConfig.LEGACY_CRUCIBLE_RULES.get()) || recipeMaterial) {
                     this.addToStack(this.recipeStack, material);
                 } else {
                     this.addToStack(this.wasteStack, material);
@@ -377,7 +405,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
     }
 
     protected void tryRecipe() {
-        CrucibleRecipes.CrucibleRecipe recipe = this.getLoadedRecipe();
+        CrucibleRecipe recipe = this.getLoadedRecipe();
 
         if(recipe == null) return;
         if(world.getTotalWorldTime() % recipe.frequency > 0) return;
@@ -420,11 +448,6 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
 
     @Override
     public boolean isItemValidForSlot(int i, ItemStack stack) {
-
-        if(i == 0) {
-            return stack.getItem() == ModItems.crucible_template;
-        }
-
         return isItemSmeltable(stack);
     }
 
@@ -435,7 +458,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
         //if there's no materials in there at all, don't smelt
         if(materials.isEmpty())
             return false;
-        CrucibleRecipes.CrucibleRecipe recipe = getLoadedRecipe();
+        CrucibleRecipe recipe = getLoadedRecipe();
 
         //needs to be true, will always be true if there's no recipe loaded
         boolean matchesRecipe = recipe == null;
@@ -450,7 +473,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
             //if no recipe is loaded, everything will land in the waste stack
             int recipeInputRequired = recipe != null ? getQuantaFromType(recipe.input, mat.material) : 0;
 
-            //this allows pouring the ouput material back into the crucible
+            //this allows pouring the output material back into the crucible
             if(recipe != null && getQuantaFromType(recipe.output, mat.material) > 0) {
                 recipeAmount += mat.amount;
                 matchesRecipe = true;
@@ -458,8 +481,13 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
             }
 
             if(recipeInputRequired == 0) {
-                //if this type isn't required by the recipe, add it to the waste stack
-                wasteAmount += mat.amount;
+                // if no recipe is set and legacy support is turned off, throw everything into the recipe stack
+                if(recipe == null && !ServerConfig.LEGACY_CRUCIBLE_RULES.get()) {
+                    recipeAmount += mat.amount;
+                } else {
+                    //if this type isn't required by the recipe, add it to the waste stack
+                    wasteAmount += mat.amount;
+                }
             } else {
 
                 //the maximum is the recipe's ratio scaled up to the recipe stack's capacity
@@ -492,13 +520,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
         stack.add(matStack.copy());
     }
 
-    public CrucibleRecipes.CrucibleRecipe getLoadedRecipe() {
-
-        if(!inventory.getStackInSlot(0).isEmpty() && inventory.getStackInSlot(0).getItem() == ModItems.crucible_template) {
-            return CrucibleRecipes.indexMapping.get(inventory.getStackInSlot(0).getItemDamage());
-        }
-
-        return null;
+    public CrucibleRecipe getLoadedRecipe() {
+        return CrucibleRecipes.INSTANCE.recipeNameMap.get(recipe);
     }
 
     /* "Arrays and Lists don't have a common ancestor" my fucking ass */
@@ -569,7 +592,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
     @Override
     public boolean canAcceptPartialPour(World world, BlockPos pos, double dX, double dY, double dZ, ForgeDirection side, Mats.MaterialStack stack) {
 
-        CrucibleRecipes.CrucibleRecipe recipe = getLoadedRecipe();
+        CrucibleRecipe recipe = getLoadedRecipe();
 
         if(recipe == null) {
             return getQuantaFromType(this.wasteStack, null) < wasteZCapacity;
@@ -586,7 +609,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
     @Override
     public Mats.MaterialStack pour(World world, BlockPos pos, double dX, double dY, double dZ, ForgeDirection side, Mats.MaterialStack stack) {
 
-        CrucibleRecipes.CrucibleRecipe recipe = getLoadedRecipe();
+        CrucibleRecipe recipe = getLoadedRecipe();
 
         if(recipe == null) {
 
@@ -633,4 +656,20 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
         return BobMathUtil.intCollectionToArray(types);
     }
 
+    @Override
+    public boolean hasPermission(EntityPlayer player) {
+        return this.isUseableByPlayer(player);
+    }
+
+    @Override
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
+        if(data.hasKey("index") && data.hasKey("selection")) {
+            int index = data.getInteger("index");
+            String selection = data.getString("selection");
+            if(index == 0) {
+                this.recipe = selection;
+                this.markDirty();
+            }
+        }
+    }
 }

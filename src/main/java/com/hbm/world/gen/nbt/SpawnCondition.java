@@ -63,7 +63,7 @@ public class SpawnCondition {
 		return canSpawn.test(biome);
 	}
 
-	public JigsawPool getPool(String name) throws CloneNotSupportedException {
+	public JigsawPool getPool(String name) {
 		JigsawPool pool = pools.get(name);
 		return pool != null ? pool.clone() : null;
 	}

@@ -1,0 +1,14 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "hbm:items/ingot_schraranium"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "nikonium": 1
+      },
+      "model": "hbm:item/ingot_nikonium"
+    }
+  ]
+}

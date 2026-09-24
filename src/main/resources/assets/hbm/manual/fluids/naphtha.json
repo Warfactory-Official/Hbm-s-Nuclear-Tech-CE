@@ -1,0 +1,25 @@
+{
+	"name": "Naphtha",
+	"icon": [
+		"hbm:fluid_icon",
+		1,
+		19
+	],
+	"trigger": [
+		[
+			"hbm:fluid_icon",
+			1,
+			19
+		]
+	],
+	"title": {
+		"en_us": "Naphtha",
+		"ru_ru": "Нафта",
+		"zh_cn": "石脑油"
+	},
+	"content": {
+		"en_us": "Obtained after [[refining|Oil Refinery]] [[heated|Boiler]] [[crude oil|Crude Oil]]. Naphtha can be used to make early fuels such as [[gasoline|Gasoline]] or [[diesel|Diesel]]. Later, it may also be used to produce [[solvent|Solvent]] for [[bedrock ore processing|Bedrock Ore Processing]].<br><br>{{Template:Oil1}}",
+		"ru_ru": "Получается после [[переработки|Oil Refinery]] [[нагретой|Boiler]] [[сырой нефти|Crude Oil]]. Нафту можно использовать для создания ранних видов топлива, таких как [[бензин|Gasoline]] или [[дизель|Diesel]]. Позже её также можно использовать для производства [[растворителя|Solvent]] для [[обработки бедрок руды|Bedrock Ore Processing]].<br><br>{{Template:Oil1}}",
+		"zh_cn": "在[[炼油厂|Oil Refinery]][[加热|Boiler]]原油后获得。石脑油可用于制造早期燃料，例如[[汽油|Gasoline]]、[[柴油|Diesel]]或[[固体燃料|Solid Fuel]]。后期也可用于为基岩矿石生产[[溶剂|Solvent]]。<br><br>另见：<br>[[基础石油处理|Basic Oil Processing]]<br>[[高级石油处理|Advanced Oil Processing]]<br>[[真空石油处理|Vacuum Oil Processing]]"
+	}
+}

@@ -18,6 +18,7 @@ import li.cil.oc.api.network.SimpleComponent;
 import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -218,7 +219,7 @@ public class TileEntityReactorControl extends TileEntityMachineBase implements I
     }
 
     @Override
-    public void receiveControl(NBTTagCompound data) {
+    public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
 
         if(data.hasKey("function")) {
             this.function = RodFunction.VALUES[data.getInteger("function")];

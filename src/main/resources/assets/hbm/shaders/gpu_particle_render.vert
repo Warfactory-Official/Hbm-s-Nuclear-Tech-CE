@@ -54,7 +54,7 @@ void main(){
 				(texData.xy+texData.zw)*float((pos.xy == TOP_RIGHT));
 	
 	pass_tex = tex;
-	pass_lightmap = lightmap;
+	pass_lightmap = lightmap * (255.0 / 256.0) + (8.0 / 256.0);
 	pass_color = color;
 	
 	vec4 position = invPlayerRot * vec4(pos*scale, 1);

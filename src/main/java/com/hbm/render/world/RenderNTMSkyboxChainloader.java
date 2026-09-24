@@ -2,16 +2,14 @@ package com.hbm.render.world;
 
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.main.ModEventHandlerClient;
+import com.hbm.render.util.NTMBufferBuilder;
+import com.hbm.render.util.NTMImmediate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderGlobal;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.IRenderHandler;
-import org.lwjgl.opengl.GL11;
 
 public class RenderNTMSkyboxChainloader extends IRenderHandler { //why an abstract class uses the I-prefix is beyond me but ok, alright, whatever
 	
@@ -52,9 +50,6 @@ public class RenderNTMSkyboxChainloader extends IRenderHandler { //why an abstra
             world.provider.setSkyRenderer(this);
         }
 
-        final Tessellator tess = Tessellator.getInstance();
-        final BufferBuilder buf = tess.getBuffer();
-
         GlStateManager.pushMatrix();
         GlStateManager.depthMask(false);
 
@@ -62,7 +57,8 @@ public class RenderNTMSkyboxChainloader extends IRenderHandler { //why an abstra
         GlStateManager.enableBlend();
         GlStateManager.disableAlpha();
         GlStateManager.disableFog();
-        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE); // additive
+        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE,
+                GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO); // additive
 
         if (ModEventHandlerClient.renderLodeStar) {
             GlStateManager.pushMatrix();
@@ -71,15 +67,17 @@ public class RenderNTMSkyboxChainloader extends IRenderHandler { //why an abstra
             GlStateManager.color(1F, 1F, 1F, 1F);
             mc.getTextureManager().bindTexture(lodeStar);
 
-            double size = 0.5D + world.rand.nextFloat() * 0.25D;
-            double dist = 100.0D;
+            float size = (float) (0.5D + world.rand.nextFloat() * 0.25D);
+            float dist = 100.0F;
 
-            buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-            buf.pos(-size, dist, -size).tex(0, 0).endVertex();
-            buf.pos( size, dist, -size).tex(0, 1).endVertex();
-            buf.pos( size, dist,  size).tex(1, 1).endVertex();
-            buf.pos(-size, dist,  size).tex(1, 0).endVertex();
-            tess.draw();
+            NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionTexQuads(1);
+            buf.appendPositionTexQuadUnchecked(
+                    -size, dist, -size, 0, 0,
+                     size, dist, -size, 0, 1,
+                     size, dist,  size, 1, 1,
+                    -size, dist,  size, 1, 0
+            );
+            NTMImmediate.INSTANCE.draw();
 
             GlStateManager.popMatrix();
         }
@@ -98,15 +96,17 @@ public class RenderNTMSkyboxChainloader extends IRenderHandler { //why an abstra
         mc.getTextureManager().bindTexture(digammaStar);
 
         double digamma = HbmLivingProps.getDigamma(mc.player);
-        double size = (1.0D + digamma * 0.25D);
-        double dist = 100.0D - digamma * 2.5D;
+        float size = (float) (1.0D + digamma * 0.25D);
+        float dist = (float) (100.0D - digamma * 2.5D);
 
-        buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-        buf.pos(-size, dist, -size).tex(0, 0).endVertex();
-        buf.pos( size, dist, -size).tex(0, 1).endVertex();
-        buf.pos( size, dist,  size).tex(1, 1).endVertex();
-        buf.pos(-size, dist,  size).tex(1, 0).endVertex();
-        tess.draw();
+        NTMBufferBuilder buf = NTMImmediate.INSTANCE.beginPositionTexQuads(1);
+        buf.appendPositionTexQuadUnchecked(
+                -size, dist, -size, 0, 0,
+                 size, dist, -size, 0, 1,
+                 size, dist,  size, 1, 1,
+                -size, dist,  size, 1, 0
+        );
+        NTMImmediate.INSTANCE.draw();
         GlStateManager.popMatrix();
 
         GlStateManager.pushMatrix();
@@ -116,15 +116,17 @@ public class RenderNTMSkyboxChainloader extends IRenderHandler { //why an abstra
 
         mc.getTextureManager().bindTexture(bobmazonSat);
 
-        size = 0.5D;
-        dist = 100.0D;
+        size = 0.5F;
+        dist = 100.0F;
 
-        buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-        buf.pos(-size, dist, -size).tex(0, 0).endVertex();
-        buf.pos( size, dist, -size).tex(0, 1).endVertex();
-        buf.pos( size, dist,  size).tex(1, 1).endVertex();
-        buf.pos(-size, dist,  size).tex(1, 0).endVertex();
-        tess.draw();
+        buf = NTMImmediate.INSTANCE.beginPositionTexQuads(1);
+        buf.appendPositionTexQuadUnchecked(
+                -size, dist, -size, 0, 0,
+                 size, dist, -size, 0, 1,
+                 size, dist,  size, 1, 1,
+                -size, dist,  size, 1, 0
+        );
+        NTMImmediate.INSTANCE.draw();
         GlStateManager.popMatrix();
 
         GlStateManager.depthMask(true);

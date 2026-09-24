@@ -11,6 +11,7 @@ import net.minecraft.client.resources.*;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.resource.IResourceType;
 import net.minecraftforge.client.resource.ISelectiveResourceReloadListener;
+import net.minecraftforge.client.resource.VanillaResourceType;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 
@@ -36,6 +37,10 @@ public class QMAWLoader implements ISelectiveResourceReloadListener {
 
     @Override
     public void onResourceManagerReload(IResourceManager resourceManager, Predicate<IResourceType> resourcePredicate) {
+        //mlbv: only reload on a complete resource reload
+        for (VanillaResourceType type : VanillaResourceType.values()) {
+            if (!resourcePredicate.test(type)) return;
+        }
         long timestamp = System.currentTimeMillis();
         MainRegistry.logger.info("[QMAW] Reloading manual...");
         init();
@@ -219,6 +224,7 @@ public class QMAWLoader implements ISelectiveResourceReloadListener {
     public static void registerJson(String file, JsonObject json) {
 
         String name = json.get("name").getAsString();
+        if(QMAWLoader.qmaw.containsKey(name)) MainRegistry.logger.info("[QMAW] Overriding existing entry {} from {}", name, file);
         QuickManualAndWiki qmaw = new QuickManualAndWiki(name);
 
         if(json.has("icon")) {

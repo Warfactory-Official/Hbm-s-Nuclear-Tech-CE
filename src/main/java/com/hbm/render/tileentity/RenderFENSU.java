@@ -42,7 +42,7 @@ public class RenderFENSU extends TileEntitySpecialRenderer<TileEntityMachineFENS
         float rot = fensu.prevRotation + (fensu.rotation - fensu.prevRotation) * partialTicks;
 
         GlStateManager.translate(0, 2.5, 0);
-        GL11.glRotated(rot, 1, 0, 0);
+        GlStateManager.rotate((float) (rot), 1, 0, 0);
         GlStateManager.translate(0, -2.5, 0);
         ResourceManager.fensu.renderPart("Disc");
 
@@ -97,7 +97,7 @@ public class RenderFENSU extends TileEntitySpecialRenderer<TileEntityMachineFENS
         float rot = lastSpin + (spin - lastSpin) * interp;
 
         GlStateManager.translate(0, 2.5, 0);
-        GL11.glRotated(rot, 1, 0, 0);
+        GlStateManager.rotate((float) (rot), 1, 0, 0);
         GlStateManager.translate(0, -2.5, 0);
         ResourceManager.fensu.renderPart("Disc");
         ResourceManager.fensu.renderPart("Lights");

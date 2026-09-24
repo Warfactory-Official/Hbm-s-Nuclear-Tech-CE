@@ -32,8 +32,8 @@ public class EntityGrenadeBouncyGeneric extends EntityGrenadeBouncyBase implemen
 
     @Override
     public ItemGenericGrenade getGrenade() {
-        ItemGenericGrenade grenade = (ItemGenericGrenade) Item.getItemById(this.dataManager.get(GRENADE_TYPE));
-        return grenade != null ? grenade : (ItemGenericGrenade) ModItems.grenade_kyiv;
+        // mismatch would throw CCE anyway
+        return (ItemGenericGrenade) Item.getItemById(this.dataManager.get(GRENADE_TYPE));
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.hbm.physics;
 
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -25,8 +25,8 @@ public class GJK {
 	public static GJKInfo colliding(@Nullable RigidBody bodyA, @Nullable RigidBody bodyB, Collider a, Collider b, boolean epa){
 		GJKInfo returnInfo = new GJKInfo();
 		csoSimplex.reset();
-		Vec3 direction = new Vec3(0, 0, 1);
-		Vec3 supportCSO = doCSOSupport(bodyA, bodyB, a, b, direction).v;
+		Vec3NT direction = new Vec3NT(0, 0, 1);
+		Vec3NT supportCSO = doCSOSupport(bodyA, bodyB, a, b, direction).v;
 		direction = supportCSO.negate();
 		for(int iter = 0; iter < gjkMaxIterations; iter ++){
 			supportCSO = doCSOSupport(bodyA, bodyB, a, b, direction).v;
@@ -43,8 +43,8 @@ public class GJK {
 				//Should never happen since we already added 2 points.
 				break;
 			case 2:
-				Vec3 ab = csoSimplex.points[1].v.subtract(csoSimplex.points[0].v);
-				Vec3 ao = csoSimplex.points[0].v.negate();
+				Vec3NT ab = csoSimplex.points[1].v.subtract(csoSimplex.points[0].v);
+				Vec3NT ao = csoSimplex.points[0].v.negate();
 				if(ab.dotProduct(ao) > 0){
 					direction = ab.crossProduct(ao).crossProduct(ab);
 				} else {
@@ -55,17 +55,17 @@ public class GJK {
 				break;
 			case 3:
 				ab = csoSimplex.points[1].v.subtract(csoSimplex.points[0].v);
-				Vec3 ac = csoSimplex.points[2].v.subtract(csoSimplex.points[0].v);
-				Vec3 abc = ab.crossProduct(ac);
+				Vec3NT ac = csoSimplex.points[2].v.subtract(csoSimplex.points[0].v);
+				Vec3NT abc = ab.crossProduct(ac);
 				ao = csoSimplex.points[0].v.negate();
 				direction = triangleCase(ab, ac, abc, ao);
 				break;
 			case 4:
 				ab = csoSimplex.points[1].v.subtract(csoSimplex.points[0].v);
 				ac = csoSimplex.points[2].v.subtract(csoSimplex.points[0].v);
-				Vec3 ad = csoSimplex.points[3].v.subtract(csoSimplex.points[0].v);
+				Vec3NT ad = csoSimplex.points[3].v.subtract(csoSimplex.points[0].v);
 				ao = csoSimplex.points[0].v.negate();
-				Vec3 dir = tetraCase(ab, ac, ad, ao);
+				Vec3NT dir = tetraCase(ab, ac, ad, ao);
 				if(dir == null){
 					if(epa)
 						EPA(bodyA, bodyB, a, b, returnInfo);
@@ -84,7 +84,7 @@ public class GJK {
 		return returnInfo;
 	}
 	
-	public static Vec3 triangleCase(Vec3 ab, Vec3 ac, Vec3 abc, Vec3 ao){
+	public static Vec3NT triangleCase(Vec3NT ab, Vec3NT ac, Vec3NT abc, Vec3NT ao){
 		if(abc.crossProduct(ac).dotProduct(ao) > 0){
 			if(ac.dotProduct(ao) > 0){
 				csoSimplex.points[1] = csoSimplex.points[2];
@@ -128,7 +128,7 @@ public class GJK {
 		}
 	}
 	
-	public static Vec3 tetraCase(Vec3 ab, Vec3 ac, Vec3 ad, Vec3 ao){
+	public static Vec3NT tetraCase(Vec3NT ab, Vec3NT ac, Vec3NT ad, Vec3NT ao){
 		if(ab.crossProduct(ac).dotProduct(ao) > 0){
 			csoSimplex.points[3] = null;
 			csoSimplex.size--;
@@ -152,23 +152,23 @@ public class GJK {
 	}
 	
 	//Calls csoSupport, possibly will be useful if I need to keep the support points found on a and b as well.
-	public static Mkv doCSOSupport(RigidBody bodyA, RigidBody bodyB, Collider a, Collider b, Vec3 direction){
-		Vec3 supportCSO = new Vec3(0, 0, 0);
+	public static Mkv doCSOSupport(RigidBody bodyA, RigidBody bodyB, Collider a, Collider b, Vec3NT direction){
+		Vec3NT supportCSO = new Vec3NT(0, 0, 0);
 		csoSupport(bodyA, bodyB, a, b, direction, supportCSO);
 		Mkv vert = new Mkv(supportCSO, direction);
 		csoSimplex.push_back(vert);
 		return vert;
 	}
 	
-	public static void csoSupport(RigidBody bodyA, RigidBody bodyB, Collider a, Collider b, Vec3 dir, Vec3 supportCSO){
+	public static void csoSupport(RigidBody bodyA, RigidBody bodyB, Collider a, Collider b, Vec3NT dir, Vec3NT supportCSO){
 		/*if(a.body != null){
-			Vec3 vecA = a.body.globalToLocalVec(dir);
+			Vec3NT vecA = a.body.globalToLocalVec(dir);
 			supportA.set(a.body.localToGlobalPos(a.support(vecA)));
 		} else {
 			supportA.set(a.support(dir));
 		}
 		if(b.body != null){
-			Vec3 vecB = b.body.globalToLocalVec(dir.negate());
+			Vec3NT vecB = b.body.globalToLocalVec(dir.negate());
 			supportB.set(b.body.localToGlobalPos(b.support(vecB)));
 		} else {
 			supportB.set(b.support(dir.negate()));
@@ -177,9 +177,9 @@ public class GJK {
 		supportCSO.set(localSupport(bodyA, a, dir).subtract(localSupport(bodyB, b, dir.negate())));
 	}
 	
-	public static Vec3 localSupport(RigidBody body, Collider c, Vec3 worldDir){
+	public static Vec3NT localSupport(RigidBody body, Collider c, Vec3NT worldDir){
 		if(body != null){
-			Vec3 localDir = body.globalToLocalVec(worldDir);
+			Vec3NT localDir = body.globalToLocalVec(worldDir);
 			if(margin != 0){
 				localDir = localDir.normalize();
 				return body.localToGlobalPos(c.support(localDir).add(localDir.mult(margin)));
@@ -198,7 +198,7 @@ public class GJK {
 	
 	private static List<Mkv[]> faces = new ArrayList<>();
 	private static List<Mkv[]> edges = new ArrayList<>();
-	private static Vec3[][] features = new Vec3[2][3];
+	private static Vec3NT[][] features = new Vec3NT[2][3];
 	
 	public static void EPA(RigidBody bodyA, RigidBody bodyB, Collider a, Collider b, GJKInfo info){
 		//Create the faces for the first tetrahedron
@@ -220,26 +220,26 @@ public class GJK {
 			final float epsilon = 0.00001F;
 			if(distToPlaneSq(closestFace, support.v) < epsilon){
 				info.result = Result.COLLIDING;
-				Vec3 separation = planeProjectOrigin(closestFace);
+				Vec3NT separation = planeProjectOrigin(closestFace);
 				info.normal = separation.normalize();
 				info.depth = (float) separation.length();
 				for(int i = 0; i < 3; i ++){
 					features[0][i] = localSupport(bodyA, a, closestFace[i].r);
 					features[1][i] = localSupport(bodyB, b, closestFace[i].r.negate());
 				}
-				Vec3 bCoords = barycentricCoords(closestFace, separation);
-				info.contactPointA = new Vec3(
-						features[0][0].xCoord*bCoords.xCoord+features[0][1].xCoord*bCoords.yCoord+features[0][2].xCoord*bCoords.zCoord,
-						features[0][0].yCoord*bCoords.xCoord+features[0][1].yCoord*bCoords.yCoord+features[0][2].yCoord*bCoords.zCoord,
-						features[0][0].zCoord*bCoords.xCoord+features[0][1].zCoord*bCoords.yCoord+features[0][2].zCoord*bCoords.zCoord);
-				//Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleTauHit(Minecraft.getMinecraft().world, features[0][0].xCoord, features[0][0].yCoord, features[0][0].zCoord, 1F, new Vec3d(0, 0, 1)));
-				//Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleTauHit(Minecraft.getMinecraft().world, features[0][1].xCoord, features[0][1].yCoord, features[0][1].zCoord, 1F, new Vec3d(0, 0, 1)));
-				//Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleTauHit(Minecraft.getMinecraft().world, features[0][2].xCoord, features[0][2].yCoord, features[0][2].zCoord, 1F, new Vec3d(0, 0, 1)));
-				//Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleTauHit(Minecraft.getMinecraft().world, info.contactPointA.xCoord, info.contactPointA.yCoord, info.contactPointA.zCoord, 2F, new Vec3d(0, 0, 1)));
-				info.contactPointB = new Vec3(
-						features[1][0].xCoord*bCoords.xCoord+features[1][1].xCoord*bCoords.yCoord+features[1][2].xCoord*bCoords.zCoord,
-						features[1][0].yCoord*bCoords.xCoord+features[1][1].yCoord*bCoords.yCoord+features[1][2].yCoord*bCoords.zCoord,
-						features[1][0].zCoord*bCoords.xCoord+features[1][1].zCoord*bCoords.yCoord+features[1][2].zCoord*bCoords.zCoord);
+				Vec3NT bCoords = barycentricCoords(closestFace, separation);
+				info.contactPointA = new Vec3NT(
+						features[0][0].x*bCoords.x+features[0][1].x*bCoords.y+features[0][2].x*bCoords.z,
+						features[0][0].y*bCoords.x+features[0][1].y*bCoords.y+features[0][2].y*bCoords.z,
+						features[0][0].z*bCoords.x+features[0][1].z*bCoords.y+features[0][2].z*bCoords.z);
+				//Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleTauHit(Minecraft.getMinecraft().world, features[0][0].x, features[0][0].y, features[0][0].z, 1F, new Vec3d(0, 0, 1)));
+				//Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleTauHit(Minecraft.getMinecraft().world, features[0][1].x, features[0][1].y, features[0][1].z, 1F, new Vec3d(0, 0, 1)));
+				//Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleTauHit(Minecraft.getMinecraft().world, features[0][2].x, features[0][2].y, features[0][2].z, 1F, new Vec3d(0, 0, 1)));
+				//Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleTauHit(Minecraft.getMinecraft().world, info.contactPointA.x, info.contactPointA.y, info.contactPointA.z, 2F, new Vec3d(0, 0, 1)));
+				info.contactPointB = new Vec3NT(
+						features[1][0].x*bCoords.x+features[1][1].x*bCoords.y+features[1][2].x*bCoords.z,
+						features[1][0].y*bCoords.x+features[1][1].y*bCoords.y+features[1][2].y*bCoords.z,
+						features[1][0].z*bCoords.x+features[1][1].z*bCoords.y+features[1][2].z*bCoords.z);
 				
 				faces.clear();
 				return;
@@ -292,29 +292,29 @@ public class GJK {
 		return false;
 	}
 	
-	public static Vec3 planeProjectOrigin(Mkv[] face){
-		Vec3 point = face[0].v.negate();
+	public static Vec3NT planeProjectOrigin(Mkv[] face){
+		Vec3NT point = face[0].v.negate();
 		double dot = face[3].v.dotProduct(point);
 		return face[3].v.mult((float) dot).negate();
 	}
 	
-	public static double distToPlaneSq(Mkv[] face, Vec3 point){
+	public static double distToPlaneSq(Mkv[] face, Vec3NT point){
 		double dot = face[3].v.dotProduct(point.subtract(face[0].v));
-		Vec3 proj = face[3].v.mult((float) dot);
+		Vec3NT proj = face[3].v.mult((float) dot);
 		return proj.lengthSquared();
 	}
 	
 	public static double originDistToPlaneSq(Mkv[] face){
 		double dot = face[0].v.dotProduct(face[3].v);
-		Vec3 proj = face[3].v.mult((float) dot);
+		Vec3NT proj = face[3].v.mult((float) dot);
 		return proj.lengthSquared();
 	}
 	
 	public static Mkv[] buildFace(Mkv a, Mkv b, Mkv c){
-		Vec3 ab = b.v.subtract(a.v);
-		Vec3 ac = c.v.subtract(a.v);
-		Vec3 ao = a.v.negate();
-		Vec3 normal = ab.crossProduct(ac).normalize();
+		Vec3NT ab = b.v.subtract(a.v);
+		Vec3NT ac = c.v.subtract(a.v);
+		Vec3NT ao = a.v.negate();
+		Vec3NT normal = ab.crossProduct(ac).normalize();
 		if(normal.dotProduct(ao) < 0){
 			return new Mkv[]{a, b, c, new Mkv(normal, null)};
 		} else {
@@ -322,7 +322,7 @@ public class GJK {
 		}
 	}
 	
-	public static Vec3 barycentricCoords(Mkv[] face, Vec3 point){
+	public static Vec3NT barycentricCoords(Mkv[] face, Vec3NT point){
 		//Idea is that the barycentric coordinate is the area of the opposite triangle to the vertex, so we compute that with the cross product
 		//and make that the weight. You also have to divide by the sum of the weights to normalize them.
 		//I was under the impression that the area of the triangle would be the cross product over 2, but apparently the barycentric coords don't need that.
@@ -332,7 +332,7 @@ public class GJK {
 		double w = face[0].v.subtract(point).crossProduct(face[1].v.subtract(point)).length();
 		//Normalize
 		double uvw = u+v+w;
-		return new Vec3(u, v, w).multd(1/uvw);
+		return new Vec3NT(u, v, w).multd(1/uvw);
 	}
 	
 	public static class Simplex {
@@ -369,10 +369,10 @@ public class GJK {
 	//Minkowski vertex, a struct for both the vertex on the minkowski difference and the ray that got there for extracting the contact.
 	//Idea from the bullet physics engine.
 	public static class Mkv {
-		public Vec3 v;
-		public Vec3 r;
+		public Vec3NT v;
+		public Vec3NT r;
 		
-		public Mkv(Vec3 point, Vec3 direction) {
+		public Mkv(Vec3NT point, Vec3NT direction) {
 			this.v = point;
 			this.r = direction;
 		}
@@ -385,10 +385,10 @@ public class GJK {
 	
 	public static class GJKInfo {
 		public Result result;
-		public Vec3 normal;
+		public Vec3NT normal;
 		public float depth;
-		public Vec3 contactPointA;
-		public Vec3 contactPointB;
+		public Vec3NT contactPointA;
+		public Vec3NT contactPointB;
 	}
 	
 	public static enum Result {

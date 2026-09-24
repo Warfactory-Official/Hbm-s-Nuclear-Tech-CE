@@ -4,11 +4,13 @@ import com.hbm.blocks.ITooltipProvider;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.machine.TileEntityStorageDrum;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -46,9 +48,24 @@ public class StorageDrum extends BlockMachineBase implements ITooltipProvider {
 		}
 	}
 
+    @Override
+    public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
+        return BlockFaceShape.CENTER_BIG;
+    }
+
 	@Override
 	public EnumBlockRenderType getRenderType(IBlockState state){
-		return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
+		return EnumBlockRenderType.MODEL;
+	}
+
+	@Override
+	public BlockRenderLayer getRenderLayer() {
+		return BlockRenderLayer.CUTOUT;
+	}
+
+	@Override
+	public boolean canRenderInLayer(IBlockState state, BlockRenderLayer layer) {
+		return layer == BlockRenderLayer.CUTOUT;
 	}
 	
 	//Drillgon200: Why are there so many of these methods????

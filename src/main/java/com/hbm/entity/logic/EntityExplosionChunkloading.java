@@ -13,6 +13,7 @@ public abstract class EntityExplosionChunkloading extends Entity implements IChu
 
     private Ticket loaderTicket;
     private ChunkPos loadedChunk;
+    private boolean awaitingTicketRestore;
 
     public EntityExplosionChunkloading(World world) {
         super(world);
@@ -20,7 +21,7 @@ public abstract class EntityExplosionChunkloading extends Entity implements IChu
 
     @Override
     protected void entityInit() {
-        init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, Type.ENTITY));
+        // Ticket requests must not happen here; entityInit also runs during NBT restore.
     }
 
     @Override
@@ -30,8 +31,18 @@ public abstract class EntityExplosionChunkloading extends Entity implements IChu
                 loaderTicket = ticket;
                 loaderTicket.bindEntity(this);
                 loaderTicket.getModData();
+            } else if(loaderTicket != ticket) {
+                ForgeChunkManager.releaseTicket(ticket);
             }
             ForgeChunkManager.forceChunk(loaderTicket, new ChunkPos(chunkCoordX, chunkCoordZ));
+        }
+    }
+
+    @Override
+    public void onUpdate() {
+        super.onUpdate();
+        if(!world.isRemote) {
+            requestChunkLoaderTicketIfNeeded();
         }
     }
 
@@ -52,5 +63,18 @@ public abstract class EntityExplosionChunkloading extends Entity implements IChu
             ForgeChunkManager.releaseTicket(loaderTicket);
             this.loaderTicket = null;
         }
+    }
+
+    protected final void markChunkLoaderRestoredFromNBT() {
+        this.awaitingTicketRestore = true;
+    }
+
+    protected final void requestChunkLoaderTicketIfNeeded() {
+        if(world.isRemote || loaderTicket != null) return;
+        if(awaitingTicketRestore) {
+            awaitingTicketRestore = false;
+            return;
+        }
+        init(ForgeChunkManager.requestTicket(MainRegistry.instance, world, Type.ENTITY));
     }
 }

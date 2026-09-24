@@ -15,7 +15,7 @@ import com.hbm.lib.Library;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.toclient.TETeslaPacket;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import com.hbm.tileentity.TileEntityMachineBase;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -94,7 +94,7 @@ public class TileEntityTesla extends TileEntityMachineBase implements ITickable,
 			if(e instanceof EntityOcelot || e == source)
 				continue;
 			
-			Vec3 vec = Vec3.createVectorHelper(e.posX - x, e.posY + e.height / 2 - y, e.posZ - z);
+			Vec3NT vec = Vec3NT.createVectorHelper(e.posX - x, e.posY + e.height / 2 - y, e.posZ - z);
 			
 			if(vec.length() > range)
 				continue;
@@ -160,7 +160,7 @@ public class TileEntityTesla extends TileEntityMachineBase implements ITickable,
 	
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+		return new AxisAlignedBB(pos.getX() - range, pos.getY() - range, pos.getZ() - range, pos.getX() + 1 + range, pos.getY() + 1 + range, pos.getZ() + 1 + range);
 	}
 	
 	@Override

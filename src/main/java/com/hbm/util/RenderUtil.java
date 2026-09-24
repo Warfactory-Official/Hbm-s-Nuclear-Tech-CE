@@ -220,12 +220,12 @@ public final class RenderUtil {
         }
 
         int alphaFuncTracked = getAlphaFunc();
-        int alphaFuncGL = GL11.glGetInteger(GL11.GL_ALPHA_TEST_FUNC);
+        int alphaFuncGL = GlStateManager.glGetInteger(GL11.GL_ALPHA_TEST_FUNC);
         if (alphaFuncTracked != alphaFuncGL) {
             diff.append("\n  alphaFunc tracked=").append(alphaFuncTracked).append(" real=").append(alphaFuncGL);
         }
         DEBUG_COLOR_BUF.clear();
-        GL11.glGetFloat(GL11.GL_ALPHA_TEST_REF, DEBUG_COLOR_BUF);
+        GlStateManager.getFloat(GL11.GL_ALPHA_TEST_REF, DEBUG_COLOR_BUF);
         float alphaRefGL = DEBUG_COLOR_BUF.get(0);
         float alphaRefTracked = getAlphaRef();
         if (Math.abs(alphaRefTracked - alphaRefGL) > FLOAT_EPS) {
@@ -241,13 +241,13 @@ public final class RenderUtil {
         }
 
         int depthFuncTracked = getDepthFunc();
-        int depthFuncGL = GL11.glGetInteger(GL11.GL_DEPTH_FUNC);
+        int depthFuncGL = GlStateManager.glGetInteger(GL11.GL_DEPTH_FUNC);
         if (depthFuncTracked != depthFuncGL) {
             diff.append("\n  depthFunc tracked=").append(depthFuncTracked).append(" real=").append(depthFuncGL);
         }
 
         DEBUG_COLOR_BUF.clear();
-        GL11.glGetFloat(GL11.GL_DEPTH_CLEAR_VALUE, DEBUG_COLOR_BUF);
+        GlStateManager.getFloat(GL11.GL_DEPTH_CLEAR_VALUE, DEBUG_COLOR_BUF);
         float clearDepthGL = DEBUG_COLOR_BUF.get(0);
         double clearDepthTracked = GlStateManager.clearState.depth;
         if (Math.abs(clearDepthTracked - clearDepthGL) > FLOAT_EPS) {
@@ -275,7 +275,7 @@ public final class RenderUtil {
         }
 
         DEBUG_COLOR_BUF.clear();
-        GL11.glGetFloat(GL11.GL_CURRENT_COLOR, DEBUG_COLOR_BUF);
+        GlStateManager.getFloat(GL11.GL_CURRENT_COLOR, DEBUG_COLOR_BUF);
         float rGL = DEBUG_COLOR_BUF.get(0);
         float gGL = DEBUG_COLOR_BUF.get(1);
         float bGL = DEBUG_COLOR_BUF.get(2);
@@ -295,10 +295,10 @@ public final class RenderUtil {
         int srcAlphaTracked = getBlendSrcAlphaFactor();
         int dstAlphaTracked = getBlendDstAlphaFactor();
 
-        int srcRgbGL = GL11.glGetInteger(GL14.GL_BLEND_SRC_RGB);
-        int dstRgbGL = GL11.glGetInteger(GL14.GL_BLEND_DST_RGB);
-        int srcAlphaGL = GL11.glGetInteger(GL14.GL_BLEND_SRC_ALPHA);
-        int dstAlphaGL = GL11.glGetInteger(GL14.GL_BLEND_DST_ALPHA);
+        int srcRgbGL = GlStateManager.glGetInteger(GL14.GL_BLEND_SRC_RGB);
+        int dstRgbGL = GlStateManager.glGetInteger(GL14.GL_BLEND_DST_RGB);
+        int srcAlphaGL = GlStateManager.glGetInteger(GL14.GL_BLEND_SRC_ALPHA);
+        int dstAlphaGL = GlStateManager.glGetInteger(GL14.GL_BLEND_DST_ALPHA);
 
         if (srcRgbTracked != srcRgbGL || dstRgbTracked != dstRgbGL || srcAlphaTracked != srcAlphaGL || dstAlphaTracked != dstAlphaGL) {
             diff.append("\n  blendFunc tracked=(").append(srcRgbTracked).append(',').append(dstRgbTracked).append(" | ").append(srcAlphaTracked)
@@ -312,13 +312,13 @@ public final class RenderUtil {
             diff.append("\n  colorLogicOp enabled tracked=").append(colorLogicTracked).append(" real=").append(colorLogicGL);
         }
         int logicOpTracked = GlStateManager.colorLogicState.opcode;
-        int logicOpGL = GL11.glGetInteger(GL11.GL_LOGIC_OP_MODE);
+        int logicOpGL = GlStateManager.glGetInteger(GL11.GL_LOGIC_OP_MODE);
         if (logicOpTracked != logicOpGL) {
             diff.append("\n  colorLogicOp opcode tracked=").append(logicOpTracked).append(" real=").append(logicOpGL);
         }
 
         DEBUG_COLOR_BUF.clear();
-        GL11.glGetFloat(GL11.GL_COLOR_CLEAR_VALUE, DEBUG_COLOR_BUF);
+        GlStateManager.getFloat(GL11.GL_COLOR_CLEAR_VALUE, DEBUG_COLOR_BUF);
         float clearRgl = DEBUG_COLOR_BUF.get(0);
         float clearGgl = DEBUG_COLOR_BUF.get(1);
         float clearBgl = DEBUG_COLOR_BUF.get(2);
@@ -336,7 +336,7 @@ public final class RenderUtil {
         }
 
         int activeTracked = getActiveTextureUnitIndex();
-        int activeEnumGL = GL11.glGetInteger(GL13.GL_ACTIVE_TEXTURE);
+        int activeEnumGL = GlStateManager.glGetInteger(GL13.GL_ACTIVE_TEXTURE);
         int activeIndexGL = activeEnumGL - GL13.GL_TEXTURE0;
 
         if (activeTracked != activeIndexGL) {
@@ -354,7 +354,7 @@ public final class RenderUtil {
                 diff.append("\n  texture2D unit ").append(i).append(" enabled tracked=").append(tex2DTracked).append(" real=").append(tex2Dgl);
             }
 
-            int boundGL = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
+            int boundGL = GlStateManager.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
             int boundTracked = GlStateManager.textureState[i].textureName;
             if (boundTracked != boundGL) {
                 diff.append("\n  textureBinding2D unit ").append(i).append(" tracked=").append(boundTracked).append(" real=").append(boundGL);
@@ -362,7 +362,7 @@ public final class RenderUtil {
         }
         GL13.glActiveTexture(activeEnumGL);
         int shadeTracked = getShadeModel();
-        int shadeGL = GL11.glGetInteger(GL11.GL_SHADE_MODEL);
+        int shadeGL = GlStateManager.glGetInteger(GL11.GL_SHADE_MODEL);
         if (shadeTracked != shadeGL) {
             diff.append("\n  shadeModel tracked=").append(shadeTracked).append(" real=").append(shadeGL);
         }
@@ -387,12 +387,12 @@ public final class RenderUtil {
             diff.append("\n  colorMaterial enabled tracked=").append(colorMaterialTracked).append(" real=").append(colorMaterialGL);
         }
         int colorMaterialFaceTracked = GlStateManager.colorMaterialState.face;
-        int colorMaterialFaceGL = GL11.glGetInteger(GL11.GL_COLOR_MATERIAL_FACE);
+        int colorMaterialFaceGL = GlStateManager.glGetInteger(GL11.GL_COLOR_MATERIAL_FACE);
         if (colorMaterialFaceTracked != colorMaterialFaceGL) {
             diff.append("\n  colorMaterial face tracked=").append(colorMaterialFaceTracked).append(" real=").append(colorMaterialFaceGL);
         }
         int colorMaterialModeTracked = GlStateManager.colorMaterialState.mode;
-        int colorMaterialModeGL = GL11.glGetInteger(GL11.GL_COLOR_MATERIAL_PARAMETER);
+        int colorMaterialModeGL = GlStateManager.glGetInteger(GL11.GL_COLOR_MATERIAL_PARAMETER);
         if (colorMaterialModeTracked != colorMaterialModeGL) {
             diff.append("\n  colorMaterial mode tracked=").append(colorMaterialModeTracked).append(" real=").append(colorMaterialModeGL);
         }
@@ -410,7 +410,7 @@ public final class RenderUtil {
         }
 
         int cullModeTracked = GlStateManager.cullState.mode;
-        int cullModeGL = GL11.glGetInteger(GL11.GL_CULL_FACE_MODE);
+        int cullModeGL = GlStateManager.glGetInteger(GL11.GL_CULL_FACE_MODE);
         if (cullModeTracked != cullModeGL) {
             diff.append("\n  cullFace mode tracked=").append(cullModeTracked).append(" real=").append(cullModeGL);
         }
@@ -428,7 +428,7 @@ public final class RenderUtil {
         }
 
         DEBUG_COLOR_BUF.clear();
-        GL11.glGetFloat(GL11.GL_POLYGON_OFFSET_FACTOR, DEBUG_COLOR_BUF);
+        GlStateManager.getFloat(GL11.GL_POLYGON_OFFSET_FACTOR, DEBUG_COLOR_BUF);
         float polyFactorGL = DEBUG_COLOR_BUF.get(0);
         float polyFactorTracked = GlStateManager.polygonOffsetState.factor;
         if (Math.abs(polyFactorTracked - polyFactorGL) > FLOAT_EPS) {
@@ -436,7 +436,7 @@ public final class RenderUtil {
         }
 
         DEBUG_COLOR_BUF.clear();
-        GL11.glGetFloat(GL11.GL_POLYGON_OFFSET_UNITS, DEBUG_COLOR_BUF);
+        GlStateManager.getFloat(GL11.GL_POLYGON_OFFSET_UNITS, DEBUG_COLOR_BUF);
         float polyUnitsGL = DEBUG_COLOR_BUF.get(0);
         float polyUnitsTracked = GlStateManager.polygonOffsetState.units;
         if (Math.abs(polyUnitsTracked - polyUnitsGL) > FLOAT_EPS) {
@@ -450,13 +450,13 @@ public final class RenderUtil {
         }
 
         int fogModeTracked = GlStateManager.fogState.mode;
-        int fogModeGL = GL11.glGetInteger(GL11.GL_FOG_MODE);
+        int fogModeGL = GlStateManager.glGetInteger(GL11.GL_FOG_MODE);
         if (fogModeTracked != fogModeGL) {
             diff.append("\n  fog mode tracked=").append(fogModeTracked).append(" real=").append(fogModeGL);
         }
 
         DEBUG_COLOR_BUF.clear();
-        GL11.glGetFloat(GL11.GL_FOG_DENSITY, DEBUG_COLOR_BUF);
+        GlStateManager.getFloat(GL11.GL_FOG_DENSITY, DEBUG_COLOR_BUF);
         float fogDensityGL = DEBUG_COLOR_BUF.get(0);
         float fogDensityTracked = GlStateManager.fogState.density;
         if (Math.abs(fogDensityTracked - fogDensityGL) > FLOAT_EPS) {
@@ -464,7 +464,7 @@ public final class RenderUtil {
         }
 
         DEBUG_COLOR_BUF.clear();
-        GL11.glGetFloat(GL11.GL_FOG_START, DEBUG_COLOR_BUF);
+        GlStateManager.getFloat(GL11.GL_FOG_START, DEBUG_COLOR_BUF);
         float fogStartGL = DEBUG_COLOR_BUF.get(0);
         float fogStartTracked = GlStateManager.fogState.start;
         if (Math.abs(fogStartTracked - fogStartGL) > FLOAT_EPS) {
@@ -472,7 +472,7 @@ public final class RenderUtil {
         }
 
         DEBUG_COLOR_BUF.clear();
-        GL11.glGetFloat(GL11.GL_FOG_END, DEBUG_COLOR_BUF);
+        GlStateManager.getFloat(GL11.GL_FOG_END, DEBUG_COLOR_BUF);
         float fogEndGL = DEBUG_COLOR_BUF.get(0);
         float fogEndTracked = GlStateManager.fogState.end;
         if (Math.abs(fogEndTracked - fogEndGL) > FLOAT_EPS) {
@@ -633,7 +633,7 @@ public final class RenderUtil {
                 GlStateManager.setFog(fm);
             } else {
                 GlStateManager.fogState.mode = mode;
-                GL11.glFogi(GL11.GL_FOG_MODE, mode);
+                GlStateManager.glFogi(GL11.GL_FOG_MODE, mode);
             }
             GlStateManager.setFogDensity(density);
             GlStateManager.setFogStart(start);

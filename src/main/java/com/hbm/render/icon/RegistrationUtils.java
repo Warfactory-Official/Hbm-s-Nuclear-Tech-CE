@@ -91,6 +91,12 @@ public class RegistrationUtils {
                 Files.walk(root).forEach(path -> {
                     if (path.toString().endsWith(".png")) {
                         String full = path.toString().replace('\\', '/');
+                        String fileName = path.getFileName().toString();
+
+                        // Skip atlas sheets that are not valid standalone sprites.
+                        if (fileName.matches("fluids\\d*\\.png")) {
+                            return;
+                        }
 
                         int idx = full.indexOf("/textures/");
                         if (idx >= 0) {

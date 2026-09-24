@@ -7,6 +7,7 @@
 package com.hbm.render.model;
 
 import com.hbm.handler.ArmorUtil;
+import com.hbm.render.util.RenderModelSyncUtil;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.GlStateManager;
@@ -104,6 +105,16 @@ public class ModelM65 extends ModelBiped {
 
 	@Override
 	public void setRotationAngles(float f2, float f3, float f4, float f5, float f6, float f7, Entity entity) {
+		ModelBiped source = RenderModelSyncUtil.getSourceModel(entity, this);
+
+		if(source != null) {
+			this.isSneak = source.isSneak;
+			this.isChild = source.isChild;
+			RenderModelSyncUtil.copyAngles(source.bipedHead, this.mask);
+			RenderModelSyncUtil.copyAngles(source.bipedHead, this.filter);
+			return;
+		}
+
 		super.setRotationAngles(f2, f3, f4, f5, f6, f7, entity);
 
 		if (entity instanceof EntityArmorStand entityarmorstand) {
@@ -116,51 +127,35 @@ public class ModelM65 extends ModelBiped {
 		} else {
 			this.isSneak = false;
 		}
-		this.mask.rotationPointX = this.bipedHead.rotationPointX;
-		this.mask.rotationPointY = this.bipedHead.rotationPointY;
-		this.mask.rotateAngleY = this.bipedHead.rotateAngleY;
-		this.mask.rotateAngleX = this.bipedHead.rotateAngleX;
-		this.filter.rotationPointX = this.bipedHead.rotationPointX;
-		this.filter.rotationPointY = this.bipedHead.rotationPointY;
-		this.filter.rotateAngleY = this.bipedHead.rotateAngleY;
-		this.filter.rotateAngleX = this.bipedHead.rotateAngleX;
 
-		if(this.isSneak) {
-            this.mask.rotationPointY = 3.73F;
-            this.filter.rotationPointY = 3.73F;
-        }
+		RenderModelSyncUtil.copyAngles(this.bipedHead, this.mask);
+		RenderModelSyncUtil.copyAngles(this.bipedHead, this.filter);
 	}
 
 	@Override
 	public void render(Entity entity, float par2, float par3, float par4, float par5, float par6, float par7) {
 		setRotationAngles(par2, par3, par4, par5, par6, par7, entity);
-		
+
+		GlStateManager.pushMatrix();
+
 		if(this.isChild) {
-			float f6 = 2.0F;
-			GlStateManager.pushMatrix();
-			GlStateManager.scale(1.5F / f6, 1.5F / f6, 1.5F / f6);
+			GlStateManager.scale(0.75F, 0.75F, 0.75F);
 			GlStateManager.translate(0.0F, 16.0F * par7, 0.0F);
-			double d = 1D / 16D * 18D;
-			GL11.glScaled(d, d, d);
-			GL11.glScaled(1.01D, 1.01D, 1.01D);
-			this.mask.render(par7);
-			
-			if(!(entity instanceof EntityLivingBase) || ArmorUtil.getGasMaskFilterRecursively(((EntityLivingBase)entity).getItemStackFromSlot(EntityEquipmentSlot.HEAD)) != null)
-				this.filter.render(par7);
-			
-			GlStateManager.popMatrix();
-		} else {
-			GlStateManager.pushMatrix();
-			double d = 1D / 16D * 18D;
-			GL11.glScaled(d, d, d);
-			GL11.glScaled(1.01D, 1.01D, 1.01D);
-			this.mask.render(par7);
-			
-			if(!(entity instanceof EntityLivingBase) || ArmorUtil.getGasMaskFilterRecursively(((EntityLivingBase)entity).getItemStackFromSlot(EntityEquipmentSlot.HEAD)) != null)
-				this.filter.render(par7);
-			
-			GlStateManager.popMatrix();
+		} else if(entity != null && entity.isSneaking()) {
+			GlStateManager.translate(0.0F, 0.2F, 0.0F);
 		}
+
+		float d = 1F / 16F * 18F * 1.01F;
+		GlStateManager.translate(this.mask.rotationPointX * par7, this.mask.rotationPointY * par7, this.mask.rotationPointZ * par7);
+		GlStateManager.scale(d, d, d);
+		GlStateManager.translate(-this.mask.rotationPointX * par7, -this.mask.rotationPointY * par7, -this.mask.rotationPointZ * par7);
+
+		this.mask.render(par7);
+
+		if(!(entity instanceof EntityLivingBase) || ArmorUtil.getGasMaskFilterRecursively(((EntityLivingBase)entity).getItemStackFromSlot(EntityEquipmentSlot.HEAD)) != null)
+			this.filter.render(par7);
+
+		GlStateManager.popMatrix();
 	}
 
 	private void setRotation(ModelRenderer model, float x, float y, float z) {

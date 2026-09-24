@@ -2,18 +2,21 @@ package com.hbm.entity.item;
 
 import com.hbm.api.conveyor.IConveyorBelt;
 import com.hbm.api.conveyor.IEnterableBlock;
-import com.hbm.tileentity.network.TileEntityCraneBase;
+import com.hbm.config.ServerConfig;
+import com.hbm.explosion.vanillant.ExplosionVNT;
+import com.hbm.explosion.vanillant.standard.ExplosionEffectTiny;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.MoverType;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
+import java.util.List;
 
 public abstract class EntityMovingConveyorObject extends Entity {
     protected int turnProgress;
@@ -75,6 +78,21 @@ public abstract class EntityMovingConveyorObject extends Entity {
                 return;
             }
 
+            // cram check every 20s
+            if((ticksExisted + this.getEntityId()) % 400 == 0) {
+                List<EntityMovingConveyorObject> objs = world.getEntitiesWithinAABB(EntityMovingConveyorObject.class, this.getEntityBoundingBox().grow(0.125, 0.125, 0.125));
+                if(objs.size() >= ServerConfig.CONVEYOR_CRAM_MAX.get()) {
+                    for(EntityMovingConveyorObject obj : objs) obj.setDead();
+                    ExplosionVNT vnt = new ExplosionVNT(world, posX, posY + 0.125, posZ, 1, this);
+                    vnt.setSFX(new ExplosionEffectTiny());
+                    vnt.explode();
+
+                    BlockPos cramPos = new BlockPos(Math.floor(posX), Math.floor(posY), Math.floor(posZ));
+                    if(world.getBlockState(cramPos).getBlock() instanceof IConveyorBelt && this.ticksExisted > 400 && ServerConfig.CONVEYOR_CRAM_EXPLODE.get())
+                        world.destroyBlock(cramPos, false);
+                }
+            }
+
             int blockX = (int) Math.floor(posX);
             int blockY = (int) Math.floor(posY);
             int blockZ = (int) Math.floor(posZ);
@@ -88,9 +106,9 @@ public abstract class EntityMovingConveyorObject extends Entity {
                 }
             } else {
                 Vec3d target = ((IConveyorBelt) b).getTravelLocation(world, blockX, blockY, blockZ, new Vec3d(posX, posY, posZ), getMoveSpeed());
-                this.motionX = target.x - posX;
-                this.motionY = target.y - posY;
-                this.motionZ = target.z - posZ;
+                this.motionX = target.x - this.posX;
+                this.motionY = target.y - this.posY;
+                this.motionZ = target.z - this.posZ;
             }
 
             BlockPos lastPos = new BlockPos(posX, posY, posZ);
@@ -118,16 +136,7 @@ public abstract class EntityMovingConveyorObject extends Entity {
                     else if (lastPos.getX() == newPos.getX() && lastPos.getY() == newPos.getY() && lastPos.getZ() < newPos.getZ())
                         dir = EnumFacing.NORTH;
 
-                    TileEntity tileEntity = world.getTileEntity(newPos);
-                    if(tileEntity instanceof TileEntityCraneBase) {
-                        TileEntityCraneBase craneBase = (TileEntityCraneBase) tileEntity;
-                        EnumFacing inputSide = craneBase.getInputSide();
-                        if (dir == inputSide) {
-                            enterBlock(enterable, newPos, dir);
-                        }
-                    } else {
-                        enterBlock(enterable, newPos, dir);
-                    }
+                    enterBlock(enterable, newPos, dir);
 
                 } else {
                     if(!newBlock.getMaterial(world.getBlockState(newPos)).isSolid()) {
@@ -162,8 +171,9 @@ public abstract class EntityMovingConveyorObject extends Entity {
         this.velocityZ = this.motionZ = motionZ;
     }
 
+    @Override
     @SideOnly(Side.CLIENT)
-    public void setPositionAndRotationDirect(double x, double y, double z, float yaw, float pitch, int theNumberThree) {
+    public void setPositionAndRotationDirect(double x, double y, double z, float yaw, float pitch, int theNumberThree, boolean teleport) {
         this.syncPosX = x;
         this.syncPosY = y;
         this.syncPosZ = z;

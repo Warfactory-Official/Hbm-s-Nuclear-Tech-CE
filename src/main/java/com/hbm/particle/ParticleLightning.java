@@ -2,7 +2,7 @@ package com.hbm.particle;
 
 import com.hbm.main.ResourceManager;
 import com.hbm.render.NTMRenderHelper;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -20,7 +20,7 @@ import org.lwjgl.opengl.GL11; import net.minecraft.client.renderer.GlStateManage
 public class ParticleLightning extends Particle {
 
 	public int divisions = 7;
-	public Vec3 direction = Vec3.createVectorHelper(0, -40, 0);
+	public Vec3NT direction = Vec3NT.createVectorHelper(0, -40, 0);
 	private float[] positions;
 	
 	public ParticleLightning(World worldIn, double posXIn, double posYIn, double posZIn) {
@@ -43,17 +43,17 @@ public class ParticleLightning extends Particle {
 		positions = new float[(divisions+2)*3];
 		for(int i = 0; i < positions.length; i += 3){
 			float magnitude = (i/3)/(divisions+1F);
-			Vec3 pos = direction.mult(magnitude);
-			positions[i] = (float) pos.xCoord;
-			positions[i+1] = (float) pos.yCoord;
-			positions[i+2] = (float) pos.zCoord;
+			Vec3NT pos = direction.mult(magnitude);
+			positions[i] = (float) pos.x;
+			positions[i+1] = (float) pos.y;
+			positions[i+2] = (float) pos.z;
 		}
 		
 		for(int i = 3; i < positions.length-3; i += 3){
-			Vec3 randPos = Vec3.createVectorHelper((world.rand.nextDouble()-0.5)*4, (rand.nextDouble()-0.5)*2, (rand.nextDouble()-0.5)*4);
-			positions[i] += randPos.xCoord;
-			positions[i+1] += randPos.yCoord;
-			positions[i+2] += randPos.zCoord;
+			Vec3NT randPos = Vec3NT.createVectorHelper((world.rand.nextDouble()-0.5)*4, (rand.nextDouble()-0.5)*2, (rand.nextDouble()-0.5)*4);
+			positions[i] += randPos.x;
+			positions[i+1] += randPos.y;
+			positions[i+2] += randPos.z;
 		}
 	}
 	
@@ -80,25 +80,25 @@ public class ParticleLightning extends Particle {
 		
 		Vec3d look = entity.getPositionEyes(partialTicks).subtract(d0, d1, d2);
 		for(int i = 0; i < positions.length-3; i += 3){
-			//Vec3 toNextSegment = Vec3.createVectorHelper(positions[i+3], positions[i+4], positions[i+5]).subtract(Vec3.createVectorHelper(positions[i], positions[i+1], positions[i+2]));
-			Vec3 point1 = Vec3.createVectorHelper(look.x, look.y, look.z).crossProduct(direction).normalize().mult((float) (0.2*particleScale));
-		    Vec3 point2 = point1.mult(-1);
+			//Vec3NT toNextSegment = Vec3NT.createVectorHelper(positions[i+3], positions[i+4], positions[i+5]).subtract(Vec3NT.createVectorHelper(positions[i], positions[i+1], positions[i+2]));
+			Vec3NT point1 = Vec3NT.createVectorHelper(look.x, look.y, look.z).crossProduct(direction).normalize().mult((float) (0.2*particleScale));
+		    Vec3NT point2 = point1.mult(-1);
 		    
-		    vertices[i*2] = (float) point1.xCoord + positions[i];
-		    vertices[i*2+1] = (float) point1.yCoord + positions[i+1];
-		    vertices[i*2+2] = (float) point1.zCoord + positions[i+2];
-		    vertices[i*2+3] = (float) point2.xCoord + positions[i];
-		    vertices[i*2+4] = (float) point2.yCoord + positions[i+1];
-		    vertices[i*2+5] = (float) point2.zCoord + positions[i+2];
+		    vertices[i*2] = (float) point1.x + positions[i];
+		    vertices[i*2+1] = (float) point1.y + positions[i+1];
+		    vertices[i*2+2] = (float) point1.z + positions[i+2];
+		    vertices[i*2+3] = (float) point2.x + positions[i];
+		    vertices[i*2+4] = (float) point2.y + positions[i+1];
+		    vertices[i*2+5] = (float) point2.z + positions[i+2];
 		    
 		    if(i == positions.length - 6){
 		    	int i2 = i + 3;
-		    	vertices[i2*2] = (float) point1.xCoord + positions[i2];
-			    vertices[i2*2+1] = (float) point1.yCoord + positions[i2+1];
-			    vertices[i2*2+2] = (float) point1.zCoord + positions[i2+2];
-			    vertices[i2*2+3] = (float) point2.xCoord + positions[i2];
-			    vertices[i2*2+4] = (float) point2.yCoord + positions[i2+1];
-			    vertices[i2*2+5] = (float) point2.zCoord + positions[i2+2];
+		    	vertices[i2*2] = (float) point1.x + positions[i2];
+			    vertices[i2*2+1] = (float) point1.y + positions[i2+1];
+			    vertices[i2*2+2] = (float) point1.z + positions[i2+2];
+			    vertices[i2*2+3] = (float) point2.x + positions[i2];
+			    vertices[i2*2+4] = (float) point2.y + positions[i2+1];
+			    vertices[i2*2+5] = (float) point2.z + positions[i2+2];
 		    }
 		}
 		

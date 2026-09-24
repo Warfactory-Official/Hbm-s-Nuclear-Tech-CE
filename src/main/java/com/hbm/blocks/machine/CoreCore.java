@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.machine.TileEntityCore;
 import net.minecraft.block.BlockContainer;
@@ -47,6 +48,12 @@ public class CoreCore extends BlockContainer {
 		}
 	}
 	
+	@Override
+	public void breakBlock(World world, BlockPos pos, IBlockState state) {
+		InventoryHelper.dropInventoryItems(world, pos, world.getTileEntity(pos));
+		super.breakBlock(world, pos, state);
+	}
+
 	@Override
 	public EnumBlockRenderType getRenderType(IBlockState state) {
 		return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;

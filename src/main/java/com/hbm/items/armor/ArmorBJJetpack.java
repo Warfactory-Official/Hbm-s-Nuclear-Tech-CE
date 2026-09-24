@@ -6,6 +6,7 @@ import com.hbm.handler.ArmorUtil;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.packet.toclient.AuxParticlePacketNT;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.render.model.ModelArmorBJ;
 import com.hbm.util.I18nUtil;
 import com.hbm.util.Vec3NT;
@@ -44,7 +45,7 @@ public class ArmorBJJetpack extends ArmorBJ {
 		return model;
 	}
 
-	public void onArmorTick(World world, EntityPlayer player, ItemStack stack) {
+	public void onArmorTick(@NotNull World world, @NotNull EntityPlayer player, @NotNull ItemStack stack) {
 		
 		super.onArmorTick(world, player, stack);
 		
@@ -55,9 +56,8 @@ public class ArmorBJJetpack extends ArmorBJ {
 			if(hasFSBArmor(player) && props.isJetpackActive()) {
 
 				NBTTagCompound data = new NBTTagCompound();
-				data.setString("type", "jetpack_bj");
 				data.setInteger("player", player.getEntityId());
-				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, player.posX, player.posY, player.posZ), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 100));
+				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(HbmEffectNT.Jetpack_BJ, data, player.posX, player.posY, player.posZ), new TargetPoint(world.provider.getDimension(), player.posX, player.posY, player.posZ, 100));
 			}
 		}
 
@@ -93,7 +93,7 @@ public class ArmorBJJetpack extends ArmorBJ {
     }
     
 	@Override
-	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn){
+	public void addInformation(@NotNull ItemStack stack, World worldIn, @NotNull List<String> list, @NotNull ITooltipFlag flagIn){
 		super.addInformation(stack, worldIn, list, flagIn);
 		list.add(TextFormatting.RED + "  + " + I18nUtil.resolveKey("armor.electricJetpack"));
     	list.add(TextFormatting.GRAY + "  + " + I18nUtil.resolveKey("armor.glider"));

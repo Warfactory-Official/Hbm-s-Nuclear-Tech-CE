@@ -4,7 +4,7 @@ import com.hbm.Tags;
 import com.hbm.entity.effect.EntityFalloutRain;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.render.NTMRenderHelper;
-import com.hbm.render.amlfrom1710.Vec3;
+import com.hbm.util.Vec3NT;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -72,7 +72,7 @@ public class RenderFallout extends Render<EntityFalloutRain> {
         
         GlStateManager.disableLighting();
         Entity ent = this.mc.getRenderViewEntity();
-        Vec3 vector = Vec3.createVectorHelper(ent.posX - entity.posX,
+        Vec3NT vector = Vec3NT.createVectorHelper(ent.posX - entity.posX,
                 ent.posY - entity.posY, ent.posZ - entity.posZ);
        
         double d = vector.length();

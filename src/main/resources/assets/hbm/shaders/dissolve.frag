@@ -1,6 +1,6 @@
 #version 120
 
-uniform sampler2D texture;
+uniform sampler2D mainTex;
 uniform sampler2D noise;
 uniform sampler2D lightmap;
 uniform float amount;
@@ -16,7 +16,7 @@ float remap(float num, float min1, float max1, float min2, float max2){
 }
 
 void main(){
-	vec4 sum = texture2D(texture, texCoord);
+	vec4 sum = texture2D(mainTex, texCoord);
 	vec4 lmap = texture2D(lightmap, lightmapTexCoord);
 	vec4 noiseSample = texture2D(noise, texCoord + noiseScroll * worldTime);
 	float a = noiseSample.r;

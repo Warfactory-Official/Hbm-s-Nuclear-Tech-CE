@@ -42,7 +42,7 @@ public abstract class BlockContainerBakeable extends BlockContainer implements I
     @Override
     public void bakeModel(ModelBakeEvent event) {
         try {
-            IModel baseModel = ModelLoaderRegistry.getModel(new ResourceLocation(blockFrame.getBaseModel()));
+            IModel baseModel = ModelLoaderRegistry.getModel(blockFrame.getBaseModelLocation());
             ImmutableMap.Builder<String, String> textureMap = ImmutableMap.builder();
 
             blockFrame.putTextures(textureMap);

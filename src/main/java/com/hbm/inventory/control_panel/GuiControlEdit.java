@@ -11,6 +11,7 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.ClickType;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Mouse;
@@ -118,6 +119,12 @@ public class GuiControlEdit extends GuiContainer {
 	public List<GuiButton> getButtons(){
 		return buttonList;
 	}
+
+	public void returnControlInputToPlayerInventory() {
+		if(container.input.getHasStack()) {
+			handleMouseClick(container.input, container.input.slotNumber, 0, ClickType.QUICK_MOVE);
+		}
+	}
 	
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
@@ -147,21 +154,26 @@ public class GuiControlEdit extends GuiContainer {
 			subElementStack.getFirst().actionPerformed(button);
 	}
 	
-	protected void pushElement(SubElement e){
+	public void pushElement(SubElement e){
 		subElementStack.getFirst().enableButtons(false);
+		subElementStack.getFirst().onElementClose();
 		e.lock = true;
 		e.enableButtons(true);
+		e.onElementOpen();
 		subElementStack.addFirst(e);
 	}
 	
-	protected void popElement(){
+	public void popElement(){
 		SubElement e = subElementStack.removeFirst();
 		e.enableButtons(false);
+		e.onElementClose();
 		subElementStack.getFirst().enableButtons(true);
+		subElementStack.getFirst().onElementOpen();
 	}
 	
 	protected void resetStack(){
 		subElementStack.getFirst().enableButtons(false);
+		subElementStack.getFirst().onElementClose();
 		subElementStack.clear();
 		subElementStack.addFirst(placement);
 		placement.enableButtons(true);

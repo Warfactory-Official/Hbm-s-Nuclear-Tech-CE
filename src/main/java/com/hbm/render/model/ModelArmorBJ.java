@@ -37,54 +37,6 @@ public class ModelArmorBJ extends ModelArmorBase {
   }
 
   @Override
-  public void render(
-      Entity entity,
-      float limbSwing,
-      float limbSwingAmount,
-      float ageInTicks,
-      float netHeadYaw,
-      float headPitch,
-      float scaleFactor) {
-    super.setRotationAngles(
-        limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entity);
-    this.body.copyTo(this.jetpack);
-
-    GlStateManager.pushMatrix();
-
-    switch (type) {
-      case 0 -> {
-        bindTexture(ResourceManager.bj_eyepatch);
-        this.head.render(scaleFactor);
-      }
-      case 1, 5 -> {
-        bindTexture(ResourceManager.bj_chest);
-        this.body.render(scaleFactor);
-
-        if (this.type == 5) {
-          bindTexture(ResourceManager.bj_jetpack);
-          this.jetpack.render(scaleFactor);
-        }
-
-        bindTexture(ResourceManager.bj_arm);
-        this.leftArm.render(scaleFactor);
-        this.rightArm.render(scaleFactor);
-      }
-      case 2 -> {
-        bindTexture(ResourceManager.bj_leg);
-        this.leftLeg.render(scaleFactor);
-        this.rightLeg.render(scaleFactor);
-      }
-      case 3 -> {
-        bindTexture(ResourceManager.bj_leg);
-        this.leftFoot.render(scaleFactor);
-        this.rightFoot.render(scaleFactor);
-      }
-    }
-
-    GlStateManager.popMatrix();
-  }
-
-  @Override
   public void renderArmor(Entity par1Entity, float par7) {
     body.copyTo(jetpack);
     switch (type) {

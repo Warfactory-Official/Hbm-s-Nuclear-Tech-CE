@@ -6,7 +6,7 @@ import com.hbm.blocks.generic.BlockMeta;
 import com.hbm.config.GeneralConfig;
 import com.hbm.interfaces.AutoRegister;
 import net.minecraft.nbt.NBTTagCompound;
-
+@Deprecated
 @AutoRegister
 public class TileEntityPileBreedingFuel extends TileEntityPileBase implements IPileNeutronReceiver {
 

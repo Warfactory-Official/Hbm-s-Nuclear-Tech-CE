@@ -13,6 +13,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -76,7 +77,7 @@ public class ArmorFSBFueled extends ArmorFSB implements IFillableItem {
 	}
 
 	@Override
-	public void onArmorTick(World world, EntityPlayer player, ItemStack stack) {
+	public void onArmorTick(@NotNull World world, @NotNull EntityPlayer player, @NotNull ItemStack stack) {
 
 		super.onArmorTick(world, player, stack);
 
@@ -86,7 +87,7 @@ public class ArmorFSBFueled extends ArmorFSB implements IFillableItem {
 	}
 
 	@SideOnly(Side.CLIENT)
-	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
+	public void addInformation(@NotNull ItemStack stack, World worldIn, @NotNull List<String> list, @NotNull ITooltipFlag flagIn) {
 		list.add(this.fuelType.getLocalizedName() + ": " + BobMathUtil.getShortNumber(getFill(stack)) + " / " + BobMathUtil.getShortNumber(getMaxFill(stack)));
 		super.addInformation(stack, worldIn, list, flagIn);
 	}
@@ -146,11 +147,11 @@ public class ArmorFSBFueled extends ArmorFSB implements IFillableItem {
 
 	@Override
 	public boolean canApplyAtEnchantingTable(ItemStack stack, Enchantment enchantment) {
-		return false;
+		return super.canApplyAtEnchantingTable(stack, enchantment);
 	}
 
 	@Override
 	public boolean isBookEnchantable(ItemStack stack, ItemStack book) {
-		return false;
+		return true;
 	}
 }

@@ -147,7 +147,7 @@ public class GUIReactorControl extends GuiInfoContainer {
 
         GlStateManager.pushMatrix();
         GlStateManager.disableTexture2D();
-        org.lwjgl.opengl.GL11.glLineWidth(3F);
+        GlStateManager.glLineWidth(3F);
 
         Tessellator tess = Tessellator.getInstance();
         BufferBuilder buffer = tess.getBuffer();

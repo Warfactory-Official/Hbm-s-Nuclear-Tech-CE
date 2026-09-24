@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.TransferStrategy;
 import com.hbm.inventory.slot.SlotFiltered;
 import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.lib.Library;
@@ -16,9 +17,17 @@ import org.jetbrains.annotations.NotNull;
 public class ContainerMachineFluidTank extends Container {
 
   private final TileEntityMachineFluidTank fluidTank;
+    private final TransferStrategy transferStrategy;
 
   public ContainerMachineFluidTank(InventoryPlayer invPlayer, TileEntityMachineFluidTank tedf) {
     fluidTank = tedf;
+      transferStrategy = TransferStrategy.builder(6)
+                                         .rule(0, 2, s -> s.getItem() instanceof IItemFluidIdentifier)
+                                         .rule(2, 4, s -> Library.isStackDrainableForTank(s, fluidTank.tank))
+                                         .rule(4, 6, s -> Library.isStackFillableForTank(s, fluidTank.tank))
+                                         .ruleDispatchMode(TransferStrategy.RuleDispatchMode.FALLTHROUGH_ON_FAILURE)
+                                         .playerFallbackMode(TransferStrategy.PlayerFallbackMode.REBALANCE_SECTIONS)
+                                         .build();
 
     this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 0, 8, 17));
     this.addSlotToContainer(new SlotItemHandler(tedf.inventory, 1, 8, 53));
@@ -40,10 +49,7 @@ public class ContainerMachineFluidTank extends Container {
 
   @Override
   public @NotNull ItemStack transferStackInSlot(@NotNull EntityPlayer player, int index) {
-      return InventoryUtil.transferStack(this.inventorySlots, index, 6,
-              s -> s.getItem() instanceof IItemFluidIdentifier, 2,
-              s -> Library.isStackDrainableForTank(s, fluidTank.tank), 4,
-              s -> Library.isStackFillableForTank(s, fluidTank.tank), 6);
+      return InventoryUtil.transferStack(this.inventorySlots, index, this.transferStrategy, player);
   }
 
   @Override
