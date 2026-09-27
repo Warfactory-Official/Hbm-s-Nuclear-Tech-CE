@@ -17,6 +17,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 
@@ -202,7 +203,9 @@ public class NodeConnection extends NodeElement implements ITypableNode {
 			if(connectionIndex == -1 || !isInput){
 				buf.appendPosition(mouseX, mouseY, 0);
 			} else {
-				NodeConnection pair = (isInput ? connection.outputs : connection.inputs).get(connectionIndex);
+				List<NodeConnection> list = (isInput ? connection.outputs : connection.inputs);
+				if (list == null) return; // fucks sake
+				NodeConnection pair = list.get(connectionIndex);
 				buf.appendPosition(pair.offsetX + (pair.isInput ? 0 : 40), pair.offsetY+10, 0);
 			}
 		}
