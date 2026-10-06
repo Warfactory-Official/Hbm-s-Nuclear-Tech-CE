@@ -369,7 +369,10 @@ public class MainRegistry {
         evt.registerServerCommand(new CommandPacketInfo());
         evt.registerServerCommand(new CommandReloadServer());
         evt.registerServerCommand(new CommandReapNetworks());
-        AdvancementManager.init(evt.getServer());
+        if(GeneralConfig.enableAdvancements) 
+            try{ AdvancementManager.init(evt.getServer()); } 
+            catch(Exception e){ logger.error("Failed to load advancements",e); }
+
         //MUST be initialized AFTER achievements!!
         BobmazonOfferFactory.init();
     }
