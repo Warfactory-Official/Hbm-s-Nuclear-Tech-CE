@@ -163,6 +163,21 @@ public abstract class RBMKBase extends BlockDummyable implements IToolable, ILoo
 		return ForgeDirection.getOrientation(DIR_NO_LID.getIndex());
 	}
 
+	@Override
+	public boolean isValidSchematicFacing(EntityPlayer player, BlockPos core, int coreMeta) {
+		return true;
+	}
+
+	@Override
+	public ItemStack getSchematicFinishItem(int schematicCoreMeta, int placedCoreMeta) {
+		if(metaToLid(placedCoreMeta) != LID_NONE) return ItemStack.EMPTY;
+		return switch(metaToLid(schematicCoreMeta)) {
+			case LID_STANDARD -> new ItemStack(ModItems.rbmk_lid);
+			case LID_GLASS -> new ItemStack(ModItems.rbmk_lid_glass);
+			default -> ItemStack.EMPTY;
+		};
+	}
+
 	public int[] getDimensions(World world) {
 		return new int[] {RBMKDials.getColumnHeight(world), 0, 0, 0, 0, 0};
 	}

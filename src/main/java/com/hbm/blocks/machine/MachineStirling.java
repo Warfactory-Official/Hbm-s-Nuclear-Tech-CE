@@ -138,6 +138,7 @@ public class MachineStirling extends BlockDummyable implements ILookOverlay, ITo
 
     @Override
     public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World worldIn, BlockPos pos, EntityPlayer player) {
+        if (isSchematicDummy(worldIn, pos)) return ItemStack.EMPTY;
         return new ItemStack(Item.getItemFromBlock(state.getBlock()), 1, findCoreTE(worldIn, pos) instanceof TileEntityStirling stirling && !stirling.hasCog ? 1 : 0);
     }
 

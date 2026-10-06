@@ -112,6 +112,7 @@ public class Compat {
         public static final String GROOVY_SCRIPT = "groovyscript";
         public static final String OPEN_COMPUTERS = "opencomputers";
         public static final String CTM = "ctm";
+        public static final String SCHEMATICA = "schematica";
         public static final String AE2 = "appliedenergistics2";
         public static final String DYNAMIC_TREES = "dynamictrees";
         public static final String HBM_NTM_STRUCTURE = "ntmdopolnenie"; //Yes, this is the modid. Idk what this means

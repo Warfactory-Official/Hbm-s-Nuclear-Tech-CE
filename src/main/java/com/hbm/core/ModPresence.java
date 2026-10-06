@@ -11,6 +11,7 @@ public final class ModPresence {
     public static final boolean CELERITAS = Launch.classLoader.getResource("org/taumc/celeritas/CeleritasVintage.class") != null;
     public static final boolean POTIONCORE = Launch.classLoader.getResource("com/tmtravlr/potioncore/PotionCore.class") != null;
     public static final boolean AE2 = Launch.classLoader.getResource("appeng/core/AppEng.class") != null;
+    public static final boolean LITEMATICA = Launch.classLoader.getResource("fi/dy/masa/litematica/Litematica.class") != null;
 
     private ModPresence() {
     }

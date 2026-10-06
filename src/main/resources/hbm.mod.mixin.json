@@ -21,7 +21,10 @@
     "celeritas.MixinWorldSlice",
     "neonium.MixinChunkBuilder",
     "neonium.MixinWorldSlice",
-    "nothirium.MixinRenderChunk"
+    "nothirium.MixinRenderChunk",
+    "litematica.MixinWorldUtils",
+    "litematica.MixinRenderChunkSchematicVbo",
+    "schematica.MixinSchematicRenderChunk"
   ],
   "mixins": [
     "potioncore.MixinPotionCoreEventHandler",

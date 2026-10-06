@@ -1,5 +1,6 @@
 package com.hbm.core;
 
+import net.minecraft.launchwrapper.Launch;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -42,6 +43,8 @@ public class ModMixinConfigPlugin implements IMixinConfigPlugin {
             case "celeritas" -> CELERITAS;
             case "potioncore" -> POTIONCORE;
             case "ae2" -> AE2;
+            case "litematica" -> LITEMATICA;
+            case "schematica" -> Launch.classLoader.getResource("com/github/lunatrius/schematica/Schematica.class") != null;
             default -> true;
         };
     }

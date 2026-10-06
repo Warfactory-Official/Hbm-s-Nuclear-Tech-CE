@@ -28,6 +28,7 @@ import com.hbm.entity.projectile.EntityAcidBomb;
 import com.hbm.entity.projectile.EntityDischarge;
 import com.hbm.handler.*;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
+import com.hbm.integration.schematica.SchematicaCompat;
 import com.hbm.items.ModItems;
 import com.hbm.items.weapon.sedna.factory.GunFactoryClient;
 import com.hbm.lib.RecoilHandler;
@@ -625,5 +626,6 @@ public class ClientProxy extends ServerProxy {
 
     public void onLoadComplete(FMLLoadCompleteEvent event) {
         if (!Loader.isModLoaded(Compat.ModIds.CTM)) NTMClientRegistry.ctmWarning = true;
+        if (Loader.isModLoaded(Compat.ModIds.SCHEMATICA)) SchematicaCompat.init();
     }
 }

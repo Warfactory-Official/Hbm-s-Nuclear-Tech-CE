@@ -63,7 +63,7 @@ public class MachineCatalyticCracker extends BlockDummyable implements ILookOver
 
     @Override
     public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
-        return new ItemStack(ModBlocks.machine_catalytic_cracker);
+        return isSchematicDummy(world, pos) ? ItemStack.EMPTY : new ItemStack(ModBlocks.machine_catalytic_cracker);
     }
 	
 	@Override

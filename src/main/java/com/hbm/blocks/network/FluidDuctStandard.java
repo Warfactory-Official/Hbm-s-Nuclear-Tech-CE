@@ -22,6 +22,7 @@ import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import com.hbm.packet.toserver.SchematicFluidPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -297,6 +298,9 @@ public class FluidDuctStandard extends FluidDuctBase implements IDynamicModels, 
 
 	@Override
 	public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
+		if (world.isRemote && world != Minecraft.getMinecraft().world && player != null && SchematicFluidPacket.hasIdentifier(player)) {
+			return new ItemStack(this, 1, state.getValue(META));
+		}
 		TileEntity tileEntity = world.getTileEntity(pos);
 		if (tileEntity instanceof TileEntityPipeBaseNT) {
 			TileEntityPipeBaseNT pipe = (TileEntityPipeBaseNT) tileEntity;

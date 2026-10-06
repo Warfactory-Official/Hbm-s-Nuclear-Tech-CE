@@ -16,6 +16,8 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.material.Mats;
 import com.hbm.lib.CapabilityContextProvider;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.network.ICachedPipeConnections;
+import com.hbm.tileentity.network.energy.TileEntityCableBaseNT;
 import com.hbm.util.Compat;
 import io.netty.buffer.ByteBuf;
 import li.cil.oc.api.machine.Arguments;
@@ -285,12 +287,28 @@ public class TileEntityProxyCombo extends TileEntityProxyBase implements IEnergy
     @Override
     public void deserializeInitial(ByteBuf buf) {
         byte flags = buf.readByte();
+        boolean connectionsChanged = power != ((flags & 2) != 0) || fluid != ((flags & 4) != 0);
         inventory   = (flags & 1)  != 0;
         power       = (flags & 2)  != 0;
         fluid       = (flags & 4)  != 0;
         conductor   = (flags & 8)  != 0;
         heat        = (flags & 16) != 0;
         moltenMetal = (flags & 32) != 0;
+        if (connectionsChanged) refreshNeighborConnections();
+    }
+
+    private void refreshNeighborConnections() {
+        if (world == null || !world.isRemote) return;
+        for (EnumFacing facing : EnumFacing.VALUES) {
+            BlockPos neighborPos = pos.offset(facing);
+            if (!world.isBlockLoaded(neighborPos)) continue;
+            TileEntity te = world.getTileEntity(neighborPos);
+            if (te instanceof ICachedPipeConnections cached) {
+                cached.invalidateConnectionCache();
+            } else if (te instanceof TileEntityCableBaseNT cable) {
+                cable.invalidateConnectionCache();
+            }
+        }
     }
 
     @Override

@@ -26,6 +26,6 @@ public abstract class MixinStateImplementation implements ISectionGeometryState 
 
     @ModifyReturnValue(method = "getRenderType", at = @At("RETURN"))
     private EnumBlockRenderType hbm$sectionedRenderType(EnumBlockRenderType original) {
-        return hbm$sectioned ? EnumBlockRenderType.INVISIBLE : original;
+        return hbm$sectioned && !ISectionGeometryState.FOREIGN_MESHER.get() ? EnumBlockRenderType.INVISIBLE : original;
     }
 }

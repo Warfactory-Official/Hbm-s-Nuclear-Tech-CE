@@ -80,13 +80,17 @@ public class TileEntityPipeBaseNT extends TileEntityLoadedBase implements IFluid
         super.onLoad();
         if (world.isRemote) {
             invalidateConnectionCache();
-            for (EnumFacing facing : EnumFacing.VALUES) {
-                BlockPos neighborPos = pos.offset(facing);
-                if (!world.isBlockLoaded(neighborPos)) continue;
-                TileEntity te = world.getTileEntity(neighborPos);
-                if (te instanceof ICachedPipeConnections cached) {
-                    cached.invalidateConnectionCache();
-                }
+            invalidateNeighborConnectionCaches();
+        }
+    }
+
+    private void invalidateNeighborConnectionCaches() {
+        for (EnumFacing facing : EnumFacing.VALUES) {
+            BlockPos neighborPos = pos.offset(facing);
+            if (!world.isBlockLoaded(neighborPos)) continue;
+            TileEntity te = world.getTileEntity(neighborPos);
+            if (te instanceof ICachedPipeConnections cached) {
+                cached.invalidateConnectionCache();
             }
         }
     }
@@ -120,6 +124,7 @@ public class TileEntityPipeBaseNT extends TileEntityLoadedBase implements IFluid
         if (this.type == type) return;
         this.type = type;
         invalidateConnectionCache();
+        if (world != null) invalidateNeighborConnectionCaches();
         this.markDirty();
 
         if (world instanceof WorldServer) {
@@ -176,8 +181,10 @@ public class TileEntityPipeBaseNT extends TileEntityLoadedBase implements IFluid
     @Override
     public void readFromNBT(NBTTagCompound nbt) {
         super.readFromNBT(nbt);
+        FluidType previous = this.type;
         this.type = Fluids.readType(nbt, "type");
         invalidateConnectionCache();
+        if (world != null && previous != this.type) invalidateNeighborConnectionCaches();
     }
 
     @Override
