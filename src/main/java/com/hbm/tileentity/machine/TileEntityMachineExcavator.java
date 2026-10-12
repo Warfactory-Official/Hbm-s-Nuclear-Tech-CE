@@ -3,6 +3,8 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.conveyor.IConveyorBelt;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluid.IFluidStandardReceiver;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.gas.BlockGasBase;
@@ -67,7 +69,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 @AutoRegister
-public class TileEntityMachineExcavator extends TileEntityMachineBase implements IEnergyReceiverMK2, IFluidStandardReceiver, ITickable, IControlReceiver, IGUIProvider, IUpgradeInfoProvider, IFluidCopiable, IConnectionAnchors {
+public class TileEntityMachineExcavator extends TileEntityMachineBase implements IEnergyReceiverMK2, IFluidStandardReceiver, ITickable, IControlReceiver, IGUIProvider, IUpgradeInfoProvider, IFluidCopiable, IConnectionAnchors, IRORValueProvider, IRORInteractive {
 
     public static final long maxPower = 10_000_000;
     private final long baseConsumption = 10_000L;
@@ -864,5 +866,32 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase implements
     @Override
     public FluidTankNTM getTankToPaste() {
         return tank;
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[] {
+                PREFIX_VALUE + "power",
+                PREFIX_VALUE + "fluid",
+                PREFIX_VALUE + "state",
+                PREFIX_FUNCTION + "setstate" + NAME_SEPARATOR + "state"
+        };
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "power").equals(name))  return "" + this.power;
+        if ((PREFIX_VALUE + "fluid").equals(name))  return "" + this.tank.getFill();
+        if ((PREFIX_VALUE + "state").equals(name))  return this.operational ? "1" : "0";
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "setstate").equalsIgnoreCase(name) && params.length == 1) {
+            this.enableDrill = params[0].equals("1");
+            this.markChanged();
+        }
+        return null;
     }
 }

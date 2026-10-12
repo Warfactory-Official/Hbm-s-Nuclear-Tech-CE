@@ -1269,53 +1269,53 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 
     @Override
     public String[] getFunctionInfo() {
-        return new String[]{PREFIX_FUNCTION + "setActive" + NAME_SEPARATOR + "active (0 or 1)", PREFIX_FUNCTION + "targetPlayers" + NAME_SEPARATOR + "enabled (0 or 1)", PREFIX_FUNCTION + "targetAnimals" + NAME_SEPARATOR + "enabled (0 or 1)", PREFIX_FUNCTION + "targetMobs" + NAME_SEPARATOR + "enabled (0 or 1)", PREFIX_FUNCTION + "targetMachines" + NAME_SEPARATOR + "enabled (0 or 1)", PREFIX_FUNCTION + "addWhitelist" + NAME_SEPARATOR + "name", PREFIX_FUNCTION + "removeWhitelist" + NAME_SEPARATOR + "name", PREFIX_FUNCTION + "addMobFilter" + NAME_SEPARATOR + "name", PREFIX_FUNCTION + "removeMobFilter" + NAME_SEPARATOR + "name", PREFIX_FUNCTION + "toggleBlacklistMobFilter" + NAME_SEPARATOR + "enabled (0 or 1)"};
+        return new String[]{PREFIX_FUNCTION + "setactive" + NAME_SEPARATOR + "active (0 or 1)", PREFIX_FUNCTION + "targetplayers" + NAME_SEPARATOR + "enabled (0 or 1)", PREFIX_FUNCTION + "targetanimals" + NAME_SEPARATOR + "enabled (0 or 1)", PREFIX_FUNCTION + "targetmobs" + NAME_SEPARATOR + "enabled (0 or 1)", PREFIX_FUNCTION + "targetmachines" + NAME_SEPARATOR + "enabled (0 or 1)", PREFIX_FUNCTION + "addwhitelist" + NAME_SEPARATOR + "name", PREFIX_FUNCTION + "removewhitelist" + NAME_SEPARATOR + "name", PREFIX_FUNCTION + "addmobfilter" + NAME_SEPARATOR + "name", PREFIX_FUNCTION + "removemobfilter" + NAME_SEPARATOR + "name", PREFIX_FUNCTION + "toggleblacklistmobfilter" + NAME_SEPARATOR + "enabled (0 or 1)"};
     }
 
     @Override
     public String runRORFunction(String name, String[] params) {
-        if ((PREFIX_FUNCTION + "setActive").equals(name) && params.length > 0) {
+        if ((PREFIX_FUNCTION + "setactive").equals(name) && params.length > 0) {
             this.isOn = IRORInteractive.parseInt(params[0], 0, 1) == 1;
             this.markChanged();
         }
-        if ((PREFIX_FUNCTION + "targetPlayers").equals(name) && params.length > 0) {
+        if ((PREFIX_FUNCTION + "targetplayers").equals(name) && params.length > 0) {
             this.targetPlayers = IRORInteractive.parseInt(params[0], 0, 1) == 1;
             this.markChanged();
         }
-        if ((PREFIX_FUNCTION + "targetAnimals").equals(name) && params.length > 0) {
+        if ((PREFIX_FUNCTION + "targetanimals").equals(name) && params.length > 0) {
             this.targetAnimals = IRORInteractive.parseInt(params[0], 0, 1) == 1;
             this.markChanged();
         }
-        if ((PREFIX_FUNCTION + "targetMobs").equals(name) && params.length > 0) {
+        if ((PREFIX_FUNCTION + "targetmobs").equals(name) && params.length > 0) {
             this.targetMobs = IRORInteractive.parseInt(params[0], 0, 1) == 1;
             this.markChanged();
         }
-        if ((PREFIX_FUNCTION + "targetMachines").equals(name) && params.length > 0) {
+        if ((PREFIX_FUNCTION + "targetmachines").equals(name) && params.length > 0) {
             this.targetMachines = IRORInteractive.parseInt(params[0], 0, 1) == 1;
             this.markChanged();
         }
-        if ((PREFIX_FUNCTION + "addWhitelist").equals(name) && params.length > 0) {
+        if ((PREFIX_FUNCTION + "addwhitelist").equals(name) && params.length > 0) {
             String playerName = params[0];
             List<String> whitelist = this.getWhitelist();
             if (!whitelist.contains(playerName)) this.addName(playerName);
             this.markChanged();
         }
-        if ((PREFIX_FUNCTION + "removeWhitelist").equals(name) && params.length > 0) {
+        if ((PREFIX_FUNCTION + "removewhitelist").equals(name) && params.length > 0) {
             String playerName = params[0];
             List<String> whitelist = this.getWhitelist();
             if (whitelist.contains(playerName)) this.removeName(whitelist.indexOf(playerName));
             this.markChanged();
         }
-        if ((PREFIX_FUNCTION + "toggleBlacklistMobFilter").equals(name) && params.length > 0) {
+        if ((PREFIX_FUNCTION + "toggleblacklistmobfilter").equals(name) && params.length > 0) {
             this.isBlacklistMobFilter = IRORInteractive.parseInt(params[0], 0, 1) == 1;
             this.markChanged();
         }
-        if ((PREFIX_FUNCTION + "addMobFilter").equals(name) && params.length > 0) {
+        if ((PREFIX_FUNCTION + "addmobfilter").equals(name) && params.length > 0) {
             String mobName = params[0];
             if (!mobFilter.contains(mobName)) mobFilter.add(mobName);
             this.markChanged();
         }
-        if ((PREFIX_FUNCTION + "removeMobFilter").equals(name) && params.length > 0) {
+        if ((PREFIX_FUNCTION + "removemobfilter").equals(name) && params.length > 0) {
             mobFilter.remove(params[0]);
             this.markChanged();
         }

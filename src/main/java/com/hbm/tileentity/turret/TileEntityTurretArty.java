@@ -1,5 +1,6 @@
 package com.hbm.tileentity.turret;
 
+import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.entity.projectile.EntityArtilleryShell;
 import com.hbm.handler.CasingEjector;
 import com.hbm.handler.threading.PacketThreading;
@@ -34,6 +35,7 @@ import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -452,6 +454,29 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery implemen
     @SideOnly(Side.CLIENT)
     public GuiScreen provideGUI(int ID, EntityPlayer player, World world, int x, int y, int z) {
         return new GUITurretArty(player.inventory, this);
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return ArrayUtils.add(super.getFunctionInfo(),
+                PREFIX_FUNCTION + "setmode" + NAME_SEPARATOR + "mode (0 artillery, 1 cannon, 2 manual)");
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        super.runRORFunction(name, params);
+
+        if ((PREFIX_FUNCTION + "setmode").equalsIgnoreCase(name) && params.length == 1) {
+            short newMode = (short) IRORInteractive.parseInt(params[0], 0, 2);
+            //like the GUI button, but only on a change so polling doesn't clear the queue
+            if (newMode != this.mode) {
+                this.mode = newMode;
+                this.tPos = null;
+                this.targetQueue.clear();
+                this.markChanged();
+            }
+        }
+        return null;
     }
 
     @Callback

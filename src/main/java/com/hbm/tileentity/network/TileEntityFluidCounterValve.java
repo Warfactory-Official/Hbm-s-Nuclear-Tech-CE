@@ -103,7 +103,7 @@ public class TileEntityFluidCounterValve extends TileEntityPipeBaseNT implements
 
     @Override
     public String[] getFunctionInfo() {
-        return new String[]{PREFIX_VALUE + "value", PREFIX_VALUE + "state", PREFIX_FUNCTION + "reset", PREFIX_FUNCTION + "setState" + NAME_SEPARATOR + "state",};
+        return new String[]{PREFIX_VALUE + "value", PREFIX_VALUE + "state", PREFIX_FUNCTION + "reset", PREFIX_FUNCTION + "setstate" + NAME_SEPARATOR + "state",};
     }
 
     @Override
@@ -112,7 +112,7 @@ public class TileEntityFluidCounterValve extends TileEntityPipeBaseNT implements
             updateCounter();
             counter = 0;
             markDirty();
-        } else if (name.equals(PREFIX_FUNCTION + "setState") && params.length > 0) {
+        } else if (name.equals(PREFIX_FUNCTION + "setstate") && params.length > 0) {
             setState(IRORInteractive.parseInt(params[0], 0, 1));
         }
         return null;

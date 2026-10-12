@@ -3,6 +3,7 @@ package com.hbm.inventory.recipes;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
+import com.hbm.blocks.ModBlocks;
 import com.hbm.config.GeneralConfig;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
@@ -13,8 +14,11 @@ import com.hbm.inventory.recipes.loader.SerializableRecipe;
 import com.hbm.items.ItemEnums.EnumCircuitType;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemFluidIcon;
+import com.hbm.main.MainRegistry;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.Optional;
 
 import java.io.IOException;
 import java.util.*;
@@ -293,6 +297,34 @@ public class SolderingRecipes extends SerializableRecipe {
       addFirstUpgrade(ModItems.upgrade_afterburn_1, ModItems.upgrade_afterburn_2);
       addSecondUpgrade(ModItems.upgrade_afterburn_2, ModItems.upgrade_afterburn_3);
     }
+
+    if (Loader.isModLoaded("opencomputers")) {
+      ItemStack chip = ocStack("chip2"); // Microchip (Tier 2)
+      ItemStack base = ocStack("card"); // Card Base
+      if (!chip.isEmpty() && !base.isEmpty()) {
+        recipes.add(
+            new SolderingRecipe(
+                new ItemStack(ModItems.rtty_card),
+                100,
+                1_000,
+                new AStack[] {
+                  new ComparableStack(ModBlocks.radio_torch_receiver),
+                  new ComparableStack(ModBlocks.radio_torch_sender),
+                  new ComparableStack(chip)
+                },
+                new AStack[] {new ComparableStack(base)},
+                new AStack[] {new OreDictStack(PB.wireFine(), 4)}));
+      } else {
+        MainRegistry.logger.warn("OpenComputers item lookup failed, RTTY card soldering recipe not added");
+      }
+    }
+  }
+
+  /** Looks up an OpenComputers item by its API name, only call this when OpenComputers is loaded */
+  @Optional.Method(modid = "opencomputers")
+  private static ItemStack ocStack(String name) {
+    li.cil.oc.api.detail.ItemInfo info = li.cil.oc.api.Items.get(name);
+    return info == null ? ItemStack.EMPTY : info.createItemStack(1);
   }
 
   public static void addFirstUpgrade(Item lower, Item higher) {

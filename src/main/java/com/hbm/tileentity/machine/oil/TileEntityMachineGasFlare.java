@@ -2,6 +2,8 @@ package com.hbm.tileentity.machine.oil;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluid.IFluidStandardReceiver;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IControlReceiver;
@@ -58,7 +60,7 @@ import java.util.List;
 public class TileEntityMachineGasFlare extends TileEntityMachineBase
         implements ITickable, IEnergyProviderMK2,
         IFluidStandardReceiver, IGUIProvider,
-        IControlReceiver, IFluidCopiable, IUpgradeInfoProvider, IConnectionAnchors {
+        IControlReceiver, IFluidCopiable, IUpgradeInfoProvider, IConnectionAnchors, IRORValueProvider, IRORInteractive {
     public static final long maxPower = 1000000;
     private final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
     public long power;
@@ -383,4 +385,40 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
 
     @Override public int getFloorCount() { return 2 * 2; }
     @Override public BlockPos getFloorPosFromIndex(int index) { return this.standardFloor3x3(index); }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[] {
+                PREFIX_VALUE + "flowstate",
+                PREFIX_VALUE + "ignitionstate",
+                PREFIX_VALUE + "output",
+                PREFIX_VALUE + "power",
+                PREFIX_VALUE + "fluid",
+                PREFIX_FUNCTION + "setflowstate" + NAME_SEPARATOR + "state",
+                PREFIX_FUNCTION + "setignitionstate" + NAME_SEPARATOR + "state"
+        };
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "flowstate").equals(name))     return this.isOn ? "1" : "0";
+        if ((PREFIX_VALUE + "ignitionstate").equals(name)) return this.doesBurn ? "1" : "0";
+        if ((PREFIX_VALUE + "output").equals(name))        return "" + this.output;
+        if ((PREFIX_VALUE + "power").equals(name))         return "" + this.power;
+        if ((PREFIX_VALUE + "fluid").equals(name))         return "" + this.tank.getFill();
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "setflowstate").equalsIgnoreCase(name) && params.length == 1) {
+            this.isOn = params[0].equals("1");
+            this.markChanged();
+        }
+        if ((PREFIX_FUNCTION + "setignitionstate").equalsIgnoreCase(name) && params.length == 1) {
+            this.doesBurn = params[0].equals("1");
+            this.markChanged();
+        }
+        return null;
+    }
 }

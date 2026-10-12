@@ -109,6 +109,9 @@ public class ModItems {
     public static final Item radar_linker = new ItemRadarLinker("radar_linker").setMaxStackSize(1).setCreativeTab(MainRegistry.consumableTab);
     public static final Item settings_tool = new ItemSettingsTool("settings_tool").setMaxStackSize(1).setCreativeTab(MainRegistry.consumableTab);
     public static final Item rtty_pager = new ItemRTTYPager("rtty_pager").setCreativeTab(MainRegistry.consumableTab);
+    public static final Item rtty_designator = new ItemRTTYDesignator("rtty_designator").setCreativeTab(MainRegistry.consumableTab);
+    //registered even without OpenComputers, the card hides itself from the creative tab then
+    public static final Item rtty_card = new ItemRTTYCard("rtty_card").setCreativeTab(MainRegistry.machineTab);
     public static final Item pollution_detector = new ItemPollutionDetector("pollution_detector").setMaxStackSize(1).setCreativeTab(MainRegistry.consumableTab);
     public static final Item ore_density_scanner = new ItemOreDensityScanner("ore_density_scanner").setMaxStackSize(1).setCreativeTab(MainRegistry.consumableTab);
     public static final Item rebar_placer = new ItemRebarPlacer("rebar_placer").setMaxStackSize(1).setCreativeTab(MainRegistry.consumableTab);

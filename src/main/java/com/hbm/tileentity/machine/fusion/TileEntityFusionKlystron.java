@@ -2,6 +2,8 @@ package com.hbm.tileentity.machine.fusion;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.handler.CompatHandler;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IControlReceiver;
@@ -47,7 +49,7 @@ import java.util.Map;
 
 @AutoRegister
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
-public class TileEntityFusionKlystron extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardReceiverMK2, IControlReceiver, IGUIProvider, IConnectionAnchors, SimpleComponent, CompatHandler.OCComponent {
+public class TileEntityFusionKlystron extends TileEntityMachineBase implements ITickable, IEnergyReceiverMK2, IFluidStandardReceiverMK2, IControlReceiver, IGUIProvider, IConnectionAnchors, SimpleComponent, CompatHandler.OCComponent, IRORValueProvider, IRORInteractive {
 
     protected KlystronNetwork.KlystronNode klystronNode;
     public static final long MAX_OUTPUT = 1_000_000;
@@ -401,5 +403,30 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase implements I
             case "getInfo": return getInfo(context, args);
         }
         throw new NoSuchMethodException();
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[] {
+                PREFIX_VALUE + "output",
+                PREFIX_VALUE + "target",
+                PREFIX_FUNCTION + "settarget" + NAME_SEPARATOR + "target"
+        };
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "output").equals(name)) return "" + this.output;
+        if ((PREFIX_VALUE + "target").equals(name))  return "" + this.outputTarget;
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "settarget").equalsIgnoreCase(name) && params.length == 1) {
+            this.outputTarget = IRORInteractive.parseInt(params[0], 0, (int) MAX_OUTPUT);
+            this.markChanged();
+        }
+        return null;
     }
 }

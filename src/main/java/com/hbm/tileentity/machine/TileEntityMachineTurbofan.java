@@ -2,6 +2,7 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluid.IFluidStandardTransceiver;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
@@ -51,7 +52,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @AutoRegister
-public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implements ITickable, IEnergyProviderMK2, IFluidStandardTransceiver, IUpgradeInfoProvider, IGUIProvider, IFluidCopiable, IFFtoNTMF, IConnectionAnchors {
+public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implements ITickable, IEnergyProviderMK2, IFluidStandardTransceiver, IUpgradeInfoProvider, IGUIProvider, IFluidCopiable, IFFtoNTMF, IConnectionAnchors, IRORValueProvider {
 
 	private AxisAlignedBB bb;
 	public long power;
@@ -517,5 +518,28 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting implem
 		HashMap<ItemMachineUpgrade.UpgradeType, Integer> upgrades = new HashMap<>();
 		upgrades.put(ItemMachineUpgrade.UpgradeType.AFTERBURN, 3);
 		return upgrades;
+	}
+
+	@Override
+	public String[] getFunctionInfo() {
+		return new String[] {
+				PREFIX_VALUE + "state",
+				PREFIX_VALUE + "output",
+				PREFIX_VALUE + "power",
+				PREFIX_VALUE + "fuel",
+				PREFIX_VALUE + "blood",
+				PREFIX_VALUE + "afterburner"
+		};
+	}
+
+	@Override
+	public String provideRORValue(String name) {
+		if((PREFIX_VALUE + "state").equals(name))		return this.wasOn ? "1" : "0";
+		if((PREFIX_VALUE + "output").equals(name))		return "" + this.output;
+		if((PREFIX_VALUE + "power").equals(name))		return "" + this.power;
+		if((PREFIX_VALUE + "fuel").equals(name))		return "" + this.tank.getFill();
+		if((PREFIX_VALUE + "blood").equals(name))		return "" + this.blood.getFill();
+		if((PREFIX_VALUE + "afterburner").equals(name))	return "" + this.afterburner;
+		return null;
 	}
 }

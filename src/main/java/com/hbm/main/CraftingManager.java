@@ -872,6 +872,10 @@ public class CraftingManager {
         addRecipeAuto(new ItemStack(ModItems.rtty_pager, 1),
                 "R", "C", "S", 'R', ModBlocks.radio_torch_receiver, 'C', DictFrame.fromOne(
                         ModItems.circuit, EnumCircuitType.BASIC), 'S', STEEL.plate());
+        addRecipeAuto(new ItemStack(ModItems.rtty_designator, 1), "R", "C", "T",
+                'R', ModBlocks.radio_torch_reader,
+                'C', DictFrame.fromOne(ModItems.circuit, EnumCircuitType.ANALOG),
+                'T', ModItems.rangefinder);
 
 		addRecipeAuto(new ItemStack(ModBlocks.deco_rbmk, 8), "R", 'R', ModBlocks.rbmk_blank );
 		addRecipeAuto(new ItemStack(ModBlocks.deco_rbmk_smooth, 1), "R", 'R', ModBlocks.deco_rbmk );

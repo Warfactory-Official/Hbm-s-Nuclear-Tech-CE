@@ -1,5 +1,7 @@
 package com.hbm.api.redstoneoverradio;
 
+import java.util.Locale;
+
 public interface IRORInteractive extends IRORInfo {
 
     String NAME_SEPARATOR = "!";
@@ -22,7 +24,7 @@ public interface IRORInteractive extends IRORInfo {
         String[] parts = input.split(NAME_SEPARATOR);
         if (parts.length <= 0 || parts.length > 2) throw new RORFunctionException(EX_NAME);
         if (parts[0].isEmpty()) throw new RORFunctionException(EX_NULL);
-        return parts[0];
+        return parts[0].toLowerCase(Locale.US);
     }
 
     /**

@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.capability.NTMEnergyCapabilityWrapper;
 import com.hbm.capability.NTMFluidHandlerWrapper;
 import com.hbm.interfaces.AutoRegister;
@@ -44,7 +45,7 @@ import java.io.IOException;
 
 @AutoRegister
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
-public class TileEntityFusionMHDT extends TileEntityLoadedBase implements ITickable, IEnergyProviderMK2, IFluidStandardTransceiverMK2, IFusionPowerReceiver, IConfigurableMachine, IConnectionAnchors, SimpleComponent, CompatHandler.OCComponent {
+public class TileEntityFusionMHDT extends TileEntityLoadedBase implements ITickable, IEnergyProviderMK2, IFluidStandardTransceiverMK2, IFusionPowerReceiver, IConfigurableMachine, IConnectionAnchors, SimpleComponent, CompatHandler.OCComponent, IRORValueProvider {
 
     protected PlasmaNetwork.PlasmaNode plasmaNode;
 
@@ -339,5 +340,18 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase implements ITicka
             case "getInfo": return getInfo(context, args);
         }
         throw new NoSuchMethodException();
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[] {
+                PREFIX_VALUE + "output"
+        };
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "output").equals(name)) return "" + this.power;
+        return null;
     }
 }

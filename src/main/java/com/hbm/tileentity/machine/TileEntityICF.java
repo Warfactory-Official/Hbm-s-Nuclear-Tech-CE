@@ -1,6 +1,7 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.fluid.IFluidStandardTransceiver;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.handler.CompatHandler;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.AutoRegister;
@@ -46,7 +47,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @AutoRegister
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
 public class TileEntityICF extends TileEntityMachineBase implements ITickable, IGUIProvider, IFluidStandardTransceiver, SimpleComponent,
-        CompatHandler.OCComponent, IFluidCopiable, IConnectionAnchors {
+        CompatHandler.OCComponent, IFluidCopiable, IConnectionAnchors, IRORValueProvider {
 
     public static final long maxHeat = 1_000_000_000_000L;
     public static final int[] io = new int[]{0, 1, 2, 3, 4, 6, 7, 8, 9, 10};
@@ -351,5 +352,26 @@ public class TileEntityICF extends TileEntityMachineBase implements ITickable, I
             case "getPelletStats" -> getPelletStats(context, args);
             default -> throw new NoSuchMethodException();
         };
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[] {
+                PREFIX_VALUE + "laser",
+                PREFIX_VALUE + "heat",
+                PREFIX_VALUE + "coldfluid",
+                PREFIX_VALUE + "hotfluid",
+                PREFIX_VALUE + "stellarflux"
+        };
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "laser").equals(name))       return "" + this.laser;
+        if ((PREFIX_VALUE + "heat").equals(name))        return "" + this.heat;
+        if ((PREFIX_VALUE + "coldfluid").equals(name))   return "" + tanks[0].getFill();
+        if ((PREFIX_VALUE + "hotfluid").equals(name))    return "" + tanks[1].getFill();
+        if ((PREFIX_VALUE + "stellarflux").equals(name)) return "" + tanks[2].getFill();
+        return null;
     }
 }

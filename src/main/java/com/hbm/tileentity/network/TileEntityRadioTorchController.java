@@ -35,10 +35,14 @@ public class TileEntityRadioTorchController extends TileEntityLoadedBase impleme
     public String channel = "";
     public String prev;
     public boolean polling = true;
+    //true while the previous tick still saw a fresh signal, a signal after a gap is a new burst
+    private boolean receiving;
+    private boolean firstTick = true;
 
     @Override
     public void update() {
         if (!world.isRemote) {
+            boolean receiving = false;
 
             if (channel != null && !channel.isEmpty()) {
                 EnumFacing dir = this.getTorchFacing().getOpposite();
@@ -59,17 +63,33 @@ public class TileEntityRadioTorchController extends TileEntityLoadedBase impleme
                             vnt.explode();
                             return;
                         }
-                        if ((this.polling && chan.timeStamp >= world.getTotalWorldTime() - 1) || !rec.equals(prev)) {
-                            try {
-                                if (!rec.isEmpty())
-                                    ror.runRORFunction(IRORInteractive.PREFIX_FUNCTION + IRORInteractive.getCommand(rec), IRORInteractive.getParams(rec));
-                            } catch (RORFunctionException _) {
+                        if (chan.timeStamp >= world.getTotalWorldTime() - 1 && chan.timeStamp != -1) {
+                            receiving = true;
+                            boolean changed = !rec.equals(prev);
+                            if (this.polling || !this.receiving || changed) {
+                                try {
+                                    if (!rec.isEmpty())
+                                        ror.runRORFunction(IRORInteractive.PREFIX_FUNCTION + IRORInteractive.getCommand(rec), IRORInteractive.getParams(rec));
+                                } catch (RORFunctionException _) {
+                                }
                             }
-                            prev = rec;
+                            if (changed) {
+                                this.prev = rec;
+                                this.markDirty();
+                            }
                         }
                     }
                 }
             }
+
+            //the broadcast queue is empty after loading, so keep the saved state for the first tick
+            if (!this.firstTick || receiving) {
+                if (this.receiving != receiving) {
+                    this.receiving = receiving;
+                    this.markDirty();
+                }
+            }
+            this.firstTick = false;
 
             networkPackNT(50);
         }
@@ -93,6 +113,7 @@ public class TileEntityRadioTorchController extends TileEntityLoadedBase impleme
         this.polling = nbt.getBoolean("polling");
         channel = nbt.getString("channel");
         this.prev = nbt.getString("prev");
+        this.receiving = nbt.hasKey("r") ? nbt.getBoolean("r") : !this.prev.isEmpty();
     }
 
     @Override
@@ -101,13 +122,24 @@ public class TileEntityRadioTorchController extends TileEntityLoadedBase impleme
         nbt.setBoolean("polling", polling);
         nbt.setString("channel", channel);
         if (prev != null) nbt.setString("prev", prev);
+        nbt.setBoolean("r", receiving);
         return nbt;
+    }
+
+    //a new channel starts with a clean burst state
+    private void setChannelName(String channel) {
+        if (!channel.equals(this.channel)) {
+            this.channel = channel;
+            this.prev = null;
+            this.receiving = false;
+            this.markDirty();
+        }
     }
 
     @Override
     public void receiveControl(EntityPlayerMP player, NBTTagCompound data) {
         if (data.hasKey("polling")) this.polling = data.getBoolean("polling");
-        if (data.hasKey("channel")) channel = data.getString("channel");
+        if (data.hasKey("channel")) this.setChannelName(data.getString("channel"));
 
         this.markDirty();
     }
@@ -139,8 +171,7 @@ public class TileEntityRadioTorchController extends TileEntityLoadedBase impleme
     @Callback(direct = true, limit = 4, doc = "function(channel: string) -- Set the channel the torch is broadcasting to")
     @Optional.Method(modid = "opencomputers")
     public Object[] setChannel(Context context, Arguments args) {
-        this.channel = args.checkString(0);
-        this.markDirty();
+        this.setChannelName(args.checkString(0));
         return new Object[] {};
     }
 

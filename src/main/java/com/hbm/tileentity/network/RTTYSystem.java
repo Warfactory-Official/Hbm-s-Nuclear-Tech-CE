@@ -132,7 +132,7 @@ public class RTTYSystem {
 		TEST_SENDER_MELODY[tempo * 48] = NoteBuilder.start().add(accordion, Note.C, Octave.LOW).add(flute, Note.D, Octave.LOW).end();
 		TEST_SENDER_MELODY[tempo * 50] = NoteBuilder.start().add(flute, Note.F, Octave.LOW).end();
 		TEST_SENDER_MELODY[tempo * 52] = NoteBuilder.start().add(accordion, Note.D, Octave.LOW).add(accordion, Note.F, Octave.LOW).add(accordion, Note.A, Octave.LOW).add(flute, Note.D, Octave.MID).end();
-		TEST_SENDER_MELODY[tempo * 54] = NoteBuilder.start().add(accordion, Note.D, Octave.LOW).add(accordion, Note.F, Octave.LOW).add(accordion, Note.A, Octave.LOW);
+		TEST_SENDER_MELODY[tempo * 54] = NoteBuilder.start().add(accordion, Note.D, Octave.LOW).add(accordion, Note.F, Octave.LOW).add(accordion, Note.A, Octave.LOW).end();
 
 		TEST_SENDER_MELODY[tempo * 56] = NoteBuilder.start().add(accordion, Note.C, Octave.LOW).add(flute, Note.D, Octave.LOW).end();
 		TEST_SENDER_MELODY[tempo * 58] = NoteBuilder.start().add(flute, Note.F, Octave.LOW).end();

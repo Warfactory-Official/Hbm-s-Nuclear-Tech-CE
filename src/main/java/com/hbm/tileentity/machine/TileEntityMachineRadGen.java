@@ -1,6 +1,7 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.capability.NTMEnergyCapabilityWrapper;
 import com.hbm.interfaces.AutoRegister;
@@ -37,7 +38,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 
 @AutoRegister
-public class TileEntityMachineRadGen extends TileEntityMachineBase implements ITickable, IEnergyProviderMK2, IGUIProvider {
+public class TileEntityMachineRadGen extends TileEntityMachineBase implements ITickable, IEnergyProviderMK2, IGUIProvider, IRORValueProvider {
 
 	private AxisAlignedBB bb;
 	public int[] progress = new int[12];
@@ -331,5 +332,31 @@ public class TileEntityMachineRadGen extends TileEntityMachineBase implements IT
 			);
 		}
 		return super.getCapability(capability, facing);
+	}
+
+	@Override
+	public String[] getFunctionInfo() {
+		String[] info = new String[3 + 12 * 2];
+		info[0] = PREFIX_VALUE + "state";
+		info[1] = PREFIX_VALUE + "power";
+		info[2] = PREFIX_VALUE + "output";
+		for(int i = 0; i < 12; i++) {
+			info[3 + i] = PREFIX_VALUE + "output" + (i + 1);
+			info[15 + i] = PREFIX_VALUE + "progress" + (i + 1);
+		}
+		return info;
+	}
+
+	@Override
+	public String provideRORValue(String name) {
+		if((PREFIX_VALUE + "state").equals(name))	return this.isOn ? "1" : "0";
+		if((PREFIX_VALUE + "power").equals(name))	return "" + this.power;
+		if((PREFIX_VALUE + "output").equals(name))	return "" + this.output;
+
+		for(int i = 0; i < 12; i++) {
+			if((PREFIX_VALUE + "output" + (i + 1)).equals(name))	return "" + this.production[i];
+			if((PREFIX_VALUE + "progress" + (i + 1)).equals(name))	return "" + (this.progress[i] * 100 / Math.max(this.maxProgress[i], 1));
+		}
+		return null;
 	}
 }

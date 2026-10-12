@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.fusion;
 
+import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.handler.CompatHandler;
 import com.hbm.interfaces.AutoRegister;
@@ -55,7 +56,7 @@ import java.util.Map;
 
 @AutoRegister
 @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "opencomputers")})
-public class TileEntityFusionTorus extends TileEntityCooledBase implements ITickable, IGUIProvider, IControlReceiver, IRORValueProvider, SimpleComponent, CompatHandler.OCComponent {
+public class TileEntityFusionTorus extends TileEntityCooledBase implements ITickable, IGUIProvider, IControlReceiver, IRORValueProvider, IRORInteractive, SimpleComponent, CompatHandler.OCComponent {
 
     public boolean didProcess = false;
 
@@ -497,7 +498,12 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements ITick
     public String[] getFunctionInfo() {
         return new String[] {
                 PREFIX_VALUE + "plasma",
-                PREFIX_VALUE + "consumption"
+                PREFIX_VALUE + "consumption",
+                PREFIX_VALUE + "progress",
+                PREFIX_VALUE + "recipe",
+                PREFIX_VALUE + "active",
+                PREFIX_VALUE + "temp",
+                PREFIX_FUNCTION + "setrecipe" + NAME_SEPARATOR + "name"
         };
     }
 
@@ -505,6 +511,19 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements ITick
     public String provideRORValue(String name) {
         if ((PREFIX_VALUE + "plasma").equals(name))      return "" + this.plasmaEnergy;
         if ((PREFIX_VALUE + "consumption").equals(name)) return "" + (int) (this.fuelConsumption * 100);
+        if ((PREFIX_VALUE + "progress").equals(name))    return "" + (int) Math.round(this.fusionModule.progress * 100);
+        if ((PREFIX_VALUE + "recipe").equals(name))      return this.fusionModule.getRecipeName();
+        if ((PREFIX_VALUE + "active").equals(name))      return "" + (this.didProcess ? 1 : 0);
+        if ((PREFIX_VALUE + "temp").equals(name))        return "" + (int) this.temperature;
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "setrecipe").equalsIgnoreCase(name) && params.length == 1) {
+            this.fusionModule.setRecipe(params[0], false);
+            this.markChanged();
+        }
         return null;
     }
 
