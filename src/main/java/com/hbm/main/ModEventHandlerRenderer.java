@@ -4,6 +4,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ICustomBlockHighlight;
 import com.hbm.config.RadiationConfig;
+import com.hbm.config.WorldConfig;
 import com.hbm.handler.pollution.PollutionHandler.PollutionType;
 import com.hbm.items.ModItems;
 import com.hbm.items.armor.IArmorDisableModel;
@@ -254,23 +255,25 @@ public class ModEventHandlerRenderer {
 
 		return fogRGBMultiplier;
 	}
-	
+
 	/** Returns the current biome's fog color adjusted for brightness if in a crater, or the world's cached fog color if not */
 	public static Vec3NT getBiomeFogColors(World world, Biome biome, float r, float g, float b, BlockPos pos, double partialTicks) {
-		
-		if(biome instanceof BiomeGenCraterBase) {
-			int color = biome.getSkyColorByTemp(biome.getTemperature(pos));
-			r = ((color & 0xff0000) >> 16) / 255F;
-			g = ((color & 0x00ff00) >> 8) / 255F;
-			b = (color & 0x0000ff) / 255F;
-			
-			float celestialAngle = world.getCelestialAngle((float) partialTicks);
-			float skyBrightness = MathHelper.clamp(MathHelper.cos(celestialAngle * (float) Math.PI * 2.0F) * 2.0F + 0.5F, 0F, 1F);
-			r *= skyBrightness;
-			g *= skyBrightness;
-			b *= skyBrightness;
-			
-			doesBiomeApply = true;
+
+		if (WorldConfig.enableCraterBiomes) {
+			if(biome instanceof BiomeGenCraterBase) {
+				int color = biome.getSkyColorByTemp(biome.getTemperature(pos));
+				r = ((color & 0xff0000) >> 16) / 255F;
+				g = ((color & 0x00ff00) >> 8) / 255F;
+				b = (color & 0x0000ff) / 255F;
+
+				float celestialAngle = world.getCelestialAngle((float) partialTicks);
+				float skyBrightness = MathHelper.clamp(MathHelper.cos(celestialAngle * (float) Math.PI * 2.0F) * 2.0F + 0.5F, 0F, 1F);
+				r *= skyBrightness;
+				g *= skyBrightness;
+				b *= skyBrightness;
+
+				doesBiomeApply = true;
+			}
 		}
 		
 		return new Vec3NT(r, g, b);

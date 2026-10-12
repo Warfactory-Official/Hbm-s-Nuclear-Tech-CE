@@ -83,11 +83,13 @@ public class AdvancementManager {
 
     private static Advancement load(net.minecraft.advancements.AdvancementManager adv, String path) {
         ResourceLocation id = new ResourceLocation(Tags.MODID, path);
-        return Objects.requireNonNull(adv.getAdvancement(id), "Missing advancement: " + id);
+        Advancement a = adv.getAdvancement(id);
+        if(a==null) MainRegistry.logger.log(Level.WARN,"Missing advancement: "+id+" - skipping");
+        return a;
     }
 
     public static void init(MinecraftServer serv) {
-        if (!GeneralConfig.enableAdvancements) return;
+        if (!GeneralConfig.enableAdvancements) return; // Probably, this line will be outdated.
         net.minecraft.advancements.AdvancementManager adv = serv.getAdvancementManager();
 
         achSacrifice  = load(adv, "achsacrifice");
@@ -170,7 +172,7 @@ public class AdvancementManager {
     }
 
     public static void grantAchievement(EntityPlayerMP player, Advancement a) {
-        if (!GeneralConfig.enableAdvancements) return;
+        if (!GeneralConfig.enableAdvancements || a == null) return;
         Objects.requireNonNull(a, "Failed to grant null advancement! This should never happen.");
         for (String s : player.getAdvancements().getProgress(a).getRemaningCriteria()) {
             player.getAdvancements().grantCriterion(a, s);
@@ -189,6 +191,7 @@ public class AdvancementManager {
      * @apiNote Call sites shall test with {@link GeneralConfig#enableAdvancements} first
      */
     public static boolean hasAdvancement(EntityPlayerMP playerMP, Advancement a) {
+        if( a== null) return false;
         Objects.requireNonNull(a, "Failed to test null advancement! This should never happen.");
         return playerMP.getAdvancements().getProgress(a).isDone();
     }
