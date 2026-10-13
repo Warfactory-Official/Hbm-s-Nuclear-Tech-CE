@@ -6,6 +6,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockBush;
 import net.minecraft.block.BlockLeaves;
 import net.minecraft.block.BlockVine;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -91,8 +93,12 @@ public class ImpactWorldHandler {
 	/// Burn the world.
 	public static void burn(World world, BlockPos pos) {
 
-		Block b = world.getBlockState(pos).getBlock();
-		if(b.isFlammable(world, pos, EnumFacing.UP) && world.isAirBlock(pos.up()) && world.getLightFor(EnumSkyBlock.SKY, pos.up()) >= 7) {
+		IBlockState state = world.getBlockState(pos);
+        Block b = state.getBlock();
+		if (state.getMaterial() == Material.WATER
+                && world.getLightFor(EnumSkyBlock.SKY, pos.up()) >= 7) {
+            world.setBlockState(pos, Blocks.AIR.getDefaultState(), 2);
+        } else if(b.isFlammable(world, pos, EnumFacing.UP) && world.isAirBlock(pos.up()) && world.getLightFor(EnumSkyBlock.SKY, pos.up()) >= 7) {
 			if(b instanceof BlockLeaves || b instanceof BlockBush) {
 				world.setBlockToAir(pos);
 			}

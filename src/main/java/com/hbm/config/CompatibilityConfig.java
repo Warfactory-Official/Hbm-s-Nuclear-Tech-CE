@@ -43,6 +43,9 @@ public class CompatibilityConfig {
 	public static HashMap<Integer, Integer> copperClusterSpawn;
 
 	public static HashMap<Integer, Integer> malachiteSpawn;
+	public static HashMap<Integer, Integer> hematiteSpawn;
+	public static HashMap<Integer, Integer> bauxiteSpawn;
+	public static HashMap<Integer, Integer> limestoneSpawn;
 
 	public static HashMap<Integer, Integer> reiiumSpawn;
 	public static HashMap<Integer, Integer> weidaniumSpawn;
@@ -218,6 +221,9 @@ public class CompatibilityConfig {
 		copperClusterSpawn = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_ORES, "01.24_copperClusterSpawn", "Amount of copper cluster veins per chunk - <dimID:amount> (Int:Int)", Integer.class, Integer.class, new String[]{ "0:3", "-6:3" }, ":");
 		
 		malachiteSpawn = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_ORES, "01.24_malachiteSpawn", "Malachite layer dimensions: missing or nonpositive disables, positive enables normal density - <dimID:value> (Int:Int)", Integer.class, Integer.class, new String[]{ "0:1" }, ":");
+		hematiteSpawn = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_ORES, "01.25_hematiteSpawn", "Hematite layer dimensions: missing or nonpositive disables, positive enables normal density - <dimID:value> (Int:Int)", Integer.class, Integer.class, new String[]{ "0:1" }, ":");
+		bauxiteSpawn = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_ORES, "01.26_bauxiteSpawn", "Bauxite layer dimensions: missing or nonpositive disables, positive enables normal density - <dimID:value> (Int:Int)", Integer.class, Integer.class, new String[]{ "0:1" }, ":");
+		limestoneSpawn = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_ORES, "01.27_limestoneSpawn", "Multiplier of the global limestone vein count in each dimension; missing or nonpositive disables - <dimID:multiplier> (Int:Int)", Integer.class, Integer.class, new String[]{ "0:1" }, ":");
 		
 		reiiumSpawn = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_ORES, "01.25_reiiumSpawnRate", "Amount of reiium ore veins per chunk - <dimID:amount> (Int:Int)", Integer.class, Integer.class, new String[]{ "-29:1" }, ":");
 		weidaniumSpawn = CommonConfig.createConfigHashMap(config, CommonConfig.CATEGORY_ORES, "01.26_weidaniumSpawnRate", "Amount of weidanium ore veins per chunk - <dimID:amount> (Int:Int)", Integer.class, Integer.class, new String[]{ "-31:1" }, ":");

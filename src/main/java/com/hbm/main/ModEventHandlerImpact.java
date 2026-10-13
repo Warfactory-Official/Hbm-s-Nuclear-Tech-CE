@@ -75,7 +75,7 @@ public class ModEventHandlerImpact {
 					EntityLivingBase entity = (EntityLivingBase) e;
 
 					if(entity.world.provider.getDimension() == 0 && data.fire > 0 && data.dust < 0.75f &&
-							event.world.getLightFor(EnumSkyBlock.SKY, new BlockPos((int) entity.posX, (int) entity.posY, (int) entity.posZ)) > 7) {
+							event.world.getLightFor(EnumSkyBlock.SKY, entity.getPosition()) > 7) {
 
 						entity.setFire(5);
 						entity.attackEntityFrom(DamageSource.ON_FIRE, 2);
@@ -276,15 +276,15 @@ public class ModEventHandlerImpact {
 								if(data.dust > 0.25 || data.fire > 0) {
 									if(storage.get(x, y, z) == Blocks.GRASS.getDefaultState()) {
 										storage.set(x, y, z, ModBlocks.impact_dirt.getDefaultState());
-									} else if(storage.get(x, y, z) instanceof BlockLog) {
+									} else if(storage.get(x, y, z).getBlock() instanceof BlockLog) {
 										storage.set(x, y, z, Blocks.AIR.getDefaultState());
-									} else if(storage.get(x, y, z) instanceof BlockLeaves) {
+									} else if(storage.get(x, y, z).getBlock() instanceof BlockLeaves) {
 										storage.set(x, y, z, Blocks.AIR.getDefaultState());
 									} else if(storage.get(x, y, z).getMaterial() == Material.LEAVES) {
 										storage.set(x, y, z, Blocks.AIR.getDefaultState());
 									} else if(storage.get(x, y, z).getMaterial() == Material.PLANTS) {
 										storage.set(x, y, z, Blocks.AIR.getDefaultState());
-									} else if(storage.get(x, y, z) instanceof BlockBush) {
+									} else if(storage.get(x, y, z).getBlock() instanceof BlockBush) {
 										storage.set(x, y, z, Blocks.AIR.getDefaultState());
 									}
 								}

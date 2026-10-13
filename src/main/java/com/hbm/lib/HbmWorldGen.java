@@ -37,11 +37,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraftforge.fml.common.IWorldGenerator;
+import net.minecraftforge.event.terraingen.TerrainGen;
+import net.minecraftforge.event.terraingen.DecorateBiomeEvent.Decorate.EventType;
 
 import java.util.Random;
 
@@ -82,27 +85,31 @@ public class HbmWorldGen implements IWorldGenerator {
         int z = chunkMinZ + rand.nextInt(16);
 
         if (!TomSaveData.forWorld(world).impact) {
-            if (rand.nextInt(16) == 0) {
+            ChunkPos chunk = new ChunkPos(chunkMinX >> 4, chunkMinZ >> 4);
+            BlockPos origin = new BlockPos(chunkMinX, 0, chunkMinZ);
+            boolean flowers = TerrainGen.decorate(world, rand, chunk, origin, EventType.FLOWERS);
+            boolean reeds = TerrainGen.decorate(world, rand, chunk, origin, EventType.REED);
+            if (rand.nextInt(16) == 0 && flowers) {
                 NTMFlowers.INSTANCE_FOXGLOVE.generate(world, rand, new BlockPos(x, 0, z));
             }
 
-            if (rand.nextInt(8) == 0) {
+            if (rand.nextInt(8) == 0 && flowers) {
                 NTMFlowers.INSTANCE_NIGHTSHADE.generate(world, rand, new BlockPos(x, 0, z));
             }
 
-            if (rand.nextInt(8) == 0) {
+            if (rand.nextInt(8) == 0 && flowers) {
                 NTMFlowers.INSTANCE_TOBACCO.generate(world, rand, new BlockPos(x, 0, z));
             }
 
-            if (rand.nextInt(64) == 0) {
+            if (rand.nextInt(64) == 0 && flowers) {
                 NTMFlowers.INSTANCE_HEMP.generate(world, rand, new BlockPos(x, 0, z));
             }
 
-			if (rand.nextInt(4) == 0) {
+			if (rand.nextInt(4) == 0 && reeds) {
                 PlantReeds.RIVER.generate(world, rand, new BlockPos(x, 0, z));
 			}
 
-			if (rand.nextInt(8) == 0) {
+			if (rand.nextInt(8) == 0 && reeds) {
                 PlantReeds.BEACH.generate(world, rand, new BlockPos(x, 0, z));
 			}
         }
@@ -198,7 +205,7 @@ public class HbmWorldGen implements IWorldGenerator {
         DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.aluminiumClusterSpawn.get(dimID)), 6, 15, 35, ModBlocks.cluster_aluminium);
         DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, parseInt(CompatibilityConfig.copperClusterSpawn.get(dimID)), 6, 15, 20, ModBlocks.cluster_copper);
 
-        DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, WorldConfig.limestoneSpawn, 6, 15, 20, ModBlocks.stone_resource.getDefaultState().withProperty(BlockResourceStone.META, BlockEnums.EnumStoneType.LIMESTONE.ordinal()));
+        DungeonToolbox.generateOre(world, rand, chunkMinX, chunkMinZ, WorldConfig.limestoneSpawn * parseInt(CompatibilityConfig.limestoneSpawn.get(dimID)), 6, 15, 20, ModBlocks.stone_resource.getDefaultState().withProperty(BlockResourceStone.META, BlockEnums.EnumStoneType.LIMESTONE.ordinal()));
 
         if (WorldConfig.newBedrockOres) {
             if (rand.nextInt(10) == 0) {

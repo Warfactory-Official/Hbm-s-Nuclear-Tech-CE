@@ -2556,7 +2556,6 @@ public class Satellite extends AbstractPhasedStructure {
 	public boolean generate_r03_last(LegacyBuilder world, Random rand, int x, int y, int z, MutableBlockPos pos)
 	{
 
-		world.setBlockState(pos.setPos(x + 19, y + 3, z + 9), Blocks.TORCH.getDefaultState().withProperty(BlockTorch.FACING, EnumFacing.NORTH), 3);
 		world.setBlockState(pos.setPos(x + 6, y + 10, z + 17), Blocks.TORCH.getDefaultState().withProperty(BlockTorch.FACING, EnumFacing.WEST), 3);
 		world.setBlockState(pos.setPos(x + 9, y + 15, z + 19), Blocks.TORCH.getDefaultState().withProperty(BlockTorch.FACING, EnumFacing.SOUTH), 3);
 		world.setBlockState(pos.setPos(x + 17, y + 15, z + 19), Blocks.TORCH.getDefaultState().withProperty(BlockTorch.FACING, EnumFacing.SOUTH), 3);

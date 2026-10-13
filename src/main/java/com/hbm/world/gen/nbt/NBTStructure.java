@@ -84,6 +84,8 @@ public class NBTStructure {
         put(Tags.MODID + ":rail_narrow", "minecraft:rail");
         put(Tags.MODID + ":tile.hev_battery", Tags.MODID + ":hev_battery_block");
         put(Tags.MODID + ":hev_battery", Tags.MODID + ":hev_battery_block");
+        put(Tags.MODID + ":barrel_iron", Tags.MODID + ":barrel_steel");
+        put(Tags.MODID + ":#undef", Tags.MODID + ":undef");
     }};
     private static final String[] LEGACY_BRICK_SLABS = {
             Tags.MODID + ":reinforced_stone_slab",
@@ -941,7 +943,7 @@ public class NBTStructure {
             }
         }
 
-        return Blocks.AIR;
+        throw new IllegalArgumentException("Unknown structure block: " + name);
     }
 
     private static @Nullable LegacyBlockDefinition remapLegacyBlockDefinition(String name, int meta) {
@@ -1210,6 +1212,16 @@ public class NBTStructure {
 		@Override
 		public boolean addComponentParts(World world, Random rand, StructureBoundingBox box) {
 			if (piece == null) return false;
+            if (com.hbm.world.gen.component.Component.overlapsVillage(world, boundingBox)) return false;
+
+            if (piece.conformToTerrain) {
+                for (int z = Math.max(box.minZ, boundingBox.minZ); z <= Math.min(box.maxZ, boundingBox.maxZ); z++) {
+                    for (int x = Math.max(box.minX, boundingBox.minX); x <= Math.min(box.maxX, boundingBox.maxX); x++) {
+                        BlockPos surface = world.getTopSolidOrLiquidBlock(new BlockPos(x, 0, z));
+                        if (world.getBlockState(surface).getMaterial().isLiquid()) return false;
+                    }
+                }
+            }
 
 			// now we're in the world, update minY/maxY
 			if (!piece.conformToTerrain && !heightUpdated) {
@@ -1265,8 +1277,8 @@ public class NBTStructure {
 			int total = 0;
 			int iterations = 0;
 
-			for (int z = box.minZ; z <= box.maxZ; z++) {
-				for (int x = box.minX; x <= box.maxX; x++) {
+			for (int z = Math.max(box.minZ, boundingBox.minZ); z <= Math.min(box.maxZ, boundingBox.maxZ); z++) {
+				for (int x = Math.max(box.minX, boundingBox.minX); x <= Math.min(box.maxX, boundingBox.maxX); x++) {
 					total += world.getTopSolidOrLiquidBlock(new BlockPos(x, 0, z)).getY();
 					iterations++;
 				}
@@ -1323,6 +1335,12 @@ public class NBTStructure {
 		public String name;
 
 		public Start() {}
+
+        @Override
+        public void generateStructure(World world, Random rand, StructureBoundingBox bounds) {
+            super.generateStructure(world, rand, bounds);
+            updateBoundingBox();
+        }
 
 		public Start(World world, Random rand, SpawnCondition spawn, int chunkX, int chunkZ) {
 			super(chunkX, chunkZ);

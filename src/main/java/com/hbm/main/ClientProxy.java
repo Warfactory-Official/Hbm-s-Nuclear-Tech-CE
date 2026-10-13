@@ -526,17 +526,17 @@ public class ClientProxy extends ServerProxy {
 
     @Override
     public float getImpactDust(World world) {
-        return ImpactWorldHandler.getDustForClient(world);
+        return world.isRemote ? ImpactWorldHandler.getDustForClient(world) : super.getImpactDust(world);
     }
 
     @Override
     public float getImpactFire(World world) {
-        return ImpactWorldHandler.getFireForClient(world);
+        return world.isRemote ? ImpactWorldHandler.getFireForClient(world) : super.getImpactFire(world);
     }
 
     @Override
     public boolean getImpact(World world) {
-        return ImpactWorldHandler.getImpactForClient(world);
+        return world.isRemote ? ImpactWorldHandler.getImpactForClient(world) : super.getImpact(world);
     }
 
     @Override

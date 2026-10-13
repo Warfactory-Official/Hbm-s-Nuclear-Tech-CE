@@ -18,6 +18,7 @@ import com.hbm.items.machine.IItemFluidIdentifier;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.saveddata.TomSaveData;
 import com.hbm.tileentity.*;
 import com.hbm.uninos.UniNodespace;
 import io.netty.buffer.ByteBuf;
@@ -40,6 +41,7 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.EnumSkyBlock;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
@@ -330,6 +332,11 @@ public class TileEntityBarrel extends TileEntityMachineBase implements ITickable
 
     public void checkFluidInteraction() {
         Block b = this.getBlockType();
+
+        if (tankNew.getTankType() == Fluids.WATER && TomSaveData.forWorld(world).fire > 1e-5
+                && world.getLightFor(EnumSkyBlock.SKY, pos) > 7) {
+            world.newExplosion(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 5, true, true);
+        }
 
         //for when you fill antimatter into a matter tank
         if (b != ModBlocks.barrel_antimatter && tankNew.getTankType().isAntimatter()) {

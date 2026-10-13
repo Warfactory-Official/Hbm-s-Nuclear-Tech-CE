@@ -29,6 +29,7 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraft.world.gen.structure.StructureComponent;
+import net.minecraft.world.gen.structure.MapGenStructureData;
 import net.minecraft.world.gen.structure.template.TemplateManager;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -86,6 +87,7 @@ abstract public class Component extends StructureComponent {
 	}
 
 	protected boolean setAverageHeight(World world, StructureBoundingBox box, int y) {
+		if (overlapsVillage(world, this.boundingBox)) return false;
 
 		int total = 0;
 		int iterations = 0;
@@ -93,7 +95,9 @@ abstract public class Component extends StructureComponent {
 		for(int z = this.boundingBox.minZ; z <= this.boundingBox.maxZ; z++) {
 			for(int x = this.boundingBox.minX; x <= this.boundingBox.maxX; x++) {
 				if(box.isVecInside(new Vec3i(x, y, z))) {
-					total += Math.max(world.getTopSolidOrLiquidBlock(new BlockPos(x, y, z)).getY(), world.provider.getAverageGroundLevel());
+					BlockPos surface = world.getTopSolidOrLiquidBlock(new BlockPos(x, y, z));
+					if (world.getBlockState(surface).getMaterial().isLiquid()) return false;
+					total += Math.max(surface.getY(), world.provider.getAverageGroundLevel());
 					iterations++;
 				}
 			}
@@ -106,6 +110,21 @@ abstract public class Component extends StructureComponent {
 		this.boundingBox.offset(0, this.hpos - this.boundingBox.minY, 0);
 		return true;
 	}
+
+    public static boolean overlapsVillage(World world, StructureBoundingBox bounds) {
+        MapGenStructureData villages = (MapGenStructureData) world.getPerWorldStorage().getOrLoadData(MapGenStructureData.class, "Village");
+        if (villages == null) return false;
+        NBTTagCompound starts = villages.getTagCompound();
+        for (String key : starts.getKeySet()) {
+            NBTTagCompound start = starts.getCompoundTag(key);
+            if (!start.getBoolean("Valid")) continue;
+            int[] village = start.getIntArray("BB");
+            // Village height is adjusted during population; its horizontal footprint is already final.
+            if (bounds.minX <= village[3] + 1 && bounds.maxX >= village[0] - 1
+                    && bounds.minZ <= village[5] + 1 && bounds.maxZ >= village[2] - 1) return true;
+        }
+        return false;
+    }
 
 	protected static int getAverageHeight(World world, StructureBoundingBox area, StructureBoundingBox box, int y) {
 

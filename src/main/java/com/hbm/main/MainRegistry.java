@@ -350,9 +350,9 @@ public class MainRegistry {
         if (WorldConfig.enableAsbestosCave)
             new OreCave(ModBlocks.stone_resource, 1).setDimensionGate(dim -> CompatibilityConfig.asbestosSpawn.getOrDefault(dim, 0) > 0).setThreshold(1.75D).setRangeMult(20).setYLevel(25).setMaxRange(20);                                            //asbestos
         if (WorldConfig.enableHematite)
-            new OreLayer3D(ModBlocks.stone_resource, BlockEnums.EnumStoneType.HEMATITE.ordinal()).setScaleH(0.04D).setScaleV(0.25D).setThreshold(230);
+            new OreLayer3D(ModBlocks.stone_resource, BlockEnums.EnumStoneType.HEMATITE.ordinal()).setDimensionGate(dim -> CompatibilityConfig.hematiteSpawn.getOrDefault(dim, 0) > 0).setScaleH(0.04D).setScaleV(0.25D).setThreshold(230);
         if (WorldConfig.enableBauxite)
-            new OreLayer3D(ModBlocks.stone_resource, BlockEnums.EnumStoneType.BAUXITE.ordinal()).setScaleH(0.03D).setScaleV(0.15D).setThreshold(300);
+            new OreLayer3D(ModBlocks.stone_resource, BlockEnums.EnumStoneType.BAUXITE.ordinal()).setDimensionGate(dim -> CompatibilityConfig.bauxiteSpawn.getOrDefault(dim, 0) > 0).setScaleH(0.03D).setScaleV(0.15D).setThreshold(300);
         if (WorldConfig.enableMalachite)
             new OreLayer3D(ModBlocks.stone_resource, BlockEnums.EnumStoneType.MALACHITE.ordinal()).setDimensionGate(dim -> CompatibilityConfig.malachiteSpawn.getOrDefault(dim, 0) > 0).setScaleH(0.1D).setScaleV(0.15D).setThreshold(275);
 

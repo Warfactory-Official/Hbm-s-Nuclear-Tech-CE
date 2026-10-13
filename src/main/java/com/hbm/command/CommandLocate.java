@@ -40,7 +40,7 @@ public class CommandLocate extends CommandBase {
         if(!(sender instanceof EntityPlayer))
             throw new PlayerNotFoundException("");
 
-        if(args.length == 0)
+        if(args.length != 2)
             throw new WrongUsageException(getUsage(sender));
 
         if(args[0].equals("structure")) {
@@ -55,8 +55,8 @@ public class CommandLocate extends CommandBase {
                 return;
             }
 
-            int chunkX = MathHelper.floor(player.posX) / 16;
-            int chunkZ = MathHelper.floor(player.posZ) / 16;
+            int chunkX = MathHelper.floor(player.posX) >> 4;
+            int chunkZ = MathHelper.floor(player.posZ) >> 4;
 
             ChunkPos pos = getNearestLocationTo(structure, player.world, chunkX, chunkZ);
 
