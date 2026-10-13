@@ -58,8 +58,8 @@ public class RenderIGenerator extends TileEntitySpecialRenderer<TileEntityMachin
 	public ItemRenderBase getRenderer(Item item) {
 		return new ItemRenderBase() {
 			public void renderInventory() {
-				GlStateManager.translate(0, -4, 0);
-				GlStateManager.scale(3, 3, 3);
+				GlStateManager.translate(0, -0.25, 0);
+				GlStateManager.scale(13.5, 13.5, 13.5);
 			}
 
 			public void renderCommon() {

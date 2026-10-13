@@ -284,8 +284,8 @@ public class RenderLPW2 extends TileEntitySpecialRenderer<TileEntityMachineLPW2>
 	public ItemRenderBase getRenderer(Item item) {
 		return new ItemRenderBase() {
 			public void renderInventory() {
-				GlStateManager.translate(0, -4, 0);
-				GlStateManager.scale(3, 3, 3);
+				GlStateManager.translate(0, 0.25, 0);
+				GlStateManager.scale(18, 18, 18);
 			}
 
 			public void renderCommon() {
