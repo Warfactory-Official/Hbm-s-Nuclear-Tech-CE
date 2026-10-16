@@ -171,7 +171,7 @@ public class TileEntityMachineSatLink extends TileEntityTickingBase implements I
 	public String runRORFunction(String name, String[] params) {
 
 		if(name.equals(PREFIX_FUNCTION + "setfreq") && params.length == 1) {
-			this.freq = IRORInteractive.parseInt(params[0], 0, 100_000);
+			this.freq = IRORInteractive.parseInt(params[0], 0, TileEntityMachineSatLinker.SAT_ID_RANGE - 1);
 			this.markChanged();
 		}
 

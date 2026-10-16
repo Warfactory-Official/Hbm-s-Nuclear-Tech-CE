@@ -488,7 +488,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
     /**
      * Reads the namelist from the AI chip in slot 0
      *
-     * @return null if there is either no chip to be found or if the name list is empty, otherwise it just reads the strings from the chip's NBT
+     * @return null if there is no chip to be found, an empty list if the chip has no names, otherwise it just reads the strings from the chip's NBT
      */
     public List<String> getWhitelist() {
 
@@ -498,7 +498,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
 
             String[] array = ItemTurretBiometry.getNames(inventory.getStackInSlot(0));
 
-            if (array == null) return null;
+            if (array == null) return new ArrayList<>();
 
             return cachedWhitelist = new ArrayList<>(Arrays.asList(array));
         }
@@ -1155,7 +1155,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
     @Optional.Method(modid = "opencomputers")
     public Object[] removeWhitelist(Context context, Arguments args) {
         List<String> names = this.getWhitelist();
-        if (!names.contains(args.checkString(0))) return new Object[]{false};
+        if (names == null || !names.contains(args.checkString(0))) return new Object[]{false};
         this.removeName(names.indexOf(args.checkString(0)));
         return new Object[]{true};
     }
@@ -1297,13 +1297,13 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
         if ((PREFIX_FUNCTION + "addWhitelist").equals(name) && params.length > 0) {
             String playerName = params[0];
             List<String> whitelist = this.getWhitelist();
-            if (!whitelist.contains(playerName)) this.addName(playerName);
+            if (whitelist != null && !whitelist.contains(playerName)) this.addName(playerName);
             this.markChanged();
         }
         if ((PREFIX_FUNCTION + "removeWhitelist").equals(name) && params.length > 0) {
             String playerName = params[0];
             List<String> whitelist = this.getWhitelist();
-            if (whitelist.contains(playerName)) this.removeName(whitelist.indexOf(playerName));
+            if (whitelist != null && whitelist.contains(playerName)) this.removeName(whitelist.indexOf(playerName));
             this.markChanged();
         }
         if ((PREFIX_FUNCTION + "toggleBlacklistMobFilter").equals(name) && params.length > 0) {

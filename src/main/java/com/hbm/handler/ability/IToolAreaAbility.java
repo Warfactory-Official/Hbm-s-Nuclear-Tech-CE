@@ -3,11 +3,14 @@ package com.hbm.handler.ability;
 import com.hbm.config.ToolConfig;
 import com.hbm.explosion.ExplosionNT;
 import com.hbm.handler.ThreeInts;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.tool.ItemToolAbility;
+import com.hbm.tileentity.network.TileEntityPipeBaseNT;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
@@ -148,7 +151,10 @@ public interface IToolAreaAbility extends IBaseAbility {
             int meta = world.getBlockState(pos1).getBlock().getMetaFromState(world.getBlockState(pos1));
             int refMeta = world.getBlockState(refPos).getBlock().getMetaFromState(world.getBlockState(refPos));
 
-            if (!isSameBlock(b, ref))
+            TileEntity te1 = world.getTileEntity(refPos);
+            TileEntity te2 = world.getTileEntity(pos1);
+
+            if (!isSameBlock(b, ref, te1, te2))
                 return;
 
             if (meta != refMeta)
@@ -162,7 +168,15 @@ public interface IToolAreaAbility extends IBaseAbility {
             recurse(world, x, y, z, refX, refY, refZ, player, tool, depth, radius);
         }
 
-        private boolean isSameBlock(Block b1, Block b2) {
+        private boolean isSameBlock(Block b1, Block b2, TileEntity te1, TileEntity te2) {
+            if (te1 instanceof TileEntityPipeBaseNT && te2 instanceof TileEntityPipeBaseNT) {
+                FluidType type1 = ((TileEntityPipeBaseNT) te1).getType();
+                FluidType type2 = ((TileEntityPipeBaseNT) te2).getType();
+                //boxducts and fluid ducts still count as different blocks
+                if (b1 == b2)
+                    return type1 == type2;
+            }
+
             if ((b1 == Blocks.REDSTONE_ORE && b2 == Blocks.LIT_REDSTONE_ORE) || (b1 == Blocks.LIT_REDSTONE_ORE && b2 == Blocks.REDSTONE_ORE))
                 return true;
             return b1 == b2;

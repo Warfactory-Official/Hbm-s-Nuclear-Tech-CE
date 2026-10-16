@@ -629,15 +629,15 @@ public class TileEntityCrucible extends TileEntityMachineBase implements IGUIPro
         int recipeInputRequired = getQuantaFromType(recipe.input, stack.material);
         int matMaximum = recipeInputRequired * recipeZCapacity / recipeContent;
 
-        if(recipeInputRequired + stack.amount <= matMaximum) {
-            this.addToStack(this.recipeStack, stack.copy());
-            return null;
-        }
+        int amount = getQuantaFromType(this.recipeStack, stack.material);
+        int amountTotal = getQuantaFromType(this.recipeStack, null);
 
-        int toAdd = matMaximum - stack.amount;
-        toAdd = Math.min(toAdd, recipeZCapacity - getQuantaFromType(this.recipeStack, null));
+        int toAdd = Math.min(matMaximum - amount, recipeZCapacity - amountTotal);
+        toAdd = Math.min(toAdd, stack.amount);
+        if(toAdd <= 0) return stack;
+
         this.addToStack(this.recipeStack, new Mats.MaterialStack(stack.material, toAdd));
-        return new Mats.MaterialStack(stack.material, stack.amount - toAdd);
+        return toAdd < stack.amount ? new Mats.MaterialStack(stack.material, stack.amount - toAdd) : null;
     }
 
     @Override public boolean canAcceptPartialFlow(World world, BlockPos pos, ForgeDirection side, Mats.MaterialStack stack) { return false; }

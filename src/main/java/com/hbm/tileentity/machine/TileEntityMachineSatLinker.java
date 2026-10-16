@@ -26,6 +26,8 @@ import org.jetbrains.annotations.NotNull;
 @AutoRegister
 public class TileEntityMachineSatLinker extends TileEntity implements ITickable, IGUIProvider {
 
+	public static final int SAT_ID_RANGE = 10_000_000;
+
 	public ItemStackHandler inventory;
 	
 	//public static final int maxFill = 64 * 3;
@@ -94,7 +96,7 @@ public class TileEntityMachineSatLinker extends TileEntity implements ITickable,
 			}
 			if(inventory.getStackInSlot(2).getItem() instanceof ISatChip){
 				SatelliteSavedData satelliteData = SatelliteSavedData.getData(world);
-				int newId = world.rand.nextInt(100000);
+				int newId = world.rand.nextInt(SAT_ID_RANGE);
 				if(!satelliteData.isFreqTaken(newId)) {
 					ISatChip.setFreqS(inventory.getStackInSlot(2), newId);
 				}
