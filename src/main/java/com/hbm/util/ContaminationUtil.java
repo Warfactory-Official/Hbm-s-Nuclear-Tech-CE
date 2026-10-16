@@ -594,6 +594,7 @@ public class ContaminationUtil {
 	private static boolean isExplosionExempt(Entity e) {
 
 		if (e instanceof EntityOcelot ||
+				e instanceof EntityArmorStand ||
 				e instanceof EntityNukeTorex ||
 				e instanceof EntityNukeExplosionMK5 ||
 				e instanceof EntityMIRV ||
