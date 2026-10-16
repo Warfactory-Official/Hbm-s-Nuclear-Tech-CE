@@ -1158,6 +1158,21 @@ public class AmmoPressRecipes extends SerializableRecipe {
             null,
             smokeless,
             null));
+
+    // CIWS belt
+    OreDictStack gunmetal = new OreDictStack(GUNMETAL.plate());
+    recipes.add(
+        new AmmoPressRecipe(
+            new ItemStack(ModItems.ammo_dgk),
+            null,
+            steel.copy(5),
+            null,
+            null,
+            smokeless.copy(5),
+            null,
+            null,
+            gunmetal.copy(5),
+            null));
   }
 
   public static HashMap<Object, Object> getRecipes() {

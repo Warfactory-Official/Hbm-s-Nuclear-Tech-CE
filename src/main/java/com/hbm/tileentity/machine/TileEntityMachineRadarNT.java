@@ -9,6 +9,7 @@ import com.hbm.api.entity.RadarEntry;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.capability.NTMEnergyCapabilityWrapper;
+import com.hbm.config.ServerConfig;
 import com.hbm.handler.CompatHandler;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.interfaces.IControlReceiver;
@@ -32,6 +33,7 @@ import com.hbm.tileentity.IConfigurableMachine;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.IRadarCommandReceiver;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.tileentity.turret.TileEntityTurretRadarCommandBase;
 import com.hbm.util.Tuple;
 import com.hbm.world.WorldUtil;
 import io.netty.buffer.ByteBuf;
@@ -66,11 +68,13 @@ import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Now with SmЯt™ lag-free entity detection! (patent pending)
@@ -304,6 +308,8 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
                 }
             }
 
+            this.handOffToRadarCommandedTurrets();
+
             this.networkPackNT(50);
             if (this.clearFlag) {
                 this.map = new byte[40_000];
@@ -318,6 +324,53 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
                 prevRotation -= 360F;
             }
         }
+    }
+
+    /** Hands each linked radar-commanded turret (CIWS) the nearest tracked entity it would accept */
+    private void handOffToRadarCommandedTurrets() {
+        if (entries.isEmpty() || !ServerConfig.CIWS_RADAR_LINK_ENABLED.get()) return;
+
+        for (int i = 0; i < 8; i++) {
+            ItemStack link = inventory.getStackInSlot(i);
+            if (link.isEmpty() || link.getItem() != ModItems.radar_linker) continue;
+
+            BlockPos linkPos = ItemCoordinateBase.getPosition(link);
+            if (linkPos == null || !world.isBlockLoaded(linkPos)) continue; //getTileEntity would load the chunk
+
+            if (!(world.getTileEntity(linkPos) instanceof TileEntityTurretRadarCommandBase turret)) continue;
+            if (!turret.isOn || turret.target != null) continue;
+
+            RadarEntry entry = getNearestEntry(turret::entityAcceptableTarget);
+            if (entry == null) continue;
+
+            Entity e = world.getEntityByID(entry.entityID);
+            if (e != null && e.isEntityAlive()) turret.sendCommandEntity(e);
+        }
+    }
+
+    /**
+     * The tracked entity closest to the radar that is alive and accepted by the filter
+     *
+     * @param accept optional filter, null accepts every living entry
+     */
+    public @Nullable RadarEntry getNearestEntry(@Nullable Predicate<Entity> accept) {
+        RadarEntry best = null;
+        double bestSq = Double.MAX_VALUE;
+
+        for (RadarEntry entry : this.entries) {
+            double dx = entry.posX - (pos.getX() + 0.5D);
+            double dy = entry.posY - pos.getY();
+            double dz = entry.posZ - (pos.getZ() + 0.5D);
+            double sq = dx * dx + dy * dy + dz * dz;
+            if (sq >= bestSq) continue;
+
+            Entity e = world.getEntityByID(entry.entityID);
+            if (e == null || !e.isEntityAlive() || (accept != null && !accept.test(e))) continue;
+
+            bestSq = sq;
+            best = entry;
+        }
+        return best;
     }
 
     public DirPos[] getConPos() {
@@ -568,7 +621,8 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
 
                 if (pos != null) {
                     TileEntity tile = world.getTileEntity(pos);
-                    if (tile instanceof IRadarCommandReceiver) {
+                    //CIWS turrets get their targets from the hand-off, not from blip clicks
+                    if (tile instanceof IRadarCommandReceiver && !(tile instanceof TileEntityTurretRadarCommandBase)) {
                         IRadarCommandReceiver rec = (IRadarCommandReceiver) tile;
 
                         if (data.hasKey("launchEntity")) {

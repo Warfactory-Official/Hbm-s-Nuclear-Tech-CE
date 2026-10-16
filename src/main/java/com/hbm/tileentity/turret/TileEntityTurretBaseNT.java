@@ -681,7 +681,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
         Vec3d delta = new Vec3d(ent.x - pos.x, ent.y - pos.y, ent.z - pos.z);
         double length = delta.length();
 
-        if (length < this.getDecetorGrace() || length > this.getDecetorRange() * 1.1) //the latter statement is only relevant for entities that have already been detected
+        if (length < this.getDecetorGrace() || isBeyondLosRange(length)) //the latter statement is only relevant for entities that have already been detected
             return false;
 
         delta = delta.normalize();
@@ -692,6 +692,11 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase imple
         if (pitchDeg < -this.getTurretDepression() || pitchDeg > this.getTurretElevation()) return false;
 
         return !Library.isObstructedOpaque(world, ent.x, ent.y, ent.z, pos.x, pos.y, pos.z);
+    }
+
+    /** Range limit for entities that were already detected, radar commanded turrets override this */
+    protected boolean isBeyondLosRange(double distance) {
+        return distance > this.getDecetorRange() * 1.1;
     }
 
     /**

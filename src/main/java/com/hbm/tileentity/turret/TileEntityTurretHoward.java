@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @AutoRegister
-public class TileEntityTurretHoward extends TileEntityTurretBaseNT implements IGUIProvider {
+public class TileEntityTurretHoward extends TileEntityTurretRadarCommandBase implements IGUIProvider {
 	static List<Integer> configs = new ArrayList<>();
 
 	static {
@@ -129,7 +129,7 @@ public class TileEntityTurretHoward extends TileEntityTurretBaseNT implements IG
 				if(conf != null) {
 					this.consumeAmmo(conf.ammo);
 					this.world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), HBMSoundHandler.howard_reload, SoundCategory.BLOCKS, 4.0F, 1F);
-					loaded = 200;
+					loaded = 100;
 				}
 			}
 		}

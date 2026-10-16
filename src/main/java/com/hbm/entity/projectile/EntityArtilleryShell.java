@@ -1,6 +1,7 @@
 package com.hbm.entity.projectile;
 
 import com.hbm.api.entity.IRadarDetectable;
+import com.hbm.config.ServerConfig;
 import com.hbm.entity.logic.IChunkLoader;
 import com.hbm.interfaces.AutoRegister;
 import com.hbm.items.weapon.ItemAmmoArty;
@@ -13,6 +14,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundCategory;
@@ -309,6 +311,7 @@ public class EntityArtilleryShell extends EntityThrowableNT implements IChunkLoa
         super.writeEntityToNBT(nbt);
 
         nbt.setInteger("type", this.dataManager.get(TYPE));
+        nbt.setInteger("health", this.health);
         nbt.setBoolean("shouldWhistle", this.shouldWhistle);
         nbt.setBoolean("didWhistle", this.didWhistle);
         nbt.setDouble("targetX", this.targetX);
@@ -336,6 +339,7 @@ public class EntityArtilleryShell extends EntityThrowableNT implements IChunkLoa
         awaitingTicketRestore = true;
 
         this.dataManager.set(TYPE, nbt.getInteger("type"));
+        if (nbt.hasKey("health")) this.health = nbt.getInteger("health");
         this.shouldWhistle = nbt.getBoolean("shouldWhistle");
         this.didWhistle = nbt.getBoolean("didWhistle");
         this.targetX = nbt.getDouble("targetX");
@@ -365,6 +369,18 @@ public class EntityArtilleryShell extends EntityThrowableNT implements IChunkLoa
 
     @Override
     public boolean canBeCollidedWith() {
+        return true;
+    }
+
+    public int health = 50;
+
+    @Override
+    public boolean attackEntityFrom(DamageSource source, float amount) {
+        if (!ServerConfig.ARTILLERY_PROJECTILES_SHOOTABLE.get() || this.isEntityInvulnerable(source)) return false;
+        if (this.health > 0 && !this.world.isRemote) {
+            this.health -= (int) amount;
+            if (this.health <= 0) this.setDead();
+        }
         return true;
     }
 

@@ -1961,7 +1961,7 @@ public class ModItems {
     public static Item ammo_standard;
     public static Item ammo_secret;
     public static final ItemAmmo<ItemAmmoEnums.Ammo240Shell> ammo_shell = new ItemAmmo<>("ammo_shell", ItemAmmoEnums.Ammo240Shell.VALUES).setCreativeTab(MainRegistry.weaponTab);
-    public static final Item ammo_dgk = new ItemCustomLore("ammo_dgk").setCreativeTab(MainRegistry.weaponTab);
+    public static final Item ammo_dgk = new ItemCustomLore("ammo_dgk").setMaxStackSize(4).setCreativeTab(MainRegistry.weaponTab);
     public static final ItemAmmo<ItemAmmoEnums.AmmoFireExt> ammo_fireext = new ItemAmmo<>("ammo_fireext", ItemAmmoEnums.AmmoFireExt.VALUES).setCreativeTab(MainRegistry.weaponTab);
     public static final ItemAmmo<ItemAmmoEnums.AmmoMisc> ammo_misc = new ItemAmmo<>("ammo_misc", ItemAmmoEnums.AmmoMisc.VALUES).setCreativeTab(MainRegistry.weaponTab);
     public static final Item ammo_arty = new ItemAmmoArty("ammo_arty");

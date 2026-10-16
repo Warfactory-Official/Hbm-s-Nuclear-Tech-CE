@@ -1,6 +1,7 @@
 package com.hbm.entity.projectile;
 
 import com.hbm.api.entity.IRadarDetectable;
+import com.hbm.config.ServerConfig;
 import com.hbm.entity.logic.IChunkLoader;
 import com.hbm.entity.projectile.rocketbehavior.IRocketSteeringBehavior;
 import com.hbm.entity.projectile.rocketbehavior.IRocketTargetingBehavior;
@@ -15,6 +16,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
@@ -104,27 +106,21 @@ public class EntityArtilleryRocket extends EntityThrowableNT
     if (!world.isRemote) {
       requestChunkLoaderTicketIfNeeded();
 
-      if (this.targeting == null) {
-        this.targeting = new RocketTargetingPredictive();
-      }
-      if (this.steering == null) {
-        this.steering = new RocketSteeringBallisticArc();
-      }
+      if (this.lastTargetPos == null) this.lastTargetPos = new Vec3d(this.posX, this.posY, this.posZ);
 
-      if (this.targetEntity == null) {
-        Vec3d delta = new Vec3d(
-                this.lastTargetPos.x - this.posX,
-                this.lastTargetPos.y - this.posY,
-                this.lastTargetPos.z - this.posZ);
-        if (delta.length() <= 15D) {
-          this.targeting = null;
-          this.steering = null;
-        }
+      //close to the target, stop steering and fly straight at it
+      Vec3d delta = new Vec3d(
+              this.lastTargetPos.x - this.posX,
+              this.lastTargetPos.y - this.posY,
+              this.lastTargetPos.z - this.posZ);
+      double momentum = Math.sqrt(motionX * motionX + motionY * motionY + motionZ * motionZ) * motionMult();
+      if (delta.length() <= momentum * 1.5D) {
+        disableSteering(delta, momentum);
+      } else {
+        if (this.targeting != null && this.targetEntity != null)
+          this.targeting.recalculateTargetPosition(this, this.targetEntity);
+        if (this.steering != null) this.steering.adjustCourse(this, 25D, 15D);
       }
-
-      if (this.targeting != null && this.targetEntity != null)
-        this.targeting.recalculateTargetPosition(this, this.targetEntity);
-      if (this.steering != null) this.steering.adjustCourse(this, 25D, 15D);
 
       loadNeighboringChunks((int) Math.floor(posX / 16D), (int) Math.floor(posZ / 16D));
       this.getType().onUpdate(this);
@@ -140,6 +136,33 @@ public class EntityArtilleryRocket extends EntityThrowableNT
            MainRegistry.proxy.effectNT(HbmEffectNT.ExKeroseneOld, posX + v.x * i, posY + v.y * i, posZ + v.z * i);
         }
       }
+    }
+  }
+
+  public int health = 100;
+
+  @Override
+  public boolean attackEntityFrom(DamageSource source, float amount) {
+    if (!ServerConfig.ARTILLERY_PROJECTILES_SHOOTABLE.get() || this.isEntityInvulnerable(source)) return false;
+    if (this.health > 0 && !this.world.isRemote) {
+      this.health -= (int) amount;
+      if (this.health <= 0) this.setDead();
+    }
+    return true;
+  }
+
+  /** Drops the guidance and points the velocity straight at the target, keeping the speed */
+  public void disableSteering(Vec3d delta, double momentum) {
+    if (this.steering == null && this.targeting == null) return;
+
+    this.steering = null;
+    this.targeting = null;
+
+    if (delta.lengthSquared() > 1.0E-6D) {
+      Vec3d dir = delta.normalize();
+      this.motionX = dir.x * momentum / motionMult();
+      this.motionY = dir.y * momentum / motionMult();
+      this.motionZ = dir.z * momentum / motionMult();
     }
   }
 
@@ -226,6 +249,7 @@ public class EntityArtilleryRocket extends EntityThrowableNT
     nbt.setDouble("targetZ", this.lastTargetPos.z);
 
     nbt.setInteger("type", this.dataManager.get(TYPE));
+    nbt.setInteger("health", this.health);
   }
 
   @Override
@@ -235,6 +259,7 @@ public class EntityArtilleryRocket extends EntityThrowableNT
 
     this.lastTargetPos = new Vec3d(nbt.getDouble("targetX"), nbt.getDouble("targetY"), nbt.getDouble("targetZ"));
     this.setType(nbt.getInteger("type"));
+    if (nbt.hasKey("health")) this.health = nbt.getInteger("health");
   }
 
   @Override

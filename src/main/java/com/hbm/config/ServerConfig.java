@@ -25,6 +25,9 @@ public class ServerConfig extends RunningConfig {
     public static ConfigWrapper<Integer> AUTOCAL_MAX_CLOCK =		    new ConfigWrapper<>(20);
     public static ConfigWrapper<Integer> CONVEYOR_CRAM_MAX =		    new ConfigWrapper<>(25);
     public static ConfigWrapper<Boolean> CONVEYOR_CRAM_EXPLODE =	    new ConfigWrapper<>(true);
+    public static ConfigWrapper<Boolean> CIWS_RADAR_LINK_ENABLED =	    new ConfigWrapper<>(true);
+    public static ConfigWrapper<Float> CIWS_RADAR_RANGE_MULT =		    new ConfigWrapper<>(4F);
+    public static ConfigWrapper<Boolean> ARTILLERY_PROJECTILES_SHOOTABLE =	new ConfigWrapper<>(true);
 
     private static void initDefaults() {
         configMap.put("DAMAGE_COMPATIBILITY_MODE", DAMAGE_COMPATIBILITY_MODE);
@@ -42,6 +45,9 @@ public class ServerConfig extends RunningConfig {
         configMap.put("AUTOCAL_MAX_CLOCK", AUTOCAL_MAX_CLOCK);
         configMap.put("CONVEYOR_CRAM_MAX", CONVEYOR_CRAM_MAX);
         configMap.put("CONVEYOR_CRAM_EXPLODE", CONVEYOR_CRAM_EXPLODE);
+        configMap.put("CIWS_RADAR_LINK_ENABLED", CIWS_RADAR_LINK_ENABLED);
+        configMap.put("CIWS_RADAR_RANGE_MULT", CIWS_RADAR_RANGE_MULT);
+        configMap.put("ARTILLERY_PROJECTILES_SHOOTABLE", ARTILLERY_PROJECTILES_SHOOTABLE);
     }
 
     /** Initializes defaults, then reads the config file if it exists, then writes the config file. */

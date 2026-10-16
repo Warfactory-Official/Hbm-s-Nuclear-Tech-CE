@@ -427,6 +427,10 @@ public class DamageResistanceHandler {
         }
     }
 
+    public static boolean isEnergyDamage(DamageSource source) {
+        return CATEGORY_ENERGY.equals(typeToCategory(source));
+    }
+
     private static String typeToCategory(DamageSource source) {
         if (source.isExplosion()) return CATEGORY_EXPLOSION;
         if (source.isFireDamage()) return CATEGORY_FIRE;
